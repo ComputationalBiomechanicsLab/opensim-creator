@@ -9,14 +9,14 @@ endif()
 
 file(GLOB_RECURSE OSC_SOURCE_AND_HEADER_FILES "*.cpp")
 list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "tests")
-add_library(OpenSimCreator STATIC ${OSC_SOURCE_AND_HEADER_FILES})
-set_target_properties(OpenSimCreator PROPERTIES CXX_EXTENSIONS OFF)
-target_compile_features(OpenSimCreator PUBLIC cxx_std_23)
-target_compile_options(OpenSimCreator PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
-target_include_directories(OpenSimCreator PUBLIC
+add_library(opensimcreator STATIC ${OSC_SOURCE_AND_HEADER_FILES})
+set_target_properties(opensimcreator PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(opensimcreator PUBLIC cxx_std_23)
+target_compile_options(opensimcreator PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
+target_include_directories(opensimcreator PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <libopensimcreator/HEADER.h>` works
 )
-target_link_libraries(OpenSimCreator PUBLIC opynsim oscar)
+target_link_libraries(opensimcreator PUBLIC opynsim oscar)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)

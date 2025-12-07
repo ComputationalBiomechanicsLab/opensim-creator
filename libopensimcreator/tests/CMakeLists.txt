@@ -22,10 +22,7 @@ target_compile_options(TestOpenSimCreator PRIVATE ${OSC_STRICT_COMPILER_OPTIONS}
 target_include_directories(TestOpenSimCreator PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"  # so that `#include <libopensimcreator/tests/TestOpenSimCreatorConfig.h>` works
 )
-target_link_libraries(TestOpenSimCreator PRIVATE
-    OpenSimCreator
-    GTest::gtest
-)
+target_link_libraries(TestOpenSimCreator PRIVATE opensimcreator GTest::gtest)
 
 # tell CMake (+IDEs) how to find all tests
 if(${OSC_DISCOVER_TESTS})

@@ -82,10 +82,7 @@ add_executable(osc osc.cpp)
 set_target_properties(osc PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(osc PUBLIC cxx_std_23)
 target_compile_options(osc PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
-target_link_libraries(osc PRIVATE
-    OpenSimCreator
-    $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:oscar_demos>
-)
+target_link_libraries(osc PRIVATE opensimcreator $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:oscar_demos>)
 target_include_directories(osc PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"  # so that `#include <osc/osc_config.h>` works
 )
