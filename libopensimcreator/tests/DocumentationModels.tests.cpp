@@ -4,7 +4,7 @@
 #include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
-#include <libopensimcreator/tests/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>

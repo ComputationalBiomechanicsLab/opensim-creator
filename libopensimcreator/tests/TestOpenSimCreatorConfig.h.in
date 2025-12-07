@@ -3,7 +3,7 @@
 // char[]
 //
 // full application name string
-#define TESTOPENSIMCREATOR_APPNAME_STRING "TestOpenSimCreator"
+#define TESTOPENSIMCREATOR_APPNAME_STRING "testopensimcreator"
 
 // char[]
 //

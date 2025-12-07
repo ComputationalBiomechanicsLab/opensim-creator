@@ -3,7 +3,7 @@
 
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
-#include <libopensimcreator/tests/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/tests/testopensimcreatorconfig.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>

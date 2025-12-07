@@ -6,7 +6,7 @@
 #include <libopensimcreator/Documents/Model/ObjectPropertyEdit.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
-#include <libopensimcreator/tests/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/tests/testopensimcreatorconfig.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>

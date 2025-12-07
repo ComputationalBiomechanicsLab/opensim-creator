@@ -55,6 +55,6 @@ export ASAN_OPTIONS="abort_on_error=1:strict_string_checks=true:malloc_context_s
 export LIBGL_ALWAYS_SOFTWARE=1  # minimize driver leaks
 export LD_PRELOAD=build/libdlclose.so  # minimize library unloading leaks (issue in graphics drivers, sometimes)
 export LSAN_OPTIONS="suppressions=build/libasan_suppressions.supp"
-./build/liboscar/testing/testoscar
-./build/liboscar-demos/testing/testoscar_demos
-ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./build/libopensimcreator/testing/TestOpenSimCreator
+./build/liboscar/tests/testoscar
+./build/liboscar-demos/tests/testoscar_demos
+ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./build/libopensimcreator/tests/testopensimcreator

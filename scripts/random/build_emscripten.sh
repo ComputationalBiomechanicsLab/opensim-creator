@@ -41,4 +41,4 @@ emmake cmake --build build/ --target testoscar -v -j$(nproc)
 emmake cmake --build build/ --target hellotriangle -v -j$(nproc)
 
 # run test suite, excluding tests that depend on window/files (work-in-progress)
-node build/liboscar/testing/testoscar/testoscar.js  --gtest_filter=-Renderer*:ShaderTest*:MaterialTest*:Image*:ResourceStream*:load_texture2D_from_image*
+node build/liboscar/tests/testoscar/testoscar.js  --gtest_filter=-Renderer*:ShaderTest*:MaterialTest*:Image*:ResourceStream*:load_texture2D_from_image*

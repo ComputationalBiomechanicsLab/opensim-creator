@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv)
 {
-    // This little dance can be handy for modifying what `TestOpenSimCreator` does when
+    // This little dance can be handy for modifying what `testopensimcreator` does when
     // ran from an IDE where editing the run configuration is annoying to do.
     std::vector<std::string> extra_args = {
         // "--gtest_filter=UndoableModelStatePair.CanLoadModelWithMuscleEquilibrationProblems",  // e.g.

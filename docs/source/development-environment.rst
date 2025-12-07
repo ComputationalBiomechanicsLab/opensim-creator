@@ -43,7 +43,7 @@ To disable this behavior, you have to provide ``--gtest_catch_exceptions=0`` to 
 test suite executable. In Visual Studio you can do this by:
 
 - Setting the executable as your startup (``F5`` et. al.) project
-- Then go to ``Debug > Debug and Launch Settings for TestOpenSimCreator.exe`` (for example)
+- Then go to ``Debug > Debug and Launch Settings for testopensimcreator.exe`` (for example)
 - And then add an `args` element to the `configurations` list
 
 Example:
@@ -58,8 +58,8 @@ Example:
         {
           "type": "default",
           "project": "CMakeLists.txt",
-          "projectTarget": "TestOpenSimCreator.exe (tests\\TestOpenSimCreator\\TestOpenSimCreator.exe)",
-          "name": "TestOpenSimCreator.exe (tests\\TestOpenSimCreator\\TestOpenSimCreator.exe)",
+          "projectTarget": "testopensimcreator.exe (tests\\testopensimcreator\\testopensimcreator.exe)",
+          "name": "testopensimcreator.exe (tests\\testopensimcreator\\testopensimcreator.exe)",
           "args": [
             "--gtest_catch_exceptions=0"
           ]
