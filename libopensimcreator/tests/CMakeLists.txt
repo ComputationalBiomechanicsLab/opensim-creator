@@ -9,6 +9,12 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/generated/libopensimcreator/tests/testopensimcreatorconfig.h"
 )
 
+# Configure an `osc.toml` configuration file specifically for the test suite
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/osc.toml"
+)
+
 file(GLOB_RECURSE _osc_test_sources "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
 add_executable(testopensimcreator
     ${_osc_test_sources}

@@ -1,0 +1,11 @@
+# This configuration file is specifically used by `testopensimcreator`
+# to ensure it has test-friendly settings
+
+# A filesystem path relative to this configuration file to the root
+# runtime resources directory (i.e. where it can find shaders, example
+# models, etc.)
+resources = "@CMAKE_CURRENT_SOURCE_DIR@/../../resources"
+
+# Enabled so that the tests do not create a bunch of windows. Disable this
+# if you actually want to visualize the tests.
+headless_mode = true
