@@ -4,7 +4,7 @@
 #include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
-#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/tests/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/Platform/Log.h>

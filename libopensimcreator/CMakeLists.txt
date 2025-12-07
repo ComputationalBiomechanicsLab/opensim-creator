@@ -8,7 +8,7 @@ if(NOT TARGET opynsim)
 endif()
 
 file(GLOB_RECURSE OSC_SOURCE_AND_HEADER_FILES "*.cpp")
-list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "(testing|\.tests\.cpp)")
+list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "tests")
 add_library(OpenSimCreator STATIC ${OSC_SOURCE_AND_HEADER_FILES})
 set_target_properties(OpenSimCreator PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(OpenSimCreator PUBLIC cxx_std_23)
@@ -19,5 +19,5 @@ target_include_directories(OpenSimCreator PUBLIC
 target_link_libraries(OpenSimCreator PUBLIC opynsim oscar)
 
 if(BUILD_TESTING)
-    add_subdirectory(testing)
+    add_subdirectory(tests)
 endif()

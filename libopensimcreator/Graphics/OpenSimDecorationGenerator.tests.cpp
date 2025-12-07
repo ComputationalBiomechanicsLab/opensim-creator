@@ -5,7 +5,7 @@
 #include <libopensimcreator/Graphics/MuscleColorSource.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
-#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/tests/TestOpenSimCreatorConfig.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
