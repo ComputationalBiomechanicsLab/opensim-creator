@@ -1,4 +1,4 @@
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
+include(cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
 
 if(NOT TARGET oscar)
     find_package(oscar REQUIRED)
