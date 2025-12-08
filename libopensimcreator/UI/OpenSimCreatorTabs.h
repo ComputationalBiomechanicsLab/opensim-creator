@@ -1,6 +1,5 @@
 #pragma once
 
-#include <libopensimcreator/UI/FrameDefinition/FrameDefinitionTab.h>
 #include <libopensimcreator/UI/MeshHittestTab.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTab.h>
@@ -22,7 +21,6 @@ namespace osc
         mi::MeshImporterTab,
         ModelEditorTab,
         ModelWarperTab,
-        FrameDefinitionTab,
         MeshHittestTab,
         RendererGeometryShaderTab,
         RendererPerfTestingTab,

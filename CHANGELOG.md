@@ -14,6 +14,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   the model warper workflow. The option compensates for the case where a scaling step
   in the model warper operates on frames that may have been warped by previous steps,
   which can result in double-warping of the data (#1144).
+- The specialized frame definition workflow was removed after one year of deprecation messages
+  and hiding it (#951). We recommend using OpenSim-native components, such as `StationDefinedFrame`
+  to define frames in models.
 - OpenSim Creator now uses [OPynSim](https://github.com/opynsim/opynsim) as its OpenSim/Simbody
   provider. This should enable porting some of OpenSim Creator's algorithms upstream so that they
   can be used from Python.

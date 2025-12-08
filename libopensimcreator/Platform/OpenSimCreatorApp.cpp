@@ -1,10 +1,6 @@
 #include "OpenSimCreatorApp.h"
 
 #include <libopensimcreator/UI/OpenSimCreatorTabRegistry.h>
-#include <libopensimcreator/Documents/CustomComponents/SphereLandmark.h>
-#include <libopensimcreator/Documents/CustomComponents/PointToPointEdge.h>
-#include <libopensimcreator/Documents/CustomComponents/MidpointLandmark.h>
-#include <libopensimcreator/Documents/CustomComponents/CrossProductEdge.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppMetadata.h>
@@ -26,7 +22,6 @@
 #include <string_view>
 #include <utility>
 
-using namespace osc::fd;
 using namespace osc;
 
 namespace
@@ -124,13 +119,6 @@ namespace
             LogginingInitConfiguration config;
             opyn::init(config);
         }
-
-        // custom components
-        log_info("registering custom types");
-        OpenSim::Object::registerType(CrossProductEdge{});
-        OpenSim::Object::registerType(MidpointLandmark{});
-        OpenSim::Object::registerType(PointToPointEdge{});
-        OpenSim::Object::registerType(SphereLandmark{});
 
         // point OpenSim's log towards OSC's log
         //

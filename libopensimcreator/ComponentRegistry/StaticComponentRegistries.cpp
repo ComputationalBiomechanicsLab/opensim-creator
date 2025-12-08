@@ -1,11 +1,7 @@
 #include "StaticComponentRegistries.h"
 
 #include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
-#include <libopensimcreator/Documents/CustomComponents/CrossProductEdge.h>
 #include <libopensimcreator/Documents/CustomComponents/InMemoryMesh.h>
-#include <libopensimcreator/Documents/CustomComponents/MidpointLandmark.h>
-#include <libopensimcreator/Documents/CustomComponents/PointToPointEdge.h>
-#include <libopensimcreator/Documents/CustomComponents/SphereLandmark.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
@@ -54,7 +50,6 @@
 #include <utility>
 #include <vector>
 
-using namespace osc::fd;
 using namespace osc;
 namespace rgs = std::ranges;
 
@@ -86,10 +81,6 @@ namespace
     std::vector<std::shared_ptr<const OpenSim::Component>> CreateCustomComponentList()
     {
         return {
-            std::make_shared<CrossProductEdge>(),
-            std::make_shared<MidpointLandmark>(),
-            std::make_shared<PointToPointEdge>(),
-            std::make_shared<SphereLandmark>(),
             std::make_shared<OpenSim::StationDefinedFrame>(),
             std::make_shared<mow::InMemoryMesh>(),
         };
