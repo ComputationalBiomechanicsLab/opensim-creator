@@ -144,7 +144,7 @@ private:
 
     UndoableModelStatePair m_Model = []()
     {
-        UndoableModelStatePair msp{App::resource_filepath("OpenSimCreator/models/RajagopalModel/Rajagopal2015.osim")};
+        UndoableModelStatePair msp{App::resource_filepath("OpenSimCreator/models/RajagopalModel/Rajagopal2016.osim")};
         ActionEnableAllWrappingSurfaces(msp);
         return msp;
     }();

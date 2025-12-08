@@ -81,10 +81,10 @@ Example Walkthrough
 
 OpenSim Creator includes example models that use ``StationDefinedFrame``:
 
-- ``StationDefinedFrame.osim`` : A simple example that contains four stations defined
+- ``StationDefinedFrameExample.osim`` : A simple example that contains four stations defined
   in one body with a ``StationDefinedFrame`` that's defined by the stations.
 
-- ``StationDefinedFrame_Advanced.osim``: A more advanced example that contains multiple
+- ``StationDefinedFrameAdvancedExample.osim``: A more advanced example that contains multiple
   ``StationDefinedFrame`` s that are chained and use stations attached via
   ``PhysicalOffsetFrame`` s.
 

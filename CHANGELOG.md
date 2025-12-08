@@ -6,7 +6,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- Added "Total Length" as an option in the muscle plot panel (#1141)
+- Added "Total Length" as an option in the muscle plot panel (#1141).
 - Fixed a regression in the simulation workflow where clicking and dragging
   the mouse over a simulation plot was no longer continuously scrubbing through
   the simulation (#1139).
@@ -14,6 +14,25 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   the model warper workflow. The option compensates for the case where a scaling step
   in the model warper operates on frames that may have been warped by previous steps,
   which can result in double-warping of the data (#1144).
+- The following example models were removed from OpenSim Creator's installation in order
+  to simplify the user experience:
+  - `bouncing_block_weak_spring.osim`
+  - `gait10dof18musc_subject01*.osim`
+  - `subject01_simbody.osim`
+  - `gait2392_millard2012muscle_subject01.osim`
+  - `gait2392_millard2012muscle_subject01_adjusted.osim`
+  - `gait2392_thelen2003muscle_subject01_simbody_adjusted.osim`
+  - `Rajagopal2015_opensense.osim`
+  - `ToyLandingModel_activeAFO.osim`
+- The following example models were renamed, for clarity/correctness:
+  - `GeometryBackendTest.osim` -> `OpenSimGeometriesExample.osim`
+  - `FullBodyModel_Hamner2010_v2_0.osim` -> `Hamner2010_FullBodyModel_v2_0.osim`
+  - `StationDefinedFrame.osim` -> `StationDefinedFrameExample.osim`
+  - `StationDefinedFrame_Advanced.osim` -> `StationDefinedFrameAdvancedExample.osim`
+  - `Rajagopal2015.osim` -> `Rajagopal2016.osim`
+- The following example models were updated to match `opensim-org/opensim-models`:
+  - `Hamner2010_FullBodyModel_v2_0.osim` (fixed inertial inequalities)
+  - `Rajagopal2016.osim` (includes changes to also support `RajagopalLaiUhlrich2023.osim`)
 - The specialized frame definition workflow was removed after one year of deprecation messages
   and hiding it (#951). We recommend using OpenSim-native components, such as `StationDefinedFrame`
   to define frames in models.

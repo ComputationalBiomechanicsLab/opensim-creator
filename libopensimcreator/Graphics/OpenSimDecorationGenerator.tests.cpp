@@ -248,7 +248,7 @@ TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
 {
     GloballyInitOpenSim();  // ensure component registry is initialized
 
-    const std::filesystem::path soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models/SoccerKick/SoccerKickingModel.osim";
+    const std::filesystem::path soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models/SoccerKickingModel/SoccerKickingModel.osim";
     OpenSim::Model model{soccerKickPath.string()};
     InitializeModel(model);
     InitializeState(model);
@@ -318,7 +318,7 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelAndStateWorksAsExpected
     GloballyInitOpenSim();  // ensure component registry is initialized
 
     // setup model + options
-    const std::filesystem::path soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models/SoccerKick/SoccerKickingModel.osim";
+    const std::filesystem::path soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models/SoccerKickingModel/SoccerKickingModel.osim";
     OpenSim::Model model{soccerKickPath.string()};
     InitializeModel(model);
     InitializeState(model);
@@ -353,7 +353,7 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpecte
     GloballyInitOpenSim();  // ensure component registry is initialized
 
     // setup model + options
-    const std::filesystem::path soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models/SoccerKick/SoccerKickingModel.osim";
+    const std::filesystem::path soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models/SoccerKickingModel/SoccerKickingModel.osim";
     const BasicModelStatePair modelState{soccerKickPath.string()};
     SceneCache cache;
     OpenSimDecorationOptions opts;
