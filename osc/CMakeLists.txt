@@ -85,8 +85,9 @@ if(OSC_USE_STRICT_COMPILER_FLAGS)
     target_compile_options(osc PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
 endif()
 target_link_libraries(osc PRIVATE opensimcreator $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:oscar_demos>)
-target_include_directories(osc PRIVATE
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/"  # so that `#include <osc/osc_config.h>` works
+target_include_directories(osc
+    # so that `#include <osc/osc_config.h>` works
+    PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/
 )
 
 # Make OS-specific modifications to `osc`

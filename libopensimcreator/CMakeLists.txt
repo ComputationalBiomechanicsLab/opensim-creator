@@ -18,8 +18,9 @@ if(OSC_USE_STRICT_COMPILER_FLAGS)
     include(cmake/osc_strict_compiler_options.cmake)
     target_compile_options(opensimcreator PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
 endif()
-target_include_directories(opensimcreator PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <libopensimcreator/HEADER.h>` works
+target_include_directories(opensimcreator
+    # so that `#include <libopensimcreator/HEADER.h>` works
+    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>"
 )
 target_link_libraries(opensimcreator PUBLIC opynsim oscar)
 
