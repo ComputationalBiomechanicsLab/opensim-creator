@@ -20,7 +20,7 @@ install(TARGETS osc BUNDLE DESTINATION .)
 # which has a known path relative to the osc executable (../Resources/osc.toml).
 set(OSC_CONFIG_RESOURCES_DIR ".")  # relative to `osc.toml`
 configure_file(
-    "${PROJECT_SOURCE_DIR}/build_resources/osc.toml.in"
+    "${PROJECT_SOURCE_DIR}/osc/osc.toml.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_macos.toml"
     @ONLY
 )

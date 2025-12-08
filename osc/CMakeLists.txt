@@ -69,10 +69,19 @@ else()
     )
 endif()
 
-# generate `osc_config.h`
+# Configure `osc_config.h` (compile-time configuration)
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/osc_config.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/osc/osc_config.h"
+    @ONLY
+)
+# Configure an `osc.toml` that's used when running from the
+# build directory (runtime configuration)
+#
+# See `packaging/` for the installed version
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/osc.toml"
     @ONLY
 )
 
@@ -141,23 +150,4 @@ elseif(APPLE)
     set_target_properties(osc PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
     )
-endif()
-
-# generate a development-specific `osc.toml`
-#
-#     - this causes osc to load resources from the current source dir
-#
-#     - which means that devs can edit shaders, models, icons, etc. and immediately
-#       test them without having to run a huge copy/sync operation
-#
-#     - this config is switched out at install-time to a configuration that loads
-#       resources from the (copied) resource directory
-if(TRUE)
-    set(OSC_CONFIG_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources")
-    configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/../build_resources/osc.toml.in"
-        "${CMAKE_BINARY_DIR}/osc.toml"  # CARE: this MUST be CMAKE_BINARY_DIR: multiple executables depend on it
-        @ONLY
-    )
-    unset(OSC_CONFIG_RESOURCES_DIR)
 endif()
