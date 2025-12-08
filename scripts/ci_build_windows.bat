@@ -7,7 +7,7 @@ REM a potentially stale/cached workspace directory.
 set "OSCDEPS_BUILD_ALWAYS=ON"
 
 REM Activate the latest Visual Studio environment (so that Ninja, cmake, etc. are available)
-call scripts/env_vs.bat
+call scripts/env_vs-x64.bat
 
 REM --system-version is necessary because, otherwise, the wrong Windows SDK might be chosen,
 REM resulting in either missing headers or shipping a binary that doesn't run on target systems.

@@ -1,4 +1,4 @@
-REM sets up a terminal environment with Visual Studio's variables
+REM sets up a batch/cmd.exe terminal with Visual Studio's variables
 REM (ninja on the PATH, etc.)
 
 @echo off

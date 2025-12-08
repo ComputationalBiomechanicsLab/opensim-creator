@@ -15,7 +15,7 @@ if "%~1"=="" (
 )
 
 REM Activate Visual Studio environment (puts ninja on the PATH, etc.)
-call scripts/env_vs.bat
+call scripts/env_vs-x64.bat
 
 REM Loop over each configuration and build the dependencies
 for %%C in (%CONFIGS%) do (
