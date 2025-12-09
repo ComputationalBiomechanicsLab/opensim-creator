@@ -148,5 +148,5 @@ TEST(FilesystemResourceLoader, resource_filepath_returns_non_nullopt_when_given_
     
     const auto filepath = loader.resource_filepath("bar");
     ASSERT_TRUE(filepath.has_value());
-    ASSERT_EQ(filepath, root_directory.absolute_path() / "bar");
+    ASSERT_EQ(filepath, std::filesystem::weakly_canonical(root_directory.absolute_path() / "bar"));
 }
