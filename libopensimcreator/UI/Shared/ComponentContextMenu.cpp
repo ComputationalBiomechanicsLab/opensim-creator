@@ -544,9 +544,7 @@ private:
         ui::unindent();
     }
 
-    void drawInboundConnectionsTable(
-        cpp23::generator<ComponentConnectionView>::iterator& it,
-        std::default_sentinel_t end)
+    void drawInboundConnectionsTable(auto& it, std::default_sentinel_t end)
     {
         ui::push_style_var(ui::StyleVar::CellPadding, ui::get_text_line_height_in_current_panel() * Vector2{0.5f});
         const ui::TableFlags flags = {

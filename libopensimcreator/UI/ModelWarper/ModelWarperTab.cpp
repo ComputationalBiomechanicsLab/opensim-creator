@@ -35,6 +35,7 @@
 #include <liboscar/UI/Widgets/RedoButton.h>
 #include <liboscar/UI/Widgets/UndoButton.h>
 #include <liboscar/UI/Widgets/WindowMenu.h>
+#include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/Typelist.h>
 #include <liboscar/Utils/UndoRedo.h>
 #include <OpenSim/Simulation/Model/Frame.h>
