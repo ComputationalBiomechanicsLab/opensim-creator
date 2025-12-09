@@ -91,12 +91,12 @@ public:
         SelectGeometryPopup& owner,
         Widget* parent,
         std::string_view popupName,
-        const std::filesystem::path& geometryDir,
+        std::optional<std::filesystem::path> geometryDir,
         std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
 
         PopupPrivate{owner, parent, popupName},
         m_OnSelection{std::move(onSelection)},
-        m_GeometryFiles{find_files_recursive(geometryDir)}
+        m_GeometryFiles{geometryDir ? find_files_recursive(*geometryDir) : std::vector<std::filesystem::path>{}}
     {}
 
     void draw_content()
@@ -255,9 +255,9 @@ private:
 osc::SelectGeometryPopup::SelectGeometryPopup(
     Widget* parent,
     std::string_view popupName,
-    const std::filesystem::path& geometryDir,
+    std::optional<std::filesystem::path> geometryDir,
     std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
 
-    Popup{std::make_unique<Impl>(*this, parent, popupName, geometryDir, std::move(onSelection))}
+    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(geometryDir), std::move(onSelection))}
 {}
 void osc::SelectGeometryPopup::impl_draw_content() { private_data().draw_content(); }

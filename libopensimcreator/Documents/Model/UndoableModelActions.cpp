@@ -112,7 +112,11 @@ namespace
 
     bool IsAnExampleFile(const std::filesystem::path& path)
     {
-        return is_subpath(App::resource_filepath("OpenSimCreator/models"), path);
+        if (const auto exampleModelsDirectoryPath = App::resource_filepath("OpenSimCreator/models")) {
+            return is_subpath(*exampleModelsDirectoryPath, path);
+        } else {
+            return false;
+        }
     }
 
     bool TrySaveModel(const OpenSim::Model& model, const std::string& save_loc)

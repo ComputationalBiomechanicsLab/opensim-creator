@@ -20,6 +20,7 @@
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
+#include <liboscar/Platform/Log.h>
 #include <liboscar/UI/IconCache.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
@@ -144,7 +145,13 @@ private:
 
     UndoableModelStatePair m_Model = []()
     {
-        UndoableModelStatePair msp{App::resource_filepath("OpenSimCreator/models/RajagopalModel/Rajagopal2016.osim")};
+        UndoableModelStatePair msp;
+        const ResourcePath rajagopalPath{"OpenSimCreator/models/RajagopalModel/Rajagopal2016.osim"};
+        if (const auto rajagopal = App::resource_filepath(rajagopalPath)) {
+            msp = UndoableModelStatePair{*rajagopal};
+        } else {
+            log_error("%s: no such resource found: falling back to a blank model", rajagopalPath.string().c_str());
+        }
         ActionEnableAllWrappingSurfaces(msp);
         return msp;
     }();

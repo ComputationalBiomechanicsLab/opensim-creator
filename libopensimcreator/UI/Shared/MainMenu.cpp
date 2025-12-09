@@ -86,20 +86,32 @@ namespace
             GetMotionFileFilters()
         );
     }
+
+    std::vector<std::filesystem::path> tryLoadExampleOsimFiles()
+    {
+        std::vector<std::filesystem::path> rv;
+
+        const ResourcePath exampleOsimsResourcePath{"OpenSimCreator/models"};
+        if (const auto exampleOsimsDirectoryPath = App::resource_filepath(exampleOsimsResourcePath)) {
+
+            rv = find_files_with_extensions_recursive(
+                *exampleOsimsDirectoryPath,
+                std::to_array({std::string_view{".osim"}})
+            );
+        } else {
+            log_warn("%s: no such directory: cannot iterate through example models: falling back to an empty list", exampleOsimsResourcePath.string().c_str());
+        }
+
+        rgs::sort(rv, is_filename_lexicographically_greater_than);
+
+        return rv;
+    }
 }
 
 osc::MainMenuFileTab::MainMenuFileTab(Widget* parent) :
     Widget{parent},
-    exampleOsimFiles
-    {
-        find_files_with_extensions_recursive(
-            App::resource_filepath("OpenSimCreator/models"),
-            std::to_array({std::string_view{".osim"}})
-        )
-    }
-{
-    rgs::sort(exampleOsimFiles, is_filename_lexicographically_greater_than);
-}
+    exampleOsimFiles{tryLoadExampleOsimFiles()}
+{}
 
 void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)  // NOLINT(performance-unnecessary-value-param)
 {

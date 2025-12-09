@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string_view>
 
 namespace OpenSim { class Geometry; }
@@ -16,7 +17,7 @@ namespace osc
         explicit SelectGeometryPopup(
             Widget* parent,
             std::string_view popupName,
-            const std::filesystem::path& geometryDir,
+            std::optional<std::filesystem::path> geometryDir,
             std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection
         );
 

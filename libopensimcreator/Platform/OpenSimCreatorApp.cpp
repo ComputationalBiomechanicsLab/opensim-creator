@@ -162,7 +162,12 @@ osc::OpenSimCreatorApp::OpenSimCreatorApp(const AppMetadata& metadata) :
     App{metadata}
 {
     GloballyInitOpenSim();
-    GloballyAddDirectoryToOpenSimGeometrySearchPath(resource_filepath("OpenSimCreator/geometry"));
+    const ResourcePath geometryDirectoryPath{"OpenSimCreator/geometry"};
+    if (const auto geometryDirectory = resource_filepath(geometryDirectoryPath)) {
+        GloballyAddDirectoryToOpenSimGeometrySearchPath(*geometryDirectory);
+    } else {
+        log_error("%s: cannot find geometry directory resource: falling back to not using one at all. You might need to update the osc.toml configuration file.", geometryDirectoryPath.string().c_str());
+    }
     RegisterOpenSimCreatorTabs(upd_tab_registry());
     InitializeOpenSimCreatorSpecificSettingDefaults(upd_settings());
     g_opensimcreator_app_global = this;
