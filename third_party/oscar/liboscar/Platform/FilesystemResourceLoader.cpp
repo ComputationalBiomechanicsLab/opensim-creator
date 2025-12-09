@@ -3,6 +3,7 @@
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/ResourceStream.h>
+#include <liboscar/Shims/Cpp23/generator.h>
 
 #include <filesystem>
 #include <functional>
@@ -16,6 +17,15 @@ namespace
     std::filesystem::path calc_full_path(const std::filesystem::path& root, const ResourcePath& subpath)
     {
         return std::filesystem::weakly_canonical(root / subpath.string());
+    }
+
+    cpp23::generator<ResourceDirectoryEntry> iterate_directory_async(std::filesystem::path full_path)
+    {
+        const std::filesystem::directory_iterator iterable{full_path};
+        for (auto it = rgs::begin(iterable), end = rgs::end(iterable); it != end; ++it) {
+            const auto relative_path = std::filesystem::relative(it->path(), full_path);
+            co_yield ResourceDirectoryEntry{relative_path.string(), it->is_directory()};
+        }
     }
 }
 
@@ -33,20 +43,14 @@ ResourceStream osc::FilesystemResourceLoader::impl_open(const ResourcePath& reso
     return ResourceStream{calc_full_path(root_directory_, resource_path)};
 }
 
-std::function<std::optional<ResourceDirectoryEntry>()> osc::FilesystemResourceLoader::impl_iterate_directory(const ResourcePath& resource_path)
+cpp23::generator<ResourceDirectoryEntry> osc::FilesystemResourceLoader::impl_iterate_directory(ResourcePath resource_path)
 {
-    const std::filesystem::path full_path = calc_full_path(root_directory_, resource_path);
-    const std::filesystem::directory_iterator iterable{full_path};
-    return [resource_path, full_path, beg = rgs::begin(iterable), en = rgs::end(iterable)]() mutable -> std::optional<ResourceDirectoryEntry>
-    {
-        if (beg != en) {
-            const auto relative_path = std::filesystem::relative(beg->path(), full_path);
-            ResourceDirectoryEntry rv{relative_path.string(), beg->is_directory()};
-            ++beg;
-            return rv;
-        }
-        else {
-            return std::nullopt;
-        }
-    };
+    std::filesystem::path full_path = calc_full_path(root_directory_, resource_path);
+    if (not std::filesystem::exists(full_path)) {
+        throw std::runtime_error{full_path.string() + ": no such directory"};
+    }
+    if (not std::filesystem::is_directory(full_path)) {
+        throw std::runtime_error{full_path.string() + ": is not a directory, cannot iterate over it"};
+    }
+    return iterate_directory_async(std::move(full_path));
 }

@@ -1530,25 +1530,16 @@ public:
 
     AppSettings& upd_settings() { return config_; }
 
-    ResourceLoader& upd_resource_loader()
-    {
-        return resource_loader_;
-    }
+    ResourceLoader& upd_resource_loader() { return resource_loader_; }
 
     std::filesystem::path get_resource_filepath(const ResourcePath& rp) const
     {
-        return std::filesystem::weakly_canonical(resources_dir_ / rp.string());
+        return std::filesystem::weakly_canonical(filesystem_resource_loader_->root_directory() / rp.string());
     }
 
-    std::string slurp_resource(const ResourcePath& rp)
-    {
-        return resource_loader_.slurp(rp);
-    }
+    std::string slurp_resource(const ResourcePath& rp) { return resource_loader_.slurp(rp); }
 
-    ResourceStream go_load_resource(const ResourcePath& rp)
-    {
-        return resource_loader_.open(rp);
-    }
+    ResourceStream go_load_resource(const ResourcePath& rp) { return resource_loader_.open(rp); }
 
     std::shared_ptr<void> upd_singleton(
         const std::type_info& type_info,
@@ -1679,10 +1670,6 @@ private:
         metadata_.config_filename(),
     };
 
-    // initialization-time resources dir (so that it doesn't have to be fetched
-    // from the settings over-and-over)
-    std::filesystem::path resources_dir_ = get_current_resources_path_and_log_it(config_);
-
     // path to the directory that the application's executable is contained within
     std::filesystem::path executable_dir_ = get_current_exe_dir_and_log_it();
 
@@ -1701,8 +1688,15 @@ private:
     // application's configuration file
     bool log_is_configured_ = configure_application_log(config_);
 
-    // top-level runtime resource loader
-    ResourceLoader resource_loader_ = make_resource_loader<FilesystemResourceLoader>(resources_dir_);
+    // internal filesystem resource loader (we know its implementation at compile-time)
+    std::shared_ptr<FilesystemResourceLoader> filesystem_resource_loader_ = std::make_shared<FilesystemResourceLoader>(
+        // initialization-time resources dir (so that it doesn't have to be fetched
+        // from the settings over-and-over)
+        get_current_resources_path_and_log_it(config_)
+    );
+
+    // the type-erased `ResourceLoader` that's dished out to callers
+    ResourceLoader resource_loader_{filesystem_resource_loader_};
 
     // SDL context (windowing, video driver, etc.)
     sdl::Context sdl_context_{SDL_INIT_VIDEO};

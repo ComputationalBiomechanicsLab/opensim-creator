@@ -4,6 +4,7 @@
 #include <liboscar/Platform/ResourceDirectoryEntry.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/ResourceStream.h>
+#include <liboscar/Shims/Cpp23/generator.h>
 
 #include <gtest/gtest.h>
 
@@ -39,9 +40,9 @@ namespace
             return ResourceStream{};
         }
 
-        std::function<std::optional<ResourceDirectoryEntry>()> impl_iterate_directory(const ResourcePath&) override
+        cpp23::generator<ResourceDirectoryEntry> impl_iterate_directory(ResourcePath) override
         {
-            return []{ return std::nullopt; };
+            co_return;
         }
 
         std::shared_ptr<MockState> state_;

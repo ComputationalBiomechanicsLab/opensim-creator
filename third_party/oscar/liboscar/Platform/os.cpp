@@ -160,10 +160,10 @@ namespace
 
 std::pair<std::fstream, std::filesystem::path> osc::mkstemp(std::string_view suffix, std::string_view prefix)
 {
-    std::default_random_engine s_prng{std::random_device{}()};
+    std::default_random_engine prng{std::random_device{}()};
     const std::filesystem::path tmpdir = std::filesystem::temp_directory_path();
     for (size_t attempt = 0; attempt < 100; ++attempt) {
-        std::filesystem::path attempt_path = tmpdir / generate_tempfile_name(s_prng, suffix, prefix);
+        std::filesystem::path attempt_path = tmpdir / generate_tempfile_name(prng, suffix, prefix);
         // TODO: remove these `pragma`s once the codebase is upgraded to C++23, because it has `std::ios_base::noreplace` support
 #pragma warning(push)
 #pragma warning(suppress : 4996)
@@ -173,5 +173,21 @@ std::pair<std::fstream, std::filesystem::path> osc::mkstemp(std::string_view suf
         }
 #pragma warning(pop)
     }
-    throw std::runtime_error{"failed to create a unique temporary filename after 100 attempts - are you creating _a lot_ of temporary files? ;)"};
+    throw std::runtime_error{"Failed to create a unique temporary filename after 100 attempts - you might be creating too many temporary files/directories"};
+}
+
+std::filesystem::path osc::mkdtemp(std::string_view suffix, std::string_view prefix)
+{
+    std::default_random_engine prng{std::random_device{}()};
+    const std::filesystem::path tmpdir = std::filesystem::temp_directory_path();
+
+    for (size_t attempt = 0; attempt < 100; ++attempt) {
+        std::filesystem::path attempt_path = tmpdir / generate_tempfile_name(prng, suffix, prefix);
+        if (std::filesystem::create_directory(attempt_path)) {  // Throwing `std::filesystem::filesystem_error` is ok: permissions errors etc. should be propagated.
+            return attempt_path;
+        }
+        // Else: the directory already exists: make another attempt
+    }
+
+    throw std::runtime_error{"Failed to create a unique temporary directory name after 100 attempts - you might be creating too many temporary files/directories"};
 }

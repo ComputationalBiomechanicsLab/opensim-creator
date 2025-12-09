@@ -1,11 +1,20 @@
 #pragma once
 
-#include <atomic>
-#include <memory>
-#include <utility>
+#include <version> // __cpp_lib_jthread
+
+#ifdef __cpp_lib_jthread
+    #include <stop_token>
+#else
+    #include <atomic>
+    #include <memory>
+    #include <utility>
+#endif
 
 namespace osc::cpp20
 {
+#ifdef __cpp_lib_jthread
+    using stop_token = std::stop_token;
+#else
     // C++20: std::stop_token
     class stop_token final {
     public:
@@ -54,4 +63,5 @@ namespace osc::cpp20
     private:
         std::shared_ptr<std::atomic<bool>> shared_state_ = std::make_shared<std::atomic<bool>>(false);
     };
+#endif
 }

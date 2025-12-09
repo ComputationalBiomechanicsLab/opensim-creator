@@ -56,4 +56,12 @@ namespace osc
         std::string_view suffix = {},
         std::string_view prefix = {}
     );
+
+    // Creates a temporary directory in the most secure manner possible.
+    //
+    // The caller is responsible for deleting the temporary directory once it is no longer needed.
+    std::filesystem::path mkdtemp(
+        std::string_view suffix = {},
+        std::string_view prefix = {}
+    );
 }

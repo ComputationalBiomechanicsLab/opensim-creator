@@ -2,6 +2,8 @@
 
 #include <liboscar/Platform/ResourcePath.h>
 
+#include <functional>
+#include <iosfwd>
 #include <utility>
 
 namespace osc
@@ -13,6 +15,8 @@ namespace osc
             is_directory_{is_directory}
         {}
 
+        friend bool operator==(const ResourceDirectoryEntry&, const ResourceDirectoryEntry&) = default;
+
         const ResourcePath& path() const { return path_; }
         operator const ResourcePath& () const { return path_; }
         bool is_directory() const { return is_directory_; }
@@ -20,4 +24,11 @@ namespace osc
         ResourcePath path_;
         bool is_directory_;
     };
+
+    std::ostream& operator<<(std::ostream&, const ResourceDirectoryEntry&);
 }
+
+template<>
+struct std::hash<osc::ResourceDirectoryEntry> final {
+    size_t operator()(const osc::ResourceDirectoryEntry&) const;
+};
