@@ -199,7 +199,7 @@ private:
             auto popup = std::make_unique<SelectGeometryPopup>(
                 parent(),
                 "select geometry to attach",
-                App::resource_filepath("geometry"),
+                App::resource_filepath("OpenSimCreator/geometry"),
                 callback
             );
             App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
