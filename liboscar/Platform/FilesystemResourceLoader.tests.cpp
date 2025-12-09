@@ -129,3 +129,24 @@ TEST(FilesystemResourceLoader, iterate_directory_yields_paths_relative_to_root_d
 
     ASSERT_EQ(expected_entries, found_entries);
 }
+
+TEST(FilesystemResourceLoader, resource_filepath_returns_nullopt_when_given_non_existent_path)
+{
+    TemporaryDirectory root_directory;
+    FilesystemResourceLoader loader{root_directory.absolute_path()};
+
+    ASSERT_EQ(loader.resource_filepath("doesnt-exist"), std::nullopt);
+}
+
+TEST(FilesystemResourceLoader, resource_filepath_returns_non_nullopt_when_given_an_existent_path)
+{
+    TemporaryDirectory root_directory;
+    {
+        std::ofstream{root_directory.absolute_path() / "bar"};
+    }
+    FilesystemResourceLoader loader{root_directory.absolute_path()};
+    
+    const auto filepath = loader.resource_filepath("bar");
+    ASSERT_TRUE(filepath.has_value());
+    ASSERT_EQ(filepath, root_directory.absolute_path() / "bar");
+}
