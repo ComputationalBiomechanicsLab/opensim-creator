@@ -2,12 +2,21 @@
 
 #include <liboscar/Shims/Cpp20/stop_token.h>
 
-#include <concepts>
-#include <thread>
-#include <utility>
+#include <version>  // __cpp_lib_jthread
+
+#ifdef __cpp_lib_jthread
+    #include <thread>
+#else
+    #include <concepts>
+    #include <thread>
+    #include <utility>
+#endif
 
 namespace osc::cpp20
 {
+#ifdef __cpp_lib_jthread
+    using jthread = std::jthread;
+#else
     // C++20: std::jthread
     class jthread final {
     public:
@@ -70,4 +79,5 @@ namespace osc::cpp20
         stop_source stop_source_;
         std::thread thread_;
     };
+#endif
 }
