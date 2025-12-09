@@ -123,7 +123,9 @@ TEST(FilesystemResourceLoader, iterate_directory_yields_paths_relative_to_root_d
 
     FilesystemResourceLoader loader{root_directory.absolute_path()};
     std::unordered_set<ResourceDirectoryEntry> found_entries;
-    found_entries.insert_range(loader.iterate_directory("."));
+    for (auto&& entry : loader.iterate_directory(".")) {
+        found_entries.insert(entry);
+    }
 
     ASSERT_EQ(expected_entries, found_entries);
 }
