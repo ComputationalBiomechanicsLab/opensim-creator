@@ -4,6 +4,7 @@
 #include <liboscar/Platform/ResourceDirectoryEntry.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/ResourceStream.h>
+#include <liboscar/Shims/Cpp23/generator.h>
 
 #include <concepts>
 #include <functional>
@@ -16,6 +17,14 @@ namespace osc
 {
     class ResourceLoader {
     public:
+        explicit ResourceLoader(
+            std::shared_ptr<IResourceLoader> impl,
+            ResourcePath prefix = ResourcePath{}) :
+
+            impl_{std::move(impl)},
+            prefix_{std::move(prefix)}
+        {}
+
         operator IResourceLoader& () { return *impl_; }
         operator const IResourceLoader& () const { return *impl_; }
 
@@ -46,7 +55,7 @@ namespace osc
             return with_prefix(ResourcePath{std::forward<StringLike>(str)});
         }
 
-        std::function<std::optional<ResourceDirectoryEntry>()> iterate_directory(const ResourcePath& resource_path)
+        cpp23::generator<ResourceDirectoryEntry> iterate_directory(const ResourcePath& resource_path)
         {
             return impl_->iterate_directory(prefix_ / resource_path);
         }
@@ -54,14 +63,6 @@ namespace osc
         template<std::derived_from<IResourceLoader> TResourceLoader, typename... Args>
         requires std::constructible_from<TResourceLoader, Args&&...>
         friend ResourceLoader make_resource_loader(Args&&...);
-
-        explicit ResourceLoader(
-            std::shared_ptr<IResourceLoader> impl,
-            ResourcePath prefix = ResourcePath{}) :
-
-            impl_{std::move(impl)},
-            prefix_{std::move(prefix)}
-        {}
 
         std::shared_ptr<IResourceLoader> impl_;
         ResourcePath prefix_;

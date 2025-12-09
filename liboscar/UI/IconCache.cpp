@@ -26,24 +26,23 @@ public:
         OSC_ASSERT(vertical_scale > 0.0f && "icon cache's vertical scale must be a positive number");
         OSC_ASSERT(device_pixel_ratio > 0.0f && "icon cache's device pixel ratio must be a positive number");
 
-        const auto it = loader_prefixed_at_dir_containing_svgs.iterate_directory(".");
-
-        for (auto el = it(); el; el = it()) {
-            const ResourcePath& p = *el;
-
-            if (p.has_extension(".svg")) {
-                Texture2D texture = SVG::read_into_texture(
-                    loader_prefixed_at_dir_containing_svgs.open(p),
-                    vertical_scale,
-                    device_pixel_ratio
-                );
-
-                icons_by_name_.try_emplace(
-                    p.stem(),
-                    std::move(texture),
-                    Rect::from_corners({0.0f, 1.0f}, {1.0f, 0.0f})
-                );
+        for (const ResourcePath& p : loader_prefixed_at_dir_containing_svgs.iterate_directory(".")) {
+            if (not p.has_extension(".svg")) {
+                continue;  // Skip non-SVGs
             }
+            // Else: read the SVG into a texture and add it to the lookup
+
+            Texture2D texture = SVG::read_into_texture(
+                loader_prefixed_at_dir_containing_svgs.open(p),
+                vertical_scale,
+                device_pixel_ratio
+            );
+
+            icons_by_name_.try_emplace(
+                p.stem(),
+                std::move(texture),
+                Rect::from_corners({0.0f, 1.0f}, {1.0f, 0.0f})
+            );
         }
     }
 
