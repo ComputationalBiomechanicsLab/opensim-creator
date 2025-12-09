@@ -1,19 +1,29 @@
 #pragma once
 
-#include <liboscar/Utils/Assertions.h>
+#include <version>  // __cpp_lib_generator
 
-#include <coroutine>
-#include <cstddef>
-#include <exception>
-#include <iterator>
-#include <memory>
-#include <ranges>
-#include <stack>
-#include <type_traits>
-#include <utility>
+#ifdef __cpp_lib_generator
+    #include <generator>
+#else
+    #include <liboscar/Utils/Assertions.h>
+
+    #include <coroutine>
+    #include <cstddef>
+    #include <exception>
+    #include <iterator>
+    #include <memory>
+    #include <ranges>
+    #include <stack>
+    #include <type_traits>
+    #include <utility>
+#endif
 
 namespace osc::cpp23
 {
+#ifdef __cpp_lib_generator
+    template<class Ref, class V = void, class Allocator = void>
+    using generator = std::generator<Ref, V, Allocator>;
+#else
     // WORK IN PROGRESS
     //
     // liboscar shim for `std::generator<Ref, V, Allocator>` (and also a bit of fun,
@@ -165,4 +175,5 @@ namespace osc::cpp23
         std::unique_ptr<std::stack<std::coroutine_handle<>>> active_ = std::make_unique<std::stack<std::coroutine_handle<>>>();
         std::coroutine_handle<promise_type> coroutine_;
     };
+#endif
 }
