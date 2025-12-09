@@ -25,29 +25,28 @@ osc::TemporaryFile::TemporaryFile(TemporaryFile&& tmp) noexcept :
 
 TemporaryFile& osc::TemporaryFile::operator=(TemporaryFile&& tmp) noexcept
 {
-    using std::swap;
-
-    if (&tmp == this) {
-        return *this;
+    if (&tmp != this) {
+        std::swap(absolute_path_, tmp.absolute_path_);
+        std::swap(handle_, tmp.handle_);
+        std::swap(should_delete_, tmp.should_delete_);
     }
-
-    swap(absolute_path_, tmp.absolute_path_);
-    swap(handle_, tmp.handle_);
-    swap(should_delete_, tmp.should_delete_);
     return *this;
 }
 
 osc::TemporaryFile::~TemporaryFile() noexcept
 {
-    if (should_delete_) {
-        if (handle_.is_open()) {
-            handle_.close();
-        }
-        try {
-            std::filesystem::remove(absolute_path_);
-        }
-        catch (const std::filesystem::filesystem_error& ex) {
-            log_error("error closing a temporary file, this could be a sign of operating system issues: %s", ex.what());
-        }
+    if (not should_delete_) {
+        return;
+    }
+
+    if (handle_.is_open()) {
+        handle_.close();
+    }
+
+    try {
+        std::filesystem::remove(absolute_path_);
+    }
+    catch (const std::filesystem::filesystem_error& ex) {
+        log_error("Error closing a temporary file (%s): %s", absolute_path_.string().c_str(), ex.what());
     }
 }
