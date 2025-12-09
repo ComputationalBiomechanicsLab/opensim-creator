@@ -1532,9 +1532,9 @@ public:
 
     ResourceLoader& upd_resource_loader() { return resource_loader_; }
 
-    std::filesystem::path get_resource_filepath(const ResourcePath& rp) const
+    std::optional<std::filesystem::path> get_resource_filepath(const ResourcePath& rp) const
     {
-        return std::filesystem::weakly_canonical(filesystem_resource_loader_->root_directory() / rp.string());
+        return filesystem_resource_loader_->resource_filepath(rp);
     }
 
     std::string slurp_resource(const ResourcePath& rp) { return resource_loader_.slurp(rp); }
@@ -1781,7 +1781,7 @@ const AppSettings& osc::App::settings()
     return get().get_config();
 }
 
-std::filesystem::path osc::App::resource_filepath(const ResourcePath& rp)
+std::optional<std::filesystem::path> osc::App::resource_filepath(const ResourcePath& rp)
 {
     return get().get_resource_filepath(rp);
 }
@@ -2193,7 +2193,7 @@ ResourceLoader& osc::App::upd_resource_loader()
     return impl_->upd_resource_loader();
 }
 
-std::filesystem::path osc::App::get_resource_filepath(const ResourcePath& rp) const
+std::optional<std::filesystem::path> osc::App::get_resource_filepath(const ResourcePath& rp) const
 {
     return impl_->get_resource_filepath(rp);
 }

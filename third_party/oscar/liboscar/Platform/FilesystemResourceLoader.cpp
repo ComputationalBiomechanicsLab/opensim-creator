@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <optional>
 #include <ranges>
 
 using namespace osc;
@@ -27,6 +28,12 @@ namespace
             co_yield ResourceDirectoryEntry{relative_path.string(), it->is_directory()};
         }
     }
+}
+
+std::optional<std::filesystem::path> osc::FilesystemResourceLoader::resource_filepath(const ResourcePath& resource_path) const
+{
+    std::filesystem::path full_path = calc_full_path(root_directory_, resource_path);
+    return std::filesystem::exists(full_path) ? std::optional{std::move(full_path)} : std::nullopt;
 }
 
 bool osc::FilesystemResourceLoader::impl_resource_exists(const ResourcePath& resource_path)

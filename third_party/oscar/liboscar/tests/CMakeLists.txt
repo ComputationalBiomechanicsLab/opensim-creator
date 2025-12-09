@@ -12,9 +12,11 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/testoscarconfig.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/tests/testoscarconfig.h"
 )
-file(GLOB_RECURSE OSCAR_OSCAR_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
 
-add_executable(testoscar ${OSCAR_OSCAR_TEST_SOURCES} TestHelpers.cpp TestHelpers.h)
+file(GLOB_RECURSE _oscar_test_sources "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
+add_executable(testoscar ${_oscar_test_sources} TestHelpers.cpp TestHelpers.h)
+unset(_oscar_test_sources)
+
 set_target_properties(testoscar PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(testoscar PUBLIC cxx_std_23)
 target_compile_options(testoscar PRIVATE ${OSCAR_EXTRA_COMPILER_FLAGS})

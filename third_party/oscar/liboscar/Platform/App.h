@@ -66,8 +66,9 @@ namespace osc
 
         static const AppSettings& settings();
 
-        // returns a full filesystem path to a (runtime- and configuration-dependent) application resource
-        static std::filesystem::path resource_filepath(const ResourcePath&);
+        // returns a full filesystem path to a (runtime- and configuration-dependent) application resource,
+        // or `std::nullopt` if the `ResourcePath` cannot be resolved to a filesystem location.
+        static std::optional<std::filesystem::path> resource_filepath(const ResourcePath&);
 
         // returns the contents of a runtime resource in the `resources/` dir as a string
         static std::string slurp(const ResourcePath&);
@@ -534,7 +535,7 @@ namespace osc
         static int main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Widget>()>& widget_ctor);
 
         // returns a full filesystem path to runtime resource in `resources/` dir
-        std::filesystem::path get_resource_filepath(const ResourcePath&) const;
+        std::optional<std::filesystem::path> get_resource_filepath(const ResourcePath&) const;
 
         // try and retrieve a singleton that has the same lifetime as the app
         std::shared_ptr<void> upd_singleton(const std::type_info&, const std::function<std::shared_ptr<void>()>&);

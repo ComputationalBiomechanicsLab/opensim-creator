@@ -26,10 +26,30 @@ configure_file(
     @ONLY
 )
 
+# generate `oscar.h`
+if(TRUE)
+    # Write header of `oscar.h`
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscar.h" "#pragma once\n\n// Auto-generated include file\n\n")
+
+    # Iterate through each header file in the project and append it to the generated file
+    file(GLOB_RECURSE _oscar_header_files "*.h")
+    list(FILTER _oscar_header_files EXCLUDE REGEX "(tests|OpenGL|Detail)")
+    foreach(_header ${_oscar_header_files})
+        file(RELATIVE_PATH _rel_path "${CMAKE_CURRENT_SOURCE_DIR}" "${_header}")
+        file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscar.h" "#include <liboscar/${_rel_path}>\n")
+        unset(_rel_path)
+        unset(_header)
+    endforeach()
+    unset(_oscar_header_files)
+endif()
+
+
 # gather source code, exclude tests
-file(GLOB_RECURSE OSCAR_SOURCE_FILES "*.cpp")
-list(FILTER OSCAR_SOURCE_FILES EXCLUDE REGEX "(tests|\.tests\.cpp)")
-add_library(oscar STATIC ${OSCAR_SOURCE_FILES})
+file(GLOB_RECURSE _oscar_source_files "*.cpp")
+list(FILTER _oscar_source_files EXCLUDE REGEX "tests")
+add_library(oscar STATIC ${_oscar_source_files})
+unset(_oscar_source_files)
+
 set_target_properties(oscar PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(oscar PUBLIC cxx_std_23)
 if(OSCAR_USE_STRICT_COMPILER_FLAGS)
@@ -38,7 +58,7 @@ if(OSCAR_USE_STRICT_COMPILER_FLAGS)
 endif()
 target_include_directories(oscar PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>         # so that `#include <liboscar/HEADER.h>` works
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>  # so that #include <liboscar/oscarconfig.h> works
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>  # so that `#include <liboscar/oscarconfig.h>` and `#include <liboscar/oscar.h>` work
     $<INSTALL_INTERFACE:include>                              # because all headers are installed into `liboscar/`
 )
 target_link_libraries(oscar
@@ -66,7 +86,16 @@ if(OSCAR_INSTALL)
     include(CMakePackageConfigHelpers)  # `configure_package_config_file`
 
     # Install generated `oscarconfig.h`
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscarconfig.h" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/liboscar")
+    install(
+        FILES       "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscarconfig.h"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/liboscar"
+    )
+
+    # Install generated `oscar.h`
+    install(
+        FILES       "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscar.h"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/liboscar"
+    )
 
     # Install all of `liboscar`'s header files to `include/liboscar`
     install(
