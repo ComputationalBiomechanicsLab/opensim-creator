@@ -9,20 +9,20 @@ option(OSCDEPS_BUILD_OSCAR   "Build oscar"           ON)
 
 # set OSCDEPS_BUILD_ALWAYS
 if(TRUE)
-    set(OSCDEPS_BUILD_ALWAYS_DOCS "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
+    set(_oscdeps_build_always_docstring "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
     if(DEFINED ENV{OSCDEPS_BUILD_ALWAYS})
-        set(OSCDEPS_BUILD_ALWAYS "$ENV{OSCDEPS_BUILD_ALWAYS}" CACHE BOOL "${OSCDEPS_BUILD_ALWAYS_DOCS}" FORCE)
+        set(OSCDEPS_BUILD_ALWAYS "$ENV{OSCDEPS_BUILD_ALWAYS}" CACHE BOOL "${_oscdeps_build_always_docstring}" FORCE)
     else()
-        set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "${OSCDEPS_BUILD_ALWAYS_DOCS}")
+        set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "${_oscdeps_build_always_docstring}")
     endif()
-    unset(OSCDEPS_BUILD_ALWAYS_DOCS)
+    unset(_oscdeps_build_always_docstring)
 endif()
 
 # setup `OSCDEPS_DEPENDENCY_CMAKE_ARGS`
 #
 # these are cache args that should be forwarded to external dependency projects
 if(TRUE)
-    set(OSCDEPS_FORWARDED_VARS
+    set(_oscdeps_forwarded_vars
 
         CMAKE_CXX_COMPILER
         CMAKE_C_COMPILER
@@ -47,12 +47,12 @@ if(TRUE)
         CMAKE_OSX_ARCHITECTURES
         CMAKE_POSITION_INDEPENDENT_CODE
     )
-    foreach(OSCDEPS_FORWARDED_VAR IN LISTS OSCDEPS_FORWARDED_VARS)
-        if (DEFINED ${OSCDEPS_FORWARDED_VAR})
-            list(APPEND OSCDEPS_DEPENDENCY_CMAKE_ARGS -D${OSCDEPS_FORWARDED_VAR}:STRING=${${OSCDEPS_FORWARDED_VAR}})
+    foreach(_forwarded_var IN LISTS _oscdeps_forwarded_vars)
+        if (DEFINED ${_forwarded_var})
+            list(APPEND _oscdeps_dependency_cmake_args -D${_forwarded_var}:STRING=${${_forwarded_var}})
         endif()
     endforeach()
-    unset(OSCDEPS_FORWARDED_VARS)
+    unset(_oscdeps_forwarded_vars)
 endif()
 
 if(OSCDEPS_BUILD_OPYNSIM)
@@ -61,7 +61,7 @@ if(OSCDEPS_BUILD_OPYNSIM)
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         INSTALL_COMMAND ""
         CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscdeps_dependency_cmake_args}
             -DBUILD_TESTING:BOOL=OFF
             -DOPYNDEPS_BUILD_ROBIN_MAP:BOOL=OFF
     )
@@ -70,7 +70,7 @@ if(OSCDEPS_BUILD_OPYNSIM)
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opynsim
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscdeps_dependency_cmake_args}
             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
             -DBUILD_TESTING:BOOL=OFF
             -DOPYN_BUILD_PYTHON_BINDINGS:BOOL=OFF
@@ -86,7 +86,7 @@ if(OSCDEPS_BUILD_OSCAR)
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         INSTALL_COMMAND ""
         CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscdeps_dependency_cmake_args}
             -DBUILD_TESTING:BOOL=OFF
     )
     ExternalProject_Add(oscar
@@ -94,7 +94,7 @@ if(OSCDEPS_BUILD_OSCAR)
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oscar
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscdeps_dependency_cmake_args}
             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
             -DBUILD_TESTING:BOOL=OFF
             -DOSCAR_BUILD_HELLOOSCAR:BOOL=OFF
