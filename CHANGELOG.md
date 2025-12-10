@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The Ubuntu package now no longer depends on `libblas3`/`liblapack3` as external
+  dependencies.
 - Fixed the "select geometry to attach" popup not listing geometry files that are
   included with the OpenSim Creator installation.
 - Added "Total Length" as an option in the muscle plot panel (#1141).
