@@ -8,6 +8,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development/install",
                 "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
@@ -27,6 +28,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/ErrorCheck/install",
                 "CMAKE_CXX_FLAGS": "-fsanitize=address",
                 "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address",
                 "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
@@ -46,7 +48,8 @@
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/RelWithDebInfo/install"
             }
         },
         {
@@ -63,7 +66,8 @@
             "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release/install"
             }
         },
         {
@@ -73,6 +77,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-MacOS-amd64/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-MacOS-amd64/install",
                 "CMAKE_OSX_ARCHITECTURES": "x86_64",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
                 "CMAKE_OSX_SYSROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/"
@@ -85,6 +90,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-MacOS-arm64/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-MacOS-arm64/install",
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
                 "CMAKE_OSX_SYSROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/"
