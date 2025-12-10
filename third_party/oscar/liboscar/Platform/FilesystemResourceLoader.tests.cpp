@@ -110,7 +110,7 @@ TEST(FilesystemResourceLoader, iterate_directory_yields_paths_relative_to_root_d
 
     TemporaryDirectory root_directory;
     {
-        std::ofstream{root_directory.absolute_path() / "file1"};
+        std::ofstream file1{root_directory.absolute_path() / "file1"};
         expected_entries.emplace("file1", false);
     }
 
@@ -118,7 +118,7 @@ TEST(FilesystemResourceLoader, iterate_directory_yields_paths_relative_to_root_d
     expected_entries.emplace("dir1", true);
     {
         // Note: iteration is non-recursive by default.
-        std::ofstream{root_directory.absolute_path() / "dir1" / "shouldnt-be-visible"};
+        std::ofstream file2{root_directory.absolute_path() / "dir1" / "shouldnt-be-visible"};
     }
 
     FilesystemResourceLoader loader{root_directory.absolute_path()};
@@ -145,8 +145,8 @@ TEST(FilesystemResourceLoader, resource_filepath_returns_non_nullopt_when_given_
         std::ofstream{root_directory.absolute_path() / "bar"};
     }
     FilesystemResourceLoader loader{root_directory.absolute_path()};
-    
+
     const auto filepath = loader.resource_filepath("bar");
     ASSERT_TRUE(filepath.has_value());
-    ASSERT_EQ(filepath, root_directory.absolute_path() / "bar");
+    ASSERT_EQ(filepath, std::filesystem::weakly_canonical(root_directory.absolute_path() / "bar"));
 }

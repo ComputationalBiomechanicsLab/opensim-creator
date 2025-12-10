@@ -177,12 +177,12 @@ R"(# configuration options
                 const toml::table& table_) :
 
                 table_name{table_name_},
-                table{table_}
+                table{&table_}
             {}
 
             std::string_view table_name;
-            const toml::table& table;
-            toml::table::const_iterator iterator = table.cbegin();
+            const toml::table* table;
+            toml::table::const_iterator iterator = table->cbegin();
         };
 
         // crawl the table
@@ -205,7 +205,7 @@ R"(# configuration options
 
             auto& cur = stack.back();
             bool recursing = false;
-            for (; cur.iterator != cur.table.cend(); ++cur.iterator) {
+            for (; cur.iterator != cur.table->cend(); ++cur.iterator) {
                 const auto& [k, node] = *cur.iterator;
 
                 if (const auto* ptr = node.as_table()) {

@@ -8,11 +8,11 @@ std::string osc::AppMetadata::application_name_with_version_and_buildid() const
 {
     std::stringstream ss;
     ss << human_readable_application_name();
-    if (version_string()) {
-        ss << " v" << *version_string();
+    if (const auto version_str = version_string()) {
+        ss << " v" << *version_str;
     }
-    if (build_id()) {
-        ss << " (build " << *build_id() << ')';
+    if (const auto build_id_str = build_id()) {
+        ss << " (build " << *build_id_str << ')';
     }
     return std::move(ss).str();
 }

@@ -1,6 +1,8 @@
-file(GLOB_RECURSE OSCAR_DEMO_SOURCES "*.cpp")
-list(FILTER OSCAR_DEMO_SOURCES EXCLUDE REGEX "(tests|\.tests\.cpp)")
-add_library(oscar_demos STATIC ${OSCAR_DEMO_SOURCES})
+file(GLOB_RECURSE _oscar_demo_sources "*.cpp")
+list(FILTER _oscar_demo_sources EXCLUDE REGEX "tests")
+add_library(oscar_demos STATIC ${_oscar_demo_sources})
+unset(_oscar_demo_sources)
+
 set_target_properties(oscar_demos PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(oscar_demos PUBLIC cxx_std_23)
 if(OSCAR_USE_STRICT_COMPILER_FLAGS)
@@ -39,5 +41,8 @@ if(OSCAR_INSTALL)
         "${CMAKE_CURRENT_BINARY_DIR}/generated/oscar_demosConfig.cmake"
         INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/oscar_demos"
     )
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/oscar_demosConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/oscar_demos")
+    install(
+        FILES       "${CMAKE_CURRENT_BINARY_DIR}/generated/oscar_demosConfig.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/oscar_demos"
+    )
 endif()

@@ -1,18 +1,26 @@
-set(OSCAR_EXTRA_COMPILER_FLAGS "" CACHE STRING "Extra compiler flags for oscar targets")
-
 include(GoogleTest)  # gtest_discover_tests
 
 option(OSCAR_DISCOVER_TESTS "Automatically run test discovery (IDE integration)" ON)
 
 find_package(GTest REQUIRED CONFIG)
 
-configure_file(osc.toml.in ${CMAKE_CURRENT_BINARY_DIR}/osc.toml)  # generate runtime configuration for tests
+# generate runtime configuration for tests
+configure_file(
+    osc.toml.in
+    ${CMAKE_CURRENT_BINARY_DIR}/osc.toml
+    @ONLY
+)
 
-file(GLOB_RECURSE OSCAR_DEMO_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
-add_executable(testoscar_demos ${OSCAR_DEMO_TEST_SOURCES})
+file(GLOB_RECURSE _oscar_demos_test_sources "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
+add_executable(testoscar_demos ${_oscar_demos_test_sources})
+unset(_oscar_demos_test_sources)
+
 set_target_properties(testoscar_demos PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(testoscar_demos PUBLIC cxx_std_23)
-target_compile_options(testoscar_demos PRIVATE ${OSCAR_EXTRA_COMPILER_FLAGS})
+if(OSCAR_USE_STRICT_COMPILER_FLAGS)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/oscar_strict_compiler_options.cmake)
+    target_compile_options(testoscar_demos PRIVATE ${OSCAR_STRICT_COMPILER_OPTIONS})
+endif()
 target_include_directories(testoscar_demos PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <testoscar_demos/HEADER.h>` works
 )

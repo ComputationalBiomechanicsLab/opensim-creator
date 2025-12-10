@@ -16,20 +16,20 @@ option(OSCARDEPS_BUILD_UNORDERED_DENSE "Build unordered-dense" ON)
 
 # set OSCARDEPS_BUILD_ALWAYS
 if(TRUE)
-    set(OSCARDEPS_BUILD_ALWAYS_DOCS "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
+    set(_oscdeps_build_always_docstring "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
     if(DEFINED ENV{OSCARDEPS_BUILD_ALWAYS})
-        set(OSCARDEPS_BUILD_ALWAYS "$ENV{OSCARDEPS_BUILD_ALWAYS}" CACHE BOOL "${OSCARDEPS_BUILD_ALWAYS_DOCS}" FORCE)
+        set(OSCARDEPS_BUILD_ALWAYS "$ENV{OSCARDEPS_BUILD_ALWAYS}" CACHE BOOL "${_oscdeps_build_always_docstring}" FORCE)
     else()
-        set(OSCARDEPS_BUILD_ALWAYS OFF CACHE BOOL "${OSCARDEPS_BUILD_ALWAYS_DOCS}")
+        set(OSCARDEPS_BUILD_ALWAYS OFF CACHE BOOL "${_oscdeps_build_always_docstring}")
     endif()
-    unset(OSCARDEPS_BUILD_ALWAYS_DOCS)
+    unset(_oscdeps_build_always_docstring)
 endif()
 
-# setup `OSCARDEPS_DEPENDENCY_CMAKE_ARGS`
+# setup `_oscardeps_dependency_cmake_args`
 #
 # these are cache args that should be forwarded to external dependency projects
 if(TRUE)
-    set(OSCARDEPS_FORWARDED_VARS
+    set(_oscardeps_forwarded_vars
 
         CMAKE_CXX_COMPILER
         CMAKE_C_COMPILER
@@ -54,12 +54,12 @@ if(TRUE)
         CMAKE_OSX_ARCHITECTURES
         CMAKE_POSITION_INDEPENDENT_CODE
     )
-    foreach(OSCARDEPS_FORWARDED_VAR IN LISTS OSCARDEPS_FORWARDED_VARS)
-        if (DEFINED ${OSCARDEPS_FORWARDED_VAR})
-            list(APPEND OSCARDEPS_DEPENDENCY_CMAKE_ARGS -D${OSCARDEPS_FORWARDED_VAR}:STRING=${${OSCARDEPS_FORWARDED_VAR}})
+    foreach(_forwarded_var IN LISTS _oscardeps_forwarded_vars)
+        if (DEFINED ${_forwarded_var})
+            list(APPEND _oscardeps_dependency_cmake_args -D${_forwarded_var}:STRING=${${_forwarded_var}})
         endif()
     endforeach()
-    unset(OSCARDEPS_FORWARDED_VARS)
+    unset(_oscardeps_forwarded_vars)
 endif()
 
 if(OSCARDEPS_BUILD_GLAD)
@@ -67,7 +67,7 @@ if(OSCARDEPS_BUILD_GLAD)
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glad
         BUILD_ALWAYS ${OSCARDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
-            ${OSCARDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscardeps_dependency_cmake_args}
     )
 endif()
 
@@ -76,7 +76,7 @@ if(OSCARDEPS_BUILD_GOOGLETEST)
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/googletest
         BUILD_ALWAYS ${OSCARDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
-            ${OSCARDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscardeps_dependency_cmake_args}
             -DBUILD_GMOCK:BOOL=OFF
             -Dgtest_force_shared_crt:BOOL=ON  # osc uses a shared runtime lib
     )
@@ -88,7 +88,7 @@ if (OSCARDEPS_BUILD_IMGUI)
         SOURCE_SUBDIR ../cmake/imgui/
         BUILD_ALWAYS ${OSCARDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
-            ${OSCARDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscardeps_dependency_cmake_args}
     )
 endif()
 
@@ -99,7 +99,7 @@ if(OSCARDEPS_BUILD_IMPLOT)
         SOURCE_SUBDIR ../cmake/implot/
         BUILD_ALWAYS ${OSCARDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
-            ${OSCARDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscardeps_dependency_cmake_args}
             -Dimgui_DIR:PATH=${CMAKE_INSTALL_PREFIX}/lib/cmake/imgui
     )
 endif()
@@ -109,7 +109,7 @@ if(OSCARDEPS_BUILD_LUNASVG)
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lunasvg
         BUILD_ALWAYS ${OSCARDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
-            ${OSCARDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscardeps_dependency_cmake_args}
             -DBUILD_SHARED_LIBS:BOOL=OFF
             -DLUNASVG_BUILD_EXAMPLES:BOOL=OFF
     )
@@ -126,7 +126,7 @@ if(OSCARDEPS_BUILD_SDL)
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/SDL
         BUILD_ALWAYS ${OSCARDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
-            ${OSCARDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscardeps_dependency_cmake_args}
             -DSDL_INSTALL_CMAKEDIR_ROOT_DEFAULT:STRING=${CMAKE_INSTALL_LIBDIR}/cmake/SDL3
             -DSDL_SHARED:BOOL=OFF
             -DSDL_STATIC:BOOL=ON
@@ -140,7 +140,7 @@ if (OSCARDEPS_BUILD_STB)
         SOURCE_SUBDIR ../cmake/stb/
         BUILD_ALWAYS ${OSCARDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
-            ${OSCARDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscardeps_dependency_cmake_args}
     )
 endif()
 
@@ -149,7 +149,7 @@ if(OSCARDEPS_BUILD_TOMLPLUSPLUS)
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tomlplusplus
         BUILD_ALWAYS ${OSCARDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
-            ${OSCARDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscardeps_dependency_cmake_args}
     )
 endif()
 
@@ -158,7 +158,6 @@ if(OSCARDEPS_BUILD_UNORDERED_DENSE)
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unordered_dense
         BUILD_ALWAYS ${OSCARDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
-            ${OSCARDEPS_DEPENDENCY_CMAKE_ARGS}
+            ${_oscardeps_dependency_cmake_args}
     )
 endif()
-

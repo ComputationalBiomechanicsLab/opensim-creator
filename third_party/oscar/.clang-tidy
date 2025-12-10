@@ -6,12 +6,9 @@ Checks: >
   bugprone-*,
   -bugprone-narrowing-conversions,
   -bugprone-easily-swappable-parameters,
-  -bugprone-lambda-function-name,
-  -bugprone-branch-clone,
   -bugprone-unchecked-optional-access,
   misc-*,
   -misc-no-recursion,
-  -misc-non-private-member-variables-in-classes,
   -misc-include-cleaner,
   -misc-const-correctness,
   concurrency-*,
@@ -27,7 +24,6 @@ Checks: >
   -cppcoreguidelines-pro-type-const-cast,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-vararg,
-  -cppcoreguidelines-avoid-const-or-ref-data-members,
   -cppcoreguidelines-avoid-do-while,
   -cppcoreguidelines-macro-usage,
   performance-*,
@@ -64,6 +60,11 @@ CheckOptions:
     value: true
   - key: readability-implicit-bool-conversion.AllowIntegerConditions
     value: true
+  - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: true
+# requires Clang Tidy >= 22.0.0
+#  - key: bugprone-unchecked-optional-access.IgnoreValueCalls
+#    value: true
 
 WarningsAsErrors: '*'
 

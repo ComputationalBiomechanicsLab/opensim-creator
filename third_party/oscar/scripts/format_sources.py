@@ -13,7 +13,7 @@ import argparse
 import os
 import re
 
-_blacklisted_directories = {'resources', 'MacOS', 'Debian', 'Windows', '__pycache__', '_static'}
+_blacklisted_directories = {'resources', '__pycache__', '_static'}
 _default_directories = ['hellooscar', 'liboscar', 'liboscar-demos', 'scripts']
 
 def num_leading_tabs(s):
