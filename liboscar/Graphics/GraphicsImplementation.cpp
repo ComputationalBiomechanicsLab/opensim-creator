@@ -770,11 +770,11 @@ namespace
             gl::ArrayBuffer<float, GL_STREAM_DRAW>& buf_,
             size_t stride_) :
 
-            buffer{buf_},
+            buffer{&buf_},
             stride{stride_}
         {}
 
-        gl::ArrayBuffer<float, GL_STREAM_DRAW>& buffer;
+        gl::ArrayBuffer<float, GL_STREAM_DRAW>* buffer;
         size_t stride = 0;
         size_t base_offset = 0;
     };
@@ -913,7 +913,7 @@ namespace
 
         switch (texture_filter_mode) {
         case TextureFilterMode::Nearest: return GL_NEAREST;
-        case TextureFilterMode::Linear:  return GL_LINEAR;
+        case TextureFilterMode::Linear:
         case TextureFilterMode::Mipmap:  return GL_LINEAR;
         default:                         std::unreachable();
         }
@@ -1838,7 +1838,7 @@ namespace
 
         switch (format) {
         case ColorRenderBufferFormat::R8_UNORM:            return CPUImageFormat::R8;
-        case ColorRenderBufferFormat::R8G8B8A8_UNORM:      return CPUImageFormat::RGBA;
+        case ColorRenderBufferFormat::R8G8B8A8_UNORM:
         case ColorRenderBufferFormat::R8G8B8A8_SRGB:       return CPUImageFormat::RGBA;
         case ColorRenderBufferFormat::R16G16_SFLOAT:       return CPUImageFormat::RG;
         case ColorRenderBufferFormat::R16G16B16_SFLOAT:    return CPUImageFormat::RGB;
@@ -1854,11 +1854,11 @@ namespace
         static_assert(num_options<CPUDataType>() == 4);
 
         switch (format) {
-        case ColorRenderBufferFormat::R8_UNORM:            return CPUDataType::UnsignedByte;
-        case ColorRenderBufferFormat::R8G8B8A8_UNORM:      return CPUDataType::UnsignedByte;
+        case ColorRenderBufferFormat::R8_UNORM:
+        case ColorRenderBufferFormat::R8G8B8A8_UNORM:
         case ColorRenderBufferFormat::R8G8B8A8_SRGB:       return CPUDataType::UnsignedByte;
-        case ColorRenderBufferFormat::R16G16_SFLOAT:       return CPUDataType::HalfFloat;
-        case ColorRenderBufferFormat::R16G16B16_SFLOAT:    return CPUDataType::HalfFloat;
+        case ColorRenderBufferFormat::R16G16_SFLOAT:
+        case ColorRenderBufferFormat::R16G16B16_SFLOAT:
         case ColorRenderBufferFormat::R16G16B16A16_SFLOAT: return CPUDataType::HalfFloat;
         case ColorRenderBufferFormat::R32_SFLOAT:          return CPUDataType::Float;
         default:                                           std::unreachable();
@@ -3320,7 +3320,7 @@ namespace
         static_assert(num_options<CullMode>() == 3);
 
         switch (cull_mode) {
-        case CullMode::Off:   return GL_FRONT;  // the value isn't going to be used anyway
+        case CullMode::Off:  // the value isn't going to be used anyway, default to front
         case CullMode::Front: return GL_FRONT;
         case CullMode::Back:  return GL_BACK;
         default:              std::unreachable();
@@ -4937,8 +4937,8 @@ private:
         static_assert(num_options<VertexAttributeFormat>() == 5);
 
         switch (format) {
-        case VertexAttributeFormat::Float32x2: return GL_FLOAT;
-        case VertexAttributeFormat::Float32x3: return GL_FLOAT;
+        case VertexAttributeFormat::Float32x2:
+        case VertexAttributeFormat::Float32x3:
         case VertexAttributeFormat::Float32x4: return GL_FLOAT;
         case VertexAttributeFormat::Unorm8x4:  return GL_UNSIGNED_BYTE;
         case VertexAttributeFormat::Snorm8x4:  return GL_BYTE;
@@ -4951,10 +4951,10 @@ private:
         static_assert(num_options<VertexAttributeFormat>() == 5);
 
         switch (format) {
-        case VertexAttributeFormat::Float32x2: return GL_FALSE;
-        case VertexAttributeFormat::Float32x3: return GL_FALSE;
+        case VertexAttributeFormat::Float32x2:
+        case VertexAttributeFormat::Float32x3:
         case VertexAttributeFormat::Float32x4: return GL_FALSE;
-        case VertexAttributeFormat::Unorm8x4:  return GL_TRUE;
+        case VertexAttributeFormat::Unorm8x4:
         case VertexAttributeFormat::Snorm8x4:  return GL_TRUE;
         default:                               std::unreachable();
         }
@@ -6099,11 +6099,8 @@ public:
         if (v) {
             // try to enable vsync
 
-            if (SDL_GL_SetSwapInterval(-1)) {
-                // adaptive vsync enabled
-            }
-            else if (SDL_GL_SetSwapInterval(1)) {
-                // normal vsync enabled
+            if (SDL_GL_SetSwapInterval(-1) or SDL_GL_SetSwapInterval(1)) {
+                // adaptive vsync, or normal vsync, enabled
             }
 
             // always read the vsync state back from SDL
@@ -6609,7 +6606,7 @@ void osc::GraphicsBackend::bind_to_instanced_attributes(
     const Shader::Impl& shader_impl,
     InstancingState& instancing_state)
 {
-    gl::bind_buffer(instancing_state.buffer);
+    gl::bind_buffer(*instancing_state.buffer);
 
     size_t byte_offset = 0;
     if (shader_impl.maybe_instanced_model_mat_attr_) {
@@ -6722,7 +6719,7 @@ std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
         }
         OSC_ASSERT_ALWAYS(sizeof(float)*float_offset == render_queue.size() * byte_stride);
 
-        auto& vbo = maybe_instancing_state.emplace(g_graphics_context_impl->upd_instance_gpu_buffer(), byte_stride).buffer;
+        auto& vbo = *maybe_instancing_state.emplace(g_graphics_context_impl->upd_instance_gpu_buffer(), byte_stride).buffer;
         vbo.assign(std::span<const float>{buf.data(), float_offset});
     }
     return maybe_instancing_state;

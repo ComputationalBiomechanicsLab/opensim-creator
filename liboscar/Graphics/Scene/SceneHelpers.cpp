@@ -351,13 +351,15 @@ BVH osc::create_triangle_bvh(const Mesh& mesh)
     const auto indices = mesh.indices();
 
     BVH rv;
+
     if (indices.empty()) {
         return rv;
     }
-    else if (mesh.topology() != MeshTopology::Triangles) {
+    if (mesh.topology() != MeshTopology::Triangles) {
         return rv;
     }
-    else if (indices.is_uint32()) {
+
+    if (indices.is_uint32()) {
         rv.build_from_indexed_triangles(mesh.vertices() , indices.to_uint32_span());
     }
     else {

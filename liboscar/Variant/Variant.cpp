@@ -29,15 +29,14 @@ namespace
         if (str.empty()) {
             return false;
         }
-        else if (is_equal_case_insensitive(str, "false")) {
+        if (is_equal_case_insensitive(str, "false")) {
             return false;
         }
-        else if (is_equal_case_insensitive(str, "0")) {
+        if (is_equal_case_insensitive(str, "0")) {
             return false;
         }
-        else {
-            return true;
-        }
+
+        return true;
     }
 
     float parse_as_float_or_zero(std::string_view str)

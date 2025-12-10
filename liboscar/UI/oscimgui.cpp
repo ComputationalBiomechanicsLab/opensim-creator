@@ -616,13 +616,8 @@ namespace
 
     void graphics_backend_handle_texture_data(OscarUIBackendData& bd, ImTextureData& texture_data)
     {
-        if (texture_data.Status == ImTextureStatus_OK) {
-            // nothing to do
-        }
-        else if (texture_data.Status == ImTextureStatus_Destroyed) {
-            // nothing to do (no callback-style behavior in this backend)
-        }
-        else if (texture_data.Status == ImTextureStatus_WantCreate) {
+        switch (texture_data.Status) {
+        case ImTextureStatus_WantCreate: {
             // ImGui: Backends should create and upload a new texture to the graphics system
             OSC_ASSERT(texture_data.TexID == 0 and texture_data.BackendUserData == nullptr);
             OSC_ASSERT(texture_data.Format == ImTextureFormat_RGBA32);
@@ -642,8 +637,9 @@ namespace
             // Update ImGui with texture details
             texture_data.SetTexID(bd.textures.allocate_imgui_texture(texture));
             texture_data.SetStatus(ImTextureStatus_OK);
+            break;
         }
-        else if (texture_data.Status == ImTextureStatus_WantUpdates) {
+        case ImTextureStatus_WantUpdates: {
             // Fetch the texture handle from the liboscar backend data
             auto* t = bd.textures.lookup_texture(texture_data.GetTexID());
             OSC_ASSERT(t and std::holds_alternative<Texture2D>(*t) && "the texture should've been created by ImTextureStatus_WantCreate");
@@ -673,13 +669,19 @@ namespace
             });
 
             texture_data.SetStatus(ImTextureStatus_OK);
+            break;
         }
-        else if (texture_data.Status == ImTextureStatus_WantDestroy) {
+        case ImTextureStatus_WantDestroy: {
             // Requesting backend to destroy the texture. Set status to Destroyed when done.
             bd.textures.deallocate_imgui_texture(texture_data.GetTexID());
             // Clear identifiers and mark as destroyed (in order to allow e.g. calling InvalidateDeviceObjects while running)
             texture_data.SetTexID(ImTextureID_Invalid);
             texture_data.SetStatus(ImTextureStatus_Destroyed);
+            break;
+        }
+        case ImTextureStatus_OK:  // nothing to do
+        case ImTextureStatus_Destroyed:  // nothing to do (no callback-style behavior in this backend)
+        default: break;
         }
     }
 
@@ -691,7 +693,7 @@ namespace
         // Before processing the draw data, which may contain texture references, catch up with texture
         // updates.
         //
-        // Most of the times, the list will have 1 element with an OK status, aka nothing to do.
+        // Most of the time, the list will have 1 element with an OK status, aka nothing to do.
         // (This almost always points to `ImGui::GetPlatformIO().Textures[]` but is part of
         // `ImDrawData` to allow overriding or disabling texture updates).
         if (draw_data->Textures != nullptr) {
@@ -1106,14 +1108,8 @@ namespace
                 }
                 return true;
             }
-            case WindowEventType::WindowDisplayScaleChanged: {
-                // This doesn't matter in modern ImGui anymore, because it now natively
-                // handles rescaling textures etc.
-                return true;
-            }
-            default: {
-                return true;
-            }
+            case WindowEventType::WindowDisplayScaleChanged:  // Doesn't matter in modern ImGui anymore, because it now natively handles rescaling textures etc.
+            default: return true;
             }
         }
         default: {
@@ -1417,7 +1413,7 @@ struct osc::Converter<ui::GizmoOperation, ui::gizmo::detail::Operation> final {
         switch (op) {
         case ui::GizmoOperation::Scale:     return ui::gizmo::detail::Operation::Scale;
         case ui::GizmoOperation::Rotate:    return ui::gizmo::detail::Operation::Rotate;
-        case ui::GizmoOperation::Translate: return ui::gizmo::detail::Operation::Translate;
+        case ui::GizmoOperation::Translate:
         default:                            return ui::gizmo::detail::Operation::Translate;
         }
     }
@@ -1430,7 +1426,7 @@ struct osc::Converter<ui::GizmoMode, ui::gizmo::detail::Mode> final {
         static_assert(num_options<ui::GizmoMode>() == 2);
         switch (mode) {
         case ui::GizmoMode::Local: return ui::gizmo::detail::Mode::Local;
-        case ui::GizmoMode::World: return ui::gizmo::detail::Mode::World;
+        case ui::GizmoMode::World:
         default:                   return ui::gizmo::detail::Mode::World;
         }
     }
@@ -3985,7 +3981,7 @@ bool osc::ui::Gizmo::handle_keyboard_inputs()
     if (shift_down or ctrl_or_super_down) {
         return false;  // assume the user is doing some other action
     }
-    else if (ui::is_key_pressed(Key::R)) {
+    if (ui::is_key_pressed(Key::R)) {
 
         // R: set manipulation mode to "rotate"
         if (operation_ == GizmoOperation::Rotate) {
@@ -3994,7 +3990,7 @@ bool osc::ui::Gizmo::handle_keyboard_inputs()
         operation_ = GizmoOperation::Rotate;
         return true;
     }
-    else if (ui::is_key_pressed(Key::G)) {
+    if (ui::is_key_pressed(Key::G)) {
 
         // G: set manipulation mode to "grab" (translate)
         if (operation_ == GizmoOperation::Translate) {
@@ -4003,7 +3999,7 @@ bool osc::ui::Gizmo::handle_keyboard_inputs()
         operation_ = GizmoOperation::Translate;
         return true;
     }
-    else if (ui::is_key_pressed(Key::S)) {
+    if (ui::is_key_pressed(Key::S)) {
 
         // S: set manipulation mode to "scale"
         if (operation_ == GizmoOperation::Scale) {
@@ -4012,9 +4008,8 @@ bool osc::ui::Gizmo::handle_keyboard_inputs()
         operation_ = GizmoOperation::Scale;
         return true;
     }
-    else {
-        return false;
-    }
+
+    return false;
 }
 
 // `ui::plot::` helpers

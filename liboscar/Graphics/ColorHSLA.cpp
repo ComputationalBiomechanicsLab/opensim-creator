@@ -48,15 +48,14 @@ namespace
         if (lightness == 0.0f) {
             return 0.0f;
         }
-        else if (lightness <= 0.5f) {
+        if (lightness <= 0.5f) {
             return 0.5f * (max - min)/lightness;
         }
-        else if (lightness < 1.0f) {
+        if (lightness < 1.0f) {
             return 0.5f * (max - min)/(1.0f - lightness);
         }
-        else {  // lightness == 1.0f
-            return 0.0f;
-        }
+        // else: lightness == 1.0f
+        return 0.0f;
     }
 }
 

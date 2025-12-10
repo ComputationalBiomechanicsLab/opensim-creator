@@ -26,7 +26,7 @@ namespace
         case LogLevel::debug:    return {0.8f, 0.8f, 0.8f, 1.0f};
         case LogLevel::info:     return {0.5f, 0.5f, 1.0f, 1.0f};
         case LogLevel::warn:     return {1.0f, 1.0f, 0.0f, 1.0f};
-        case LogLevel::err:      return {1.0f, 0.0f, 0.0f, 1.0f};
+        case LogLevel::err:      return {1.0f, 0.2f, 0.0f, 1.0f};
         case LogLevel::critical: return {1.0f, 0.0f, 0.0f, 1.0f};
         case LogLevel::off:      return {1.0f, 1.0f, 1.0f, 1.0f};
         default:                 std::unreachable();

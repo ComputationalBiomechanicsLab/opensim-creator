@@ -57,47 +57,45 @@ bool osc::CSV::read_row_into_vector(
             columns.push_back(str);
             break;
         }
-        else if (c == '\n' and not inside_quotes) {
+        if (c == '\n' and not inside_quotes) {
             // standard newline
             columns.push_back(str);
             break;
         }
-        else if (c == '\r' and in.peek() == '\n' and not inside_quotes) {
+        if (c == '\r' and in.peek() == '\n' and not inside_quotes) {
             // windows newline
 
             in.get();  // skip the \n
             columns.push_back(str);
             break;
         }
-        else if (c == '"' and str.empty() and not inside_quotes) {
+        if (c == '"' and str.empty() and not inside_quotes) {
             // quote at beginning of quoted column
             inside_quotes = true;
             continue;
         }
-        else if (c == '"' and in.peek() == '"') {
+        if (c == '"' and in.peek() == '"') {
             // escaped quote
 
             in.get();  // skip the second '"'
             str += '"';
             continue;
         }
-        else if (c == '"' and inside_quotes) {
-            // quote at end of of quoted column
+        if (c == '"' and inside_quotes) {
+            // quote at end of quoted column
             inside_quotes = false;
             continue;
         }
-        else if (c == ',' and not inside_quotes) {
+        if (c == ',' and not inside_quotes) {
             // comma delimiter at end of column
 
             columns.push_back(str);
             str.clear();
             continue;
         }
-        else {
-            // normal text
-            str += static_cast<std::string::value_type>(c);
-            continue;
-        }
+
+        // else: normal text
+        str += static_cast<std::string::value_type>(c);
     }
 
     if (not columns.empty()) {
