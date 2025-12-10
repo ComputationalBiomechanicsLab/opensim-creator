@@ -5877,7 +5877,12 @@ namespace
         // initialize GLAD
         //
         // this effectively loads the extensions this application requires at runtime
-        if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress)) == 0) {
+        const auto loader_func = [](const char* name) -> void*
+        {
+            void(*function_ptr)() = SDL_GL_GetProcAddress(name);
+            return std::bit_cast<void*>(std::bit_cast<uintptr_t>(function_ptr));  // necessary to avoid UB checkers
+        };
+        if (gladLoadGLLoader(loader_func) == 0) {
             std::stringstream ss;
             ss << "gladLoadGLLoader() failed: (no error message available)";
             throw std::runtime_error{ss.str()};
