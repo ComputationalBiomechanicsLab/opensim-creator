@@ -51,7 +51,7 @@ osc::cpp23::generator<osc::ResourceDirectoryEntry> osc::OverlayResourceLoader::i
         for (auto&& entry : loader->iterate_directory(resource_path)) {
             auto [it, inserted] = previously_emitted_entries.emplace(std::forward<decltype(entry)>(entry));
             if (inserted) {
-                co_yield *it;
+                co_yield ResourceDirectoryEntry{*it};
             }
         }
     }
