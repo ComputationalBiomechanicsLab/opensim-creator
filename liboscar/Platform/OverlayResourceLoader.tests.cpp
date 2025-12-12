@@ -39,7 +39,7 @@ TEST(OverlayResourceLoader, resource_filepath_returns_correct_path)
     loader.emplace_lowest_priority<FilesystemResourceLoader>(dir2.absolute_path());
     loader.emplace_lowest_priority<FilesystemResourceLoader>(dir3.absolute_path());
 
-    ASSERT_EQ(loader.resource_filepath("file1"), dir2.absolute_path() / "file1");
+    ASSERT_EQ(loader.resource_filepath("file1"), std::filesystem::weakly_canonical(dir2.absolute_path() / "file1"));
 }
 
 TEST(OverlayResourceLoader, resource_exists_returns_true_if_file_exists_in_some_layer)
