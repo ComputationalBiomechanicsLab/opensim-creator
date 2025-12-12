@@ -38,14 +38,14 @@ TEST(FilesystemResourceLoader, resource_exists_returns_true_for_existent_path)
     ASSERT_TRUE(loader.resource_exists("somefile"));
 }
 
-TEST(FilesystemResourceLoader, resource_exists_returns_true_for_existent_directory)
+TEST(FilesystemResourceLoader, resource_exists_returns_false_for_existent_directory)
 {
     TemporaryDirectory root_directory;
     std::filesystem::create_directory(root_directory.absolute_path() / "somedir");
 
     FilesystemResourceLoader loader{root_directory.absolute_path()};
 
-    ASSERT_TRUE(loader.resource_exists("somedir"));
+    ASSERT_FALSE(loader.resource_exists("somedir"));
 }
 
 TEST(FilesystemResourceLoader, open_throws_when_opening_non_existent_path)

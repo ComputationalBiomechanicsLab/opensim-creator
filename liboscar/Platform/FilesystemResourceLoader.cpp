@@ -39,7 +39,9 @@ std::optional<std::filesystem::path> osc::FilesystemResourceLoader::resource_fil
 bool osc::FilesystemResourceLoader::impl_resource_exists(const ResourcePath& resource_path)
 {
     const std::filesystem::path full_path = calc_full_path(root_directory_, resource_path);
-    return std::filesystem::exists(full_path);
+    std::error_code ec;
+    const std::filesystem::file_status status = std::filesystem::status(full_path, ec);
+    return (not ec) and (not std::filesystem::is_directory(status));
 }
 
 ResourceStream osc::FilesystemResourceLoader::impl_open(const ResourcePath& resource_path)
