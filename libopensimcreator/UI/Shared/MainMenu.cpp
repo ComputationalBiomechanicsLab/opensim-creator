@@ -405,8 +405,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::draw_help_marker("opens OSC's installation location in your OS's default file browser");
         ui::next_column();
         ui::push_id(id++);
-        if (ui::draw_button(OSC_ICON_FOLDER " open"))
-        {
+        if (ui::draw_button(OSC_ICON_FOLDER " open")) {
             open_file_in_os_default_application(App::get().executable_directory());
         }
         ui::pop_id();

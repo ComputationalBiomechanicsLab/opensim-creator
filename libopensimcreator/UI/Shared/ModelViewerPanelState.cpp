@@ -9,8 +9,5 @@ osc::ModelViewerPanelState::ModelViewerPanelState(
 
     panel_name_{panelName_},
     m_Flags{flags_},
-    m_CachedModelRenderer
-    {
-        App::singleton<SceneCache>(App::resource_loader()),
-    }
+    m_CachedModelRenderer{App::singleton<SceneCache>(App::resource_loader())}
 {}
