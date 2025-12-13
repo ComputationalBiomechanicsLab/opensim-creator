@@ -1,12 +1,12 @@
 #include "LOGLFaceCullingTab.h"
 
 #include <liboscar/Formats/SVG.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/Geometries/BoxGeometry.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/MouseCapturingCamera.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
@@ -23,7 +23,7 @@ namespace
         return BoxGeometry{}.mesh();
     }
 
-    Material generate_uv_testing_texture_mapped_material(IResourceLoader& loader)
+    Material generate_uv_testing_texture_mapped_material(ResourceLoader& loader)
     {
         Material material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),

@@ -1,6 +1,6 @@
-#include "OverlayResourceLoader.h"
+#include "OverlayFilesystem.h"
 
-#include <liboscar/Platform/FilesystemResourceLoader.h>
+#include <liboscar/Platform/NativeFilesystem.h>
 #include <liboscar/Utils/TemporaryDirectory.h>
 
 #include <gtest/gtest.h>
@@ -9,22 +9,22 @@
 
 using namespace osc;
 
-TEST(OverlayResourceLoader, can_default_construct)
+TEST(OverlayFilesystem, can_default_construct)
 {
-    [[maybe_unused]] OverlayResourceLoader default_constructed;
+    [[maybe_unused]] OverlayFilesystem default_constructed;
 }
 
-TEST(OverlayResourceLoader, can_emplace_children)
+TEST(OverlayFilesystem, can_emplace_children)
 {
     TemporaryDirectory dir1;
     TemporaryDirectory dir2;
 
-    OverlayResourceLoader loader;
-    loader.emplace_lowest_priority<FilesystemResourceLoader>(dir1.absolute_path());
-    loader.emplace_lowest_priority<FilesystemResourceLoader>(dir2.absolute_path());
+    OverlayFilesystem overlay_filesystem;
+    overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir1.absolute_path());
+    overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir2.absolute_path());
 }
 
-TEST(OverlayResourceLoader, resource_filepath_returns_correct_path)
+TEST(OverlayFilesystem, resource_filepath_returns_correct_path)
 {
     TemporaryDirectory dir1;  // highest priority (empty)
     TemporaryDirectory dir2;  // middle priority <----- the file of interest is here
@@ -34,15 +34,15 @@ TEST(OverlayResourceLoader, resource_filepath_returns_correct_path)
         std::ofstream file1{dir2.absolute_path() / "file1"};
     }
 
-    OverlayResourceLoader loader;
-    loader.emplace_lowest_priority<FilesystemResourceLoader>(dir1.absolute_path());
-    loader.emplace_lowest_priority<FilesystemResourceLoader>(dir2.absolute_path());
-    loader.emplace_lowest_priority<FilesystemResourceLoader>(dir3.absolute_path());
+    OverlayFilesystem overlay_filesystem;
+    overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir1.absolute_path());
+    overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir2.absolute_path());
+    overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir3.absolute_path());
 
-    ASSERT_EQ(loader.resource_filepath("file1"), std::filesystem::weakly_canonical(dir2.absolute_path() / "file1"));
+    ASSERT_EQ(overlay_filesystem.resource_filepath("file1"), std::filesystem::weakly_canonical(dir2.absolute_path() / "file1"));
 }
 
-TEST(OverlayResourceLoader, resource_exists_returns_true_if_file_exists_in_some_layer)
+TEST(OverlayFilesystem, resource_exists_returns_true_if_file_exists_in_some_layer)
 {
     TemporaryDirectory dir1;  // foo.txt, /subdir/
     {
@@ -65,23 +65,23 @@ TEST(OverlayResourceLoader, resource_exists_returns_true_if_file_exists_in_some_
         std::ofstream subfoobar{dir3.absolute_path() / "subdir" / "foobar.txt"};
     }
 
-    OverlayResourceLoader loader;
-    loader.emplace_lowest_priority<FilesystemResourceLoader>(dir1.absolute_path());
-    loader.emplace_lowest_priority<FilesystemResourceLoader>(dir2.absolute_path());
-    loader.emplace_lowest_priority<FilesystemResourceLoader>(dir3.absolute_path());
+    OverlayFilesystem overlay_filesystem;
+    overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir1.absolute_path());
+    overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir2.absolute_path());
+    overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir3.absolute_path());
 
-    ASSERT_TRUE(loader.resource_exists("foo.txt"));
-    ASSERT_TRUE(loader.resource_exists("subdir/foo.txt"));
-    ASSERT_TRUE(loader.resource_exists("subdir/bar.txt"));
-    ASSERT_TRUE(loader.resource_exists("subdir/foobar.txt"));
+    ASSERT_TRUE(overlay_filesystem.resource_exists("foo.txt"));
+    ASSERT_TRUE(overlay_filesystem.resource_exists("subdir/foo.txt"));
+    ASSERT_TRUE(overlay_filesystem.resource_exists("subdir/bar.txt"));
+    ASSERT_TRUE(overlay_filesystem.resource_exists("subdir/foobar.txt"));
 
-    ASSERT_FALSE(loader.resource_exists("bar.txt"));
-    ASSERT_FALSE(loader.resource_exists("foobar.txt"));
-    ASSERT_FALSE(loader.resource_exists("subdir")) << "Directories are only shown during iteration: they aren't load-able resources";
-    ASSERT_FALSE(loader.resource_exists("subdir/barfoo.txt"));
+    ASSERT_FALSE(overlay_filesystem.resource_exists("bar.txt"));
+    ASSERT_FALSE(overlay_filesystem.resource_exists("foobar.txt"));
+    ASSERT_FALSE(overlay_filesystem.resource_exists("subdir")) << "Directories are only shown during iteration: they aren't load-able resources";
+    ASSERT_FALSE(overlay_filesystem.resource_exists("subdir/barfoo.txt"));
 }
 
-TEST(OverlayResourceLoader, slurp_slurps_the_correct_resource_stream)
+TEST(OverlayFilesystem, slurp_slurps_the_correct_resource_stream)
 {
     // foo.txt, /subdir/
     TemporaryDirectory dir1;
@@ -109,10 +109,10 @@ TEST(OverlayResourceLoader, slurp_slurps_the_correct_resource_stream)
         std::ofstream subfoobar{dir3.absolute_path() / "subdir" / "foobar.txt"};
     }
 
-    OverlayResourceLoader loader;
-    loader.emplace_lowest_priority<FilesystemResourceLoader>(dir1.absolute_path());
-    loader.emplace_lowest_priority<FilesystemResourceLoader>(dir2.absolute_path());
-    loader.emplace_lowest_priority<FilesystemResourceLoader>(dir3.absolute_path());
+    OverlayFilesystem overlay_filesystem;
+    overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir1.absolute_path());
+    overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir2.absolute_path());
+    overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir3.absolute_path());
 
-    ASSERT_EQ(loader.slurp("subdir/foo.txt"), "expected content");
+    ASSERT_EQ(overlay_filesystem.slurp("subdir/foo.txt"), "expected content");
 }

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <liboscar/Platform/IResourceLoader.h>
 #include <liboscar/Platform/ResourceDirectoryEntry.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/ResourceStream.h>
+#include <liboscar/Platform/VirtualFilesystem.h>
 #include <liboscar/Shims/Cpp23/generator.h>
 
 #include <concepts>
@@ -15,18 +15,21 @@
 
 namespace osc
 {
+    // An accessor that loads resources within a prefix (i.e. a directory)
+    // relative to the root of some `VirtualFilesystem`.
+    //
+    // Example: An implementation might combine `VirtualFilesystem`s with
+    // a `LayeredFilesystem` and prefix it with `textures/`, as part of a
+    // "texture loader" subsystem.
     class ResourceLoader {
     public:
         explicit ResourceLoader(
-            std::shared_ptr<IResourceLoader> impl,
+            std::shared_ptr<VirtualFilesystem> impl,
             ResourcePath prefix = ResourcePath{}) :
 
             impl_{std::move(impl)},
             prefix_{std::move(prefix)}
         {}
-
-        operator IResourceLoader& () { return *impl_; }
-        operator const IResourceLoader& () const { return *impl_; }
 
         bool resource_exists(const ResourcePath& resource_path)
         {
@@ -60,15 +63,15 @@ namespace osc
             return impl_->iterate_directory(prefix_ / resource_path);
         }
     private:
-        template<std::derived_from<IResourceLoader> TResourceLoader, typename... Args>
+        template<std::derived_from<VirtualFilesystem> TResourceLoader, typename... Args>
         requires std::constructible_from<TResourceLoader, Args&&...>
         friend ResourceLoader make_resource_loader(Args&&...);
 
-        std::shared_ptr<IResourceLoader> impl_;
+        std::shared_ptr<VirtualFilesystem> impl_;
         ResourcePath prefix_;
     };
 
-    template<std::derived_from<IResourceLoader> TResourceLoader, typename... Args>
+    template<std::derived_from<VirtualFilesystem> TResourceLoader, typename... Args>
     requires std::constructible_from<TResourceLoader, Args&&...>
     ResourceLoader make_resource_loader(Args&&... args)
     {

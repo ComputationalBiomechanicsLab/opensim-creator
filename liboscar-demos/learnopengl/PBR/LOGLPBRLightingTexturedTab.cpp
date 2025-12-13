@@ -1,12 +1,12 @@
 #include "LOGLPBRLightingTexturedTab.h"
 
 #include <liboscar/Formats/Image.h>
+#include <liboscar/Graphics/Geometries/SphereGeometry.h>
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Material.h>
-#include <liboscar/Graphics/Geometries/SphereGeometry.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/MouseCapturingCamera.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PerfPanel.h>
@@ -48,7 +48,7 @@ namespace
         return rv;
     }
 
-    Material create_material(IResourceLoader& loader)
+    Material create_material(ResourceLoader& loader)
     {
         const Texture2D albedo = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/albedo.jpg"),

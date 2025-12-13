@@ -1,9 +1,5 @@
 #include "SceneCache.h"
 
-#include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/Scene/SceneHelpers.h>
-#include <liboscar/Graphics/Shader.h>
 #include <liboscar/Graphics/Geometries/AABBGeometry.h>
 #include <liboscar/Graphics/Geometries/BoxGeometry.h>
 #include <liboscar/Graphics/Geometries/CircleGeometry.h>
@@ -13,9 +9,13 @@
 #include <liboscar/Graphics/Geometries/PlaneGeometry.h>
 #include <liboscar/Graphics/Geometries/SphereGeometry.h>
 #include <liboscar/Graphics/Geometries/TorusGeometry.h>
+#include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
+#include <liboscar/Graphics/Mesh.h>
+#include <liboscar/Graphics/Scene/SceneHelpers.h>
+#include <liboscar/Graphics/Shader.h>
 #include <liboscar/Maths/BVH.h>
-#include <liboscar/Platform/FilesystemResourceLoader.h>
 #include <liboscar/Platform/Log.h>
+#include <liboscar/Platform/NativeFilesystem.h>
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Utils/HashHelpers.h>
@@ -113,7 +113,7 @@ struct std::hash<TorusParameters> final {
 class osc::SceneCache::Impl final {
 public:
     Impl() :
-        Impl{make_resource_loader<FilesystemResourceLoader>(".")}
+        Impl{make_resource_loader<NativeFilesystem>(".")}
     {}
 
     explicit Impl(ResourceLoader resource_loader) :

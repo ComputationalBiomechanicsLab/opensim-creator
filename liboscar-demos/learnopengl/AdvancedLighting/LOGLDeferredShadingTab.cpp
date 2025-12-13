@@ -2,15 +2,15 @@
 
 #include <liboscar/Formats/Image.h>
 #include <liboscar/Graphics/Color.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/RenderTarget.h>
 #include <liboscar/Graphics/RenderTargetColorAttachment.h>
-#include <liboscar/Graphics/Geometries/BoxGeometry.h>
-#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/MouseCapturingCamera.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
@@ -82,7 +82,7 @@ namespace
         return rv;
     }
 
-    Material load_gbuffer_material(IResourceLoader& loader)
+    Material load_gbuffer_material(ResourceLoader& loader)
     {
         return Material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
@@ -109,7 +109,7 @@ namespace
 
     struct GBufferRenderingState final {
 
-        explicit GBufferRenderingState(IResourceLoader& loader) :
+        explicit GBufferRenderingState(ResourceLoader& loader) :
             material{load_gbuffer_material(loader)}
         {}
 
@@ -158,7 +158,7 @@ namespace
 
     struct LightPassState final {
 
-        explicit LightPassState(IResourceLoader& loader) :
+        explicit LightPassState(ResourceLoader& loader) :
             material{Shader{
                 loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
                 loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),

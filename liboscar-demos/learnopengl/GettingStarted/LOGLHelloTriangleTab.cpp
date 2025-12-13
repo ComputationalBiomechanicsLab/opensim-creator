@@ -5,7 +5,6 @@
 #include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IResourceLoader.h>
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
@@ -41,7 +40,7 @@ namespace
         return rv;
     }
 
-    Material create_triangle_material(IResourceLoader& loader)
+    Material create_triangle_material(ResourceLoader& loader)
     {
         return Material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/GettingStarted/HelloTriangle.vert"),

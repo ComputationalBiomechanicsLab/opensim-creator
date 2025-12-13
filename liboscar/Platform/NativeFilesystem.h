@@ -1,8 +1,8 @@
 #pragma once
 
-#include <liboscar/Platform/IResourceLoader.h>
 #include <liboscar/Platform/ResourceDirectoryEntry.h>
 #include <liboscar/Platform/ResourceStream.h>
+#include <liboscar/Platform/VirtualFilesystem.h>
 #include <liboscar/Shims/Cpp23/generator.h>
 
 #include <filesystem>
@@ -13,10 +13,10 @@ namespace osc { class ResourcePath; }
 
 namespace osc
 {
-    // An `IResourceLoader` that loads all resources from a single root directory.
-    class FilesystemResourceLoader final : public IResourceLoader {
+    // A `VirtualFilesystem` that uses the process's native filesystem.
+    class NativeFilesystem final : public VirtualFilesystem {
     public:
-        explicit FilesystemResourceLoader(const std::filesystem::path& root_directory) :
+        explicit NativeFilesystem(const std::filesystem::path& root_directory) :
             root_directory_{root_directory}
         {}
 

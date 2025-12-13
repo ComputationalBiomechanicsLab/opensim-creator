@@ -1,11 +1,11 @@
 #include "LOGLPBRLightingTab.h"
 
+#include <liboscar/Graphics/Geometries/SphereGeometry.h>
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Material.h>
-#include <liboscar/Graphics/Geometries/SphereGeometry.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/MouseCapturingCamera.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PerfPanel.h>
@@ -47,11 +47,11 @@ namespace
         return rv;
     }
 
-    Material load_pbr_material(IResourceLoader& rl)
+    Material load_pbr_material(ResourceLoader& loader)
     {
         Material rv{Shader{
-            rl.slurp("oscar_demos/learnopengl/shaders/PBR/lighting/PBR.vert"),
-            rl.slurp("oscar_demos/learnopengl/shaders/PBR/lighting/PBR.frag"),
+            loader.slurp("oscar_demos/learnopengl/shaders/PBR/lighting/PBR.vert"),
+            loader.slurp("oscar_demos/learnopengl/shaders/PBR/lighting/PBR.frag"),
         }};
         rv.set<float>("uAO", 1.0f);
         return rv;

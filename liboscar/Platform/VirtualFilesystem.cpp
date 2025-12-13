@@ -1,4 +1,4 @@
-#include "IResourceLoader.h"
+#include "VirtualFilesystem.h"
 
 #include <istream>
 #include <iterator>
@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-std::string osc::IResourceLoader::slurp(const ResourcePath& resource_path)
+std::string osc::VirtualFilesystem::slurp(const ResourcePath& resource_path)
 {
     auto fd = open(resource_path);
     fd.stream().exceptions(std::istream::failbit | std::istream::badbit);

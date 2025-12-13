@@ -2,12 +2,11 @@
 
 #include <liboscar/Formats/Image.h>
 #include <liboscar/Graphics/Camera.h>
+#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IResourceLoader.h>
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
@@ -29,7 +28,7 @@ namespace
         return quad;
     }
 
-    Material load_textured_material(IResourceLoader& loader)
+    Material load_textured_material(ResourceLoader& loader)
     {
         Material rv{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/GettingStarted/Texturing.vert"),

@@ -10,18 +10,6 @@
 #include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/Cursor.h>
 #include <liboscar/Platform/CursorShape.h>
-#include <liboscar/Platform/FilesystemResourceLoader.h>
-#include <liboscar/Platform/Key.h>
-#include <liboscar/Platform/Log.h>
-#include <liboscar/Platform/MouseButton.h>
-#include <liboscar/Platform/MouseInputSource.h>
-#include <liboscar/Platform/PhysicalKeyModifier.h>
-#include <liboscar/Platform/ResourceLoader.h>
-#include <liboscar/Platform/ResourcePath.h>
-#include <liboscar/Platform/ResourceStream.h>
-#include <liboscar/Platform/Screenshot.h>
-#include <liboscar/Platform/Widget.h>
-#include <liboscar/Platform/os.h>
 #include <liboscar/Platform/Events/DisplayStateChangeEvent.h>
 #include <liboscar/Platform/Events/DropFileEvent.h>
 #include <liboscar/Platform/Events/KeyEvent.h>
@@ -31,6 +19,18 @@
 #include <liboscar/Platform/Events/TextInputEvent.h>
 #include <liboscar/Platform/Events/WindowEvent.h>
 #include <liboscar/Platform/Events/WindowEventType.h>
+#include <liboscar/Platform/Key.h>
+#include <liboscar/Platform/Log.h>
+#include <liboscar/Platform/MouseButton.h>
+#include <liboscar/Platform/MouseInputSource.h>
+#include <liboscar/Platform/NativeFilesystem.h>
+#include <liboscar/Platform/os.h>
+#include <liboscar/Platform/PhysicalKeyModifier.h>
+#include <liboscar/Platform/ResourceLoader.h>
+#include <liboscar/Platform/ResourcePath.h>
+#include <liboscar/Platform/ResourceStream.h>
+#include <liboscar/Platform/Screenshot.h>
+#include <liboscar/Platform/Widget.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/Conversion.h>
@@ -1534,7 +1534,7 @@ public:
 
     std::optional<std::filesystem::path> get_resource_filepath(const ResourcePath& rp) const
     {
-        return filesystem_resource_loader_->resource_filepath(rp);
+        return native_filesystem_->resource_filepath(rp);
     }
 
     std::string slurp_resource(const ResourcePath& rp) { return resource_loader_.slurp(rp); }
@@ -1688,15 +1688,15 @@ private:
     // application's configuration file
     bool log_is_configured_ = configure_application_log(config_);
 
-    // internal filesystem resource loader (we know its implementation at compile-time)
-    std::shared_ptr<FilesystemResourceLoader> filesystem_resource_loader_ = std::make_shared<FilesystemResourceLoader>(
+    // internal native filesystem (we know its implementation at compile-time)
+    std::shared_ptr<NativeFilesystem> native_filesystem_ = std::make_shared<NativeFilesystem>(
         // initialization-time resources dir (so that it doesn't have to be fetched
         // from the settings over-and-over)
         get_current_resources_path_and_log_it(config_)
     );
 
     // the type-erased `ResourceLoader` that's dished out to callers
-    ResourceLoader resource_loader_{filesystem_resource_loader_};
+    ResourceLoader resource_loader_{native_filesystem_};
 
     // SDL context (windowing, video driver, etc.)
     sdl::Context sdl_context_{SDL_INIT_VIDEO};

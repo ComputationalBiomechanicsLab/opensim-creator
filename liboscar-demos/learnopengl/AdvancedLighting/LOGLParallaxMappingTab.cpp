@@ -1,12 +1,12 @@
 #include "LOGLParallaxMappingTab.h"
 
 #include <liboscar/Formats/Image.h>
-#include <liboscar/Graphics/Graphics.h>
-#include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/Geometries/BoxGeometry.h>
 #include <liboscar/Graphics/Geometries/PlaneGeometry.h>
+#include <liboscar/Graphics/Graphics.h>
+#include <liboscar/Graphics/Material.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/MouseCapturingCamera.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
@@ -27,7 +27,7 @@ namespace
         return rv;
     }
 
-    Material create_parallax_mapping_material(IResourceLoader& loader)
+    Material create_parallax_mapping_material(ResourceLoader& loader)
     {
         const Texture2D diffuse_map = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/bricks2.jpg"),
@@ -54,7 +54,7 @@ namespace
         return rv;
     }
 
-    Material create_lightcube_material(IResourceLoader& loader)
+    Material create_lightcube_material(ResourceLoader& loader)
     {
         return Material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/LightCube.vert"),
