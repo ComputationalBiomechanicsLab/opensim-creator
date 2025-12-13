@@ -391,9 +391,9 @@ private:
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
-    Texture2D m_MainAppLogo = SVG::read_into_texture(App::load_resource("OpenSimCreator/textures/banner.svg"), 1.0f, App::get().highest_device_pixel_ratio());
-    Texture2D m_CziLogo = SVG::read_into_texture(App::load_resource("OpenSimCreator/textures/chanzuckerberg_logo.svg"), 0.5f, App::get().highest_device_pixel_ratio());
-    Texture2D m_TudLogo = SVG::read_into_texture(App::load_resource("OpenSimCreator/textures/tudelft_logo.svg"), 0.5f, App::get().highest_device_pixel_ratio());
+    Texture2D m_MainAppLogo = SVG::read_into_texture(App::open_resource("OpenSimCreator/textures/banner.svg"), 1.0f, App::get().highest_device_pixel_ratio());
+    Texture2D m_CziLogo = SVG::read_into_texture(App::open_resource("OpenSimCreator/textures/chanzuckerberg_logo.svg"), 0.5f, App::get().highest_device_pixel_ratio());
+    Texture2D m_TudLogo = SVG::read_into_texture(App::open_resource("OpenSimCreator/textures/tudelft_logo.svg"), 0.5f, App::get().highest_device_pixel_ratio());
 
     // dimensions of stuff
     Vector2 m_SplashMenuMaxDims = {640.0f, 512.0f};

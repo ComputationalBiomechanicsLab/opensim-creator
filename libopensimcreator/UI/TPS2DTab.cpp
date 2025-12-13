@@ -476,7 +476,7 @@ private:
 
     // GUI state (rendering, colors, etc.)
     Texture2D m_BoxTexture = SVG::read_into_texture(
-        App::load_resource("OpenSimCreator/textures/uv_checker.svg")
+        App::open_resource("OpenSimCreator/textures/uv_checker.svg")
     );
     Mesh m_InputGrid = PlaneGeometry{{.dimensions = Vector2{2.0f}, .num_segments = Vector2{50}}};
     Mesh m_OutputGrid = m_InputGrid;

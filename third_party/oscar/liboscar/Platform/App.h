@@ -74,7 +74,7 @@ namespace osc
         static std::string slurp(const ResourcePath&);
 
         // returns an opened stream to the given application resource
-        static ResourceStream load_resource(const ResourcePath&);
+        static ResourceStream open_resource(const ResourcePath&);
 
         // returns the top- (application-)level resource loader
         static ResourceLoader& resource_loader();
@@ -528,11 +528,11 @@ namespace osc
         // returns the contents of a runtime resource in the `resources/` dir as a string
         std::string slurp_resource(const ResourcePath&);
 
-        // returns an opened stream to the given resource
-        ResourceStream go_load_resource(const ResourcePath&);
-
     private:
         static int main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Widget>()>& widget_ctor);
+
+        // returns an opened stream to the given resource
+        ResourceStream go_open_resource(const ResourcePath&);
 
         // returns a full filesystem path to runtime resource in `resources/` dir
         std::optional<std::filesystem::path> get_resource_filepath(const ResourcePath&) const;

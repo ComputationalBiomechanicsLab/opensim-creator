@@ -1539,7 +1539,7 @@ public:
 
     std::string slurp_resource(const ResourcePath& rp) { return resource_loader_.slurp(rp); }
 
-    ResourceStream go_load_resource(const ResourcePath& rp) { return resource_loader_.open(rp); }
+    ResourceStream go_open_resource(const ResourcePath& rp) { return resource_loader_.open(rp); }
 
     std::shared_ptr<void> upd_singleton(
         const std::type_info& type_info,
@@ -1791,9 +1791,9 @@ std::string osc::App::slurp(const ResourcePath& rp)
     return upd().slurp_resource(rp);
 }
 
-ResourceStream osc::App::load_resource(const ResourcePath& rp)
+ResourceStream osc::App::open_resource(const ResourcePath& rp)
 {
-    return upd().go_load_resource(rp);
+    return upd().go_open_resource(rp);
 }
 
 ResourceLoader& osc::App::resource_loader()
@@ -2203,9 +2203,9 @@ std::string osc::App::slurp_resource(const ResourcePath& rp)
     return impl_->slurp_resource(rp);
 }
 
-ResourceStream osc::App::go_load_resource(const ResourcePath& rp)
+ResourceStream osc::App::go_open_resource(const ResourcePath& rp)
 {
-    return impl_->go_load_resource(rp);
+    return impl_->go_open_resource(rp);
 }
 
 int osc::App::main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Widget>()>& widget_ctor)
