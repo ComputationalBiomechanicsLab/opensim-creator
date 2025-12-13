@@ -7,7 +7,7 @@
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/MouseCapturingCamera.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
@@ -78,7 +78,7 @@ namespace
         return camera;
     }
 
-    Material create_floor_material(IResourceLoader& loader)
+    Material create_floor_material(ResourceLoader& loader)
     {
         const Texture2D wood_texture = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/wood.jpg"),

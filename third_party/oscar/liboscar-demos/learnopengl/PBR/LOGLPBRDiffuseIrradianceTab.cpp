@@ -1,17 +1,17 @@
 #include "LOGLPBRDiffuseIrradianceTab.h"
 
 #include <liboscar/Formats/Image.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Graphics/Geometries/SphereGeometry.h>
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/RenderTexture.h>
 #include <liboscar/Graphics/Texture2D.h>
-#include <liboscar/Graphics/Geometries/BoxGeometry.h>
-#include <liboscar/Graphics/Geometries/SphereGeometry.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/MouseCapturingCamera.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
@@ -52,8 +52,7 @@ namespace
         return rv;
     }
 
-    RenderTexture load_equirectangular_hdr_texture_into_cubemap(
-        IResourceLoader& loader)
+    RenderTexture load_equirectangular_hdr_texture_into_cubemap(ResourceLoader& loader)
     {
         Texture2D hdr_texture = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
@@ -93,9 +92,7 @@ namespace
         return cubemap_render_texture;
     }
 
-    RenderTexture create_irradiance_cubemap(
-        IResourceLoader& loader,
-        const RenderTexture& skybox)
+    RenderTexture create_irradiance_cubemap(ResourceLoader& loader, const RenderTexture& skybox)
     {
         RenderTexture irradiance_cubemap{{
             .pixel_dimensions = {32, 32},
@@ -121,7 +118,7 @@ namespace
         return irradiance_cubemap;
     }
 
-    Material create_material(IResourceLoader& loader)
+    Material create_material(ResourceLoader& loader)
     {
         Material rv{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/diffuse_irradiance/PBR.vert"),

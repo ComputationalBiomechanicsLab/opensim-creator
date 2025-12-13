@@ -1,6 +1,9 @@
 #include "LOGLSSAOTab.h"
 
 #include <liboscar/Graphics/ColorRenderBufferFormat.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
+#include <liboscar/Graphics/Geometries/SphereGeometry.h>
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/RenderTarget.h>
@@ -8,11 +11,8 @@
 #include <liboscar/Graphics/RenderTargetDepthStencilAttachment.h>
 #include <liboscar/Graphics/Shader.h>
 #include <liboscar/Graphics/Texture2D.h>
-#include <liboscar/Graphics/Geometries/BoxGeometry.h>
-#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
-#include <liboscar/Graphics/Geometries/SphereGeometry.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/MouseCapturingCamera.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PerfPanel.h>
@@ -97,7 +97,7 @@ namespace
         return rv;
     }
 
-    Material load_gbuffer_material(IResourceLoader& loader)
+    Material load_gbuffer_material(ResourceLoader& loader)
     {
         return Material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
@@ -112,7 +112,7 @@ namespace
         return rv;
     }
 
-    Material load_ssao_material(IResourceLoader& loader)
+    Material load_ssao_material(ResourceLoader& loader)
     {
         return Material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
@@ -120,7 +120,7 @@ namespace
         }};
     }
 
-    Material load_blur_material(IResourceLoader& loader)
+    Material load_blur_material(ResourceLoader& loader)
     {
         return Material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
@@ -128,7 +128,7 @@ namespace
         }};
     }
 
-    Material load_lighting_material(IResourceLoader& loader)
+    Material load_lighting_material(ResourceLoader& loader)
     {
         return Material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),

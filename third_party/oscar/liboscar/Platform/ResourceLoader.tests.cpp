@@ -1,9 +1,9 @@
 #include "ResourceLoader.h"
 
-#include <liboscar/Platform/IResourceLoader.h>
 #include <liboscar/Platform/ResourceDirectoryEntry.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/ResourceStream.h>
+#include <liboscar/Platform/VirtualFilesystem.h>
 #include <liboscar/Shims/Cpp23/generator.h>
 
 #include <gtest/gtest.h>
@@ -22,9 +22,9 @@ namespace
         std::optional<ResourcePath> last_existence_check_path;
     };
 
-    class MockResourceLoader : public IResourceLoader {
+    class MockFilesystem : public VirtualFilesystem {
     public:
-        explicit MockResourceLoader(std::shared_ptr<MockState> state_) :
+        explicit MockFilesystem(std::shared_ptr<MockState> state_) :
             state_{std::move(state_)}
         {}
     private:
@@ -54,17 +54,17 @@ TEST(ResourceLoader, inplace_constructor_works_as_intended)
     const auto mock_state = std::make_shared<MockState>();
     const ResourcePath resource_path{"some/path"};
 
-    ResourceLoader resource_loader = make_resource_loader<MockResourceLoader>(mock_state);
+    ResourceLoader resource_loader = make_resource_loader<MockFilesystem>(mock_state);
     resource_loader.open(resource_path);
 
     ASSERT_EQ(mock_state->last_open_call_path, resource_path);
 }
 
-TEST(ResourceLoader, WithPrefixCausesIResourceLoaderToBeCalledWithPrefixedPath)
+TEST(ResourceLoader, with_prefix_causes_VirtualFilesystem_to_be_called_with_prefixed_path)
 {
     const auto mock_state = std::make_shared<MockState>();
 
-    ResourceLoader resource_loader = make_resource_loader<MockResourceLoader>(mock_state);
+    ResourceLoader resource_loader = make_resource_loader<MockFilesystem>(mock_state);
     ResourceLoader prefixed_loader = resource_loader.with_prefix("prefix");
 
     resource_loader.open(ResourcePath{"path"});
@@ -76,7 +76,7 @@ TEST(ResourceLoader, WithPrefixCausesIResourceLoaderToBeCalledWithPrefixedPath)
 TEST(ResourceLoader, resource_exists_calls_underlying_impl_resource_exists)
 {
     const auto mock_state = std::make_shared<MockState>();
-    ResourceLoader resource_loader = make_resource_loader<MockResourceLoader>(mock_state);
+    ResourceLoader resource_loader = make_resource_loader<MockFilesystem>(mock_state);
     ASSERT_TRUE(resource_loader.resource_exists("should/exist"));
     ASSERT_EQ(mock_state->last_existence_check_path, ResourcePath{"should/exist"});
 }

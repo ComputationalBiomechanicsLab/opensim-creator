@@ -1,4 +1,4 @@
-#include "FilesystemResourceLoader.h"
+#include "NativeFilesystem.h"
 
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/ResourcePath.h>
@@ -30,19 +30,21 @@ namespace
     }
 }
 
-std::optional<std::filesystem::path> osc::FilesystemResourceLoader::resource_filepath(const ResourcePath& resource_path) const
+std::optional<std::filesystem::path> osc::NativeFilesystem::resource_filepath(const ResourcePath& resource_path) const
 {
     std::filesystem::path full_path = calc_full_path(root_directory_, resource_path);
     return std::filesystem::exists(full_path) ? std::optional{std::move(full_path)} : std::nullopt;
 }
 
-bool osc::FilesystemResourceLoader::impl_resource_exists(const ResourcePath& resource_path)
+bool osc::NativeFilesystem::impl_resource_exists(const ResourcePath& resource_path)
 {
     const std::filesystem::path full_path = calc_full_path(root_directory_, resource_path);
-    return std::filesystem::exists(full_path);
+    std::error_code ec;
+    const std::filesystem::file_status status = std::filesystem::status(full_path, ec);
+    return (not ec) and (not std::filesystem::is_directory(status));
 }
 
-ResourceStream osc::FilesystemResourceLoader::impl_open(const ResourcePath& resource_path)
+ResourceStream osc::NativeFilesystem::impl_open(const ResourcePath& resource_path)
 {
     if (log_level() <= LogLevel::debug) {
         log_debug("opening %s", resource_path.string().c_str());
@@ -50,7 +52,7 @@ ResourceStream osc::FilesystemResourceLoader::impl_open(const ResourcePath& reso
     return ResourceStream{calc_full_path(root_directory_, resource_path)};
 }
 
-cpp23::generator<ResourceDirectoryEntry> osc::FilesystemResourceLoader::impl_iterate_directory(ResourcePath resource_path)
+cpp23::generator<ResourceDirectoryEntry> osc::NativeFilesystem::impl_iterate_directory(ResourcePath resource_path)
 {
     std::filesystem::path full_path = calc_full_path(root_directory_, resource_path);
     if (not std::filesystem::exists(full_path)) {

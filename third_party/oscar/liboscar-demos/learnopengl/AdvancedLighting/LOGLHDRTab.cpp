@@ -2,14 +2,14 @@
 
 #include <liboscar/Formats/Image.h>
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Graphics/Graphics.h>
-#include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/Geometries/BoxGeometry.h>
 #include <liboscar/Graphics/Geometries/PlaneGeometry.h>
+#include <liboscar/Graphics/Graphics.h>
+#include <liboscar/Graphics/Material.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/MouseCapturingCamera.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
@@ -55,7 +55,7 @@ namespace
         return rv;
     }
 
-    Material create_scene_material(IResourceLoader& loader)
+    Material create_scene_material(ResourceLoader& loader)
     {
         const Texture2D wood_texture = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/wood.jpg"),
@@ -73,7 +73,7 @@ namespace
         return material;
     }
 
-    Material create_tonemap_material(IResourceLoader& loader)
+    Material create_tonemap_material(ResourceLoader& loader)
     {
         return Material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/HDR/Tonemap.vert"),
