@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/Platform/ILogSink.h>
 #include <liboscar/Platform/LogMessageView.h>
+#include <liboscar/Platform/LogSink.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/StringName.h>
@@ -23,7 +23,7 @@ namespace osc
             name_{name}
         {}
 
-        Logger(std::string_view name, std::shared_ptr<ILogSink> sink) :
+        Logger(std::string_view name, std::shared_ptr<LogSink> sink) :
             name_{name},
             log_sinks_{std::move(sink)}
         {}
@@ -104,15 +104,15 @@ namespace osc
             log_message(LogLevel::critical, fmt, args...);
         }
 
-        const std::vector<std::shared_ptr<ILogSink>>& sinks() const { return log_sinks_; }
-        std::vector<std::shared_ptr<ILogSink>>& sinks() { return log_sinks_; }
+        const std::vector<std::shared_ptr<LogSink>>& sinks() const { return log_sinks_; }
+        std::vector<std::shared_ptr<LogSink>>& sinks() { return log_sinks_; }
 
         LogLevel level() const { return log_level_; }
         void set_level(LogLevel level_) { log_level_ = level_; }
 
     private:
         StringName name_;
-        std::vector<std::shared_ptr<ILogSink>> log_sinks_;
+        std::vector<std::shared_ptr<LogSink>> log_sinks_;
         LogLevel log_level_ = LogLevel::DEFAULT;
     };
 }

@@ -9,6 +9,7 @@ opynsim
 -------
 
 - https://github.com/opynsim/opynsim
+- Version (approx): 81dbc1e62943f53d9814e53c4d7def6c66c0d5b0
 - Licensed under the Apache 2.0 license
 - Copyright (c) 2025 Adam Kewley
 
@@ -16,5 +17,6 @@ oscar
 -----
 
 - https://github.com/opynsim/oscar
+- Version (approx): d2fdc9628bb180a965e82a999d890f439f902d64
 - Licensed under the Apache 2.0 license
 - Copyright (c) 2025 Adam Kewley
