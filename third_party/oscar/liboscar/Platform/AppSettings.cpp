@@ -308,7 +308,7 @@ R"(# configuration options
         std::string_view key,
         const Variant& value)
     {
-        static_assert(num_options<VariantType>() == 9);  // TODO: support more of them
+        static_assert(num_options<VariantType>() == 10);  // TODO: support more of them
 
         switch (value.type()) {
         case VariantType::None:
