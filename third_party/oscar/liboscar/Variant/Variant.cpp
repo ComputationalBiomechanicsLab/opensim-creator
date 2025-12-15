@@ -7,6 +7,7 @@
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>
+#include <liboscar/Utils/HashHelpers.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <liboscar/Variant/VariantType.h>
@@ -14,6 +15,7 @@
 #include <charconv>
 #include <cstddef>
 #include <exception>
+#include <iomanip>
 #include <string_view>
 #include <string>
 #include <type_traits>
@@ -61,6 +63,11 @@ namespace
         auto [ptr, err] = std::from_chars(str.data(), str.data() + str.size(), rv);
         return err == std::errc{} ? rv : 0;
     }
+
+    auto hash_of(const std::vector<Variant>& variant_array)
+    {
+        return hash_range(variant_array);
+    }
 }
 
 osc::Variant::Variant() : data_{std::monostate{}}
@@ -78,6 +85,7 @@ osc::Variant::Variant(std::string_view v) : data_{std::string{v}} {}
 osc::Variant::Variant(const StringName& v) : data_{v} {}
 osc::Variant::Variant(Vector2 v) : data_{v} {}
 osc::Variant::Variant(Vector3 v) : data_{v} {}
+osc::Variant::Variant(std::vector<Variant> ary) : data_{std::move(ary)} {}
 
 osc::Variant::~Variant() noexcept = default;
 
@@ -87,29 +95,31 @@ Variant& osc::Variant::operator=(Variant&&) noexcept = default;
 VariantType osc::Variant::type() const
 {
     return std::visit(Overload{
-        [](const std::monostate&) { return VariantType::None; },
-        [](const bool&)           { return VariantType::Bool; },
-        [](const Color&)          { return VariantType::Color; },
-        [](const float&)          { return VariantType::Float; },
-        [](const int&)            { return VariantType::Int; },
-        [](const std::string&)    { return VariantType::String; },
-        [](const StringName&)     { return VariantType::StringName; },
-        [](const Vector2&)        { return VariantType::Vector2; },
-        [](const Vector3&)        { return VariantType::Vector3; },
+        [](const std::monostate&)       { return VariantType::None; },
+        [](const bool&)                 { return VariantType::Bool; },
+        [](const Color&)                { return VariantType::Color; },
+        [](const float&)                { return VariantType::Float; },
+        [](const int&)                  { return VariantType::Int; },
+        [](const std::string&)          { return VariantType::String; },
+        [](const StringName&)           { return VariantType::StringName; },
+        [](const Vector2&)              { return VariantType::Vector2; },
+        [](const Vector3&)              { return VariantType::Vector3; },
+        [](const std::vector<Variant>&) { return VariantType::VariantArray; },
     }, data_);
 }
 
 osc::Variant::operator bool() const
 {
     return std::visit(Overload{
-        [](const std::monostate&) { return false; },
-        [](const bool& v)         { return v; },
-        [](const Color& v)        { return v.r != 0.0f; },
-        [](const float& v)        { return v != 0.0f; },
-        [](const int& v)          { return v != 0; },
-        [](std::string_view s)    { return parse_as_bool(s); },
-        [](const Vector2& v)      { return v.x != 0.0f; },
-        [](const Vector3& v)      { return v.x != 0.0f; },
+        [](const std::monostate&)           { return false; },
+        [](const bool& v)                   { return v; },
+        [](const Color& v)                  { return v.r != 0.0f; },
+        [](const float& v)                  { return v != 0.0f; },
+        [](const int& v)                    { return v != 0; },
+        [](std::string_view s)              { return parse_as_bool(s); },
+        [](const Vector2& v)                { return v.x != 0.0f; },
+        [](const Vector3& v)                { return v.x != 0.0f; },
+        [](const std::vector<Variant>& ary) { return not ary.empty(); },
     }, data_);
 }
 
@@ -128,34 +138,44 @@ osc::Variant::operator osc::Color() const
         },
         [](const Vector2& v)      { return Color{v.x, v.y, 0.0f}; },
         [](const Vector3& v)      { return Color{v}; },
+        [](const std::vector<Variant>& ary)
+        {
+            Color rv = Color::black();
+            for (size_t i = 0; i < min(rv.size(), ary.size()); ++i) {
+                rv[i] = static_cast<float>(ary[i]);
+            }
+            return rv;
+        }
     }, data_);
 }
 
 osc::Variant::operator float() const
 {
     return std::visit(Overload{
-        [](const std::monostate&) { return 0.0f; },
-        [](const bool& v)         { return v ? 1.0f : 0.0f; },
-        [](const Color& v)        { return v.r; },
-        [](const float& v)        { return v; },
-        [](const int& v)          { return static_cast<float>(v); },
-        [](std::string_view s)    { return parse_as_float_or_zero(s); },
-        [](const Vector2& v)      { return v.x; },
-        [](const Vector3& v)      { return v.x; },
+        [](const std::monostate&)           { return 0.0f; },
+        [](const bool& v)                   { return v ? 1.0f : 0.0f; },
+        [](const Color& v)                  { return v.r; },
+        [](const float& v)                  { return v; },
+        [](const int& v)                    { return static_cast<float>(v); },
+        [](std::string_view s)              { return parse_as_float_or_zero(s); },
+        [](const Vector2& v)                { return v.x; },
+        [](const Vector3& v)                { return v.x; },
+        [](const std::vector<Variant>& ary) { return ary.empty() ? 0.0f : static_cast<float>(ary.front()); },
     }, data_);
 }
 
 osc::Variant::operator int() const
 {
     return std::visit(Overload{
-        [](const std::monostate&) { return 0; },
-        [](const bool& v)         { return v ? 1 : 0; },
-        [](const Color& v)        { return static_cast<int>(v.r); },
-        [](const float& v)        { return static_cast<int>(v); },
-        [](const int& v)          { return v; },
-        [](std::string_view s)    { return parse_as_int_or_zero(s); },
-        [](const Vector2& v)      { return static_cast<int>(v.x); },
-        [](const Vector3& v)      { return static_cast<int>(v.x); },
+        [](const std::monostate&)           { return 0; },
+        [](const bool& v)                   { return v ? 1 : 0; },
+        [](const Color& v)                  { return static_cast<int>(v.r); },
+        [](const float& v)                  { return static_cast<int>(v); },
+        [](const int& v)                    { return v; },
+        [](std::string_view s)              { return parse_as_int_or_zero(s); },
+        [](const Vector2& v)                { return static_cast<int>(v.x); },
+        [](const Vector3& v)                { return static_cast<int>(v.x); },
+        [](const std::vector<Variant>& ary) { return ary.empty() ? 0 : static_cast<int>(ary.front()); },
     }, data_);
 }
 
@@ -164,14 +184,33 @@ osc::Variant::operator std::string() const
     using namespace std::literals::string_literals;
 
     return std::visit(Overload{
-        [](const std::monostate&) { return "<null>"s; },
-        [](const bool& v)         { return v ? "true"s : "false"s; },
-        [](const Color& v)        { return to_html_string_rgba(v); },
-        [](const float& v)        { return std::to_string(v); },
-        [](const int& v)          { return std::to_string(v); },
-        [](std::string_view s)    { return std::string{s}; },
-        [](const Vector2& v)      { return stream_to_string(v); },
-        [](const Vector3& v)      { return stream_to_string(v); },
+        [](const std::monostate&)           { return "<null>"s; },
+        [](const bool& v)                   { return v ? "true"s : "false"s; },
+        [](const Color& v)                  { return to_html_string_rgba(v); },
+        [](const float& v)                  { return std::to_string(v); },
+        [](const int& v)                    { return std::to_string(v); },
+        [](std::string_view s)              { return std::string{s}; },
+        [](const Vector2& v)                { return stream_to_string(v); },
+        [](const Vector3& v)                { return stream_to_string(v); },
+        [](const std::vector<Variant>& ary)
+        {
+            std::stringstream ss;
+            ss << '[';
+            std::string_view delimiter;
+            for (const auto& variant : ary) {
+                ss << delimiter;
+                const std::string s = static_cast<std::string>(variant);
+                if (variant.type() == VariantType::String or variant.type() == VariantType::StringName) {
+                    ss << std::quoted(s);
+                } else {
+                    ss << s;
+                }
+                delimiter = ", ";
+            }
+            ss << ']';
+
+            return std::move(ss).str();
+        },
     }, data_);
 }
 
@@ -180,7 +219,7 @@ osc::Variant::operator osc::StringName() const
     return std::visit(Overload{
         [](const std::string& str) { return StringName{str}; },
         [](const StringName& sn)   { return sn; },
-        [](const auto&)            { return StringName{}; },
+        [this](const auto&)        { return StringName{std::string{*this}}; },
     }, data_);
 }
 
@@ -195,6 +234,14 @@ osc::Variant::operator osc::Vector2() const
         [](std::string_view)      { return Vector2{}; },
         [](const Vector2& v)      { return v; },
         [](const Vector3& v)      { return Vector2{v}; },
+        [](const std::vector<Variant>& ary)
+        {
+            Vector2 rv{};
+            for (size_t i = 0; i < min(rv.size(), ary.size()); ++i) {
+                rv[i] = static_cast<float>(ary[i]);
+            }
+            return rv;
+        }
     }, data_);
 }
 
@@ -209,6 +256,29 @@ osc::Variant::operator osc::Vector3() const
         [](std::string_view)      { return Vector3{}; },
         [](const Vector2& v)      { return Vector3{v, 0.0f}; },
         [](const Vector3& v)      { return v; },
+        [](const std::vector<Variant>& ary)
+        {
+            Vector3 rv{};
+            for (size_t i = 0; i < min(rv.size(), ary.size()); ++i) {
+                rv[i] = static_cast<float>(ary[i]);
+            }
+            return rv;
+        }
+    }, data_);
+}
+
+osc::Variant::operator std::vector<Variant>() const
+{
+    return std::visit(Overload{
+        [](const std::monostate&)           { return std::vector<Variant>{}; },
+        [](const bool& v)                   { return std::vector<Variant>{Variant{v}}; },
+        [](const Color& v)                  { return std::vector<Variant>{Variant{v.r}, Variant{v.g}, Variant{v.b}, Variant{v.a}}; },
+        [](const float& v)                  { return std::vector<Variant>{Variant{v}}; },
+        [](const int& v)                    { return std::vector<Variant>{Variant{v}}; },
+        [](std::string_view v)              { return std::vector<Variant>{Variant{v}}; },
+        [](const Vector2& v)                { return std::vector<Variant>{Variant{v.x}, Variant{v.y}}; },
+        [](const Vector3& v)                { return std::vector<Variant>{Variant{v.x}, Variant{v.y}, Variant{v.z}}; },
+        [](const std::vector<Variant>& ary) { return ary; },
     }, data_);
 }
 
@@ -260,10 +330,5 @@ size_t std::hash<osc::Variant>::operator()(const Variant& variant) const
     //
     //     `hash_of(Variant) == hash_of(std::string) == hash_of(std::string_view) == hash_of(StringName)...`
 
-    return std::visit(Overload{
-        []<typename T>(const T& inner)
-        {
-            return std::hash<std::remove_cvref_t<T>>{}(inner);
-        },
-    }, variant.data_);
+    return std::visit(Overload{[](const auto& inner) { return hash_of(inner); }}, variant.data_);
 }

@@ -14,6 +14,7 @@ namespace osc
         VariantType::String,
         VariantType::StringName,
         VariantType::Vector2,
-        VariantType::Vector3
+        VariantType::Vector3,
+        VariantType::VariantArray
     >;
 }

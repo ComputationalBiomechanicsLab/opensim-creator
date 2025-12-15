@@ -12,6 +12,7 @@
 #include <string_view>
 #include <string>
 #include <variant>
+#include <vector>
 
 namespace osc
 {
@@ -32,6 +33,7 @@ namespace osc
         explicit Variant(const StringName&);
         explicit Variant(Vector2);
         explicit Variant(Vector3);
+        explicit Variant(std::vector<Variant>);
 
         ~Variant() noexcept;
 
@@ -49,6 +51,7 @@ namespace osc
         explicit operator StringName() const;
         explicit operator Vector2() const;
         explicit operator Vector3() const;
+        explicit operator std::vector<Variant>() const;
 
         friend bool operator==(const Variant&, const Variant&);
         friend void swap(Variant&, Variant&) noexcept;
@@ -65,7 +68,8 @@ namespace osc
             std::string,
             StringName,
             Vector2,
-            Vector3
+            Vector3,
+            std::vector<Variant>
         > data_;
     };
 

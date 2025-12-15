@@ -52,4 +52,9 @@ namespace osc
     struct VariantTypeTraits<VariantType::Vector3> {
         static inline constexpr CStringView name = "Vector3";
     };
+
+    template<>
+    struct VariantTypeTraits<VariantType::VariantArray> {
+        static inline constexpr CStringView name = "VariantArray";
+    };
 }

@@ -28,6 +28,7 @@ namespace
         {VariantType::StringName, "StringName"},
         {VariantType::Vector2, "Vector2"},
         {VariantType::Vector3, "Vector3"},
+        {VariantType::VariantArray, "VariantArray"},
     });
     static_assert(num_options<VariantType>() == std::tuple_size<decltype(c_expected_variant_type_strings)>());
 }

@@ -14,6 +14,7 @@ namespace osc
         StringName,
         Vector2,
         Vector3,
+        VariantArray,
         NUM_OPTIONS
     };
 
