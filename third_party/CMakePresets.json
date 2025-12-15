@@ -11,6 +11,16 @@
             }
         },
         {
+            "name": "Development-Inlined",
+            "inherits": "Development",
+            "cacheVariables": {
+                "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
+                "OSCDEPS_BUILD_OPYNSIM": "OFF",
+                "OSCDEPS_BUILD_OSCAR_DEPS": "ON",
+                "OSCDEPS_BUILD_OSCAR": "OFF"
+            }
+        },
+        {
             "name": "ErrorCheck",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/ErrorCheck",
@@ -65,10 +75,11 @@
         }
     ],
     "buildPresets": [
-        { "name": "Development",         "configurePreset": "Development" },
-        { "name": "ErrorCheck",          "configurePreset": "ErrorCheck" },
-        { "name": "RelWithDebInfo",      "configurePreset": "RelWithDebInfo" },
-        { "name": "Release",             "configurePreset": "Release" },
+        { "name": "Development",         "configurePreset": "Development"         },
+        { "name": "Development-Inlined", "configurePreset": "Development-Inlined" },
+        { "name": "ErrorCheck",          "configurePreset": "ErrorCheck"          },
+        { "name": "RelWithDebInfo",      "configurePreset": "RelWithDebInfo"      },
+        { "name": "Release",             "configurePreset": "Release"             },
         { "name": "Release-MacOS-amd64", "configurePreset": "Release-MacOS-amd64" },
         { "name": "Release-MacOS-arm64", "configurePreset": "Release-MacOS-arm64" }
     ],
@@ -78,6 +89,13 @@
             "steps": [
                 { "type": "configure", "name": "Development" },
                 { "type": "build",     "name": "Development" }
+            ]
+        },
+        {
+            "name": "Development-Inlined",
+            "steps": [
+                { "type": "configure", "name": "Development-Inlined" },
+                { "type": "build",     "name": "Development-Inlined" }
             ]
         },
         {

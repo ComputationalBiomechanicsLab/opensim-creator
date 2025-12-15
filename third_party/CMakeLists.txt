@@ -4,8 +4,10 @@ project(osc-dependencies)
 include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)   # CMAKE_INSTALL_LIBDIR
 
-option(OSCDEPS_BUILD_OPYNSIM "Build opynsim"         ON)
-option(OSCDEPS_BUILD_OSCAR   "Build oscar"           ON)
+option(OSCDEPS_BUILD_OPYNSIM_DEPS "Build opynsim's transitive dependencies" ON)
+option(OSCDEPS_BUILD_OPYNSIM      "Build opynsim"                           ON)
+option(OSCDEPS_BUILD_OSCAR_DEPS   "Build oscar's transitive dependencies"   ON)
+option(OSCDEPS_BUILD_OSCAR        "Build oscar"                             ON)
 
 # set OSCDEPS_BUILD_ALWAYS
 if(TRUE)
@@ -55,7 +57,7 @@ if(TRUE)
     unset(_oscdeps_forwarded_vars)
 endif()
 
-if(OSCDEPS_BUILD_OPYNSIM)
+if(OSCDEPS_BUILD_OPYNSIM_DEPS)
     ExternalProject_Add(opyndeps
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opynsim/third_party
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
@@ -65,8 +67,10 @@ if(OSCDEPS_BUILD_OPYNSIM)
             -DBUILD_TESTING:BOOL=OFF
             -DOPYNDEPS_BUILD_ROBIN_MAP:BOOL=OFF
     )
+endif()
+
+if(OSCDEPS_BUILD_OPYNSIM)
     ExternalProject_Add(opynsim
-        DEPENDS opyndeps
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opynsim
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
@@ -78,9 +82,12 @@ if(OSCDEPS_BUILD_OPYNSIM)
             -DOPYN_USE_STRICT_COMPILER_FLAGS:BOOL=OFF
             -DOPYN_PACKAGE:BOOL=OFF
     )
+    if(OSCDEPS_BUILD_OPYNSIM_DEPS)
+        add_dependencies(opynsim opyndeps)
+    endif()
 endif()
 
-if(OSCDEPS_BUILD_OSCAR)
+if(OSCDEPS_BUILD_OSCAR_DEPS)
     ExternalProject_Add(oscdeps
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oscar/third_party
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
@@ -89,8 +96,10 @@ if(OSCDEPS_BUILD_OSCAR)
             ${_oscdeps_dependency_cmake_args}
             -DBUILD_TESTING:BOOL=OFF
     )
+endif()
+
+if(OSCDEPS_BUILD_OSCAR)
     ExternalProject_Add(oscar
-        DEPENDS oscdeps
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oscar
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
@@ -99,4 +108,7 @@ if(OSCDEPS_BUILD_OSCAR)
             -DBUILD_TESTING:BOOL=OFF
             -DOSCAR_BUILD_HELLOOSCAR:BOOL=OFF
     )
+    if(OSCDEPS_BUILD_OSCAR_DEPS)
+        add_dependencies(oscar oscdeps)
+    endif()
 endif()
