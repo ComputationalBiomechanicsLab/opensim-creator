@@ -104,9 +104,4 @@ namespace osc
     private:
         std::shared_ptr<Impl> impl_;
     };
-
-    // returns a filesystem path to the application's `resources/` directory. Uses heuristics
-    // to figure out where it is if the provided `AppSettings` doesn't contain the necessary
-    // information
-    std::filesystem::path get_resource_dir_from_settings(const AppSettings&);
 }

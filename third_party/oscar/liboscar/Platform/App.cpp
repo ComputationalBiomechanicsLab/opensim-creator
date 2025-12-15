@@ -483,6 +483,72 @@ namespace
         return rv;
     }
 
+    std::filesystem::path get_resources_dir_fallback_path(const AppSettings& settings)
+    {
+        if (const auto system_config = settings.system_configuration_file_location()) {
+
+            auto resources_dir_path = system_config->parent_path() / "resources";
+            if (std::filesystem::exists(resources_dir_path)) {
+                return resources_dir_path;
+            }
+            else {
+                log_warn("resources path fallback: tried %s, but it doesn't exist", resources_dir_path.string().c_str());
+            }
+        }
+
+        auto resources_relative_to_exe = current_executable_directory().parent_path() / "resources";
+        if (std::filesystem::exists(resources_relative_to_exe)) {
+            return resources_relative_to_exe;
+        }
+        else {
+            log_warn("resources path fallback: using %s as a filler entry, but it doesn't actually exist: the application's configuration file has an incorrect/missing 'resources' key", resources_relative_to_exe.string().c_str());
+        }
+
+        return resources_relative_to_exe;
+    }
+
+    // returns a filesystem path to the application's `resources/` directory. Uses heuristics
+    // to figure out where it is if the provided `AppSettings` doesn't contain the necessary
+    // information
+    std::filesystem::path get_resource_dir_from_settings(const AppSettings& settings)
+    {
+        // care: the resources directory is _very_, __very__ important
+        //
+        // if the application can't find resources, then it'll _probably_ fail to
+        // boot correctly, which will result in great disappointment, so this code
+        // has to try its best
+
+        constexpr CStringView resources_key = "resources";
+
+        const auto resources_dir_setting_value = settings.find_value(resources_key);
+        if (not resources_dir_setting_value) {
+            return get_resources_dir_fallback_path(settings);
+        }
+
+        if (resources_dir_setting_value->type() != VariantType::String) {
+            log_error("application setting for '%s' is not a string: falling back", resources_key.c_str());
+            return get_resources_dir_fallback_path(settings);
+        }
+
+        // resolve `resources` dir relative to the configuration file in which it was defined
+        std::filesystem::path config_file_dir;
+        if (const auto p = settings.find_value_filesystem_source(resources_key)) {
+            config_file_dir = p->parent_path();
+        }
+        else {
+            config_file_dir = current_executable_directory().parent_path();  // assume the `bin/` dir is one-up from the settings
+        }
+        const std::filesystem::path configured_resources_dir{to<std::string>(*resources_dir_setting_value)};
+
+        auto resolved_resource_dir = std::filesystem::weakly_canonical(config_file_dir / configured_resources_dir);
+        if (not std::filesystem::exists(resolved_resource_dir)) {
+            log_error("'resources', in the application configuration, points to a location that does not exist (%s), so the application may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attemtping to fallback to a default resources location (which may or may not work).", resolved_resource_dir.string().c_str());
+            return get_resources_dir_fallback_path(settings);
+        }
+
+        return resolved_resource_dir;
+    }
+
     std::filesystem::path get_current_resources_path_and_log_it(const AppSettings& settings)
     {
         auto rv = get_resource_dir_from_settings(settings);
