@@ -2191,6 +2191,11 @@ namespace
                 }
             }
 
+            // Ensure the scaled model doesn't refer to the same filepath as the source
+            // model, because it's  quite dangerous if the user can save over their source
+            // model easily (#1146).
+            copy->setInputFileName("");
+
             // Make the model undo-able
             auto undoableModel = std::make_unique<UndoableModelStatePair>(std::move(copy));
 

@@ -49,6 +49,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   separately from OpenSim/simbody/OPynSim.
 - The model warper now has a `ThinPlateSplineBodyCenterOfMassScalingStep`, which can be used
   to TPS-warp a body's center-of-mass as part of a model warping procedure (#1147).
+- The model warper now clears the filepath of the exported/warped model, so that it's harder
+  to accidentally save the warped model over the source model (#1146).
 
 
 ## [0.6.2] - 2025/11/03
