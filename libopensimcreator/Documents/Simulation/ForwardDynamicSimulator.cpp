@@ -258,7 +258,7 @@ namespace
 
     // this is the main function that the simulator thread works through (unguarded against exceptions)
     SimulationStatus FdSimulationMainUnguarded(
-        cpp20::stop_token stopToken,
+        cpp20::stop_token stopToken,  // NOLINT(performance-unnecessary-value-param)
         SimulatorThreadInput& input,
         SharedState& shared)
     {
