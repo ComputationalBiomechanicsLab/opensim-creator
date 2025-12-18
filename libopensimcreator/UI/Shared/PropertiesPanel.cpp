@@ -87,6 +87,7 @@ namespace
             if (ui::should_save_last_drawn_item_value()) {
                 ActionSetComponentName(*m_Model, GetAbsolutePath(*selected), m_EditedName);
             }
+            ui::add_screenshot_annotation_to_last_drawn_item("PropertiesPanel/name");
 
             ui::next_column();
 
