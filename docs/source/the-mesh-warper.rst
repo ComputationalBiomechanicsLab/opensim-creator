@@ -102,7 +102,11 @@ OpenSim Creator's mesh warping UI, which internally uses the TPS algorithm:
   to any point in the source space to warp it into the destination space. E.g.
   in the mesh warping UI, the transform is applied to the *source mesh* to produce
   the *result mesh*. It's also applied to *non-participating landmarks*
-  to produce warped data points.
+  to produce warped data points. Additionally, the warp transform can be separated
+  into ``scale``, ``rotate``, ``translate``, and ``warp`` components. This is useful for
+  removing the rigid transform (``rotate`` and ``translate``), which is usually due to
+  things like subject orientation, from the warp transform. ``rotate`` and
+  ``translate`` are disabled by default for this reason.
 
 - **Result Mesh** is the result of applying the *warp transform* to the *source mesh*.
 
@@ -135,26 +139,26 @@ Mesh Warping UI Overview
     *Middle*: the destination mesh, with paired destination landmarks shown in green.
     *Right*: the result mesh, with the source mesh overlaid in red.
 
-The mesh warping UI uses separate windows to display relevant warp information. You can
-toggle each window from the ``Window`` menu at the top of the UI. Here is how each
-window relates to mesh warping and the TPS technique:
+The mesh warping UI uses separate panels to display relevant warp information. You can
+toggle each panel from the ``Window`` menu at the top of the UI. Here is how each
+panel relates to mesh warping and the TPS technique:
 
-- **Source Mesh (window)**: shows the source mesh, source landmarks,
+- **Source Mesh (panel)**: shows the source mesh, source landmarks,
   and non-participating landmarks. Source landmarks that have no corresponding
   destination landmark (an unpaired source landmark) are displayed in :red:`red`,
   paired landmarks in :green:`green`, and non-participating landmarks in :purple:`purple`.
 
-- **Destination Mesh (window)**: shows the destination mesh and destination landmarks.
+- **Destination Mesh (panel)**: shows the destination mesh and destination landmarks.
   Destination landmarks that have no corresponding source landmark (an unpaired
   destination landmark) are displayed in :red:`red`, paired landmarks in :green:`green`.
 
-- **Result (window)**: shows the result mesh and any warped non-participating landmarks.
+- **Result (panel)**: shows the result mesh and any warped non-participating landmarks.
   There's also an option to overlay the destination mesh in this panel, which helps with
   evaluating how closely the result mesh (made by warping the source mesh) matches the
-  destination mesh. There is also a ``Blending Factor`` control, which enables blending
+  destination mesh. The ``Blending Factor`` control enables blending
   between "not warped" (i.e. source data) and "fully warped" on a linear scale.
 
-- **Landmark Navigator (window)**: shows each (source/destination/non-participating)
+- **Landmark Navigator (panel)**: shows each (source/destination/non-participating)
   landmark the UI is editing. This is handy when editing many landmarks.
 
 - **Toolbar (top)**: the main feature of note here is the ability

@@ -10,8 +10,10 @@ osc::TPSDocument::TPSDocument() :
     recalculateNormals{false},
     sourceLandmarksPrescale{1.0f},
     destinationLandmarksPrescale{1.0f},
-    applyAffineTranslation{true},
+
+    // note: These should ideally match the model warper's defaults (#1122).
+    applyAffineTranslation{false},
     applyAffineScale{true},
-    applyAffineRotation{true},
+    applyAffineRotation{false},
     applyNonAffineWarp{true}
 {}

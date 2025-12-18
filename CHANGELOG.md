@@ -53,6 +53,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   to accidentally save the warped model over the source model (#1146).
 - Fixed body Center of Mass visualization was missing half of their segments (the ones flipped
   via a negative scale) after backface culling was enabled (#1150).
+- The mesh warper workflow now only applies the `scale` and `warp` components of the TPS warp
+  to the source mesh to yield the result mesh (previously, it applied `scale`, `rotate`, `translate`
+  and `warp`), which matches the model warper workflow's defaults (#1122).
 
 
 ## [0.6.2] - 2025/11/03
