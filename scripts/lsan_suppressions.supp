@@ -1,0 +1,2 @@
+leak:/lib/x86_64-linux-gnu/libnvidia-glcore.so
+leak:OpenSim::Coordinate
