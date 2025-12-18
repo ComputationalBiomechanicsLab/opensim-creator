@@ -47,6 +47,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   is effectively a separated refactor of OpenSim Creator's existing engine. This is mostly an
   organizational change for @adamkewley that enables building new OpenSim Creator-like UIs
   separately from OpenSim/simbody/OPynSim.
+- The model warper now has a `ThinPlateSplineBodyCenterOfMassScalingStep`, which can be used
+  to TPS-warp a body's center-of-mass as part of a model warping procedure (#1147).
 
 
 ## [0.6.2] - 2025/11/03
