@@ -752,59 +752,40 @@ namespace
         Transform t = TransformInGround(b, rs.getState());
         t.translation = t * to<Vector3>(b.getMassCenter());
         t.scale = Vector3{radius};
+        constexpr SceneDecorationFlags flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull};
 
-        // draw four octants with the first color
+        // Draw four sphere octants in the first color
         rs.consume(b, SceneDecoration{
             .mesh = rs.sphere_octant_mesh(),
             .transform = t,
             .shading = c_CenterOfMassFirstColor,
-            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
+            .flags = flags,
         });
-        rs.consume(b, SceneDecoration{
-            .mesh = rs.sphere_octant_mesh(),
-            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::x())),
-            .shading = c_CenterOfMassFirstColor,
-            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
-        });
-        rs.consume(b, SceneDecoration{
-            .mesh = rs.sphere_octant_mesh(),
-            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::y())),
-            .shading = c_CenterOfMassFirstColor,
-            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
-        });
-        rs.consume(b, SceneDecoration{
-            .mesh = rs.sphere_octant_mesh(),
-            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::z())),
-            .shading = c_CenterOfMassFirstColor,
-            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
-        });
+        for (auto&& axis : {CoordinateDirection::x(), CoordinateDirection::y(), CoordinateDirection::z()}) {
+            rs.consume(b, SceneDecoration{
+                .mesh = rs.sphere_octant_mesh(),
+                .transform = t.with_rotation(t.rotation * angle_axis(180_deg, axis)),
+                .shading = c_CenterOfMassFirstColor,
+                .flags = flags,
+            });
+        }
 
-        // draw four octants with the second color
-        t.scale.x *= -1.0f;  // mirror image along one plane
+        // Draw four sphere octants with the second color
+        t = t.with_rotation(t.rotation * angle_axis(90_deg, CoordinateDirection::x()));  // start rotated 90 degrees
         rs.consume(b, SceneDecoration{
             .mesh = rs.sphere_octant_mesh(),
             .transform = t,
             .shading = c_CenterOfMassSecondColor,
-            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
+            .flags = flags,
         });
-        rs.consume(b, SceneDecoration{
-            .mesh = rs.sphere_octant_mesh(),
-            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::x())),
-            .shading = c_CenterOfMassSecondColor,
-            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
-        });
-        rs.consume(b, SceneDecoration{
-            .mesh = rs.sphere_octant_mesh(),
-            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::y())),
-            .shading = c_CenterOfMassSecondColor,
-            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
-        });
-        rs.consume(b, SceneDecoration{
-            .mesh = rs.sphere_octant_mesh(),
-            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::z())),
-            .shading = c_CenterOfMassSecondColor,
-            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
-        });
+        for (auto&& axis : {CoordinateDirection::x(), CoordinateDirection::y(), CoordinateDirection::z()}) {
+            rs.consume(b, SceneDecoration{
+                .mesh = rs.sphere_octant_mesh(),
+                .transform = t.with_rotation(t.rotation * angle_axis(180_deg, axis)),
+                .shading = c_CenterOfMassSecondColor,
+                .flags = flags,
+            });
+        }
     }
 
     // OSC-specific decoration handler for `OpenSim::Body`

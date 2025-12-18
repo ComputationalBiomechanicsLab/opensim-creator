@@ -51,6 +51,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   to TPS-warp a body's center-of-mass as part of a model warping procedure (#1147).
 - The model warper now clears the filepath of the exported/warped model, so that it's harder
   to accidentally save the warped model over the source model (#1146).
+- Fixed body Center of Mass visualization was missing half of their segments (the ones flipped
+  via a negative scale) after backface culling was enabled (#1150).
 
 
 ## [0.6.2] - 2025/11/03
