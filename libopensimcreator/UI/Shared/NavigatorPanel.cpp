@@ -223,9 +223,10 @@ private:
 
             // pop tree nodes down to the current depth
             while (imguiTreeDepth >= std::ssize(currentPath)) {
+                --imguiTreeDepth;
                 ui::indent(unindentPerLevel);
                 ui::tree_pop();
-                --imguiTreeDepth;
+                ui::pop_id();
             }
             OSC_ASSERT(imguiTreeDepth <= std::ssize(currentPath) - 1);
 
@@ -275,7 +276,9 @@ private:
                 ui::unindent(unindentPerLevel);
                 ++imguiTreeDepth;
             }
-            ui::pop_id();
+            else {
+                ui::pop_id();
+            }
             ui::pop_style_color(pushedStyles);
 
             // handle tree node user interaction
@@ -310,6 +313,7 @@ private:
         while (imguiTreeDepth-- > 0) {
             ui::indent(unindentPerLevel);
             ui::tree_pop();
+            ui::pop_id();
         }
 
         // cache the previous selection path, so we can observe when it has changed (#908)
