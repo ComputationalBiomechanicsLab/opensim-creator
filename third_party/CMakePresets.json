@@ -12,8 +12,11 @@
         },
         {
             "name": "Development-Inlined",
-            "inherits": "Development",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/../build/third_party/Development-Inlined",
             "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development-Inlined/install",
                 "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
                 "OSCDEPS_BUILD_OPYNSIM": "OFF",
                 "OSCDEPS_BUILD_OSCAR_DEPS": "ON",
@@ -31,6 +34,19 @@
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_CXX_FLAGS": "-fsanitize=address",
                 "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address"
+            }
+        },
+        {
+            "name": "Debug-Inlined",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/../build/third_party/Debug-Inlined",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Debug-Inlined/install",
+                "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
+                "OSCDEPS_BUILD_OPYNSIM": "OFF",
+                "OSCDEPS_BUILD_OSCAR_DEPS": "ON",
+                "OSCDEPS_BUILD_OSCAR": "OFF"
             }
         },
         {
@@ -80,6 +96,7 @@
         { "name": "Development",         "configurePreset": "Development"         },
         { "name": "Development-Inlined", "configurePreset": "Development-Inlined" },
         { "name": "ErrorCheck",          "configurePreset": "ErrorCheck"          },
+        { "name": "Debug-Inlined",       "configurePreset": "Debug-Inlined"},
         { "name": "RelWithDebInfo",      "configurePreset": "RelWithDebInfo"      },
         { "name": "Release",             "configurePreset": "Release"             },
         { "name": "Release-MacOS-amd64", "configurePreset": "Release-MacOS-amd64" },
@@ -105,6 +122,13 @@
             "steps": [
                 { "type": "configure", "name": "ErrorCheck" },
                 { "type": "build",     "name": "ErrorCheck" }
+            ]
+        },
+        {
+            "name": "Debug-Inlined",
+            "steps": [
+                { "type": "configure", "name": "Debug-Inlined" },
+                { "type": "build",     "name": "Debug-Inlined" }
             ]
         },
         {
