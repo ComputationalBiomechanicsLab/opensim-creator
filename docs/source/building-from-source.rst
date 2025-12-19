@@ -22,9 +22,8 @@ Windows Environment Setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The OpenSim Creator build requires that the development environment has ``git``,
-a C++-20 compiler, cmake, ``WiX``/``NSIS`` (if packaging an installer), and ``python``
-(to run ``build.py``, build script bindings, and build this documentation). Here
-is a step-by-step guide for setting up a typical development environment:
+a C++-20 compiler, cmake, ``WiX``/``NSIS`` (if packaging an installer), and ``python``.
+Here is a step-by-step guide for setting up a typical development environment:
 
 1. Get ``git``:
     1. Download and install ``git`` from https://git-scm.com/downloads
@@ -64,14 +63,14 @@ is a step-by-step guide for setting up a typical development environment:
     2. The resulting ``opensim-creator`` directory should contain all necessary
        source code to build the project (incl. third_party code etc.)
 
-8. Install ``pip`` package dependencies (if building these documentation pages):
+8. Install ``pip`` package dependencies:
     1. Using either a virtual environment (google it), or your base ``python``
        installation, ``cd`` into the ``opensim-creator`` directory in a terminal
-       and install the documentation package dependencies with:
+       and install python dependencies with:
 
 .. code-block:: bash
 
-    pip install -r docs/requirements.txt -r docs/requirements-dev.txt
+    pip install -r requirements/all_requirements.txt
 
 
 Windows Build
@@ -128,9 +127,9 @@ Building on Ubuntu (22.04 or newer)
     1. Clone ``opensim-creator``: ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``
     2. ``cd`` into the source dir: ``cd opensim-creator``
     3. The remaining build steps are performed in the source directory
-6. Get python libraries (*optional*: you only need this if you want to build documentation):
+6. Get python libraries:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
-    2. Install all necessary python libraries into your current python environment with ``pip install -r docs/requirements.txt -r docs/requirements-dev.txt```
+    2. Install all necessary python libraries into your current python environment with ``pip install -r requirements/all_requirements.txt``
 7. Build OpenSim Creator from source:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Run the build script, you can use the ``CC`` and ``CXX`` environment variables to choose
