@@ -123,7 +123,7 @@
             "execution": {"noTestsAction": "error"},
             "environment": {
                 "ASAN_OPTIONS": "abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=false:detect_stack_use_after_return=true:strict_init_order=false",
-                "LSAN_OPTIONS": "suppressions=${sourceDir}/scripts/lsan_suppressions.supp",
+                "LSAN_OPTIONS": "suppressions=${sourceDir}/scripts/suppressions_lsan.supp",
                 "LIBGL_ALWAYS_SOFTWARE": "1"
             }
         },

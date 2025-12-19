@@ -10,3 +10,6 @@
 #
 # (this can be effectively necessary for high-perf rendering via WSL)
 export MESA_D3D12_DEFAULT_ADAPTER_NAME=nvidia  #  alternatively, intel
+
+# A session DBUS must be launched in order for the file dialogs to work.
+eval $(dbus-launch --sh-syntax)

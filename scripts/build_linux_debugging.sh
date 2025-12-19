@@ -11,4 +11,3 @@ cd third_party && cmake --workflow --preset ErrorCheck && cd -
 
 # configure+build+test OpenSim Creator
 cmake --workflow --preset ErrorCheck
-
