@@ -230,7 +230,13 @@ private:
             plot::push_style_var(plot::PlotStyleVar::PlotPadding, {0.0f, 0.0f});
             plot::push_style_var(plot::PlotStyleVar::PlotBorderSize, 0.0f);
             plot::push_style_var(plot::PlotStyleVar::FitPadding, {0.0f, 1.0f});
-            const auto flags = plot::PlotFlags::NoTitle | plot::PlotFlags::NoLegend | plot::PlotFlags::NoInputs | plot::PlotFlags::NoMenus | plot::PlotFlags::NoBoxSelect | plot::PlotFlags::NoFrame;
+            const auto flags =
+                plot::PlotFlags::NoTitle |
+                plot::PlotFlags::NoLegend |
+                plot::PlotFlags::NoMenus |
+                plot::PlotFlags::NoBoxSelect |
+                plot::PlotFlags::NoFrame |
+                plot::PlotFlags::NoMouseText;
 
             if (plot::begin("##", {plotWidth, m_Height}, flags)) {
                 plot::setup_axis(plot::Axis::X1, std::nullopt, plot::AxisFlags::NoDecorations | plot::AxisFlags::NoMenus | plot::AxisFlags::AutoFit);
@@ -249,7 +255,7 @@ private:
             plot::pop_style_var();
             plot::pop_style_var();
         }
-        bool plotIsHovered = ui::is_item_hovered(ui::HoveredFlag::AllowWhenOverlapped);
+        bool plotIsHovered = ui::is_item_hovered();
 
         // if the user right-clicks, draw a context menu
         TryDrawOutputContextMenuForLastItem(*m_API, sim, m_OutputExtractor);
