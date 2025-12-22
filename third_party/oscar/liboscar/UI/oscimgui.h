@@ -608,6 +608,7 @@ namespace osc::ui
     float get_text_line_height_with_spacing_in_current_panel();
     float get_font_base_size();
     float get_font_base_size_with_spacing();
+    std::optional<Texture2D> get_font_texture();
 
     Vector2 calc_text_size(CStringView text, bool hide_text_after_double_hash = false);
 

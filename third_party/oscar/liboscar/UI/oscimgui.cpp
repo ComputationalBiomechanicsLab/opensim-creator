@@ -2621,6 +2621,26 @@ float osc::ui::get_font_base_size_with_spacing()
     return c_default_base_font_device_independent_pixel_size + ImGui::GetStyle().ItemSpacing.y;
 }
 
+std::optional<Texture2D> osc::ui::get_font_texture()
+{
+    auto* backend = try_get_ui_backend_data();
+    if (not backend) {
+        return std::nullopt;
+    }
+
+    auto* handle = backend->textures.lookup_texture(ImGui::GetIO().Fonts->TexRef.GetTexID());
+    if (not handle) {
+        return std::nullopt;
+    }
+
+    auto* texture2d = std::get_if<Texture2D>(handle);
+    if (not texture2d) {
+        return std::nullopt;
+    }
+
+    return *texture2d;
+}
+
 Vector2 osc::ui::calc_text_size(CStringView text, bool hide_text_after_double_hash)
 {
     return ImGui::CalcTextSize(text.c_str(), text.c_str() + text.size(), hide_text_after_double_hash);
