@@ -4252,9 +4252,16 @@ void osc::ui::plot::plot_line(CStringView name, std::span<const Vector2> points)
     );
 }
 
-void osc::ui::plot::plot_line(CStringView name, std::span<const float> points)
+void osc::ui::plot::plot_line(CStringView name, std::span<const float> y_values, std::optional<ClosedInterval<float>> x_range)
 {
-    ImPlot::PlotLine(name.c_str(), points.data(), static_cast<int>(points.size()));
+    double xscale = 1.0;
+    double xstart = 0.0;
+    if (x_range) {
+        xscale = x_range->length() / static_cast<float>(y_values.size());
+        xstart = x_range->lower;
+    }
+
+    ImPlot::PlotLine(name.c_str(), y_values.data(), static_cast<int>(y_values.size()), xscale, xstart);
 }
 
 Rect osc::ui::plot::get_plot_ui_rect()

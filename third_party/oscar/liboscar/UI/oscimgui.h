@@ -1317,7 +1317,7 @@ namespace osc::ui
 
         // plots a standard 2D line plot
         void plot_line(CStringView name, std::span<const Vector2> points);
-        void plot_line(CStringView name, std::span<const float> points);
+        void plot_line(CStringView name, std::span<const float> y_values, std::optional<ClosedInterval<float>> x_range = std::nullopt);
 
         // returns the plot's rectangle in ui space
         //
