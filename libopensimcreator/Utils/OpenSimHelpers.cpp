@@ -761,12 +761,14 @@ cpp23::generator<ComponentConnectionView> osc::ForEachInboundConnection(
         }
         for (const auto& socketName : subcomponent.getSocketNames()) {
             if (const auto* socket = subcomponent.tryGetSocket(socketName)) {
-                if (&socket->getConnecteeAsObject() == c) {
-                    co_yield ComponentConnectionView{
-                        subcomponent,  // source
-                        *c,            // target
-                        socketName,    // connection name
-                    };
+                for (unsigned int i = 0; i < socket->getNumConnectees(); ++i) {
+                    if (&socket->getConnecteeAsObject(static_cast<int>(i)) == c) {
+                        co_yield ComponentConnectionView{
+                            subcomponent,  // source
+                            *c,            // target
+                            socketName,    // connection name
+                        };
+                    }
                 }
             }
         }

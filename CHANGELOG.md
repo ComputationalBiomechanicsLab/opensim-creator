@@ -58,6 +58,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   and `warp`), which matches the model warper workflow's defaults (#1122).
 - Fixed an issue in the `oscar` backend where some icons (e.g. the playback buttons when running
   a new simulation) could sometimes be blank (#1145).
+- Fixed the sockets menu crashing with newer versions of OpenSim because `OpenSim::AbstractSocket::getConnecteeAsObject`
+  now requires an index argument (#1151).
 
 
 ## [0.6.2] - 2025/11/03
