@@ -104,6 +104,7 @@ class BuildConfiguration:
         self.notarization_enabled = None
         self.skip_osc = False
         self.skip_rendering_tests = False
+        self.headless_mode = True
         self.allowed_final_target_build_attempts = 1
         self.seconds_between_final_target_build_attempts = 2
 
@@ -173,6 +174,28 @@ class BuildConfiguration:
 
         return rv
 
+    def get_osc_ctest_extra_environment_variables(self):
+        rv = {}
+        if self.headless_mode:
+            rv["OSC_INTERNAL_HIDE_WINDOW"] = "1"
+        return rv
+
+    def get_excluded_tests(self):
+        if not self.skip_rendering_tests:
+            return []  # no tests excluded
+        else:
+            return [
+                "Graphics",
+                "MeshDepthWritingMaterialFixture",
+                "MeshNormalVectorsMaterialFixture",
+                "ShaderTest",
+                "MaterialTest",
+                "RegisteredDemoTabsTest",
+                "RegisteredOpenSimCreatorTabs",
+                "AddComponentPopup",
+                "LoadingTab",
+            ]
+
 # Represents a section (grouping, substep) of the build
 class Section:
     def __init__(self, name):
@@ -232,7 +255,9 @@ def build_osc(conf: BuildConfiguration):
         # test
         _run_ctest(
             test_dir=conf.get_osc_build_dir(),
-            concurrency=conf.concurrency
+            concurrency=conf.concurrency,
+            excluded_tests=conf.get_excluded_tests(),
+            extra_env_vars=conf.get_osc_ctest_extra_environment_variables()
         )
 
         # build final target (which might not be in ALL, e.g. `package`)
@@ -281,6 +306,7 @@ def main():
     parser.add_argument("--codesign-enabled", help="enable signing resulting binaries/package", default=conf.codesign_enabled, action="store_true")
     parser.add_argument("--notarization-enabled", help="enable notarizing the resulting binaries/package", default=conf.notarization_enabled, action="store_true")
     parser.add_argument("--skip-rendering-tests", help="skip tests that use the rendering subsystem", default=conf.skip_rendering_tests, action="store_true")
+    parser.add_argument("--headless", help="run tests is headless mode (i.e. don't show UI during UI tests)", default=conf.headless_mode, action="store_true")
     parser.add_argument("--allowed-final-target-build-attempts", help="the number of times the final build step is allowed to fail (can be handy when the packaging system is flakey)", type=int, default=conf.allowed_final_target_build_attempts)
     parser.add_argument("--seconds-between-final-target-build-attempts", help="the number of seconds that should be slept between final target build attempts", default=conf.seconds_between_final_target_build_attempts, type=int)
     if platform.system() == "Darwin":
@@ -299,6 +325,7 @@ def main():
     conf.codesign_enabled = args.codesign_enabled
     conf.notarization_enabled = args.notarization_enabled
     conf.skip_rendering_tests = args.skip_rendering_tests
+    conf.headless_mode = args.headless
     conf.allowed_final_target_build_attempts = args.allowed_final_target_build_attempts
     conf.seconds_between_final_target_build_attempts = args.seconds_between_final_target_build_attempts
     if platform.system() == "Darwin":
