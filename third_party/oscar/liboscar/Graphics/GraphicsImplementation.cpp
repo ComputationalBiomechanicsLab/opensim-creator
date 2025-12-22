@@ -1508,6 +1508,7 @@ public:
     {
         OSC_ASSERT(ssize(pixels) == area_of(pixel_dimensions_));
         convert_color32s_to_pixel_bytes(pixels, texture_format_, pixel_data_);
+        maybe_opengl_data_.reset();  // If the CPU pixel data changes, it should trigger a re-upload (#1145)
     }
 
     std::span<const uint8_t> pixel_data() const
@@ -1521,11 +1522,13 @@ public:
         OSC_ASSERT(pixel_components_row_by_row.size() == pixel_data_.size());
 
         rgs::copy(pixel_components_row_by_row, pixel_data_.begin());
+        maybe_opengl_data_.reset();  // If the CPU pixel data changes, it should trigger a re-upload (#1145)
     }
 
     void update_pixel_data(const std::function<void(std::span<uint8_t>)>& updater)
     {
         updater(pixel_data_);
+        maybe_opengl_data_.reset();  // If the CPU pixel data changes, it should trigger a re-upload (#1145)
     }
 
     // non PIMPL method

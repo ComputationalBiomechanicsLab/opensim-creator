@@ -544,6 +544,11 @@ namespace
         else {
             bd.camera.render_to_main_window();
         }
+
+        // Prevent UI material from retaining a potentially-stale
+        // texture handle, which can trigger additional copies
+        // whenever the texture is modified (#1145).
+        bd.ui_material.unset("uTexture");
     }
 
     void render_drawlist(

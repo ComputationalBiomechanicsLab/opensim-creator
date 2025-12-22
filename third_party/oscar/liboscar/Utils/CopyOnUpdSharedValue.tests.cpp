@@ -166,3 +166,24 @@ TEST(CopyOnUpdSharedValue, equality_compares_pointer_equivalence)
     ASSERT_EQ(reinterpret_cast<uintptr_t>(cow1.get()) % alignof(OveralignedStruct), 0u);
     ASSERT_EQ(reinterpret_cast<uintptr_t>(cow3.get()) % alignof(OveralignedStruct), 0u);
 }
+
+TEST(CopyOnUpdSharedValue, use_count_behaves_as_expected)
+{
+    const auto cow1 = make_cowv<TestStruct>(1);
+    ASSERT_EQ(cow1.use_count(), 1);
+    {
+        const auto cow2{cow1};
+        ASSERT_EQ(cow1.use_count(), 2);
+        ASSERT_EQ(cow2.use_count(), 2);
+    }
+    ASSERT_EQ(cow1.use_count(), 1);
+    const auto cow2{cow1};
+    {
+        const auto cow3{cow2};
+        ASSERT_EQ(cow1.use_count(), 3);
+        ASSERT_EQ(cow2.use_count(), 3);
+        ASSERT_EQ(cow3.use_count(), 3);
+    }
+    ASSERT_EQ(cow1.use_count(), 2);
+    ASSERT_EQ(cow2.use_count(), 2);
+}

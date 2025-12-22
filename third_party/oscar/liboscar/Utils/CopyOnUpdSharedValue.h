@@ -72,6 +72,8 @@ namespace osc
             return static_cast<T*>(ptr_->data);
         }
 
+        long use_count() const noexcept { return ptr_->owners; }
+
     private:
         friend struct std::hash<CopyOnUpdSharedValue>;
 
@@ -84,7 +86,7 @@ namespace osc
                 data{data}
             {}
 
-            std::atomic<size_t> owners = 1;
+            std::atomic<long> owners = 1;
             void (*deleter)(ControlBlock*) noexcept;
             void* data;
         };
