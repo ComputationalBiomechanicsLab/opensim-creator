@@ -1128,10 +1128,11 @@ namespace osc::ui
             None        = 0,
             NoTitle     = 1<<0,
             NoLegend    = 1<<1,
+            NoMouseText = 1<<2,
+            NoInputs    = 1<<3,
             NoMenus     = 1<<4,
             NoBoxSelect = 1<<5,
             NoFrame     = 1<<6,
-            NoInputs    = 1<<3,
 
             Default     = None,
         };

@@ -4048,6 +4048,7 @@ namespace
         static_assert(std::to_underlying(plot::PlotFlags::NoBoxSelect) == ImPlotFlags_NoBoxSelect);
         static_assert(std::to_underlying(plot::PlotFlags::NoFrame) == ImPlotFlags_NoFrame);
         static_assert(std::to_underlying(plot::PlotFlags::NoInputs) == ImPlotFlags_NoInputs);
+        static_assert(std::to_underlying(plot::PlotFlags::NoMouseText) == ImPlotFlags_NoMouseText);
         return static_cast<ImPlotFlags>(flags);
     }
 
