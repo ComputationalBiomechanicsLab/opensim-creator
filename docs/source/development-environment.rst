@@ -55,7 +55,7 @@ Visual Studio 2022/2026
   - Right-click the ``osc`` CMake target and ``Set As Startup Project``, so that
     pressing ``F5`` will then build+run ``osc.exe``
   - (optional): switch the solution explorer view to a ``Folder View`` after doing
-    this: the CMake view is crap for developing osc
+    this: the CMake view is crap for developing OpenSim Creator
   - You should now be able to build+run ``osc`` from ``Visual Studio``
   - To run tests, open the ``Test Explorer`` tab, which should list all of the
     ``googletest`` tests in the project.

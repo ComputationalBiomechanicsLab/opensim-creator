@@ -60,6 +60,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   a new simulation) could sometimes be blank (#1145).
 - Fixed the sockets menu crashing with newer versions of OpenSim because `OpenSim::AbstractSocket::getConnecteeAsObject`
   now requires an index argument (#1151).
+- The MacOS application bundle is now called "OpenSim Creator" (previously: "osc"), which makes
+  it show the full application name in things like the Finder and Docking bar. A symlink and
+  `Info.plist` mention of `osc` should mean that any existing scripts that strongly depend on the
+  old name should work (you might need to update your `PATH`, though).
 
 
 ## [0.6.2] - 2025/11/03

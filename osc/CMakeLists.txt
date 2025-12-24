@@ -138,16 +138,24 @@ elseif(UNIX AND NOT APPLE)
     #     ${SOME_ROOT}/bin/osc (executable)
     set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
 elseif(APPLE)
-    # When building `osc` for Apple platforms, build it as a MacOSX bundle (enables using BUNDLE variables).
-    set_target_properties(osc PROPERTIES MACOSX_BUNDLE TRUE)
-
-    # Generate + specify a valid `Info.plist` file for the bundle.
+    # Generate + specify a valid `Info.plist` file for the Mac bundle.
     configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
-        @ONLY
+            "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
+            @ONLY
     )
+
+    # When building `osc` for Apple platforms, build it as a MacOSX bundle (enables using BUNDLE variables).
     set_target_properties(osc PROPERTIES
+        MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
+        OUTPUT_NAME "${OSC_LONG_APPNAME}"  # This is what users see in the docking bar etc.
+    )
+
+    # Create a symlink named 'osc' inside the bundle next to the main binary
+    add_custom_command(TARGET osc POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
+        "OpenSim Creator"
+        "$<TARGET_FILE_DIR:osc>/osc"
     )
 endif()

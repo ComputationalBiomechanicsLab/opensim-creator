@@ -284,10 +284,10 @@ def build_osc(conf: BuildConfiguration):
 
         if platform.system() == "Darwin":
             # On Mac, ensure all runtime dependencies are within a known whitelist
-            _run(["./scripts/test_macos-dependencies.py", os.path.join(conf.get_osc_build_dir(), "osc/osc.app/Contents/MacOS/osc")])
+            _run(["./scripts/test_macos-dependencies.py", os.path.join(conf.get_osc_build_dir(), "osc/OpenSim Creator.app/Contents/MacOS/osc")])
         if conf.osx_deployment_target:
             # If the caller specified a specific deployment target, ensure the binary has that target
-            _run(["./scripts/test_macos-uses-sdk.py", conf.osx_deployment_target, os.path.join(conf.get_osc_build_dir(), "osc/osc.app/Contents/MacOS/osc")])
+            _run(["./scripts/test_macos-uses-sdk.py", conf.osx_deployment_target, os.path.join(conf.get_osc_build_dir(), "osc/OpenSim Creator.app/Contents/MacOS/osc")])
 
 def main():
     logging.basicConfig(level=logging.DEBUG)

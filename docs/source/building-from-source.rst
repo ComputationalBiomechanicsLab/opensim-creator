@@ -6,7 +6,7 @@ Building From Source
 
 .. note::
 
-    The build instructions here are for general users who just want to build OSC.
+    The build instructions here are for general users who just want to build OpenSim Creator.
 
     Because everyone's C++ build environment is *slightly* different, there are
     no catch-all build instructions that will work for everyone. Instead, we

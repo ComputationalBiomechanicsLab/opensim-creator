@@ -1,7 +1,7 @@
 # Apple MacOS packaging script
 #
 # Creates a DMG (archive) installer that packages the whole application into
-# a single directory tree that can be dragged to /Applications/osc.app
+# a single directory tree that can be dragged to `/Applications`
 
 option(OSC_CODESIGN_ENABLED     "Enable codesigning the resulting app bundle and DMG file"    OFF)
 option(OSC_NOTARIZATION_ENABLED "Enable notarizing (xcrun notarytool) the resulting DMG file" OFF)
@@ -16,7 +16,7 @@ install(TARGETS osc BUNDLE DESTINATION .)
 
 # Generate + install the user-facing `osc.toml` file
 #
-# In contrast to the dev-centric one, this loads resources from the `osc.app/Resources/` dir,
+# In contrast to the dev-centric one, this loads resources from the bundle `Resources/` dir,
 # which has a known path relative to the osc executable (../Resources/osc.toml).
 set(OSC_CONFIG_RESOURCES_DIR ".")  # relative to `osc.toml`
 configure_file(
@@ -28,7 +28,7 @@ unset(OSC_CONFIG_RESOURCES_DIR)
 install(
     FILES       "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_macos.toml"
     RENAME      "osc.toml"
-    DESTINATION "osc.app/Contents/Resources"
+    DESTINATION "$<TARGET_BUNDLE_CONTENT_DIR:osc>/Resources"
 )
 
 # Install the `resources/` (assets) directory.
@@ -37,14 +37,14 @@ install(
         "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator"
         "$<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:${PROJECT_SOURCE_DIR}/resources/oscar_demos>"
 
-    DESTINATION "osc.app/Contents/Resources"
+    DESTINATION "$<TARGET_BUNDLE_CONTENT_DIR:osc>/Resources"
 )
 
 # Install the Mac-specific desktop icon (.icns).
 install(
     FILES       "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator/textures/logo.icns"
     RENAME      "osc.icns"  # must match `CFBundleIconFile` in `Info.plist
-    DESTINATION "osc.app/Contents/Resources"
+    DESTINATION "$<TARGET_BUNDLE_CONTENT_DIR:osc>/Resources"
 )
 
 # Ensure the installer is named `opensimcreator-${version}-macos-${arch}.dmg`.
@@ -70,19 +70,19 @@ if(OSC_CODESIGN_ENABLED)
 
     # Specify a script that signs the built binaries just before CPack creates the DMG.
     configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/MacOS/codesign_osc.app.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_osc.app.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/MacOS/codesign_app.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_app.cmake"
         @ONLY
     )
-    set(CPACK_PRE_BUILD_SCRIPTS "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_osc.app.cmake")
+    set(CPACK_PRE_BUILD_SCRIPTS "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_app.cmake")
 
     # Specify a script that signs the DMG after CPack creates it.
     configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/MacOS/codesign_osc.dmg.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_osc.dmg.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/MacOS/codesign_dmg.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_dmg.cmake"
         @ONLY
     )
-    list(APPEND CPACK_POST_BUILD_SCRIPTS "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_osc.dmg.cmake")
+    list(APPEND CPACK_POST_BUILD_SCRIPTS "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_dmg.cmake")
 endif()
 
 # Handle notarization (requires `OSC_CODESIGN_ENABLED`).
@@ -110,11 +110,11 @@ if(OSC_NOTARIZATION_ENABLED)
 
     # Specify a script that notarizes the DMG after CPack creates it and it's signed (above)
     configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/MacOS/notarize_osc.dmg.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/generated/notarize_osc.dmg.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/MacOS/notarize_dmg.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/notarize_dmg.cmake"
         @ONLY
     )
-    list(APPEND CPACK_POST_BUILD_SCRIPTS "${CMAKE_CURRENT_BINARY_DIR}/generated/notarize_osc.dmg.cmake")
+    list(APPEND CPACK_POST_BUILD_SCRIPTS "${CMAKE_CURRENT_BINARY_DIR}/generated/notarize_dmg.cmake")
 endif()
 
 # CPack variables are fully configured, so include CPack

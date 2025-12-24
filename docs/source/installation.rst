@@ -25,8 +25,8 @@ Installing on MacOS (Sonoma 14.5 or newer)
 
 - Download a ``dmg``-based installer from the `GitHub Releases Page`_
 - Double click the ``dmg`` file to mount it
-- Drag the ``osc`` icon into your ``Applications`` directory
-- Run ``osc`` from your applications folder
+- Drag the ``OpenSim Creator`` icon into your ``Applications`` directory
+- Run ``OpenSim Creator`` from your applications folder
 
 .. warning::
 
@@ -39,16 +39,16 @@ Installing on MacOS (Sonoma 14.5 or newer)
 
   **On Sequoia**: open a terminal and run ``xattr -cr /path/to/opensimcreator.dmg`` to
   clear any quarantine flags that MacOS added when the dmg was downloaded. Mount the
-  dmg (e.g. by double-clicking it), drag and drop ``osc`` into the ``Applications``
+  dmg (e.g. by double-clicking it), drag and drop ``OpenSim Creator`` into the ``Applications``
   directory. Try to run the application. MacOS will fail to open it this first
   time. Open the computer's system settings, go to ``Privacy & Security``, scroll
-  down, there should be something like ``osc was blocked to protect your
+  down, there should be something like ``OpenSim Creator was blocked to protect your
   mac``, click ``Open Anyway``. After doing this the first time, subsequent runs
   shouldn't require these steps.
 
   **On MacOSes older than Sequoia**: Mount the dmg (e.g. by double-clicking it), drag
-  and drop ``osc`` to the ``Applications`` directory. Open the ``Applications`` directory
-  and right-click ``osc``, click ``open``. MacOS will ask you whether you're sure
+  and drop ``OpenSim Creator`` to the ``Applications`` directory. Open the ``Applications`` directory
+  and right-click ``OpenSim Creator``, click ``open``. MacOS will ask you whether you're sure
   you want to open it (you are). After doing this the first time, subsequent runs
   shouldn't require these steps.
 
@@ -60,7 +60,7 @@ Installing on Ubuntu (22.04 or newer)
 - Double-click the ``.deb`` package and install it through your package manager UI.
 - **Alternatively**, you can install the ``deb`` file through the command line with:
 
-    apt-get install -yf ~/Downloads/osc-X.X.X_amd64.deb  #  or similar
+    apt-get install -yf ~/Downloads/opensimcreator-X.X.X_amd64.deb  #  or similar
 
 - Once installed, the ``osc`` or ``OpenSim Creator`` shortcuts should be available
   from your desktop, or you can browse to the installation location (``/opt/osc``)

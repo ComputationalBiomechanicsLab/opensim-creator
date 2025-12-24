@@ -22,7 +22,7 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Copy this checklist into it
     - [ ] Bump the VERSION in the top-level `CMakeLists.txt` accordingly
     - [ ] Use `scripts/build_linux_debugging.sh` to clean-build a debug (+ libASAN)
-          version of OSC on Ubuntu 24 (debugging os).
+          version of OpenSim Creator on Ubuntu 24 (debugging os).
     - [ ] Ensure the `clang-tidy` lints and test suite passes with the debug build
     - [ ] Ensure the test suite passes under valgrind (see: `scripts/build_linux_valgrind.sh`)
     - [ ] Manually spot-check new changes with the debug+ASAN build

@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleName</key>
-  <string>osc</string>
+  <string>OpenSim Creator</string>
 
   <key>CFBundleDisplayName</key>
   <string>OpenSim Creator (osc)</string>
@@ -20,12 +20,12 @@
   <string>@PROJECT_VERSION@</string>
 
   <key>CFBundleExecutable</key>
-  <string>osc</string>
+  <string>OpenSim Creator</string>
 
   <key>CFBundleIconFile</key>
   <string>osc</string>
 
-  <!-- liboscar natively supports HighDPI -->
+  <!-- the application natively supports HighDPI -->
   <key>NSHighResolutionCapable</key>
   <true/>
 
