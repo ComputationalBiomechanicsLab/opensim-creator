@@ -159,3 +159,7 @@ elseif(APPLE)
         "$<TARGET_FILE_DIR:osc>/osc"
     )
 endif()
+
+if (BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
