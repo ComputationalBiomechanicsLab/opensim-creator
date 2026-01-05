@@ -1,8 +1,10 @@
 include(CMakeDependentOption)
 
-option(                OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target" OFF)
-cmake_dependent_option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites"          ON BUILD_TESTING OFF)
-option(                OPYN_STABLE_ABI             "Perform a python stable ABI build" ON)
+option(BUILD_TESTING               "Build test suites"                    ON)
+option(OPYN_BUILD_TESTING          "Build test suites (OPynSim-specific)" ${BUILD_TESTING})
+option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites"             ${OPYN_BUILD_TESTING})
+option(OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target"    OFF)
+option(OPYN_STABLE_ABI             "Perform a python stable ABI build"    ON)
 
 # Figure out required python components
 set(OPYN_REQUIRED_PYTHON_COMPONENTS Interpreter)

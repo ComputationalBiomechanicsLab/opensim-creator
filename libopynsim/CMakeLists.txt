@@ -1,3 +1,5 @@
+option(BUILD_TESTING                  "Build test suites"                         ON)
+option(OPYN_BUILD_TESTING             "Build test suites (OPynSim-specific)"      ${BUILD_TESTING})
 option(OPYN_FORCE_ASSERTS_ENABLED "Enable OPynSim's runtime assertions - even if building a release build" ON)
 
 find_package(mdspan REQUIRED)
@@ -29,12 +31,12 @@ if(OPYN_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/opynsim_strict_compiler_options.cmake)
     target_compile_options(opynsim PRIVATE ${OPYN_STRICT_COMPILER_OPTIONS})
 endif()
-set_target_properties(opynsim PROPERTIES
-    CXX_EXTENSIONS            OFF
-    POSITION_INDEPENDENT_CODE ON  # for python bindings
-)
+set_target_properties(opynsim PROPERTIES CXX_EXTENSIONS OFF)
+if(OPYN_BUILD_PYTHON_BINDINGS)
+    set_target_properties(opynsim PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
 
-if(BUILD_TESTING)
+if(OPYN_BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 

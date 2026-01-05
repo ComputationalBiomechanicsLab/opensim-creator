@@ -3,10 +3,10 @@ forward-delcared without having access to the definition
 
 ---
 
-diff --git a/libosim/opensim-core/OpenSim/Analyses/OutputReporter.cpp b/libosim/opensim-core/OpenSim/Analyses/OutputReporter.cpp
+diff --git a/OpenSim/Analyses/OutputReporter.cpp b/OpenSim/Analyses/OutputReporter.cpp
 index 772dcfc4..8ea342b9 100644
---- a/libosim/opensim-core/OpenSim/Analyses/OutputReporter.cpp
-+++ b/libosim/opensim-core/OpenSim/Analyses/OutputReporter.cpp
+--- a/OpenSim/Analyses/OutputReporter.cpp
++++ b/OpenSim/Analyses/OutputReporter.cpp
 @@ -32,6 +32,13 @@
  using namespace OpenSim;
  using namespace std;
@@ -21,10 +21,10 @@ index 772dcfc4..8ea342b9 100644
  //=============================================================================
  // ANALYSIS
  //=============================================================================
-diff --git a/libosim/opensim-core/OpenSim/Analyses/OutputReporter.h b/libosim/opensim-core/OpenSim/Analyses/OutputReporter.h
+diff --git a/OpenSim/Analyses/OutputReporter.h b/OpenSim/Analyses/OutputReporter.h
 index 32fafb13..0b2c639a 100644
---- a/libosim/opensim-core/OpenSim/Analyses/OutputReporter.h
-+++ b/libosim/opensim-core/OpenSim/Analyses/OutputReporter.h
+--- a/OpenSim/Analyses/OutputReporter.h
++++ b/OpenSim/Analyses/OutputReporter.h
 @@ -28,6 +28,7 @@
  // INCLUDES
  //=============================================================================

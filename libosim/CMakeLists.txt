@@ -4,20 +4,15 @@ include(CMakePackageConfigHelpers)  # configure_package_config_file
 # BLAS/LAPACK: prefer using OpenBLAS if it has been installed
 # on the `CMAKE_PREFIX_PATH`, because the caller _probably_
 # wants the build to use that
+set(OPYN_USE_OPENBLAS OFF)
 foreach(_prefix IN LISTS CMAKE_PREFIX_PATH)
     if(EXISTS "${_prefix}/${CMAKE_INSTALL_LIBDIR}/cmake/OpenBLAS/OpenBLASConfig.cmake")
         find_package(OpenBLAS REQUIRED CONFIG)
-
-        # Alias FindBLAS/FindLAPACK targets
-        add_library(BLAS::BLAS INTERFACE IMPORTED)
-        add_library(LAPACK::LAPACK INTERFACE IMPORTED)
-        set_target_properties(BLAS::BLAS PROPERTIES INTERFACE_LINK_LIBRARIES OpenBLAS::OpenBLAS)
-        set_target_properties(LAPACK::LAPACK PROPERTIES INTERFACE_LINK_LIBRARIES OpenBLAS::OpenBLAS)
-
+        set(OPYN_USE_OPENBLAS ON)
         break()
     endif()
 endforeach()
-if(NOT OpenBLAS_FOUND)
+if(NOT OPYN_USE_OPENBLAS)
     # Fall back to system-provided BLAS/LAPACK
     find_package(BLAS    REQUIRED)
     find_package(LAPACK  REQUIRED)
@@ -687,17 +682,23 @@ PUBLIC
 )
 target_compile_features(osim PUBLIC cxx_std_20)
 
-target_link_libraries(osim
-PUBLIC
+target_link_libraries(osim PUBLIC
     ${CMAKE_DL_LIBS} # used by simbody (plugin loaders)
-    BLAS::BLAS       # used by simbody (linear algebra)
-    LAPACK::LAPACK   # used by simbody (linear algebra)
     spdlog::spdlog   # used by OpenSim (logging)
 )
+# BLAS/LAPACK/OpenBLAS is used by simbody for linear algebra.
+if(OPYN_USE_OPENBLAS)
+    target_link_libraries(osim PUBLIC OpenBLAS::OpenBLAS)
+else()
+    target_link_libraries(osim PUBLIC BLAS::BLAS LAPACK::LAPACK)
+endif()
 set_target_properties(osim PROPERTIES
-    POSITION_INDEPENDENT_CODE ON  # for python bindings
+    CXX_EXTENSIONS OFF
     CXX_CLANG_TIDY            ""  # do not statically analyze third-party code
 )
+if(OPYN_BUILD_PYTHON_BINDINGS)
+    set_target_properties(osim PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
 
 # Install osim such that it is header-compatible with OpenSim and
 # simbody projects (unofficial legacy project support).

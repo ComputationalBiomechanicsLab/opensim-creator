@@ -4,7 +4,7 @@
 if(OPYN_BUILD_PYTHON_BINDINGS)
 
     # Useful for test.pypi.org (e.g. version.dev{1,2,3})
-    set(OPYN_WHEEL_VERSION ${PROJECT_VERSION}.dev8)
+    set(OPYN_WHEEL_VERSION ${PROJECT_VERSION})
 
     # Find Python
     find_package(Python REQUIRED COMPONENTS Interpreter)

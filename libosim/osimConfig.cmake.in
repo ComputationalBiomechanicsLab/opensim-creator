@@ -1,12 +1,15 @@
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-# BLAS/LAPACK can be built into your CMAKE_PREFIX_PATH by
-# "superbuild"ing `opynsim/third_party`. However, you don't
-# have to: it's sometimes better to use the OS-provided
-# BLAS/LAPACK
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
+
+if(@OPYN_USE_OPENBLAS@)  # ON if `libosim` was compiled with OpenBLAS
+    find_package(OpenBLAS REQUIRED CONFIG)
+else()
+    # Fall back to system-provided BLAS/LAPACK
+    find_package(BLAS    REQUIRED)
+    find_package(LAPACK  REQUIRED)
+endif()
+
 # this should be built by the "superbuild"ing `opynsim/third_party`
 # because OpenSim strongly depends on a particular version of
 # spdlog (grrr)
