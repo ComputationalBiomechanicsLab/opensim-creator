@@ -1,7 +1,7 @@
 #include "ExportPointsPopup.h"
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
@@ -263,7 +263,7 @@ namespace
         const OpenSim::Model& model,
         const SimTK::State& state)
     {
-        ui::draw_button("Select" OSC_ICON_CARET_DOWN);
+        ui::draw_button("Select" MSMICONS_CARET_DOWN);
         if (ui::begin_popup_context_menu("##selectmenu", ui::PopupFlag::MouseButtonLeft))
         {
             DrawSelectionStateModifierMenuContent(
@@ -278,7 +278,7 @@ namespace
 
         ui::same_line();
 
-        ui::draw_button("De-Select" OSC_ICON_CARET_DOWN);
+        ui::draw_button("De-Select" MSMICONS_CARET_DOWN);
         if (ui::begin_popup_context_menu("##deselectmenu", ui::PopupFlag::MouseButtonLeft))
         {
             DrawSelectionStateModifierMenuContent(
@@ -578,7 +578,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(OSC_ICON_UPLOAD " Export to CSV"))
+        if (ui::draw_button(MSMICONS_UPLOAD " Export to CSV"))
         {
             ActionPromptUserForSaveLocationAndExportPoints(
                 m_Model->getModel(),

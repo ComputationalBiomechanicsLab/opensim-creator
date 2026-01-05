@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
@@ -85,7 +85,7 @@ private:
         ui::next_column();
         if (rgs::any_of(outputs, is_numeric, &OutputExtractor::getOutputType)) {
 
-            ui::draw_button(OSC_ICON_SAVE " Save All " OSC_ICON_CARET_DOWN);
+            ui::draw_button(MSMICONS_SAVE " Save All " MSMICONS_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft)) {
                 if (ui::draw_menu_item("as CSV")) {
                     m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs, false);

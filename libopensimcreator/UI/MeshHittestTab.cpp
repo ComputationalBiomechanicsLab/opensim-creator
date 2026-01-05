@@ -1,7 +1,7 @@
 #include "MeshHittestTab.h"
 
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 
 #include <liboscar/Graphics/Camera.h>
 #include <liboscar/Graphics/Color.h>
@@ -39,7 +39,7 @@ class osc::MeshHittestTab::Impl final : public TabPrivate {
 public:
 
     explicit Impl(MeshHittestTab& owner, Widget* parent) :
-        TabPrivate{owner, parent, OSC_ICON_COOKIE " MeshHittestTab"}
+        TabPrivate{owner, parent, MSMICONS_COOKIE " MeshHittestTab"}
     {
         m_Camera.set_background_color(Color::white());
     }

@@ -7,7 +7,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationModelStatePair.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <libopensimcreator/UI/Shared/ComponentContextMenu.h>
 #include <libopensimcreator/UI/Shared/CoordinateEditorPanel.h>
@@ -76,7 +76,7 @@ public:
         Widget* parent_,
         std::shared_ptr<Simulation> simulation_) :
 
-        TabPrivate{owner, parent_, OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
+        TabPrivate{owner, parent_, MSMICONS_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
         m_Simulation{std::move(simulation_)}
     {
         m_PanelManager->register_toggleable_panel(

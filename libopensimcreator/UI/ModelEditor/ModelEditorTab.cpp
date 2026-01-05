@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Events/AddMusclePlotEvent.h>
 #include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <libopensimcreator/UI/LoadingTab.h>
@@ -387,7 +387,7 @@ private:
     std::string computeTabName()
     {
         std::stringstream ss;
-        ss << OSC_ICON_EDIT << " ";
+        ss << MSMICONS_EDIT << " ";
         ss << RecommendedDocumentName(m_Model->getModel());
         return std::move(ss).str();
     }

@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>
@@ -76,7 +76,7 @@ public:
                 ui::table_next_row();
 
                 ui::table_set_column_index(column++);
-                if (ui::draw_small_button(OSC_ICON_TRASH)) {
+                if (ui::draw_small_button(MSMICONS_TRASH)) {
                     env->removeUserOutputExtractor(outputIdx);
                 }
                 ui::same_line();

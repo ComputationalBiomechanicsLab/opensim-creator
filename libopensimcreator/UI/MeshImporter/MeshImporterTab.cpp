@@ -16,7 +16,7 @@
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableActions.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/MeshImporter/ChooseElLayer.h>
 #include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
@@ -841,7 +841,7 @@ private:
 
     void drawNothingContextMenuContentHeader()
     {
-        ui::draw_text(OSC_ICON_BOLT " Actions");
+        ui::draw_text(MSMICONS_BOLT " Actions");
         ui::same_line();
         ui::draw_text_disabled("(nothing clicked)");
         ui::draw_separator();
@@ -948,7 +948,7 @@ private:
 
         if (CanAttachMeshTo(el))
         {
-            if (ui::draw_menu_item(OSC_ICON_CUBE " Meshes"))
+            if (ui::draw_menu_item(MSMICONS_CUBE " Meshes"))
             {
                 m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader(el.getID());
             }
@@ -959,21 +959,21 @@ private:
         ui::push_id(imguiID++);
         if (el.hasPhysicalSize())
         {
-            if (ui::begin_menu(OSC_ICON_CIRCLE " Body"))
+            if (ui::begin_menu(MSMICONS_CIRCLE " Body"))
             {
-                if (ui::draw_menu_item(OSC_ICON_COMPRESS_ARROWS_ALT " at center"))
+                if (ui::draw_menu_item(MSMICONS_COMPRESS_ARROWS_ALT " at center"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
                 }
                 ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
-                if (ui::draw_menu_item(OSC_ICON_MOUSE_POINTER " at click position"))
+                if (ui::draw_menu_item(MSMICONS_MOUSE_POINTER " at click position"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph(), clickPos, el.getID());
                 }
                 ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
-                if (ui::draw_menu_item(OSC_ICON_DOT_CIRCLE " at ground"))
+                if (ui::draw_menu_item(MSMICONS_DOT_CIRCLE " at ground"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph());
                 }
@@ -981,7 +981,7 @@ private:
 
                 if (const auto* mesh = dynamic_cast<const Mesh*>(&el))
                 {
-                    if (ui::draw_menu_item(OSC_ICON_BORDER_ALL " at bounds center"))
+                    if (ui::draw_menu_item(MSMICONS_BORDER_ALL " at bounds center"))
                     {
                         const AABB bounds = mesh->calcBounds().value_or(AABB{});
                         const Vector3 location = centroid_of(bounds);
@@ -989,14 +989,14 @@ private:
                     }
                     ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
-                    if (ui::draw_menu_item(OSC_ICON_DIVIDE " at mesh average center"))
+                    if (ui::draw_menu_item(MSMICONS_DIVIDE " at mesh average center"))
                     {
                         const Vector3 location = AverageCenter(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
                     ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
-                    if (ui::draw_menu_item(OSC_ICON_WEIGHT " at mesh mass center"))
+                    if (ui::draw_menu_item(MSMICONS_WEIGHT " at mesh mass center"))
                     {
                         const Vector3 location = mass_center_of(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
@@ -1009,7 +1009,7 @@ private:
         }
         else
         {
-            if (ui::draw_menu_item(OSC_ICON_CIRCLE " Body"))
+            if (ui::draw_menu_item(MSMICONS_CIRCLE " Body"))
             {
                 AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
             }
@@ -1020,7 +1020,7 @@ private:
         ui::push_id(imguiID++);
         if (const auto* body = dynamic_cast<const Body*>(&el))
         {
-            if (ui::draw_menu_item(OSC_ICON_LINK " Joint"))
+            if (ui::draw_menu_item(MSMICONS_LINK " Joint"))
             {
                 transitionToChoosingJointParent(*body);
             }
@@ -1033,21 +1033,21 @@ private:
         {
             if (el.hasPhysicalSize())
             {
-                if (ui::begin_menu(OSC_ICON_MAP_PIN " Station"))
+                if (ui::begin_menu(MSMICONS_MAP_PIN " Station"))
                 {
-                    if (ui::draw_menu_item(OSC_ICON_COMPRESS_ARROWS_ALT " at center"))
+                    if (ui::draw_menu_item(MSMICONS_COMPRESS_ARROWS_ALT " at center"))
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos(m_Shared->getModelGraph()));
                     }
                     ui::draw_tooltip_if_item_hovered("Add Station", MIStrings::c_StationDescription);
 
-                    if (ui::draw_menu_item(OSC_ICON_MOUSE_POINTER " at click position"))
+                    if (ui::draw_menu_item(MSMICONS_MOUSE_POINTER " at click position"))
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, clickPos);
                     }
                     ui::draw_tooltip_if_item_hovered("Add Station", MIStrings::c_StationDescription);
 
-                    if (ui::draw_menu_item(OSC_ICON_DOT_CIRCLE " at ground"))
+                    if (ui::draw_menu_item(MSMICONS_DOT_CIRCLE " at ground"))
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Vector3{});
                     }
@@ -1055,7 +1055,7 @@ private:
 
                     if (dynamic_cast<const Mesh*>(&el))
                     {
-                        if (ui::draw_menu_item(OSC_ICON_BORDER_ALL " at bounds center"))
+                        if (ui::draw_menu_item(MSMICONS_BORDER_ALL " at bounds center"))
                         {
                             AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, centroid_of(el.calcBounds(m_Shared->getModelGraph()).value_or(AABB{})));
                         }
@@ -1067,7 +1067,7 @@ private:
             }
             else
             {
-                if (ui::draw_menu_item(OSC_ICON_MAP_PIN " Station"))
+                if (ui::draw_menu_item(MSMICONS_MAP_PIN " Station"))
                 {
                     AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos(m_Shared->getModelGraph()));
                 }
@@ -1079,13 +1079,13 @@ private:
 
     void drawNothingActions()
     {
-        if (ui::draw_menu_item(OSC_ICON_CUBE " Add Meshes"))
+        if (ui::draw_menu_item(MSMICONS_CUBE " Add Meshes"))
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
         ui::draw_tooltip_if_item_hovered("Add Meshes to the model", MIStrings::c_MeshDescription);
 
-        if (ui::begin_menu(OSC_ICON_PLUS " Add Other"))
+        if (ui::begin_menu(MSMICONS_PLUS " Add Other"))
         {
             drawAddOtherMenuItems();
 
@@ -1095,13 +1095,13 @@ private:
 
     void drawMIObjectActions(MIObject& el, const Vector3& clickPos)
     {
-        if (ui::draw_menu_item(OSC_ICON_CAMERA " Focus camera on this"))
+        if (ui::draw_menu_item(MSMICONS_CAMERA " Focus camera on this"))
         {
             m_Shared->focusCameraOn(centroid_of(el.calcBounds(m_Shared->getModelGraph()).value_or(AABB{})));
         }
         ui::draw_tooltip_if_item_hovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
 
-        if (ui::begin_menu(OSC_ICON_PLUS " Add"))
+        if (ui::begin_menu(MSMICONS_PLUS " Add"))
         {
             drawAddOtherToMIObjectActions(el, clickPos);
             ui::end_menu();
@@ -1109,7 +1109,7 @@ private:
 
         if (const auto* body = dynamic_cast<const Body*>(&el))
         {
-            if (ui::draw_menu_item(OSC_ICON_LINK " Join to"))
+            if (ui::draw_menu_item(MSMICONS_LINK " Join to"))
             {
                 transitionToChoosingJointParent(*body);
             }
@@ -1118,7 +1118,7 @@ private:
 
         if (el.canDelete())
         {
-            if (ui::draw_menu_item(OSC_ICON_TRASH " Delete"))
+            if (ui::draw_menu_item(MSMICONS_TRASH " Delete"))
             {
                 DeleteObject(m_Shared->updCommittableModelGraph(), el.getID());
                 garbageCollectStaleRefs();
@@ -1136,7 +1136,7 @@ private:
             return;  // can't change its position
         }
 
-        if (!ui::begin_menu(OSC_ICON_ARROWS_ALT " Translate"))
+        if (!ui::begin_menu(MSMICONS_ARROWS_ALT " Translate"))
         {
             return;  // top-level menu isn't open
         }
@@ -1208,7 +1208,7 @@ private:
             return;  // can't change its rotation
         }
 
-        if (!ui::begin_menu(OSC_ICON_REDO " Reorient"))
+        if (!ui::begin_menu(MSMICONS_REDO " Reorient"))
         {
             return;  // top-level menu isn't open
         }
@@ -1330,7 +1330,7 @@ private:
             return;
         }
 
-        if (ui::begin_menu(OSC_ICON_EXTERNAL_LINK_ALT " Reassign Connection"))
+        if (ui::begin_menu(MSMICONS_EXTERNAL_LINK_ALT " Reassign Connection"))
         {
             ui::push_style_var(ui::StyleVar::ItemSpacing, {10.0f, 10.0f});
 
@@ -1406,7 +1406,7 @@ private:
 
     void drawSaveMeshMenu(const Mesh& el)
     {
-        if (ui::begin_menu(OSC_ICON_FILE_EXPORT " Export"))
+        if (ui::begin_menu(MSMICONS_FILE_EXPORT " Export"))
         {
             ui::draw_text_disabled("With Respect to:");
             ui::draw_separator();
@@ -1688,19 +1688,19 @@ private:
     {
         ui::push_style_var(ui::StyleVar::ItemSpacing, {10.0f, 10.0f});
 
-        if (ui::draw_menu_item(OSC_ICON_CUBE " Meshes"))
+        if (ui::draw_menu_item(MSMICONS_CUBE " Meshes"))
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
         ui::draw_tooltip_if_item_hovered("Add Meshes", MIStrings::c_MeshDescription);
 
-        if (ui::draw_menu_item(OSC_ICON_CIRCLE " Body"))
+        if (ui::draw_menu_item(MSMICONS_CIRCLE " Body"))
         {
             AddBody(m_Shared->updCommittableModelGraph());
         }
         ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
-        if (ui::draw_menu_item(OSC_ICON_MAP_PIN " Station"))
+        if (ui::draw_menu_item(MSMICONS_MAP_PIN " Station"))
         {
             Document& mg = m_Shared->updModelGraph();
             auto& e = mg.emplace<StationEl>(UID{}, MIIDs::Ground(), Vector3{}, StationEl::Class().generateName());
@@ -1715,7 +1715,7 @@ private:
     {
         int imguiID = 0;
 
-        if (ui::draw_button(OSC_ICON_CUBE " Add Meshes"))
+        if (ui::draw_button(MSMICONS_CUBE " Add Meshes"))
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
@@ -1723,7 +1723,7 @@ private:
 
         ui::same_line();
 
-        ui::draw_button(OSC_ICON_PLUS " Add Other");
+        ui::draw_button(MSMICONS_PLUS " Add Other");
         ui::draw_tooltip_if_item_hovered("Add components to the model");
 
         if (ui::begin_popup_context_menu("##additemtoscenepopup", ui::PopupFlag::MouseButtonLeft))
@@ -1734,7 +1734,7 @@ private:
 
         ui::same_line();
 
-        ui::draw_button(OSC_ICON_PAINT_ROLLER " Colors");
+        ui::draw_button(MSMICONS_PAINT_ROLLER " Colors");
         ui::draw_tooltip_if_item_hovered("Change scene display colors", "This only changes the decroative display colors of model elements in this screen. Color changes are not saved to the exported OpenSim model. Changing these colors can be handy for spotting things, or constrasting scene elements more strongly");
 
         if (ui::begin_popup_context_menu("##addpainttoscenepopup", ui::PopupFlag::MouseButtonLeft))
@@ -1758,7 +1758,7 @@ private:
 
         ui::same_line();
 
-        ui::draw_button(OSC_ICON_EYE " Visibility");
+        ui::draw_button(MSMICONS_EYE " Visibility");
         ui::draw_tooltip_if_item_hovered("Change what's visible in the 3D scene", "This only changes what's visible in this screen. Visibility options are not saved to the exported OpenSim model. Changing these visibility options can be handy if you have a lot of overlapping/intercalated scene elements");
 
         if (ui::begin_popup_context_menu("##changevisibilitypopup", ui::PopupFlag::MouseButtonLeft))
@@ -1782,7 +1782,7 @@ private:
 
         ui::same_line();
 
-        ui::draw_button(OSC_ICON_LOCK " Interactivity");
+        ui::draw_button(MSMICONS_LOCK " Interactivity");
         ui::draw_tooltip_if_item_hovered("Change what your mouse can interact with in the 3D scene", "This does not prevent being able to edit the model - it only affects whether you can click that type of element in the 3D scene. Combining these flags with visibility and custom colors can be handy if you have heavily overlapping/intercalated scene elements.");
 
         if (ui::begin_popup_context_menu("##changeinteractionlockspopup", ui::PopupFlag::MouseButtonLeft))
@@ -1806,7 +1806,7 @@ private:
 
         ui::same_line();
 
-        ui::draw_gizmo_operation_selector(m_Gizmo, true, true, true, OSC_ICON_ARROWS_ALT, OSC_ICON_REDO, OSC_ICON_EXPAND_ARROWS_ALT);
+        ui::draw_gizmo_operation_selector(m_Gizmo, true, true, true, MSMICONS_ARROWS_ALT, MSMICONS_REDO, MSMICONS_EXPAND_ARROWS_ALT);
 
         ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
         ui::same_line();
@@ -1832,7 +1832,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(OSC_ICON_RECYCLE " Reload Meshes")) {
+        if (ui::draw_button(MSMICONS_RECYCLE " Reload Meshes")) {
             m_Shared->reloadMeshes();
         }
         ui::draw_tooltip_body_only_if_item_hovered("Reloads all meshes in the scene from disk");
@@ -1865,7 +1865,7 @@ private:
 
         ui::set_cursor_ui_position(m_Shared->get3DSceneRect().ypd_bottom_left() + Vector2{100.0f, -55.0f});
 
-        if (ui::draw_button(OSC_ICON_SEARCH_MINUS))
+        if (ui::draw_button(MSMICONS_SEARCH_MINUS))
         {
             m_Shared->updCamera().radius *= 1.2f;
         }
@@ -1873,7 +1873,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(OSC_ICON_SEARCH_PLUS))
+        if (ui::draw_button(MSMICONS_SEARCH_PLUS))
         {
             m_Shared->updCamera().radius *= 0.8f;
         }
@@ -1881,7 +1881,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT))
+        if (ui::draw_button(MSMICONS_EXPAND_ARROWS_ALT))
         {
             if (const std::optional<AABB> sceneAABB = calcSceneAABB())
             {
@@ -1934,7 +1934,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(OSC_ICON_CAMERA))
+        if (ui::draw_button(MSMICONS_CAMERA))
         {
             m_Shared->resetCamera();
         }
@@ -1947,8 +1947,8 @@ private:
     {
         ui::push_style_var(ui::StyleVar::FramePadding, {10.0f, 10.0f});
 
-        constexpr CStringView mainButtonText = "Convert to OpenSim Model " OSC_ICON_ARROW_RIGHT;
-        constexpr CStringView settingButtonText = OSC_ICON_COG;
+        constexpr CStringView mainButtonText = "Convert to OpenSim Model " MSMICONS_ARROW_RIGHT;
+        constexpr CStringView settingButtonText = MSMICONS_COG;
         constexpr Vector2 spacingBetweenMainAndSettingsButtons = {1.0f, 0.0f};
         constexpr Vector2 margin = {25.0f, 35.0f};
 
@@ -2234,26 +2234,26 @@ private:
     {
         if (ui::begin_menu("File"))
         {
-            if (ui::draw_menu_item(OSC_ICON_FILE " New", KeyModifier::Ctrl | Key::N))
+            if (ui::draw_menu_item(MSMICONS_FILE " New", KeyModifier::Ctrl | Key::N))
             {
                 m_Shared->requestNewMeshImporterTab();
             }
 
             ui::draw_separator();
 
-            if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Import", KeyModifier::Ctrl | Key::O))
+            if (ui::draw_menu_item(MSMICONS_FOLDER_OPEN " Import", KeyModifier::Ctrl | Key::O))
             {
                 m_Shared->openOsimFileAsModelGraph();
             }
             ui::draw_tooltip_if_item_hovered("Import osim into mesh importer", "Try to import an existing osim file into the mesh importer.\n\nBEWARE: the mesh importer is *not* an OpenSim model editor. The import process will delete information from your osim in order to 'jam' it into this screen. The main purpose of this button is to export/import mesh editor scenes, not to edit existing OpenSim models.");
 
-            if (ui::draw_menu_item(OSC_ICON_SAVE " Export", KeyModifier::Ctrl | Key::S))
+            if (ui::draw_menu_item(MSMICONS_SAVE " Export", KeyModifier::Ctrl | Key::S))
             {
                 m_Shared->exportModelGraphAsOsimFile();
             }
             ui::draw_tooltip_if_item_hovered("Export mesh impoter scene to osim", "Try to export the current mesh importer scene to an osim.\n\nBEWARE: the mesh importer scene may not map 1:1 onto an OpenSim model, so re-importing the scene *may* change a few things slightly. The main utility of this button is to try and save some progress in the mesh importer.");
 
-            if (ui::draw_menu_item(OSC_ICON_SAVE " Export As", KeyModifier::Ctrl | KeyModifier::Shift | Key::S))
+            if (ui::draw_menu_item(MSMICONS_SAVE " Export As", KeyModifier::Ctrl | KeyModifier::Shift | Key::S))
             {
                 m_Shared->exportAsModelGraphAsOsimFile();
             }
@@ -2261,7 +2261,7 @@ private:
 
             ui::draw_separator();
 
-            if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Import Stations from CSV"))
+            if (ui::draw_menu_item(MSMICONS_FOLDER_OPEN " Import Stations from CSV"))
             {
                 auto popup = std::make_shared<ImportStationsFromCSVPopup>(
                     &owner(),
@@ -2281,12 +2281,12 @@ private:
 
             ui::draw_separator();
 
-            if (ui::draw_menu_item(OSC_ICON_TIMES " Close", KeyModifier::Ctrl | Key::W))
+            if (ui::draw_menu_item(MSMICONS_TIMES " Close", KeyModifier::Ctrl | Key::W))
             {
                 m_Shared->request_close();
             }
 
-            if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", KeyModifier::Ctrl | Key::Q))
+            if (ui::draw_menu_item(MSMICONS_TIMES_CIRCLE " Quit", KeyModifier::Ctrl | Key::Q))
             {
                 App::upd().request_quit();
             }
@@ -2299,11 +2299,11 @@ private:
     {
         if (ui::begin_menu("Edit"))
         {
-            if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", KeyModifier::Ctrl | Key::Z, false, m_Shared->canUndoCurrentModelGraph()))
+            if (ui::draw_menu_item(MSMICONS_UNDO " Undo", KeyModifier::Ctrl | Key::Z, false, m_Shared->canUndoCurrentModelGraph()))
             {
                 m_Shared->undoCurrentModelGraph();
             }
-            if (ui::draw_menu_item(OSC_ICON_REDO " Redo", KeyModifier::Ctrl | KeyModifier::Shift | Key::Z, false, m_Shared->canRedoCurrentModelGraph()))
+            if (ui::draw_menu_item(MSMICONS_REDO " Redo", KeyModifier::Ctrl | KeyModifier::Shift | Key::Z, false, m_Shared->canRedoCurrentModelGraph()))
             {
                 m_Shared->redoCurrentModelGraph();
             }

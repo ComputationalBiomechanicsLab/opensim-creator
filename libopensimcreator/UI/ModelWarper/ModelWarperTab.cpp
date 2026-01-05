@@ -9,7 +9,7 @@
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
@@ -2577,7 +2577,7 @@ namespace
             ui::set_cursor_panel_position({0.0f, top});
             ui::draw_text_centered("An error occured while trying to scale the model:");
             ui::draw_text_centered(message);
-            if (ui::draw_button_centered(OSC_ICON_RECYCLE " Retry Scaling")) {
+            if (ui::draw_button_centered(MSMICONS_RECYCLE " Retry Scaling")) {
                 m_State->actionRetryScalingDeferred();
             }
         }
@@ -2628,7 +2628,7 @@ namespace
             ui::same_line();
             ui::draw_text("Source Model: ");
             ui::same_line();
-            if (ui::draw_button(OSC_ICON_FILE)) {
+            if (ui::draw_button(MSMICONS_FILE)) {
                 m_State->actionCreateNewSourceModel();
             }
             ui::same_line();
@@ -2645,15 +2645,15 @@ namespace
             ui::same_line();
             ui::draw_text("Scaling Document: ");
             ui::same_line();
-            if (ui::draw_button(OSC_ICON_FILE)) {
+            if (ui::draw_button(MSMICONS_FILE)) {
                 m_State->actionCreateNewScalingDocument();
             }
             ui::same_line();
-            if (ui::draw_button(OSC_ICON_FOLDER_OPEN)) {
+            if (ui::draw_button(MSMICONS_FOLDER_OPEN)) {
                 m_State->actionOpenScalingDocument();
             }
             ui::same_line();
-            if (ui::draw_button(OSC_ICON_SAVE)) {
+            if (ui::draw_button(MSMICONS_SAVE)) {
                 m_State->actionSaveScalingDocument();
             }
             ui::same_line();
@@ -2683,13 +2683,13 @@ namespace
                 }
 
                 ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
-                if (ui::draw_button(OSC_ICON_PLAY " Export Warped Model")) {
+                if (ui::draw_button(MSMICONS_PLAY " Export Warped Model")) {
                     m_State->exportWarpedModelToModelEditor();
                 }
                 ui::add_screenshot_annotation_to_last_drawn_item("Export Warped Model Button");
                 ui::pop_style_color();
                 ui::same_line(0.0f, 1.0f);
-                if (ui::draw_button(OSC_ICON_COG)) {
+                if (ui::draw_button(MSMICONS_COG)) {
                     ui::open_popup("##WarpedModelExportModifiers");
                 }
 
@@ -2742,8 +2742,8 @@ namespace
         }
 
         std::shared_ptr<ModelWarperV3UIState> m_State;
-        UndoButton m_UndoButton{this, m_State->getUndoRedoPtr(), OSC_ICON_UNDO};
-        RedoButton m_RedoButton{this, m_State->getUndoRedoPtr(), OSC_ICON_REDO};
+        UndoButton m_UndoButton{this, m_State->getUndoRedoPtr(), MSMICONS_UNDO};
+        RedoButton m_RedoButton{this, m_State->getUndoRedoPtr(), MSMICONS_REDO};
     };
 
     // control panel (design, set parameters, etc.)
@@ -2840,7 +2840,7 @@ namespace
 
             // draw deletion button
             {
-                constexpr auto deletionButtonIcon = OSC_ICON_TRASH;
+                constexpr auto deletionButtonIcon = MSMICONS_TRASH;
 
                 ui::same_line();
 
@@ -2900,7 +2900,7 @@ namespace
 
         void draw_add_scaling_step_context_button()
         {
-            ui::draw_button(OSC_ICON_PLUS "Add Scaling Step", {ui::get_content_region_available().x, ui::calc_button_size("").y});
+            ui::draw_button(MSMICONS_PLUS "Add Scaling Step", {ui::get_content_region_available().x, ui::calc_button_size("").y});
             if (ui::begin_popup_context_menu("##AddScalingStepPopupMenu", ui::PopupFlag::MouseButtonLeft)) {
                 for (const auto& ptr : getScalingStepPrototypes()) {
                     ui::push_id(ptr.get());

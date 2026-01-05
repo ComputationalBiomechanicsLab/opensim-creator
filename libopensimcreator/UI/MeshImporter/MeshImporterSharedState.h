@@ -13,7 +13,7 @@
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterHover.h>
 #include <libopensimcreator/UI/MeshImporter/MeshLoader.h>
@@ -229,7 +229,7 @@ namespace osc::mi
         std::string getRecommendedTitle() const
         {
             std::stringstream ss;
-            ss << OSC_ICON_CUBE << ' ' << getDocumentName();
+            ss << MSMICONS_CUBE << ' ' << getDocumentName();
             return std::move(ss).str();
         }
 

@@ -1,7 +1,7 @@
 #include "GeometryPathEditorPopup.h"
 
 #include <libopensimcreator/Documents/Model/IComponentAccessor.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/UI/oscimgui.h>
@@ -191,7 +191,7 @@ private:
 
     void drawAddPathPointButton()
     {
-        if (ui::draw_button(OSC_ICON_PLUS_CIRCLE " Add Point"))
+        if (ui::draw_button(MSMICONS_PLUS_CIRCLE " Add Point"))
         {
             ActionAddNewPathPoint(m_EditedGeometryPath.updPathPointSet());
         }
@@ -222,7 +222,7 @@ private:
         if (i <= 0) {
             ui::begin_disabled();
         }
-        if (ui::draw_small_button(OSC_ICON_ARROW_UP)) {
+        if (ui::draw_small_button(MSMICONS_ARROW_UP)) {
             m_RequestedAction = RequestedAction{RequestedAction::Type::MoveUp, i};
         }
         if (i <= 0) {
@@ -234,7 +234,7 @@ private:
         if (i+1 >= ssize(pps)) {
             ui::begin_disabled();
         }
-        if (ui::draw_small_button(OSC_ICON_ARROW_DOWN)) {
+        if (ui::draw_small_button(MSMICONS_ARROW_DOWN)) {
             m_RequestedAction = RequestedAction{RequestedAction::Type::MoveDown, i};
         }
         if (i+1 >= ssize(pps)) {
@@ -244,7 +244,7 @@ private:
         ui::same_line();
 
         ui::push_style_color(ui::ColorVar::Text, Color{0.7f, 0.0f, 0.0f});
-        if (ui::draw_small_button(OSC_ICON_TRASH))
+        if (ui::draw_small_button(MSMICONS_TRASH))
         {
             m_RequestedAction = RequestedAction{RequestedAction::Type::Delete, i};
         }

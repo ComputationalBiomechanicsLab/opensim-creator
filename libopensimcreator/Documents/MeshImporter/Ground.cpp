@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshImporter/MIClass.h>
 #include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/UID.h>
@@ -21,7 +21,7 @@ MIClass osc::mi::Ground::CreateClass()
         MIStrings::c_GroundLabel,
         MIStrings::c_GroundLabelPluralized,
         MIStrings::c_GroundLabelOptionallyPluralized,
-        OSC_ICON_DOT_CIRCLE,
+        MSMICONS_DOT_CIRCLE,
         MIStrings::c_GroundDescription,
     };
 }

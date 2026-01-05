@@ -9,7 +9,7 @@
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
@@ -50,12 +50,12 @@ namespace
         const OutputExtractor& output)
     {
         if (env.hasUserOutputExtractor(output)) {
-            if (ui::draw_menu_item(OSC_ICON_TIMES " Stop Watching")) {
+            if (ui::draw_menu_item(MSMICONS_TIMES " Stop Watching")) {
                 env.removeUserOutputExtractor(output);
             }
         }
         else {
-            if (ui::draw_menu_item(OSC_ICON_EYE " Watch Output")) {
+            if (ui::draw_menu_item(MSMICONS_EYE " Watch Output")) {
                 env.addUserOutputExtractor(output);
             }
             ui::draw_tooltip_if_item_hovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
@@ -67,11 +67,11 @@ namespace
         ISimulatorUIAPI& api,
         const OutputExtractor& output)
     {
-        if (ui::draw_menu_item(OSC_ICON_SAVE "Save as CSV")) {
+        if (ui::draw_menu_item(MSMICONS_SAVE "Save as CSV")) {
             api.tryPromptToSaveOutputsAsCSV({output}, false);
         }
 
-        if (ui::draw_menu_item(OSC_ICON_SAVE "Save as CSV (and open)")) {
+        if (ui::draw_menu_item(MSMICONS_SAVE "Save as CSV (and open)")) {
             api.tryPromptToSaveOutputsAsCSV({output}, true);
         }
     }
@@ -129,7 +129,7 @@ namespace
         ISimulation& sim,
         const OutputExtractor& output)
     {
-        if (ui::begin_menu(OSC_ICON_CHART_LINE "Plot Against Other Output")) {
+        if (ui::begin_menu(MSMICONS_CHART_LINE "Plot Against Other Output")) {
             DrawSelectOtherOutputMenuContent(sim, output);
             ui::end_menu();
         }

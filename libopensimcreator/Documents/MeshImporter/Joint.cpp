@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshImporter/CrossrefDescriptor.h>
 #include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Transform.h>
@@ -41,7 +41,7 @@ MIClass osc::mi::Joint::CreateClass()
         MIStrings::c_JointLabel,
         MIStrings::c_JointLabelPluralized,
         MIStrings::c_JointLabelOptionallyPluralized,
-        OSC_ICON_LINK,
+        MSMICONS_LINK,
         MIStrings::c_JointDescription,
     };
 }

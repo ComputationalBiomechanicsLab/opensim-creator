@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
@@ -77,7 +77,7 @@ private:
 
     void drawNewDocumentButton()
     {
-        if (ui::draw_button(OSC_ICON_FILE)) {
+        if (ui::draw_button(MSMICONS_FILE)) {
             ActionCreateNewDocument(m_State->updUndoable());
         }
         ui::draw_tooltip_if_item_hovered(
@@ -88,7 +88,7 @@ private:
 
     void drawOpenDocumentButton()
     {
-        ui::draw_button(OSC_ICON_FOLDER_OPEN);
+        ui::draw_button(MSMICONS_FOLDER_OPEN);
         if (ui::begin_popup_context_menu("##OpenFolder", ui::PopupFlag::MouseButtonLeft)) {
             if (ui::draw_menu_item("Load Source Mesh")) {
                 ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
@@ -106,7 +106,7 @@ private:
 
     void drawSaveLandmarksButton()
     {
-        if (ui::draw_button(OSC_ICON_SAVE)) {
+        if (ui::draw_button(MSMICONS_SAVE)) {
             ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch(), lm::LandmarkCSVFlags::NoNames);
         }
         ui::draw_tooltip_if_item_hovered(
@@ -141,7 +141,7 @@ private:
 
     void drawVisualAidsMenuButton()
     {
-        if (ui::draw_button("visualization options " OSC_ICON_COG)) {
+        if (ui::draw_button("visualization options " MSMICONS_COG)) {
             ui::open_popup("visualization_options_popup");
         }
         if (ui::begin_popup("visualization_options_popup", {ui::PanelFlag::AlwaysAutoResize, ui::PanelFlag::NoTitleBar, ui::PanelFlag::NoSavedSettings})) {
@@ -166,8 +166,8 @@ private:
     }
 
     std::shared_ptr<MeshWarpingTabSharedState> m_State;
-    UndoButton m_UndoButton{&owner(), m_State->getUndoableSharedPtr(), OSC_ICON_UNDO};
-    RedoButton m_RedoButton{&owner(), m_State->getUndoableSharedPtr(), OSC_ICON_REDO};
+    UndoButton m_UndoButton{&owner(), m_State->getUndoableSharedPtr(), MSMICONS_UNDO};
+    RedoButton m_RedoButton{&owner(), m_State->getUndoableSharedPtr(), MSMICONS_REDO};
 };
 
 osc::MeshWarpingTabToolbar::MeshWarpingTabToolbar(

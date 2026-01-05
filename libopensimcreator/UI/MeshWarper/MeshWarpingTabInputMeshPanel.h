@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabContextMenu.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabHover.h>
@@ -481,7 +481,7 @@ namespace osc
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            ui::draw_button_nobg(OSC_ICON_INFO_CIRCLE);
+            ui::draw_button_nobg(MSMICONS_INFO_CIRCLE);
             if (ui::is_item_hovered())
             {
                 ui::begin_tooltip();
@@ -526,7 +526,7 @@ namespace osc
         // draws an import button that enables the user to import things for this input
         void drawImportButton()
         {
-            ui::draw_button(OSC_ICON_FILE_IMPORT " import" OSC_ICON_CARET_DOWN);
+            ui::draw_button(MSMICONS_FILE_IMPORT " import" MSMICONS_CARET_DOWN);
             if (ui::begin_popup_context_menu("##importcontextmenu", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("Mesh File"))
@@ -567,7 +567,7 @@ namespace osc
         // draws an export button that enables the user to export things from this input
         void drawExportButton()
         {
-            ui::draw_button(OSC_ICON_FILE_EXPORT " export" OSC_ICON_CARET_DOWN);
+            ui::draw_button(MSMICONS_FILE_EXPORT " export" MSMICONS_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportcontextmenu", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
@@ -608,7 +608,7 @@ namespace osc
         // draws a button that auto-fits the camera to the 3D scene
         void drawAutoFitCameraButton()
         {
-            if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT))
+            if (ui::draw_button(MSMICONS_EXPAND_ARROWS_ALT))
             {
                 if (const auto bounds = m_State->getScratchMesh(m_DocumentIdentifier).bounds()) {
                     auto_focus(m_Camera, *bounds, aspect_ratio_of(m_LastTextureHittestResult.item_ui_rect));

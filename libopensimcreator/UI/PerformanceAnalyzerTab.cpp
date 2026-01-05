@@ -7,7 +7,7 @@
 #include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 #include <libopensimcreator/Utils/ParamBlock.h>
 #include <libopensimcreator/Utils/ParamValue.h>
@@ -53,7 +53,7 @@ public:
         BasicModelStatePair baseModel,
         ParamBlock params) :
 
-        TabPrivate{owner, parent, OSC_ICON_FAST_FORWARD " PerformanceAnalyzerTab"},
+        TabPrivate{owner, parent, MSMICONS_FAST_FORWARD " PerformanceAnalyzerTab"},
         m_BaseModel{std::move(baseModel)},
         m_BaseParams{std::move(params)}
     {}
@@ -113,7 +113,7 @@ public:
 
             ui::end_table();
 
-            if (ui::draw_button(OSC_ICON_SAVE " Export to CSV")) {
+            if (ui::draw_button(MSMICONS_SAVE " Export to CSV")) {
                 promptUserToExportOutputs();
             }
         }

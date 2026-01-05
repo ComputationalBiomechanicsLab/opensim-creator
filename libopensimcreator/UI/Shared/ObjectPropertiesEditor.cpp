@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/IVersionedComponentAccessor.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/FunctionCurveViewerPopup.h>
 #include <libopensimcreator/UI/Shared/GeometryPathEditorPopup.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -500,7 +500,7 @@ namespace
                 if (disabled) {
                     ui::begin_disabled();
                 }
-                if (ui::draw_button(OSC_ICON_PLUS " Add Entry", { ui::get_content_region_available().x, ui::calc_button_size("").y })) {
+                if (ui::draw_button(MSMICONS_PLUS " Add Entry", { ui::get_content_region_available().x, ui::calc_button_size("").y })) {
                     m_EditedProperty.appendValue(std::string{});  // append blank entry (don't emit upstream until user edits it)
                 }
                 if (disabled) {
@@ -509,7 +509,7 @@ namespace
             }
             else if (m_EditedProperty.isOptionalProperty() and m_EditedProperty.empty()) {
                 // it's an optional property, so draw a "Populate" button if it's unoccupied
-                if (ui::draw_button(OSC_ICON_PLUS " Populate", { ui::get_content_region_available().x, ui::calc_button_size("").y })) {
+                if (ui::draw_button(MSMICONS_PLUS " Populate", { ui::get_content_region_available().x, ui::calc_button_size("").y })) {
                     m_EditedProperty.appendValue(std::string{});  // append blank entry (don't emit upstream until user edits it)
                 }
             }
@@ -526,7 +526,7 @@ namespace
 
             // calculate space taken by deletion button at end of line (if necessary)
             const float deletionButtonWidth = m_EditedProperty.size() > m_EditedProperty.getMinListSize() ?
-                ui::calc_button_size(OSC_ICON_TRASH).x :
+                ui::calc_button_size(MSMICONS_TRASH).x :
                 0.0f;
 
             // read stored value from edited property
@@ -548,7 +548,7 @@ namespace
             // if applicable, add deletion button
             if (m_EditedProperty.size() > m_EditedProperty.getMinListSize()) {
                 ui::same_line();
-                if (ui::draw_button(OSC_ICON_TRASH)) {
+                if (ui::draw_button(MSMICONS_TRASH)) {
                     rv = MakeSimplePropertyElementDeleter<std::string>(idx);
                 }
             }
@@ -608,7 +608,7 @@ namespace
 
             // draw deletion button that can delete an element from the property's list
             if (m_EditedProperty.isListProperty()) {
-                if (ui::draw_button(OSC_ICON_TRASH)) {
+                if (ui::draw_button(MSMICONS_TRASH)) {
                     rv = MakeSimplePropertyElementDeleter<double>(idx);
                 }
                 ui::same_line();
@@ -686,7 +686,7 @@ namespace
 
             // draw deletion button that can delete an element from the property's list
             if (m_EditedProperty.isListProperty()) {
-                if (ui::draw_button(OSC_ICON_TRASH)) {
+                if (ui::draw_button(MSMICONS_TRASH)) {
                     rv = MakeSimplePropertyElementDeleter<bool>(idx);
                 }
                 ui::same_line();
@@ -954,7 +954,7 @@ namespace
 
             // draw deletion button that can delete an element from the property's list
             if (m_EditedProperty.isListProperty()) {
-                if (ui::draw_button(OSC_ICON_TRASH)) {
+                if (ui::draw_button(MSMICONS_TRASH)) {
                     rv = MakeSimplePropertyElementDeleter<SimTK::Vec3>(idx);
                 }
                 ui::same_line();
@@ -1088,7 +1088,7 @@ namespace
 
             // draw deletion button that can delete an element from the property's list
             if (m_EditedProperty.isListProperty()) {
-                if (ui::draw_button(OSC_ICON_TRASH)) {
+                if (ui::draw_button(MSMICONS_TRASH)) {
                     rv = MakeSimplePropertyElementDeleter<SimTK::Vec6>(idx);
                 }
             }
@@ -1174,7 +1174,7 @@ namespace
 
             // draw deletion button that can delete an element from the property's list
             if (m_EditedProperty.isListProperty()) {
-                if (ui::draw_button(OSC_ICON_TRASH)) {
+                if (ui::draw_button(MSMICONS_TRASH)) {
                     rv = MakeSimplePropertyElementDeleter<int>(idx);
                 }
                 ui::same_line();
@@ -1400,7 +1400,7 @@ namespace
                 Widget* parentWidget = tryGetParentWidget();
                 const auto componentPtr = tryGetComponentSharedPtr();
                 if (parentWidget and componentPtr) {
-                    if (ui::draw_button(OSC_ICON_EDIT " edit ")) {
+                    if (ui::draw_button(MSMICONS_EDIT " edit ")) {
                         App::post_event<OpenPopupEvent>(*parentWidget, createGeometryPathEditorPopup(componentPtr));
                     }
                 }
@@ -1496,7 +1496,7 @@ namespace
                 Widget* parentWidget = tryGetParentWidget();
                 const auto componentPtr = tryGetComponentSharedPtr();
                 if (parentWidget and componentPtr) {
-                    if (ui::draw_button(OSC_ICON_EYE " view ")) {
+                    if (ui::draw_button(MSMICONS_EYE " view ")) {
 
                         // care: the accessor here differs from the default because the user's selection
                         // can change the accessor's behavior. This is a panel, so it should stick to
@@ -1536,7 +1536,7 @@ namespace
                 }
             }
 
-            ui::draw_tooltip_if_item_hovered("View Function", OSC_ICON_MAGIC " Experimental Feature " OSC_ICON_MAGIC ": currently, plots the `OpenSim::Function`, but it doesn't know what the X or Y axes are, or what values might be reasonable for either. It also doesn't spawn a non-modal panel, which would be handy if you wanted to view multiple functions at the same time - I should work on that ;)");
+            ui::draw_tooltip_if_item_hovered("View Function", MSMICONS_MAGIC " Experimental Feature " MSMICONS_MAGIC ": currently, plots the `OpenSim::Function`, but it doesn't know what the X or Y axes are, or what values might be reasonable for either. It also doesn't spawn a non-modal panel, which would be handy if you wanted to view multiple functions at the same time - I should work on that ;)");
             ui::same_line();
             ui::align_text_to_frame_padding();  // ensure it aligns with the property name in the previous column
             ui::draw_text(prop->getTypeName());

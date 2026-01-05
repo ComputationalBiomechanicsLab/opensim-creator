@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Model/Environment.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 
@@ -61,7 +61,7 @@ private:
         ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
 
         ui::push_style_color(ui::ColorVar::Text, Color::dark_green());
-        if (ui::draw_button(OSC_ICON_PLAY)) {
+        if (ui::draw_button(MSMICONS_PLAY)) {
             if (parent()) {
                 ActionStartSimulatingModel(*parent(), *m_Model);
             }
@@ -72,7 +72,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(OSC_ICON_EDIT))
+        if (ui::draw_button(MSMICONS_EDIT))
         {
             auto popup = std::make_unique<ParamBlockEditorPopup>(
                 &owner(),

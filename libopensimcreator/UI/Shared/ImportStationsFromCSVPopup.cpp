@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/Landmarks/LandmarkHelpers.h>
 #include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableActions.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 
 #include <liboscar/Formats/CSV.h>
 #include <liboscar/Graphics/Color.h>
@@ -92,7 +92,7 @@ private:
         constexpr CStringView c_ExampleInputText = "name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\n";
         ui::draw_text_wrapped("Example Input: ");
         ui::same_line();
-        if (ui::draw_button(OSC_ICON_COPY))
+        if (ui::draw_button(MSMICONS_COPY))
         {
             set_clipboard_text(c_ExampleInputText);
         }
@@ -104,7 +104,7 @@ private:
 
     void drawSelectInitialFileState()
     {
-        if (ui::draw_button_centered(OSC_ICON_FILE " Select File"))
+        if (ui::draw_button_centered(MSMICONS_FILE " Select File"))
         {
             actionTryPromptingUserForCSVFile();
         }
@@ -150,12 +150,12 @@ private:
         }
         ui::draw_vertical_spacer(0.2f);
 
-        if (ui::draw_button(OSC_ICON_FILE " Select Different File"))
+        if (ui::draw_button(MSMICONS_FILE " Select Different File"))
         {
             actionTryPromptingUserForCSVFile();
         }
         ui::same_line();
-        if (ui::draw_button(OSC_ICON_RECYCLE " Reload Same File"))
+        if (ui::draw_button(MSMICONS_RECYCLE " Reload Same File"))
         {
             actionLoadCSVFile(*m_MaybeImportPath);
         }
@@ -169,7 +169,7 @@ private:
         }
 
         ui::push_style_color(ui::ColorVar::Text, Color::orange());
-        ui::draw_text(OSC_ICON_EXCLAMATION " input file contains issues");
+        ui::draw_text(MSMICONS_EXCLAMATION " input file contains issues");
         ui::pop_style_color();
 
         if (ui::is_item_hovered())

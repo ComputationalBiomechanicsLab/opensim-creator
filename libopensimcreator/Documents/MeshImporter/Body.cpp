@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/MeshImporter/MIClass.h>
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Transform.h>
@@ -37,7 +37,7 @@ MIClass osc::mi::Body::CreateClass()
         MIStrings::c_BodyLabel,
         MIStrings::c_BodyLabelPluralized,
         MIStrings::c_BodyLabelOptionallyPluralized,
-        OSC_ICON_CIRCLE,
+        MSMICONS_CIRCLE,
         MIStrings::c_BodyDescription,
     };
 }

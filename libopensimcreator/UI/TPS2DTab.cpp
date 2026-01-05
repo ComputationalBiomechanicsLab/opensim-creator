@@ -1,6 +1,6 @@
 #include "TPS2DTab.h"
 
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 
 #include <liboscar/Formats/SVG.h>
 #include <liboscar/Graphics/Camera.h>
@@ -300,7 +300,7 @@ class osc::TPS2DTab::Impl final : public TabPrivate {
 public:
 
     explicit Impl(TPS2DTab& owner, Widget* parent) :
-        TabPrivate{owner, parent, OSC_ICON_BEZIER_CURVE " TPS2DTab"}
+        TabPrivate{owner, parent, MSMICONS_BEZIER_CURVE " TPS2DTab"}
     {
         m_TexturedMaterial.set_texture(m_BoxTexture);
         wireframe_material_.set_color({0.0f, 0.0f, 0.0f, 0.15f});

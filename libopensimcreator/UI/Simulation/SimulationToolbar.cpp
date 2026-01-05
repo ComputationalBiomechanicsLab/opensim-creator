@@ -1,7 +1,7 @@
 #include "SimulationToolbar.h"
 
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/SimulationScrubber.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -75,7 +75,7 @@ private:
     void drawScaleFactorGroup()
     {
         ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
-        ui::draw_text(OSC_ICON_EXPAND_ALT);
+        ui::draw_text(MSMICONS_EXPAND_ALT);
         ui::draw_tooltip_if_item_hovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
         ui::same_line();
 

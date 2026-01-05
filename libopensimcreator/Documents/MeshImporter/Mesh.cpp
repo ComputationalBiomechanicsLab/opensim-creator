@@ -5,7 +5,7 @@
 #include <libopensimcreator/Documents/MeshImporter/MIClass.h>
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/AABB.h>
@@ -54,7 +54,7 @@ MIClass osc::mi::Mesh::CreateClass()
         MIStrings::c_MeshLabel,
         MIStrings::c_MeshLabelPluralized,
         MIStrings::c_MeshLabelOptionallyPluralized,
-        OSC_ICON_CUBE,
+        MSMICONS_CUBE,
         MIStrings::c_MeshDescription,
     };
 }

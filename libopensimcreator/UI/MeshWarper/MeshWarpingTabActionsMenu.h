@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 
 #include <liboscar/UI/oscimgui.h>
 
@@ -45,7 +45,7 @@ namespace osc
             if (not hasLandmarks) {
                 ui::begin_disabled();
             }
-            if (ui::draw_menu_item(OSC_ICON_ERASER " clear landmarks")) {
+            if (ui::draw_menu_item(MSMICONS_ERASER " clear landmarks")) {
                 ActionClearAllLandmarks(m_State->updUndoable());
             }
             if (not hasLandmarks) {
@@ -61,7 +61,7 @@ namespace osc
             if (not hasNonParticipatingLandmarks) {
                 ui::begin_disabled();
             }
-            if (ui::draw_menu_item(OSC_ICON_ERASER " clear non-participating landmarks")) {
+            if (ui::draw_menu_item(MSMICONS_ERASER " clear non-participating landmarks")) {
                 ActionClearAllNonParticipatingLandmarks(m_State->updUndoable());
             }
             if (not hasNonParticipatingLandmarks) {

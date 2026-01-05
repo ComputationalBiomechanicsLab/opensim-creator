@@ -1,6 +1,6 @@
 #include "MainUIScreen.h"
 
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Events/OpenFileEvent.h>
 #include <libopensimcreator/UI/LoadingTab.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
@@ -496,7 +496,7 @@ public:
                     }
 
                     // adding buttons to tab bars: https://github.com/ocornut/imgui/issues/3291
-                    ui::draw_tab_item_button(OSC_ICON_PLUS);
+                    ui::draw_tab_item_button(MSMICONS_PLUS);
 
                     if (ui::begin_popup_context_menu("popup", ui::PopupFlag::MouseButtonLeft)) {
                         drawAddNewTabMenu();
@@ -565,11 +565,11 @@ public:
 
     void drawAddNewTabMenu()
     {
-        if (ui::draw_menu_item(OSC_ICON_EDIT " Editor")) {
+        if (ui::draw_menu_item(MSMICONS_EDIT " Editor")) {
             impl_select_tab(addTab(std::make_unique<ModelEditorTab>(&owner())));
         }
 
-        if (ui::draw_menu_item(OSC_ICON_CUBE " Mesh Importer")) {
+        if (ui::draw_menu_item(MSMICONS_CUBE " Mesh Importer")) {
             impl_select_tab(addTab(std::make_unique<mi::MeshImporterTab>(&owner())));
         }
 
@@ -714,8 +714,8 @@ private:
         rv.set_base_imgui_ini_config_resource("OpenSimCreator/imgui_base_config.ini");
         rv.set_main_font_as_standard_plus_icon_font(
             "OpenSimCreator/fonts/Ruda-Bold.ttf",
-            "OpenSimCreator/fonts/OpenSimCreatorIconFont.ttf",
-            {OSC_ICON_MIN, OSC_ICON_MAX}
+            "OpenSimCreator/fonts/msmicons.ttf",
+            {MSMICONS_MIN, MSMICONS_MAX}
         );
         return rv;
     }

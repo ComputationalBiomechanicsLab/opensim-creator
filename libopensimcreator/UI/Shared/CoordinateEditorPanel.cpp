@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Shared/ComponentContextMenu.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -108,7 +108,7 @@ private:
         if (m_Model->isReadonly()) {
             ui::begin_disabled();
         }
-        ui::draw_button("Pose " OSC_ICON_CARET_DOWN);
+        ui::draw_button("Pose " MSMICONS_CARET_DOWN);
         if (ui::begin_popup_context_menu("##PosePopup", ui::PopupFlag::MouseButtonLeft)) {
             // Draw a button that can be used to zero all coordinates, which can be a cheap way
             // of resetting a model's pose (#957).
@@ -198,7 +198,7 @@ private:
         ui::push_style_color(ui::ColorVar::ButtonActive, Color::clear());
         ui::push_style_color(ui::ColorVar::ButtonHovered, Color::clear());
         ui::push_style_var(ui::StyleVar::FramePadding, {0.0f, ui::get_style_frame_padding().y});
-        if (ui::draw_button(c.getLocked(m_Model->getState()) ? OSC_ICON_LOCK : OSC_ICON_UNLOCK)) {
+        if (ui::draw_button(c.getLocked(m_Model->getState()) ? MSMICONS_LOCK : MSMICONS_UNLOCK)) {
             const bool newValue = !c.getLocked(m_Model->getState());
             ActionSetCoordinateLockedAndSave(*m_Model, c, newValue);
         }

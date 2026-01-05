@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -363,7 +363,7 @@ private:
 
             ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
 
-            if (ui::draw_button(OSC_ICON_TRASH)) {
+            if (ui::draw_button(MSMICONS_TRASH)) {
                 maybeIndexToErase = i;
             }
 
@@ -372,7 +372,7 @@ private:
             if (i <= 0) {
                 ui::begin_disabled();
             }
-            if (ui::draw_button(OSC_ICON_ARROW_UP) and i > 0) {
+            if (ui::draw_button(MSMICONS_ARROW_UP) and i > 0) {
                 std::swap(m_PathPoints[i], m_PathPoints[i-1]);
             }
             if (i <= 0) {
@@ -384,7 +384,7 @@ private:
             if (i >= std::ssize(m_PathPoints) - 1) {
                 ui::begin_disabled();
             }
-            if (ui::draw_button(OSC_ICON_ARROW_DOWN) && i < std::ssize(m_PathPoints) - 1) {
+            if (ui::draw_button(MSMICONS_ARROW_DOWN) && i < std::ssize(m_PathPoints) - 1) {
                 std::swap(m_PathPoints[i], m_PathPoints[i+1]);
             }
             if (i >= std::ssize(m_PathPoints) - 1) {
@@ -456,7 +456,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(OSC_ICON_PLUS " add")) {
+        if (ui::draw_button(MSMICONS_PLUS " add")) {
             std::unique_ptr<OpenSim::Component> rv = tryCreateComponentFromState();
             if (rv) {
                 try {

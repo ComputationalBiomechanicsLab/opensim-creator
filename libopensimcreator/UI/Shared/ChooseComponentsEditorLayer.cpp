@@ -5,7 +5,7 @@
 #include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
 #include <libopensimcreator/Graphics/OpenSimGraphicsHelpers.h>
 #include <libopensimcreator/Graphics/OverlayDecorationGenerator.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ChooseComponentsEditorLayerParameters.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
@@ -247,7 +247,7 @@ public:
         {
             ui::push_style_var(ui::StyleVar::FramePadding, {10.0f, 10.0f});
 
-            constexpr CStringView cancellationButtonText = OSC_ICON_ARROW_LEFT " Cancel (ESC)";
+            constexpr CStringView cancellationButtonText = MSMICONS_ARROW_LEFT " Cancel (ESC)";
             const Vector2 margin = {25.0f, 25.0f};
             const Vector2 buttonDims = ui::calc_button_size(cancellationButtonText);
             const Vector2 buttonTopLeft = panelState.viewportUiRect.ypd_bottom_right() - (buttonDims + margin);

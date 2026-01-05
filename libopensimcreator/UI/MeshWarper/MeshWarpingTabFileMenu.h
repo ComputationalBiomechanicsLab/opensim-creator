@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <liboscar/Platform/App.h>
@@ -35,29 +35,29 @@ namespace osc
     private:
         void drawContent()
         {
-            if (ui::draw_menu_item(OSC_ICON_FILE " New", KeyModifier::Ctrl | Key::N))
+            if (ui::draw_menu_item(MSMICONS_FILE " New", KeyModifier::Ctrl | Key::N))
             {
                 ActionCreateNewDocument(m_State->updUndoable());
             }
 
-            if (ui::begin_menu(OSC_ICON_FILE_IMPORT " Import"))
+            if (ui::begin_menu(MSMICONS_FILE_IMPORT " Import"))
             {
                 drawImportMenuContent();
                 ui::end_menu();
             }
 
-            if (ui::begin_menu(OSC_ICON_FILE_EXPORT " Export"))
+            if (ui::begin_menu(MSMICONS_FILE_EXPORT " Export"))
             {
                 drawExportMenuContent();
                 ui::end_menu();
             }
 
-            if (ui::draw_menu_item(OSC_ICON_TIMES " Close", KeyModifier::Ctrl | Key::W))
+            if (ui::draw_menu_item(MSMICONS_TIMES " Close", KeyModifier::Ctrl | Key::W))
             {
                 m_State->closeTab();
             }
 
-            if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", KeyModifier::Ctrl | Key::Q))
+            if (ui::draw_menu_item(MSMICONS_TIMES_CIRCLE " Quit", KeyModifier::Ctrl | Key::Q))
             {
                 App::upd().request_quit();
             }

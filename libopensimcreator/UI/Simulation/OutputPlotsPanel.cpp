@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Model/Environment.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
@@ -53,7 +53,7 @@ public:
         }
 
         if (IsAnyOutputExportableToCSV(*m_Environment)) {
-            ui::draw_button(OSC_ICON_SAVE " Save All " OSC_ICON_CARET_DOWN);
+            ui::draw_button(MSMICONS_SAVE " Save All " MSMICONS_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft)) {
                 if (ui::draw_menu_item("as CSV")) {
                     m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV(m_Environment->getAllUserOutputExtractors());
@@ -79,7 +79,7 @@ public:
 
             DrawOutputNameColumn(output, true, m_SimulatorUIAPI->tryGetCurrentSimulationState());
             ui::same_line();
-            if (ui::draw_button(OSC_ICON_TRASH)) {
+            if (ui::draw_button(MSMICONS_TRASH)) {
                 m_Environment->removeUserOutputExtractor(output);
                 --i;
             }

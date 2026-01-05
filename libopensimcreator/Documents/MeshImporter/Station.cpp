@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshImporter/CrossrefDescriptor.h>
 #include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Vector3.h>
@@ -49,7 +49,7 @@ MIClass osc::mi::StationEl::CreateClass()
         MIStrings::c_StationLabel,
         MIStrings::c_StationLabelPluralized,
         MIStrings::c_StationLabelOptionallyPluralized,
-        OSC_ICON_MAP_PIN,
+        MSMICONS_MAP_PIN,
         MIStrings::c_StationDescription,
     };
 }

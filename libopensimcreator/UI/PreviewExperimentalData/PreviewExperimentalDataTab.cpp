@@ -6,7 +6,7 @@
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ComponentContextMenu.h>
@@ -331,7 +331,7 @@ namespace
                     }
 
                     ui::same_line();
-                    if (ui::draw_button(OSC_ICON_RECYCLE " reload all")) {
+                    if (ui::draw_button(MSMICONS_RECYCLE " reload all")) {
                         m_UiState->reloadAll();
                     }
                 }
@@ -392,7 +392,7 @@ public:
     explicit Impl(
         PreviewExperimentalDataTab& owner,
         Widget* parent) :
-        TabPrivate{owner, parent, OSC_ICON_BEZIER_CURVE " Experimental Data"}
+        TabPrivate{owner, parent, MSMICONS_BEZIER_CURVE " Experimental Data"}
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",

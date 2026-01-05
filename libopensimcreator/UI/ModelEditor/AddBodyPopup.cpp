@@ -4,7 +4,7 @@
 #include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -44,7 +44,7 @@ public:
     void draw_content()
     {
         if (m_Model->isReadonly()) {
-            ui::draw_text_centered(OSC_ICON_LOCK " cannot edit the model - it is locked");
+            ui::draw_text_centered(MSMICONS_LOCK " cannot edit the model - it is locked");
             if (ui::draw_button("cancel")) {
                 request_close();
             }
@@ -216,7 +216,7 @@ public:
 
         ui::same_line();
 
-        if (ui::draw_button(OSC_ICON_PLUS " add body")) {
+        if (ui::draw_button(MSMICONS_PLUS " add body")) {
             ActionAddBodyToModel(*m_Model, m_BodyDetails);
             request_close();
         }

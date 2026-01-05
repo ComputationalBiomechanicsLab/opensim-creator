@@ -14,7 +14,7 @@
 #include <libopensimcreator/Graphics/MuscleSizingStyle.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Platform/RecentFile.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -288,46 +288,46 @@ namespace
 CStringView osc::IconFor(const OpenSim::Component& c)
 {
     if (dynamic_cast<const OpenSim::Muscle*>(&c)) {
-        return OSC_ICON_MUSCLE;
+        return MSMICONS_MUSCLE;
     }
     else if (dynamic_cast<const OpenSim::Coordinate*>(&c)) {
-        return OSC_ICON_COORDINATE;
+        return MSMICONS_COORDINATE;
     }
     else if (dynamic_cast<const OpenSim::WrapObject*>(&c)) {
-        return OSC_ICON_WRAP;
+        return MSMICONS_WRAP;
     }
     else if (dynamic_cast<const OpenSim::Probe*>(&c)) {
-        return OSC_ICON_PROBE;
+        return MSMICONS_PROBE;
     }
     else if (dynamic_cast<const OpenSim::Joint*>(&c)) {
-        return OSC_ICON_JOINT;
+        return MSMICONS_JOINT;
     }
     else if (dynamic_cast<const OpenSim::Geometry*>(&c)) {
-        return OSC_ICON_MESH;
+        return MSMICONS_MESH;
     }
     else if (dynamic_cast<const OpenSim::Body*>(&c)) {
-        return OSC_ICON_BODY;
+        return MSMICONS_BODY;
     }
     else if (dynamic_cast<const OpenSim::ContactGeometry*>(&c)) {
-        return OSC_ICON_CONTACT;
+        return MSMICONS_CONTACT;
     }
     else if (dynamic_cast<const OpenSim::Station*>(&c) or dynamic_cast<const OpenSim::PathPoint*>(&c)) {
-        return OSC_ICON_MARKER;
+        return MSMICONS_MARKER;
     }
     else if (dynamic_cast<const OpenSim::Constraint*>(&c)) {
-        return OSC_ICON_CONSTRAINT;
+        return MSMICONS_CONSTRAINT;
     }
     else if (dynamic_cast<const OpenSim::Function*>(&c)) {
-        return OSC_ICON_SPLINE;
+        return MSMICONS_SPLINE;
     }
     else if (dynamic_cast<const OpenSim::Frame*>(&c)) {
-        return OSC_ICON_FRAME;
+        return MSMICONS_FRAME;
     }
     else if (dynamic_cast<const OpenSim::Model*>(&c)) {
-        return OSC_ICON_MODEL;
+        return MSMICONS_MODEL;
     }
     else {
-        return OSC_ICON_COMPONENT;
+        return MSMICONS_COMPONENT;
     }
 }
 
@@ -475,7 +475,7 @@ void osc::DrawSimulationParams(const ParamBlock& params)
 void osc::DrawSearchBar(std::string& out)
 {
     ui::push_style_var(ui::StyleVar::FrameRounding, 5.0f);
-    ui::draw_string_input_with_hint("##hirarchtsearchbar", OSC_ICON_SEARCH " search...",  out);
+    ui::draw_string_input_with_hint("##hirarchtsearchbar", MSMICONS_SEARCH " search...",  out);
     ui::pop_style_var();
 }
 
@@ -638,7 +638,7 @@ bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
 {
     const CStringView label = flags & CalculateMenuFlags::NoCalculatorIcon ?
         "Calculate" :
-        OSC_ICON_CALCULATOR " Calculate";
+        MSMICONS_CALCULATOR " Calculate";
     return ui::begin_menu(label);
 }
 
@@ -1325,7 +1325,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vector2> padding)
 
 void osc::DrawNewModelButton(Widget& api)
 {
-    if (ui::draw_button(OSC_ICON_FILE))
+    if (ui::draw_button(MSMICONS_FILE))
     {
         ActionNewModel(api);
     }
@@ -1336,14 +1336,14 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile)
 {
     ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
-    if (ui::draw_button(OSC_ICON_FOLDER_OPEN))
+    if (ui::draw_button(MSMICONS_FOLDER_OPEN))
     {
         onUserClickedOpenOrSelectedFile(std::nullopt);
     }
     ui::draw_tooltip_if_item_hovered("Open Model", "Opens an existing osim file in a new tab");
     ui::same_line();
     ui::push_style_var(ui::StyleVar::FramePadding, {1.0f, ui::get_style_frame_padding().y});
-    ui::draw_button(OSC_ICON_CARET_DOWN);
+    ui::draw_button(MSMICONS_CARET_DOWN);
     ui::draw_tooltip_if_item_hovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
     ui::pop_style_var();
     ui::pop_style_var();
@@ -1382,7 +1382,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(Widget& api)
 
 void osc::DrawSaveModelButton(const std::shared_ptr<IModelStatePair>& model)
 {
-    if (ui::draw_button(OSC_ICON_SAVE)) {
+    if (ui::draw_button(MSMICONS_SAVE)) {
         ActionSaveModelAsync(model);
     }
     ui::draw_tooltip_if_item_hovered("Save Model", "Saves the model to an osim file");
@@ -1395,7 +1395,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
     if (disable) {
         ui::begin_disabled();
     }
-    if (ui::draw_button(OSC_ICON_RECYCLE)) {
+    if (ui::draw_button(MSMICONS_RECYCLE)) {
         ActionReloadOsimFromDisk(model, *App::singleton<SceneCache>());
     }
     if (disable) {
@@ -1412,7 +1412,7 @@ void osc::DrawUndoButton(IModelStatePair& model)
     if (disable) {
         ui::begin_disabled();
     }
-    if (ui::draw_button(OSC_ICON_UNDO) and undoable != nullptr) {
+    if (ui::draw_button(MSMICONS_UNDO) and undoable != nullptr) {
         undoable->doUndo();
     }
     if (disable) {
@@ -1429,7 +1429,7 @@ void osc::DrawRedoButton(IModelStatePair& model)
     if (disable) {
         ui::begin_disabled();
     }
-    if (ui::draw_button(OSC_ICON_REDO) and undoable != nullptr) {
+    if (ui::draw_button(MSMICONS_REDO) and undoable != nullptr) {
         undoable->doRedo();
     }
     if (disable) {
@@ -1537,7 +1537,7 @@ void osc::DrawAllDecorationToggleButtons(IModelStatePair& model, IconCache& icon
 void osc::DrawSceneScaleFactorEditorControls(IModelStatePair& model)
 {
     ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
-    ui::draw_text(OSC_ICON_EXPAND_ALT);
+    ui::draw_text(MSMICONS_EXPAND_ALT);
     ui::draw_tooltip_if_item_hovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
     ui::same_line();
 
@@ -1552,7 +1552,7 @@ void osc::DrawSceneScaleFactorEditorControls(IModelStatePair& model)
 
     ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
     ui::same_line();
-    if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT)) {
+    if (ui::draw_button(MSMICONS_EXPAND_ARROWS_ALT)) {
         ActionAutoscaleSceneScaleFactor(model);
     }
     ui::pop_style_var();

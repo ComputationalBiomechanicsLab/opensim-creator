@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Model/Environment.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/ModelEditor/ExportPointsPopup.h>
 #include <libopensimcreator/UI/ModelEditor/ModelMusclePlotPanel.h>
 #include <libopensimcreator/UI/PerformanceAnalyzerTab.h>
@@ -71,13 +71,13 @@ private:
     {
         if (ui::begin_menu("Edit")) {
             auto* undoable = dynamic_cast<UndoableModelStatePair*>(m_Model.get());
-            if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", KeyModifier::Ctrl | Key::Z, false, undoable != nullptr and undoable->canUndo())) {
+            if (ui::draw_menu_item(MSMICONS_UNDO " Undo", KeyModifier::Ctrl | Key::Z, false, undoable != nullptr and undoable->canUndo())) {
                 if (undoable) {
                     undoable->doUndo();
                 }
             }
 
-            if (ui::draw_menu_item(OSC_ICON_REDO " Redo", KeyModifier::Ctrl | KeyModifier::Shift | Key::Z, false, undoable != nullptr and undoable->canRedo())) {
+            if (ui::draw_menu_item(MSMICONS_REDO " Redo", KeyModifier::Ctrl | KeyModifier::Shift | Key::Z, false, undoable != nullptr and undoable->canRedo())) {
                 if (undoable) {
                     undoable->doRedo();
                 }
@@ -104,11 +104,11 @@ private:
     void drawMainMenuToolsTab()
     {
         if (ui::begin_menu("Tools")) {
-            if (ui::draw_menu_item(OSC_ICON_PLAY " Simulate", KeyModifier::Ctrl | Key::R)) {
+            if (ui::draw_menu_item(MSMICONS_PLAY " Simulate", KeyModifier::Ctrl | Key::R)) {
                 ActionStartSimulatingModel(owner(), *m_Model);
             }
 
-            if (ui::draw_menu_item(OSC_ICON_EDIT " Edit simulation settings")) {
+            if (ui::draw_menu_item(MSMICONS_EDIT " Edit simulation settings")) {
                 if (parent()) {
                     auto popup = std::make_unique<ParamBlockEditorPopup>(
                         &owner(),

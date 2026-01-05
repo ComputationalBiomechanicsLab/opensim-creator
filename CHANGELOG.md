@@ -47,6 +47,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   is effectively a separated refactor of OpenSim Creator's existing engine. This is mostly an
   organizational change for @adamkewley that enables building new OpenSim Creator-like UIs
   separately from OpenSim/simbody/OPynSim.
+- OpenSim Creator now uses [msmicons](https://github.com/adamkewley/msmicons) as the source of
+  its icon font. This is entirely an organizational change to promote using the font in other
+  projects - it's identical to previous verions of OpenSim Creator.
 - The model warper now has a `ThinPlateSplineBodyCenterOfMassScalingStep`, which can be used
   to TPS-warp a body's center-of-mass as part of a model warping procedure (#1147).
 - The model warper now clears the filepath of the exported/warped model, so that it's harder

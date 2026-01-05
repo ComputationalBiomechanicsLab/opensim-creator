@@ -1,6 +1,6 @@
 #include "OpenSimDecorationOptionFlags.h"
 
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/EnumHelpers.h>

@@ -1,7 +1,7 @@
 #include "SplashTab.h"
 
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Platform/RecentFile.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/LoadingTab.h>
@@ -77,7 +77,7 @@ namespace
         Widget& parent_,
         int& imguiID)
     {
-        const std::string label = std::string{OSC_ICON_FILE} + " " + path.filename().string();
+        const std::string label = std::string{MSMICONS_FILE} + " " + path.filename().string();
 
         ui::push_id(++imguiID);
         if (ui::draw_menu_item(label)) {
@@ -99,7 +99,7 @@ class osc::SplashTab::Impl final : public TabPrivate {
 public:
 
     explicit Impl(SplashTab& owner, Widget* parent_) :
-        TabPrivate{owner, parent_, OSC_ICON_HOME},
+        TabPrivate{owner, parent_, MSMICONS_HOME},
         m_MainMenuFileTab{std::make_unique<MainMenuFileTab>(&owner)}
     {
         m_MainAppLogo.set_filter_mode(TextureFilterMode::Linear);
@@ -251,19 +251,19 @@ private:
 
     void drawActionsMenuSectionContent()
     {
-        if (ui::draw_menu_item(OSC_ICON_FILE " New Model")) {
+        if (ui::draw_menu_item(MSMICONS_FILE " New Model")) {
             ActionNewModel(*parent());
         }
-        if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open Model")) {
+        if (ui::draw_menu_item(MSMICONS_FOLDER_OPEN " Open Model")) {
             ActionOpenModel(*parent());
         }
-        if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
+        if (ui::draw_menu_item(MSMICONS_FILE_IMPORT " Import Meshes")) {
             auto tab = std::make_unique<mi::MeshImporterTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
         ui::add_screenshot_annotation_to_last_drawn_item("SplashTab/ImportMeshesMenuItem");
         if (const auto docsURL = App::get().metadata().documentation_url()) {
-            if (ui::draw_menu_item(OSC_ICON_BOOK " Open Documentation")) {
+            if (ui::draw_menu_item(MSMICONS_BOOK " Open Documentation")) {
                 open_url_in_os_default_web_browser(*docsURL);
             }
         }
@@ -271,22 +271,22 @@ private:
 
     void drawWorkflowsMenuSectionContent()
     {
-        if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Mesh Importer")) {
+        if (ui::draw_menu_item(MSMICONS_FILE_IMPORT " Mesh Importer")) {
             auto tab = std::make_unique<mi::MeshImporterTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
 
-        if (ui::draw_menu_item(OSC_ICON_BEZIER_CURVE " Preview Experimental Data")) {
+        if (ui::draw_menu_item(MSMICONS_BEZIER_CURVE " Preview Experimental Data")) {
             auto tab = std::make_unique<PreviewExperimentalDataTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
-        if (ui::draw_menu_item(OSC_ICON_CUBE " Mesh Warping")) {
+        if (ui::draw_menu_item(MSMICONS_CUBE " Mesh Warping")) {
             auto tab = std::make_unique<MeshWarpingTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
         ui::add_screenshot_annotation_to_last_drawn_item("SplashTab/MeshWarpingMenuItem");
 
-        if (ui::draw_menu_item(OSC_ICON_MAGIC " Model Warping (" OSC_ICON_MAGIC " experimental)")) {
+        if (ui::draw_menu_item(MSMICONS_MAGIC " Model Warping (" MSMICONS_MAGIC " experimental)")) {
             auto tab = std::make_unique<ModelWarperTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
