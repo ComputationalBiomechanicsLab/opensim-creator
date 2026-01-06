@@ -1,4 +1,4 @@
-# `libopensimcreator`: The library behind the OpenSim Creator UI
+# `libopensimcreator/`: Implementation Code For OpenSim Creator
 
 `libopensimcreator` combines `liboscar` (the UI engine) with `libopynsim`
 (OpenSim + Simbody bindings) to create a UI for OpenSim that can be
