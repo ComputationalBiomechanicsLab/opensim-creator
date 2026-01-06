@@ -213,12 +213,16 @@ elseif(APPLE)
         )
     endforeach()
 
-    # On Apple, copy the desktop icon into the bundle
+    # On Apple, copy the desktop icon into the bundle __at build time__
     target_sources(osc PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/osc.icns")
     set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/osc.icns" PROPERTIES
         MACOSX_PACKAGE_LOCATION Resources
         HEADER_FILE_ONLY TRUE
     )
+
+    # On Apple, at install time, just copy the bundle. Everything was
+    # bundled at build time.
+    install(TARGETS osc BUNDLE DESTINATION .)
 endif()
 
 if (BUILD_TESTING)
