@@ -1,60 +1,20 @@
 # Windows packaging
 #
-# Creates a self-extracting (.msi) installer with NSIS and a portable ZIP
-# installer. Requires NSIS.exe, from: https://nsis.sourceforge.io/Download
+# Creates a self-extracting (.msi) installer with WiX and a portable ZIP
+# installer. Requires WiX, download and install WiX3 (e.g. ``wix314.exe``)
+# from https://github.com/wixtoolset/wix3/releases (see OSC documentation)
 
 option(OSC_CODESIGN_ENABLED     "Enable codesigning the built binaries (exes/dlls) and resulting installer"                 OFF)
 option(OSC_PACKAGE_PORTABLE_ZIP "Enable creating a portable ZIP package"                                                    ON)
 option(OSC_PACKAGE_MSI          "Enable using WiX to package an MSI installer (https://github.com/wixtoolset/wix/releases)" ON)
 
-# package any required system libraries (C/C++ runtimes)
-include(InstallRequiredSystemLibraries)
-
-# install osc.exe and all of its RUNTIME_DEPENDENCIES
-#
-# https://stackoverflow.com/questions/62884439/how-to-use-cmake-file-get-runtime-dependencies-in-an-install-statement
-install(
-    TARGETS osc
-    RUNTIME_DEPENDENCIES
-        PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"  # don't install Windows-provided libs
-        POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"  # don't install Windows-provided libs
-)
-
-# install a user-facing `osc.toml` config file
-#
-#     - in contrast to the dev-centric one, this loads resources from the installation dir,
-#       which has a known path relative to the osc executable (../resources)
-if(TRUE)
-    set(OSC_CONFIG_RESOURCES_DIR "resources")  # relative to `osc.toml`
-    configure_file(
-        "${PROJECT_SOURCE_DIR}/osc/osc.toml.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
-        @ONLY
-    )
-    unset(OSC_CONFIG_RESOURCES_DIR)
-
-    install(
-        FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
-        RENAME "osc.toml"
-        DESTINATION "."
-    )
-endif()
-
-# install the runtime `resources/` (assets) dir
-install(
-    DIRECTORY
-        "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator"
-        "$<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:${PROJECT_SOURCE_DIR}/resources/oscar_demos>"
-    DESTINATION "resources"
-)
-
 # use the naming convention `opensimcreator-$version-windows-$arch.exe` (#975)
-string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} OSC_ARCH_LOWERCASE)
-set(CPACK_SYSTEM_NAME "windows-${OSC_ARCH_LOWERCASE}")
-unset(OSC_ARCH_LOWERCASE)
+string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} _arch_lowercase)
+set(CPACK_SYSTEM_NAME "windows-${_arch_lowercase}")
+unset(_arch_lowercase)
 
 # If requested, package the install tree into a zip (portable installer)
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "${OSC_PACKAGE_NAME}")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}")
 if(OSC_PACKAGE_PORTABLE_ZIP)
     list(APPEND CPACK_GENERATOR "ZIP")
 endif()
@@ -67,26 +27,28 @@ if(OSC_PACKAGE_MSI)
 
     # set `CPACK_WIX_UPGRADE_CODE` as a GUID derived from the project properties
     if(TRUE)
-        string(MD5 OSC_VERSION_MD5_HASH "${PROJECT_NAME}-${PROJECT_VERSION}")
-        string(LENGTH "${OSC_VERSION_MD5_HASH}" _hash_len)
+        string(MD5 _osc_version_md5_hash "${PROJECT_NAME}-${PROJECT_VERSION}")
+        string(LENGTH "${_osc_version_md5_hash}" _hash_len)
         if(_hash_len LESS 32)
-            message(FATAL_ERROR "MD5 hash too short: ${OSC_VERSION_MD5_HASH}")
+            message(FATAL_ERROR "MD5 hash too short: ${_osc_version_md5_hash}")
         endif()
-        string(SUBSTRING "${OSC_VERSION_MD5_HASH}" 0 8  part1)
-        string(SUBSTRING "${OSC_VERSION_MD5_HASH}" 8 4  part2)
-        string(SUBSTRING "${OSC_VERSION_MD5_HASH}" 12 4 part3)
-        string(SUBSTRING "${OSC_VERSION_MD5_HASH}" 16 4 part4)
-        string(SUBSTRING "${OSC_VERSION_MD5_HASH}" 20 12 part5)
-        set(OSC_VERSION_GUID "${part1}-${part2}-${part3}-${part4}-${part5}")
-        set(CPACK_WIX_UPGRADE_CODE "${OSC_VERSION_GUID}")  # must be stable between releases
-        set(CPACK_WIX_UPGRADE_GUID "${OSC_VERSION_GUID}")  # must be stable between releases
-        unset(OSC_VERSION_MD5_HASH)
-        unset(part1)
-        unset(part2)
-        unset(part3)
-        unset(part4)
-        unset(part5)
-        unset(OSC_VERSION_GUID)
+        string(SUBSTRING "${_osc_version_md5_hash}" 0  8  _part1)
+        string(SUBSTRING "${_osc_version_md5_hash}" 8  4  _part2)
+        string(SUBSTRING "${_osc_version_md5_hash}" 12 4  _part3)
+        string(SUBSTRING "${_osc_version_md5_hash}" 16 4  _part4)
+        string(SUBSTRING "${_osc_version_md5_hash}" 20 12 _part5)
+        set(_osc_version_guid "${_part1}-${_part2}-${_part3}-${_part4}-${_part5}")
+
+        set(CPACK_WIX_UPGRADE_CODE "${_osc_version_guid}")  # must be stable between releases
+        set(CPACK_WIX_UPGRADE_GUID "${_osc_version_guid}")  # must be stable between releases
+
+        unset(_osc_version_guid)
+        unset(_part5)
+        unset(_part4)
+        unset(_part3)
+        unset(_part2)
+        unset(_part1)
+        unset(_osc_version_md5_hash)
         message(STATUS "Using deterministic UpgradeCode: ${CPACK_WIX_UPGRADE_CODE}")
     endif()
 endif()

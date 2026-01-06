@@ -54,6 +54,7 @@ set(
 )
 mark_as_advanced(OSC_AUTHOR_EMAIL)
 option(OSC_BUNDLE_OSCAR_DEMOS "enable/disable bundling oscar demos with the `osc` application" OFF)
+mark_as_advanced(OSC_BUNDLE_OSCAR_DEMOS)
 
 # set OSC_BUILD_ID
 if(DEFINED ENV{OSC_BUILD_ID})
@@ -116,12 +117,8 @@ if(WIN32)
     # On Windows with MSVC, indicate it's compiling a desktop application.
     target_link_options(osc PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:
-
-            # Windows: open as a desktop app, not CLI
-            /SUBSYSTEM:windows
-
-            # Windows: call into `main`, not `WinMain`
-            /ENTRY:mainCRTStartup
+            /SUBSYSTEM:windows     # Open as a desktop app (no console window)
+            /ENTRY:mainCRTStartup  # Call into `main`, not `WinMain`
         >
     )
 
@@ -134,6 +131,44 @@ if(WIN32)
         PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:osc> $<TARGET_RUNTIME_DLLS:osc>
         COMMAND_EXPAND_LISTS
+    )
+
+    # On Windows (installation), package any required system libraries (C/C++ runtimes)
+    include(InstallRequiredSystemLibraries)
+
+    # On Windows (installation), install `osc` and all of its RUNTIME_DEPENDENCIES
+    #
+    # https://stackoverflow.com/questions/62884439/how-to-use-cmake-file-get-runtime-dependencies-in-an-install-statement
+    install(
+        TARGETS osc
+        RUNTIME_DEPENDENCIES
+            PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"  # don't install Windows-provided libs
+            POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"  # don't install Windows-provided libs
+    )
+
+    # On Windows (installation), install a user-facing `osc.toml` config file
+    #
+    #     - in contrast to the dev-centric one, this loads resources from the installation dir,
+    #       which has a known path relative to the osc executable (../resources)
+    if(TRUE)
+        set(OSC_CONFIG_RESOURCES_DIR "resources")  # relative to `osc.toml`
+        configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
+            @ONLY
+        )
+        unset(OSC_CONFIG_RESOURCES_DIR)
+        install(
+            FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
+            RENAME "osc.toml"
+            DESTINATION "."
+        )
+    endif()
+
+    # On Windows (installation), install the runtime `resources/` (assets) directory
+    install(
+        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../resources/OpenSimCreator"
+        DESTINATION "resources"
     )
 elseif(UNIX AND NOT APPLE)
     # On Linux, configure an `osc.toml` that's used when running from the

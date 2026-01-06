@@ -52,7 +52,6 @@ endif()
 install(
     DIRECTORY
         "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator"
-        "$<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:${PROJECT_SOURCE_DIR}/resources/oscar_demos>"
     DESTINATION
         "resources/"
 )
