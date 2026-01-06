@@ -5,8 +5,7 @@
 
 option(OSC_CODESIGN_ENABLED     "Enable codesigning the built binaries (exes/dlls) and resulting installer"                 OFF)
 option(OSC_PACKAGE_PORTABLE_ZIP "Enable creating a portable ZIP package"                                                    ON)
-option(OSC_PACKAGE_WITH_NSIS    "Enable using NSIS to package an exe installer (https://nsis.sourceforge.io/Download)"      OFF)
-option(OSC_PACKAGE_WITH_WIX     "Enable using WiX to package an MSI installer (https://github.com/wixtoolset/wix/releases)" ON)
+option(OSC_PACKAGE_MSI          "Enable using WiX to package an MSI installer (https://github.com/wixtoolset/wix/releases)" ON)
 
 # package any required system libraries (C/C++ runtimes)
 include(InstallRequiredSystemLibraries)
@@ -54,40 +53,14 @@ string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} OSC_ARCH_LOWERCASE)
 set(CPACK_SYSTEM_NAME "windows-${OSC_ARCH_LOWERCASE}")
 unset(OSC_ARCH_LOWERCASE)
 
+# If requested, package the install tree into a zip (portable installer)
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${OSC_PACKAGE_NAME}")
-
-
 if(OSC_PACKAGE_PORTABLE_ZIP)
     list(APPEND CPACK_GENERATOR "ZIP")
 endif()
 
-# conditionally use NSIS to package a self-extracting EXE installer
-if(OSC_PACKAGE_WITH_NSIS)
-    list(APPEND CPACK_GENERATOR "NSIS")
-
-    # set NSIS variables so that the self-extracting installer behaves as expected
-    set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/osc/osc.ico")
-    set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
-    set(CPACK_NSIS_HELP_LINK ${CPACK_PACKAGE_HOMEPAGE_URL})
-    set(CPACK_NSIS_CONTACT "${OSC_AUTHOR_EMAIL}")
-    set(CPACK_NSIS_MODIFY_PATH OFF)  # do not prompt the user to modify the PATH
-    set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
-
-    # BROKE: set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-    #
-    # the reason it's broke is because CMake has changed something in more-recent
-    # versions that breaks it. There's a PR about it here:
-    #
-    # - https://gitlab.kitware.com/cmake/cmake/-/issues/23001
-
-    # BROKE: set(CPACK_NSIS_MUI_FINISHPAGE_RUN osc)
-    #
-    # it boots the app with admin privs if the installer is ran with admin privs
-    # see opensim-creator/#95 (or inkscape's CMake file)
-endif()
-
-# conditionally use WiX to package an MSI installer
-if(OSC_PACKAGE_WITH_WIX)
+# If requested, use WiX to package an MSI installer
+if(OSC_PACKAGE_MSI)
     list(APPEND CPACK_GENERATOR "WIX")
 
     set(CPACK_WIX_PRODUCT_ICON "${PROJECT_SOURCE_DIR}/osc/osc.ico")
@@ -118,7 +91,7 @@ if(OSC_PACKAGE_WITH_WIX)
     endif()
 endif()
 
-# Handle code signing
+# If requested, handle code signing
 if(OSC_CODESIGN_ENABLED)
     # see: https://learn.microsoft.com/en-us/windows/win32/seccrypto/signtool
     # and: https://www.files.certum.eu/documents/manual_en/Code-Signing-signing-the-code-using-tools-like-Singtool-and-Jarsigner_v2.3.pdf

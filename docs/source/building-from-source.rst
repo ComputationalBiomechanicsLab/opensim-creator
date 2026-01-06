@@ -45,25 +45,22 @@ Here is a step-by-step guide for setting up a typical development environment:
     3. Verify it's installed by opening a terminal (``Shift+Right-Click`` -> ``Open Powershell window here``)
        and run ``cmake``.
 
-4. Get ``NSIS`` (if `OSC_PACKAGE_WITH_NSIS` is `ON`, and you plan on packaging an installer ``.exe``):
-    1. Download and install it from https://nsis.sourceforge.io/Download
-
-5. Get ``WiX`` (can be disabled with -DOSC_PACKAGE_WITH_WIX=OFF, builds the ``.msi`` installer):
+4. Get ``WiX`` (can be disabled with -DOSC_PACKAGE_MSI=OFF, builds the ``.msi`` installer):
     1. Download and install WiX3 (e.g. ``wix314.exe``) from https://github.com/wixtoolset/wix3/releases
     2. Avoid using newer WiX versions because GitHub runner images etc. currently still use WiX3 (see: https://github.com/actions/runner-images/tree/main/images/windows)
 
-6. Get ``python`` and ``pip``:
+5. Get ``python`` and ``pip``:
     1. Download from https://www.python.org/downloads/
     2. Make sure ``python`` and ``pip`` are added to the ``PATH`` (the installer usually prompts this)
     3. Verify they are installed by opening a terminal (``Shift+Right-Click`` -> ``Open Powershell window here``) and run ``python --help`` and ``pip --help``
 
-7. Clone the ``opensim-creator`` source code repository:
+6. Clone the ``opensim-creator`` source code repository:
     1. Open a terminal, ``cd`` to your workspace directory (e.g. ``Desktop``),
        and run ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``
     2. The resulting ``opensim-creator`` directory should contain all necessary
        source code to build the project (incl. third_party code etc.)
 
-8. Install ``pip`` package dependencies:
+7. Install ``pip`` package dependencies:
     1. Using either a virtual environment (google it), or your base ``python``
        installation, ``cd`` into the ``opensim-creator`` directory in a terminal
        and install python dependencies with:
