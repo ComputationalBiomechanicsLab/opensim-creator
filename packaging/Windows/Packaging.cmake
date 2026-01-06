@@ -1,6 +1,6 @@
-# Windows packaging
+# Microsoft Installer (MSI) and Portable (ZIP) Packaging Script
 #
-# Creates a self-extracting (.msi) installer with WiX and a portable ZIP
+# Creates a self-extracting `.msi` installer with WiX and a portable ZIP
 # installer. Requires WiX, download and install WiX3 (e.g. ``wix314.exe``)
 # from https://github.com/wixtoolset/wix3/releases (see OSC documentation)
 

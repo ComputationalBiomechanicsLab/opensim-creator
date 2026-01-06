@@ -115,7 +115,7 @@ if(WIN32)
         COMMAND_EXPAND_LISTS
     )
 
-    # On Windows (installation), package any required system libraries (C/C++ runtimes)
+    # On Windows (installation), install any required system libraries (C/C++ runtimes)
     include(InstallRequiredSystemLibraries)
 
     # On Windows (installation), install `osc` and all of its RUNTIME_DEPENDENCIES
@@ -133,7 +133,7 @@ if(WIN32)
     #     - in contrast to the dev-centric one, this loads resources from the installation dir,
     #       which has a known path relative to the osc executable (../resources)
     if(TRUE)
-        set(OSC_CONFIG_RESOURCES_DIR "resources")  # relative to `osc.toml`
+        set(OSC_CONFIG_RESOURCES_DIR "resources")  # relative to `osc.toml` at install time
         configure_file(
             "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
             "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
@@ -171,6 +171,40 @@ elseif(UNIX AND NOT APPLE)
     #     ${SOME_ROOT}/lib/*.so
     #     ${SOME_ROOT}/bin/osc (executable)
     set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
+
+    # On Linux (installation), install runtime libraries into the install directory
+    include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR, _INCLUDEDIR, etc.
+    install(
+        TARGETS osc
+        RUNTIME_DEPENDENCIES
+        DIRECTORIES ${CMAKE_INSTALL_LIBDIR}
+        POST_EXCLUDE_REGEXES "^/usr/*" "^/lib/*"  # don't copy system-provided dependencies
+    )
+
+    # On Linux (installation): install a user-facing `osc.toml` config file
+    #
+    # In contrast to the dev-centric one, this loads resources from the installation
+    # directory, which has a known path relative to the osc executable (../resources)
+    if(TRUE)
+        set(OSC_CONFIG_RESOURCES_DIR "resources")  # relative to `osc.toml` at install time
+        configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_debian.toml"
+            @ONLY
+        )
+        unset(OSC_CONFIG_RESOURCES_DIR)
+        install(
+            FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_debian.toml"
+            RENAME "osc.toml"
+            DESTINATION "."
+        )
+    endif()
+
+    # On Linux (installation), copy `resources/` (assets) directory
+    install(
+        DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/../resources/OpenSimCreator"
+        DESTINATION "resources/"
+    )
 elseif(APPLE)
     # On Apple, resource files (configuration, images, etc.) are
     # considered to be part of the BUILD artifact, not an INSTALL concern,

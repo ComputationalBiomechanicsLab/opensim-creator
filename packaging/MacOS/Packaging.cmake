@@ -1,12 +1,11 @@
-# Apple MacOS packaging script
+# DMG Packaging Script
 #
-# Creates a DMG (archive) that packages the whole application into
-# a single directory tree that can be dragged to `/Applications`
+# Creates a DMG (archive) that packages the whole application into a
+# single directory tree that can be dragged to `/Applications` on MacOS.
 
 option(OSC_CODESIGN_ENABLED     "Enable codesigning the resulting application bundle and DMG file"    OFF)
 option(OSC_NOTARIZATION_ENABLED "Enable notarizing (xcrun notarytool) the resulting DMG file" OFF)
 
-# Package the software into a DMG file with a "Drag the app bundle to the Applications folder" link.
 set(CPACK_GENERATOR DragNDrop)
 set(CPACK_DMG_CREATE_APPLICATIONS_LINK ON)
 set(CPACK_DMG_VOLUME_NAME "${OSC_LONG_APPNAME} ${PROJECT_VERSION}")
@@ -49,7 +48,7 @@ if(OSC_CODESIGN_ENABLED)
     list(APPEND CPACK_POST_BUILD_SCRIPTS "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_dmg.cmake")
 endif()
 
-# Handle notarization (requires `OSC_CODESIGN_ENABLED`).
+# Handle notarization
 if(OSC_NOTARIZATION_ENABLED)
     if(NOT OSC_CODESIGN_ENABLED)
         message(FATAL_ERROR "OSC_NOTARIZATION_ENABLED is ${OSC_NOTARIZATION_ENABLED} but OSC_CODESIGN_ENABLED is ${OSC_CODESIGN_ENABLED}: notarization requires code signing to be enabled")
