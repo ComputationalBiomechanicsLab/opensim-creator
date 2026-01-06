@@ -1,6 +1,6 @@
 # Windows packaging
 #
-# Creates a self-extracting (.exe) installer with NSIS and a portable ZIP
+# Creates a self-extracting (.msi) installer with NSIS and a portable ZIP
 # installer. Requires NSIS.exe, from: https://nsis.sourceforge.io/Download
 
 option(OSC_CODESIGN_ENABLED     "Enable codesigning the built binaries (exes/dlls) and resulting installer"                 OFF)
@@ -66,8 +66,7 @@ if(OSC_PACKAGE_WITH_NSIS)
     list(APPEND CPACK_GENERATOR "NSIS")
 
     # set NSIS variables so that the self-extracting installer behaves as expected
-    set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator/textures/logo.ico")
-    set(CPACK_NSIS_INSTALLED_ICON_NAME "resources/OpenSimCreator/textures/logo.ico")
+    set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/osc/osc.ico")
     set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
     set(CPACK_NSIS_HELP_LINK ${CPACK_PACKAGE_HOMEPAGE_URL})
     set(CPACK_NSIS_CONTACT "${OSC_AUTHOR_EMAIL}")
@@ -91,7 +90,7 @@ endif()
 if(OSC_PACKAGE_WITH_WIX)
     list(APPEND CPACK_GENERATOR "WIX")
 
-    set(CPACK_WIX_PRODUCT_ICON "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator/textures/logo.ico")
+    set(CPACK_WIX_PRODUCT_ICON "${PROJECT_SOURCE_DIR}/osc/osc.ico")
 
     # set `CPACK_WIX_UPGRADE_CODE` as a GUID derived from the project properties
     if(TRUE)
