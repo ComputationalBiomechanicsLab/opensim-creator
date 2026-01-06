@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7703588.svg)](https://doi.org/10.5281/zenodo.7703588)
 
-# OpenSim Creator <img src="resources/OpenSimCreator/textures/logo.svg" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
+# OpenSim Creator <img src="packaging/Debian/osc.svg" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
 
 > A UI for building OpenSim models
 
