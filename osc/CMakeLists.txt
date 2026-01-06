@@ -35,24 +35,6 @@ set(
     "a longer, user-friendly name of the application"
 )
 mark_as_advanced(OSC_LONG_APPNAME)
-set(
-    OSC_SOFTWARE_DESCRIPTION "A standalone GUI for building OpenSim models"
-    CACHE STRING
-    "a desription of what the software does (shows in package installers on Debian, for example)"
-)
-mark_as_advanced(OSC_SOFTWARE_DESCRIPTION)
-set(
-    OSC_AUTHOR "Adam Kewley"
-    CACHE STRING
-    "the user-facing name of the author (appears in installer, etc.)"
-)
-mark_as_advanced(OSC_AUTHOR)
-set(
-    OSC_AUTHOR_EMAIL "contact@adamkewley.com"
-    CACHE STRING
-    "the user-facing email of the author (appears in 'email support', installer, etc.)"
-)
-mark_as_advanced(OSC_AUTHOR_EMAIL)
 option(OSC_BUNDLE_OSCAR_DEMOS "enable/disable bundling oscar demos with the `osc` application" OFF)
 mark_as_advanced(OSC_BUNDLE_OSCAR_DEMOS)
 

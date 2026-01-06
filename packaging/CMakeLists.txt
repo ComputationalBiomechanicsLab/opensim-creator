@@ -8,6 +8,24 @@ set(
     "a prefix for the name of the built package (e.g. OSC_PACKAGE_NAME-version.exe)"
 )
 mark_as_advanced(OSC_PACKAGE_NAME)
+set(
+    OSC_AUTHOR "Adam Kewley"
+    CACHE STRING
+    "the user-facing name of the author (appears in installer, etc.)"
+)
+mark_as_advanced(OSC_AUTHOR)
+set(
+    OSC_AUTHOR_EMAIL "contact@adamkewley.com"
+    CACHE STRING
+    "the user-facing email of the author (appears in 'email support', installer, etc.)"
+)
+mark_as_advanced(OSC_AUTHOR_EMAIL)
+set(
+    OSC_SOFTWARE_DESCRIPTION "A standalone GUI for building OpenSim models"
+    CACHE STRING
+    "a desription of what the software does (shows in package installers on Debian, for example)"
+)
+mark_as_advanced(OSC_SOFTWARE_DESCRIPTION)
 
 # set OSC_PACKAGING_DIR
 if(TRUE)
