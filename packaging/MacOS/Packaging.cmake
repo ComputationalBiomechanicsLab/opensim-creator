@@ -12,40 +12,12 @@ set(CPACK_DMG_CREATE_APPLICATIONS_LINK ON)
 set(CPACK_DMG_VOLUME_NAME "${OSC_LONG_APPNAME} ${PROJECT_VERSION}")
 
 # Install the `osc` bundle target (includes executable and plist).
-install(TARGETS osc BUNDLE DESTINATION .)
-
-# Generate + install the user-facing `osc.toml` file
 #
-# In contrast to the dev-centric one, this loads resources from the bundle `Resources/` dir,
-# which has a known path relative to the osc executable (../Resources/osc.toml).
-set(OSC_CONFIG_RESOURCES_DIR ".")  # relative to `osc.toml`
-configure_file(
-    "${PROJECT_SOURCE_DIR}/osc/osc.toml.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_macos.toml"
-    @ONLY
-)
-unset(OSC_CONFIG_RESOURCES_DIR)
-install(
-    FILES       "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_macos.toml"
-    RENAME      "osc.toml"
-    DESTINATION "$<TARGET_BUNDLE_CONTENT_DIR:osc>/Resources"
-)
-
-# Install the `resources/` (assets) directory.
-install(
-    DIRECTORY
-        "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator"
-        "$<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:${PROJECT_SOURCE_DIR}/resources/oscar_demos>"
-
-    DESTINATION "$<TARGET_BUNDLE_CONTENT_DIR:osc>/Resources"
-)
-
-# Install the Mac-specific desktop icon (.icns).
-install(
-    FILES       "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator/textures/logo.icns"
-    RENAME      "osc.icns"  # must match `CFBundleIconFile` in `Info.plist
-    DESTINATION "$<TARGET_BUNDLE_CONTENT_DIR:osc>/Resources"
-)
+# It's assumed that the bundle already contains all necessary
+# runtime resources (e.g. images, configuration files) because
+# Apple treats the entire application container (`.app`) as the
+# resulting binary.
+install(TARGETS osc BUNDLE DESTINATION .)
 
 # Ensure the installer is named `opensimcreator-${version}-macos-${arch}.dmg`.
 if(CMAKE_OSX_ARCHITECTURES)

@@ -67,6 +67,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   it show the full application name in things like the Finder and Docking bar. A symlink and
   `Info.plist` mention of `osc` should mean that any existing scripts that strongly depend on the
   old name should work (you might need to update your `PATH`, though).
+- The MacOS application bundle is now created at build-time, rather than install-time.
 
 
 ## [0.6.2] - 2025/11/03

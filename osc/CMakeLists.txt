@@ -75,15 +75,6 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/generated/osc/osc_config.h"
     @ONLY
 )
-# Configure an `osc.toml` that's used when running from the
-# build directory (runtime configuration)
-#
-# See `packaging/` for the installed version
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/osc.toml"
-    @ONLY
-)
 
 # setup generic (OS-independent) `osc` executable target
 add_executable(osc osc.cpp)
@@ -99,16 +90,30 @@ target_include_directories(osc
     PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/
 )
 
-# Make OS-specific modifications to `osc`
+# Make OS-specific modifications for the `osc` target
 if(WIN32)
+    # On Windows, configure an `osc.toml` that's used when running `osc`
+    # from the build directory (runtime configuration when developing)
+    #
+    # See `packaging/` for the `osc.toml` that's used at install-time
+    set(OSC_CONFIG_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources")
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/osc.toml"
+        @ONLY
+    )
+    unset(OSC_CONFIG_RESOURCES_DIR)
+
+    # On Windows with MSVC, link a `resources.rc` file.
+    #
+    # It tells the MSVC compiler how to compile non-source resources into
+    # the output exe. Specifically, it's used to embed the application icon
+    # into the `osc` exe
     target_sources(osc PRIVATE
-        # Windows: also link a resources file (rc)
-        #
-        # the resources file tells MSVC compiler how to compile non-source resources
-        # into the output exe. Specifically, it's used to embed the application icon
-        # into the `osc` exe
         $<$<CXX_COMPILER_ID:MSVC>:${CMAKE_CURRENT_SOURCE_DIR}/resources.rc>
     )
+
+    # On Windows with MSVC, indicate it's compiling a desktop application.
     target_link_options(osc PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:
 
@@ -120,7 +125,7 @@ if(WIN32)
         >
     )
 
-    # for development on Windows, copy all runtime dlls to the exe directory
+    # On Windows, copy all runtime dlls to the exe directory
     # (because Windows doesn't have an RPATH)
     #
     # see: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html?highlight=runtime#genex:TARGET_RUNTIME_DLLS
@@ -131,6 +136,18 @@ if(WIN32)
         COMMAND_EXPAND_LISTS
     )
 elseif(UNIX AND NOT APPLE)
+    # On Linux, configure an `osc.toml` that's used when running from the
+    # build directory (runtime configuration)
+    #
+    # See `packaging/` for the installed version
+    set(OSC_CONFIG_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources")
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/osc.toml"
+        @ONLY
+    )
+    unset(OSC_CONFIG_RESOURCES_DIR)
+
     # On Linux, set RPATH of `osc` to $ORIGIN/../lib, because unix directory
     # structure usually is:
     #
@@ -138,25 +155,69 @@ elseif(UNIX AND NOT APPLE)
     #     ${SOME_ROOT}/bin/osc (executable)
     set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
 elseif(APPLE)
-    # Generate + specify a valid `Info.plist` file for the Mac bundle.
+    # On Apple, resource files (configuration, images, etc.) are
+    # considered to be part of the BUILD artifact, not an INSTALL concern,
+    # because MacOS bundles are "the resultant executable" and contain
+    # everything.
+
+    # On Apple, generate + specify a valid `Info.plist` file for the Mac bundle.
     configure_file(
-            "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
-            "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
-            @ONLY
+        "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
+        @ONLY
     )
 
-    # When building `osc` for Apple platforms, build it as a MacOSX bundle (enables using BUNDLE variables).
+    # On Apple, build `osc` it as a MacOSX bundle (enables using BUNDLE variables).
     set_target_properties(osc PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
         OUTPUT_NAME "${OSC_LONG_APPNAME}"  # This is what users see in the docking bar etc.
     )
 
-    # Create a symlink named 'osc' inside the bundle next to the main binary
+    # On Apple, create a symlink named 'osc' inside the bundle next to the main binary
     add_custom_command(TARGET osc POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E create_symlink
         "OpenSim Creator"
         "$<TARGET_FILE_DIR:osc>/osc"
+    )
+
+    # On Apple, generate an `osc.toml` file inside the bundle __at build time__
+    set(OSC_CONFIG_RESOURCES_DIR ".")  # relative to `osc.toml` in the bundle
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/osc.toml"
+        @ONLY
+    )
+    unset(OSC_CONFIG_RESOURCES_DIR)
+    target_sources(osc PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/generated/osc.toml")
+    set_source_files_properties(
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/osc.toml"
+        PROPERTIES
+            MACOSX_PACKAGE_LOCATION Resources
+            HEADER_FILE_ONLY TRUE
+    )
+
+    # On Apple, copy all resource files into the bundle __at build time__
+    # and ensure they have the same directory structure
+    file(GLOB_RECURSE OSC_RESOURCE_FILES
+        CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/../resources/*"
+    )
+    foreach(_absolute_path ${OSC_RESOURCE_FILES})
+        file(RELATIVE_PATH _relative_path "${CMAKE_CURRENT_SOURCE_DIR}/../resources/" ${_absolute_path})
+        get_filename_component(_relative_directory "${_relative_path}" DIRECTORY)
+        target_sources(osc PRIVATE "${_absolute_path}")
+        set_source_files_properties("${_absolute_path}" PROPERTIES
+            MACOSX_PACKAGE_LOCATION "Resources/${_relative_directory}"
+            HEADER_FILE_ONLY TRUE
+        )
+    endforeach()
+
+    # On Apple, copy the desktop icon into the bundle
+    target_sources(osc PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/osc.icns")
+    set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/osc.icns" PROPERTIES
+        MACOSX_PACKAGE_LOCATION Resources
+        HEADER_FILE_ONLY TRUE
     )
 endif()
 
