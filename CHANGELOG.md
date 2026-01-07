@@ -6,68 +6,67 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- The Ubuntu package now no longer depends on `libblas3`/`liblapack3` as external
-  dependencies.
+## [0.7.0] - 2026/01/07
+
+- Added `compensate_for_frame_warping` to Thin-Plate Spline (TPS) warping steps in
+  the model warper workflow. The option compensates for cases where a scaling step
+  in the model warper operates on frames that may already have been warped by previous
+  steps, which can result in double-warping of the data (#1144).
+- Added "Total Length" as an option in the muscle plot panel (#1141).
+- Added `ThinPlateSplineBodyCenterOfMassScalingStep` to the model warper workflow, which can
+  be used to TPS-warp a body's center of mass as part of a model warping procedure (#1147).
+- Changed the (internal) software architecture:
+  - The project now uses [OPynSim](https://github.com/opynsim/opynsim) as its OpenSim/Simbody
+    provider. This should enable porting some of OpenSim Creator's algorithms upstream so that
+    they can be used from Python.
+  - The project now uses [oscar](https://github.com/adamkewley/oscar) as its backend. `oscar`
+    is effectively a separate refactor of OpenSim Creator's existing engine. This is an
+    organizational change that enables building new OpenSim Creator-like UIs separately
+    from OpenSim/simbody/OPynSim.
+  - The project now uses [msmicons](https://github.com/adamkewley/msmicons) as the source of
+    its icon font. This is entirely an organizational change to promote using the font in other
+    projects.
+- Changed the MacOS application bundle name to "OpenSim Creator" (previously: "osc"). This makes
+  it show the full application name in things like the Finder and Dock. A symlink and
+  `Info.plist` mention of `osc` should mean that any existing scripts that strictly depend on
+  the old name should continue to work (you might need to update your `PATH`, though).
+- Changed the MacOS application bundle to be created at build-time, rather than install-time
+  (development/cmake detail).
+- Changed the Debian/Ubuntu package to no longer depend on `libblas3`/`liblapack3` as external
+  dependencies (it now only depends on `libgl1`, `libopengl0`, and `libstdc++6`).
+- Changed the example model files that are included with OpenSim Creator to simplify
+  the user experience by having a shorter list with clearer names:
+  - Removed: `bouncing_block_weak_spring.osim`, `gait10dof18musc_subject01*.osim`,
+    `subject01_simbody.osim`, `gait2392_millard2012muscle_subject01.osim`,
+    `gait2392_millard2012muscle_subject01_adjusted.osim`, `gait2392_thelen2003muscle_subject01_simbody_adjusted.osim`,
+    `Rajagopal2015_opensense.osim`, and `ToyLandingModel_activeAFO.osim`.
+  - Renamed for clarity/correctness: `GeometryBackendTest.osim` -> `OpenSimGeometriesExample.osim`,
+    `FullBodyModel_Hamner2010_v2_0.osim` -> `Hamner2010_FullBodyModel_v2_0.osim`,
+    `StationDefinedFrame.osim` -> `StationDefinedFrameExample.osim`,
+    `StationDefinedFrame_Advanced.osim` -> `StationDefinedFrameAdvancedExample.osim`, and
+    `Rajagopal2015.osim` -> `Rajagopal2016.osim`.
+  - Updated from upstream (`opensim-org/opensim-models`): `Hamner2010_FullBodyModel_v2_0.osim`
+    (fixed inertial inequalities), `Rajagopal2016.osim` (includes changes to also
+    support `RajagopalLaiUhlrich2023.osim`).
+- Changed the model warper workflow to now clear the filepath of the exported/warped model, so
+  that it's harder to accidentally save the warped model over the source model (#1146).
+- Changed the mesh warper workflow to only apply the `scale` and `warp` components of the TPS warp
+  to the source mesh to yield the result mesh by default (previously, it applied `scale`, `rotate`,
+  `translate` and `warp`). This matches the model warper workflow's defaults (#1122).
+- Removed the frame definition workflow. It has had deprecation messages and been hidden
+  in the UI for roughly one year with no complaints (#951). Moving forward, we recommend
+  using OpenSim-native components, such as `StationDefinedFrame` to define frames in models.
 - Fixed the "select geometry to attach" popup not listing geometry files that are
   included with the OpenSim Creator installation.
-- Added "Total Length" as an option in the muscle plot panel (#1141).
 - Fixed a regression in the simulation workflow where clicking and dragging
   the mouse over a simulation plot was no longer continuously scrubbing through
   the simulation (#1139).
-- Added `compensate_for_frame_warping` to Thin-Plate Spline (TPS) warping steps in
-  the model warper workflow. The option compensates for the case where a scaling step
-  in the model warper operates on frames that may have been warped by previous steps,
-  which can result in double-warping of the data (#1144).
-- The following example models were removed from OpenSim Creator's installation in order
-  to simplify the user experience:
-  - `bouncing_block_weak_spring.osim`
-  - `gait10dof18musc_subject01*.osim`
-  - `subject01_simbody.osim`
-  - `gait2392_millard2012muscle_subject01.osim`
-  - `gait2392_millard2012muscle_subject01_adjusted.osim`
-  - `gait2392_thelen2003muscle_subject01_simbody_adjusted.osim`
-  - `Rajagopal2015_opensense.osim`
-  - `ToyLandingModel_activeAFO.osim`
-- The following example models were renamed, for clarity/correctness:
-  - `GeometryBackendTest.osim` -> `OpenSimGeometriesExample.osim`
-  - `FullBodyModel_Hamner2010_v2_0.osim` -> `Hamner2010_FullBodyModel_v2_0.osim`
-  - `StationDefinedFrame.osim` -> `StationDefinedFrameExample.osim`
-  - `StationDefinedFrame_Advanced.osim` -> `StationDefinedFrameAdvancedExample.osim`
-  - `Rajagopal2015.osim` -> `Rajagopal2016.osim`
-- The following example models were updated to match `opensim-org/opensim-models`:
-  - `Hamner2010_FullBodyModel_v2_0.osim` (fixed inertial inequalities)
-  - `Rajagopal2016.osim` (includes changes to also support `RajagopalLaiUhlrich2023.osim`)
-- The specialized frame definition workflow was removed after one year of deprecation messages
-  and hiding it (#951). We recommend using OpenSim-native components, such as `StationDefinedFrame`
-  to define frames in models.
-- OpenSim Creator now uses [OPynSim](https://github.com/opynsim/opynsim) as its OpenSim/Simbody
-  provider. This should enable porting some of OpenSim Creator's algorithms upstream so that they
-  can be used from Python.
-- OpenSim Creator now uses [oscar](https://github.com/adamkewley/oscar) as its backend. `oscar`
-  is effectively a separated refactor of OpenSim Creator's existing engine. This is mostly an
-  organizational change for @adamkewley that enables building new OpenSim Creator-like UIs
-  separately from OpenSim/simbody/OPynSim.
-- OpenSim Creator now uses [msmicons](https://github.com/adamkewley/msmicons) as the source of
-  its icon font. This is entirely an organizational change to promote using the font in other
-  projects - it's identical to previous verions of OpenSim Creator.
-- The model warper now has a `ThinPlateSplineBodyCenterOfMassScalingStep`, which can be used
-  to TPS-warp a body's center-of-mass as part of a model warping procedure (#1147).
-- The model warper now clears the filepath of the exported/warped model, so that it's harder
-  to accidentally save the warped model over the source model (#1146).
-- Fixed body Center of Mass visualization was missing half of their segments (the ones flipped
-  via a negative scale) after backface culling was enabled (#1150).
-- The mesh warper workflow now only applies the `scale` and `warp` components of the TPS warp
-  to the source mesh to yield the result mesh (previously, it applied `scale`, `rotate`, `translate`
-  and `warp`), which matches the model warper workflow's defaults (#1122).
+- Fixed an issue where body center of mass visualizations were missing half of their segments (those
+  flipped via a negative scale) after backface culling was enabled (#1150).
 - Fixed an issue in the `oscar` backend where some icons (e.g. the playback buttons when running
   a new simulation) could sometimes be blank (#1145).
-- Fixed the sockets menu crashing with newer versions of OpenSim because `OpenSim::AbstractSocket::getConnecteeAsObject`
-  now requires an index argument (#1151).
-- The MacOS application bundle is now called "OpenSim Creator" (previously: "osc"), which makes
-  it show the full application name in things like the Finder and Docking bar. A symlink and
-  `Info.plist` mention of `osc` should mean that any existing scripts that strongly depend on the
-  old name should work (you might need to update your `PATH`, though).
-- The MacOS application bundle is now created at build-time, rather than install-time.
+- Fixed the sockets menu crashing with newer versions of OpenSim because
+  `OpenSim::AbstractSocket::getConnecteeAsObject` now requires an index argument (#1151).
 
 
 ## [0.6.2] - 2025/11/03
