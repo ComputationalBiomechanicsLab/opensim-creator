@@ -37,7 +37,10 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Rebase any currently-active feature branches onto the release commit (discourage stale branches)
     - [ ] Download release artifacts from the tagged commit CI build
       - [ ] Also, create a source tarball with `./scripts/ci_bundle-sources.sh ${VERSION}`
+      - [ ] For MacOS, ensure the codesigning environment variables are set: `OSC_CODESIGN_DEVELOPER_ID`,
+            `OSC_NOTARIZATION_APPLE_ID`, `OSC_NOTARIZATION_TEAM_ID`, and `OSC_NOTARIZATION_PASSWORD`.
       - [ ] For MacOS, the release must be built on a developer's machine with `./scripts/ci_build_mac-arm64.sh --codesign-enabled --notarization-enabled`
+      - [ ] For MacOS, the release must **also** be built on a developer's machine with `./scripts/ci_build_mac-amd64.sh --codesign-enabled --notarization-enabled`
       - [ ] For Windows, the release must be built on a developer's machine with `./scripts/ci_build_windows.bat --codesign-enabled`
     - [ ] Unzip/rename any artifacts (see prev. releases)
     - [ ] Create new release on github from the tagged commit
