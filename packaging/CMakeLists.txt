@@ -2,60 +2,38 @@ if(NOT TARGET osc)
     message(FATAL_ERROR "`osc` must be defined before packaging - it depends on targets/variables set by `osc`")
 endif()
 
-set(
-    OSC_PACKAGE_NAME "opensimcreator"
-    CACHE STRING
-    "a prefix for the name of the built package (e.g. OSC_PACKAGE_NAME-version.exe)"
-)
-mark_as_advanced(OSC_PACKAGE_NAME)
-set(
-    OSC_AUTHOR "Adam Kewley"
-    CACHE STRING
-    "the user-facing name of the author (appears in installer, etc.)"
-)
-mark_as_advanced(OSC_AUTHOR)
-set(
-    OSC_AUTHOR_EMAIL "contact@adamkewley.com"
-    CACHE STRING
-    "the user-facing email of the author (appears in 'email support', installer, etc.)"
-)
-mark_as_advanced(OSC_AUTHOR_EMAIL)
-set(
-    OSC_SOFTWARE_DESCRIPTION "A standalone GUI for building OpenSim models"
-    CACHE STRING
-    "a description of what the software does (usually shows in package installers)"
-)
-mark_as_advanced(OSC_SOFTWARE_DESCRIPTION)
-option(OSC_PACKAGE_PORTABLE_ZIP "Enable creating a portable ZIP package" ${WIN32})
+option(OSC_CODESIGN_ENABLED     "Enable codesigning the package (if applicable)" OFF)
+option(OSC_NOTARIZATION_ENABLED "Enable notarizing the package (if applicable)"  OFF)
 
-# set OSC_PACKAGING_DIR
-if(TRUE)
-    if(WIN32)
-        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/msi")
-    elseif(UNIX AND NOT APPLE)
-        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/deb")
-    elseif(APPLE)
-        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/dmg")
-    else()
-        set(OSC_PACKAGING_DIR_DEFAULT "UNKNOWN_PACKAGING_METHOD")
-    endif()
+# Set standard (shared) CPack variables
+set(CPACK_PACKAGE_NAME                "opensimcreator")
+set(CPACK_PACKAGE_VENDOR              "Adam Kewley")
+set(CPACK_PACKAGE_CONTACT             "Adam Kewley <contact@adamkewley.com>")
+set(CPACK_PACKAGE_HOMEPAGE_URL        "${OSC_REPO_URL}")
+set(CPACK_PACKAGE_DESCRIPTION         "A standalone GUI for building OpenSim models")
+set(CPACK_PACKAGE_EXECUTABLES         "osc;${OSC_LONG_APPNAME}")  # ensure human-readable application name can be searched in start bar etc. (#1079)
 
-    set(OSC_PACKAGING_DIR "${OSC_PACKAGING_DIR_DEFAULT}"
-        CACHE PATH
-        "a path to a directory containing a `Packaging.cmake` script that configures packaging the application for the target platform"
-    )
+# Set custom CPack variables that are forwarded to `CPackOptions.cmake` scripts
+set(CPACK_OSC_CODESIGN_ENABLED        ${OSC_CODESIGN_ENABLED})
+set(CPACK_OSC_NOTARIZATION_ENABLED    ${OSC_NOTARIZATION_ENABLED})
+set(CPACK_OSC_LONG_APPNAME            "${OSC_LONG_APPNAME}")
+set(CPACK_OSC_PROJECT_NAME            "${PROJECT_NAME}")
+set(CPACK_OSC_PROJECT_VERSION         "${PROJECT_VERSION}")
+set(CPACK_OSC_PROJECT_SOURCE_DIR      "${PROJECT_SOURCE_DIR}")
+set(CPACK_OSC_CMAKE_OSX_ARCHITECTURES "${CMAKE_OSX_ARCHITECTURES}")
+set(CPACK_OSC_CMAKE_SYSTEM_PROCESSOR  "${CMAKE_SYSTEM_PROCESSOR}")
+
+# Specify the top-level `CPackOptions.cmake` script
+set(CPACK_PROJECT_CONFIG_FILE      "${CMAKE_CURRENT_SOURCE_DIR}/CPackOptions.cmake")
+
+# Figure out `CPACK_GENERATOR` defaults
+if(WIN32)
+    set(CPACK_GENERATOR "ZIP;WIX")
+elseif(UNIX AND NOT APPLE)
+    set(CPACK_GENERATOR "DEB")
+elseif(APPLE)
+    set(CPACK_GENERATOR "DragNDrop")
 endif()
 
-# set shared/common CPack variables
-set(CPACK_PACKAGE_NAME "${OSC_PACKAGE_NAME}")
-set(CPACK_PACKAGE_VENDOR "${OSC_AUTHOR}")
-set(CPACK_PACKAGE_CONTACT "${OSC_AUTHOR} <${OSC_AUTHOR_EMAIL}>")
-set(CPACK_PACKAGE_HOMEPAGE_URL "${OSC_REPO_URL}")
-set(CPACK_PACKAGE_DESCRIPTION "${OSC_SOFTWARE_DESCRIPTION}")
-set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_LONG_APPNAME}")  # ensure human-readable application name can be searched in start bar etc. (#1079)
-if(OSC_PACKAGE_PORTABLE_ZIP)  # If requested, also package the install tree into a zip (portable installer)
-    list(APPEND CPACK_GENERATOR "ZIP")
-endif()
-
-# `include` platform-specific packaging instructions
-include(${OSC_PACKAGING_DIR}/Packaging.cmake)
+# Now that all `CPACK_` variables are set, include CPack
+include(CPack)

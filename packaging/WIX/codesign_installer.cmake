@@ -7,10 +7,10 @@ foreach(package ${CPACK_PACKAGE_FILES})
     execute_process(
         COMMAND
             signtool sign
-            /n  "@OSC_CERTIFICATE_SUBJECT@"
-            /tr "@OSC_CERTIFICATE_TIMESTAMP_SERVER@"
-            /td "@OSC_CERTIFICATE_TIMESTAMP_DIGEST@"
-            /fd "@OSC_CODESIGN_DIGEST_ALGORITHM@"
+            /n  "${CPACK_OSC_CERTIFICATE_SUBJECT}"
+            /tr "${CPACK_OSC_CERTIFICATE_TIMESTAMP_SERVER}"
+            /td "${CPACK_OSC_CERTIFICATE_TIMESTAMP_DIGEST}"
+            /fd "${CPACK_OSC_CODESIGN_DIGEST_ALGORITHM}"
             /v
             "${package}"
         RESULT_VARIABLE res

@@ -45,7 +45,7 @@ Here is a step-by-step guide for setting up a typical development environment:
     3. Verify it's installed by opening a terminal (``Shift+Right-Click`` -> ``Open Powershell window here``)
        and run ``cmake``.
 
-4. Get ``WiX`` (can be disabled with -DOSC_PACKAGE_MSI=OFF, builds the ``.msi`` installer):
+4. Get ``WiX`` (can be disabled with -DOSC_CONFIGURE_PACKAGING=OFF, builds the ``.msi`` installer):
     1. Download and install WiX3 (e.g. ``wix314.exe``) from https://github.com/wixtoolset/wix3/releases
     2. Avoid using newer WiX versions because GitHub runner images etc. currently still use WiX3 (see: https://github.com/actions/runner-images/tree/main/images/windows)
 

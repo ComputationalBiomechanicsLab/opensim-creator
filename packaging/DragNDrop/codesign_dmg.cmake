@@ -1,0 +1,22 @@
+# CPack script that codesigns the packaged DMG
+
+execute_process(
+    COMMAND codesign
+    --verbose
+    --timestamp
+    --sign "${CPACK_OSC_CODESIGN_DEVELOPER_ID}"
+    "${CPACK_PACKAGE_FILES}"
+    RESULT_VARIABLE res
+    COMMAND_ECHO STDERR
+)
+if(NOT res EQUAL 0)
+    message(FATAL_ERROR "codesign failed!")
+endif()
+execute_process(
+    COMMAND codesign --verify --verbose=4 "${CPACK_PACKAGE_FILES}"
+    RESULT_VARIABLE res
+    COMMAND_ECHO STDERR
+)
+if(NOT res EQUAL 0)
+    message(FATAL_ERROR "codesign failed!")
+endif()
