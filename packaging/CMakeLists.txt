@@ -23,7 +23,7 @@ mark_as_advanced(OSC_AUTHOR_EMAIL)
 set(
     OSC_SOFTWARE_DESCRIPTION "A standalone GUI for building OpenSim models"
     CACHE STRING
-    "a desription of what the software does (shows in package installers on Debian, for example)"
+    "a description of what the software does (usually shows in package installers)"
 )
 mark_as_advanced(OSC_SOFTWARE_DESCRIPTION)
 option(OSC_PACKAGE_PORTABLE_ZIP "Enable creating a portable ZIP package" ${WIN32})
@@ -31,11 +31,11 @@ option(OSC_PACKAGE_PORTABLE_ZIP "Enable creating a portable ZIP package" ${WIN32
 # set OSC_PACKAGING_DIR
 if(TRUE)
     if(WIN32)
-        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/Windows")
+        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/msi")
     elseif(UNIX AND NOT APPLE)
-        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/Debian")
+        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/deb")
     elseif(APPLE)
-        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/MacOS")
+        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/dmg")
     else()
         set(OSC_PACKAGING_DIR_DEFAULT "UNKNOWN_PACKAGING_METHOD")
     endif()

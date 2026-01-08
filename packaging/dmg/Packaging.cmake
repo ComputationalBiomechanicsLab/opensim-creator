@@ -3,8 +3,8 @@
 # Creates a DMG (archive) that packages the whole application into a
 # single directory tree that can be dragged to `/Applications` on MacOS.
 
-option(OSC_CODESIGN_ENABLED     "Enable codesigning the resulting application bundle and DMG file"    OFF)
-option(OSC_NOTARIZATION_ENABLED "Enable notarizing (xcrun notarytool) the resulting DMG file" OFF)
+option(OSC_CODESIGN_ENABLED     "Enable codesigning the resulting application bundle and DMG file" OFF)
+option(OSC_NOTARIZATION_ENABLED "Enable notarizing (xcrun notarytool) the resulting DMG file"      OFF)
 
 set(CPACK_GENERATOR DragNDrop)
 set(CPACK_DMG_CREATE_APPLICATIONS_LINK ON)
