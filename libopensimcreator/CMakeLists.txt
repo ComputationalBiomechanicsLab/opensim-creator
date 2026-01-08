@@ -14,6 +14,12 @@ unset(_osc_sources)
 
 set_target_properties(opensimcreator PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(opensimcreator PUBLIC cxx_std_23)
+target_compile_options(opensimcreator PRIVATE
+    $<$<CXX_COMPILER_ID:AppleClang>:
+        -Werror=unguarded-availability      # error if targeting earlier versions of MacOS with a newer SDK (can produce invalid binaries?)
+        -Werror=unguarded-availability-new  # error if targeting earlier versions of MacOS with a newer SDK (can produce invalid binaries?)
+    >
+)
 if(OSC_USE_STRICT_COMPILER_FLAGS)
     include(cmake/osc_strict_compiler_options.cmake)
     target_compile_options(opensimcreator PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})

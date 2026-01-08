@@ -51,9 +51,4 @@ set(OSC_STRICT_COMPILER_OPTIONS
         -Wno-restrict            # don't warn if `restrict` is misused (produces false positives in googletest: https://github.com/google/googletest/issues/4232)
         -Wno-dangling-reference  # don't warn if a dangling reference is detected (produces false positives, e.g. https://github.com/fmtlib/fmt/issues/3415)
     >
-
-    $<$<CXX_COMPILER_ID:AppleClang>:
-        -Werror=unguarded-availability      # error if targeting earlier versions of MacOS with a newer SDK (can produce invalid binaries?)
-        -Werror=unguarded-availability-new  # error if targeting earlier versions of MacOS with a newer SDK (can produce invalid binaries?)
-    >
 )
