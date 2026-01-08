@@ -10,13 +10,6 @@ install(
     DESTINATION /usr/local/bin/
 )
 
-# On Linux (installation), copy `osc.svg` (application icon) into
-# the assets directory.
-install(
-    FILES "${CMAKE_CURRENT_SOURCE_DIR}/Debian/osc.svg"
-    DESTINATION "resources/OpenSimCreator/textures"
-)
-
 # On Linux (installation), copy `osc.desktop` (startup icon) to `/usr/local/share/applications/`
 install(
     FILES "${CMAKE_CURRENT_SOURCE_DIR}/Debian/osc.desktop"
