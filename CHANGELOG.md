@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed and invalid icon file path in the Linux (#1153)
+
 ## [0.7.0] - 2026/01/07
 
 - Added `compensate_for_frame_warping` to Thin-Plate Spline (TPS) warping steps in
