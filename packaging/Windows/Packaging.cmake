@@ -1,11 +1,10 @@
-# Microsoft Installer (MSI) and Portable (ZIP) Packaging Script
+# Microsoft Installer (MSI) Packaging Script
 #
-# Creates a self-extracting `.msi` installer with WiX and a portable ZIP
-# installer. Requires WiX, download and install WiX3 (e.g. ``wix314.exe``)
-# from https://github.com/wixtoolset/wix3/releases (see OSC documentation)
+# Creates a self-extracting `.msi` installer with WiX. You can download and
+# install WiX3 (e.g. ``wix314.exe``) from https://github.com/wixtoolset/wix3/releases (see
+# OSC documentation)
 
 option(OSC_CODESIGN_ENABLED     "Enable codesigning the built binaries (exes/dlls) and resulting installer"                 OFF)
-option(OSC_PACKAGE_PORTABLE_ZIP "Enable creating a portable ZIP package"                                                    ON)
 option(OSC_PACKAGE_MSI          "Enable using WiX to package an MSI installer (https://github.com/wixtoolset/wix/releases)" ON)
 
 # use the naming convention `opensimcreator-$version-windows-$arch.exe` (#975)
@@ -13,11 +12,8 @@ string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} _arch_lowercase)
 set(CPACK_SYSTEM_NAME "windows-${_arch_lowercase}")
 unset(_arch_lowercase)
 
-# If requested, package the install tree into a zip (portable installer)
+# Set the install directory for the package (used by NSIS/WiX?)
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}")
-if(OSC_PACKAGE_PORTABLE_ZIP)
-    list(APPEND CPACK_GENERATOR "ZIP")
-endif()
 
 # If requested, use WiX to package an MSI installer
 if(OSC_PACKAGE_MSI)

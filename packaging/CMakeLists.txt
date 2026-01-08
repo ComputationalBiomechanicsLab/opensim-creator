@@ -26,6 +26,7 @@ set(
     "a desription of what the software does (shows in package installers on Debian, for example)"
 )
 mark_as_advanced(OSC_SOFTWARE_DESCRIPTION)
+option(OSC_PACKAGE_PORTABLE_ZIP "Enable creating a portable ZIP package" ${WIN32})
 
 # set OSC_PACKAGING_DIR
 if(TRUE)
@@ -52,6 +53,9 @@ set(CPACK_PACKAGE_CONTACT "${OSC_AUTHOR} <${OSC_AUTHOR_EMAIL}>")
 set(CPACK_PACKAGE_HOMEPAGE_URL "${OSC_REPO_URL}")
 set(CPACK_PACKAGE_DESCRIPTION "${OSC_SOFTWARE_DESCRIPTION}")
 set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_LONG_APPNAME}")  # ensure human-readable application name can be searched in start bar etc. (#1079)
+if(OSC_PACKAGE_PORTABLE_ZIP)  # If requested, also package the install tree into a zip (portable installer)
+    list(APPEND CPACK_GENERATOR "ZIP")
+endif()
 
 # `include` platform-specific packaging instructions
 include(${OSC_PACKAGING_DIR}/Packaging.cmake)
