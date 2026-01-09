@@ -106,7 +106,7 @@ MacOS Build
 1. Build OpenSim Creator in a terminal:
     1. If you have multiple C++ compilers, make sure that the ``CC`` and ``CXX`` environment variables
        point to compilers that are compatible with C++23. E.g. ``export CXX=$(brew --prefix llvm@15)/bin/clang++``
-    2. Run the build script: ``./scripts/ci_build_mac-arm64.sh --build-type Development``
+    2. Run the build script: ``./scripts/ci_build_unix.sh Development``
 
 
 Building on Ubuntu (22.04 or newer)
@@ -133,5 +133,5 @@ Ubuntu Build
 1. Build OpenSim Creator from source:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Run the build script, you can use the ``CC`` and ``CXX`` environment variables to choose
-       your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 ./scripts/ci_build_ubuntu22.sh Development``
+       your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 ./scripts/ci_build_unix.sh Development``
 

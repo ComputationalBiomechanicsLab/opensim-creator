@@ -2,8 +2,21 @@ if(NOT TARGET osc)
     message(FATAL_ERROR "`osc` must be defined before packaging - it depends on targets/variables set by `osc`")
 endif()
 
-option(OSC_CODESIGN_ENABLED     "Enable codesigning the package (if applicable)" OFF)
-option(OSC_NOTARIZATION_ENABLED "Enable notarizing the package (if applicable)"  OFF)
+# Handle `OSC_CODESIGN_ENABLED` (may come from environment)
+if(DEFINED ENV{OSC_CODESIGN_ENABLED})
+    set(_codesign_default $ENV{OSC_CODESIGN_ENABLED})
+else()
+    set(_codesign_default OFF)
+endif()
+option(OSC_CODESIGN_ENABLED "Enable codesigning the package" ${_codesign_default})
+
+# Handle `OSC_NOTARIZATION_ENABLED` (may come from environment)
+if(DEFINED ENV{OSC_NOTARIZATION_ENABLED})
+    set(_notarize_default $ENV{OSC_NOTARIZATION_ENABLED})
+else()
+    set(_notarize_default OFF)
+endif()
+option(OSC_NOTARIZATION_ENABLED "Enable notarizing the package" ${_notarize_default})
 
 # Set standard (shared) CPack variables
 set(CPACK_PACKAGE_NAME                "opensimcreator")
