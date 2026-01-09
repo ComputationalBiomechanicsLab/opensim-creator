@@ -28,7 +28,7 @@ Visual Studio 2022/2026
     of the VS UI).
   - Build the third-party dependencies, which should install the dependencies in a
     preset location within the OpenSim Creator build directory
-  - Open the top-level ``opensim-creator`` folder in VS. CMake should configure it 
+  - Open the top-level ``opensim-creator`` folder in VS. CMake should configure it
     without any errors. **Note**: you need to use the same configuration for both
     the dependencies and main build.
 

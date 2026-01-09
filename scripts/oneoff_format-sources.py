@@ -13,8 +13,9 @@ import argparse
 import os
 import re
 
-_blacklisted_directories = {'resources', 'MacOS', 'Debian', 'Windows', '__pycache__', '_static'}
-_default_directories = ['hellooscar', 'libopensimcreator', 'liboscar', 'liboscar-demos', 'osc', 'scripts', 'docs/source']
+_blacklisted_directories = {'resources', '__pycache__', '_static'}
+_blasklisted_extensions = {'.ico', '.icns'}
+_default_directories = ['.github', 'docs/source', 'libopensimcreator', 'osc', 'packaging', 'requirements', 'scripts']
 
 def num_leading_tabs(s):
     rv = 0
@@ -42,6 +43,12 @@ def should_skip_dir(dirname):
             return True
     return False
 
+def should_skip_file(file):
+    for blacklisted_extension in _blasklisted_extensions:
+        if blacklisted_extension in file:
+            return True
+    return False
+
 # recursively tries to convert any tabs to spaces in the source tree
 #
 # (tabs sometimes slip into the source tree from editing files in terminals)
@@ -50,6 +57,8 @@ def replace_leading_tabs_with_spaces_in(dirpath):
         if should_skip_dir(root):
             continue
         for file in files:
+            if should_skip_file(file):
+                continue
             path = os.path.join(root, file)
             lines = read_lines(path)
 
@@ -75,6 +84,8 @@ def strip_whitespace_for_all_files_in(dirname):
         if should_skip_dir(root):
             continue
         for file in files:
+            if should_skip_file(file):
+                continue
             p = os.path.join(root, file)
 
             new_content = None
@@ -93,6 +104,8 @@ def ensure_all_files_have_trailing_newline(dirpath):
         if should_skip_dir(root):
             continue
         for file in files:
+            if should_skip_file(file):
+                continue
             path = os.path.join(root, file)
             with open(path, "r", encoding='utf-8') as f:
                 content = f.read()
