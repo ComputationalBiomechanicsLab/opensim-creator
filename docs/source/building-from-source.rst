@@ -122,7 +122,9 @@ Ubuntu Environment Setup
     2. ``cd`` into the source dir: ``cd opensim-creator``
     3. The remaining build steps are performed in the source directory
 3. Get ``apt`` dependencies:
-    1. Run ``./scripts/setup_ubuntu.sh``
+    1. ``apt`` dependencies are listed in the ``docker/`` directory with an ``_apt.txt`` suffix
+    2. For example, if you're on Ubuntu 22.04, you could run ``apt-get install $(sed 's/#.*//' "docker/ubuntu22_apt.txt" | xargs)``
+       to install the necessary Ubuntu 22.04 apt dependencies
 4. Setup Python Get python libraries:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Install all necessary python libraries into your current python environment with ``pip install -r requirements/all_requirements.txt``
