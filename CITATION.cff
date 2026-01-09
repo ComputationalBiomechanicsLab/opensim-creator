@@ -46,3 +46,31 @@ license: Apache-2.0
 commit: c3db488e70a2bf9b20140a123816017b744c9de5
 version: 0.7.0
 date-released: '2026-01-07'
+
+preferred-citation:
+  authors:
+  - family-names: Kewley
+    given-names: Adam
+    orcid: "https://orcid.org/0000-0002-6505-5374"
+  - family-names: Beesel
+    given-names: Julia
+    name-particle: van
+    orcid: "https://orcid.org/0000-0001-5457-0103"
+  - family-names: Seth
+    given-names: Ajay
+    orcid: "https://orcid.org/0000-0003-4217-1580"
+  date-published: 2026-01-09
+  doi: 10.21105/joss.08284
+  issn: 2475-9066
+  issue: 117
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 8284
+  title: "OpenSim Creator: An Interactive User Interface for Building
+    OpenSim Musculoskeletal Models"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.08284"
+  volume: 11
+title: "OpenSim Creator: An Interactive User Interface for Building
+  OpenSim Musculoskeletal Models"
