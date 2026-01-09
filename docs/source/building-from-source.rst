@@ -133,5 +133,5 @@ Ubuntu Build
 1. Build OpenSim Creator from source:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Run the build script, you can use the ``CC`` and ``CXX`` environment variables to choose
-       your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 ./scripts/ci_build_ubuntu22.sh --build-type Development``
+       your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 ./scripts/ci_build_ubuntu22.sh Development``
 

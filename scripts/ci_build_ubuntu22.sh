@@ -6,10 +6,26 @@
 
 set -xeuo pipefail
 
+# If no arguments, default to a "Release" build
+if [ "$#" -eq 0 ]; then
+    CONFIGS=("Release")
+else
+    CONFIGS=("$@")
+fi
+
 # Ensure dependencies are re-checked/re-built if the CI script is ran on
 # a potentially stale/cached workspace directory.
 export OSCDEPS_BUILD_ALWAYS=${OSCDEPS_BUILD_ALWAYS:-ON}
+export CC=gcc-12  # Needed for C++20
+export CXX=g++-12  # Needed for C++20
 
-# Run buildscript under virtual desktop with `xvfb-run` (for UI tests)
-CC=gcc-12 CXX=g++-12 OSC_BUILD_CONCURRENCY=$(nproc) xvfb-run ./scripts/build.py "$@"
+for CONFIG in "${CONFIGS[@]}"; do
+    echo "=== Building configuration: $CONFIG ==="
+
+    # build bundled dependencies
+    cd third_party && cmake --workflow --preset "$CONFIG" && cd -
+
+    # build the main project under `xvfb-run` (for UI tests)
+    xvfb-run cmake --workflow --preset "$CONFIG"
+done
 
