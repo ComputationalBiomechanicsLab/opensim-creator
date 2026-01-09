@@ -34,6 +34,8 @@ jobs:
   macos_amd64:
     name: MacOS (amd64)
     runs-on: macos-14
+    env:
+      CTEST_PARALLEL_LEVEL: 1
     steps:
     - uses: actions/checkout@v4
 
@@ -49,6 +51,8 @@ jobs:
   macos_arm64:
     name: MacOS (arm64)
     runs-on: macos-14
+    env:
+      CTEST_PARALLEL_LEVEL: 1
     steps:
     - uses: actions/checkout@v4
 
