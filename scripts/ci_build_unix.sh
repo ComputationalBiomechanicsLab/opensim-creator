@@ -14,9 +14,9 @@ fi
 for CONFIG in "${CONFIGS[@]}"; do
     echo "=== Building configuration: $CONFIG ==="
 
-    # build bundled dependencies
+    # Configure + build dependencies
     cd third_party && cmake --workflow --preset "$CONFIG" && cd -
 
-    # build the main project
+    # Build OpenSim Creator
     cmake --workflow --preset "$CONFIG"
 done

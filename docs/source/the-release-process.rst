@@ -41,7 +41,7 @@ Creator, it's usually copied into a GitHub issue:
             `OSC_NOTARIZATION_APPLE_ID`, `OSC_NOTARIZATION_TEAM_ID`, and `OSC_NOTARIZATION_PASSWORD`.
       - [ ] For MacOS, the release must be built+notarized on a developer's machine with `OSC_CODESIGN_ENABLED=1 OSC_NOTARIZATION_ENABLED=1 ./scripts/ci_build_unix.sh Release-MacOS-arm64`
       - [ ] For MacOS, the release must **also** be built+notarized on a developer's machine with `OSC_CODESIGN_ENABLED=1 OSC_NOTARIZATION_ENABLED=1 ./scripts/ci_build_unix.sh Release-MacOS-amd64`
-      - [ ] For Windows, the release must be built+codesigned on a developer's machine with `./scripts/ci_build_windows.bat --codesign-enabled`
+      - [ ] For Windows, the release must be built+codesigned on a developer's machine with `OSC_CODESIGN_ENABLED=1 ./scripts/ci_build_windows.bat Release-Windows-amd64`
     - [ ] Unzip/rename any artifacts (see prev. releases)
     - [ ] Create new release on github from the tagged commit
       - [ ] Upload all artifacts against it

@@ -6,9 +6,13 @@
 
 set -xeuo pipefail
 
+# Configure + build dependencies
 cd third_party && cmake --workflow --preset RelWithDebInfo && cd -
+
+# Build OpenSim Creator
 cmake --workflow --preset RelWithDebInfo
 
+# Run test suite under valgrind
 LIBGL_ALWAYS_SOFTWARE=1 valgrind \
     --leak-check=full \
     --trace-children=yes \

@@ -12,4 +12,3 @@ else
     echo "ERROR: Could not find a valid Python virtual environment in '.venv/'."
     exit 1
 fi
-

@@ -102,17 +102,29 @@
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
                 "CMAKE_OSX_SYSROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/"
             }
+        },
+        {
+            "name": "Release-Windows-amd64",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Release-Windows-amd64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-Windows-amd64/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Windows-amd64/install",
+                "CMAKE_SYSTEM_VERSION": "10.0.26100.0"
+            }
         }
     ],
     "buildPresets": [
-        { "name": "Development",         "configurePreset": "Development"         },
-        { "name": "Development-Inlined", "configurePreset": "Development-Inlined" },
-        { "name": "ErrorCheck",          "configurePreset": "ErrorCheck"          },
-        { "name": "Debug-Inlined",       "configurePreset": "Debug-Inlined"       },
-        { "name": "RelWithDebInfo",      "configurePreset": "RelWithDebInfo"      },
-        { "name": "Release",             "configurePreset": "Release"             },
-        { "name": "Release-MacOS-amd64", "configurePreset": "Release-MacOS-amd64" },
-        { "name": "Release-MacOS-arm64", "configurePreset": "Release-MacOS-arm64" }
+        { "name": "Development",           "configurePreset": "Development"         },
+        { "name": "Development-Inlined",   "configurePreset": "Development-Inlined" },
+        { "name": "ErrorCheck",            "configurePreset": "ErrorCheck"          },
+        { "name": "Debug-Inlined",         "configurePreset": "Debug-Inlined"       },
+        { "name": "RelWithDebInfo",        "configurePreset": "RelWithDebInfo"      },
+        { "name": "Release",               "configurePreset": "Release"             },
+        { "name": "Release-MacOS-amd64",   "configurePreset": "Release-MacOS-amd64" },
+        { "name": "Release-MacOS-arm64",   "configurePreset": "Release-MacOS-arm64" },
+        { "name": "Release-Windows-amd64", "configurePreset": "Release-Windows-amd64" }
     ],
     "testPresets": [
         {
@@ -167,12 +179,24 @@
             "configurePreset": "Release-MacOS-arm64",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "Release-Windows-amd64",
+            "configurePreset": "Release-Windows-amd64",
+            "filter": {
+                "exclude": {
+                    "name": "Graphics|MeshDepthWritingMaterialFixture|MeshNormalVectorsMaterialFixture|ShaderTest|MaterialTest|RegisteredDemoTabsTest|RegisteredOpenSimCreatorTabs|AddComponentPopup|LoadingTab"
+                }
+            },
+            "output": { "outputOnFailure": true },
+            "execution": { "noTestsAction": "error" }
         }
     ],
     "packagePresets": [
-        { "name": "Release",             "configurePreset": "Release"             },
-        { "name": "Release-MacOS-amd64", "configurePreset": "Release-MacOS-amd64" },
-        { "name": "Release-MacOS-arm64", "configurePreset": "Release-MacOS-arm64" }
+        { "name": "Release",               "configurePreset": "Release"               },
+        { "name": "Release-MacOS-amd64",   "configurePreset": "Release-MacOS-amd64"   },
+        { "name": "Release-MacOS-arm64",   "configurePreset": "Release-MacOS-arm64"   },
+        { "name": "Release-Windows-amd64", "configurePreset": "Release-Windows-amd64" }
     ],
     "workflowPresets": [
         {
@@ -236,6 +260,15 @@
                 { "type": "build",     "name": "Release-MacOS-arm64" },
                 { "type": "test",      "name": "Release-MacOS-arm64" },
                 { "type": "package",   "name": "Release-MacOS-arm64" }
+            ]
+        },
+        {
+            "name": "Release-Windows-amd64",
+            "steps": [
+                { "type": "configure", "name": "Release-Windows-amd64" },
+                { "type": "build",     "name": "Release-Windows-amd64" },
+                { "type": "test",      "name": "Release-Windows-amd64" },
+                { "type": "package",   "name": "Release-Windows-amd64" }
             ]
         }
     ]

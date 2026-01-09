@@ -69,7 +69,7 @@ are:
 1. Open a PowerShell terminal (``Shift+Right-Click`` -> ``Open Powershell window here``)
 2. Either ``cd`` into the ``opensim-creator`` directory (if cloned when you setup
    the environment, above), or clone it with ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``.
-3. Run ``./scripts/ci_build_windows.bat --build-type Development``
+3. Run ``./scripts/ci_build_windows.bat Development``
 
 
 Building on MacOS (Sonoma or newer)

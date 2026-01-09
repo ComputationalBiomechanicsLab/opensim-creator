@@ -6,8 +6,8 @@
 
 set -xeuo pipefail
 
-# configure+build dependencies
+# Configure + build dependencies
 cd third_party && cmake --workflow --preset ErrorCheck && cd -
 
-# configure+build+test OpenSim Creator
+# Build OpenSim Creator
 cmake --workflow --preset ErrorCheck
