@@ -35,14 +35,20 @@ platforms. This makes `osc` fairly easy to build, integrate, and package.
 <a name="citing"></a>
 ## 📖 Citing/Acknowledging
 
-OpenSim Creator doesn't have a central _written_ software publication that you can cite (yet 😉). However, if you _need_ to directly cite OpenSim Creator (e.g. because you think it's relevant that you built a model with it), the closest thing you can use is our DOI-ed Zenodo releases (metadata available in this repo: `CITATION.cff`/`codemeta.json`):
+If you want to cite OpenSim Creator, cite our official JOSS announcement paper:
+
+> Kewley et al., (2026). OpenSim Creator: An Interactive User Interface for Building OpenSim Musculoskeletal Models. Journal of Open Source Software, 11(117), 8284, https://doi.org/10.21105/joss.08284
+
+If you want to cite a specific version of OpenSim Creator (e.g. for reproducibility), then additionally
+cite the unique Zenodo DOI corresponding to that version, for example:
 
 > Kewley, A., Beesel, J., & Seth, A. (2026). OpenSim Creator (0.7.0). Zenodo. https://doi.org/10.5281/zenodo.18172189
 
-If you need a general citation for the simulation/modelling technique, you can directly cite OpenSim via this paper:
+If you want to cite the underlying simulation/modelling algorithm (OpenSim), cite:
 
 > Seth A, Hicks JL, Uchida TK, Habib A, Dembia CL, et al. (2018) **OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement.** _PLOS Computational Biology_ 14(7): e1006223. https://doi.org/10.1371/journal.pcbi.1006223
 
+Related: [CITATION.cff](CITATION.cff) and [codemeta.json](codemeta.json) 
 
 ## 🌲Sustainability, Archiving, and Mirrors
 
