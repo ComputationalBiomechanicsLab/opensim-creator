@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Performs an end-to-end build of OpenSim Creator with debugging options
-# enabled. This is usaully used to verify a release, or lint the source
+# enabled. This is usually used to verify a release, or lint the source
 # code.
 
 set -xeuo pipefail

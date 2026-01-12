@@ -3,7 +3,7 @@
 # Automatically updates relevant source files in the repository (e.g. the
 # README, CITATION.cff) to point at the latest Zenodo release.
 #
-# USAGE
+# USAGE:
 #
 #     python scripts/oneoff_bump-zenodo-details.py  # follow the prompts this gives
 #     git diff                                      # ensure the script made sane changes

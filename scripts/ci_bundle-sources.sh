@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Bundle the source code for a given git tag into an archive
+# Bundles the source code for a given git tag into a tarball archive.
 
 if [[ "$#" -ne 1 ]]; then
     echo "usage: $0 GIT_TAG"

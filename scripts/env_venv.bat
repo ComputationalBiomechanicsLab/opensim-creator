@@ -1,5 +1,6 @@
-REM usage: `call scripts\env_venv.bat`
+REM Usage: `call scripts\env_venv.bat`
 REM
-REM sets up a `cmd.exe` terminal to use the project virtual environment
+REM Sets up the calling `cmd.exe` terminal environment to use the
+REM project's python virtual environment.
 
 call .venv/Scripts/activate.bat

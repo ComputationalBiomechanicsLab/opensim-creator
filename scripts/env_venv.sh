@@ -1,7 +1,8 @@
 # usage: `source scripts/env_venv.sh`
 #
-# Sets up a bash terminal to use the project's python virtual environment (assuming
-# one was set up with `setup_venv-all` or similar.
+# Sets up the calling (`source`ing) bash terminal to use the
+# project's python virtual environment (assuming one was set up
+# with `setup_venv-all` or similar.
 
 # Determine which activate script exists
 if [ -f ".venv/bin/activate" ]; then

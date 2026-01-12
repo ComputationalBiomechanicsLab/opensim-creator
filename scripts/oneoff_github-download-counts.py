@@ -6,7 +6,7 @@
 import datetime
 import itertools
 import functools
-import requests  # must be installed via pip: `pip install requests`
+import requests  # may be installed via pip: `pip install requests`
 import re
 
 class Row:
@@ -22,10 +22,10 @@ class Row:
 #
 # OSMV was originally hosted at https://github.com/adamkewley/osmv and later
 # renamed to https://github.com/adamkewley/opensim-creator . This python script
-# used to track the legacy repo and the current repo, but the legacy repo was
+# previously tracked the legacy repo and the current repo, but the legacy repo was
 # gradually deprecated (first, with a warning message) and finally deleted to
-# make it impossible for a user to accidently download a very very old version
-# of the software. Because the repo is deleted, the API for the legacy counters
+# make it impossible for a user to accidentally download a very old version
+# of OSMV. Because the repo is deleted, the API for the legacy counters
 # no longer works, so their final numbers were baked into this script.
 legacy_download_counters = [
     Row('osmv', '0.0.1', datetime.datetime.strptime('01-13-21', '%m-%d-%y'), 10),

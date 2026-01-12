@@ -1,4 +1,4 @@
-# Sets up a WSL2 environment to use WSL2 optimally.
+# Sets up the calling WSL2 bash terminal to use WSL2 optimally.
 #
 #     usage (WSL2 unix terminal only): `source env_wsl2.sh`
 
