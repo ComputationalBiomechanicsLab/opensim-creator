@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+## [0.7.1] - 2026/01/12
+
 - A link to OpenSim Creator's [official JOSS announcement paper](https://doi.org/10.21105/joss.08284)
   was added to the splash screen. Please cite it if you can: it's a straightforward way for
   us to measure impact and justify funding further development.
