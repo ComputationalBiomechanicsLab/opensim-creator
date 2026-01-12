@@ -6,7 +6,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- Fixed and invalid icon file path in the Linux (#1153)
+- A link to OpenSim Creator's [official JOSS announcement paper](https://doi.org/10.21105/joss.08284)
+  was added to the splash screen. Please cite it if you can: it's a straightforward way for
+  us to measure impact and justify funding further development.
+- Fixed an invalid desktop icon file path in the Linux (#1153).
+- Linux packaging now installs `osc` as a softlink alias to `/opt/osc/bin/osc`, which
+  removes an intermediate `bash` script.
+
 
 ## [0.7.0] - 2026/01/07
 

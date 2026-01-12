@@ -267,6 +267,12 @@ private:
                 open_url_in_os_default_web_browser(*docsURL);
             }
         }
+        constexpr CStringView joss_url = "https://joss.theoj.org/papers/10.21105/joss.08284";
+        if (ui::draw_menu_item(MSMICONS_LINK " Cite our JOSS paper")) {
+            open_url_in_os_default_web_browser(joss_url);
+            set_clipboard_text(joss_url);
+        }
+        ui::draw_tooltip_if_item_hovered(joss_url, "Click to open in your default browser and, additionally, copy the link to the clipboard (in case the browser doesn't open)");
     }
 
     void drawWorkflowsMenuSectionContent()
