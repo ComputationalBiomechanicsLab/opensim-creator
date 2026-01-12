@@ -21,7 +21,7 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Create an issue called something like `Release XX.xx.pp`
     - [ ] Copy this checklist into it
     - [ ] Bump the VERSION in the top-level `CMakeLists.txt` accordingly
-    - [ ] Use `scripts/build_linux_debugging.sh` to clean-build a debug (+ libASAN)
+    - [ ] Use `./scripts/build_linux_debugging.sh` to clean-build a debug (+ libASAN)
           version of OpenSim Creator on Ubuntu 24 (debugging os).
     - [ ] Ensure the `clang-tidy` lints and test suite passes with the debug build
     - [ ] Ensure the test suite passes under valgrind (see: `scripts/build_linux_valgrind.sh`)
@@ -35,14 +35,22 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Tag+push the `CHANGELOG.md` update commit as a release (so that the commit message
           roughly matches something release-ey).
     - [ ] Rebase any currently-active feature branches onto the release commit (discourage stale branches)
-    - [ ] Download release artifacts from the tagged commit CI build
-      - [ ] Also, create a source tarball with `./scripts/ci_bundle-sources.sh ${VERSION}`
-      - [ ] For MacOS, ensure secret codesigning environment variables are set: `OSC_CODESIGN_DEVELOPER_ID`,
-            `OSC_NOTARIZATION_APPLE_ID`, `OSC_NOTARIZATION_TEAM_ID`, and `OSC_NOTARIZATION_PASSWORD`.
-      - [ ] For MacOS, the release must be built+notarized on a developer's machine with `OSC_CODESIGN_ENABLED=1 OSC_NOTARIZATION_ENABLED=1 ./scripts/ci_build_unix.sh Release-MacOS-arm64`
-      - [ ] For MacOS, the release must **also** be built+notarized on a developer's machine with `OSC_CODESIGN_ENABLED=1 OSC_NOTARIZATION_ENABLED=1 ./scripts/ci_build_unix.sh Release-MacOS-amd64`
-      - [ ] For Windows, the release must be built+codesigned on a developer's machine with `OSC_CODESIGN_ENABLED=1 ./scripts/ci_build_windows.bat Release-Windows-amd64`
-    - [ ] Unzip/rename any artifacts (see prev. releases)
+    - [ ] Assemble/build/sign release artifacts:
+      - [ ] Create a source tarball with `./scripts/ci_bundle-sources.sh ${VERSION}`
+      - [ ] Build MacOS release on developer's machine (GitHub Actions doesn't store developer's private keys):
+        - [ ] Ensure secret codesigning environment variables are set: `OSC_CODESIGN_DEVELOPER_ID`,
+              `OSC_NOTARIZATION_APPLE_ID`, `OSC_NOTARIZATION_TEAM_ID`, and `OSC_NOTARIZATION_PASSWORD`.
+        - [ ] Build and notarize an **arm64** release on the developer's machine with `OSC_CODESIGN_ENABLED=1 OSC_NOTARIZATION_ENABLED=1 ./scripts/ci_build_unix.sh Release-MacOS-arm64`
+        - [ ] Build and notarize an **amd64** release on the developer's machine with `OSC_CODESIGN_ENABLED=1 OSC_NOTARIZATION_ENABLED=1 ./scripts/ci_build_unix.sh Release-MacOS-amd64`
+      - [ ] Build Windows release on developer's machine (GitHub Actions cannot access physical signing USB keys):
+        - [ ] Build and codesign an **amd64** release on the developer's machine with `OSC_CODESIGN_ENABLED=1 ./scripts/ci_build_windows.bat Release-Windows-amd64`
+      - [ ] Combine all artifacts into a single location/directory:
+        - [ ] Source tarball
+        - [ ] Linux DEB package
+        - [ ] MacOS codesigned and notarized arm64 dmg
+        - [ ] MacOS codesigned and notarized amd64 dmg
+        - [ ] Windows codesigned amd64 msi
+        - [ ] Windows amd64 portable zip
     - [ ] Create new release on github from the tagged commit
       - [ ] Upload all artifacts against it
       - [ ] Write a user-friendly version of CHANGELOG as the release description that explains
