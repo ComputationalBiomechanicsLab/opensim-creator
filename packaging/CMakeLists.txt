@@ -27,8 +27,8 @@ set(CPACK_PACKAGE_DESCRIPTION         "A standalone GUI for building OpenSim mod
 set(CPACK_PACKAGE_EXECUTABLES         "osc;${OSC_LONG_APPNAME}")  # ensure human-readable application name can be searched in start bar etc. (#1079)
 
 # Set custom CPack variables that are forwarded to `CPackOptions.cmake` scripts
-set(CPACK_OSC_CODESIGN_ENABLED        ${OSC_CODESIGN_ENABLED})
-set(CPACK_OSC_NOTARIZATION_ENABLED    ${OSC_NOTARIZATION_ENABLED})
+set(CPACK_OSC_CODESIGN_ENABLED         ${OSC_CODESIGN_ENABLED})
+set(CPACK_OSC_NOTARIZATION_ENABLED     ${OSC_NOTARIZATION_ENABLED})
 set(CPACK_OSC_LONG_APPNAME            "${OSC_LONG_APPNAME}")
 set(CPACK_OSC_PROJECT_NAME            "${PROJECT_NAME}")
 set(CPACK_OSC_PROJECT_VERSION         "${PROJECT_VERSION}")
@@ -37,7 +37,7 @@ set(CPACK_OSC_CMAKE_OSX_ARCHITECTURES "${CMAKE_OSX_ARCHITECTURES}")
 set(CPACK_OSC_CMAKE_SYSTEM_PROCESSOR  "${CMAKE_SYSTEM_PROCESSOR}")
 
 # Specify the top-level `CPackOptions.cmake` script
-set(CPACK_PROJECT_CONFIG_FILE      "${CMAKE_CURRENT_SOURCE_DIR}/CPackOptions.cmake")
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/CPackOptions.cmake")
 
 # Figure out `CPACK_GENERATOR` defaults
 if(WIN32)
