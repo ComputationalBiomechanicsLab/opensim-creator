@@ -14,9 +14,14 @@ parser.add_argument('binary', help='the binary to check')
 args = parser.parse_args()
 
 sdk_version = None
+minos_version = None
 for line in subprocess.check_output(["otool", "-l", args.binary], text=True, encoding="utf-8").splitlines():
     if "sdk" in line:
         sdk_version = line.split(" ")[-1].strip()
+    if "minos" in line:
+        minos_version = line.split(" ")[-1].strip()
 
 assert sdk_version, f"Could not parse sdk version from output"
 assert sdk_version == args.expected_sdk_version, f'{sdk_version} is not the expected SDK version ({args.expected_sdk_version})'
+assert minos_version, f"Could not parse minimum OS version from output"
+assert minos_version == args.expected_sdk_version, f"{minos_version}: is not the expected minimum OS version ({args.expected_sdk_version})"
