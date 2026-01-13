@@ -42,7 +42,7 @@ If you want to cite OpenSim Creator, cite our official JOSS announcement paper:
 If you want to cite a specific version of OpenSim Creator (e.g. for reproducibility), then additionally
 cite the unique Zenodo DOI corresponding to that version, for example:
 
-> Kewley, A., Beesel, J., & Seth, A. (2026). OpenSim Creator (0.7.0). Zenodo. https://doi.org/10.5281/zenodo.18172189
+> Kewley, A., Beesel, J., & Seth, A. (2026). OpenSim Creator: An Interactive User Interface for Building OpenSim Musculoskeletal Models (0.7.1). Zenodo. https://doi.org/10.5281/zenodo.18223720
 
 If you want to cite the underlying simulation/modelling algorithm (OpenSim), cite:
 
