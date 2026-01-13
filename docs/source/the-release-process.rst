@@ -65,6 +65,8 @@ Creator, it's usually copied into a GitHub issue:
             correct Zenodo release.
     - [ ] Ensure the entire repository, incl. all tags, is pushed to the official
           TU Delft mirror at https://gitlab.tudelft.nl/computationalbiomechanicslab/opensim-creator
+      - [ ] `git remote add gitlab https://gitlab.tudelft.nl/computationalbiomechanicslab/opensim-creator.git`
+      - [ ] `git push gitlab main && git push gitlab TAG`
     - [ ] Ensure all release artifacts, incl. the source tarball, are uploaded to
           `files.opensimcreator.com/releases`
       - [ ] Upload with (e.g.): `rsync --delete --exclude .git/ -avz files.opensimcreator.com/ files.opensimcreator.com:/var/www/files.opensimcreator.com/`
