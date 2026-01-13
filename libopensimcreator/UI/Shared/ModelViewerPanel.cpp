@@ -11,18 +11,18 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/AppSettings.h>
-#include <liboscar/Platform/Log.h>
-#include <liboscar/UI/IconCache.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Panels/PanelPrivate.h>
-#include <liboscar/UI/Widgets/GuiRuler.h>
-#include <liboscar/UI/Widgets/IconWithoutMenu.h>
+#include <liboscar/maths/MathHelpers.h>
+#include <liboscar/maths/Rect.h>
+#include <liboscar/maths/RectFunctions.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/AppSettings.h>
+#include <liboscar/platform/Log.h>
+#include <liboscar/ui/IconCache.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/panels/PanelPrivate.h>
+#include <liboscar/ui/widgets/GuiRuler.h>
+#include <liboscar/ui/widgets/IconWithoutMenu.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <memory>

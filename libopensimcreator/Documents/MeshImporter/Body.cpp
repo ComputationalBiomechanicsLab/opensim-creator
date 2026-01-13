@@ -5,8 +5,8 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Maths/Transform.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/maths/Transform.h>
+#include <liboscar/utils/UID.h>
 
 #include <ostream>
 #include <string>

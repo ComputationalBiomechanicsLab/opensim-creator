@@ -3,8 +3,8 @@
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/UI/Screens/TabTestingScreen.h>
-#include <liboscar/UI/Tabs/TabRegistry.h>
+#include <liboscar/ui/screens/TabTestingScreen.h>
+#include <liboscar/ui/tabs/TabRegistry.h>
 
 #include <memory>
 #include <stdexcept>

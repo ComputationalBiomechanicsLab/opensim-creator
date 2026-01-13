@@ -9,8 +9,8 @@
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 #include <libopensimcreator/Utils/ParamBlock.h>
 
-#include <liboscar/Utils/SynchronizedValue.h>
-#include <liboscar/Utils/SynchronizedValueGuard.h>
+#include <liboscar/utils/SynchronizedValue.h>
+#include <liboscar/utils/SynchronizedValueGuard.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>

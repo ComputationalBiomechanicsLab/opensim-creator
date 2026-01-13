@@ -10,9 +10,9 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/Popup.h>
-#include <liboscar/Utils/StringHelpers.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/popups/Popup.h>
+#include <liboscar/utils/StringHelpers.h>
 
 #include <memory>
 #include <optional>

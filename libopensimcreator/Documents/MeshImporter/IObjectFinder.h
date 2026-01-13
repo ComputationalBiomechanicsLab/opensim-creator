@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Utils/UID.h>
+#include <liboscar/utils/UID.h>
 
 namespace osc::mi { class MIObject; }
 

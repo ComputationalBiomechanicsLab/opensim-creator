@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
+#include <liboscar/graphics/scene/SceneDecorationFlags.h>
 
 namespace OpenSim { class Component; }
 namespace osc { struct SceneDecoration; }

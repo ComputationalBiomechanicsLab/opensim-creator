@@ -5,8 +5,8 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/Utils/EnumHelpers.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/utils/EnumHelpers.h>
 
 #include <memory>
 #include <string>

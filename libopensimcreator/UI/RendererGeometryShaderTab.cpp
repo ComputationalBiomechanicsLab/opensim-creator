@@ -2,25 +2,25 @@
 
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 
-#include <liboscar/Graphics/Camera.h>
-#include <liboscar/Graphics/Color.h>
-#include <liboscar/Graphics/Graphics.h>
-#include <liboscar/Graphics/Material.h>
-#include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
-#include <liboscar/Graphics/Materials/MeshNormalVectorsMaterial.h>
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/EulerAngles.h>
-#include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Cursor.h>
-#include <liboscar/Platform/CursorShape.h>
-#include <liboscar/Platform/Events/Event.h>
-#include <liboscar/Platform/Events/KeyEvent.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/graphics/Camera.h>
+#include <liboscar/graphics/Color.h>
+#include <liboscar/graphics/Graphics.h>
+#include <liboscar/graphics/Material.h>
+#include <liboscar/graphics/materials/MeshBasicMaterial.h>
+#include <liboscar/graphics/materials/MeshNormalVectorsMaterial.h>
+#include <liboscar/graphics/Mesh.h>
+#include <liboscar/maths/Angle.h>
+#include <liboscar/maths/EulerAngles.h>
+#include <liboscar/maths/MathHelpers.h>
+#include <liboscar/maths/Transform.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/Cursor.h>
+#include <liboscar/platform/CursorShape.h>
+#include <liboscar/platform/events/Event.h>
+#include <liboscar/platform/events/KeyEvent.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/tabs/TabPrivate.h>
 
 #include <memory>
 

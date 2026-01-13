@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 
-#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/ui/popups/Popup.h>
 
 #include <functional>
 #include <memory>

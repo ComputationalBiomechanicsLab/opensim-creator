@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/UI/Tabs/Tab.h>
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/ui/tabs/Tab.h>
+#include <liboscar/utils/CStringView.h>
 
 namespace osc { class Widget; }
 

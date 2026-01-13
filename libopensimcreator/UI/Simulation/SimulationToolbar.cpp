@@ -6,10 +6,10 @@
 #include <libopensimcreator/UI/Simulation/SimulationScrubber.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Vector2.h>
-#include <liboscar/Maths/Vector4.h>
-#include <liboscar/UI/oscimgui.h>
+#include <liboscar/graphics/Color.h>
+#include <liboscar/maths/Vector2.h>
+#include <liboscar/maths/Vector4.h>
+#include <liboscar/ui/oscimgui.h>
 
 #include <memory>
 #include <string>

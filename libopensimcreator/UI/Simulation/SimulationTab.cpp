@@ -24,20 +24,20 @@
 #include <libopensimcreator/UI/Simulation/SimulationToolbar.h>
 #include <libopensimcreator/UI/Simulation/SimulationUIPlaybackState.h>
 
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Events/Event.h>
-#include <liboscar/Platform/Events/KeyEvent.h>
-#include <liboscar/Platform/os.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Events/OpenNamedPanelEvent.h>
-#include <liboscar/UI/Events/OpenPopupEvent.h>
-#include <liboscar/UI/Panels/LogViewerPanel.h>
-#include <liboscar/UI/Panels/PanelManager.h>
-#include <liboscar/UI/Panels/PerfPanel.h>
-#include <liboscar/UI/Popups/PopupManager.h>
-#include <liboscar/UI/Tabs/TabPrivate.h>
-#include <liboscar/Utils/EnumHelpers.h>
-#include <liboscar/Utils/Perf.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/events/Event.h>
+#include <liboscar/platform/events/KeyEvent.h>
+#include <liboscar/platform/os.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/events/OpenNamedPanelEvent.h>
+#include <liboscar/ui/events/OpenPopupEvent.h>
+#include <liboscar/ui/panels/LogViewerPanel.h>
+#include <liboscar/ui/panels/PanelManager.h>
+#include <liboscar/ui/panels/PerfPanel.h>
+#include <liboscar/ui/popups/PopupManager.h>
+#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/Perf.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
 

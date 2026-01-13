@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
 
-#include <liboscar/Utils/EnumHelpers.h>
+#include <liboscar/utils/EnumHelpers.h>
 
 namespace osc
 {

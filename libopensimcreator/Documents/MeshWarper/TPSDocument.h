@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
 
-#include <liboscar/Graphics/Mesh.h>
+#include <liboscar/graphics/Mesh.h>
 
 #include <vector>
 

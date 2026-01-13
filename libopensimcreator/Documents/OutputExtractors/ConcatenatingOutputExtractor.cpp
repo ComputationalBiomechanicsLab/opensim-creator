@@ -4,10 +4,10 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
 
-#include <liboscar/Utils/Conversion.h>
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/EnumHelpers.h>
-#include <liboscar/Utils/HashHelpers.h>
+#include <liboscar/utils/Conversion.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/HashHelpers.h>
 
 #include <cstddef>
 #include <sstream>

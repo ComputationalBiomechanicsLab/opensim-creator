@@ -33,7 +33,7 @@ if(TRUE)
 
     # Iterate through each header file in the project and append it to the generated file
     file(GLOB_RECURSE _oscar_header_files "*.h")
-    list(FILTER _oscar_header_files EXCLUDE REGEX "(tests|OpenGL|Detail)")
+    list(FILTER _oscar_header_files EXCLUDE REGEX "(tests|opengl|detail)")
     foreach(_header ${_oscar_header_files})
         file(RELATIVE_PATH _rel_path "${CMAKE_CURRENT_SOURCE_DIR}" "${_header}")
         file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscar.h" "#include <liboscar/${_rel_path}>\n")

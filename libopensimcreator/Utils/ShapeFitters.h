@@ -1,8 +1,8 @@
 #pragma once
 
-#include <liboscar/Maths/Ellipsoid.h>
-#include <liboscar/Maths/Plane.h>
-#include <liboscar/Maths/Sphere.h>
+#include <liboscar/maths/Ellipsoid.h>
+#include <liboscar/maths/Plane.h>
+#include <liboscar/maths/Sphere.h>
 
 namespace osc { class Mesh; }
 

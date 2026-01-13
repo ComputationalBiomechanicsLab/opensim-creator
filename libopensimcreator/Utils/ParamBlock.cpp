@@ -1,6 +1,6 @@
 #include "ParamBlock.h"
 
-#include <liboscar/Utils/Algorithms.h>
+#include <liboscar/utils/Algorithms.h>
 
 #include <cstddef>
 #include <memory>

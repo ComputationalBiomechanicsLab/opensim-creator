@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/utils/CStringView.h>
 
 #include <concepts>
 #include <cstddef>

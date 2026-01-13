@@ -1,11 +1,11 @@
 #include "OpenSimDecorationOptions.h"
 
-#include <liboscar/Utils/Algorithms.h>
-#include <liboscar/Utils/Conversion.h>
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/EnumHelpers.h>
-#include <liboscar/Variant/Variant.h>
-#include <liboscar/Variant/VariantType.h>
+#include <liboscar/utils/Algorithms.h>
+#include <liboscar/utils/Conversion.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/variant/Variant.h>
+#include <liboscar/variant/VariantType.h>
 
 #include <optional>
 #include <ranges>

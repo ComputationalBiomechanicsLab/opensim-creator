@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Utils/ClonePtr.h>
+#include <liboscar/utils/ClonePtr.h>
 
 #include <filesystem>
 #include <unordered_map>

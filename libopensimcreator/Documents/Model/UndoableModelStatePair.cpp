@@ -4,11 +4,11 @@
 #include <libopensimcreator/Documents/Model/ModelStateCommit.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Platform/Log.h>
-#include <liboscar/Utils/Algorithms.h>
-#include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/Perf.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/platform/Log.h>
+#include <liboscar/utils/Algorithms.h>
+#include <liboscar/utils/Assertions.h>
+#include <liboscar/utils/Perf.h>
+#include <liboscar/utils/UID.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/PropertyObjArray.h>

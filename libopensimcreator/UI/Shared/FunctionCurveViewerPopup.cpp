@@ -2,13 +2,13 @@
 
 #include <libopensimcreator/Documents/Model/IVersionedComponentAccessor.h>
 
-#include <liboscar/Formats/CSV.h>
-#include <liboscar/Maths/ClosedInterval.h>
-#include <liboscar/Maths/Constants.h>
-#include <liboscar/Platform/App.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Panels/PanelPrivate.h>
-#include <liboscar/Utils/Algorithms.h>
+#include <liboscar/formats/CSV.h>
+#include <liboscar/maths/ClosedInterval.h>
+#include <liboscar/maths/Constants.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/panels/PanelPrivate.h>
+#include <liboscar/utils/Algorithms.h>
 #include <OpenSim/Common/Function.h>
 
 #include <array>

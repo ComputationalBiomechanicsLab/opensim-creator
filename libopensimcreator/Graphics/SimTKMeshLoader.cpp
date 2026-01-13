@@ -2,12 +2,12 @@
 
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/TriangleFunctions.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Platform/FileDialogFilter.h>
-#include <liboscar/Utils/Assertions.h>
+#include <liboscar/graphics/Mesh.h>
+#include <liboscar/maths/MathHelpers.h>
+#include <liboscar/maths/TriangleFunctions.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/platform/FileDialogFilter.h>
+#include <liboscar/utils/Assertions.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/PolygonalMesh.h>
 

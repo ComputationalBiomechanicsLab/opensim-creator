@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Panels/Panel.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/panels/Panel.h>
 
 namespace osc
 {

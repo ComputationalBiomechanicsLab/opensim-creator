@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 
-#include <liboscar/Utils/ClonePtr.h>
+#include <liboscar/utils/ClonePtr.h>
 
 #include <filesystem>
 #include <memory>

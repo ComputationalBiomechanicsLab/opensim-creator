@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
-#include <liboscar/Graphics/Scene/SceneDecoration.h>
+#include <liboscar/graphics/scene/SceneDecoration.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace osc;

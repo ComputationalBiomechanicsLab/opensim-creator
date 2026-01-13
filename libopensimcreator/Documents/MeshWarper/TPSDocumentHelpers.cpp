@@ -7,11 +7,11 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
-#include <liboscar/Shims/Cpp23/ranges.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Utils/Algorithms.h>
-#include <liboscar/Utils/EnumHelpers.h>
-#include <liboscar/Utils/StringName.h>
+#include <liboscar/shims/cpp23/ranges.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/utils/Algorithms.h>
+#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/StringName.h>
 
 #include <algorithm>
 #include <concepts>

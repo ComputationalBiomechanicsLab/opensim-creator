@@ -1,7 +1,7 @@
 #include "ImGuiDemoTab.h"
 
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/tabs/TabPrivate.h>
 
 #include <memory>
 

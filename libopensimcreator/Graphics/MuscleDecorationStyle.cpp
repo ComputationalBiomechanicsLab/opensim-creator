@@ -1,7 +1,7 @@
 #include "MuscleDecorationStyle.h"
 
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/EnumHelpers.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/EnumHelpers.h>
 
 #include <array>
 #include <cstddef>

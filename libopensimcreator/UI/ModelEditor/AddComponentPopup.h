@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/ui/popups/Popup.h>
 #include <OpenSim/Common/ComponentPath.h>
 
 #include <memory>

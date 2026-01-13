@@ -10,6 +10,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   static library and C++ header files as part of the build. This is an advanced option
   that we provide only to help us build internal prototypes: we do not provide any support/stability
   for downstream C++ projects (you've been warned :wink:).
+- Upstream `liboscar`'s directory naming convention was changed from CamelCase to snake_case, which
+  means that `#include`s in OpenSim Creator required updates (e.g. `#include <liboscar/Graphics/Color.h>`
+  became `#include <liboscar/graphics/Color.h>`). The long-term intention is to also move files to
+  snake_case, to more closely match the file/directory naming convention of Python projects.
 
 ## [0.7.1] - 2026/01/12
 

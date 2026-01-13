@@ -2,11 +2,11 @@
 
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Force.h>
-#include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/HashHelpers.h>
+#include <liboscar/utils/Assertions.h>
+#include <liboscar/utils/HashHelpers.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Platform/Log.h>
+#include <liboscar/platform/Log.h>
 
 using namespace osc;
 

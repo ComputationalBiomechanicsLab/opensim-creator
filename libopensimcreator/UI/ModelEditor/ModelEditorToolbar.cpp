@@ -7,14 +7,14 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 
-#include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Vector2.h>
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Widget.h>
-#include <liboscar/Platform/WidgetPrivate.h>
-#include <liboscar/UI/Events/OpenPopupEvent.h>
-#include <liboscar/UI/IconCache.h>
-#include <liboscar/UI/oscimgui.h>
+#include <liboscar/graphics/Color.h>
+#include <liboscar/maths/Vector2.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/Widget.h>
+#include <liboscar/platform/WidgetPrivate.h>
+#include <liboscar/ui/events/OpenPopupEvent.h>
+#include <liboscar/ui/IconCache.h>
+#include <liboscar/ui/oscimgui.h>
 
 #include <algorithm>
 #include <memory>

@@ -2,9 +2,9 @@
 
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
-#include <liboscar/Graphics/Scene/SceneCache.h>
-#include <liboscar/Graphics/Scene/SceneDecoration.h>
-#include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
+#include <liboscar/graphics/scene/SceneCache.h>
+#include <liboscar/graphics/scene/SceneDecoration.h>
+#include <liboscar/graphics/scene/SceneDecorationFlags.h>
 
 #include <gtest/gtest.h>
 #include <simbody/internal/MultibodySystem.h>

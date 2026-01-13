@@ -1,6 +1,6 @@
 #include "TestHelpers.h"
 
-#include <liboscar/Maths/MathHelpers.h>
+#include <liboscar/maths/MathHelpers.h>
 
 #include <algorithm>
 #include <numeric>

@@ -5,10 +5,10 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Maths/Constants.h>
-#include <liboscar/Maths/Vector2.h>
-#include <liboscar/Utils/EnumHelpers.h>
-#include <liboscar/Utils/HashHelpers.h>
+#include <liboscar/maths/Constants.h>
+#include <liboscar/maths/Vector2.h>
+#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/HashHelpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/ComponentPath.h>

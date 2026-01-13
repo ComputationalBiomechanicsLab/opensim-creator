@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/utils/CStringView.h>
 
 #include <chrono>
 #include <optional>

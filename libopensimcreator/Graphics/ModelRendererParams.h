@@ -4,9 +4,9 @@
 #include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
 #include <libopensimcreator/Graphics/OverlayDecorationOptions.h>
 
-#include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/PolarPerspectiveCamera.h>
-#include <liboscar/Maths/Vector3.h>
+#include <liboscar/graphics/Color.h>
+#include <liboscar/maths/PolarPerspectiveCamera.h>
+#include <liboscar/maths/Vector3.h>
 
 #include <string_view>
 

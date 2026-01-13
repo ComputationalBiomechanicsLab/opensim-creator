@@ -1,8 +1,8 @@
 #include "OPynSimHelpers.h"
 
 #include <libopynsim/Utils/TPS3D.h>
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Utils/Perf.h>
+#include <liboscar/graphics/Mesh.h>
+#include <liboscar/utils/Perf.h>
 
 #include <new>
 

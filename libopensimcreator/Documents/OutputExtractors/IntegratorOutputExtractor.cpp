@@ -4,9 +4,9 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <liboscar/Maths/Constants.h>
-#include <liboscar/Utils/HashHelpers.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/maths/Constants.h>
+#include <liboscar/utils/HashHelpers.h>
+#include <liboscar/utils/UID.h>
 #include <simmath/Integrator.h>
 
 #include <cstddef>

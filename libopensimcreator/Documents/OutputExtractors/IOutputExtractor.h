@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
-#include <liboscar/Maths/Vector2.h>
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/maths/Vector2.h>
+#include <liboscar/utils/CStringView.h>
 
 #include <cstddef>
 #include <functional>

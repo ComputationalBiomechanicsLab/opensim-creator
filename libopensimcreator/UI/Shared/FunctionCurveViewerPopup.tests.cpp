@@ -1,8 +1,8 @@
 #include "FunctionCurveViewerPopup.h"
 
 #include <gtest/gtest.h>
-#include <liboscar/Maths/Constants.h>
-#include <liboscar/Utils/Algorithms.h>
+#include <liboscar/maths/Constants.h>
+#include <liboscar/utils/Algorithms.h>
 
 using namespace osc;
 

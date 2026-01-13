@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Platform/Events/Event.h>
+#include <liboscar/platform/events/Event.h>
 
 #include <filesystem>
 #include <utility>

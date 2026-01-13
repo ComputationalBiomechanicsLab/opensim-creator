@@ -2,10 +2,10 @@
 
 #include <libopensimcreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
 
-#include <liboscar/Formats/CSV.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Utils/StdVariantHelpers.h>
-#include <liboscar/Utils/StringHelpers.h>
+#include <liboscar/formats/CSV.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/utils/StdVariantHelpers.h>
+#include <liboscar/utils/StringHelpers.h>
 
 #include <algorithm>
 #include <cstddef>

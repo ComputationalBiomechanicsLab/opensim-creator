@@ -7,11 +7,11 @@
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
 
-#include <liboscar/Platform/os.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Panels/PanelPrivate.h>
-#include <liboscar/Utils/Algorithms.h>
-#include <liboscar/Utils/Perf.h>
+#include <liboscar/platform/os.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/panels/PanelPrivate.h>
+#include <liboscar/utils/Algorithms.h>
+#include <liboscar/utils/Perf.h>
 
 #include <algorithm>
 #include <filesystem>

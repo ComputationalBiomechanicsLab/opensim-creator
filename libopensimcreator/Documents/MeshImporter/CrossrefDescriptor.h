@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
 
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/UID.h>
 
 namespace osc::mi
 {

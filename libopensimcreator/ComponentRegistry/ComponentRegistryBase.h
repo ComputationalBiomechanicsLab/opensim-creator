@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/ComponentRegistry/ComponentRegistryEntryBase.h>
 
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/utils/CStringView.h>
 #include <OpenSim/Common/Component.h>
 
 #include <concepts>

@@ -4,8 +4,8 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Variant/Variant.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/variant/Variant.h>
 
 #include <cstddef>
 #include <string>

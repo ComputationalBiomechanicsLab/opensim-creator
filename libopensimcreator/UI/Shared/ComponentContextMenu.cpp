@@ -13,16 +13,16 @@
 #include <libopensimcreator/UI/Shared/ModelAddMenuItems.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/os.h>
-#include <liboscar/Platform/Widget.h>
-#include <liboscar/UI/Events/OpenNamedPanelEvent.h>
-#include <liboscar/UI/Events/OpenPopupEvent.h>
-#include <liboscar/UI/IconCache.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/Popup.h>
-#include <liboscar/UI/Popups/PopupPrivate.h>
-#include <liboscar/Utils/Assertions.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/os.h>
+#include <liboscar/platform/Widget.h>
+#include <liboscar/ui/events/OpenNamedPanelEvent.h>
+#include <liboscar/ui/events/OpenPopupEvent.h>
+#include <liboscar/ui/IconCache.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/popups/Popup.h>
+#include <liboscar/ui/popups/PopupPrivate.h>
+#include <liboscar/utils/Assertions.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentSocket.h>

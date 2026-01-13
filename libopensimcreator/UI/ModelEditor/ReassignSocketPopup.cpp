@@ -5,9 +5,9 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/Popup.h>
-#include <liboscar/UI/Popups/PopupPrivate.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/popups/Popup.h>
+#include <liboscar/ui/popups/PopupPrivate.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>

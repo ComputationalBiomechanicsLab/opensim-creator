@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <liboscar/Maths/Constants.h>
-#include <liboscar/Utils/HashHelpers.h>
+#include <liboscar/maths/Constants.h>
+#include <liboscar/utils/HashHelpers.h>
 #include <simbody/internal/MultibodySystem.h>
 
 #include <optional>

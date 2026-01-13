@@ -7,8 +7,8 @@
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/Platform/Widget.h>
-#include <liboscar/UI/oscimgui.h>
+#include <liboscar/platform/Widget.h>
+#include <liboscar/ui/oscimgui.h>
 #include <OpenSim/Common/Component.h>
 
 #include <exception>

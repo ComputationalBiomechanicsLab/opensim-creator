@@ -1,6 +1,6 @@
 #include "ComponentOutputSubfield.h"
 
-#include <liboscar/Utils/EnumHelpers.h>
+#include <liboscar/utils/EnumHelpers.h>
 #include <OpenSim/Common/Component.h>  // necessary because ComponentOutput.h doesn't correctly include it
 #include <OpenSim/Common/ComponentOutput.h>
 #include <SimTKcommon/SmallMatrix.h>

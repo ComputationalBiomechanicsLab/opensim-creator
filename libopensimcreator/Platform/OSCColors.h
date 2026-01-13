@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Graphics/Color.h>
+#include <liboscar/graphics/Color.h>
 
 namespace osc
 {

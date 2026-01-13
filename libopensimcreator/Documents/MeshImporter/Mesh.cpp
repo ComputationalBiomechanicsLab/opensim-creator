@@ -8,9 +8,9 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Maths/AABB.h>
-#include <liboscar/Maths/AABBFunctions.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/maths/AABB.h>
+#include <liboscar/maths/AABBFunctions.h>
+#include <liboscar/utils/UID.h>
 
 #include <filesystem>
 #include <ostream>

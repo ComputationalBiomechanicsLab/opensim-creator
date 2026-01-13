@@ -1,18 +1,18 @@
 #include "MandelbrotTab.h"
 
-#include <liboscar/Graphics/Camera.h>
-#include <liboscar/Graphics/Graphics.h>
-#include <liboscar/Graphics/Material.h>
-#include <liboscar/Graphics/Shader.h>
-#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/ResourceLoader.h>
-#include <liboscar/Platform/Events/EventType.h>
-#include <liboscar/Platform/Events/KeyEvent.h>
-#include <liboscar/Platform/Events/MouseEvent.h>
-#include <liboscar/Platform/Events/MouseWheelEvent.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/graphics/Camera.h>
+#include <liboscar/graphics/Graphics.h>
+#include <liboscar/graphics/Material.h>
+#include <liboscar/graphics/Shader.h>
+#include <liboscar/graphics/geometries/PlaneGeometry.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/ResourceLoader.h>
+#include <liboscar/platform/events/EventType.h>
+#include <liboscar/platform/events/KeyEvent.h>
+#include <liboscar/platform/events/MouseEvent.h>
+#include <liboscar/platform/events/MouseWheelEvent.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/tabs/TabPrivate.h>
 
 #include <limits>
 #include <memory>

@@ -8,15 +8,15 @@
 #include <libopensimcreator/Documents/MeshImporter/Mesh.h>
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 
-#include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
-#include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Shims/Cpp23/ranges.h>
-#include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/StdVariantHelpers.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/graphics/scene/SceneDecorationFlags.h>
+#include <liboscar/maths/MathHelpers.h>
+#include <liboscar/maths/Transform.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/shims/cpp23/ranges.h>
+#include <liboscar/utils/Assertions.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/StdVariantHelpers.h>
+#include <liboscar/utils/UID.h>
 
 #include <sstream>
 #include <stdexcept>

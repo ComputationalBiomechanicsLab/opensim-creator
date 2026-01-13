@@ -3,11 +3,11 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/AppSettings.h>
-#include <liboscar/Shims/Cpp23/ranges.h>
-#include <liboscar/Utils/Algorithms.h>
-#include <liboscar/Utils/Assertions.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/AppSettings.h>
+#include <liboscar/shims/cpp23/ranges.h>
+#include <liboscar/utils/Algorithms.h>
+#include <liboscar/utils/Assertions.h>
 
 #include <vector>
 

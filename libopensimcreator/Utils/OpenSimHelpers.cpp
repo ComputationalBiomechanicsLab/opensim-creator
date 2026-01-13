@@ -3,15 +3,15 @@
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
-#include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Plane.h>
-#include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Platform/Log.h>
-#include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/Perf.h>
-#include <liboscar/Utils/StringHelpers.h>
+#include <liboscar/maths/MathHelpers.h>
+#include <liboscar/maths/Plane.h>
+#include <liboscar/maths/Transform.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/platform/Log.h>
+#include <liboscar/utils/Assertions.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/Perf.h>
+#include <liboscar/utils/StringHelpers.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>

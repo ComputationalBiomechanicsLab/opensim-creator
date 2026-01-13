@@ -1,10 +1,10 @@
 #include "DrawingTestTab.h"
 
-#include <liboscar/Graphics/RenderTexture.h>
-#include <liboscar/Platform/App.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Tabs/TabPrivate.h>
-#include <liboscar/Utils/Assertions.h>
+#include <liboscar/graphics/RenderTexture.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/utils/Assertions.h>
 
 #include <memory>
 

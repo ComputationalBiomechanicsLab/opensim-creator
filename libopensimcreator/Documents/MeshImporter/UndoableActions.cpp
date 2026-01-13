@@ -11,11 +11,11 @@
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/maths/Angle.h>
+#include <liboscar/maths/MathHelpers.h>
+#include <liboscar/maths/Transform.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/utils/UID.h>
 
 #include <cstddef>
 #include <sstream>

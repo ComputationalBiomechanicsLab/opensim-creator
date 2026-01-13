@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/Platform/Widget.h>
-#include <liboscar/UI/Panels/Panel.h>
+#include <liboscar/platform/Widget.h>
+#include <liboscar/ui/panels/Panel.h>
 
 #include <memory>
 #include <string_view>

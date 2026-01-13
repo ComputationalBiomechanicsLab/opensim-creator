@@ -1,0 +1,49 @@
+#include "TemporaryFile.h"
+
+#include <liboscar/utils/StringHelpers.h>
+
+#include <gtest/gtest.h>
+
+#include <filesystem>
+
+using namespace osc;
+
+TEST(TemporaryFile, can_default_construct)
+{
+    [[maybe_unused]] const TemporaryFile temporary_file;
+}
+
+TEST(TemporaryFile, stream_is_open_returns_true_on_default_construction)
+{
+    TemporaryFile temporary_file;
+    ASSERT_TRUE(temporary_file.stream().is_open());
+}
+
+TEST(TemporaryFile, file_exists_on_filesystem_after_default_construction)
+{
+    const TemporaryFile temporary_file;
+    ASSERT_TRUE(std::filesystem::exists(temporary_file.absolute_path()));
+}
+
+TEST(TemporaryFile, file_stops_existing_once_temporary_file_drops_out_of_scope)
+{
+    std::filesystem::path abs_path;
+    {
+        const TemporaryFile temporary_file;
+        abs_path = temporary_file.absolute_path();
+        ASSERT_TRUE(std::filesystem::exists(abs_path));
+    }
+    ASSERT_FALSE(std::filesystem::exists(abs_path));
+}
+
+TEST(TemporaryFile, filename_begins_with_prefix_when_constructed_with_a_prefix)
+{
+    const TemporaryFile temporary_file({ .prefix = "someprefix" });
+    ASSERT_TRUE(temporary_file.filename().string().starts_with("someprefix"));
+}
+
+TEST(TemporaryFile, filename_ends_with_suffix_when_constructed_with_a_suffix)
+{
+    const TemporaryFile temporary_file({ .suffix = "somesuffix" });
+    ASSERT_TRUE(temporary_file.filename().string().ends_with("somesuffix"));
+}

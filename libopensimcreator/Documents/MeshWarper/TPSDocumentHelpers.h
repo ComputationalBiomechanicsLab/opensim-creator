@@ -8,11 +8,11 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 
 #include <libopynsim/Utils/LandmarkPair3D.h>
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/EnumHelpers.h>
-#include <liboscar/Utils/StringName.h>
+#include <liboscar/graphics/Mesh.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/StringName.h>
 
 #include <cstddef>
 #include <optional>

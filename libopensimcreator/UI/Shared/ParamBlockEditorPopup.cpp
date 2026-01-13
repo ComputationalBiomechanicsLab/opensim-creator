@@ -3,10 +3,10 @@
 #include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
 #include <libopensimcreator/Utils/ParamBlock.h>
 
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/Popup.h>
-#include <liboscar/UI/Popups/PopupPrivate.h>
-#include <liboscar/Utils/StdVariantHelpers.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/popups/Popup.h>
+#include <liboscar/ui/popups/PopupPrivate.h>
+#include <liboscar/utils/StdVariantHelpers.h>
 
 #include <string_view>
 #include <variant>

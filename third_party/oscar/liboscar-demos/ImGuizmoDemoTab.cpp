@@ -1,18 +1,18 @@
 #include "ImGuizmoDemoTab.h"
 
-#include <liboscar/Graphics/Camera.h>
-#include <liboscar/Graphics/Geometries/GridGeometry.h>
-#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
-#include <liboscar/Graphics/Graphics.h>
-#include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
-#include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/MatrixFunctions.h>
-#include <liboscar/Maths/PolarPerspectiveCamera.h>
-#include <liboscar/Maths/QuaternionFunctions.h>
-#include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/graphics/Camera.h>
+#include <liboscar/graphics/geometries/GridGeometry.h>
+#include <liboscar/graphics/geometries/PlaneGeometry.h>
+#include <liboscar/graphics/Graphics.h>
+#include <liboscar/graphics/materials/MeshBasicMaterial.h>
+#include <liboscar/maths/Matrix4x4.h>
+#include <liboscar/maths/MatrixFunctions.h>
+#include <liboscar/maths/PolarPerspectiveCamera.h>
+#include <liboscar/maths/QuaternionFunctions.h>
+#include <liboscar/maths/Rect.h>
+#include <liboscar/maths/RectFunctions.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/tabs/TabPrivate.h>
 
 #include <memory>
 

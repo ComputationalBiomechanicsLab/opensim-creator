@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataTypeList.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataTypeTraits.h>
 
-#include <liboscar/Utils/EnumHelpers.h>
+#include <liboscar/utils/EnumHelpers.h>
 
 #include <array>
 

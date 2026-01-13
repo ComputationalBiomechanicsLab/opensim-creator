@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/UI/oscimgui.h>
+#include <liboscar/ui/oscimgui.h>
 
 #include <memory>
 

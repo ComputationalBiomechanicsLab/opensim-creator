@@ -3,9 +3,9 @@
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/SynchronizedValueGuard.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/SynchronizedValueGuard.h>
+#include <liboscar/utils/UID.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <memory>

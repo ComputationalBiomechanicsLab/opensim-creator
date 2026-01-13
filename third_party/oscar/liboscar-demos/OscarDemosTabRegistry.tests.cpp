@@ -1,8 +1,8 @@
 #include "OscarDemosTabRegistry.h"
 
-#include <liboscar/Platform/App.h>
-#include <liboscar/UI/Screens/TabTestingScreen.h>
-#include <liboscar/UI/Tabs/TabRegistry.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/ui/screens/TabTestingScreen.h>
+#include <liboscar/ui/tabs/TabRegistry.h>
 
 #include <gtest/gtest.h>
 

@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/MeshWarper/TPSDocument.h>
 
-#include <liboscar/Utils/UndoRedo.h>
+#include <liboscar/utils/UndoRedo.h>
 
 namespace osc
 {

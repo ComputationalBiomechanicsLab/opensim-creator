@@ -5,9 +5,9 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
 
-#include <liboscar/Formats/OBJ.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/formats/OBJ.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/utils/UID.h>
 
 #include <iosfwd>
 #include <memory>

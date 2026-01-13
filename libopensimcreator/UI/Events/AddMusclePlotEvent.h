@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Platform/Events/Event.h>
+#include <liboscar/platform/events/Event.h>
 #include <OpenSim/Common/ComponentPath.h>
 
 namespace OpenSim { class Coordinate; }

@@ -6,8 +6,8 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <liboscar/Platform/App.h>
-#include <liboscar/UI/oscimgui.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/ui/oscimgui.h>
 
 #include <memory>
 #include <utility>

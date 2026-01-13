@@ -2,10 +2,10 @@
 
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 
-#include <liboscar/Maths/AABB.h>
-#include <liboscar/Maths/Vector2.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/maths/AABB.h>
+#include <liboscar/maths/Vector2.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/utils/CStringView.h>
 
 #include <filesystem>
 #include <functional>

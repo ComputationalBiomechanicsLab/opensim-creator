@@ -7,10 +7,10 @@
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <liboscar/Maths/Circle.h>
-#include <liboscar/Maths/Vector2.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Panels/Panel.h>
+#include <liboscar/maths/Circle.h>
+#include <liboscar/maths/Vector2.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/panels/Panel.h>
 
 #include <memory>
 #include <string_view>

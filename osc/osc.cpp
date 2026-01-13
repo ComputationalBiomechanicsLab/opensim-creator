@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/UI/MainUIScreen.h>
-#include <liboscar/Platform/AppMetadata.h>
-#include <liboscar/UI/Tabs/TabRegistry.h>
+#include <liboscar/platform/AppMetadata.h>
+#include <liboscar/ui/tabs/TabRegistry.h>
 #include <liboscar-demos/OscarDemosTabRegistry.h>
 
 #include <cstdlib>

@@ -6,9 +6,9 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Maths/VectorFunctions.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/maths/VectorFunctions.h>
+#include <liboscar/utils/UID.h>
 
 #include <iostream>
 #include <string>

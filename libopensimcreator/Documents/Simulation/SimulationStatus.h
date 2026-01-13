@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/utils/CStringView.h>
 
 #include <span>
 

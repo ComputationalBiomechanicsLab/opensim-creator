@@ -7,14 +7,14 @@
 #include <libopensimcreator/UI/Shared/ComponentContextMenu.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Graphics/Color.h>
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Widget.h>
-#include <liboscar/UI/Events/OpenPopupEvent.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Panels/PanelPrivate.h>
-#include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/graphics/Color.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/Widget.h>
+#include <liboscar/ui/events/OpenPopupEvent.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/panels/PanelPrivate.h>
+#include <liboscar/utils/Assertions.h>
+#include <liboscar/utils/CStringView.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 

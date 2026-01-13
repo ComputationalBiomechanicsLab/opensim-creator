@@ -1,8 +1,8 @@
 #pragma once
 
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/MeshIndicesView.h>
-#include <liboscar/Platform/FileDialogFilter.h>
+#include <liboscar/graphics/Mesh.h>
+#include <liboscar/graphics/MeshIndicesView.h>
+#include <liboscar/platform/FileDialogFilter.h>
 
 #include <filesystem>
 #include <span>

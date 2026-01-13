@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/MeshImporter/Document.h>
 
-#include <liboscar/Utils/UndoRedo.h>
+#include <liboscar/utils/UndoRedo.h>
 
 namespace osc::mi
 {

@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/MeshImporter/IObjectFinder.h>
 #include <libopensimcreator/Documents/MeshImporter/MIObject.h>
 
-#include <liboscar/Utils/ClonePtr.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/utils/ClonePtr.h>
+#include <liboscar/utils/UID.h>
 
 #include <concepts>
 #include <cstddef>

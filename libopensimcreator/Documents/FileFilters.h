@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Platform/FileDialogFilter.h>
+#include <liboscar/platform/FileDialogFilter.h>
 
 #include <span>
 

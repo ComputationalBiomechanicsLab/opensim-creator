@@ -13,17 +13,17 @@
 #include <libopensimcreator/UI/SplashTab.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Graphics/Scene/SceneCache.h>
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/AppMetadata.h>
-#include <liboscar/Platform/Log.h>
-#include <liboscar/Platform/os.h>
-#include <liboscar/UI/Events/CloseTabEvent.h>
-#include <liboscar/UI/Events/OpenTabEvent.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/FilesystemHelpers.h>
-#include <liboscar/Utils/StringHelpers.h>
+#include <liboscar/graphics/scene/SceneCache.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/AppMetadata.h>
+#include <liboscar/platform/Log.h>
+#include <liboscar/platform/os.h>
+#include <liboscar/ui/events/CloseTabEvent.h>
+#include <liboscar/ui/events/OpenTabEvent.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/FilesystemHelpers.h>
+#include <liboscar/utils/StringHelpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>

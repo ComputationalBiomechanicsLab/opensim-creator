@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <liboscar/Utils/Conversion.h>
+#include <liboscar/utils/Conversion.h>
 
 #include <functional>
 #include <span>

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Utils/Spsc.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/graphics/Mesh.h>
+#include <liboscar/utils/Spsc.h>
+#include <liboscar/utils/UID.h>
 
 #include <filesystem>
 #include <string>

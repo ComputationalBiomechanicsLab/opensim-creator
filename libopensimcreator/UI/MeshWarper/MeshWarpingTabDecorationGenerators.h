@@ -3,10 +3,10 @@
 #include <libopensimcreator/Graphics/OverlayDecorationGenerator.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <liboscar/Graphics/Color.h>
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/Scene/SceneDecoration.h>
-#include <liboscar/Graphics/Scene/SceneHelpers.h>
+#include <liboscar/graphics/Color.h>
+#include <liboscar/graphics/Mesh.h>
+#include <liboscar/graphics/scene/SceneDecoration.h>
+#include <liboscar/graphics/scene/SceneHelpers.h>
 
 #include <functional>
 

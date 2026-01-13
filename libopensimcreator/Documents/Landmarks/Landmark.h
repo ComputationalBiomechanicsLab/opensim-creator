@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vector3.h>
+#include <liboscar/maths/Vector3.h>
 
 #include <optional>
 #include <string>

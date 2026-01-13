@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/MeshImporter/Document.h>
 #include <libopensimcreator/Documents/MeshImporter/MIObject.h>
 
-#include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/graphics/scene/SceneDecorationFlags.h>
+#include <liboscar/utils/UID.h>
 
 #include <concepts>
 #include <optional>

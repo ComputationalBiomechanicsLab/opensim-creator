@@ -4,10 +4,10 @@
 #include <libopensimcreator/Documents/MeshImporter/MIClass.h>
 #include <libopensimcreator/Documents/MeshImporter/MIObjectCRTP.h>
 
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/AABB.h>
-#include <liboscar/Maths/Transform.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/graphics/Mesh.h>
+#include <liboscar/maths/AABB.h>
+#include <liboscar/maths/Transform.h>
+#include <liboscar/utils/UID.h>
 
 #include <filesystem>
 #include <iosfwd>

@@ -1,17 +1,17 @@
 #include "SubMeshTab.h"
 
-#include <liboscar/Graphics/Camera.h>
-#include <liboscar/Graphics/Geometries/BoxGeometry.h>
-#include <liboscar/Graphics/Geometries/CircleGeometry.h>
-#include <liboscar/Graphics/Geometries/SphereGeometry.h>
-#include <liboscar/Graphics/Graphics.h>
-#include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/SubMeshDescriptor.h>
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/ResourceLoader.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/graphics/Camera.h>
+#include <liboscar/graphics/geometries/BoxGeometry.h>
+#include <liboscar/graphics/geometries/CircleGeometry.h>
+#include <liboscar/graphics/geometries/SphereGeometry.h>
+#include <liboscar/graphics/Graphics.h>
+#include <liboscar/graphics/materials/MeshBasicMaterial.h>
+#include <liboscar/graphics/Mesh.h>
+#include <liboscar/graphics/SubMeshDescriptor.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/ResourceLoader.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/tabs/TabPrivate.h>
 
 #include <array>
 #include <concepts>

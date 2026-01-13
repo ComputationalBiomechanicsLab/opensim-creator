@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <liboscar/Variant/Variant.h>
+#include <liboscar/variant/Variant.h>
 
 #include <concepts>
 #include <functional>

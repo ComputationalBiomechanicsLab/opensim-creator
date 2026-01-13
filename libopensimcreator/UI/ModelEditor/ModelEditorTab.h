@@ -1,8 +1,8 @@
 #pragma once
 
-#include <liboscar/UI/Tabs/Tab.h>
-#include <liboscar/UI/Tabs/TabSaveResult.h>
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/ui/tabs/Tab.h>
+#include <liboscar/ui/tabs/TabSaveResult.h>
+#include <liboscar/utils/CStringView.h>
 
 #include <future>
 

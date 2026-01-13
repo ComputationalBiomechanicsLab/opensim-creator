@@ -12,14 +12,14 @@
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 
-#include <liboscar/Formats/CSV.h>
-#include <liboscar/Formats/OBJ.h>
-#include <liboscar/Formats/STL.h>
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/FileDialogFilter.h>
-#include <liboscar/Platform/Log.h>
+#include <liboscar/formats/CSV.h>
+#include <liboscar/formats/OBJ.h>
+#include <liboscar/formats/STL.h>
+#include <liboscar/graphics/Mesh.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/FileDialogFilter.h>
+#include <liboscar/platform/Log.h>
 
 #include <array>
 #include <filesystem>

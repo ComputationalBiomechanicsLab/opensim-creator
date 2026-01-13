@@ -13,12 +13,12 @@
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/WidgetPrivate.h>
-#include <liboscar/UI/Events/OpenPopupEvent.h>
-#include <liboscar/UI/Events/OpenTabEvent.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Widgets/WindowMenu.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/WidgetPrivate.h>
+#include <liboscar/ui/events/OpenPopupEvent.h>
+#include <liboscar/ui/events/OpenTabEvent.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/widgets/WindowMenu.h>
 
 #include <memory>
 #include <utility>

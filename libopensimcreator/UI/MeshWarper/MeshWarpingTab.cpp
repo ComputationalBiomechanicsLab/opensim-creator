@@ -9,16 +9,16 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabStatusBar.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabToolbar.h>
 
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Events/Event.h>
-#include <liboscar/Platform/Events/KeyEvent.h>
-#include <liboscar/UI/Panels/LogViewerPanel.h>
-#include <liboscar/UI/Panels/PanelManager.h>
-#include <liboscar/UI/Panels/PerfPanel.h>
-#include <liboscar/UI/Panels/ToggleablePanelFlags.h>
-#include <liboscar/UI/Panels/UndoRedoPanel.h>
-#include <liboscar/UI/Tabs/TabPrivate.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/events/Event.h>
+#include <liboscar/platform/events/KeyEvent.h>
+#include <liboscar/ui/panels/LogViewerPanel.h>
+#include <liboscar/ui/panels/PanelManager.h>
+#include <liboscar/ui/panels/PerfPanel.h>
+#include <liboscar/ui/panels/ToggleablePanelFlags.h>
+#include <liboscar/ui/panels/UndoRedoPanel.h>
+#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/utils/UID.h>
 
 #include <memory>
 #include <string_view>

@@ -2,31 +2,31 @@
 
 #include <liboscar-demos/bookofshaders/BookOfShadersTab.h>
 
-#include <liboscar-demos/learnopengl/AdvancedLighting/LOGLBloomTab.h>
-#include <liboscar-demos/learnopengl/AdvancedLighting/LOGLDeferredShadingTab.h>
-#include <liboscar-demos/learnopengl/AdvancedLighting/LOGLGammaTab.h>
-#include <liboscar-demos/learnopengl/AdvancedLighting/LOGLHDRTab.h>
-#include <liboscar-demos/learnopengl/AdvancedLighting/LOGLNormalMappingTab.h>
-#include <liboscar-demos/learnopengl/AdvancedLighting/LOGLParallaxMappingTab.h>
-#include <liboscar-demos/learnopengl/AdvancedLighting/LOGLPointShadowsTab.h>
-#include <liboscar-demos/learnopengl/AdvancedLighting/LOGLShadowMappingTab.h>
-#include <liboscar-demos/learnopengl/AdvancedLighting/LOGLSSAOTab.h>
-#include <liboscar-demos/learnopengl/AdvancedOpenGL/LOGLBlendingTab.h>
-#include <liboscar-demos/learnopengl/AdvancedOpenGL/LOGLCubemapsTab.h>
-#include <liboscar-demos/learnopengl/AdvancedOpenGL/LOGLFaceCullingTab.h>
-#include <liboscar-demos/learnopengl/AdvancedOpenGL/LOGLFramebuffersTab.h>
-#include <liboscar-demos/learnopengl/GettingStarted/LOGLCoordinateSystemsTab.h>
-#include <liboscar-demos/learnopengl/GettingStarted/LOGLHelloTriangleTab.h>
-#include <liboscar-demos/learnopengl/GettingStarted/LOGLTexturingTab.h>
-#include <liboscar-demos/learnopengl/Guest/LOGLCSMTab.h>
-#include <liboscar-demos/learnopengl/Lighting/LOGLBasicLightingTab.h>
-#include <liboscar-demos/learnopengl/Lighting/LOGLLightingMapsTab.h>
-#include <liboscar-demos/learnopengl/Lighting/LOGLMultipleLightsTab.h>
-#include <liboscar-demos/learnopengl/PBR/LOGLPBRDiffuseIrradianceTab.h>
-#include <liboscar-demos/learnopengl/PBR/LOGLPBRLightingTab.h>
-#include <liboscar-demos/learnopengl/PBR/LOGLPBRLightingTexturedTab.h>
-#include <liboscar-demos/learnopengl/PBR/LOGLPBRSpecularIrradianceTab.h>
-#include <liboscar-demos/learnopengl/PBR/LOGLPBRSpecularIrradianceTexturedTab.h>
+#include <liboscar-demos/learnopengl/advanced_lighting/LOGLBloomTab.h>
+#include <liboscar-demos/learnopengl/advanced_lighting/LOGLDeferredShadingTab.h>
+#include <liboscar-demos/learnopengl/advanced_lighting/LOGLGammaTab.h>
+#include <liboscar-demos/learnopengl/advanced_lighting/LOGLHDRTab.h>
+#include <liboscar-demos/learnopengl/advanced_lighting/LOGLNormalMappingTab.h>
+#include <liboscar-demos/learnopengl/advanced_lighting/LOGLParallaxMappingTab.h>
+#include <liboscar-demos/learnopengl/advanced_lighting/LOGLPointShadowsTab.h>
+#include <liboscar-demos/learnopengl/advanced_lighting/LOGLShadowMappingTab.h>
+#include <liboscar-demos/learnopengl/advanced_lighting/LOGLSSAOTab.h>
+#include <liboscar-demos/learnopengl/advanced_opengl/LOGLBlendingTab.h>
+#include <liboscar-demos/learnopengl/advanced_opengl/LOGLCubemapsTab.h>
+#include <liboscar-demos/learnopengl/advanced_opengl/LOGLFaceCullingTab.h>
+#include <liboscar-demos/learnopengl/advanced_opengl/LOGLFramebuffersTab.h>
+#include <liboscar-demos/learnopengl/getting_started/LOGLCoordinateSystemsTab.h>
+#include <liboscar-demos/learnopengl/getting_started/LOGLHelloTriangleTab.h>
+#include <liboscar-demos/learnopengl/getting_started/LOGLTexturingTab.h>
+#include <liboscar-demos/learnopengl/guest/LOGLCSMTab.h>
+#include <liboscar-demos/learnopengl/lighting/LOGLBasicLightingTab.h>
+#include <liboscar-demos/learnopengl/lighting/LOGLLightingMapsTab.h>
+#include <liboscar-demos/learnopengl/lighting/LOGLMultipleLightsTab.h>
+#include <liboscar-demos/learnopengl/pbr/LOGLPBRDiffuseIrradianceTab.h>
+#include <liboscar-demos/learnopengl/pbr/LOGLPBRLightingTab.h>
+#include <liboscar-demos/learnopengl/pbr/LOGLPBRLightingTexturedTab.h>
+#include <liboscar-demos/learnopengl/pbr/LOGLPBRSpecularIrradianceTab.h>
+#include <liboscar-demos/learnopengl/pbr/LOGLPBRSpecularIrradianceTexturedTab.h>
 
 #include <liboscar-demos/CustomWidgetsTab.h>
 #include <liboscar-demos/DrawingTestTab.h>
@@ -39,7 +39,7 @@
 #include <liboscar-demos/MeshGenTestTab.h>
 #include <liboscar-demos/SubMeshTab.h>
 
-#include <liboscar/Utils/Typelist.h>
+#include <liboscar/utils/Typelist.h>
 
 namespace osc
 {

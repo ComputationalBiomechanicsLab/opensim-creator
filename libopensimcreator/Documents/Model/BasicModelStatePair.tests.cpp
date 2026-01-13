@@ -5,7 +5,7 @@
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/Graphics/Scene/SceneCache.h>
+#include <liboscar/graphics/scene/SceneCache.h>
 #include <SimTKcommon/internal/State.h>
 
 #include <filesystem>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Utils/Flags.h>
+#include <liboscar/utils/Flags.h>
 
 namespace osc
 {

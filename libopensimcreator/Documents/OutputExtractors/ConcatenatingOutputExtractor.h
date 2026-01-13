@@ -5,7 +5,7 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/utils/CStringView.h>
 
 #include <cstddef>
 #include <string>

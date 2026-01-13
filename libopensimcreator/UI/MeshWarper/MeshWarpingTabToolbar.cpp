@@ -6,11 +6,11 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <liboscar/Platform/Widget.h>
-#include <liboscar/Platform/WidgetPrivate.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Widgets/RedoButton.h>
-#include <liboscar/UI/Widgets/UndoButton.h>
+#include <liboscar/platform/Widget.h>
+#include <liboscar/platform/WidgetPrivate.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/widgets/RedoButton.h>
+#include <liboscar/ui/widgets/UndoButton.h>
 
 #include <memory>
 #include <string_view>

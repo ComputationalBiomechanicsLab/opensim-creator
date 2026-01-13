@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/IVersionedComponentAccessor.h>
 
-#include <liboscar/Utils/UID.h>
+#include <liboscar/utils/UID.h>
 
 #include <filesystem>
 #include <memory>

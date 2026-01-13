@@ -10,20 +10,20 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabHover.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabUserSelection.h>
 
-#include <liboscar/Graphics/Color.h>
-#include <liboscar/Graphics/Material.h>
-#include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
-#include <liboscar/Graphics/Scene/SceneCache.h>
-#include <liboscar/Maths/AABB.h>
-#include <liboscar/Maths/PolarPerspectiveCamera.h>
-#include <liboscar/Maths/Vector2.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Widget.h>
-#include <liboscar/UI/Events/CloseTabEvent.h>
-#include <liboscar/UI/Popups/PopupManager.h>
-#include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/graphics/Color.h>
+#include <liboscar/graphics/Material.h>
+#include <liboscar/graphics/materials/MeshBasicMaterial.h>
+#include <liboscar/graphics/scene/SceneCache.h>
+#include <liboscar/maths/AABB.h>
+#include <liboscar/maths/PolarPerspectiveCamera.h>
+#include <liboscar/maths/Vector2.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/Widget.h>
+#include <liboscar/ui/events/CloseTabEvent.h>
+#include <liboscar/ui/popups/PopupManager.h>
+#include <liboscar/utils/Assertions.h>
+#include <liboscar/utils/UID.h>
 
 #include <concepts>
 #include <memory>

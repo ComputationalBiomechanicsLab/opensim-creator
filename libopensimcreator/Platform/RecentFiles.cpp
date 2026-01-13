@@ -2,9 +2,9 @@
 
 #include <libopensimcreator/Platform/RecentFile.h>
 
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Log.h>
-#include <liboscar/Utils/Algorithms.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/Log.h>
+#include <liboscar/utils/Algorithms.h>
 
 #include <algorithm>
 #include <chrono>

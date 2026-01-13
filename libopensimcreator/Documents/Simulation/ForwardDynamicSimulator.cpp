@@ -10,12 +10,12 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
-#include <liboscar/Platform/Log.h>
-#include <liboscar/Shims/Cpp20/stop_token.h>
-#include <liboscar/Shims/Cpp20/thread.h>
-#include <liboscar/Utils/HashHelpers.h>
-#include <liboscar/Utils/PerfClock.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/platform/Log.h>
+#include <liboscar/shims/cpp20/stop_token.h>
+#include <liboscar/shims/cpp20/thread.h>
+#include <liboscar/utils/HashHelpers.h>
+#include <liboscar/utils/PerfClock.h>
+#include <liboscar/utils/UID.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <simmath/Integrator.h>

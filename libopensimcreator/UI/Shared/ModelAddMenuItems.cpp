@@ -12,14 +12,14 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Widget.h>
-#include <liboscar/Platform/WidgetPrivate.h>
-#include <liboscar/Shims/Cpp23/ranges.h>
-#include <liboscar/UI/Events/OpenPopupEvent.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/StringHelpers.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/Widget.h>
+#include <liboscar/platform/WidgetPrivate.h>
+#include <liboscar/shims/cpp23/ranges.h>
+#include <liboscar/ui/events/OpenPopupEvent.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/StringHelpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Control/Controller.h>

@@ -1,7 +1,7 @@
 #include "IntegratorMethod.h"
 
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/EnumHelpers.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/EnumHelpers.h>
 
 #include <simmath/ExplicitEulerIntegrator.h>
 #include <simmath/RungeKutta2Integrator.h>

@@ -1,7 +1,7 @@
 #include "ModelViewerPanelState.h"
 
-#include <liboscar/Graphics/Scene/SceneCache.h>
-#include <liboscar/Platform/App.h>
+#include <liboscar/graphics/scene/SceneCache.h>
+#include <liboscar/platform/App.h>
 
 osc::ModelViewerPanelState::ModelViewerPanelState(
     std::string_view panelName_,

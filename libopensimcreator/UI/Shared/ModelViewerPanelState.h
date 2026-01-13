@@ -4,11 +4,11 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelFlags.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelLayer.h>
 
-#include <liboscar/Graphics/Scene/SceneCollision.h>
-#include <liboscar/Graphics/Scene/SceneDecoration.h>
-#include <liboscar/Maths/AABB.h>
-#include <liboscar/Maths/Rect.h>
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/graphics/scene/SceneCollision.h>
+#include <liboscar/graphics/scene/SceneDecoration.h>
+#include <liboscar/maths/AABB.h>
+#include <liboscar/maths/Rect.h>
+#include <liboscar/utils/CStringView.h>
 #include <OpenSim/Common/ComponentPath.h>
 
 #include <optional>

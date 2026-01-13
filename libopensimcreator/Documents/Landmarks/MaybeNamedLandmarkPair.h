@@ -3,8 +3,8 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <libopynsim/Utils/LandmarkPair3D.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Utils/CStringView.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/utils/CStringView.h>
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <concepts>

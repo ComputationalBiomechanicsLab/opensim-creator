@@ -2,12 +2,12 @@
 
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/os.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/Popup.h>
-#include <liboscar/UI/Popups/PopupPrivate.h>
-#include <liboscar/Utils/FilesystemHelpers.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/os.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/popups/Popup.h>
+#include <liboscar/ui/popups/PopupPrivate.h>
+#include <liboscar/utils/FilesystemHelpers.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <SimTKcommon/SmallMatrix.h>
 

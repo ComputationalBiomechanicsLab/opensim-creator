@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/ObjectPropertyEdit.h>
 
-#include <liboscar/Platform/Widget.h>
+#include <liboscar/platform/Widget.h>
 
 #include <functional>
 #include <memory>

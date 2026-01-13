@@ -2,14 +2,14 @@
 
 #include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
 
-#include <liboscar/Graphics/Color.h>
-#include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
-#include <liboscar/Graphics/Scene/SceneDecorationShading.h>
-#include <liboscar/Maths/AABB.h>
-#include <liboscar/Maths/AABBFunctions.h>
-#include <liboscar/Maths/Transform.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/graphics/Color.h>
+#include <liboscar/graphics/Mesh.h>
+#include <liboscar/graphics/scene/SceneDecorationFlags.h>
+#include <liboscar/graphics/scene/SceneDecorationShading.h>
+#include <liboscar/maths/AABB.h>
+#include <liboscar/maths/AABBFunctions.h>
+#include <liboscar/maths/Transform.h>
+#include <liboscar/utils/UID.h>
 
 namespace osc::mi
 {

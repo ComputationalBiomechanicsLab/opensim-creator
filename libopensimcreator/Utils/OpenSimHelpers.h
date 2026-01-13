@@ -1,12 +1,12 @@
 #pragma once
 
-#include <liboscar/Concepts/DereferencesTo.h>
-#include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Ray.h>
-#include <liboscar/Maths/Vector3.h>
-#include <liboscar/Shims/Cpp23/generator.h>
-#include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/StringName.h>
+#include <liboscar/concepts/DereferencesTo.h>
+#include <liboscar/graphics/Color.h>
+#include <liboscar/maths/Ray.h>
+#include <liboscar/maths/Vector3.h>
+#include <liboscar/shims/cpp23/generator.h>
+#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/StringName.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <SimTKcommon/internal/Transform.h>
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <liboscar/Graphics/AntiAliasingLevel.h>
-#include <liboscar/Graphics/Scene/SceneCollision.h>
-#include <liboscar/Graphics/Scene/SceneRendererParams.h>
-#include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/Vector2.h>
+#include <liboscar/graphics/AntiAliasingLevel.h>
+#include <liboscar/graphics/scene/SceneCollision.h>
+#include <liboscar/graphics/scene/SceneRendererParams.h>
+#include <liboscar/maths/Rect.h>
+#include <liboscar/maths/Vector2.h>
 
 #include <functional>
 #include <optional>

@@ -1,9 +1,9 @@
 #include "OpenSimDecorationOptions.h"
 
 #include <gtest/gtest.h>
-#include <liboscar/Utils/Conversion.h>
-#include <liboscar/Utils/StringHelpers.h>
-#include <liboscar/Variant/Variant.h>
+#include <liboscar/utils/Conversion.h>
+#include <liboscar/utils/StringHelpers.h>
+#include <liboscar/variant/Variant.h>
 
 #include <string_view>
 #include <unordered_map>

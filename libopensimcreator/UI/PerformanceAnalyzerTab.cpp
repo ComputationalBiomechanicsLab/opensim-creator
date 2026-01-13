@@ -12,11 +12,11 @@
 #include <libopensimcreator/Utils/ParamBlock.h>
 #include <libopensimcreator/Utils/ParamValue.h>
 
-#include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Widget.h>
-#include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Tabs/TabPrivate.h>
-#include <liboscar/Utils/Algorithms.h>
+#include <liboscar/platform/App.h>
+#include <liboscar/platform/Widget.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/utils/Algorithms.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>

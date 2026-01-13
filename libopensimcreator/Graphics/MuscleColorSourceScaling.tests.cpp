@@ -1,7 +1,7 @@
 #include "MuscleColorSourceScaling.h"
 
 #include <gtest/gtest.h>
-#include <liboscar/Utils/EnumHelpers.h>
+#include <liboscar/utils/EnumHelpers.h>
 
 #include <type_traits>
 #include <utility>

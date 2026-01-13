@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Graphics/Scene/SceneDecoration.h>
+#include <liboscar/graphics/scene/SceneDecoration.h>
 
 using namespace osc;
 
