@@ -6,6 +6,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Added `OSC_LIBOPENSIMCREATOR_INSTALL` cmake option, which enables installing the `opensimcreator`
+  static library and C++ header files as part of the build. This is an advanced option
+  that we provide only to help us build internal prototypes: we do not provide any support/stability
+  for downstream C++ projects (you've been warned :wink:).
+
 ## [0.7.1] - 2026/01/12
 
 - A link to OpenSim Creator's [official JOSS announcement paper](https://doi.org/10.21105/joss.08284)

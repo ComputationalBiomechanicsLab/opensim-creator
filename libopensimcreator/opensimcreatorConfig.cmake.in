@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(oscar REQUIRED)
+find_dependency(opynsim REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/opensimcreatorTargets.cmake")
+
+check_required_components("opensimcreator")
