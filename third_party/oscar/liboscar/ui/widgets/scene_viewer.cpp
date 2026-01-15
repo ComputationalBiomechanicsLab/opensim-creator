@@ -1,8 +1,8 @@
 #include "scene_viewer.h"
 
-#include <liboscar/graphics/scene/SceneCache.h>
-#include <liboscar/graphics/scene/SceneDecoration.h>
-#include <liboscar/graphics/scene/SceneRenderer.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
 

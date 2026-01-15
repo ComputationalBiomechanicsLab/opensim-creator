@@ -3,12 +3,12 @@
 #include <libopensimcreator/Documents/Model/IVersionedComponentAccessor.h>
 
 #include <liboscar/formats/csv.h>
-#include <liboscar/maths/ClosedInterval.h>
-#include <liboscar/maths/Constants.h>
+#include <liboscar/maths/closed_interval.h>
+#include <liboscar/maths/constants.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
-#include <liboscar/utils/Algorithms.h>
+#include <liboscar/utils/algorithms.h>
 #include <OpenSim/Common/Function.h>
 
 #include <array>

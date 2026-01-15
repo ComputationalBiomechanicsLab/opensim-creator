@@ -1,8 +1,8 @@
 #pragma once
 
-#include <liboscar/graphics/Texture2D.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/vector2.h>
 
 #include <utility>
 

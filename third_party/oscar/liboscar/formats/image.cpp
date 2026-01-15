@@ -1,11 +1,11 @@
 #include "image.h"
 
-#include <liboscar/graphics/Color32.h>
-#include <liboscar/graphics/ColorSpace.h>
-#include <liboscar/graphics/Texture2D.h>
-#include <liboscar/graphics/TextureFormat.h>
-#include <liboscar/utils/Assertions.h>
-#include <liboscar/utils/ObjectRepresentation.h>
+#include <liboscar/graphics/color32.h>
+#include <liboscar/graphics/color_space.h>
+#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture_format.h>
+#include <liboscar/utils/assertions.h>
+#include <liboscar/utils/object_representation.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

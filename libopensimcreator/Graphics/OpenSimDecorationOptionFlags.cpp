@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/enum_helpers.h>
 
 #include <array>
 #include <cstddef>

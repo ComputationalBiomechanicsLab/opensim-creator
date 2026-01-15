@@ -1,7 +1,7 @@
 #include "TPSDocument.h"
 
-#include <liboscar/graphics/geometries/CylinderGeometry.h>
-#include <liboscar/graphics/geometries/SphereGeometry.h>
+#include <liboscar/graphics/geometries/cylinder_geometry.h>
+#include <liboscar/graphics/geometries/sphere_geometry.h>
 
 osc::TPSDocument::TPSDocument() :
     sourceMesh{SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}}.mesh()},

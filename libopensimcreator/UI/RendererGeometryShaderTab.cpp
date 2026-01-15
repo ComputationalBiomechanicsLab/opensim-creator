@@ -2,18 +2,18 @@
 
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 
-#include <liboscar/graphics/Camera.h>
-#include <liboscar/graphics/Color.h>
-#include <liboscar/graphics/Graphics.h>
-#include <liboscar/graphics/Material.h>
-#include <liboscar/graphics/materials/MeshBasicMaterial.h>
-#include <liboscar/graphics/materials/MeshNormalVectorsMaterial.h>
-#include <liboscar/graphics/Mesh.h>
-#include <liboscar/maths/Angle.h>
-#include <liboscar/maths/EulerAngles.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/Transform.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/camera.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/graphics.h>
+#include <liboscar/graphics/material.h>
+#include <liboscar/graphics/materials/mesh_basic_material.h>
+#include <liboscar/graphics/materials/mesh_normal_vectors_material.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/maths/angle.h>
+#include <liboscar/maths/euler_angles.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/transform.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/cursor.h>
 #include <liboscar/platform/cursor_shape.h>

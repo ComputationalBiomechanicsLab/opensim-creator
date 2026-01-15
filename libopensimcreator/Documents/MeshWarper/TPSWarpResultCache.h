@@ -6,8 +6,8 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <libopynsim/Utils/TPS3D.h>
-#include <liboscar/graphics/Mesh.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/maths/vector3.h>
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>

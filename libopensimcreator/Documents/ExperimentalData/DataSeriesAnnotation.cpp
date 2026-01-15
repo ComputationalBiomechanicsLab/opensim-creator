@@ -3,10 +3,10 @@
 #include <libopensimcreator/Documents/ExperimentalData/DataPointType.h>
 
 #include <libopensimcreator/Utils/SimTKConverters.h>
-#include <liboscar/graphics/Color.h>
-#include <liboscar/maths/ClosedInterval.h>
-#include <liboscar/maths/QuaternionFunctions.h>
-#include <liboscar/utils/Assertions.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/maths/closed_interval.h>
+#include <liboscar/maths/quaternion_functions.h>
+#include <liboscar/utils/assertions.h>
 #include <OpenSim/Common/Storage.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 

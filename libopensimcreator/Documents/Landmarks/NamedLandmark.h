@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Landmarks/Landmark.h>
 
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/maths/vector3.h>
 
 #include <string>
 

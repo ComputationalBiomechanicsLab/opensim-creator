@@ -1,9 +1,9 @@
 #include "class.h"
 
 #include <liboscar/dom/property_info.h>
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/StringHelpers.h>
-#include <liboscar/utils/StringName.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utils/string_name.h>
 
 #include <concepts>
 #include <cstddef>

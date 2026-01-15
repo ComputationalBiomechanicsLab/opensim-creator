@@ -1,15 +1,15 @@
 #include "variant.h"
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/maths/VectorFunctions.h>
-#include <liboscar/maths/Vector2.h>
-#include <liboscar/maths/Vector3.h>
-#include <liboscar/utils/Conversion.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/EnumHelpers.h>
-#include <liboscar/utils/HashHelpers.h>
-#include <liboscar/utils/StdVariantHelpers.h>
-#include <liboscar/utils/StringHelpers.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/maths/vector_functions.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/utils/conversion.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utils/std_variant_helpers.h>
+#include <liboscar/utils/string_helpers.h>
 #include <liboscar/variant/variant_type.h>
 
 #include <charconv>

@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include <liboscar/utils/TemporaryDirectory.h>
+#include <liboscar/utils/temporary_directory.h>
 
 #include <filesystem>
 #include <fstream>

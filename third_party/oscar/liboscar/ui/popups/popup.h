@@ -1,10 +1,10 @@
 #pragma once
 
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 
 #include <memory>
 #include <optional>

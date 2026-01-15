@@ -1,9 +1,9 @@
 #pragma once
 
-#include <liboscar/graphics/AntiAliasingLevel.h>
-#include <liboscar/graphics/scene/SceneCollision.h>
-#include <liboscar/maths/AABB.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/graphics/anti_aliasing_level.h>
+#include <liboscar/graphics/scene/scene_collision.h>
+#include <liboscar/maths/aabb.h>
+#include <liboscar/maths/vector2.h>
 
 #include <memory>
 #include <optional>

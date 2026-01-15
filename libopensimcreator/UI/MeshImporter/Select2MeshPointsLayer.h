@@ -7,10 +7,10 @@
 #include <libopensimcreator/UI/MeshImporter/MeshImporterSharedState.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterUILayer.h>
 
-#include <liboscar/maths/Vector2.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 
 #include <functional>
 #include <memory>

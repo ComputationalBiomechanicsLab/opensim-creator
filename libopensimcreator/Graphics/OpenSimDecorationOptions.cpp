@@ -1,9 +1,9 @@
 #include "OpenSimDecorationOptions.h"
 
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/Conversion.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/conversion.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/enum_helpers.h>
 #include <liboscar/variant/variant.h>
 #include <liboscar/variant/variant_type.h>
 

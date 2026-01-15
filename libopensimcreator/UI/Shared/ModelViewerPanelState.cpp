@@ -1,6 +1,6 @@
 #include "ModelViewerPanelState.h"
 
-#include <liboscar/graphics/scene/SceneCache.h>
+#include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/platform/app.h>
 
 osc::ModelViewerPanelState::ModelViewerPanelState(

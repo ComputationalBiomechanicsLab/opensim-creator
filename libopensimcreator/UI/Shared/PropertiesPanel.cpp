@@ -7,12 +7,12 @@
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/graphics/Color.h>
+#include <liboscar/graphics/color.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
-#include <liboscar/utils/ScopeExit.h>
+#include <liboscar/utils/scope_exit.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
 

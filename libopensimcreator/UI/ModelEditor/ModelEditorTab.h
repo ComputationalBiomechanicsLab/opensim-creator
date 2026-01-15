@@ -2,7 +2,7 @@
 
 #include <liboscar/ui/tabs/tab.h>
 #include <liboscar/ui/tabs/tab_save_result.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 
 #include <future>
 

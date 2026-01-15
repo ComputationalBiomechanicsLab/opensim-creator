@@ -1,8 +1,8 @@
 #include "os.h"
 
 #include <liboscar/platform/log.h>
-#include <liboscar/utils/ScopeExit.h>
-#include <liboscar/utils/StringHelpers.h>
+#include <liboscar/utils/scope_exit.h>
+#include <liboscar/utils/string_helpers.h>
 
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_error.h>

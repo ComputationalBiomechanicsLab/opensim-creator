@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/events/event.h>
 #include <liboscar/platform/events/event_type.h>
 #include <liboscar/platform/mouse_input_source.h>

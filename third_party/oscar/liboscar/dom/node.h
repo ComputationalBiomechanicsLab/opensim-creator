@@ -2,7 +2,7 @@
 
 #include <liboscar/dom/node_path.h>
 #include <liboscar/dom/object.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 
 #include <concepts>
 #include <cstddef>

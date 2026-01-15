@@ -12,20 +12,20 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/graphics/scene/SceneCache.h>
-#include <liboscar/graphics/scene/SceneDecoration.h>
-#include <liboscar/graphics/scene/SceneDecorationFlags.h>
-#include <liboscar/graphics/scene/SceneHelpers.h>
-#include <liboscar/graphics/scene/SceneRenderer.h>
-#include <liboscar/maths/BVH.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/RectFunctions.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/graphics/scene/scene_decoration_flags.h>
+#include <liboscar/graphics/scene/scene_helpers.h>
+#include <liboscar/graphics/scene/scene_renderer.h>
+#include <liboscar/maths/bvh.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/StringName.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/string_name.h>
 
 #include <memory>
 #include <optional>

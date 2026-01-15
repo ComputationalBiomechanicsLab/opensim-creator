@@ -3,16 +3,16 @@
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/graphics/scene/SceneCache.h>
-#include <liboscar/graphics/scene/SceneDecoration.h>
-#include <liboscar/graphics/scene/SceneDecorationFlags.h>
-#include <liboscar/graphics/scene/SceneHelpers.h>
-#include <liboscar/maths/LineSegment.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/graphics/scene/scene_decoration_flags.h>
+#include <liboscar/graphics/scene/scene_helpers.h>
+#include <liboscar/maths/line_segment.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/platform/log.h>
-#include <liboscar/utils/HashHelpers.h>
+#include <liboscar/utils/hash_helpers.h>
 #include <simbody/internal/common.h>
 #include <simbody/internal/MobilizedBody.h>
 #include <simbody/internal/SimbodyMatterSubsystem.h>

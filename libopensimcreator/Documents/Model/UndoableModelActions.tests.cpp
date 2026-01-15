@@ -10,7 +10,7 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/maths/MathHelpers.h>
+#include <liboscar/maths/math_helpers.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/StationDefinedFrame.h>

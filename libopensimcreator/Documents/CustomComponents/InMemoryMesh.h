@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/CustomComponents/ICustomDecorationGenerator.h>
 
-#include <liboscar/graphics/Mesh.h>
+#include <liboscar/graphics/mesh.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 
 namespace osc::mow

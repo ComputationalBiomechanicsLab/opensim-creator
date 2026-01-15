@@ -14,16 +14,16 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
-#include <liboscar/graphics/Mesh.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/Matrix4x4.h>
-#include <liboscar/maths/MatrixFunctions.h>
-#include <liboscar/maths/Transform.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/matrix4x4.h>
+#include <liboscar/maths/matrix_functions.h>
+#include <liboscar/maths/transform.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/platform/log.h>
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/Assertions.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/assertions.h>
+#include <liboscar/utils/uid.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/AbstractPathPoint.h>

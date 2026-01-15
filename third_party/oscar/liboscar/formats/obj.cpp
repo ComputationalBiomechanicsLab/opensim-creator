@@ -1,7 +1,7 @@
 #include "obj.h"
 
-#include <liboscar/graphics/Mesh.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/platform/strings.h>
 

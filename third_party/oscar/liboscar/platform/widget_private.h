@@ -1,8 +1,8 @@
 #pragma once
 
 #include <liboscar/platform/widget.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/SharedLifetimeBlock.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/shared_lifetime_block.h>
 
 #include <string_view>
 

@@ -2,9 +2,9 @@
 
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 
-#include <liboscar/maths/ClosedInterval.h>
-#include <liboscar/maths/Normalized.h>
-#include <liboscar/utils/ChronoHelpers.h>
+#include <liboscar/maths/closed_interval.h>
+#include <liboscar/maths/normalized.h>
+#include <liboscar/utils/chrono_helpers.h>
 
 namespace osc
 {

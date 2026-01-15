@@ -22,8 +22,8 @@
 
 #include <libopynsim/Utils/TPS3D.h>
 #include <liboscar/formats/obj.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/TransformFunctions.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/transform_functions.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/ui/events/open_tab_event.h>
@@ -35,9 +35,9 @@
 #include <liboscar/ui/widgets/redo_button.h>
 #include <liboscar/ui/widgets/undo_button.h>
 #include <liboscar/ui/widgets/window_menu.h>
-#include <liboscar/utils/Assertions.h>
-#include <liboscar/utils/Typelist.h>
-#include <liboscar/utils/UndoRedo.h>
+#include <liboscar/utils/assertions.h>
+#include <liboscar/utils/typelist.h>
+#include <liboscar/utils/undo_redo.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapCylinder.h>

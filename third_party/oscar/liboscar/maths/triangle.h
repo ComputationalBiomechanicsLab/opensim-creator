@@ -1,0 +1,38 @@
+#pragma once
+
+#include <liboscar/maths/vector3.h>
+
+#include <cstddef>
+
+namespace osc
+{
+    struct Triangle final {
+        using element_type = float;
+        using value_type = Vector<element_type, 3>;
+        using size_type = size_t;
+        using difference_type = ptrdiff_t;
+        using reference = value_type&;
+        using const_reference = const value_type&;
+        using pointer = value_type*;
+        using const_pointer = const value_type*;
+        using iterator = value_type*;
+        using const_iterator = const value_type*;
+        static constexpr size_t extent = 3;
+
+        constexpr size_type size() const { return extent; }
+        constexpr pointer data() { return &p0; }
+        constexpr const_pointer data() const { return &p0; }
+        constexpr iterator begin() { return data(); }
+        constexpr const_iterator begin() const { return data(); }
+        constexpr iterator end() { return data() + size(); }
+        constexpr const_iterator end() const { return data() + size(); }
+        constexpr reference operator[](size_type pos) { return begin()[pos]; }
+        constexpr const_reference operator[](size_type pos) const { return begin()[pos]; }
+
+        friend bool operator==(const Triangle&, const Triangle&) = default;
+
+        value_type p0{};
+        value_type p1{};
+        value_type p2{};
+    };
+}

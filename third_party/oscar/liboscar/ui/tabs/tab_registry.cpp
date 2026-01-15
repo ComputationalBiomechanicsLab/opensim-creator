@@ -1,6 +1,6 @@
 #include "tab_registry.h"
 
-#include <liboscar/utils/Algorithms.h>
+#include <liboscar/utils/algorithms.h>
 
 #include <algorithm>
 #include <functional>

@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Graphics/CustomRenderingOptionFlags.h>
 
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 #include <liboscar/variant/variant.h>
 
 #include <cstddef>

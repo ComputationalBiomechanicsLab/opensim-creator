@@ -6,16 +6,16 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/formats/csv.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
 #include <liboscar/ui/popups/popup_private.h>
-#include <liboscar/utils/Assertions.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/EnumHelpers.h>
-#include <liboscar/utils/StringHelpers.h>
+#include <liboscar/utils/assertions.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utils/string_helpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>

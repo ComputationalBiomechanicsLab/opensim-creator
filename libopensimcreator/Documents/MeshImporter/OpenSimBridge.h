@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshImporter/Document.h>
 #include <libopensimcreator/Documents/MeshImporter/OpenSimExportFlags.h>
 
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/maths/vector3.h>
 
 #include <filesystem>
 #include <memory>

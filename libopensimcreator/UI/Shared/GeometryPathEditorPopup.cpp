@@ -7,7 +7,7 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
 #include <liboscar/ui/popups/popup_private.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>

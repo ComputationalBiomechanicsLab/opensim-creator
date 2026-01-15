@@ -7,9 +7,9 @@
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/graphics/scene/SceneCache.h>
-#include <liboscar/graphics/scene/SceneDecoration.h>
-#include <liboscar/utils/FilesystemHelpers.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/utils/filesystem_helpers.h>
 
 #include <array>
 #include <filesystem>

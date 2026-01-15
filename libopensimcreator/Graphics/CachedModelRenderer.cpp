@@ -6,19 +6,19 @@
 #include <libopensimcreator/Graphics/OpenSimGraphicsHelpers.h>
 #include <libopensimcreator/Graphics/OverlayDecorationGenerator.h>
 
-#include <liboscar/graphics/AntiAliasingLevel.h>
-#include <liboscar/graphics/scene/SceneCache.h>
-#include <liboscar/graphics/scene/SceneCollision.h>
-#include <liboscar/graphics/scene/SceneDecoration.h>
-#include <liboscar/graphics/scene/SceneHelpers.h>
-#include <liboscar/graphics/scene/SceneRenderer.h>
-#include <liboscar/graphics/scene/SceneRendererParams.h>
-#include <liboscar/maths/AABB.h>
-#include <liboscar/maths/AABBFunctions.h>
-#include <liboscar/maths/BVH.h>
-#include <liboscar/maths/PolarPerspectiveCamera.h>
-#include <liboscar/maths/Vector2.h>
-#include <liboscar/utils/Perf.h>
+#include <liboscar/graphics/anti_aliasing_level.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_collision.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/graphics/scene/scene_helpers.h>
+#include <liboscar/graphics/scene/scene_renderer.h>
+#include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/maths/aabb.h>
+#include <liboscar/maths/aabb_functions.h>
+#include <liboscar/maths/bvh.h>
+#include <liboscar/maths/polar_perspective_camera.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/utils/perf.h>
 
 #include <cstdint>
 #include <memory>

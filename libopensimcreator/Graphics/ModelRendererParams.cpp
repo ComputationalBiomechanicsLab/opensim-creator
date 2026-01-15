@@ -4,12 +4,12 @@
 #include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
 #include <libopensimcreator/Graphics/OverlayDecorationOptions.h>
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/graphics/scene/SceneRendererParams.h>
-#include <liboscar/maths/PolarPerspectiveCamera.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/platform/app_settings.h>
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/Conversion.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/conversion.h>
 #include <liboscar/variant/variant.h>
 
 #include <string>

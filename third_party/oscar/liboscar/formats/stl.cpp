@@ -1,15 +1,15 @@
 #include "stl.h"
 
-#include <liboscar/graphics/Mesh.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/Triangle.h>
-#include <liboscar/maths/TriangleFunctions.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/triangle.h>
+#include <liboscar/maths/triangle_functions.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/platform/strings.h>
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/Assertions.h>
-#include <liboscar/utils/ObjectRepresentation.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/assertions.h>
+#include <liboscar/utils/object_representation.h>
 
 #include <algorithm>
 #include <cstddef>

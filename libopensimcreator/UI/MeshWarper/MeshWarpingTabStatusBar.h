@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/ui/oscimgui.h>
 
 #include <memory>

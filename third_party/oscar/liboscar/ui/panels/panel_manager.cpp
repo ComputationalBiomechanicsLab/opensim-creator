@@ -2,9 +2,9 @@
 
 #include <liboscar/ui/panels/panel.h>
 #include <liboscar/ui/panels/toggleable_panel_flags.h>
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/uid.h>
 
 #include <algorithm>
 #include <functional>

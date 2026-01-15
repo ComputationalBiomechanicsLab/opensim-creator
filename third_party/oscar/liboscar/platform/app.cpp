@@ -1,10 +1,10 @@
 #include "app.h"
 
-#include <liboscar/graphics/GraphicsContext.h>
-#include <liboscar/graphics/Texture2D.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/RectFunctions.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/graphics/graphics_context.h>
+#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/app_clock.h>
 #include <liboscar/platform/app_metadata.h>
 #include <liboscar/platform/app_settings.h>
@@ -31,14 +31,14 @@
 #include <liboscar/platform/resource_stream.h>
 #include <liboscar/platform/screenshot.h>
 #include <liboscar/platform/widget.h>
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/Assertions.h>
-#include <liboscar/utils/Conversion.h>
-#include <liboscar/utils/EnumHelpers.h>
-#include <liboscar/utils/Perf.h>
-#include <liboscar/utils/ScopeExit.h>
-#include <liboscar/utils/SynchronizedValue.h>
-#include <liboscar/utils/TypeInfoReference.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/assertions.h>
+#include <liboscar/utils/conversion.h>
+#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utils/perf.h>
+#include <liboscar/utils/scope_exit.h>
+#include <liboscar/utils/synchronized_value.h>
+#include <liboscar/utils/type_info_reference.h>
 
 #include <ankerl/unordered_dense.h>
 #include <SDL3/SDL.h>

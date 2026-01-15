@@ -6,7 +6,7 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
 #include <liboscar/ui/popups/popup_private.h>
-#include <liboscar/utils/StdVariantHelpers.h>
+#include <liboscar/utils/std_variant_helpers.h>
 
 #include <string_view>
 #include <variant>

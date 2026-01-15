@@ -13,9 +13,9 @@
 #include <liboscar/platform/log.h>
 #include <liboscar/shims/cpp20/stop_token.h>
 #include <liboscar/shims/cpp20/thread.h>
-#include <liboscar/utils/HashHelpers.h>
-#include <liboscar/utils/PerfClock.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utils/perf_clock.h>
+#include <liboscar/utils/uid.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <simmath/Integrator.h>

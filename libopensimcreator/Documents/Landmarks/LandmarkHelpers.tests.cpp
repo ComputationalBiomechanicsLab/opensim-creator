@@ -3,7 +3,7 @@
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/maths/vector3.h>
 
 #include <algorithm>
 #include <cstddef>

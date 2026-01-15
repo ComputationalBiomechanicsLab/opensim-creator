@@ -1,0 +1,12 @@
+#include "frustum_planes.h"
+
+#include <gtest/gtest.h>
+
+#include <concepts>
+
+using namespace osc;
+
+TEST(FrustumPlanes, is_regular)
+{
+    static_assert(std::regular<FrustumPlanes>);
+}

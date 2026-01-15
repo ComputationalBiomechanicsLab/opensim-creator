@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 #include <liboscar/variant/variant_type.h>
 
 namespace osc

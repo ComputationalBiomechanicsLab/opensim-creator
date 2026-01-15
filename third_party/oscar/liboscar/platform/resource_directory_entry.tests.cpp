@@ -1,6 +1,6 @@
 #include "resource_directory_entry.h"
 
-#include <liboscar/utils/StringHelpers.h>
+#include <liboscar/utils/string_helpers.h>
 
 #include <gtest/gtest.h>
 

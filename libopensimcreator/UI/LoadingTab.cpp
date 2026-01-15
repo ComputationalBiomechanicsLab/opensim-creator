@@ -5,10 +5,10 @@
 #include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/RectFunctions.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/ui/events/close_tab_event.h>

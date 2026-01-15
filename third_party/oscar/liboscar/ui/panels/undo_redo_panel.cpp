@@ -2,7 +2,7 @@
 
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
-#include <liboscar/utils/UndoRedo.h>
+#include <liboscar/utils/undo_redo.h>
 
 #include <cstddef>
 #include <memory>

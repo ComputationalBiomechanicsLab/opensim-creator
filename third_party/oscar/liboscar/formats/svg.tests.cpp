@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/maths/vector2.h>
 
 #include <sstream>
 #include <string>

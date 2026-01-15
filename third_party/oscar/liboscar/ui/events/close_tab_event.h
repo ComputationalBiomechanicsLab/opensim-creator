@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/platform/events/event.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/utils/uid.h>
 
 namespace osc
 {

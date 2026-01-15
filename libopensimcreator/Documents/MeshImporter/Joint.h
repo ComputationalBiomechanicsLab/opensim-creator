@@ -4,11 +4,11 @@
 #include <libopensimcreator/Documents/MeshImporter/MIObjectCRTP.h>
 #include <libopensimcreator/Documents/MeshImporter/MIObjectFlags.h>
 
-#include <liboscar/maths/AABB.h>
-#include <liboscar/maths/AABBFunctions.h>
-#include <liboscar/maths/Transform.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/maths/aabb.h>
+#include <liboscar/maths/aabb_functions.h>
+#include <liboscar/maths/transform.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/uid.h>
 
 #include <cstddef>
 #include <iosfwd>

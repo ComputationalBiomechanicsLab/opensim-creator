@@ -13,7 +13,7 @@
 #include <libopensimcreator/UI/SplashTab.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/graphics/scene/SceneCache.h>
+#include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_metadata.h>
 #include <liboscar/platform/log.h>
@@ -21,9 +21,9 @@
 #include <liboscar/ui/events/close_tab_event.h>
 #include <liboscar/ui/events/open_tab_event.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/FilesystemHelpers.h>
-#include <liboscar/utils/StringHelpers.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/filesystem_helpers.h>
+#include <liboscar/utils/string_helpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>

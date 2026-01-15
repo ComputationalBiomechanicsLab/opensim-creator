@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 
-#include <liboscar/utils/UID.h>
+#include <liboscar/utils/uid.h>
 
 #include <optional>
 #include <memory>

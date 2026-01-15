@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/OutputExtractors/IOutputExtractor.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/ClonePtr.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/clone_ptr.h>
 
 #include <cstddef>
 

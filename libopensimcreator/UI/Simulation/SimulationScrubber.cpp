@@ -6,7 +6,7 @@
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/enum_helpers.h>
 
 #include <memory>
 #include <string>

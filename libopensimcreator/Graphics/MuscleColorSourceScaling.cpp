@@ -1,7 +1,7 @@
 #include "MuscleColorSourceScaling.h"
 
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/enum_helpers.h>
 
 #include <array>
 #include <cstddef>

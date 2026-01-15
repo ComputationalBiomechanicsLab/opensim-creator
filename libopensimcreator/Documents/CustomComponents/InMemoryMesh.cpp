@@ -3,7 +3,7 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
-#include <liboscar/graphics/scene/SceneDecoration.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 
 void osc::mow::InMemoryMesh::implGenerateCustomDecorations(

@@ -16,7 +16,7 @@
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/Algorithms.h>
+#include <liboscar/utils/algorithms.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/vector3.h>
 
 #include <optional>
 #include <string>

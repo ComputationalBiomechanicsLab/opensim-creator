@@ -2,16 +2,16 @@
 
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
-#include <liboscar/graphics/Mesh.h>
-#include <liboscar/maths/GeometricFunctions.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/RectFunctions.h>
-#include <liboscar/maths/Sphere.h>
-#include <liboscar/maths/Vector2.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/maths/geometric_functions.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/sphere.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/shims/cpp23/numeric.h>
-#include <liboscar/utils/Assertions.h>
+#include <liboscar/utils/assertions.h>
 #include <simmath/LinearAlgebra.h>
 #include <SimTKcommon/internal/VectorMath.h>
 

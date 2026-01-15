@@ -4,18 +4,18 @@
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/graphics/geometries/SphereGeometry.h>
-#include <liboscar/graphics/Mesh.h>
-#include <liboscar/maths/Angle.h>
-#include <liboscar/maths/CommonFunctions.h>
-#include <liboscar/maths/Ellipsoid.h>
-#include <liboscar/maths/EllipsoidFunctions.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/Plane.h>
-#include <liboscar/maths/Sphere.h>
-#include <liboscar/maths/Transform.h>
-#include <liboscar/maths/TrigonometricFunctions.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/geometries/sphere_geometry.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/maths/angle.h>
+#include <liboscar/maths/common_functions.h>
+#include <liboscar/maths/ellipsoid.h>
+#include <liboscar/maths/ellipsoid_functions.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/plane.h>
+#include <liboscar/maths/sphere.h>
+#include <liboscar/maths/transform.h>
+#include <liboscar/maths/trigonometric_functions.h>
+#include <liboscar/maths/vector3.h>
 
 #include <array>
 #include <cstddef>

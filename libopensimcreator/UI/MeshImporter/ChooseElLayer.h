@@ -8,16 +8,16 @@
 #include <libopensimcreator/UI/MeshImporter/MeshImporterSharedState.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterUILayer.h>
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/graphics/scene/SceneDecorationFlags.h>
-#include <liboscar/maths/EasingFunctions.h>
-#include <liboscar/maths/Vector2.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/scene/scene_decoration_flags.h>
+#include <liboscar/maths/easing_functions.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/uid.h>
 
 #include <algorithm>
 #include <cstddef>

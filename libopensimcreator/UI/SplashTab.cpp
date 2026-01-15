@@ -13,17 +13,17 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/formats/svg.h>
-#include <liboscar/graphics/Color.h>
-#include <liboscar/graphics/scene/SceneCache.h>
-#include <liboscar/graphics/scene/SceneRenderer.h>
-#include <liboscar/graphics/scene/SceneRendererParams.h>
-#include <liboscar/graphics/Texture2D.h>
-#include <liboscar/graphics/TextureFilterMode.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/PolarPerspectiveCamera.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/RectFunctions.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_renderer.h>
+#include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture_filter_mode.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/polar_perspective_camera.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_metadata.h>
 #include <liboscar/platform/app_settings.h>
@@ -34,8 +34,8 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
 #include <liboscar/ui/widgets/log_viewer.h>
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/c_string_view.h>
 
 #include <filesystem>
 #include <memory>

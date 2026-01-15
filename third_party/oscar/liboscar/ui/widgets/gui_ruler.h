@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/graphics/scene/SceneCollision.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/scene/scene_collision.h>
+#include <liboscar/maths/vector3.h>
 
 #include <optional>
 

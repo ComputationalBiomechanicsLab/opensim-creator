@@ -4,9 +4,9 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementID.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementType.h>
 
-#include <liboscar/maths/Vector3.h>
-#include <liboscar/utils/StringName.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/utils/string_name.h>
+#include <liboscar/utils/uid.h>
 
 namespace osc
 {

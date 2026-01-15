@@ -9,13 +9,13 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/graphics/scene/SceneCache.h>
-#include <liboscar/graphics/scene/SceneDecoration.h>
-#include <liboscar/graphics/scene/SceneHelpers.h>
-#include <liboscar/maths/AABBFunctions.h>
-#include <liboscar/maths/MathHelpers.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/graphics/scene/scene_helpers.h>
+#include <liboscar/maths/aabb_functions.h>
+#include <liboscar/maths/math_helpers.h>
 #include <liboscar/platform/log.h>
-#include <liboscar/utils/StringHelpers.h>
+#include <liboscar/utils/string_helpers.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Geometry.h>

@@ -3,8 +3,8 @@
 /*
 
 #include <liboscar/Object/PropertyInfo.h>
-#include <liboscar/graphics/Color.h>
-#include <liboscar/utils/StringName.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/utils/string_name.h>
 #include <liboscar/variant/variant.h>
 #include <liboscar/variant/variant_type.h>
 

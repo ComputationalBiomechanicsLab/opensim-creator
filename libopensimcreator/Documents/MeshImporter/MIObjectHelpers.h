@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshImporter/MIClass.h>
 #include <libopensimcreator/Documents/MeshImporter/MIVariant.h>
 
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/maths/vector3.h>
 
 #include <array>
 #include <variant>

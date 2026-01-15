@@ -1,16 +1,16 @@
 #include "camera_view_axes.h"
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/maths/Circle.h>
-#include <liboscar/maths/GeometricFunctions.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/PolarPerspectiveCamera.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/RectFunctions.h>
-#include <liboscar/maths/Vector2.h>
-#include <liboscar/maths/Vector4.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/maths/circle.h>
+#include <liboscar/maths/geometric_functions.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/polar_perspective_camera.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector4.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 
 #include <algorithm>
 #include <array>

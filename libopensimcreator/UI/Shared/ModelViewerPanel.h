@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/UI/Shared/ModelViewerPanelFlags.h>
 
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/ui/panels/panel.h>
 
 #include <memory>

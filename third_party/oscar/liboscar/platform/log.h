@@ -3,9 +3,9 @@
 #include <liboscar/platform/logger.h>
 #include <liboscar/platform/log_level.h>
 #include <liboscar/platform/log_message.h>
-#include <liboscar/utils/CircularBuffer.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/SynchronizedValue.h>
+#include <liboscar/utils/circular_buffer.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/synchronized_value.h>
 
 #include <cstddef>
 #include <memory>

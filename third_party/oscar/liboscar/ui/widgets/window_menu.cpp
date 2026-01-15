@@ -2,7 +2,7 @@
 
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_manager.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 
 #include <memory>
 #include <utility>

@@ -2,7 +2,7 @@
 
 #include <liboscar/platform/key.h>
 #include <liboscar/platform/key_modifier.h>
-#include <liboscar/utils/HashHelpers.h>
+#include <liboscar/utils/hash_helpers.h>
 
 #include <cstddef>
 #include <functional>

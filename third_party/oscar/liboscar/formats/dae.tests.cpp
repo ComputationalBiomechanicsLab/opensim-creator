@@ -1,10 +1,10 @@
 #include "dae.h"
 
-#include <liboscar/graphics/geometries/BoxGeometry.h>
-#include <liboscar/graphics/Mesh.h>
-#include <liboscar/graphics/scene/SceneDecoration.h>
+#include <liboscar/graphics/geometries/box_geometry.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/tests/testoscarconfig.h>
-#include <liboscar/utils/StringHelpers.h>
+#include <liboscar/utils/string_helpers.h>
 
 #include <gtest/gtest.h>
 

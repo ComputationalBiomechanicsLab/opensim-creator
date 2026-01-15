@@ -8,9 +8,9 @@
 #include <libopensimcreator/Documents/MeshImporter/Mesh.h>
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 
-#include <liboscar/graphics/MeshFunctions.h>
-#include <liboscar/maths/Vector3.h>
-#include <liboscar/utils/StdVariantHelpers.h>
+#include <liboscar/graphics/mesh_functions.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/utils/std_variant_helpers.h>
 
 #include <array>
 #include <variant>

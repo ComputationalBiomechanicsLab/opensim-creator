@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/graphics/Mesh.h>
-#include <liboscar/graphics/MeshIndicesView.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/mesh_indices_view.h>
 #include <liboscar/platform/file_dialog_filter.h>
 
 #include <filesystem>

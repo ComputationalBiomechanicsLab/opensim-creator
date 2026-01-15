@@ -3,9 +3,9 @@
 #include <libopensimcreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
 
 #include <liboscar/formats/csv.h>
-#include <liboscar/maths/Vector3.h>
-#include <liboscar/utils/StdVariantHelpers.h>
-#include <liboscar/utils/StringHelpers.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/utils/std_variant_helpers.h>
+#include <liboscar/utils/string_helpers.h>
 
 #include <algorithm>
 #include <cstddef>

@@ -1,14 +1,14 @@
 #include "dae.h"
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/graphics/Mesh.h>
-#include <liboscar/graphics/MeshTopology.h>
-#include <liboscar/graphics/scene/SceneDecoration.h>
-#include <liboscar/maths/Matrix4x4.h>
-#include <liboscar/maths/TransformFunctions.h>
-#include <liboscar/maths/Vector2.h>
-#include <liboscar/maths/Vector3.h>
-#include <liboscar/maths/VectorFunctions.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/mesh_topology.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/maths/matrix4x4.h>
+#include <liboscar/maths/transform_functions.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector_functions.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/platform/strings.h>
 

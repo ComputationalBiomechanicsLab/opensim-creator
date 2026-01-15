@@ -5,7 +5,7 @@
 #ifdef __cpp_lib_generator
     #include <generator>
 #else
-    #include <liboscar/utils/Assertions.h>
+    #include <liboscar/utils/assertions.h>
 
     #include <coroutine>
     #include <cstddef>

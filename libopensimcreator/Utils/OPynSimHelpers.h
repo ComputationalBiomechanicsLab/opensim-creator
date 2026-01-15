@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopynsim/Utils/TPS3D.h>
-#include <liboscar/graphics/Mesh.h>
+#include <liboscar/graphics/mesh.h>
 
 namespace osc
 {

@@ -1,0 +1,28 @@
+#pragma once
+
+#include <liboscar/maths/angle.h>
+#include <liboscar/maths/matrix4x4.h>
+#include <liboscar/maths/vector3.h>
+
+namespace osc
+{
+    // a camera that moves freely through 3D space, oriented via pitch and yaw Euler
+    // angles (no roll - i.e. as in FPS games)
+    struct EulerPerspectiveCamera final {
+
+        EulerPerspectiveCamera();
+
+        Vector3 front() const;
+        Vector3 up() const;
+        Vector3 right() const;
+        Matrix4x4 view_matrix() const;
+        Matrix4x4 projection_matrix(float aspect_ratio) const;
+
+        Vector3 origin = {};
+        Radians pitch = Degrees{0};
+        Radians yaw = Degrees{180};
+        Radians vertical_field_of_view = Degrees{35};
+        float znear = 0.1f;
+        float zfar = 1000.0f;
+    };
+}

@@ -1,7 +1,7 @@
 #include "property_info.h"
 
-#include <liboscar/utils/StringHelpers.h>
-#include <liboscar/utils/StringName.h>
+#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utils/string_name.h>
 #include <liboscar/variant/variant.h>
 
 #include <sstream>

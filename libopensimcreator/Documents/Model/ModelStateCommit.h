@@ -1,8 +1,8 @@
 #pragma once
 
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/SynchronizedValueGuard.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/synchronized_value_guard.h>
+#include <liboscar/utils/uid.h>
 
 #include <memory>
 #include <string_view>

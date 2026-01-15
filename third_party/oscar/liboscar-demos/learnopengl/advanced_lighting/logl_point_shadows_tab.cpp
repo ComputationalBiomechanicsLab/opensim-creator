@@ -1,0 +1,244 @@
+#include "logl_point_shadows_tab.h"
+
+#include <liboscar/formats/image.h>
+#include <liboscar/graphics/graphics.h>
+#include <liboscar/graphics/material.h>
+#include <liboscar/graphics/render_texture.h>
+#include <liboscar/graphics/geometries/box_geometry.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/matrix_functions.h>
+#include <liboscar/maths/quaternion_functions.h>
+#include <liboscar/maths/transform.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/ui/mouse_capturing_camera.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/panels/perf_panel.h>
+#include <liboscar/ui/tabs/tab_private.h>
+
+#include <array>
+#include <chrono>
+#include <optional>
+#include <utility>
+
+using namespace osc::literals;
+using namespace osc;
+
+namespace
+{
+    constexpr Vector2i c_shadow_map_pixel_dimensions = {1024, 1024};
+
+    Transform make_rotated_transform()
+    {
+        return {
+            .scale = Vector3(0.75f),
+            .rotation = angle_axis(60_deg, normalize(Vector3{1.0f, 0.0f, 1.0f})),
+            .translation = {-1.5f, 2.0f, -3.0f},
+        };
+    }
+
+    struct SceneCube final {
+        explicit SceneCube(Transform transform_) :
+            transform{transform_}
+        {}
+
+        SceneCube(Transform transform_, bool invert_normals_) :
+            transform{transform_},
+            invert_normals{invert_normals_}
+        {}
+
+        Transform transform;
+        bool invert_normals = false;
+    };
+
+    auto make_scene_cubes()
+    {
+        return std::to_array<SceneCube>({
+            SceneCube{{.scale = Vector3{5.0f}}, true},
+            SceneCube{{.scale = Vector3{0.50f}, .translation = {4.0f, -3.5f, 0.0f}}},
+            SceneCube{{.scale = Vector3{0.75f}, .translation = {2.0f, 3.0f, 1.0f}}},
+            SceneCube{{.scale = Vector3{0.50f}, .translation = {-3.0f, -1.0f, 0.0f}}},
+            SceneCube{{.scale = Vector3{0.50f}, .translation = {-1.5f, 1.0f, 1.5f}}},
+            SceneCube{make_rotated_transform()},
+        });
+    }
+
+    RenderTexture create_depth_texture()
+    {
+        return RenderTexture{{
+            .pixel_dimensions = c_shadow_map_pixel_dimensions,
+            .dimensionality = TextureDimensionality::Cube,
+            .color_format = ColorRenderBufferFormat::R32_SFLOAT,
+        }};
+    }
+
+    MouseCapturingCamera create_camera()
+    {
+        MouseCapturingCamera rv;
+        rv.set_position({0.0f, 0.0f, 5.0f});
+        rv.set_vertical_field_of_view(45_deg);
+        rv.set_clipping_planes({0.1f, 100.0f});
+        rv.set_background_color(Color::clear());
+        return rv;
+    }
+}
+
+class osc::LOGLPointShadowsTab::Impl final : public TabPrivate {
+public:
+    static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/PointShadows"; }
+
+    explicit Impl(LOGLPointShadowsTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
+    {}
+
+    void on_mount()
+    {
+        App::upd().make_main_loop_polling();
+        scene_camera_.on_mount();
+    }
+
+    void on_unmount()
+    {
+        scene_camera_.on_unmount();
+        App::upd().make_main_loop_waiting();
+    }
+
+    bool on_event(Event& e)
+    {
+        return scene_camera_.on_event(e);
+    }
+
+    void on_tick()
+    {
+        // move light position over time
+        const double seconds = App::get().frame_delta_since_startup().count();
+        light_pos_.x = static_cast<float>(3.0 * sin(0.5 * seconds));
+    }
+
+    void on_draw()
+    {
+        scene_camera_.on_draw();
+        draw_3d_scene();
+        draw_2d_ui();
+    }
+
+private:
+    void draw_3d_scene()
+    {
+        const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
+
+        draw_shadow_pass_to_cubemap();
+        draw_shadow_mapped_scene_to_screen(workspace_screen_space_rect);
+    }
+
+    void draw_shadow_pass_to_cubemap()
+    {
+        // create a 90 degree cube cone projection matrix
+        const float znear = 0.1f;
+        const float zfar = 25.0f;
+        const Matrix4x4 projection_matrix = perspective(
+            90_deg,
+            aspect_ratio_of(c_shadow_map_pixel_dimensions),
+            znear,
+            zfar
+        );
+
+        // have the cone point toward all 6 faces of the cube
+        const auto shadow_matrices =
+            calc_cubemap_view_proj_matrices(projection_matrix, light_pos_);
+
+        // pass data to material
+        shadow_mapping_material_.set_array("uShadowMatrices", shadow_matrices);
+        shadow_mapping_material_.set("uLightPos", light_pos_);
+        shadow_mapping_material_.set("uFarPlane", zfar);
+
+        // render (shadow mapping does not use the camera's view/projection matrices)
+        Camera camera;
+        for (const SceneCube& cube : scene_cubes_) {
+            graphics::draw(cube_mesh_, cube.transform, shadow_mapping_material_, camera);
+        }
+        camera.render_to(depth_texture_);
+    }
+
+    void draw_shadow_mapped_scene_to_screen(const Rect& viewport_screen_space_rect)
+    {
+        Material material = use_soft_shadows_ ? soft_scene_material_ : scene_material_;
+
+        // set shared material params
+        material.set("uDiffuseTexture", m_WoodTexture);
+        material.set("uLightPos", light_pos_);
+        material.set("uViewPos", scene_camera_.position());
+        material.set("uFarPlane", 25.0f);
+        material.set("uShadows", soft_shadows_);
+
+        material.set("uDepthMap", depth_texture_);
+        for (const SceneCube& cube : scene_cubes_) {
+            MaterialPropertyBlock material_props;
+            material_props.set("uReverseNormals", cube.invert_normals);
+            graphics::draw(cube_mesh_, cube.transform, material, scene_camera_, material_props);
+        }
+        material.unset("uDepthMap");
+
+        // also, draw the light as a little cube
+        material.set("uShadows", soft_shadows_);
+        graphics::draw(cube_mesh_, {.scale = Vector3{0.1f}, .translation = light_pos_}, material, scene_camera_);
+
+        scene_camera_.set_pixel_rect(viewport_screen_space_rect);
+        scene_camera_.render_to_main_window();
+        scene_camera_.set_pixel_rect(std::nullopt);
+    }
+
+    void draw_2d_ui()
+    {
+        ui::begin_panel("controls");
+        ui::draw_checkbox("show shadows", &soft_shadows_);
+        ui::draw_checkbox("soften shadows", &use_soft_shadows_);
+        ui::end_panel();
+
+        perf_panel_.on_draw();
+    }
+
+    ResourceLoader loader_ = App::resource_loader();
+
+    Material shadow_mapping_material_{Shader{
+        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
+        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
+        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
+    }};
+
+    Material scene_material_{Shader{
+        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/Scene.frag"),
+    }};
+
+    Material soft_scene_material_{Shader{
+        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
+    }};
+
+    MouseCapturingCamera scene_camera_ = create_camera();
+    Texture2D m_WoodTexture = Image::read_into_texture(
+        loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
+        ColorSpace::sRGB
+    );
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
+    std::array<SceneCube, 6> scene_cubes_ = make_scene_cubes();
+    RenderTexture depth_texture_ = create_depth_texture();
+    Vector3 light_pos_;
+    bool soft_shadows_ = true;
+    bool use_soft_shadows_ = false;
+
+    PerfPanel perf_panel_{&owner()};
+};
+
+
+CStringView osc::LOGLPointShadowsTab::id() { return Impl::static_label(); }
+
+osc::LOGLPointShadowsTab::LOGLPointShadowsTab(Widget* parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
+{}
+void osc::LOGLPointShadowsTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLPointShadowsTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLPointShadowsTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLPointShadowsTab::impl_on_tick() { private_data().on_tick(); }
+void osc::LOGLPointShadowsTab::impl_on_draw() { private_data().on_draw(); }

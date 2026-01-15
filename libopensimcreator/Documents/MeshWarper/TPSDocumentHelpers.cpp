@@ -8,10 +8,10 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/shims/cpp23/ranges.h>
-#include <liboscar/maths/Vector3.h>
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/EnumHelpers.h>
-#include <liboscar/utils/StringName.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utils/string_name.h>
 
 #include <algorithm>
 #include <concepts>

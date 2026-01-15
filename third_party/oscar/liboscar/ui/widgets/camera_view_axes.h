@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/maths/vector2.h>
 
 namespace osc { struct PolarPerspectiveCamera; }
 

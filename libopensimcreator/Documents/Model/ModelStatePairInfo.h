@@ -1,7 +1,7 @@
 #pragma once
 
 #include <OpenSim/Common/ComponentPath.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/utils/uid.h>
 
 namespace osc { class IModelStatePair; }
 

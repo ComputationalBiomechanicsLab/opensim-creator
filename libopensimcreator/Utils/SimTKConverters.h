@@ -1,13 +1,13 @@
 #pragma once
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/maths/EulerAngles.h>
-#include <liboscar/maths/Matrix3x3.h>
-#include <liboscar/maths/Matrix4x4.h>
-#include <liboscar/maths/Quaternion.h>
-#include <liboscar/maths/Vector3.h>
-#include <liboscar/maths/Vector4.h>
-#include <liboscar/utils/Conversion.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/maths/euler_angles.h>
+#include <liboscar/maths/matrix3x3.h>
+#include <liboscar/maths/matrix4x4.h>
+#include <liboscar/maths/quaternion.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector4.h>
+#include <liboscar/utils/conversion.h>
 #include <SimTKcommon/internal/MassProperties.h>
 #include <SimTKcommon/internal/Rotation.h>
 #include <SimTKcommon/internal/Transform.h>

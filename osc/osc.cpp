@@ -4,7 +4,7 @@
 #include <libopensimcreator/UI/MainUIScreen.h>
 #include <liboscar/platform/app_metadata.h>
 #include <liboscar/ui/tabs/tab_registry.h>
-#include <liboscar-demos/OscarDemosTabRegistry.h>
+#include <liboscar-demos/oscar_demos_tab_registry.h>
 
 #include <cstdlib>
 #include <filesystem>

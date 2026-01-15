@@ -7,9 +7,9 @@
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/ui/tabs/tab_registry.h>
-#include <liboscar/utils/Assertions.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/assertions.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/enum_helpers.h>
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>

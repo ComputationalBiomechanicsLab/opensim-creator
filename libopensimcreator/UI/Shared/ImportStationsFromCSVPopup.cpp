@@ -7,7 +7,7 @@
 #include <libopensimcreator/Platform/msmicons.h>
 
 #include <liboscar/formats/csv.h>
-#include <liboscar/graphics/Color.h>
+#include <liboscar/graphics/color.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/file_dialog_filter.h>
 #include <liboscar/platform/os.h>

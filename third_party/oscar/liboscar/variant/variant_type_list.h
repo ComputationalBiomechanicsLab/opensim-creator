@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/enum_helpers.h>
 #include <liboscar/variant/variant_type.h>
 
 namespace osc

@@ -20,9 +20,9 @@
 #include <libopensimcreator/UI/Shared/PropertiesPanel.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/graphics/scene/SceneCache.h>
-#include <liboscar/maths/ClosedInterval.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/maths/closed_interval.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/ui/icon_cache.h>

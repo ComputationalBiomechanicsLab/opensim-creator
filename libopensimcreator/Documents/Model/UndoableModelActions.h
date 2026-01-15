@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
 
-#include <liboscar/maths/EulerAngles.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/maths/euler_angles.h>
+#include <liboscar/maths/vector3.h>
 
 #include <cstddef>
 #include <filesystem>

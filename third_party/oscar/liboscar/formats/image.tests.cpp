@@ -1,12 +1,12 @@
 #include "image.h"
 
-#include <liboscar/graphics/ColorSpace.h>
-#include <liboscar/graphics/Texture2D.h>
-#include <liboscar/maths/CommonFunctions.h>
-#include <liboscar/maths/GeometricFunctions.h>
+#include <liboscar/graphics/color_space.h>
+#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/maths/common_functions.h>
+#include <liboscar/maths/geometric_functions.h>
 #include <liboscar/platform/resource_stream.h>
 #include <liboscar/tests/testoscarconfig.h>
-#include <liboscar/utils/NullOStream.h>
+#include <liboscar/utils/null_o_stream.h>
 
 #include <gtest/gtest.h>
 

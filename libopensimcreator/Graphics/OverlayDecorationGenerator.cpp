@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Graphics/OverlayDecorationOptions.h>
 
-#include <liboscar/graphics/scene/SceneHelpers.h>
+#include <liboscar/graphics/scene/scene_helpers.h>
 
 #include <functional>
 

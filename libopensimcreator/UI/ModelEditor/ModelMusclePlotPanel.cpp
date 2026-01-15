@@ -9,10 +9,10 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/formats/csv.h>
-#include <liboscar/graphics/Color.h>
-#include <liboscar/maths/Angle.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/Vector4.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/maths/angle.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/vector4.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/file_dialog_filter.h>
 #include <liboscar/platform/log.h>
@@ -21,12 +21,12 @@
 #include <liboscar/shims/cpp20/thread.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/Assertions.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/StringHelpers.h>
-#include <liboscar/utils/SynchronizedValue.h>
-#include <liboscar/utils/SynchronizedValueGuard.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/assertions.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utils/synchronized_value.h>
+#include <liboscar/utils/synchronized_value_guard.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>

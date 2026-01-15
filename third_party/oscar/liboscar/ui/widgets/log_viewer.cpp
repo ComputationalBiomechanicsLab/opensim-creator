@@ -1,13 +1,13 @@
 #include "log_viewer.h"
 
-#include <liboscar/graphics/Color.h>
+#include <liboscar/graphics/color.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/platform/widget_private.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/CircularBuffer.h>
-#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/circular_buffer.h>
+#include <liboscar/utils/enum_helpers.h>
 
 #include <sstream>
 #include <string>

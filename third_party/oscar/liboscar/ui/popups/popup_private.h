@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/widget_private.h>
 #include <liboscar/ui/popups/popup.h>
 #include <liboscar/ui/oscimgui.h>

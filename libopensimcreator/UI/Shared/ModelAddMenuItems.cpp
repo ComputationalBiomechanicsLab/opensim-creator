@@ -18,8 +18,8 @@
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/ui/events/open_popup_event.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/StringHelpers.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/string_helpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Control/Controller.h>

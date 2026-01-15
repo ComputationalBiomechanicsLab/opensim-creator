@@ -43,14 +43,14 @@
 #include "imgui_internal.h"
 #include "imguizmo.h"
 
-#include <liboscar/maths/Constants.h>
-#include <liboscar/maths/Matrix4x4.h>
-#include <liboscar/maths/MatrixFunctions.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/RectFunctions.h>
-#include <liboscar/maths/Transform.h>
-#include <liboscar/maths/TransformFunctions.h>
-#include <liboscar/utils/ScopeExit.h>
+#include <liboscar/maths/constants.h>
+#include <liboscar/maths/matrix4x4.h>
+#include <liboscar/maths/matrix_functions.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/transform.h>
+#include <liboscar/maths/transform_functions.h>
+#include <liboscar/utils/scope_exit.h>
 
 #include <functional>
 #include <limits>

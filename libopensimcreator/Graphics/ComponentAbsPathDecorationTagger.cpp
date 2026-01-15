@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/graphics/scene/SceneDecoration.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
 
 void osc::ComponentAbsPathDecorationTagger::operator()(
     const OpenSim::Component& component,

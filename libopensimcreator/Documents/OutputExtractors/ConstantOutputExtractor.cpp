@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/HashHelpers.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/hash_helpers.h>
 
 #include <cstddef>
 

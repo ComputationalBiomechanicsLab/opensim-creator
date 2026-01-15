@@ -36,12 +36,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <liboscar/maths/Angle.h>
-#include <liboscar/maths/Matrix4x4.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/Transform.h>
-#include <liboscar/maths/Vector3.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/maths/angle.h>
+#include <liboscar/maths/matrix4x4.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/transform.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/utils/uid.h>
 
 #include <optional>
 #include <utility>

@@ -6,15 +6,15 @@
 #include <libopensimcreator/Graphics/ModelRendererParams.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
 
-#include <liboscar/graphics/AntiAliasingLevel.h>
-#include <liboscar/graphics/scene/SceneDecoration.h>
-#include <liboscar/graphics/scene/SceneHelpers.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/PolarPerspectiveCamera.h>
-#include <liboscar/maths/Ray.h>
-#include <liboscar/maths/RectFunctions.h>
-#include <liboscar/maths/Vector2.h>
-#include <liboscar/utils/Perf.h>
+#include <liboscar/graphics/anti_aliasing_level.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/graphics/scene/scene_helpers.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/polar_perspective_camera.h>
+#include <liboscar/maths/ray.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/utils/perf.h>
 
 #include <algorithm>
 #include <optional>

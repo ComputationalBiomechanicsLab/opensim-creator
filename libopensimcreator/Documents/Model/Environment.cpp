@@ -6,8 +6,8 @@
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/shims/cpp23/ranges.h>
-#include <liboscar/utils/Algorithms.h>
-#include <liboscar/utils/Assertions.h>
+#include <liboscar/utils/algorithms.h>
+#include <liboscar/utils/assertions.h>
 
 #include <vector>
 

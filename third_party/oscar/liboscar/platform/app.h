@@ -1,9 +1,9 @@
 #pragma once
 
-#include <liboscar/graphics/AntiAliasingLevel.h>
-#include <liboscar/graphics/Color.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/graphics/anti_aliasing_level.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/app_clock.h>
 #include <liboscar/platform/app_main_loop_status.h>
 #include <liboscar/platform/file_dialog_filter.h>

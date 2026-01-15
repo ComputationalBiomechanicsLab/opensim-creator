@@ -8,9 +8,9 @@
 
 #include <gtest/gtest.h>
 #include <liboscar/formats/dae.h>
-#include <liboscar/graphics/scene/SceneCache.h>
-#include <liboscar/graphics/scene/SceneDecoration.h>
-#include <liboscar/utils/NullOStream.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/utils/null_o_stream.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/Model.h>

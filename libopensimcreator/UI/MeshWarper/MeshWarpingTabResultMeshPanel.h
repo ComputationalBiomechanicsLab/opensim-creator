@@ -7,17 +7,17 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabPanel.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <liboscar/graphics/RenderTexture.h>
-#include <liboscar/graphics/scene/CachedSceneRenderer.h>
-#include <liboscar/graphics/scene/SceneCache.h>
-#include <liboscar/graphics/scene/SceneDecoration.h>
-#include <liboscar/graphics/scene/SceneRendererParams.h>
-#include <liboscar/maths/PolarPerspectiveCamera.h>
-#include <liboscar/maths/Vector2.h>
-#include <liboscar/maths/Vector3.h>
+#include <liboscar/graphics/render_texture.h>
+#include <liboscar/graphics/scene/cached_scene_renderer.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/maths/polar_perspective_camera.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector3.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 
 #include <functional>
 #include <memory>

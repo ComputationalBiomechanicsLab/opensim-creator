@@ -3,7 +3,7 @@
 #include <liboscar/ui/icon.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/widgets/icon_without_menu.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 
 #include <functional>
 #include <utility>

@@ -1,13 +1,13 @@
 #include "gui_ruler.h"
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/graphics/scene/SceneCollision.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/PolarPerspectiveCamera.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/scene/scene_collision.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/polar_perspective_camera.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 
 #include <iomanip>
 #include <optional>

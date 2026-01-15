@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/maths/Rect.h>
+#include <liboscar/maths/rect.h>
 
 #include <string>
 #include <utility>

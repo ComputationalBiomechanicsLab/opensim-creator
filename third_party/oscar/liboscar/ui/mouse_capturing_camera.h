@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/graphics/Camera.h>
-#include <liboscar/maths/EulerAngles.h>
+#include <liboscar/graphics/camera.h>
+#include <liboscar/maths/euler_angles.h>
 
 namespace osc { class Event; }
 

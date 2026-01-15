@@ -2,7 +2,7 @@
 
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
-#include <liboscar/utils/Conversion.h>
+#include <liboscar/utils/conversion.h>
 
 #include <sstream>
 #include <string>

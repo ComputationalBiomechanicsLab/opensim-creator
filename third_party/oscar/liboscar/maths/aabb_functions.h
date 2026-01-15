@@ -1,0 +1,202 @@
+#pragma once
+
+#include <liboscar/concepts/input_range_with_size_greater_than.h>
+#include <liboscar/maths/aabb.h>
+#include <liboscar/maths/common_functions.h>
+#include <liboscar/maths/matrix4x4.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/transform.h>
+#include <liboscar/maths/vector3.h>
+
+#include <array>
+#include <concepts>
+#include <functional>
+#include <optional>
+#include <ranges>
+
+namespace osc
+{
+    // returns the average centroid of `aabb`
+    constexpr Vector3 centroid_of(const AABB& aabb)
+    {
+        return 0.5f * (aabb.min + aabb.max);
+    }
+
+    // returns the widths of the edges of `aabb`
+    constexpr Vector3 dimensions_of(const AABB& aabb)
+    {
+        return aabb.max - aabb.min;
+    }
+
+    // returns the half-widths of the edges of `aabb`
+    constexpr Vector3 half_widths_of(const AABB& aabb)
+    {
+        return 0.5f * dimensions_of(aabb);
+    }
+
+    // returns the volume of `aabb`
+    constexpr float volume_of(const AABB& aabb)
+    {
+        Vector3 const dims = dimensions_of(aabb);
+        return dims.x * dims.y * dims.z;
+    }
+
+    // tests if `aabb` has zero width along all of its edges
+    constexpr bool is_point(const AABB& aabb)
+    {
+        return aabb.min == aabb.max;
+    }
+
+    // tests if `aabb` has zero width along any of its edges
+    constexpr bool has_zero_volume(const AABB& aabb)
+    {
+        return volume_of(aabb) == 0.0f;
+    }
+
+    // returns the eight corner vertices of `aabb`
+    std::array<Vector3, 8> corner_vertices_of(const AABB& aabb);
+
+    // returns an `AABB` computed by transforming `aabb` with `m`
+    AABB transform_aabb(const Matrix4x4& m, const AABB& aabb);
+
+    // returns an `AABB` computed by transforming `aabb` with `t`
+    AABB transform_aabb(const Transform& t, const AABB& aabb);
+
+    // returns an `AABB` that tightly bounds `x`
+    constexpr AABB bounding_aabb_of(const Vector3& x)
+    {
+        return AABB{.min = x, .max = x};
+    }
+
+    // returns an `AABB` that tightly bounds both `x` and `y`
+    constexpr AABB bounding_aabb_of(const AABB& x, const Vector3& y)
+    {
+        return AABB{elementwise_min(x.min, y), elementwise_max(x.max, y)};
+    }
+
+    // returns an `AABB` that tightly bounds both `x` and `y`
+    constexpr AABB bounding_aabb_of(const AABB& x, const AABB& y)
+    {
+        return AABB{elementwise_min(x.min, y.min), elementwise_max(x.max, y.max)};
+    }
+
+    // returns an `AABB` that tightly bounds the union of `x` and `y`, or only `y` if `x` is `std::nullopt`
+    constexpr AABB bounding_aabb_of(const std::optional<AABB>& x, const AABB& y)
+    {
+        return x ? bounding_aabb_of(*x, y) : y;
+    }
+
+    // returns an `AABB` that tightly bounds any non-`std::nullopt` `AABB`s in `x` or `y`
+    //
+    // if both `x` and `y` are `std::nullopt`, returns `std::nullopt`
+    constexpr std::optional<AABB> bounding_aabb_of(std::optional<AABB> x, std::optional<AABB> y)
+    {
+        if (x and y) {
+            return bounding_aabb_of(*x, *y);
+        }
+        else if (x) {
+            return *x;
+        }
+        else if (y) {
+            return *y;
+        }
+        else {
+            return std::nullopt;
+        }
+    }
+
+    namespace detail
+    {
+        // returns an `AABB` that tightly bounds the `Vector3`s projected from `r`
+        template<std::ranges::input_range R, class Proj = std::identity>
+        requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vector3&>
+        constexpr AABB bounding_aabb_of_nonempty_range(R&& r, Proj proj = {})
+        {
+            auto it = std::ranges::begin(r);
+            const auto last = std::ranges::end(r);
+
+            AABB rv = bounding_aabb_of(std::invoke(proj, *it));
+            while (++it != last) {
+                rv = bounding_aabb_of(rv, std::invoke(proj, *it));
+            }
+            return rv;
+        }
+    }
+
+    // returns an `AABB` that tightly bounds the `Vector3`s projected from `r`
+    template<std::ranges::input_range R, class Proj = std::identity>
+    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vector3&>
+    constexpr std::optional<AABB> bounding_aabb_of(R&& r, Proj proj = {})
+    {
+        if (std::ranges::begin(r) != std::ranges::end(r)) {
+            return detail::bounding_aabb_of_nonempty_range(std::forward<R>(r), std::move(proj));
+        } else {
+            return std::nullopt;
+        }
+    }
+
+    // returns an `AABB` that tightly bounds the `Vector3`s projected from `r` (specialized for compile-time-non-empty ranges)
+    template<InputRangeWithSizeGreaterThan<0> R, class Proj = std::identity>
+    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vector3&>
+    constexpr AABB bounding_aabb_of(R&& r, Proj proj = {})
+    {
+        return detail::bounding_aabb_of_nonempty_range(std::forward<R>(r), std::move(proj));
+    }
+
+    // returns an `AABB` that tightly bounds the `AABB`s projected from `r`
+    template<std::ranges::input_range Range, class Proj = std::identity>
+    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, const AABB&>
+    constexpr std::optional<AABB> bounding_aabb_of(Range&& r, Proj proj = {})
+    {
+        auto it = std::ranges::begin(r);
+        auto const last = std::ranges::end(r);
+        if (it == last) {
+            return std::nullopt;  // empty range
+        }
+
+        AABB rv = std::invoke(proj, *it);
+        while (++it != last) {
+            rv = bounding_aabb_of(rv, std::invoke(proj, *it));
+        }
+        return rv;
+    }
+
+    // returns an `AABB` that tightly bounds any non-`std::nullopt` `std::optional<AABB>`s projected from `r`
+    //
+    // if no element in `r` projects an `AABB`, returns `std::nullopt`
+    template<std::ranges::input_range Range, class Proj = std::identity>
+    requires
+        std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, const std::optional<AABB>&>
+        and (not std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, const AABB&>)
+    constexpr std::optional<AABB> bounding_aabb_of(Range&& r, Proj proj = {})
+    {
+        auto it = std::ranges::begin(r);
+        const auto last = std::ranges::end(r);
+
+        // find first non-nullopt AABB (or the end)
+        std::optional<AABB> rv;
+        while (!rv && it != last) {
+            rv = std::invoke(proj, *it++);
+        }
+
+        // combine with remainder of range
+        for (; it != last; ++it) {
+            rv = bounding_aabb_of(std::invoke(proj, *it), *rv);
+        }
+
+        return rv;
+    }
+
+    // returns a `Rect` in normalized device coordinate-like (NDC-like) space that loosely
+    // bounds the world-space-located `aabb`
+    //
+    // if the AABB does not lie within the NDC clipping bounds (i.e. between (-1, -1)
+    // and (1, 1)), returns `std::nullopt`
+    std::optional<Rect> loosely_project_into_ndc(
+        const AABB& aabb,
+        const Matrix4x4& view_mat,
+        const Matrix4x4& proj_mat,
+        float znear,
+        float zfar
+    );
+}

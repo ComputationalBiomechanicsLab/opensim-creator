@@ -4,7 +4,7 @@
 
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
-#include <liboscar/utils/Algorithms.h>
+#include <liboscar/utils/algorithms.h>
 
 #include <algorithm>
 #include <chrono>

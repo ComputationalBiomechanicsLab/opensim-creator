@@ -1,14 +1,14 @@
 #pragma once
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/graphics/Color32.h>
-#include <liboscar/maths/Matrix3x3.h>
-#include <liboscar/maths/Matrix4x4.h>
-#include <liboscar/maths/Transform.h>
-#include <liboscar/maths/Triangle.h>
-#include <liboscar/maths/Vector2.h>
-#include <liboscar/maths/Vector3.h>
-#include <liboscar/maths/Vector4.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/color32.h>
+#include <liboscar/maths/matrix3x3.h>
+#include <liboscar/maths/matrix4x4.h>
+#include <liboscar/maths/transform.h>
+#include <liboscar/maths/triangle.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector4.h>
 
 #include <cstddef>
 #include <cstdint>

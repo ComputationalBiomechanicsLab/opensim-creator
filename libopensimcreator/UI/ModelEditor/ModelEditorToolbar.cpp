@@ -7,8 +7,8 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/platform/widget_private.h>

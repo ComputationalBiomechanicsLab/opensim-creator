@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
 
-#include <liboscar/graphics/scene/SceneDecoration.h>
-#include <liboscar/graphics/Mesh.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/graphics/mesh.h>
 
 #include <functional>
 

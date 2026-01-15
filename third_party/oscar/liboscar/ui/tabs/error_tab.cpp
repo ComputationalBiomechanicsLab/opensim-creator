@@ -1,9 +1,9 @@
 #include "error_tab.h"
 
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/RectFunctions.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
 #include <liboscar/ui/widgets/log_viewer.h>

@@ -15,16 +15,16 @@
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/graphics/Color.h>
-#include <liboscar/maths/MathHelpers.h>
-#include <liboscar/maths/RectFunctions.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/Assertions.h>
-#include <liboscar/utils/EnumHelpers.h>
-#include <liboscar/utils/Perf.h>
+#include <liboscar/utils/assertions.h>
+#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utils/perf.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>

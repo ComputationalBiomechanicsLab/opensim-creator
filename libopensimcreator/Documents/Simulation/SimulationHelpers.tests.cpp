@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <liboscar/formats/csv.h>
-#include <liboscar/utils/StringHelpers.h>
+#include <liboscar/utils/string_helpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <array>

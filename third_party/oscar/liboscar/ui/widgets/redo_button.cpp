@@ -1,7 +1,7 @@
 #include "redo_button.h"
 
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/UndoRedo.h>
+#include <liboscar/utils/undo_redo.h>
 
 #include <cstddef>
 #include <memory>

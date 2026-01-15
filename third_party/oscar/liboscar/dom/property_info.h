@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/utils/StringName.h>
+#include <liboscar/utils/string_name.h>
 #include <liboscar/variant/variant.h>
 #include <liboscar/variant/variant_type.h>
 

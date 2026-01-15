@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <liboscar/utils/EnumHelpers.h>
+#include <liboscar/utils/enum_helpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <cstddef>

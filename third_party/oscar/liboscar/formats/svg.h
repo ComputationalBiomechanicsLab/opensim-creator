@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/graphics/Texture2D.h>
+#include <liboscar/graphics/texture2_d.h>
 
 #include <iosfwd>
 

@@ -5,13 +5,13 @@
 #include <libopensimcreator/Documents/MeshImporter/MIObjectFlags.h>
 #include <libopensimcreator/Documents/MeshImporter/MIVariant.h>
 
-#include <liboscar/maths/AABB.h>
-#include <liboscar/maths/EulerAngles.h>
-#include <liboscar/maths/Quaternion.h>
-#include <liboscar/maths/Transform.h>
-#include <liboscar/maths/Vector3.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/maths/aabb.h>
+#include <liboscar/maths/euler_angles.h>
+#include <liboscar/maths/quaternion.h>
+#include <liboscar/maths/transform.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/uid.h>
 
 #include <iosfwd>
 #include <memory>

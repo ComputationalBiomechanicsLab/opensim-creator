@@ -1,6 +1,6 @@
 #include "MIObject.h"
 
-#include <liboscar/maths/MathHelpers.h>
+#include <liboscar/maths/math_helpers.h>
 
 #include <algorithm>
 

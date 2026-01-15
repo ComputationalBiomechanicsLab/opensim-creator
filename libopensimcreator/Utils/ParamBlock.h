@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Utils/ParamValue.h>
 
-#include <liboscar/utils/ClonePtr.h>
+#include <liboscar/utils/clone_ptr.h>
 
 #include <optional>
 #include <string>

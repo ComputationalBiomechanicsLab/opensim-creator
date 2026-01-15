@@ -7,24 +7,24 @@
 #include <libopensimcreator/Graphics/OpenSimGraphicsHelpers.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <liboscar/graphics/Graphics.h>
-#include <liboscar/graphics/scene/SceneCache.h>
-#include <liboscar/graphics/scene/SceneHelpers.h>
-#include <liboscar/graphics/scene/SceneRenderer.h>
-#include <liboscar/graphics/scene/SceneRendererParams.h>
-#include <liboscar/maths/AABBFunctions.h>
-#include <liboscar/maths/Angle.h>
-#include <liboscar/maths/PolarPerspectiveCamera.h>
-#include <liboscar/maths/Rect.h>
-#include <liboscar/maths/RectFunctions.h>
-#include <liboscar/maths/Vector2.h>
+#include <liboscar/graphics/graphics.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_helpers.h>
+#include <liboscar/graphics/scene/scene_renderer.h>
+#include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/maths/aabb_functions.h>
+#include <liboscar/maths/angle.h>
+#include <liboscar/maths/polar_perspective_camera.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/vector2.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/ui/icon_cache.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/CStringView.h>
+#include <liboscar/utils/c_string_view.h>
 
 #include <cstddef>
 #include <memory>

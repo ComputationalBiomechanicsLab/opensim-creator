@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/uid.h>
 
 #include <atomic>
 #include <cstdint>

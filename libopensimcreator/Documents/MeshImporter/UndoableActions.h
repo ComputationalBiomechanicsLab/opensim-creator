@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
 
-#include <liboscar/maths/Vector3.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/utils/uid.h>
 
 #include <optional>
 #include <span>

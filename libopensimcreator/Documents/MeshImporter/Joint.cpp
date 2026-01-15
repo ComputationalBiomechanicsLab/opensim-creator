@@ -6,9 +6,9 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/maths/Transform.h>
-#include <liboscar/utils/CStringView.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/maths/transform.h>
+#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/uid.h>
 
 #include <cstddef>
 #include <ostream>

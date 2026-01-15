@@ -2,8 +2,8 @@
 
 #include <liboscar/concepts/named_input_stream.h>
 #include <liboscar/formats/image_loading_flags.h>
-#include <liboscar/graphics/ColorSpace.h>
-#include <liboscar/graphics/Texture2D.h>
+#include <liboscar/graphics/color_space.h>
+#include <liboscar/graphics/texture2_d.h>
 
 #include <iosfwd>
 #include <utility>

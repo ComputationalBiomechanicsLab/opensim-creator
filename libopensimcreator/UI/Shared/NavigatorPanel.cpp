@@ -5,13 +5,13 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/graphics/Color.h>
+#include <liboscar/graphics/color.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
-#include <liboscar/utils/Assertions.h>
-#include <liboscar/utils/StringHelpers.h>
-#include <liboscar/utils/VariableLengthArray.h>
+#include <liboscar/utils/assertions.h>
+#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utils/variable_length_array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>

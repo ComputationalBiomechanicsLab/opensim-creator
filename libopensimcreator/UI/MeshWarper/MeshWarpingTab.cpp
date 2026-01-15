@@ -18,7 +18,7 @@
 #include <liboscar/ui/panels/toggleable_panel_flags.h>
 #include <liboscar/ui/panels/undo_redo_panel.h>
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/UID.h>
+#include <liboscar/utils/uid.h>
 
 #include <memory>
 #include <string_view>
