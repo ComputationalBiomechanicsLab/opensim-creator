@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/concepts/DereferencesTo.h>
+#include <liboscar/concepts/dereferences_to.h>
 #include <liboscar/graphics/Color.h>
 #include <liboscar/maths/Ray.h>
 #include <liboscar/maths/Vector3.h>

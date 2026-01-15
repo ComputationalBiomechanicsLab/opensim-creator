@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/concepts/AssociativeContainer.h>
-#include <liboscar/concepts/AssociativeContainerKeyFor.h>
+#include <liboscar/concepts/associative_container.h>
+#include <liboscar/concepts/associative_container_key_for.h>
 
 #include <algorithm>
 #include <concepts>

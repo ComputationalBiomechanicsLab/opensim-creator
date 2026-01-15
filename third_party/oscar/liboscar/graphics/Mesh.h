@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/concepts/BitCastable.h>
+#include <liboscar/concepts/bit_castable.h>
 #include <liboscar/graphics/Color.h>
 #include <liboscar/graphics/MeshIndicesView.h>
 #include <liboscar/graphics/MeshTopology.h>

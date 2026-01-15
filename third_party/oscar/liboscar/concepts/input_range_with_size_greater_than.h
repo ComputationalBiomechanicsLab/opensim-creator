@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/concepts/RangeWithSizeGreaterThan.h>
+#include <liboscar/concepts/range_with_size_greater_than.h>
 
 #include <ranges>
 

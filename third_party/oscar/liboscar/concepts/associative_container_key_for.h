@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/concepts/AssociativeContainer.h>
+#include <liboscar/concepts/associative_container.h>
 
 #include <concepts>
 #include <ranges>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/concepts/InputRangeWithSizeGreaterThan.h>
+#include <liboscar/concepts/input_range_with_size_greater_than.h>
 #include <liboscar/maths/AABB.h>
 #include <liboscar/maths/CommonFunctions.h>
 #include <liboscar/maths/Matrix4x4.h>

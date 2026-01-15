@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/concepts/NamedInputStream.h>
+#include <liboscar/concepts/named_input_stream.h>
 #include <liboscar/formats/ImageLoadingFlags.h>
 #include <liboscar/graphics/ColorSpace.h>
 #include <liboscar/graphics/Texture2D.h>

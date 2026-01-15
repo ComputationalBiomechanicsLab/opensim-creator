@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/concepts/SameAsAnyOf.h>
+#include <liboscar/concepts/same_as_any_of.h>
 #include <liboscar/utils/StdVariantHelpers.h>
 
 #include <cstdint>

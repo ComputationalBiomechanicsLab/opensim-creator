@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/concepts/BitCastable.h>
-#include <liboscar/concepts/SameAsAnyOf.h>
+#include <liboscar/concepts/bit_castable.h>
+#include <liboscar/concepts/same_as_any_of.h>
 #include <liboscar/maths/Matrix3x3.h>
 #include <liboscar/maths/Matrix4x4.h>
 #include <liboscar/maths/MatrixFunctions.h>

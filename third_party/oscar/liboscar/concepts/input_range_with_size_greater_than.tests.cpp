@@ -1,4 +1,4 @@
-#include "InputRangeWithSizeGreaterThan.h"
+#include "input_range_with_size_greater_than.h"
 
 #include <gtest/gtest.h>
 
