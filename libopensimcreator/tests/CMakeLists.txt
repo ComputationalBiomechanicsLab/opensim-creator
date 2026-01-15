@@ -18,13 +18,10 @@ configure_file(
 )
 
 file(GLOB_RECURSE _osc_test_sources "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
-add_executable(testopensimcreator
-    ${_osc_test_sources}
-    DocumentationModels.tests.cpp
-    OpenSimLibraryAPI.tests.cpp
-    testopensimcreator.cpp  # main
-)
+file(GLOB_RECURSE _osc_extra_sources "*.cpp")
+add_executable(testopensimcreator ${_osc_test_sources} ${_osc_extra_sources})
 unset(_osc_test_sources)
+unset(_osc_extra_sources)
 
 set_target_properties(testopensimcreator PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(testopensimcreator PUBLIC cxx_std_23)
