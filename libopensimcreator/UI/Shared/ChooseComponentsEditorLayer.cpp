@@ -21,8 +21,8 @@
 #include <liboscar/maths/MathHelpers.h>
 #include <liboscar/maths/RectFunctions.h>
 #include <liboscar/maths/Vector2.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/AppSettings.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/app_settings.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/utils/CStringView.h>
 #include <liboscar/utils/StringName.h>

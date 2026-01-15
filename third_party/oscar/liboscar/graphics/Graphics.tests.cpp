@@ -7,7 +7,7 @@
 #include <liboscar/graphics/Shader.h>
 #include <liboscar/graphics/SubMeshDescriptor.h>
 #include <liboscar/maths/Transform.h>
-#include <liboscar/platform/App.h>
+#include <liboscar/platform/app.h>
 
 #include <gtest/gtest.h>
 

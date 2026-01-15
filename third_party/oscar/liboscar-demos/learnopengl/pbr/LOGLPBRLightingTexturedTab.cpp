@@ -1,16 +1,16 @@
 #include "LOGLPBRLightingTexturedTab.h"
 
-#include <liboscar/formats/Image.h>
+#include <liboscar/formats/image.h>
 #include <liboscar/graphics/geometries/SphereGeometry.h>
 #include <liboscar/graphics/Graphics.h>
 #include <liboscar/graphics/Material.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/ResourceLoader.h>
-#include <liboscar/ui/MouseCapturingCamera.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/resource_loader.h>
+#include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/PerfPanel.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/panels/perf_panel.h>
+#include <liboscar/ui/tabs/tab_private.h>
 
 #include <array>
 #include <memory>

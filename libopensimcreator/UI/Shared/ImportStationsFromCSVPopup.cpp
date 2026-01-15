@@ -6,13 +6,13 @@
 #include <libopensimcreator/Documents/MeshImporter/UndoableActions.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <liboscar/formats/CSV.h>
+#include <liboscar/formats/csv.h>
 #include <liboscar/graphics/Color.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/FileDialogFilter.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/file_dialog_filter.h>
 #include <liboscar/platform/os.h>
-#include <liboscar/ui/popups/Popup.h>
-#include <liboscar/ui/popups/PopupPrivate.h>
+#include <liboscar/ui/popups/popup.h>
+#include <liboscar/ui/popups/popup_private.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 

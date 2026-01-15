@@ -1,6 +1,6 @@
 #include "TemporaryFile.h"
 
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/utils/TemporaryFileParameters.h>
 

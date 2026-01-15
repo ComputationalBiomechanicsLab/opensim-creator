@@ -6,9 +6,9 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
 
-#include <liboscar/platform/Widget.h>
-#include <liboscar/ui/panels/PanelManager.h>
-#include <liboscar/ui/widgets/WindowMenu.h>
+#include <liboscar/platform/widget.h>
+#include <liboscar/ui/panels/panel_manager.h>
+#include <liboscar/ui/widgets/window_menu.h>
 
 #include <memory>
 

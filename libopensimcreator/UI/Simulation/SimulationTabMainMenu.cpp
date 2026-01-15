@@ -3,11 +3,11 @@
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
 
-#include <liboscar/platform/Widget.h>
-#include <liboscar/platform/WidgetPrivate.h>
+#include <liboscar/platform/widget.h>
+#include <liboscar/platform/widget_private.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/PanelManager.h>
-#include <liboscar/ui/widgets/WindowMenu.h>
+#include <liboscar/ui/panels/panel_manager.h>
+#include <liboscar/ui/widgets/window_menu.h>
 
 #include <memory>
 #include <utility>

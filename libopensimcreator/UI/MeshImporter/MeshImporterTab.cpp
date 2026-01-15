@@ -29,8 +29,8 @@
 #include <libopensimcreator/UI/Shared/ImportStationsFromCSVPopup.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
 
-#include <liboscar/formats/OBJ.h>
-#include <liboscar/formats/STL.h>
+#include <liboscar/formats/obj.h>
+#include <liboscar/formats/stl.h>
 #include <liboscar/graphics/Color.h>
 #include <liboscar/graphics/Mesh.h>
 #include <liboscar/maths/AABB.h>
@@ -45,16 +45,16 @@
 #include <liboscar/maths/Vector2.h>
 #include <liboscar/maths/Vector3.h>
 #include <liboscar/maths/VectorFunctions.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/ui/events/CloseTabEvent.h>
-#include <liboscar/ui/events/OpenTabEvent.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/ui/events/close_tab_event.h>
+#include <liboscar/ui/events/open_tab_event.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/PerfPanel.h>
-#include <liboscar/ui/panels/UndoRedoPanel.h>
-#include <liboscar/ui/popups/PopupManager.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
-#include <liboscar/ui/widgets/CameraViewAxes.h>
-#include <liboscar/ui/widgets/LogViewer.h>
+#include <liboscar/ui/panels/perf_panel.h>
+#include <liboscar/ui/panels/undo_redo_panel.h>
+#include <liboscar/ui/popups/popup_manager.h>
+#include <liboscar/ui/tabs/tab_private.h>
+#include <liboscar/ui/widgets/camera_view_axes.h>
+#include <liboscar/ui/widgets/log_viewer.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/CStringView.h>
 #include <liboscar/utils/ScopeExit.h>

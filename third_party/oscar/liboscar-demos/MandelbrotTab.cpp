@@ -5,14 +5,14 @@
 #include <liboscar/graphics/Material.h>
 #include <liboscar/graphics/Shader.h>
 #include <liboscar/graphics/geometries/PlaneGeometry.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/ResourceLoader.h>
-#include <liboscar/platform/events/EventType.h>
-#include <liboscar/platform/events/KeyEvent.h>
-#include <liboscar/platform/events/MouseEvent.h>
-#include <liboscar/platform/events/MouseWheelEvent.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/resource_loader.h>
+#include <liboscar/platform/events/event_type.h>
+#include <liboscar/platform/events/key_event.h>
+#include <liboscar/platform/events/mouse_event.h>
+#include <liboscar/platform/events/mouse_wheel_event.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/tabs/tab_private.h>
 
 #include <limits>
 #include <memory>

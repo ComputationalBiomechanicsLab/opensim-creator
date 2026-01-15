@@ -22,9 +22,9 @@
 #include <libopensimcreator/Utils/ParamValue.h>
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
-#include <liboscar/formats/DAE.h>
-#include <liboscar/formats/OBJ.h>
-#include <liboscar/formats/STL.h>
+#include <liboscar/formats/dae.h>
+#include <liboscar/formats/obj.h>
+#include <liboscar/formats/stl.h>
 #include <liboscar/graphics/Color.h>
 #include <liboscar/graphics/Mesh.h>
 #include <liboscar/graphics/scene/SceneCache.h>
@@ -34,12 +34,12 @@
 #include <liboscar/maths/RectFunctions.h>
 #include <liboscar/maths/Vector2.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Log.h>
-#include <liboscar/ui/IconCache.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/log.h>
+#include <liboscar/ui/icon_cache.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/widgets/CameraViewAxes.h>
-#include <liboscar/ui/widgets/IconWithMenu.h>
+#include <liboscar/ui/widgets/camera_view_axes.h>
+#include <liboscar/ui/widgets/icon_with_menu.h>
 #include <liboscar/utils/StringHelpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>

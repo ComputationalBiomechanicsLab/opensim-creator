@@ -13,10 +13,10 @@
 #include <liboscar/maths/CollisionTests.h>
 #include <liboscar/maths/FrustumPlanes.h>
 #include <liboscar/maths/RectFunctions.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/ui/MouseCapturingCamera.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/tabs/tab_private.h>
 
 #include <algorithm>
 #include <array>

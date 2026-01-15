@@ -16,11 +16,11 @@
 #include <liboscar/maths/MathHelpers.h>
 #include <liboscar/maths/MatrixFunctions.h>
 #include <liboscar/maths/QuaternionFunctions.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/ui/MouseCapturingCamera.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/LogViewerPanel.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/panels/log_viewer_panel.h>
+#include <liboscar/ui/tabs/tab_private.h>
 #include <liboscar/utils/Assertions.h>
 
 #include <array>

@@ -24,10 +24,10 @@
 #include <liboscar/maths/Triangle.h>
 #include <liboscar/maths/Vector2.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/App.h>
+#include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/PerfPanel.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/panels/perf_panel.h>
+#include <liboscar/ui/tabs/tab_private.h>
 #include <liboscar/utils/PerfClock.h>
 
 #include <chrono>

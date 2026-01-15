@@ -23,7 +23,7 @@
 #include <liboscar/maths/QuaternionFunctions.h>
 #include <liboscar/maths/Transform.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/utils/Algorithms.h>
 #include <liboscar/utils/EnumHelpers.h>
 #include <liboscar/utils/Perf.h>

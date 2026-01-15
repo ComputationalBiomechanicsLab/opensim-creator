@@ -1,6 +1,6 @@
 #include "os.h"
 
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/utils/ScopeExit.h>
 #include <liboscar/utils/StringHelpers.h>
 

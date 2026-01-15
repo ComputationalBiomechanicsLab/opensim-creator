@@ -14,7 +14,8 @@ configure_file(
 )
 
 file(GLOB_RECURSE _oscar_test_sources "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
-add_executable(testoscar ${_oscar_test_sources} TestHelpers.cpp TestHelpers.h)
+file(GLOB_RECURSE _oscar_test_extras "*.cpp")
+add_executable(testoscar ${_oscar_test_sources} ${_oscar_test_extras})
 unset(_oscar_test_sources)
 
 set_target_properties(testoscar PROPERTIES CXX_EXTENSIONS OFF)

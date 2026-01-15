@@ -7,7 +7,7 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/formats/DAE.h>
+#include <liboscar/formats/dae.h>
 #include <liboscar/graphics/scene/SceneCache.h>
 #include <liboscar/graphics/scene/SceneDecoration.h>
 #include <liboscar/utils/NullOStream.h>

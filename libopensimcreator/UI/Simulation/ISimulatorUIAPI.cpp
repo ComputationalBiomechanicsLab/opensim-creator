@@ -4,8 +4,8 @@
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationHelpers.h>
 
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>
 #include <OpenSim/Simulation/Model/Model.h>
 

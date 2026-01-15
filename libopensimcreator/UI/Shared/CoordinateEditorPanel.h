@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/ui/panels/Panel.h>
+#include <liboscar/ui/panels/panel.h>
 
 #include <memory>
 #include <string_view>

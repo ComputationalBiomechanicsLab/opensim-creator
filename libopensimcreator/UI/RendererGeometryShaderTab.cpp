@@ -14,13 +14,13 @@
 #include <liboscar/maths/MathHelpers.h>
 #include <liboscar/maths/Transform.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Cursor.h>
-#include <liboscar/platform/CursorShape.h>
-#include <liboscar/platform/events/Event.h>
-#include <liboscar/platform/events/KeyEvent.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/cursor.h>
+#include <liboscar/platform/cursor_shape.h>
+#include <liboscar/platform/events/event.h>
+#include <liboscar/platform/events/key_event.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/tabs/tab_private.h>
 
 #include <memory>
 

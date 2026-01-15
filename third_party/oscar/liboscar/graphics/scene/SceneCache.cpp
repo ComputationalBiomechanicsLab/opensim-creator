@@ -14,10 +14,10 @@
 #include <liboscar/graphics/scene/SceneHelpers.h>
 #include <liboscar/graphics/Shader.h>
 #include <liboscar/maths/BVH.h>
-#include <liboscar/platform/Log.h>
-#include <liboscar/platform/NativeFilesystem.h>
-#include <liboscar/platform/ResourceLoader.h>
-#include <liboscar/platform/ResourcePath.h>
+#include <liboscar/platform/log.h>
+#include <liboscar/platform/native_filesystem.h>
+#include <liboscar/platform/resource_loader.h>
+#include <liboscar/platform/resource_path.h>
 #include <liboscar/utils/HashHelpers.h>
 #include <liboscar/utils/SynchronizedValue.h>
 #include <liboscar/utils/TypeInfoReference.h>

@@ -11,7 +11,7 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/popups/Popup.h>
+#include <liboscar/ui/popups/popup.h>
 #include <liboscar/utils/StringHelpers.h>
 
 #include <memory>

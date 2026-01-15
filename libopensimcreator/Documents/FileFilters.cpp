@@ -1,6 +1,6 @@
 #include "FileFilters.h"
 
-#include <liboscar/platform/FileDialogFilter.h>
+#include <liboscar/platform/file_dialog_filter.h>
 
 #include <array>
 #include <span>

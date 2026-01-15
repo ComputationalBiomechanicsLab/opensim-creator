@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/platform/Widget.h>
+#include <liboscar/platform/widget.h>
 
 #include <filesystem>
 

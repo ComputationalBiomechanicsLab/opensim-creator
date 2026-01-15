@@ -6,10 +6,10 @@
 #include <liboscar/graphics/Material.h>
 #include <liboscar/graphics/MaterialPropertyBlock.h>
 #include <liboscar/graphics/geometries/PlaneGeometry.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/AppClock.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/app_clock.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/tabs/tab_private.h>
 
 #include <chrono>
 #include <memory>

@@ -7,7 +7,7 @@
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/utils/Assertions.h>
 #include <OpenSim/Common/Component.h>

@@ -12,7 +12,7 @@
 #include <libopensimcreator/UI/Shared/MainMenu.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/formats/SVG.h>
+#include <liboscar/formats/svg.h>
 #include <liboscar/graphics/Color.h>
 #include <liboscar/graphics/scene/SceneCache.h>
 #include <liboscar/graphics/scene/SceneRenderer.h>
@@ -24,16 +24,16 @@
 #include <liboscar/maths/Rect.h>
 #include <liboscar/maths/RectFunctions.h>
 #include <liboscar/maths/Vector2.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/AppMetadata.h>
-#include <liboscar/platform/AppSettings.h>
-#include <liboscar/platform/events/DropFileEvent.h>
-#include <liboscar/platform/events/Event.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/app_metadata.h>
+#include <liboscar/platform/app_settings.h>
+#include <liboscar/platform/events/drop_file_event.h>
+#include <liboscar/platform/events/event.h>
 #include <liboscar/platform/os.h>
-#include <liboscar/ui/events/OpenTabEvent.h>
+#include <liboscar/ui/events/open_tab_event.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
-#include <liboscar/ui/widgets/LogViewer.h>
+#include <liboscar/ui/tabs/tab_private.h>
+#include <liboscar/ui/widgets/log_viewer.h>
 #include <liboscar/utils/Algorithms.h>
 #include <liboscar/utils/CStringView.h>
 

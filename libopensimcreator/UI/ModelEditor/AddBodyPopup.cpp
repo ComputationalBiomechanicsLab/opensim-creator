@@ -9,12 +9,12 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Widget.h>
-#include <liboscar/ui/events/OpenPopupEvent.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/widget.h>
+#include <liboscar/ui/events/open_popup_event.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/popups/Popup.h>
-#include <liboscar/ui/popups/PopupPrivate.h>
+#include <liboscar/ui/popups/popup.h>
+#include <liboscar/ui/popups/popup_private.h>
 #include <liboscar/utils/StringHelpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>

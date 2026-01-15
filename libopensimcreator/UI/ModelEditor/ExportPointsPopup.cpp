@@ -5,13 +5,13 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
-#include <liboscar/formats/CSV.h>
+#include <liboscar/formats/csv.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/popups/Popup.h>
-#include <liboscar/ui/popups/PopupPrivate.h>
+#include <liboscar/ui/popups/popup.h>
+#include <liboscar/ui/popups/popup_private.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/CStringView.h>
 #include <liboscar/utils/EnumHelpers.h>

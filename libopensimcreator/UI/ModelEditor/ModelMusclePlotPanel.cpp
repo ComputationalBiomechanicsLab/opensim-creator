@@ -8,19 +8,19 @@
 #include <libopensimcreator/UI/Events/AddMusclePlotEvent.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/formats/CSV.h>
+#include <liboscar/formats/csv.h>
 #include <liboscar/graphics/Color.h>
 #include <liboscar/maths/Angle.h>
 #include <liboscar/maths/MathHelpers.h>
 #include <liboscar/maths/Vector4.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/FileDialogFilter.h>
-#include <liboscar/platform/Log.h>
-#include <liboscar/platform/Widget.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/file_dialog_filter.h>
+#include <liboscar/platform/log.h>
+#include <liboscar/platform/widget.h>
 #include <liboscar/shims/cpp20/stop_token.h>
 #include <liboscar/shims/cpp20/thread.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/PanelPrivate.h>
+#include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utils/Algorithms.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/CStringView.h>

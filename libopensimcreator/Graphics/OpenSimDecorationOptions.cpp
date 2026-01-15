@@ -4,8 +4,8 @@
 #include <liboscar/utils/Conversion.h>
 #include <liboscar/utils/CStringView.h>
 #include <liboscar/utils/EnumHelpers.h>
-#include <liboscar/variant/Variant.h>
-#include <liboscar/variant/VariantType.h>
+#include <liboscar/variant/variant.h>
+#include <liboscar/variant/variant_type.h>
 
 #include <optional>
 #include <ranges>

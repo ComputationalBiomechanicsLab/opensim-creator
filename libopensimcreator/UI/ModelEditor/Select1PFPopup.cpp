@@ -4,8 +4,8 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/popups/Popup.h>
-#include <liboscar/ui/popups/PopupPrivate.h>
+#include <liboscar/ui/popups/popup.h>
+#include <liboscar/ui/popups/popup_private.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Model.h>

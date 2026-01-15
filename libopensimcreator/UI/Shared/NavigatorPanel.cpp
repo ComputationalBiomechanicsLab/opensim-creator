@@ -8,7 +8,7 @@
 #include <liboscar/graphics/Color.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/PanelPrivate.h>
+#include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/StringHelpers.h>
 #include <liboscar/utils/VariableLengthArray.h>

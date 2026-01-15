@@ -15,12 +15,12 @@
 #include <liboscar/graphics/scene/SceneRendererParams.h>
 #include <liboscar/maths/PolarPerspectiveCamera.h>
 #include <liboscar/maths/Vector2.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/AppSettings.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/app_settings.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
-#include <liboscar/ui/widgets/CameraViewAxes.h>
-#include <liboscar/ui/widgets/SceneViewer.h>
+#include <liboscar/ui/tabs/tab_private.h>
+#include <liboscar/ui/widgets/camera_view_axes.h>
+#include <liboscar/ui/widgets/scene_viewer.h>
 
 #include <map>
 #include <memory>

@@ -18,7 +18,7 @@
 #include <liboscar/maths/Vector2.h>
 #include <liboscar/maths/Vector3.h>
 #include <liboscar/maths/Vector4.h>
-#include <liboscar/tests/TestHelpers.h>
+#include <liboscar/tests/test_helpers.h>
 
 #include <gtest/gtest.h>
 

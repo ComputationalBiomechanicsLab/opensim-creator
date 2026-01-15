@@ -15,7 +15,7 @@
 #include <liboscar/maths/Vector.h>
 #include <liboscar/maths/Vector3.h>
 #include <liboscar/maths/Vector4.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/StringHelpers.h>

@@ -7,7 +7,7 @@
 #include <liboscar/maths/Plane.h>
 #include <liboscar/maths/Transform.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/CStringView.h>
 #include <liboscar/utils/Perf.h>

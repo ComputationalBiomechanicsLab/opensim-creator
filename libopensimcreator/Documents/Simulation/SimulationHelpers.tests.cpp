@@ -6,7 +6,7 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/formats/CSV.h>
+#include <liboscar/formats/csv.h>
 #include <liboscar/utils/StringHelpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 

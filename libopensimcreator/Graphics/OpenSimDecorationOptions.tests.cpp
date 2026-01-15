@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <liboscar/utils/Conversion.h>
 #include <liboscar/utils/StringHelpers.h>
-#include <liboscar/variant/Variant.h>
+#include <liboscar/variant/variant.h>
 
 #include <string_view>
 #include <unordered_map>

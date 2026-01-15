@@ -2,11 +2,11 @@
 
 #include <libopensimcreator/UI/OpenSimCreatorTabRegistry.h>
 
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/AppMetadata.h>
-#include <liboscar/platform/AppSettings.h>
-#include <liboscar/platform/Log.h>
-#include <liboscar/ui/tabs/TabRegistry.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/app_metadata.h>
+#include <liboscar/platform/app_settings.h>
+#include <liboscar/platform/log.h>
+#include <liboscar/ui/tabs/tab_registry.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/CStringView.h>
 #include <liboscar/utils/EnumHelpers.h>

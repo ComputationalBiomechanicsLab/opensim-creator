@@ -2,7 +2,7 @@
 
 #include <liboscar/graphics/Mesh.h>
 #include <liboscar/graphics/MeshIndicesView.h>
-#include <liboscar/platform/FileDialogFilter.h>
+#include <liboscar/platform/file_dialog_filter.h>
 
 #include <filesystem>
 #include <span>

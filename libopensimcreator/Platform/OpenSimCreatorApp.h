@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/platform/App.h>
+#include <liboscar/platform/app.h>
 
 #include <filesystem>
 

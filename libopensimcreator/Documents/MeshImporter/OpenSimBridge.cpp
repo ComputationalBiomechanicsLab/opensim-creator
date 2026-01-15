@@ -20,7 +20,7 @@
 #include <liboscar/maths/MatrixFunctions.h>
 #include <liboscar/maths/Transform.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/utils/Algorithms.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/UID.h>

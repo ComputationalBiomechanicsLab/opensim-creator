@@ -18,10 +18,10 @@
 #include <liboscar/maths/PolarPerspectiveCamera.h>
 #include <liboscar/maths/Vector2.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Widget.h>
-#include <liboscar/ui/events/CloseTabEvent.h>
-#include <liboscar/ui/popups/PopupManager.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/widget.h>
+#include <liboscar/ui/events/close_tab_event.h>
+#include <liboscar/ui/popups/popup_manager.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/UID.h>
 

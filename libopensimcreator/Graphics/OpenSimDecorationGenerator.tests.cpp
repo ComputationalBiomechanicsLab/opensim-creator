@@ -14,7 +14,7 @@
 #include <liboscar/graphics/scene/SceneHelpers.h>
 #include <liboscar/maths/AABBFunctions.h>
 #include <liboscar/maths/MathHelpers.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/utils/StringHelpers.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>

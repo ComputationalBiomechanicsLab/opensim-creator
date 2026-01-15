@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/ui/popups/Popup.h>
+#include <liboscar/ui/popups/popup.h>
 
 #include <memory>
 #include <string_view>

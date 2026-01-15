@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <liboscar/formats/SVG.h>
+#include <liboscar/formats/svg.h>
 #include <liboscar/graphics/Camera.h>
 #include <liboscar/graphics/geometries/PlaneGeometry.h>
 #include <liboscar/graphics/Graphics.h>
@@ -15,10 +15,10 @@
 #include <liboscar/maths/RectFunctions.h>
 #include <liboscar/maths/Vector2.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/App.h>
+#include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/LogViewerPanel.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/panels/log_viewer_panel.h>
+#include <liboscar/ui/tabs/tab_private.h>
 #include <liboscar/utils/Algorithms.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/StdVariantHelpers.h>

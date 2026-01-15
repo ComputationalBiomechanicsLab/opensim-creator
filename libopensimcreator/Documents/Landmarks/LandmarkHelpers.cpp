@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
 
-#include <liboscar/formats/CSV.h>
+#include <liboscar/formats/csv.h>
 #include <liboscar/maths/Vector3.h>
 #include <liboscar/utils/StdVariantHelpers.h>
 #include <liboscar/utils/StringHelpers.h>

@@ -9,12 +9,12 @@
 #include <liboscar/maths/Rect.h>
 #include <liboscar/maths/RectFunctions.h>
 #include <liboscar/maths/Vector2.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Log.h>
-#include <liboscar/ui/events/CloseTabEvent.h>
-#include <liboscar/ui/events/OpenTabEvent.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/log.h>
+#include <liboscar/ui/events/close_tab_event.h>
+#include <liboscar/ui/events/open_tab_event.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/tabs/tab_private.h>
 
 #include <chrono>
 #include <exception>

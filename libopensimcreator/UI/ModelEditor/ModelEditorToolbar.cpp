@@ -9,11 +9,11 @@
 
 #include <liboscar/graphics/Color.h>
 #include <liboscar/maths/Vector2.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Widget.h>
-#include <liboscar/platform/WidgetPrivate.h>
-#include <liboscar/ui/events/OpenPopupEvent.h>
-#include <liboscar/ui/IconCache.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/widget.h>
+#include <liboscar/platform/widget_private.h>
+#include <liboscar/ui/events/open_popup_event.h>
+#include <liboscar/ui/icon_cache.h>
 #include <liboscar/ui/oscimgui.h>
 
 #include <algorithm>

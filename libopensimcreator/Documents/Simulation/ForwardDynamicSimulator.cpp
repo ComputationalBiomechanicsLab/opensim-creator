@@ -10,7 +10,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/shims/cpp20/stop_token.h>
 #include <liboscar/shims/cpp20/thread.h>
 #include <liboscar/utils/HashHelpers.h>

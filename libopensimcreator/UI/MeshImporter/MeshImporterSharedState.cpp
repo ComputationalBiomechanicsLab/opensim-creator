@@ -1,6 +1,6 @@
 #include "MeshImporterSharedState.h"
 
-#include <liboscar/platform/events/DropFileEvent.h>
+#include <liboscar/platform/events/drop_file_event.h>
 
 bool osc::mi::MeshImporterSharedState::onEvent(Event& ev)
 {

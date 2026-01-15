@@ -1,6 +1,6 @@
 #include "MeshDepthWritingMaterial.h"
 
-#include <liboscar/platform/App.h>
+#include <liboscar/platform/app.h>
 
 #include <gtest/gtest.h>
 

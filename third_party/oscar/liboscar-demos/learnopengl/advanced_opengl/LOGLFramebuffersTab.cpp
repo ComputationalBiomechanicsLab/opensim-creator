@@ -1,18 +1,18 @@
 #include "LOGLFramebuffersTab.h"
 
-#include <liboscar/formats/Image.h>
+#include <liboscar/formats/image.h>
 #include <liboscar/graphics/Graphics.h>
 #include <liboscar/graphics/Material.h>
 #include <liboscar/graphics/Mesh.h>
 #include <liboscar/graphics/RenderTexture.h>
 #include <liboscar/graphics/geometries/BoxGeometry.h>
 #include <liboscar/graphics/geometries/PlaneGeometry.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/ui/MouseCapturingCamera.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/LogViewerPanel.h>
-#include <liboscar/ui/panels/PerfPanel.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/panels/log_viewer_panel.h>
+#include <liboscar/ui/panels/perf_panel.h>
+#include <liboscar/ui/tabs/tab_private.h>
 
 #include <memory>
 

@@ -12,9 +12,9 @@
 #include <liboscar/maths/Vector.h>
 #include <liboscar/maths/Vector2.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/Key.h>
-#include <liboscar/platform/KeyCombination.h>
-#include <liboscar/platform/ResourcePath.h>
+#include <liboscar/platform/key.h>
+#include <liboscar/platform/key_combination.h>
+#include <liboscar/platform/resource_path.h>
 #include <liboscar/utils/CopyOnUpdPtr.h>
 #include <liboscar/utils/CStringView.h>
 #include <liboscar/utils/Flags.h>

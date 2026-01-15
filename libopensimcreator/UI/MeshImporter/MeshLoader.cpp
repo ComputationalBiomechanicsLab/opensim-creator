@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/log.h>
 
 #include <exception>
 #include <filesystem>

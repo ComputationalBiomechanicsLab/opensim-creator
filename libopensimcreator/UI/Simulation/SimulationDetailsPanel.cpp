@@ -9,7 +9,7 @@
 
 #include <liboscar/platform/os.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/PanelPrivate.h>
+#include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utils/Algorithms.h>
 #include <liboscar/utils/Perf.h>
 

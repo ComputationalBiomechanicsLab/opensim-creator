@@ -1,6 +1,6 @@
 #include "ImPlotDemoTab.h"
 
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/tabs/tab_private.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/utils/CStringView.h>
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/ui/tabs/Tab.h>
-#include <liboscar/ui/tabs/TabSaveResult.h>
+#include <liboscar/ui/tabs/tab.h>
+#include <liboscar/ui/tabs/tab_save_result.h>
 
 #include <filesystem>
 #include <future>

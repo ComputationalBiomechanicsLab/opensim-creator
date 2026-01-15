@@ -79,8 +79,8 @@
 #include <liboscar/maths/Vector3.h>
 #include <liboscar/maths/Vector4.h>
 #include <liboscar/maths/VectorFunctions.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/utils/Algorithms.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/BoolLike.h>

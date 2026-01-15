@@ -2,9 +2,9 @@
 
 #include <liboscar/graphics/RenderTexture.h>
 #include <liboscar/graphics/Texture2D.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/AppMetadata.h>
-#include <liboscar/tests/TestHelpers.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/app_metadata.h>
+#include <liboscar/tests/test_helpers.h>
 #include <liboscar/tests/testoscarconfig.h>
 #include <liboscar/utils/CStringView.h>
 #include <liboscar/utils/StringHelpers.h>

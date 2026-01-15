@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/Platform/RecentFile.h>
 
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/utils/Algorithms.h>
 
 #include <algorithm>

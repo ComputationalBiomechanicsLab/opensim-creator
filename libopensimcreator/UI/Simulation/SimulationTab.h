@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/ui/tabs/Tab.h>
+#include <liboscar/ui/tabs/tab.h>
 
 #include <memory>
 

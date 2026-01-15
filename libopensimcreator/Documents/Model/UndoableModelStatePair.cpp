@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/Model/ModelStateCommit.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/utils/Algorithms.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/Perf.h>

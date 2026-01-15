@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/UI/OpenSimCreatorTabs.h>
 
-#include <liboscar/ui/tabs/TabRegistry.h>
+#include <liboscar/ui/tabs/tab_registry.h>
 
 void osc::RegisterOpenSimCreatorTabs(TabRegistry& registry)
 {

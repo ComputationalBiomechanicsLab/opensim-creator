@@ -36,16 +36,16 @@
 #include <liboscar/maths/Vector3.h>
 #include <liboscar/maths/Vector4.h>
 #include <liboscar/maths/VectorFunctions.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Cursor.h>
-#include <liboscar/platform/CursorShape.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/cursor.h>
+#include <liboscar/platform/cursor_shape.h>
 #include <liboscar/platform/os.h>
-#include <liboscar/platform/PhysicalKeyModifier.h>
-#include <liboscar/platform/ResourceLoader.h>
-#include <liboscar/platform/ResourcePath.h>
-#include <liboscar/platform/WindowID.h>
+#include <liboscar/platform/physical_key_modifier.h>
+#include <liboscar/platform/resource_loader.h>
+#include <liboscar/platform/resource_path.h>
+#include <liboscar/platform/window_id.h>
 #include <liboscar/shims/cpp23/ranges.h>
-#include <liboscar/ui/detail/ImGuizmo.h>
+#include <liboscar/ui/detail/imguizmo.h>
 #include <liboscar/utils/Algorithms.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/Conversion.h>
@@ -67,12 +67,12 @@
 #define IM_VEC2_CLASS_EXTRA                                                 \
          ImVec2(const osc::Vector2& f) { x = f.x; y = f.y; }                   \
          operator osc::Vector2() const { return osc::Vector2(x,y); }
-#include <liboscar/platform/events/EventType.h>
-#include <liboscar/platform/events/KeyEvent.h>
-#include <liboscar/platform/events/MouseEvent.h>
-#include <liboscar/platform/events/MouseWheelEvent.h>
-#include <liboscar/platform/events/TextInputEvent.h>
-#include <liboscar/platform/events/WindowEvent.h>
+#include <liboscar/platform/events/event_type.h>
+#include <liboscar/platform/events/key_event.h>
+#include <liboscar/platform/events/mouse_event.h>
+#include <liboscar/platform/events/mouse_wheel_event.h>
+#include <liboscar/platform/events/text_input_event.h>
+#include <liboscar/platform/events/window_event.h>
 
 #include <imgui.h>
 #include <imgui_internal.h>

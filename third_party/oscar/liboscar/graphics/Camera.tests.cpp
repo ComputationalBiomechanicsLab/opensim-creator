@@ -7,7 +7,7 @@
 #include <liboscar/maths/MathHelpers.h>
 #include <liboscar/maths/MatrixFunctions.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/tests/TestHelpers.h>
+#include <liboscar/tests/test_helpers.h>
 
 #include <gtest/gtest.h>
 

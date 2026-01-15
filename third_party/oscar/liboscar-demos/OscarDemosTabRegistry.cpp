@@ -2,7 +2,7 @@
 
 #include <liboscar-demos/OscarDemoTabs.h>
 
-#include <liboscar/ui/tabs/TabRegistry.h>
+#include <liboscar/ui/tabs/tab_registry.h>
 
 void osc::register_demo_tabs(TabRegistry& registry)
 {

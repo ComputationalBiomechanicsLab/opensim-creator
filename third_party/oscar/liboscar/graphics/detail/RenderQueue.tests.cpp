@@ -5,8 +5,8 @@
 #include <liboscar/graphics/Material.h>
 #include <liboscar/graphics/MaterialPropertyBlock.h>
 #include <liboscar/graphics/materials/MeshBasicMaterial.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/AppMetadata.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/app_metadata.h>
 #include <liboscar/tests/testoscarconfig.h>
 #include <liboscar/maths/Matrix4x4.h>
 

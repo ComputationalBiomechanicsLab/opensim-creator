@@ -7,10 +7,10 @@
 #include <liboscar/graphics/Color.h>
 #include <liboscar/graphics/scene/SceneRendererParams.h>
 #include <liboscar/maths/PolarPerspectiveCamera.h>
-#include <liboscar/platform/AppSettings.h>
+#include <liboscar/platform/app_settings.h>
 #include <liboscar/utils/Algorithms.h>
 #include <liboscar/utils/Conversion.h>
-#include <liboscar/variant/Variant.h>
+#include <liboscar/variant/variant.h>
 
 #include <string>
 #include <string_view>

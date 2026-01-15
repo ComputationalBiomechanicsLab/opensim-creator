@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
 
-#include <liboscar/ui/tabs/Tab.h>
+#include <liboscar/ui/tabs/tab.h>
 
 namespace osc { class ParamBlock; }
 namespace osc { class Widget; }

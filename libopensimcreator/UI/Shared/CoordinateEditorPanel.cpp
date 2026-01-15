@@ -8,11 +8,11 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/graphics/Color.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Widget.h>
-#include <liboscar/ui/events/OpenPopupEvent.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/widget.h>
+#include <liboscar/ui/events/open_popup_event.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/PanelPrivate.h>
+#include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/CStringView.h>
 #include <OpenSim/Common/Component.h>

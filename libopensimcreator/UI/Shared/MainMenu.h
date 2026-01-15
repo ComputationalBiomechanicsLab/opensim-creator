@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/platform/Widget.h>
-#include <liboscar/ui/popups/SaveChangesPopup.h>
+#include <liboscar/platform/widget.h>
+#include <liboscar/ui/popups/save_changes_popup.h>
 
 #include <filesystem>
 #include <memory>

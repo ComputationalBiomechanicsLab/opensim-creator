@@ -8,10 +8,10 @@
 #include <liboscar/graphics/materials/MeshBasicMaterial.h>
 #include <liboscar/graphics/Mesh.h>
 #include <liboscar/graphics/SubMeshDescriptor.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/ResourceLoader.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/resource_loader.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/tabs/TabPrivate.h>
+#include <liboscar/ui/tabs/tab_private.h>
 
 #include <array>
 #include <concepts>

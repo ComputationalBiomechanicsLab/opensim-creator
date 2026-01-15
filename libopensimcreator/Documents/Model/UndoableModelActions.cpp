@@ -29,10 +29,10 @@
 #include <liboscar/maths/Quaternion.h>
 #include <liboscar/maths/Sphere.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/App.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>
-#include <liboscar/ui/events/OpenTabEvent.h>
+#include <liboscar/ui/events/open_tab_event.h>
 #include <liboscar/utils/Algorithms.h>
 #include <liboscar/utils/Assertions.h>
 #include <liboscar/utils/FilesystemHelpers.h>

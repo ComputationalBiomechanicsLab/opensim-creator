@@ -11,7 +11,7 @@
 #include <liboscar/maths/LineSegment.h>
 #include <liboscar/maths/MathHelpers.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/utils/HashHelpers.h>
 #include <simbody/internal/common.h>
 #include <simbody/internal/MobilizedBody.h>

@@ -4,7 +4,7 @@
 
 #include <liboscar/maths/Rect.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/ui/panels/Panel.h>
+#include <liboscar/ui/panels/panel.h>
 
 #include <memory>
 #include <optional>

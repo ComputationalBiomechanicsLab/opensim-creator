@@ -15,7 +15,7 @@
 #include <liboscar/maths/PolarPerspectiveCamera.h>
 #include <liboscar/maths/Vector2.h>
 #include <liboscar/maths/Vector3.h>
-#include <liboscar/platform/App.h>
+#include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/utils/CStringView.h>
 

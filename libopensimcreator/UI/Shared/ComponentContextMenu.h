@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/ui/popups/Popup.h>
+#include <liboscar/ui/popups/popup.h>
 #include <liboscar/utils/Flags.h>
 
 #include <memory>

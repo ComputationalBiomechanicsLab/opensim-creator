@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/Mesh.h>
-#include <liboscar/platform/ResourcePath.h>
+#include <liboscar/platform/resource_path.h>
 
 #include <functional>
 #include <memory>

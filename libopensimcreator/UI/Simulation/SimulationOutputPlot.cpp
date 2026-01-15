@@ -19,7 +19,7 @@
 #include <liboscar/maths/MathHelpers.h>
 #include <liboscar/maths/RectFunctions.h>
 #include <liboscar/maths/Vector2.h>
-#include <liboscar/platform/Log.h>
+#include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/utils/Assertions.h>

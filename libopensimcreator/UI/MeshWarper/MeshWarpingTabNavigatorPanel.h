@@ -10,7 +10,7 @@
 #include <liboscar/maths/Circle.h>
 #include <liboscar/maths/Vector2.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/panels/Panel.h>
+#include <liboscar/ui/panels/panel.h>
 
 #include <memory>
 #include <string_view>
