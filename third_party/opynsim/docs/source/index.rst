@@ -16,6 +16,7 @@ Table of Contents
    visual-studio-development-environment-setup
    contributing-to-simbody-and-opensim
    updating-documentation
+   building-opynsim-as-a-cpp-library
 
 .. toctree::
     :caption: Other Links
