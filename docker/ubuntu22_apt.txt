@@ -3,11 +3,11 @@ cmake                   # top-level build generator
 ninja-build             # build system
 build-essential         # C/C++ compiler, deb packaging, etc.
 pkg-config              # needed by third_party
-xdg-desktop-portal-gtk  # needed by third_party/oscar (SDL3 dialog implementation)
-libx11-dev              # needed by third_party/oscar (SDL3 window implementation)
-libxext-dev             # needed by third_party/oscar (SDL3 window implementation)
-libopengl-dev           # needed by third_party/oscar
-libgl1-mesa-dev         # needed by third_party/oscar
+xdg-desktop-portal-gtk  # needed by oscar (SDL3 dialog implementation)
+libx11-dev              # needed by oscar (SDL3 window implementation)
+libxext-dev             # needed by oscar (SDL3 window implementation)
+libopengl-dev           # needed by oscar
+libgl1-mesa-dev         # needed by oscar
 gcc-12                  # needed in Ubuntu 22.04 to build modern C++20
 g++-12                  # needed in Ubuntu 22.04 to build modern C++20
 xvfb                    # needed by headless build servers so that the test suites can run UI tests

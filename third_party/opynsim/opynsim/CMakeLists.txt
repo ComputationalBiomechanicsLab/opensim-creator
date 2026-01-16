@@ -7,23 +7,19 @@ option(OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target"    OFF)
 option(OPYN_STABLE_ABI             "Perform a python stable ABI build"    ON)
 
 # Figure out required python components
-set(OPYN_REQUIRED_PYTHON_COMPONENTS Interpreter)
+set(OPYN_REQUIRED_PYTHON_COMPONENTS Interpreter Development.Module)
 if(OPYN_STABLE_ABI)
     set(OPYN_MIN_PYTHON_REQUIRED_VERSION 3.12)  # Dictated by nanobind
     list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development.SABIModule)
 else()
     set(OPYN_MIN_PYTHON_REQUIRED_VERSION 3.8)  # Dicatated by opynsim's python source code
-    list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development.Module)
 endif()
 if(OPYN_BUILD_OPYNSIM_DEBUGGER)
-    list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development)  # the debugger uses embedded API
+    list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development.Embed)
 endif()
 
-# Find Python
-find_package(
-    Python ${OPYN_MIN_PYTHON_REQUIRED_VERSION} REQUIRED
-    COMPONENTS ${OPYN_REQUIRED_PYTHON_COMPONENTS}
-)
+find_package(Python ${OPYN_MIN_PYTHON_REQUIRED_VERSION} COMPONENTS ${OPYN_REQUIRED_PYTHON_COMPONENTS} REQUIRED)
+find_package(nanobind REQUIRED)  # Note: this must be *after* finding Python
 
 # Build
 #
@@ -38,10 +34,6 @@ if(TRUE)
             )
         endif()
     endif()
-
-    # Include nanobind
-    set(NB_USE_SUBMODULE_DEPS OFF)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/nanobind ${CMAKE_CURRENT_BINARY_DIR}/opynsim/nanobind SYSTEM)
 
     # Use nanobind to declare the `_opynsim_native` Python extension module target
     set(OPYN_NANOBIND_ARGS NB_STATIC)

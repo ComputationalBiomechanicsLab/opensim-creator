@@ -10,12 +10,15 @@ else()
     set(OPYNDEPS_BUILD_OPENBLAS_DEFAULT ON)
 endif()
 
-option(OPYNDEPS_BUILD_CATCH2    "Build Catch2"                            ON)
-option(OPYNDEPS_BUILD_MDSPAN    "Build mdspan"                            ON)
-# SKIP nanobind: it's imported by `opynsim` via `add_submodule`
-option(OPYNDEPS_BUILD_OPENBLAS  "Build OpenBLAS"                          ${OPYNDEPS_BUILD_OPENBLAS_DEFAULT})
-option(OPYNDEPS_BUILD_ROBIN_MAP "Build robin-map (required for nanobind)" ON)
-option(OPYNDEPS_BUILD_SPDLOG    "Build spdlog"                            ON)
+option(OPYNDEPS_BUILD_CATCH2     "Build Catch2"                            ON)
+option(OPYNDEPS_BUILD_EIGEN      "Build Eigen"                             ON)
+option(OPYNDEPS_BUILD_MDSPAN     "Build mdspan"                            ON)
+option(OPYNDEPS_BUILD_NANOBIND   "Build nanobind"                          ON)
+option(OPYNDEPS_BUILD_OPENBLAS   "Build OpenBLAS"                          ${OPYNDEPS_BUILD_OPENBLAS_DEFAULT})
+option(OPYNDEPS_BUILD_OSCAR_DEPS "Build oscar's transitive dependencies"   ON)
+option(OPYNDEPS_BUILD_OSCAR      "Build oscar"                             ON)
+option(OPYNDEPS_BUILD_ROBIN_MAP  "Build robin-map (required for nanobind)" ON)
+option(OPYNDEPS_BUILD_SPDLOG     "Build spdlog"                            ON)
 
 # set OPYNDEPS_BUILD_ALWAYS
 if(TRUE)
@@ -55,6 +58,7 @@ if(TRUE)
         CMAKE_SYSTEM_VERSION
         CMAKE_OSX_DEPLOYMENT_TARGET
         CMAKE_OSX_ARCHITECTURES
+        CMAKE_POSITION_INDEPENDENT_CODE
     )
     foreach(OPYNDEPS_FORWARDED_VAR IN LISTS OPYNDEPS_FORWARDED_VARS)
         if (DEFINED ${OPYNDEPS_FORWARDED_VAR})
@@ -74,12 +78,40 @@ if(OPYNDEPS_BUILD_CATCH2)
     )
 endif()
 
+if(OPYNDEPS_BUILD_EIGEN)
+    ExternalProject_Add(eigen
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/eigen
+        BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OPYNDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DCMAKEPACKAGE_INSTALL_DIR:STRING=${CMAKE_INSTALL_LIBDIR}/cmake/eigen
+            -DEIGEN_BUILD_TESTING:BOOL=OFF
+            -DEIGEN_BUILD_DOC:BOOL=OFF
+            -DEIGEN_BUILD_DEMOS:BOOL=OFF
+            -DEIGEN_BUILD_PKGCONFIG:BOOL=OFF
+            -DEIGEN_TEST_NO_FORTRAN:BOOL=ON
+            -DEIGEN_BUILD_BLAS:BOOL=OFF
+            -DEIGEN_BUILD_LAPACK:BOOL=OFF
+    )
+endif()
+
 if(OPYNDEPS_BUILD_MDSPAN)
     ExternalProject_Add(mdspan
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/mdspan
         BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OPYNDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
+if(OPYNDEPS_BUILD_NANOBIND)
+    ExternalProject_Add(nanobind
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/nanobind
+        BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OPYNDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DNB_TEST:BOOL=OFF
+            -DNB_USE_SUBMODULE_DEPS:BOOL=OFF  # we separately install robin-map, below
     )
 endif()
 
@@ -97,6 +129,32 @@ if(OPYNDEPS_BUILD_OPENBLAS)
             -DDYNAMIC_ARCH:BOOL=OFF
             -DBUILD_LAPACK_DEPRECATED:BOOL=OFF
     )
+endif()
+
+if(OPYNDEPS_BUILD_OSCAR_DEPS)
+    ExternalProject_Add(oscardeps
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oscar/third_party
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        INSTALL_COMMAND ""
+        CMAKE_CACHE_ARGS
+            ${OPYNDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DBUILD_TESTING:BOOL=OFF
+    )
+endif()
+
+if(OPYNDEPS_BUILD_OSCAR)
+    ExternalProject_Add(oscar
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oscar
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OPYNDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
+            -DBUILD_TESTING:BOOL=OFF
+            -DOSCAR_BUILD_HELLOOSCAR:BOOL=OFF
+    )
+    if(OPYNDEPS_BUILD_OSCAR_DEPS)
+        add_dependencies(oscar oscardeps)
+    endif()
 endif()
 
 if(OPYNDEPS_BUILD_ROBIN_MAP)

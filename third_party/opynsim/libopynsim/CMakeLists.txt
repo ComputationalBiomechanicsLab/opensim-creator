@@ -3,6 +3,9 @@ option(OPYN_BUILD_TESTING             "Build test suites (OPynSim-specific)"    
 option(OPYN_FORCE_ASSERTS_ENABLED "Enable OPynSim's runtime assertions - even if building a release build" ON)
 
 find_package(mdspan REQUIRED)
+if(NOT TARGET oscar)  # i.e. if oscar isn't being built inline
+    find_package(oscar REQUIRED)
+endif()
 
 # Generate compile-time configuration file
 configure_file(

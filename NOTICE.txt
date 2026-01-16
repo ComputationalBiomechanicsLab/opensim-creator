@@ -1,5 +1,5 @@
 OpenSim Creator
-Copyright 2025 Adam Kewley
+Copyright 2026 Adam Kewley
 License: Apache License Version 2.0
 
 This product includes software developed by third parties, listed
@@ -9,14 +9,7 @@ opynsim
 -------
 
 - https://github.com/opynsim/opynsim
-- Version (approx): 214e1cbd765707724adc233a29a104b9aaa6ed5d
+- Version (approx): 4b119d18d8273911940261672cc808272e94cca8
 - Licensed under the Apache 2.0 license
-- Copyright (c) 2025 Adam Kewley
+- Copyright (c) 2026 Adam Kewley
 
-oscar
------
-
-- https://github.com/opynsim/oscar
-- Version (approx): 24442dae6570afa2d7bfb810a06fcdeefd9906fd
-- Licensed under the Apache 2.0 license
-- Copyright (c) 2025 Adam Kewley

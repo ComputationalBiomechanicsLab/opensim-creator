@@ -18,9 +18,8 @@
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development-Inlined/install",
                 "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
-                "OSCDEPS_BUILD_OPYNSIM": "OFF",
-                "OSCDEPS_BUILD_OSCAR_DEPS": "ON",
-                "OSCDEPS_BUILD_OSCAR": "OFF"
+                "OSCDEPS_BUILD_OSCAR": "OFF",
+                "OSCDEPS_BUILD_OPYNSIM": "OFF"
             }
         },
         {
@@ -44,9 +43,8 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Debug-Inlined/install",
                 "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
-                "OSCDEPS_BUILD_OPYNSIM": "OFF",
-                "OSCDEPS_BUILD_OSCAR_DEPS": "ON",
-                "OSCDEPS_BUILD_OSCAR": "OFF"
+                "OSCDEPS_BUILD_OSCAR": "OFF",
+                "OSCDEPS_BUILD_OPYNSIM": "OFF"
             }
         },
         {

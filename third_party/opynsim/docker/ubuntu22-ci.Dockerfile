@@ -6,17 +6,14 @@ ARG CMAKE_BUILD=3.29
 # Avoid interactive prompts during package installs
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies and build essentials
-RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    build-essential \
-    curl \
-    gcc-12 \
-    g++-12 \
-    ninja-build \
-    git \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Copy apt requirements file into the container
+COPY ubuntu22_apt.txt /tmp/ubuntu22_apt.txt
+
+# Install system dependencies (+cleanup)
+RUN apt-get update && \
+    apt-get install -y software-properties-common curl ca-certificates && \
+    apt-get install -y $(sed 's/#.*//' /tmp/ubuntu22_apt.txt | xargs) && \
+    rm -rf /var/lib/apt/lists/* /tmp/ubuntu22_apt.txt
 
 # Make gcc-12 the default
 RUN update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-12 100 \
@@ -46,4 +43,3 @@ RUN apt-key adv --fetch-keys 'https://apt.kitware.com/keys/kitware-archive-lates
 
 # default shell
 cmd ["/bin/bash"]
-

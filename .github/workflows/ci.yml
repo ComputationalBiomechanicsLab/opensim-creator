@@ -15,8 +15,10 @@ jobs:
 
     - name: build
       shell: cmd
+      # use subst to hack around Windows path length issues
       run: |
-        cd /d "%GITHUB_WORKSPACE%"
+        subst X: %GITHUB_WORKSPACE%
+        cd /d X:
         scripts\ci_build_windows.bat Release-Windows-amd64
 
     - uses: actions/upload-artifact@v4

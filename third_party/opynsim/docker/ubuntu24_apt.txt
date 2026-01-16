@@ -1,0 +1,15 @@
+git                     # version control
+cmake                   # top-level build system
+ninja-build             # build system
+build-essential         # C/C++ compiler, deb packaging, etc.
+pkg-config              # needed by third_party
+xdg-desktop-portal-gtk  # needed by oscar (SDL3 dialog implementation)
+libx11-dev              # needed by oscar (SDL3 window implementation)
+libxext-dev             # needed by oscar (SDL3 window implementation)
+libopengl-dev           # needed by oscar
+libgl1-mesa-dev         # needed by oscar
+xvfb                    # needed by headless build servers so that the test suites can run tests that open the UI
+clang                   # for an easier clang-tidy build (ErrorCheck preset)
+clang-tidy              # for static analysis (ErrorCheck preset)
+gdb                     # for interactive debugging of any runtime issues
+valgrind                # for debugging memory leaks, bad memory accesses, etc.

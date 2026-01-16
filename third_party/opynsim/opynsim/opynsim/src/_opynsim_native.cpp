@@ -74,13 +74,13 @@ namespace
         constexpr auto to_stdlib_extents(
             nb::shape<NbExtents...>,
             const int64_t* runtime_extents,
-            std::index_sequence<I...>) -> cpp23::extents<size_t, to_stdlib_extent<NbExtents>()...>
+            std::index_sequence<I...>) -> opyn::cpp23::extents<size_t, to_stdlib_extent<NbExtents>()...>
         {
-            return cpp23::extents<size_t, to_stdlib_extent<NbExtents>()...>{runtime_extents[I]...};
+            return opyn::cpp23::extents<size_t, to_stdlib_extent<NbExtents>()...>{runtime_extents[I]...};
         }
 
         template<nb::ssize_t... NbExtents>
-        constexpr auto to_stdlib_extents(nb::shape<NbExtents...> shape, const int64_t* extents) -> cpp23::extents<size_t, to_stdlib_extent<NbExtents>()...>
+        constexpr auto to_stdlib_extents(nb::shape<NbExtents...> shape, const int64_t* extents) -> opyn::cpp23::extents<size_t, to_stdlib_extent<NbExtents>()...>
         {
             return to_stdlib_extents(shape, extents, std::make_index_sequence<sizeof...(NbExtents)>{});
         }
@@ -104,11 +104,11 @@ namespace
     // Returns a non-owning `std::mdspan` view of the given `nb::ndarray`.
     template<typename T, typename Shape>
     constexpr auto to_mdspan(nb::ndarray<T, Shape, nb::device::cpu> ndary)
-        -> cpp23::mdspan<T, detail::ToStdlibExtents<Shape>, cpp23::layout_stride>
+        -> opyn::cpp23::mdspan<T, detail::ToStdlibExtents<Shape>, opyn::cpp23::layout_stride>
     {
         return {
             ndary.data(),
-            cpp23::layout_stride::mapping{detail::to_stdlib_extents(Shape{}, ndary.shape_ptr()), detail::to_stdlib_strides(ndary)}
+            opyn::cpp23::layout_stride::mapping{detail::to_stdlib_extents(Shape{}, ndary.shape_ptr()), detail::to_stdlib_strides(ndary)}
         };
     }
 }

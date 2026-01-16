@@ -17,6 +17,10 @@ if(BUILD_TESTING)
     enable_testing()
 endif()
 
+if(OSC_BUILD_OSCAR_INLINE)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/opynsim/third_party/oscar)
+endif()
+
 if(OSC_BUILD_OPYNSIM_INLINE)
     set(OPYN_BUILD_TESTING ${OSC_TEST_OPYNSIM_INLINE})
     set(OPYN_BUILD_PYTHON_BINDINGS OFF)
@@ -24,10 +28,6 @@ if(OSC_BUILD_OPYNSIM_INLINE)
     set(OPYN_USE_STRICT_COMPILER_FLAGS OFF)
     set(OPYN_PACKAGE OFF)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/opynsim)
-endif()
-
-if(OSC_BUILD_OSCAR_INLINE)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/oscar)
 endif()
 
 add_subdirectory(libopensimcreator)
