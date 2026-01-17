@@ -21,6 +21,7 @@ add_library(opynsim STATIC ${LIBOPYNSIM_SOURCE_FILES})
 target_link_libraries(opynsim
 PUBLIC
     osim            # OpenSim/Simbody/plugins
+    oscar           # UI
     mdspan::mdspan  # Copy-free memory buffer views (handy for fast python bindings)
 )
 target_include_directories(opynsim

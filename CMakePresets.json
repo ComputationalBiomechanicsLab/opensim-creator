@@ -20,6 +20,7 @@
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development-Inlined/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development-Inlined/install",
+                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
                 "OSC_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OSC_BUILD_OSCAR_INLINE": "ON",
                 "OSC_BUILD_OPYNSIM_INLINE": "ON",
@@ -28,7 +29,8 @@
                 "OPYN_BUILD_DOCS": "OFF",
                 "OPYN_BUILD_PYTHON_BINDINGS": "ON",
                 "OPYN_BUILD_TESTING": "ON",
-                "OPYN_VENV": "${sourceDir}/.venv"
+                "OPYN_VENV": "${sourceDir}/.venv",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
             }
         },
         {
@@ -56,6 +58,7 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug-Inlined/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Debug-Inlined/install",
+                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
                 "OSC_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OSC_BUILD_OSCAR_INLINE": "ON",
@@ -64,7 +67,8 @@
                 "OPYN_BUILD_DOCS": "OFF",
                 "OPYN_BUILD_PYTHON_BINDINGS": "ON",
                 "OPYN_BUILD_TESTING": "ON",
-                "OPYN_VENV": "${sourceDir}/.venv"
+                "OPYN_VENV": "${sourceDir}/.venv",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
             }
         },
         {

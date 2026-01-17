@@ -17,6 +17,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development-Inlined/install",
+                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
                 "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
                 "OSCDEPS_BUILD_OSCAR": "OFF",
                 "OSCDEPS_BUILD_OPYNSIM": "OFF"
@@ -42,6 +43,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Debug-Inlined/install",
+                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
                 "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
                 "OSCDEPS_BUILD_OSCAR": "OFF",
                 "OSCDEPS_BUILD_OPYNSIM": "OFF"

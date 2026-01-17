@@ -1,6 +1,7 @@
+#include <libopynsim/Shims/Cpp23/mdspan.h>
+#include <libopynsim/ui/hello_ui.h>
 #include <libopynsim/Utils/Assertions.h>
 #include <libopynsim/Utils/TPS3D.h>
-#include <libopynsim/Shims/Cpp23/mdspan.h>
 
 #include <SimTKcommon/SmallMatrix.h>
 #include <nanobind/nanobind.h>
@@ -186,4 +187,6 @@ NB_MODULE(_opynsim_native, m) {  // NOLINT(cppcoreguidelines-avoid-non-const-glo
         nb::arg("destination_landmarks"),
         "Pairs `source_landmarks` with `destination_landmarks` and uses the pairing to compute the Thin-Plate Spline (coefficients) of the pairing"
     );
+
+    m.def("hello_ui", opyn::show_hello_ui);
 }
