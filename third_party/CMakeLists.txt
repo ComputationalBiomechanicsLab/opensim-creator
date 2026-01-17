@@ -64,7 +64,6 @@ if(OSCDEPS_BUILD_OPYNSIM_DEPS)
         CMAKE_CACHE_ARGS
             ${_oscdeps_dependency_cmake_args}
             -DBUILD_TESTING:BOOL=OFF
-            -DOPYNDEPS_BUILD_ROBIN_MAP:BOOL=OFF
             -DOPYNDEPS_BUILD_OSCAR:BOOL=${OSCDEPS_BUILD_OSCAR}
     )
 endif()
