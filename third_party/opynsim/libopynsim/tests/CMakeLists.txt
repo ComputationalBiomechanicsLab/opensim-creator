@@ -1,23 +1,54 @@
+include(GoogleTest)  # gtest_discover_tests
+
 option(OPYN_DISCOVER_TESTS "Automatically run test discovery (IDE integration)" ON)
 
-find_package(Catch2 REQUIRED CONFIG)
+find_package(GTest REQUIRED CONFIG)
 
-# Glob for all non-test `.cpp` files in this `testing/` directory that may be
-# used as utilities by the tests
-file(GLOB_RECURSE OPYN_TEST_HELPER_SOURCES *.cpp)
-list(FILTER OPYN_TEST_HELPER_SOURCES EXCLUDE REGEX "c2tests.cpp$")
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/testopynsimconfig.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/tests/testopynsimconfig.h"
+    @ONLY
+)
 
-# Glob for all Catch2 test files, which are named `*.c2tests.cpp` in opynsim
-file(GLOB_RECURSE OPYN_CATCH2TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../*.c2tests.cpp")
+# Configure an `osc.toml` configuration file specifically for the test suite
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/osc.toml"
+    @ONLY
+)
 
-# Declare `testopynsim` test runner executable
-add_executable(testopynsim ${OPYN_CATCH2TEST_SOURCES} ${OPYN_TEST_HELPER_SOURCES})
+file(GLOB_RECURSE _opyn_test_sources "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
+file(GLOB_RECURSE _opyn_extra_sources "*.cpp")
+add_executable(testopynsim ${_opyn_test_sources} ${_opyn_extra_sources})
+unset(_opyn_test_sources)
+unset(_opyn_extra_sources)
+
 set_target_properties(testopynsim PROPERTIES CXX_EXTENSIONS OFF)
-target_compile_features(testopynsim PUBLIC cxx_std_23)
-target_link_libraries(testopynsim PRIVATE opynsim Catch2::Catch2WithMain)
+target_compile_features(testopynsim PUBLIC cxx_std_20)
+if(OPYN_USE_STRICT_COMPILER_FLAGS)
+    include(../cmake/opynsim_strict_compiler_options.cmake)
+    target_compile_options(testopynsim PRIVATE ${OPYN_STRICT_COMPILER_OPTIONS})
+endif()
+target_include_directories(testopynsim
+    # so that `#include <libopynsim/tests/testopynsimconfig.h>` works
+    PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/generated/"
+)
+target_link_libraries(testopynsim PRIVATE opynsim GTest::gtest)
 
-# If requested, tell CMake (+IDEs) how to discover all Catch2 tests
-if(OPYN_DISCOVER_TESTS)
-    include(Catch)
-    catch_discover_tests(testopynsim)
+# tell CMake (+IDEs) how to find all tests
+if(OSC_DISCOVER_TESTS)
+    gtest_discover_tests(testopynsim)
+endif()
+
+# for development on Windows, copy all runtime dlls to the exe directory
+# (because Windows doesn't have an RPATH)
+#
+# see: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html?highlight=runtime#genex:TARGET_RUNTIME_DLLS
+if (WIN32)
+    add_custom_command(
+        TARGET testopynsim
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:testopynsim> $<TARGET_RUNTIME_DLLS:testopynsim>
+        COMMAND_EXPAND_LISTS
+    )
 endif()

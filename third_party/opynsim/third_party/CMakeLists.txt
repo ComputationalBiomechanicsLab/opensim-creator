@@ -10,7 +10,6 @@ else()
     set(OPYNDEPS_BUILD_OPENBLAS_DEFAULT ON)
 endif()
 
-option(OPYNDEPS_BUILD_CATCH2     "Build Catch2"                            ON)
 option(OPYNDEPS_BUILD_EIGEN      "Build Eigen"                             ON)
 option(OPYNDEPS_BUILD_MDSPAN     "Build mdspan"                            ON)
 option(OPYNDEPS_BUILD_NANOBIND   "Build nanobind"                          ON)
@@ -67,15 +66,6 @@ if(TRUE)
     endforeach()
 
     unset(OPYNDEPS_FORWARDED_VARS)
-endif()
-
-if(OPYNDEPS_BUILD_CATCH2)
-    ExternalProject_Add(Catch2
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Catch2
-        BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OPYNDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
 endif()
 
 if(OPYNDEPS_BUILD_EIGEN)
