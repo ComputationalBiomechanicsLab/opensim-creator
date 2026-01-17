@@ -1,4 +1,4 @@
-#include "texture2_d.h"
+#include "texture2d.h"
 
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/color32.h>

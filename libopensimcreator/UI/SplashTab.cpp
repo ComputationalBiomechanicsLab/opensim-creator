@@ -17,7 +17,7 @@
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/texture_filter_mode.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/polar_perspective_camera.h>

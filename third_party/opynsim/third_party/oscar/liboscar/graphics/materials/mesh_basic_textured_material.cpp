@@ -2,7 +2,7 @@
 
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/shader.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 
 #include <string_view>
 

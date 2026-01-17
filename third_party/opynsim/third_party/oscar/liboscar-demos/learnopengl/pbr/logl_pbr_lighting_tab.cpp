@@ -1,4 +1,4 @@
-#include "loglpbr_lighting_tab.h"
+#include "logl_pbr_lighting_tab.h"
 
 #include <liboscar/graphics/geometries/sphere_geometry.h>
 #include <liboscar/graphics/graphics.h>

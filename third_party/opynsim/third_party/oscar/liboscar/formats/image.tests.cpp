@@ -1,12 +1,12 @@
 #include "image.h"
 
 #include <liboscar/graphics/color_space.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/maths/common_functions.h>
 #include <liboscar/maths/geometric_functions.h>
 #include <liboscar/platform/resource_stream.h>
 #include <liboscar/tests/testoscarconfig.h>
-#include <liboscar/utils/null_o_stream.h>
+#include <liboscar/utils/null_ostream.h>
 
 #include <gtest/gtest.h>
 
@@ -37,7 +37,7 @@ TEST(Image, read_into_texture_is_compatible_with_PNG_write)
     const auto path = std::filesystem::path{OSC_TEST_RESOURCES_DIR} / "awesomeface.png";
     const Texture2D loaded_texture = Image::read_into_texture(ResourceStream{path}, ColorSpace::Linear);
 
-    NullOStream out;
+    NullOstream out;
     ASSERT_NO_THROW({ PNG::write(out, loaded_texture); });
     ASSERT_TRUE(out.was_written_to());
 }

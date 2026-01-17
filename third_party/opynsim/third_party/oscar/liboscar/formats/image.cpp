@@ -2,7 +2,7 @@
 
 #include <liboscar/graphics/color32.h>
 #include <liboscar/graphics/color_space.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/texture_format.h>
 #include <liboscar/utils/assertions.h>
 #include <liboscar/utils/object_representation.h>

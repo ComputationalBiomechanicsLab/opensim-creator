@@ -1,7 +1,7 @@
 #include "app.h"
 
 #include <liboscar/graphics/graphics_context.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/vector2.h>

@@ -1,4 +1,4 @@
-#include "loglpbr_diffuse_irradiance_tab.h"
+#include "logl_pbr_diffuse_irradiance_tab.h"
 
 #include <liboscar/formats/image.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
@@ -6,7 +6,7 @@
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/render_texture.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/matrix_functions.h>
 #include <liboscar/maths/vector3.h>

@@ -1,4 +1,4 @@
-#include "loglssao_tab.h"
+#include "logl_ssao_tab.h"
 
 #include <liboscar/graphics/color_render_buffer_format.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
@@ -10,7 +10,7 @@
 #include <liboscar/graphics/render_target_color_attachment.h>
 #include <liboscar/graphics/render_target_depth_stencil_attachment.h>
 #include <liboscar/graphics/shader.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
 #include <liboscar/ui/mouse_capturing_camera.h>

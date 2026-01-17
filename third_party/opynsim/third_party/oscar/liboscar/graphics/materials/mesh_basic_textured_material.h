@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/material.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 
 namespace osc
 {

@@ -1,10 +1,10 @@
-#include "loglpbr_specular_irradiance_textured_tab.h"
+#include "logl_pbr_specular_irradiance_textured_tab.h"
 
 #include <liboscar/formats/image.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/render_texture.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/graphics/geometries/plane_geometry.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>

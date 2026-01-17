@@ -5,7 +5,7 @@
 #include <liboscar/graphics/render_texture.h>
 #include <liboscar/graphics/shared_color_render_buffer.h>
 #include <liboscar/graphics/shared_depth_stencil_render_buffer.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/maths/matrix3x3.h>
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/vector2.h>

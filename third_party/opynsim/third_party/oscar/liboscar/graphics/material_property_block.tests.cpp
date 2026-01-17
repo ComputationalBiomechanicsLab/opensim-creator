@@ -1,7 +1,7 @@
 #include "material_property_block.h"
 
 #include <liboscar/graphics/color.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/maths/matrix3x3.h>
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/vector3.h>

@@ -11,7 +11,7 @@
 #include <liboscar/graphics/render_texture.h>
 #include <liboscar/graphics/shader.h>
 #include <liboscar/graphics/sub_mesh_descriptor.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/texture_filter_mode.h>
 #include <liboscar/graphics/texture_format.h>
 #include <liboscar/graphics/unorm8.h>

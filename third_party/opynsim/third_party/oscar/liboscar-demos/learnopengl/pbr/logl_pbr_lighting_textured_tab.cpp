@@ -1,4 +1,4 @@
-#include "loglpbr_lighting_textured_tab.h"
+#include "logl_pbr_lighting_textured_tab.h"
 
 #include <liboscar/formats/image.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>

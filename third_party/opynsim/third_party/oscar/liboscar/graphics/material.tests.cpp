@@ -1,7 +1,7 @@
 #include "material.h"
 
 #include <liboscar/graphics/render_texture.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_metadata.h>
 #include <liboscar/tests/test_helpers.h>

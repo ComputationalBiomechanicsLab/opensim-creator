@@ -10,7 +10,7 @@
 #include <liboscar/formats/dae.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
-#include <liboscar/utils/null_o_stream.h>
+#include <liboscar/utils/null_ostream.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -108,7 +108,7 @@ TEST(UndoableModelStatePair, canWriteRajagopalModelToDAE)
     ASSERT_FALSE(decorations.empty()) << "decorations should be generated";
 
     // write decorations to a fake (testing) `std::ostream`
-    NullOStream stream;
+    NullOstream stream;
     const DAEMetadata metadata{TESTOPENSIMCREATOR_APPNAME_STRING, TESTOPENSIMCREATOR_APPNAME_STRING};
     DAE::write(stream, decorations, metadata);
 

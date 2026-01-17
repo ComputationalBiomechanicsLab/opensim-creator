@@ -2,7 +2,7 @@
 
 #include <liboscar/graphics/anti_aliasing_level.h>
 #include <liboscar/graphics/color.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 
 #include <future>
 #include <string>

@@ -1,4 +1,4 @@
-#include "loglcsm_tab.h"
+#include "logl_csm_tab.h"
 
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/depth_stencil_render_buffer_params.h>

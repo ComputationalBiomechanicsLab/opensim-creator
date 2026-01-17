@@ -8,9 +8,9 @@
 namespace osc
 {
     // a `std::ostream` that performs no actual input-output operations
-    class NullOStream final : public std::ostream {
+    class NullOstream final : public std::ostream {
     public:
-        NullOStream() : std::ostream{&streambuf_} {}
+        NullOstream() : std::ostream{&streambuf_} {}
 
         size_t num_chars_written() const
         {

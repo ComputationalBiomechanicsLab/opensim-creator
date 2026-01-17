@@ -1,4 +1,4 @@
-#include "loglhdr_tab.h"
+#include "logl_hdr_tab.h"
 
 #include <liboscar/formats/image.h>
 #include <liboscar/graphics/color.h>

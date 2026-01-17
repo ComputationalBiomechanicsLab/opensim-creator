@@ -6,7 +6,7 @@
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/render_texture.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/texture_format.h>
 #include <liboscar/maths/collision_tests.h>
 #include <liboscar/maths/math_helpers.h>

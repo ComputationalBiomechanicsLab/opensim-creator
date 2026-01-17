@@ -1,4 +1,4 @@
-#include "loglpbr_specular_irradiance_tab.h"
+#include "logl_pbr_specular_irradiance_tab.h"
 
 #include <liboscar/formats/image.h>
 #include <liboscar/graphics/geometries/box_geometry.h>

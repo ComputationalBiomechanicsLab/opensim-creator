@@ -5,7 +5,7 @@
 #include <liboscar/graphics/cubemap_face.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
-#include <liboscar/graphics/texture2_d.h>
+#include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
