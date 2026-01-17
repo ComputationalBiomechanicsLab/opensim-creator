@@ -42,9 +42,9 @@ osc::TorusGeometry::TorusGeometry(const Params& p)
                 p.tube_radius * sin(v)
             );
             normals.push_back(normalize(Vector3{
-                vertex.x - p.tube_center_radius*cos(u),
-                vertex.y - p.tube_center_radius*sin(u),
-                vertex.z - 0.0f,
+                vertex.x() - p.tube_center_radius*cos(u),
+                vertex.y() - p.tube_center_radius*sin(u),
+                vertex.z() - 0.0f,
             }));
             uvs.emplace_back(fi/fnum_tubular_segments, fj/fnum_radial_segments);
         }

@@ -95,20 +95,15 @@ TEST(Color, can_explicitly_construct_from_Vector3)
     const Color color{v};
 
     // ensure `Vector3` ctor creates a solid hdr_color with a == 1.0f
-    ASSERT_EQ(color.r, v.x);
-    ASSERT_EQ(color.g, v.y);
-    ASSERT_EQ(color.b, v.z);
+    ASSERT_EQ(color.r, v.x());
+    ASSERT_EQ(color.g, v.y());
+    ASSERT_EQ(color.b, v.z());
     ASSERT_EQ(color.a, 1.0f);
 }
 
 TEST(Color, can_explicitly_construct_from_Vector4)
 {
     [[maybe_unused]] const Color color{Vector4{0.0f, 1.0f, 0.0f, 1.0f}};
-}
-
-TEST(Color, implicitly_converts_into_a_Vector4)
-{
-    [[maybe_unused]] constexpr Vector4 v = Color{0.0f, 0.0f, 1.0f, 0.0f};
 }
 
 TEST(Color, bracket_operator_accesses_each_component)

@@ -117,8 +117,8 @@ osc::Variant::operator bool() const
         [](const float& v)                  { return v != 0.0f; },
         [](const int& v)                    { return v != 0; },
         [](std::string_view s)              { return parse_as_bool(s); },
-        [](const Vector2& v)                { return v.x != 0.0f; },
-        [](const Vector3& v)                { return v.x != 0.0f; },
+        [](const Vector2& v)                { return v.x() != 0.0f; },
+        [](const Vector3& v)                { return v.x() != 0.0f; },
         [](const std::vector<Variant>& ary) { return not ary.empty(); },
     }, data_);
 }
@@ -136,7 +136,7 @@ osc::Variant::operator osc::Color() const
             const auto c = try_parse_html_color_string(str);
             return c ? *c : Color::black();
         },
-        [](const Vector2& v)      { return Color{v.x, v.y, 0.0f}; },
+        [](const Vector2& v)      { return Color{v.x(), v.y(), 0.0f}; },
         [](const Vector3& v)      { return Color{v}; },
         [](const std::vector<Variant>& ary)
         {
@@ -158,8 +158,8 @@ osc::Variant::operator float() const
         [](const float& v)                  { return v; },
         [](const int& v)                    { return static_cast<float>(v); },
         [](std::string_view s)              { return parse_as_float_or_zero(s); },
-        [](const Vector2& v)                { return v.x; },
-        [](const Vector3& v)                { return v.x; },
+        [](const Vector2& v)                { return v.x(); },
+        [](const Vector3& v)                { return v.x(); },
         [](const std::vector<Variant>& ary) { return ary.empty() ? 0.0f : static_cast<float>(ary.front()); },
     }, data_);
 }
@@ -173,8 +173,8 @@ osc::Variant::operator int() const
         [](const float& v)                  { return static_cast<int>(v); },
         [](const int& v)                    { return v; },
         [](std::string_view s)              { return parse_as_int_or_zero(s); },
-        [](const Vector2& v)                { return static_cast<int>(v.x); },
-        [](const Vector3& v)                { return static_cast<int>(v.x); },
+        [](const Vector2& v)                { return static_cast<int>(v.x()); },
+        [](const Vector3& v)                { return static_cast<int>(v.x()); },
         [](const std::vector<Variant>& ary) { return ary.empty() ? 0 : static_cast<int>(ary.front()); },
     }, data_);
 }
@@ -276,8 +276,8 @@ osc::Variant::operator std::vector<Variant>() const
         [](const float& v)                  { return std::vector<Variant>{Variant{v}}; },
         [](const int& v)                    { return std::vector<Variant>{Variant{v}}; },
         [](std::string_view v)              { return std::vector<Variant>{Variant{v}}; },
-        [](const Vector2& v)                { return std::vector<Variant>{Variant{v.x}, Variant{v.y}}; },
-        [](const Vector3& v)                { return std::vector<Variant>{Variant{v.x}, Variant{v.y}, Variant{v.z}}; },
+        [](const Vector2& v)                { return std::vector<Variant>{Variant{v.x()}, Variant{v.y()}}; },
+        [](const Vector3& v)                { return std::vector<Variant>{Variant{v.x()}, Variant{v.y()}, Variant{v.z()}}; },
         [](const std::vector<Variant>& ary) { return ary; },
     }, data_);
 }

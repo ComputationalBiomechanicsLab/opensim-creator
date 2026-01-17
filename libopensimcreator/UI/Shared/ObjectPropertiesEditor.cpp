@@ -138,10 +138,10 @@ namespace
     {
         ui::DrawListView l = ui::get_panel_draw_list();
         const Vector2 p = ui::get_cursor_ui_position();
-        const float h = ui::get_text_line_height_in_current_panel() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
+        const float h = ui::get_text_line_height_in_current_panel() + 2.0f*ui::get_style_frame_padding().y() + 2.0f*ui::get_style_frame_border_size();
         const Vector2 dims = Vector2{4.0f, h};
         l.add_rect_filled(Rect::from_corners(p, p + dims), color);
-        ui::set_cursor_ui_position({p.x + 4.0f, p.y});
+        ui::set_cursor_ui_position({p.x() + 4.0f, p.y()});
     }
 
     // draws a context menu that the user can use to change the step interval of the +/- buttons
@@ -500,7 +500,7 @@ namespace
                 if (disabled) {
                     ui::begin_disabled();
                 }
-                if (ui::draw_button(MSMICONS_PLUS " Add Entry", { ui::get_content_region_available().x, ui::calc_button_size("").y })) {
+                if (ui::draw_button(MSMICONS_PLUS " Add Entry", { ui::get_content_region_available().x(), ui::calc_button_size("").y() })) {
                     m_EditedProperty.appendValue(std::string{});  // append blank entry (don't emit upstream until user edits it)
                 }
                 if (disabled) {
@@ -509,7 +509,7 @@ namespace
             }
             else if (m_EditedProperty.isOptionalProperty() and m_EditedProperty.empty()) {
                 // it's an optional property, so draw a "Populate" button if it's unoccupied
-                if (ui::draw_button(MSMICONS_PLUS " Populate", { ui::get_content_region_available().x, ui::calc_button_size("").y })) {
+                if (ui::draw_button(MSMICONS_PLUS " Populate", { ui::get_content_region_available().x(), ui::calc_button_size("").y() })) {
                     m_EditedProperty.appendValue(std::string{});  // append blank entry (don't emit upstream until user edits it)
                 }
             }
@@ -526,13 +526,13 @@ namespace
 
             // calculate space taken by deletion button at end of line (if necessary)
             const float deletionButtonWidth = m_EditedProperty.size() > m_EditedProperty.getMinListSize() ?
-                ui::calc_button_size(MSMICONS_TRASH).x :
+                ui::calc_button_size(MSMICONS_TRASH).x() :
                 0.0f;
 
             // read stored value from edited property
             std::string value = m_EditedProperty.getValue(idx);
 
-            ui::set_next_item_width(ui::get_content_region_available().x - deletionButtonWidth);
+            ui::set_next_item_width(ui::get_content_region_available().x() - deletionButtonWidth);
             if (ui::draw_string_input("##stringeditor", value)) {
                 // update the edited property - don't rely on ImGui to remember edits
                 m_EditedProperty.setValue(idx, value);
@@ -618,7 +618,7 @@ namespace
             //
             // care: optional properties have size==0, so perform a range check
             auto value = static_cast<float>(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : 0.0);
-            ui::set_next_item_width(ui::get_content_region_available().x);
+            ui::set_next_item_width(ui::get_content_region_available().x());
             auto frameAnnotationLabel = "ObjectPropertiesEditor::DoubleEditor/" + m_EditedProperty.getName();
             auto drawRV = DrawCustomScalarInput("##doubleeditor", value, m_StepSize, frameAnnotationLabel);
 
@@ -698,7 +698,7 @@ namespace
             bool value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : false;
             bool edited = false;
 
-            ui::set_next_item_width(ui::get_content_region_available().x);
+            ui::set_next_item_width(ui::get_content_region_available().x());
             if (ui::draw_checkbox("##booleditor", &value)) {
                 // update the edited property - don't rely on ImGui to remember edits
                 m_EditedProperty.setValue(idx, value);
@@ -910,7 +910,7 @@ namespace
                 m_MaybeUserSelectedFrameAbsPath->getComponentName() :
                 std::string{defaultedLabel};
 
-            ui::set_next_item_width(ui::get_content_region_available().x - ui::calc_text_size("(?)").x);
+            ui::set_next_item_width(ui::get_content_region_available().x() - ui::calc_text_size("(?)").x());
             if (ui::begin_combobox("##reexpressioneditor", preview)) {
                 int imguiID = 0;
 
@@ -995,7 +995,7 @@ namespace
             DrawColoredDimensionHintVerticalLine(Color(0.0f, 0.6f).with_element(i, 1.0f));
 
             // draw the input editor
-            ui::set_next_item_width(ui::get_content_region_available().x);
+            ui::set_next_item_width(ui::get_content_region_available().x());
             auto frameAnnotation = GenerateVecFrameAnnotationLabel(m_EditedProperty, i);
             auto drawRV = DrawCustomScalarInput("##valueinput", editedValue[i], m_StepSize, frameAnnotation);
 
@@ -1104,7 +1104,7 @@ namespace
             for (int i = 0; i < 2; ++i) {
                 ui::push_id(i);
 
-                ui::set_next_item_width(ui::get_content_region_available().x);
+                ui::set_next_item_width(ui::get_content_region_available().x());
                 if (ui::draw_float3_input("##vec6editor", rawValue.data() + static_cast<ptrdiff_t>(3*i), "%.6f")) {
                     m_EditedProperty.updValue(idx)[3*i + 0] = static_cast<double>(rawValue[3*i + 0]);
                     m_EditedProperty.updValue(idx)[3*i + 1] = static_cast<double>(rawValue[3*i + 1]);
@@ -1186,7 +1186,7 @@ namespace
             int value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : 0;
             bool edited = false;
 
-            ui::set_next_item_width(ui::get_content_region_available().x);
+            ui::set_next_item_width(ui::get_content_region_available().x());
             if (ui::draw_int_input("##inteditor", &value)) {
                 // update the edited property - don't rely on ImGui to remember edits
                 m_EditedProperty.setValue(idx, value);
@@ -1268,7 +1268,7 @@ namespace
             bool shouldSave = false;
 
             Color color = to_color(m_EditedProperty.getValue());
-            ui::set_next_item_width(ui::get_content_region_available().x);
+            ui::set_next_item_width(ui::get_content_region_available().x());
 
             if (ui::draw_rgba_color_editor("##coloreditor", color)) {
                 SimTK::Vec3 newColor;
@@ -1302,7 +1302,7 @@ namespace
                     "Surface",
                 });
                 size_t index = clamp(static_cast<size_t>(m_EditedProperty.getValue().get_representation())+1, 0uz, options.size());
-                ui::set_next_item_width(ui::get_content_region_available().x);
+                ui::set_next_item_width(ui::get_content_region_available().x());
                 if (ui::draw_combobox("##DisplayPref", &index, options)) {
                     m_EditedProperty.updValue().set_representation(static_cast<OpenSim::VisualRepresentation>(static_cast<int>(index)-1));
                     shouldSave = true;

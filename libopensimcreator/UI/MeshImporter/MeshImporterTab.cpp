@@ -1822,7 +1822,7 @@ private:
             const CStringView tooltipDesc = "This rescales *some* elements in the scene. Specifically, the ones that have no 'size', such as body frames, joint frames, and the chequered floor texture.\n\nChanging this is handy if you are working on smaller or larger models, where the size of the (decorative) frames and floor are too large/small compared to the model you are working on.\n\nThis is purely decorative and does not affect the exported OpenSim model in any way.";
 
             float sf = m_Shared->getSceneScaleFactor();
-            ui::set_next_item_width(ui::calc_text_size("1000.00").x);
+            ui::set_next_item_width(ui::calc_text_size("1000.00").x());
             if (ui::draw_float_input("scene scale factor", &sf))
             {
                 m_Shared->setSceneScaleFactor(sf);
@@ -1858,7 +1858,7 @@ private:
             CameraViewAxes axes;
 
             const Vector2 windowPadding = ui::get_style_panel_padding();
-            const Vector2 axesTopLeft = m_Shared->get3DSceneRect().ypd_bottom_left() + Vector2{windowPadding.x, -windowPadding.y} - Vector2{0.0f, axes.dimensions().y};
+            const Vector2 axesTopLeft = m_Shared->get3DSceneRect().ypd_bottom_left() + Vector2{windowPadding.x(), -windowPadding.y()} - Vector2{0.0f, axes.dimensions().y()};
             ui::set_cursor_ui_position(axesTopLeft);
             axes.draw(m_Shared->updCamera());
         }
@@ -1958,8 +1958,8 @@ private:
 
         const Vector2 buttonTopLeft =
         {
-            viewportBottomRight.x - (margin.x + spacingBetweenMainAndSettingsButtons.x + settingButtonDims.x + mainButtonDims.x),
-            viewportBottomRight.y - (margin.y + mainButtonDims.y),
+            viewportBottomRight.x() - (margin.x() + spacingBetweenMainAndSettingsButtons.x() + settingButtonDims.x() + mainButtonDims.x()),
+            viewportBottomRight.y() - (margin.y() + mainButtonDims.y()),
         };
 
         ui::set_cursor_ui_position(buttonTopLeft);
@@ -1974,7 +1974,7 @@ private:
         ui::draw_tooltip_if_item_hovered("Convert current scene to an OpenSim Model", "This will attempt to convert the current scene into an OpenSim model, followed by showing the model in OpenSim Creator's OpenSim model editor screen.\n\nYour progress in this tab will remain untouched.");
 
         ui::push_style_var(ui::StyleVar::FramePadding, {10.0f, 10.0f});
-        ui::same_line(0.0f, spacingBetweenMainAndSettingsButtons.x);
+        ui::same_line(0.0f, spacingBetweenMainAndSettingsButtons.x());
         ui::draw_button(settingButtonText);
         ui::pop_style_var();
 

@@ -80,7 +80,7 @@ namespace
         Vector2i dimensions{};
         int num_components = 0;
         const std::unique_ptr<float, decltype(&stbi_image_free)> pixel_data = {
-            stbi_loadf_from_callbacks(&c_stbi_stream_callbacks, &in, &dimensions.x, &dimensions.y, &num_components, 0),
+            stbi_loadf_from_callbacks(&c_stbi_stream_callbacks, &in, &dimensions.x(), &dimensions.y(), &num_components, 0),
             stbi_image_free,
         };
 
@@ -107,7 +107,7 @@ namespace
 
         const std::span<const float> pixel_span{
             pixel_data.get(),
-            static_cast<size_t>(dimensions.x*dimensions.y*num_components)
+            static_cast<size_t>(dimensions.x()*dimensions.y()*num_components)
         };
 
         Texture2D rv{dimensions, *texture_format, color_space};
@@ -128,7 +128,7 @@ namespace
         Vector2i dimensions{};
         int num_components = 0;
         const std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> pixel_data = {
-            stbi_load_from_callbacks(&c_stbi_stream_callbacks, &in, &dimensions.x, &dimensions.y, &num_components, 0),
+            stbi_load_from_callbacks(&c_stbi_stream_callbacks, &in, &dimensions.x(), &dimensions.y(), &num_components, 0),
             stbi_image_free,
         };
 
@@ -154,7 +154,7 @@ namespace
         }
 
         Texture2D rv{dimensions, *texture_format, color_space};
-        rv.set_pixel_data({pixel_data.get(), static_cast<size_t>(dimensions.x*dimensions.y*num_components)});
+        rv.set_pixel_data({pixel_data.get(), static_cast<size_t>(dimensions.x()*dimensions.y()*num_components)});
         return rv;
     }
 
@@ -205,7 +205,7 @@ void osc::PNG::write(
     const Texture2D& texture)
 {
     const Vector2i dimensions = texture.pixel_dimensions();
-    const int row_stride = 4 * dimensions.x;
+    const int row_stride = 4 * dimensions.x();
     const std::vector<Color32> pixels = texture.pixels32();
 
     const auto guard = lock_stbi_api();
@@ -220,8 +220,8 @@ void osc::PNG::write(
     const int rv = stbi_write_png_to_func(
         osc_stbi_write_via_std_ostream,
         &out,
-        dimensions.x,
-        dimensions.y,
+        dimensions.x(),
+        dimensions.y(),
         4,
         pixels.data(),
         row_stride
@@ -252,8 +252,8 @@ void osc::JPEG::write(std::ostream& out, const Texture2D& texture, float quality
     const int rv = stbi_write_jpg_to_func(
         osc_stbi_write_via_std_ostream,
         &out,
-        dimensions.x,
-        dimensions.y,
+        dimensions.x(),
+        dimensions.y(),
         4,
         pixels.data(),
         static_cast<int>(100.0f*quality)

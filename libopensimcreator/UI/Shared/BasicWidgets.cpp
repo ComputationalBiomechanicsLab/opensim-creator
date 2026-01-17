@@ -1122,9 +1122,9 @@ bool osc::DrawAdvancedParamsEditor(
     edited = ui::draw_float_meters_input("znear", params.camera.znear) || edited;
     edited = ui::draw_float_meters_input("zfar", params.camera.zfar) || edited;
     ui::start_new_line();
-    edited = ui::draw_float_meters_slider("pan_x", params.camera.focus_point.x, -100.0f, 100.0f) || edited;
-    edited = ui::draw_float_meters_slider("pan_y", params.camera.focus_point.y, -100.0f, 100.0f) || edited;
-    edited = ui::draw_float_meters_slider("pan_z", params.camera.focus_point.z, -100.0f, 100.0f) || edited;
+    edited = ui::draw_float_meters_slider("pan_x", params.camera.focus_point.x(), -100.0f, 100.0f) || edited;
+    edited = ui::draw_float_meters_slider("pan_y", params.camera.focus_point.y(), -100.0f, 100.0f) || edited;
+    edited = ui::draw_float_meters_slider("pan_z", params.camera.focus_point.z(), -100.0f, 100.0f) || edited;
 
     ui::draw_vertical_spacer(10.0f/15.0f);
     ui::draw_text("advanced scene properties:");
@@ -1226,9 +1226,9 @@ bool osc::DrawCameraControlButtons(
     c.a *= 0.9f;
     ui::push_style_color(ui::ColorVar::Button, c);
 
-    const float spacing = ui::get_style_item_spacing().x;
-    float width = zoomOutButton.dimensions().x + spacing + zoomInButton.dimensions().x + spacing + autoFocusButton.dimensions().x;
-    const Vector2 topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::get_style_item_spacing().y};
+    const float spacing = ui::get_style_item_spacing().x();
+    float width = zoomOutButton.dimensions().x() + spacing + zoomInButton.dimensions().x() + spacing + autoFocusButton.dimensions().x();
+    const Vector2 topleft = {desiredTopCentroid.x() - 0.5f*width, desiredTopCentroid.y() + 2.0f*ui::get_style_item_spacing().y()};
     ui::set_cursor_ui_position(topleft);
 
     bool edited = false;
@@ -1250,8 +1250,8 @@ bool osc::DrawCameraControlButtons(
     // next line (centered)
     {
         const Vector2 tl = {
-            desiredTopCentroid.x - 0.5f*sceneSettingsButton.dimensions().x,
-            ui::get_cursor_ui_position().y,
+            desiredTopCentroid.x() - 0.5f*sceneSettingsButton.dimensions().x(),
+            ui::get_cursor_ui_position().y(),
         };
         ui::set_cursor_ui_position(tl);
         if (sceneSettingsButton.on_draw()) {
@@ -1284,15 +1284,15 @@ bool osc::DrawViewerImGuiOverlays(
     const Vector2 renderDims = renderRect.dimensions();
     const Vector2 axesDims = axes.dimensions();
     const Vector2 axesTopLeft = {
-        renderRect.left() + renderDims.x - windowPadding.x - axesDims.x,
-        renderRect.ypd_top() + windowPadding.y,
+        renderRect.left() + renderDims.x() - windowPadding.x() - axesDims.x(),
+        renderRect.ypd_top() + windowPadding.y(),
     };
 
     // draw the bottom overlays
     ui::set_cursor_ui_position(axesTopLeft);
     edited = axes.draw(params.camera) || edited;
 
-    const Vector2 cameraButtonsTopLeft = axesTopLeft + Vector2{0.0f, axesDims.y};
+    const Vector2 cameraButtonsTopLeft = axesTopLeft + Vector2{0.0f, axesDims.y()};
     ui::set_cursor_ui_position(cameraButtonsTopLeft);
     edited = DrawCameraControlButtons(
         params,
@@ -1300,7 +1300,7 @@ bool osc::DrawViewerImGuiOverlays(
         renderRect,
         maybeSceneAABB,
         iconCache,
-        {axesTopLeft.x + 0.5f*axesDims.x, axesTopLeft.y + axesDims.y}
+        {axesTopLeft.x() + 0.5f*axesDims.x(), axesTopLeft.y() + axesDims.y()}
     ) || edited;
 
     return edited;
@@ -1313,7 +1313,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vector2> padding)
         ui::push_style_var(ui::StyleVar::PanelPadding, *padding);
     }
 
-    const float height = ui::get_frame_height() + 2.0f*ui::get_style_panel_padding().y;
+    const float height = ui::get_frame_height() + 2.0f*ui::get_style_panel_padding().y();
     const ui::PanelFlags flags = {ui::PanelFlag::NoScrollbar, ui::PanelFlag::NoSavedSettings};
     bool open = ui::begin_main_window_top_bar(label, height, flags);
     if (padding)
@@ -1342,7 +1342,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     }
     ui::draw_tooltip_if_item_hovered("Open Model", "Opens an existing osim file in a new tab");
     ui::same_line();
-    ui::push_style_var(ui::StyleVar::FramePadding, {1.0f, ui::get_style_frame_padding().y});
+    ui::push_style_var(ui::StyleVar::FramePadding, {1.0f, ui::get_style_frame_padding().y()});
     ui::draw_button(MSMICONS_CARET_DOWN);
     ui::draw_tooltip_if_item_hovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
     ui::pop_style_var();
@@ -1543,7 +1543,7 @@ void osc::DrawSceneScaleFactorEditorControls(IModelStatePair& model)
 
     {
         float scaleFactor = model.getFixupScaleFactor();
-        ui::set_next_item_width(ui::calc_text_size("0.00000").x);
+        ui::set_next_item_width(ui::calc_text_size("0.00000").x());
         if (ui::draw_float_input("##scaleinput", &scaleFactor)) {
             model.setFixupScaleFactor(scaleFactor);
         }

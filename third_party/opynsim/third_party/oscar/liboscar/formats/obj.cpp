@@ -22,7 +22,7 @@ namespace
 
     std::ostream& write_vector3(std::ostream& out, const Vector3& v)
     {
-        return out << v.x << ' ' << v.y << ' ' << v.z;
+        return out << v.x() << ' ' << v.y() << ' ' << v.z();
     }
 
     void write_vertices(std::ostream& out, const Mesh& mesh)

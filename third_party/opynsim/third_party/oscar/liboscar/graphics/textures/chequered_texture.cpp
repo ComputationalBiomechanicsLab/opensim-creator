@@ -23,10 +23,10 @@ namespace
 
         std::vector<Color32> pixels;
         pixels.reserve(area_of(texture_pixel_dimensions));
-        for (int y = 0; y < texture_pixel_dimensions.y; ++y) {
-            const bool y_on = (y / chequer_pixel_dimensions.y) % 2 == 0;
-            for (int x = 0; x < texture_pixel_dimensions.x; ++x) {
-                const bool x_on = (x / chequer_pixel_dimensions.x) % 2 == 0;
+        for (int y = 0; y < texture_pixel_dimensions.y(); ++y) {
+            const bool y_on = (y / chequer_pixel_dimensions.y()) % 2 == 0;
+            for (int x = 0; x < texture_pixel_dimensions.x(); ++x) {
+                const bool x_on = (x / chequer_pixel_dimensions.x()) % 2 == 0;
                 pixels.push_back(y_on ^ x_on ? on_color : off_color);
             }
         }

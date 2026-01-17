@@ -138,7 +138,7 @@ namespace osc::mi
             {
                 std::stringstream ss;
                 ss.precision(4);
-                ss << '(' << position.x << ", " << position.y << ", " << position.z << ')';
+                ss << '(' << position.x() << ", " << position.y() << ", " << position.z() << ')';
                 return std::move(ss).str();
             }(m_MaybeCurrentHover.Pos);
 

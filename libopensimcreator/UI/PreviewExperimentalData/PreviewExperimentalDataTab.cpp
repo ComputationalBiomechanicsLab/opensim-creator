@@ -340,14 +340,14 @@ namespace
                 ui::draw_same_line_with_vertical_separator();
                 {
                     ClosedInterval<float> tr = m_UiState->getTimeRange();
-                    ui::set_next_item_width(ui::calc_text_size("<= xxxx").x);
+                    ui::set_next_item_width(ui::calc_text_size("<= xxxx").x());
                     if (ui::draw_float_input("<=", &tr.lower)) {
                         m_UiState->setTimeRange(tr);
                     }
 
                     ui::same_line();
                     auto t = static_cast<float>(m_UiState->getScrubTime());
-                    ui::set_next_item_width(ui::calc_text_size("----------------------------------------------------------------").x);
+                    ui::set_next_item_width(ui::calc_text_size("----------------------------------------------------------------").x());
                     if (ui::draw_float_slider("t", &t, static_cast<float>(tr.lower), static_cast<float>(tr.upper), "%.6f")) {
                         m_UiState->setScrubTime(t);
                     }
@@ -355,7 +355,7 @@ namespace
                     ui::same_line();
                     ui::draw_text("<=");
                     ui::same_line();
-                    ui::set_next_item_width(ui::calc_text_size("<= xxxx").x);
+                    ui::set_next_item_width(ui::calc_text_size("<= xxxx").x());
                     if (ui::draw_float_input("##<=", &tr.upper)) {
                         m_UiState->setTimeRange(tr);
                     }

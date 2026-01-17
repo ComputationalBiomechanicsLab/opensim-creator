@@ -302,7 +302,7 @@ private:
         for (const IBLSpecularObjectTextures& texture : object_textures_) {
             set_material_maps(pbr_material_, texture);
             graphics::draw(sphere_mesh_, {.translation = pos}, pbr_material_, camera_);
-            pos.x += 2.0f;
+            pos.x() += 2.0f;
         }
     }
 

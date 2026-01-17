@@ -121,7 +121,7 @@ public:
             }}}, render_params_);
 
             // Draw camera manipulator
-            ui::set_cursor_ui_position(viewport_ui_rect.ypd_top_right() - Vector2{camera_axes_ui_.dimensions().x, 0.0f});
+            ui::set_cursor_ui_position(viewport_ui_rect.ypd_top_right() - Vector2{camera_axes_ui_.dimensions().x(), 0.0f});
             camera_axes_ui_.draw(camera_);
         }
         ui::end_panel();

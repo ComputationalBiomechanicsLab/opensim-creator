@@ -295,7 +295,7 @@ namespace
         const Vector3& basis1,
         const Vector3& basis2)
     {
-        return planeSurfacePoint.x*basis1 + planeSurfacePoint.y*basis2;
+        return planeSurfacePoint.x()*basis1 + planeSurfacePoint.y()*basis2;
     }
 
     // part of solving this algebraic form for an ellipsoid:
@@ -321,9 +321,9 @@ namespace
         SimTK::Matrix D(nRows, nCols);
         SimTK::Vector d2(nRows);
         for (int row = 0; row < nRows; ++row) {
-            const double x = vs[row].x;
-            const double y = vs[row].y;
-            const double z = vs[row].z;
+            const double x = vs[row].x();
+            const double y = vs[row].y();
+            const double z = vs[row].z();
 
             D(row, 0) = x*x + y*y - 2.0*z*z;
             D(row, 1) = x*x + z*z - 2.0*y*y;

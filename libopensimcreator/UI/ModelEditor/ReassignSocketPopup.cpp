@@ -163,7 +163,7 @@ public:
 
         ui::draw_text("%s's new connectee:", socket->getName().c_str());
 
-        ui::set_next_item_width(ui::get_content_region_available().x);
+        ui::set_next_item_width(ui::get_content_region_available().x());
         DrawSearchBar(m_EditedParams.search);
 
         ui::begin_child_panel(
@@ -184,7 +184,7 @@ public:
         ui::end_child_panel();
 
         if (not m_Error.empty()) {
-            ui::set_next_item_width(ui::get_content_region_available().x);
+            ui::set_next_item_width(ui::get_content_region_available().x());
             ui::draw_text_wrapped(m_Error);
         }
 

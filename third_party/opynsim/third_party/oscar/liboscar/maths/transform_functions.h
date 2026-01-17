@@ -23,17 +23,17 @@ namespace osc
     {
         Matrix3x3 rv = matrix3x3_cast(transform.rotation);
 
-        rv[0][0] *= transform.scale.x;
-        rv[0][1] *= transform.scale.x;
-        rv[0][2] *= transform.scale.x;
+        rv[0][0] *= transform.scale.x();
+        rv[0][1] *= transform.scale.x();
+        rv[0][2] *= transform.scale.x();
 
-        rv[1][0] *= transform.scale.y;
-        rv[1][1] *= transform.scale.y;
-        rv[1][2] *= transform.scale.y;
+        rv[1][0] *= transform.scale.y();
+        rv[1][1] *= transform.scale.y();
+        rv[1][2] *= transform.scale.y();
 
-        rv[2][0] *= transform.scale.z;
-        rv[2][1] *= transform.scale.z;
-        rv[2][2] *= transform.scale.z;
+        rv[2][0] *= transform.scale.z();
+        rv[2][1] *= transform.scale.z();
+        rv[2][2] *= transform.scale.z();
 
         return rv;
     }
@@ -43,21 +43,21 @@ namespace osc
     {
         Matrix4x4 rv = matrix4x4_cast(transform.rotation);
 
-        rv[0][0] *= transform.scale.x;
-        rv[0][1] *= transform.scale.x;
-        rv[0][2] *= transform.scale.x;
+        rv[0][0] *= transform.scale.x();
+        rv[0][1] *= transform.scale.x();
+        rv[0][2] *= transform.scale.x();
 
-        rv[1][0] *= transform.scale.y;
-        rv[1][1] *= transform.scale.y;
-        rv[1][2] *= transform.scale.y;
+        rv[1][0] *= transform.scale.y();
+        rv[1][1] *= transform.scale.y();
+        rv[1][2] *= transform.scale.y();
 
-        rv[2][0] *= transform.scale.z;
-        rv[2][1] *= transform.scale.z;
-        rv[2][2] *= transform.scale.z;
+        rv[2][0] *= transform.scale.z();
+        rv[2][1] *= transform.scale.z();
+        rv[2][2] *= transform.scale.z();
 
-        rv[3][0] = transform.translation.x;
-        rv[3][1] = transform.translation.y;
-        rv[3][2] = transform.translation.z;
+        rv[3][0] = transform.translation.x();
+        rv[3][1] = transform.translation.y();
+        rv[3][2] = transform.translation.z();
 
         return rv;
     }

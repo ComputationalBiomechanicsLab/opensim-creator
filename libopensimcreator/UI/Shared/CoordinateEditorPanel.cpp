@@ -197,7 +197,7 @@ private:
         ui::push_style_color(ui::ColorVar::Button, Color::clear());
         ui::push_style_color(ui::ColorVar::ButtonActive, Color::clear());
         ui::push_style_color(ui::ColorVar::ButtonHovered, Color::clear());
-        ui::push_style_var(ui::StyleVar::FramePadding, {0.0f, ui::get_style_frame_padding().y});
+        ui::push_style_var(ui::StyleVar::FramePadding, {0.0f, ui::get_style_frame_padding().y()});
         if (ui::draw_button(c.getLocked(m_Model->getState()) ? MSMICONS_LOCK : MSMICONS_UNLOCK)) {
             const bool newValue = !c.getLocked(m_Model->getState());
             ActionSetCoordinateLockedAndSave(*m_Model, c, newValue);
@@ -213,7 +213,7 @@ private:
     {
         const bool coordinateLocked = c.getLocked(m_Model->getState());
 
-        ui::set_next_item_width(ui::get_content_region_available().x);
+        ui::set_next_item_width(ui::get_content_region_available().x());
 
         const float minValue = ConvertCoordValueToDisplayValue(c, c.getRangeMin());
         const float maxValue = ConvertCoordValueToDisplayValue(c, c.getRangeMax());
@@ -242,7 +242,7 @@ private:
     {
         float displayedSpeed = ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Model->getState()));
 
-        ui::set_next_item_width(ui::get_content_region_available().x);
+        ui::set_next_item_width(ui::get_content_region_available().x());
         if (ui::draw_float_meters_input("##coordinatespeededitor", displayedSpeed)) {
             const double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
             ActionSetCoordinateSpeed(*m_Model, c, storedSpeed);

@@ -161,13 +161,13 @@ private:
         const auto tabUIRectCorners = ui::get_main_window_workspace_ui_rect().corners();
         const Rect tabUIRectWithoutBar = Rect::from_corners(
             tabUIRectCorners.min,
-            tabUIRectCorners.max - Vector2{0.0f, max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y) - 2.0f*ui::get_style_panel_padding().y}
+            tabUIRectCorners.max - Vector2{0.0f, max(m_TudLogo.dimensions().y(), m_CziLogo.dimensions().y()) - 2.0f*ui::get_style_panel_padding().y()}
         );
 
-        const Vector2 menuAndTopLogoDims = elementwise_min(tabUIRectWithoutBar.dimensions(), Vector2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
+        const Vector2 menuAndTopLogoDims = elementwise_min(tabUIRectWithoutBar.dimensions(), Vector2{m_SplashMenuMaxDims.x(), m_SplashMenuMaxDims.y() + m_MainAppLogoDims.y() + m_TopLogoPadding.y()});
         const Vector2 menuAndTopLogoTopLeft = tabUIRectWithoutBar.ypd_top_left() + 0.5f*(tabUIRectWithoutBar.dimensions() - menuAndTopLogoDims);
-        const Vector2 menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
-        const Vector2 menuTopLeft = Vector2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
+        const Vector2 menuDims = {menuAndTopLogoDims.x(), menuAndTopLogoDims.y() - m_MainAppLogoDims.y() - m_TopLogoPadding.y()};
+        const Vector2 menuTopLeft = Vector2{menuAndTopLogoTopLeft.x(), menuAndTopLogoTopLeft.y() + m_MainAppLogoDims.y() + m_TopLogoPadding.y()};
 
         return Rect::from_corners(menuTopLeft, menuTopLeft + menuDims);
     }
@@ -176,8 +176,8 @@ private:
     {
         const Rect mmr = calcMainMenuRect();
         const Vector2 topLeft{
-            mmr.left() + 0.5f*mmr.width() - 0.5f*m_MainAppLogoDims.x,
-            mmr.ypd_top() - m_TopLogoPadding.y - m_MainAppLogoDims.y,
+            mmr.left() + 0.5f*mmr.width() - 0.5f*m_MainAppLogoDims.x(),
+            mmr.ypd_top() - m_TopLogoPadding.y() - m_MainAppLogoDims.y(),
         };
 
         return Rect::from_corners(topLeft, topLeft + m_MainAppLogoDims);
@@ -226,7 +226,7 @@ private:
         const Rect mmr = calcMainMenuRect();
         const Vector2 dims = mmr.dimensions();
         ui::set_next_panel_ui_position(mmr.ypd_top_left());
-        ui::set_next_panel_size({dims.x, -1.0f});
+        ui::set_next_panel_size({dims.x(), -1.0f});
         ui::set_next_panel_size_constraints(dims, dims);
 
         if (ui::begin_panel("Splash screen", nullptr, ui::PanelFlag::NoTitleBar)) {
@@ -362,15 +362,15 @@ private:
     {
         const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
         Vector2 loc = workspaceUIRect.ypd_bottom_right();
-        loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.dimensions().x;
-        loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y);
+        loc.x() = loc.x() - 2.0f*ui::get_style_panel_padding().x() - m_CziLogo.dimensions().x() - 2.0f*ui::get_style_item_spacing().x() - m_TudLogo.dimensions().x();
+        loc.y() = loc.y() - 2.0f*ui::get_style_panel_padding().y() - max(m_CziLogo.dimensions().y(), m_TudLogo.dimensions().y());
 
         ui::set_next_panel_ui_position(loc);
         ui::begin_panel("##czlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_CziLogo);
         ui::end_panel();
 
-        loc.x += m_CziLogo.dimensions().x + 2.0f*ui::get_style_item_spacing().x;
+        loc.x() += m_CziLogo.dimensions().x() + 2.0f*ui::get_style_item_spacing().x();
         ui::set_next_panel_ui_position(loc);
         ui::begin_panel("##tudlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_TudLogo);

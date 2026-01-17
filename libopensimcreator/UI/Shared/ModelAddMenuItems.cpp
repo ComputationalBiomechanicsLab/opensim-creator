@@ -61,7 +61,7 @@ public:
             ui::begin_disabled();
         }
 
-        ui::set_next_item_width(ui::get_content_region_available().x);
+        ui::set_next_item_width(ui::get_content_region_available().x());
         DrawSearchBar(m_SearchString);
 
         if (m_SearchString.empty()) {

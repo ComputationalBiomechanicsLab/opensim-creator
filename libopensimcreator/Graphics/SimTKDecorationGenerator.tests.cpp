@@ -79,7 +79,7 @@ TEST(SimTKDecorationGenerator, PropagatesNegativeScaleFactors)
 
     osc::GenerateDecorations(cache, matter, state, sphere, 1.0f, [&](const SceneDecoration& dec)
     {
-        ASSERT_EQ(dec.transform.scale.y, -1.0f);
+        ASSERT_EQ(dec.transform.scale.y(), -1.0f);
     });
 }
 

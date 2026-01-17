@@ -18,23 +18,23 @@ using namespace osc;
 SimTK::Vec3 osc::Converter<Vector3, SimTK::Vec3>::operator()(const Vector3& v) const
 {
     return {
-        static_cast<double>(v.x),
-        static_cast<double>(v.y),
-        static_cast<double>(v.z),
+        static_cast<double>(v.x()),
+        static_cast<double>(v.y()),
+        static_cast<double>(v.z()),
     };
 }
 
 SimTK::fVec3 Converter<Vector3, SimTK::fVec3>::operator()(const Vector3& v) const
 {
-    return {v.x, v.y, v.z};
+    return {v.x(), v.y(), v.z()};
 }
 
 SimTK::Vec3 osc::Converter<EulerAngles, SimTK::Vec3>::operator()(const EulerAngles& v) const
 {
     return {
-        static_cast<double>(v.x.count()),
-        static_cast<double>(v.y.count()),
-        static_cast<double>(v.z.count()),
+        static_cast<double>(v.x().count()),
+        static_cast<double>(v.y().count()),
+        static_cast<double>(v.z().count()),
     };
 }
 

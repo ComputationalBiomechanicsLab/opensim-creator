@@ -22,9 +22,9 @@ namespace
 {
     void draw_toggler(bool enabled, bool hovered, Vector2 pos, Vector2 size)
     {
-        const float radius = size.y * 0.5f;
-        const float rounding = size.y * 0.25f;
-        const float slot_half_height = size.y * 0.5f;
+        const float radius = size.y() * 0.5f;
+        const float rounding = size.y() * 0.25f;
+        const float slot_half_height = size.y() * 0.5f;
         const bool draw_circular_grabber = false;
 
         const Color bg_color = hovered ?
@@ -32,12 +32,12 @@ namespace
             ui::get_color(enabled ? ui::ColorVar::CheckMark : ui::ColorVar::FrameBg);
 
         const Vector2 pmid{
-            pos.x + radius + (enabled ? 1.0f : 0.0f) * (size.x - radius * 2),
-            pos.y + size.y / 2.0f,
+            pos.x() + radius + (enabled ? 1.0f : 0.0f) * (size.x() - radius * 2),
+            pos.y() + size.y() / 2.0f,
         };
         const Rect bg_rect = Rect::from_corners(
-            {pos.x, pmid.y - slot_half_height},
-            {pos.x + size.x, pmid.y + slot_half_height}
+            {pos.x(),            pmid.y() - slot_half_height},
+            {pos.x() + size.x(), pmid.y() + slot_half_height}
         );
 
         ui::DrawListView draw_list = ui::get_panel_draw_list();
@@ -79,8 +79,8 @@ namespace
         const Vector2 frame_padding = ui::get_style_frame_padding();
         const Vector2 toggle_size = {toggle_height * 1.75f, toggle_height};
         const Vector2 toggle_pos{
-            button_bottom_right.x - toggle_size.x - frame_padding.x,
-            button_top_left.y + (title_height - toggle_size.y)/2.0f + frame_padding.y,
+            button_bottom_right.x() - toggle_size.x() - frame_padding.x(),
+            button_top_left.y() + (title_height - toggle_size.y())/2.0f + frame_padding.y(),
         };
         draw_toggler(*v, ui::is_item_hovered(), toggle_pos, toggle_size);
 

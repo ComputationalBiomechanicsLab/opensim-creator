@@ -54,14 +54,14 @@ namespace
 
         if (ratio >= 1.0f) {
             // it will touch the top/bottom but may (ratio != 1.0f) fall short of the left/right
-            const Vector2 rv_dimensions = {target_dimensions.x/ratio, target_dimensions.y};
-            const Vector2 rv_top_left = {target_ui_top_left.x + 0.5f*(target_dimensions.x - rv_dimensions.x), target_ui_top_left.y};
+            const Vector2 rv_dimensions = {target_dimensions.x()/ratio, target_dimensions.y()};
+            const Vector2 rv_top_left = {target_ui_top_left.x() + 0.5f*(target_dimensions.x() - rv_dimensions.x()), target_ui_top_left.y()};
             return Rect::from_corners(rv_top_left, rv_top_left + rv_dimensions);
         }
         else {
             // it will touch the left/right but will not touch the top/bottom
-            const Vector2 rv_dimensions = {target_dimensions.x, ratio*target_dimensions.y};
-            const Vector2 rv_top_left = {target_ui_top_left.x, target_ui_top_left.y + 0.5f*(target_dimensions.y - rv_dimensions.y)};
+            const Vector2 rv_dimensions = {target_dimensions.x(), ratio*target_dimensions.y()};
+            const Vector2 rv_top_left = {target_ui_top_left.x(), target_ui_top_left.y() + 0.5f*(target_dimensions.y() - rv_dimensions.y())};
             return Rect::from_corners(rv_top_left, rv_top_left + rv_dimensions);
         }
     }
@@ -138,7 +138,7 @@ public:
             // show editor for setting window size
             {
                 const Vector2 s = App::get().main_window_dimensions();
-                ui::draw_text("%f %f", s.x, s.y);
+                ui::draw_text("%f %f", s.x(), s.y());
                 if (ui::draw_button("change")) {
                     App::upd().try_async_set_main_window_dimensions({1920.0f, 1080.0f});
                 }

@@ -56,7 +56,7 @@ SceneRendererParams osc::CalcSceneRendererParams(
 {
     SceneRendererParams rv;
 
-    if (viewportDims.x >= 1.0f && viewportDims.y >= 1.0f) {
+    if (viewportDims.x() >= 1.0f && viewportDims.y() >= 1.0f) {
         rv.dimensions = viewportDims;
     }
     rv.device_pixel_ratio = viewportDevicePixelRatio;

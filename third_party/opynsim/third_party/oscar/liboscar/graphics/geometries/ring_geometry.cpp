@@ -43,8 +43,8 @@ osc::RingGeometry::RingGeometry(const Params& p)
             const Vector3& v = vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
             normals.emplace_back(0.0f, 0.0f, 1.0f);
             uvs.emplace_back(
-                (v.x/p.outer_radius + 1.0f) / 2.0f,
-                (v.y/p.outer_radius + 1.0f) / 2.0f
+                (v.x()/p.outer_radius + 1.0f) / 2.0f,
+                (v.y()/p.outer_radius + 1.0f) / 2.0f
             );
         }
         radius += radius_step;

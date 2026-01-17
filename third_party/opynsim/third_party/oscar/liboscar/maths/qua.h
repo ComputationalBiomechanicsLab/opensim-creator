@@ -38,7 +38,7 @@ namespace osc
 
         // constructs a `Qua` with `w = s` and the xyz of `v`
         constexpr Qua(T s, const Vector<T, 3>& v) :
-            w{s}, x{v.x}, y{v.y}, z{v.z}
+            w{s}, x{v.x()}, y{v.y()}, z{v.z()}
         {}
 
         // constructs a `Qua` from its wxyz components
@@ -72,14 +72,14 @@ namespace osc
                 // around an arbitrary orthogonal axis. Axis normalisation
                 // can happen later, when we normalise the quaternion.
                 real_part = static_cast<T>(0);
-                t = abs(u.x) > abs(u.z) ? Vector<T, 3>(-u.y, u.x, static_cast<T>(0)) : Vector<T, 3>(static_cast<T>(0), -u.z, u.y);
+                t = abs(u.x()) > abs(u.z()) ? Vector<T, 3>(-u.y(), u.x(), static_cast<T>(0)) : Vector<T, 3>(static_cast<T>(0), -u.z(), u.y());
             }
             else {
                 // Otherwise, build quaternion the standard way.
                 t = cross(u, v);
             }
 
-            *this = normalize(Qua<T>::wxyz(real_part, t.x, t.y, t.z));
+            *this = normalize(Qua<T>::wxyz(real_part, t.x(), t.y(), t.z()));
         }
 
         // constructs a `Qua` from Euler angles that are assumed to represent an
@@ -89,10 +89,10 @@ namespace osc
             Vector<T, 3> c = cos(euler_angles * T(0.5));
             Vector<T, 3> s = sin(euler_angles * T(0.5));
 
-            this->w = c.x * c.y * c.z + s.x * s.y * s.z;
-            this->x = s.x * c.y * c.z - c.x * s.y * s.z;
-            this->y = c.x * s.y * c.z + s.x * c.y * s.z;
-            this->z = c.x * c.y * s.z - s.x * s.y * c.z;
+            this->w = c.x() * c.y() * c.z() + s.x() * s.y() * s.z();
+            this->x = s.x() * c.y() * c.z() - c.x() * s.y() * s.z();
+            this->y = c.x() * s.y() * c.z() + s.x() * c.y() * s.z();
+            this->z = c.x() * c.y() * s.z() - s.x() * s.y() * c.z();
         }
 
         // constructs a `Qua` by decomposing an orthogonal matrix

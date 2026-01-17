@@ -63,9 +63,9 @@ namespace osc
                 return;
             }
 
-            ui::table_setup_column("Name", {}, 0.7f*ui::get_content_region_available().x);
-            ui::table_setup_column("Source", {}, 0.15f*ui::get_content_region_available().x);
-            ui::table_setup_column("Destination", {}, 0.15f*ui::get_content_region_available().x);
+            ui::table_setup_column("Name",        {}, 0.70f*ui::get_content_region_available().x());
+            ui::table_setup_column("Source",      {}, 0.15f*ui::get_content_region_available().x());
+            ui::table_setup_column("Destination", {}, 0.15f*ui::get_content_region_available().x());
 
             int id = 0;
             for (const auto& lm : m_State->getScratch().landmarkPairs) {
@@ -144,7 +144,7 @@ namespace osc
 
         void drawConnectingLine(const Circle& src, const Circle& dest)
         {
-            const float pad = ui::get_style_item_inner_spacing().x;
+            const float pad = ui::get_style_item_inner_spacing().x();
 
             // draw connecting line
             const Vector2 direction = normalize(dest.origin - src.origin);
@@ -156,7 +156,7 @@ namespace osc
             // draw triangle on end of connecting line to form an arrow
             const Vector2 p0 = end;
             const Vector2 base = p0 - 2.0f*pad*direction;
-            const Vector2 orthogonal = {-direction.y, direction.x};
+            const Vector2 orthogonal = {-direction.y(), direction.x()};
             const Vector2 p1 = base + pad*orthogonal;
             const Vector2 p2 = base - pad*orthogonal;
             ui::get_panel_draw_list().add_triangle_filled(p0, p1, p2, color);
@@ -169,8 +169,8 @@ namespace osc
                 return;
             }
 
-            ui::table_setup_column("Name", {}, 0.7f*ui::get_content_region_available().x);
-            ui::table_setup_column("Location", {}, 0.3f*ui::get_content_region_available().x);
+            ui::table_setup_column("Name",     {}, 0.7f*ui::get_content_region_available().x());
+            ui::table_setup_column("Location", {}, 0.3f*ui::get_content_region_available().x());
 
             int id = 0;
             for (const auto& npl : m_State->getScratch().nonParticipatingLandmarks) {

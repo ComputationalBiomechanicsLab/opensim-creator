@@ -284,21 +284,21 @@ namespace osc
     template<typename T>
     typename Matrix<T, 3, 3>::column_type operator*(const Matrix<T, 3, 3>& m, const typename Matrix<T, 3, 3>::row_type& v)
     {
-        return typename Matrix<T, 3, 3>::column_type(
-            m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z,
-            m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z,
-            m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z
-        );
+        return typename Matrix<T, 3, 3>::column_type{
+            m[0][0] * v.x() + m[1][0] * v.y() + m[2][0] * v.z(),
+            m[0][1] * v.x() + m[1][1] * v.y() + m[2][1] * v.z(),
+            m[0][2] * v.x() + m[1][2] * v.y() + m[2][2] * v.z(),
+        };
     }
 
     template<typename T>
     typename Matrix<T, 3, 3>::row_type operator*(const typename Matrix<T, 3, 3>::column_type& v, const Matrix<T, 3, 3>& m)
     {
-        return typename Matrix<T, 3, 3>::row_type(
-            m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z,
-            m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z,
-            m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z
-        );
+        return typename Matrix<T, 3, 3>::row_type{
+            m[0][0] * v.x() + m[0][1] * v.y() + m[0][2] * v.z(),
+            m[1][0] * v.x() + m[1][1] * v.y() + m[1][2] * v.z(),
+            m[2][0] * v.x() + m[2][1] * v.y() + m[2][2] * v.z(),
+        };
     }
 
     template<typename T>

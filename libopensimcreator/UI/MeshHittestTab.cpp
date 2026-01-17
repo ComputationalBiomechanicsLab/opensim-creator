@@ -135,13 +135,13 @@ public:
             ui::draw_checkbox("BVH", &m_UseBVH);
             ui::draw_text("%" PRId64 " microseconds", static_cast<int64_t>(m_RaycastDuration.count()));
             auto r = m_Ray;
-            ui::draw_text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.position().x, m_Camera.position().y, m_Camera.position().z);
-            ui::draw_text("origin = (%.2f, %.2f, %.2f), direction = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.direction.x, r.direction.y, r.direction.z);
+            ui::draw_text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.position().x(), m_Camera.position().y(), m_Camera.position().z());
+            ui::draw_text("origin = (%.2f, %.2f, %.2f), direction = (%.2f, %.2f, %.2f)", r.origin.x(), r.origin.y(), r.origin.z(), r.direction.x(), r.direction.y(), r.direction.z());
             if (m_IsMousedOver) {
-                ui::draw_text("hit = (%.2f, %.2f, %.2f)", m_HitPos.x, m_HitPos.y, m_HitPos.z);
-                ui::draw_text("p0 = (%.2f, %.2f, %.2f)", m_Tris.p0.x, m_Tris.p0.y, m_Tris.p0.z);
-                ui::draw_text("p1 = (%.2f, %.2f, %.2f)", m_Tris.p1.x, m_Tris.p1.y, m_Tris.p1.z);
-                ui::draw_text("p2 = (%.2f, %.2f, %.2f)", m_Tris.p2.x, m_Tris.p2.y, m_Tris.p2.z);
+                ui::draw_text("hit = (%.2f, %.2f, %.2f)", m_HitPos.x(),  m_HitPos.y(),  m_HitPos.z());
+                ui::draw_text("p0 = (%.2f, %.2f, %.2f)", m_Tris.p0.x(), m_Tris.p0.y(), m_Tris.p0.z());
+                ui::draw_text("p1 = (%.2f, %.2f, %.2f)", m_Tris.p1.x(), m_Tris.p1.y(), m_Tris.p1.z());
+                ui::draw_text("p2 = (%.2f, %.2f, %.2f)", m_Tris.p2.x(), m_Tris.p2.y(), m_Tris.p2.z());
 
             }
             ui::end_panel();

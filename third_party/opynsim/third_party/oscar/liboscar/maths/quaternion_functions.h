@@ -217,9 +217,9 @@ namespace osc
 
         return Qua<T>::wxyz(
             s * static_cast<T>(0.5f),
-            rotation_axis.x * invs,
-            rotation_axis.y * invs,
-            rotation_axis.z * invs
+            rotation_axis.x() * invs,
+            rotation_axis.y() * invs,
+            rotation_axis.z() * invs
         );
     }
 

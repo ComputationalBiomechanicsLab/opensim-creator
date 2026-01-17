@@ -81,7 +81,7 @@ private:
 
         {
             float scaleFactor = m_Simulation->getFixupScaleFactor();
-            ui::set_next_item_width(ui::calc_text_size("0.00000").x);
+            ui::set_next_item_width(ui::calc_text_size("0.00000").x());
             if (ui::draw_float_input("##scaleinput", &scaleFactor)) {
                 m_Simulation->setFixupScaleFactor(scaleFactor);
             }

@@ -172,14 +172,14 @@ TEST(CopyOnUpdSharedValue, use_count_behaves_as_expected)
     const auto cow1 = make_cowv<TestStruct>(1);
     ASSERT_EQ(cow1.use_count(), 1);
     {
-        const auto cow2{cow1};
+        const auto cow2{cow1};  // NOLINT(performance-unnecessary-copy-initialization)
         ASSERT_EQ(cow1.use_count(), 2);
         ASSERT_EQ(cow2.use_count(), 2);
     }
     ASSERT_EQ(cow1.use_count(), 1);
-    const auto cow2{cow1};
+    const auto cow2{cow1};  // NOLINT(performance-unnecessary-copy-initialization)
     {
-        const auto cow3{cow2};
+        const auto cow3{cow2};  // NOLINT(performance-unnecessary-copy-initialization)
         ASSERT_EQ(cow1.use_count(), 3);
         ASSERT_EQ(cow2.use_count(), 3);
         ASSERT_EQ(cow3.use_count(), 3);

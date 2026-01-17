@@ -112,7 +112,7 @@ public:
     {
         // move light position over time
         const double seconds = App::get().frame_delta_since_startup().count();
-        light_pos_.x = static_cast<float>(3.0 * sin(0.5 * seconds));
+        light_pos_.x() = static_cast<float>(3.0 * sin(0.5 * seconds));
     }
 
     void on_draw()

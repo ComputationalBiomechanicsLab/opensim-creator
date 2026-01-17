@@ -285,7 +285,7 @@ private:
         const Vector2 viewport_top_left = viewport_screen_space_rect.ypu_top_left();
         for (size_t i = 0; i < textures.size(); ++i) {
             const float offset = static_cast<float>(i)*overlay_size;
-            const Vector2 overlay_bottom_left = {viewport_top_left.x + offset, viewport_top_left.y - overlay_size};
+            const Vector2 overlay_bottom_left = {viewport_top_left.x() + offset, viewport_top_left.y() - overlay_size};
             const Vector2 overlay_top_right = overlay_bottom_left + Vector2{overlay_size};
             graphics::blit_to_main_window(*textures[i], Rect::from_corners(overlay_bottom_left, overlay_top_right));
         }

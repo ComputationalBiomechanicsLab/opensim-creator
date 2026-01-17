@@ -974,7 +974,7 @@ namespace osc::mi
             const Vector3 mp = midpoint(parent, child);
             const Vector2 midpointScr = worldPosToScreenPos(mp);
             const Vector2 directionScr = normalize(child2ParentScr);
-            const Vector2 directionNormalScr = {-directionScr.y, directionScr.x};
+            const Vector2 directionNormalScr = {-directionScr.y(), directionScr.x()};
 
             const Vector2 p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
             const Vector2 p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;

@@ -70,7 +70,10 @@
             "name": "ErrorCheck",
             "configurePreset": "ErrorCheck",
             "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error"}
+            "execution": {"noTestsAction": "error"},
+            "environment": {
+                "LIBGL_ALWAYS_SOFTWARE": "1"
+            }
         },
         {
             "name": "RelWithDebInfo",

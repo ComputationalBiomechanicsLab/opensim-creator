@@ -38,7 +38,7 @@ void osc::WriteOutputsAsCSV(
             static_assert(num_options<OutputExtractorDataType>() == 3);
             if (o.getOutputType() == OutputExtractorDataType::Vector2) {
                 const Vector2 v = o.getValueVector2(root, report);
-                out << ',' << v.x << ',' << v.y;
+                out << ',' << v.x() << ',' << v.y();
             }
             else {
                 out << ',' << o.getValueFloat(root, report);

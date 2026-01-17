@@ -219,8 +219,8 @@ private:
         }
 
         // setup drawing area for drawing
-        ui::set_next_item_width(ui::get_content_region_available().x);
-        const float plotWidth = ui::get_content_region_available().x;
+        ui::set_next_item_width(ui::get_content_region_available().x());
+        const float plotWidth = ui::get_content_region_available().x();
         Rect plotRect{};
 
         // draw the plot
@@ -287,13 +287,13 @@ private:
         if (plotIsHovered) {
             const Vector2 mp = ui::get_mouse_ui_position();
             const Vector2 plotLoc = mp - plotRect.ypd_top_left();
-            const float relLoc = plotLoc.x / plotRect.width();
+            const float relLoc = plotLoc.x() / plotRect.width();
             const SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
 
             // draw vertical line to show current X of their hover
             {
-                const Vector2 p1 = {mp.x, plotRect.ypd_top()};
-                const Vector2 p2 = {mp.x, plotRect.ypd_bottom()};
+                const Vector2 p1 = {mp.x(), plotRect.ypd_top()};
+                const Vector2 p2 = {mp.x(), plotRect.ypd_bottom()};
                 drawlist.add_line(p1, p2, hoverTimeLineColor);
             }
 
@@ -349,8 +349,8 @@ private:
         }
 
         // setup drawing area for drawing
-        ui::set_next_item_width(ui::get_content_region_available().x);
-        const float plotWidth = ui::get_content_region_available().x;
+        ui::set_next_item_width(ui::get_content_region_available().x());
+        const float plotWidth = ui::get_content_region_available().x();
         Rect plotRect{};
 
         // draw the plot
@@ -380,7 +380,7 @@ private:
                     Vector2d currentVal = m_OutputExtractor.getValueVector2(*sim.getModel(), currentReport);
                     // ensure the annotation doesn't occlude the line too heavily
                     auto annotationColor = ui::get_style_color(ui::ColorVar::PopupBg).with_alpha(0.5f);
-                    plot::draw_annotation(currentVal, annotationColor, {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);
+                    plot::draw_annotation(currentVal, annotationColor, {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x(), currentVal.y());
                     plot::drag_point(0, &currentVal, OSCColors::scrub_current(), 4.0f, plot::DragToolFlag::NoInputs);
                 }
 

@@ -1398,7 +1398,7 @@ public:
         wrap_mode_w_{wrap_mode},
         filter_mode_{filter_mode}
     {
-        OSC_ASSERT(pixel_dimensions_.x > 0 and pixel_dimensions_.y > 0);
+        OSC_ASSERT(pixel_dimensions_.x() > 0 and pixel_dimensions_.y() > 0);
     }
 
     Vector2i pixel_dimensions() const
@@ -1518,7 +1518,7 @@ public:
 
     void set_pixel_data(std::span<const uint8_t> pixel_components_row_by_row)
     {
-        OSC_ASSERT(pixel_components_row_by_row.size() == num_bytes_per_pixel_in(texture_format_)*pixel_dimensions_.x*pixel_dimensions_.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
+        OSC_ASSERT(pixel_components_row_by_row.size() == num_bytes_per_pixel_in(texture_format_)*pixel_dimensions_.x()*pixel_dimensions_.y() && "incorrect number of bytes passed to Texture2D::set_pixel_data");
         OSC_ASSERT(pixel_components_row_by_row.size() == pixel_data_.size());
 
         rgs::copy(pixel_components_row_by_row, pixel_data_.begin());
@@ -1555,7 +1555,7 @@ private:
         *maybe_opengl_data_ = Texture2DOpenGLData{};
 
         const size_t num_bytes_per_pixel = num_bytes_per_pixel_in(texture_format_);
-        const size_t num_bytes_per_row = pixel_dimensions_.x * num_bytes_per_pixel;
+        const size_t num_bytes_per_row = pixel_dimensions_.x() * num_bytes_per_pixel;
         const GLint unpack_alignment = opengl_unpack_alignment_of(texture_format_);
         const CPUDataType cpu_data_type = equivalent_cpu_datatype_of(texture_format_);  // TextureFormat's datatype == CPU format's datatype for cubemaps
         const CPUImageFormat cpu_component_layout = equivalent_cpu_image_format_of(texture_format_);  // TextureFormat's layout == CPU formats's layout for cubemaps
@@ -1571,8 +1571,8 @@ private:
             GL_TEXTURE_2D,
             0,
             opengl_internal_format_of(texture_format_, color_space_),
-            pixel_dimensions_.x,
-            pixel_dimensions_.y,
+            pixel_dimensions_.x(),
+            pixel_dimensions_.y(),
             0,
             opengl_format_of(cpu_component_layout),
             opengl_data_type_of(cpu_data_type),
@@ -1603,7 +1603,7 @@ private:
     TextureWrapMode wrap_mode_v_ = TextureWrapMode::Repeat;
     TextureWrapMode wrap_mode_w_ = TextureWrapMode::Repeat;
     TextureFilterMode filter_mode_ = TextureFilterMode::Nearest;
-    std::vector<uint8_t> pixel_data_ = std::vector<uint8_t>(num_bytes_per_pixel_in(texture_format_) * pixel_dimensions_.x * pixel_dimensions_.y, 0xff);
+    std::vector<uint8_t> pixel_data_ = std::vector<uint8_t>(num_bytes_per_pixel_in(texture_format_) * pixel_dimensions_.x() * pixel_dimensions_.y(), 0xff);
     float device_pixel_ratio_ = 1.0f;
     UID texture_params_version_;
     DefaultConstructOnCopy<std::optional<Texture2DOpenGLData>> maybe_opengl_data_;
@@ -1908,8 +1908,8 @@ std::ostream& osc::operator<<(std::ostream& o, DepthStencilRenderBufferFormat de
 std::ostream& osc::operator<<(std::ostream& o, const RenderTextureParams& params)
 {
     return o <<
-        "RenderTextureParams(width = " << params.pixel_dimensions.x
-        << ", height = " << params.pixel_dimensions.y
+        "RenderTextureParams(width = " << params.pixel_dimensions.x()
+        << ", height = " << params.pixel_dimensions.y()
         << ", device_pixel_ratio = " << params.device_pixel_ratio
         << ", anti_aliasing_level = " << params.anti_aliasing_level
         << ", color_format = " << params.color_format
@@ -1924,13 +1924,13 @@ namespace
     public:
         explicit RenderBufferImpl(const RenderBufferParams& params) : params_{params}
         {
-            OSC_ASSERT_ALWAYS((dimensionality() != TextureDimensionality::Cube or pixel_dimensions().x == pixel_dimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
+            OSC_ASSERT_ALWAYS((dimensionality() != TextureDimensionality::Cube or pixel_dimensions().x() == pixel_dimensions().y()) && "cannot construct a Cube renderbuffer with non-square dimensions");
             OSC_ASSERT_ALWAYS((dimensionality() != TextureDimensionality::Cube or anti_aliasing_level() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
         }
 
         void reformat(const RenderBufferParams& params)
         {
-            OSC_ASSERT((params.dimensionality != TextureDimensionality::Cube or params.pixel_dimensions.x == params.pixel_dimensions.y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
+            OSC_ASSERT((params.dimensionality != TextureDimensionality::Cube or params.pixel_dimensions.x() == params.pixel_dimensions.y()) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
             OSC_ASSERT((params.dimensionality != TextureDimensionality::Cube or params.anti_aliasing_level == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
 
             if (params_ != params) {
@@ -1945,7 +1945,7 @@ namespace
 
         void set_pixel_dimensions(Vector2i new_pixel_dimensions)
         {
-            OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or new_pixel_dimensions.x == new_pixel_dimensions.y) && "cannot set a cubemap to have non-square dimensions");
+            OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or new_pixel_dimensions.x() == new_pixel_dimensions.y()) && "cannot set a cubemap to have non-square dimensions");
 
             if (new_pixel_dimensions != pixel_dimensions()) {
                 params_.pixel_dimensions = new_pixel_dimensions;
@@ -1957,7 +1957,7 @@ namespace
 
         void set_dimensionality(TextureDimensionality new_dimensionality)
         {
-            OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or pixel_dimensions().x == pixel_dimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
+            OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or pixel_dimensions().x() == pixel_dimensions().y()) && "cannot set dimensionality to Cube for non-square render buffer");
             OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or anti_aliasing_level() == AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
 
             if (new_dimensionality != dimensionality()) {
@@ -2021,8 +2021,8 @@ namespace
                 GL_TEXTURE_2D,
                 0,
                 to_opengl_internal_color_format_enum(params_),
-                params_.pixel_dimensions.x,
-                params_.pixel_dimensions.y,
+                params_.pixel_dimensions.x(),
+                params_.pixel_dimensions.y(),
                 0,
                 opengl_format_of(equivalent_cpu_image_format_of(params_.format)),
                 opengl_data_type_of(equivalent_cpu_datatype_of(params_.format)),
@@ -2049,8 +2049,8 @@ namespace
                 GL_RENDERBUFFER,
                 params_.anti_aliasing_level.template get_as<GLsizei>(),
                 to_opengl_internal_color_format_enum(params_),
-                params_.pixel_dimensions.x,
-                params_.pixel_dimensions.y
+                params_.pixel_dimensions.x(),
+                params_.pixel_dimensions.y()
             );
             gl::bind_renderbuffer();
 
@@ -2060,8 +2060,8 @@ namespace
                 GL_TEXTURE_2D,
                 0,
                 to_opengl_internal_color_format_enum(params_),
-                params_.pixel_dimensions.x,
-                params_.pixel_dimensions.y,
+                params_.pixel_dimensions.x(),
+                params_.pixel_dimensions.y(),
                 0,
                 opengl_format_of(equivalent_cpu_image_format_of(params_.format)),
                 opengl_data_type_of(equivalent_cpu_datatype_of(params_.format)),
@@ -2090,8 +2090,8 @@ namespace
                     GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                     0,
                     to_opengl_internal_color_format_enum(params_),
-                    params_.pixel_dimensions.x,
-                    params_.pixel_dimensions.y,
+                    params_.pixel_dimensions.x(),
+                    params_.pixel_dimensions.y(),
                     0,
                     opengl_format_of(equivalent_cpu_image_format_of(params_.format)),
                     opengl_data_type_of(equivalent_cpu_datatype_of(params_.format)),
@@ -6181,14 +6181,14 @@ public:
             const Vector2i pixel_dimensions = App::get().main_window_pixel_dimensions();
             const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
 
-            std::vector<uint8_t> pixels(static_cast<size_t>(4*pixel_dimensions.x*pixel_dimensions.y));
+            std::vector<uint8_t> pixels(static_cast<size_t>(4*pixel_dimensions.x()*pixel_dimensions.y()));
             OSC_ASSERT(is_aligned_at_least(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
             gl::pixel_store_i(GL_PACK_ALIGNMENT, 4);
             glReadPixels(
                 0,
                 0,
-                pixel_dimensions.x,
-                pixel_dimensions.y,
+                pixel_dimensions.x(),
+                pixel_dimensions.y(),
                 GL_RGBA,
                 GL_UNSIGNED_BYTE,
                 pixels.data()
@@ -7141,19 +7141,19 @@ float osc::GraphicsBackend::setup_top_level_pipeline_state(
     const auto viewport_geom = calc_viewport_geometry(camera, maybe_custom_render_target);
 
     gl::viewport(
-        static_cast<GLint>(viewport_geom.viewport.bottom_left.x),
-        static_cast<GLint>(viewport_geom.viewport.bottom_left.y),
-        static_cast<GLsizei>(viewport_geom.viewport.pixel_dimensions.x),
-        static_cast<GLsizei>(viewport_geom.viewport.pixel_dimensions.y)
+        static_cast<GLint>(viewport_geom.viewport.bottom_left.x()),
+        static_cast<GLint>(viewport_geom.viewport.bottom_left.y()),
+        static_cast<GLsizei>(viewport_geom.viewport.pixel_dimensions.x()),
+        static_cast<GLsizei>(viewport_geom.viewport.pixel_dimensions.y())
     );
 
     if (viewport_geom.scissor) {
         gl::enable(GL_SCISSOR_TEST);
         glScissor(
-            static_cast<GLint>(viewport_geom.scissor->bottom_left.x),
-            static_cast<GLint>(viewport_geom.scissor->bottom_left.y),
-            static_cast<GLsizei>(viewport_geom.scissor->pixel_dimensions.x),
-            static_cast<GLsizei>(viewport_geom.scissor->pixel_dimensions.y)
+            static_cast<GLint>(viewport_geom.scissor->bottom_left.x()),
+            static_cast<GLint>(viewport_geom.scissor->bottom_left.y()),
+            static_cast<GLsizei>(viewport_geom.scissor->pixel_dimensions.x()),
+            static_cast<GLsizei>(viewport_geom.scissor->pixel_dimensions.y())
         );
     }
     else {
@@ -7392,12 +7392,12 @@ void osc::GraphicsBackend::resolve_render_buffers(
             gl::blit_framebuffer(
                 0,
                 0,
-                pixel_dimensions.x,
-                pixel_dimensions.y,
+                pixel_dimensions.x(),
+                pixel_dimensions.y(),
                 0,
                 0,
-                pixel_dimensions.x,
-                pixel_dimensions.y,
+                pixel_dimensions.x(),
+                pixel_dimensions.y(),
                 GL_COLOR_BUFFER_BIT,
                 GL_NEAREST
             );
@@ -7444,12 +7444,12 @@ void osc::GraphicsBackend::resolve_render_buffers(
             gl::blit_framebuffer(
                 0,
                 0,
-                pixel_dimensions.x,
-                pixel_dimensions.y,
+                pixel_dimensions.x(),
+                pixel_dimensions.y(),
                 0,
                 0,
-                pixel_dimensions.x,
-                pixel_dimensions.y,
+                pixel_dimensions.x(),
+                pixel_dimensions.y(),
                 GL_DEPTH_BUFFER_BIT,
                 GL_NEAREST
             );
@@ -7668,12 +7668,12 @@ void osc::GraphicsBackend::copy_texture(
     gl::blit_framebuffer(
         0,
         0,
-        source.pixel_dimensions().x,
-        source.pixel_dimensions().y,
+        source.pixel_dimensions().x(),
+        source.pixel_dimensions().y(),
         0,
         0,
-        destination.pixel_dimensions().x,
-        destination.pixel_dimensions().y,
+        destination.pixel_dimensions().x(),
+        destination.pixel_dimensions().y(),
         GL_COLOR_BUFFER_BIT,
         GL_LINEAR  // the two texture may have different pixel dimensions (avoid GL_NEAREST)
     );
@@ -7686,15 +7686,15 @@ void osc::GraphicsBackend::copy_texture(
         OSC_ASSERT(is_aligned_at_least(cpu_buffer.data(), pack_format) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(cpu_buffer.size() == area_of(destination.pixel_dimensions())*num_bytes_per_pixel_in(destination.texture_format()));
 
-        gl::viewport(0, 0, destination.pixel_dimensions().x, destination.pixel_dimensions().y);
+        gl::viewport(0, 0, destination.pixel_dimensions().x(), destination.pixel_dimensions().y());
         gl::bind_framebuffer(GL_READ_FRAMEBUFFER, draw_fbo);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
         gl::pixel_store_i(GL_PACK_ALIGNMENT, pack_format);
         glReadPixels(
             0,
             0,
-            destination.pixel_dimensions().x,
-            destination.pixel_dimensions().y,
+            destination.pixel_dimensions().x(),
+            destination.pixel_dimensions().y(),
             to_opengl_image_color_format_enum(destination.texture_format()),
             to_opengl_image_data_type_enum(destination.texture_format()),
             cpu_buffer.data()
@@ -7770,8 +7770,8 @@ void osc::GraphicsBackend::copy_texture(
         gl::blit_framebuffer(
             0,
             0,
-            source.pixel_dimensions().x,
-            source.pixel_dimensions().y,
+            source.pixel_dimensions().x(),
+            source.pixel_dimensions().y(),
             0,
             0,
             destination.width() / (1<<mipmap_level),

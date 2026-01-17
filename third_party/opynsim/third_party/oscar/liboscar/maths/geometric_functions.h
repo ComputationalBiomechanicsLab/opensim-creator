@@ -49,9 +49,9 @@ namespace osc
     constexpr Vector<T, 3> cross(const Vector<T, 3>& x, const Vector<T, 3>& y)
     {
         return Vector<T, 3>(
-            x.y * y.z - y.y * x.z,
-            x.z * y.x - y.z * x.x,
-            x.x * y.y - y.x * x.y
+            x.y() * y.z() - y.y() * x.z(),
+            x.z() * y.x() - y.z() * x.x(),
+            x.x() * y.y() - y.x() * x.y()
         );
     }
 
@@ -80,14 +80,14 @@ namespace osc
     template<std::integral T, std::floating_point FloatingPointResult = float>
     constexpr FloatingPointResult aspect_ratio_of(Vector<T, 2> v)
     {
-        return static_cast<FloatingPointResult>(v.x) / static_cast<FloatingPointResult>(v.y);
+        return static_cast<FloatingPointResult>(v.x()) / static_cast<FloatingPointResult>(v.y());
     }
 
-    // returns the aspect ratio of `v` (effectively: `v.x/v.y`)
+    // returns `v.() / v.y()` (i.e. the aspect ratio of `v`).
     template<std::floating_point T>
     constexpr T aspect_ratio_of(Vector<T, 2> v)
     {
-        return v.x / v.y;
+        return v.x() / v.y();
     }
 
     // returns the area of a 2D rectangle that begins at the origin and ends at `v`
@@ -95,6 +95,6 @@ namespace osc
     requires std::is_arithmetic_v<T>
     constexpr T area_of(const Vector<T, 2>& v)
     {
-        return v.x * v.y;
+        return v.x() * v.y();
     }
 }

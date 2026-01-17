@@ -113,16 +113,16 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
     // return the angle around the Y axis, CCW when looking from above
     const auto azimuth = [](const Vector3& v) -> Radians
     {
-        return atan2(v.z, -v.x);
+        return atan2(v.z(), -v.x());
     };
 
     const auto correct_uv = [](Vector2& uv, const Vector3& vector, Radians azimuth)
     {
-        if ((azimuth < 0_rad) and (uv.x == 1.0f)) {
-            uv.x -= 1.0f;
+        if ((azimuth < 0_rad) and (uv.x() == 1.0f)) {
+            uv.x() -= 1.0f;
         }
-        if ((vector.x == 0.0f) and (vector.z == 0.0f)) {
-            uv.x = Turns{azimuth + 0.5_turn}.count();
+        if ((vector.x() == 0.0f) and (vector.z() == 0.0f)) {
+            uv.x() = Turns{azimuth + 0.5_turn}.count();
         }
     };
 
@@ -149,9 +149,9 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
         // handle case when face straddles the seam, see mrdoob/three.js#3269
         OSC_ASSERT(uvs.size() % 3 == 0);
         for (size_t i = 0; i < 3*(uvs.size()/3); i += 3) {
-            const float x0 = uvs[i+0].x;
-            const float x1 = uvs[i+1].x;
-            const float x2 = uvs[i+2].x;
+            const float x0 = uvs[i+0].x();
+            const float x1 = uvs[i+1].x();
+            const float x2 = uvs[i+2].x();
             const auto [min, max] = rgs::minmax({x0, x1, x2});
 
             // these magic numbers are arbitrary (copied from three.js)
@@ -168,7 +168,7 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
         // returns angle above the XZ plane
         const auto inclination = [](const Vector3& v) -> Radians
         {
-            return atan2(-v.y, length(Vector2{v.x, v.z}));
+            return atan2(-v.y(), length(Vector2{v.x(), v.z()}));
         };
 
         for (const Vector3& vertex : generated_vertices) {

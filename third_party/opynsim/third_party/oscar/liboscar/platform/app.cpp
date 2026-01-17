@@ -612,11 +612,11 @@ namespace
 
             Vector2 relative_delta = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
             relative_delta *= os_to_main_window_device_independent_ratio;            // convert SDL3 units (pixels) to device-independent pixels
-            relative_delta.y = main_window_dimensions.y - relative_delta.y;          // convert from SDL3 space (top-left origin, left-handed) to screen space
+            relative_delta.y() = main_window_dimensions.y() - relative_delta.y();          // convert from SDL3 space (top-left origin, left-handed) to screen space
 
             Vector2 position_in_window = {static_cast<float>(e.motion.x), static_cast<float>(e.motion.y)};
             position_in_window *= os_to_main_window_device_independent_ratio;        // convert SDL3 units (pixels) to device-independent pixels
-            position_in_window.y = main_window_dimensions.y - position_in_window.y;  // convert from SDL3 space (top-left origin, left-handed) to screen space
+            position_in_window.y() = main_window_dimensions.y() - position_in_window.y();  // convert from SDL3 space (top-left origin, left-handed) to screen space
 
             return std::make_unique<MouseEvent>(MouseEvent::motion(source, relative_delta, position_in_window));
         }
@@ -630,11 +630,11 @@ namespace
                 // orders of magnitude and frequency for scroll events, so this section needs
                 // to try and hide that fact (MacOS, in particular, reports completely different
                 // raw deltas from other OSes opensim-creator#971).
-                if (delta.x != 0.0f) {
-                    delta.x = delta.x > 0.0f ? +1.0f : -1.0f;
+                if (delta.x() != 0.0f) {
+                    delta.x() = delta.x() > 0.0f ? +1.0f : -1.0f;
                 }
-                if (delta.y != 0.0f) {
-                    delta.y = delta.y > 0.0f ? +1.0f : -1.0f;
+                if (delta.y() != 0.0f) {
+                    delta.y() = delta.y() > 0.0f ? +1.0f : -1.0f;
                 }
             }
             return std::make_unique<MouseWheelEvent>(delta, source);
@@ -1297,10 +1297,10 @@ public:
         // coordinate system).
 
         Vector2i sdl_size;
-        SDL_GetWindowSize(main_window_.get(), &sdl_size.x, &sdl_size.y);
+        SDL_GetWindowSize(main_window_.get(), &sdl_size.x(), &sdl_size.y());
         const Vector2 ratio = new_dims/main_window_dimensions();
         const Vector2i scaled_dims(ratio * Vector2{sdl_size});
-        SDL_SetWindowSize(main_window_.get(), scaled_dims.x, scaled_dims.y);
+        SDL_SetWindowSize(main_window_.get(), scaled_dims.x(), scaled_dims.y());
     }
 
     Vector2 main_window_pixel_dimensions() const
@@ -1383,14 +1383,14 @@ public:
         // SDL returns position of the mouse relative to the top-left corner
         // of the window in OS units
         Vector2 p;
-        SDL_GetMouseState(&p.x, &p.y);
+        SDL_GetMouseState(&p.x(), &p.y());
 
         // scale OS units to device-independent pixels
         p *= os_to_main_window_device_independent_ratio();
 
         // transform from left-handed origin-in-top-left coordinate system
         // to screen space
-        p.y = main_window_dimensions().y - p.y;
+        p.y() = main_window_dimensions().y() - p.y();
 
         return p;
     }
@@ -1406,7 +1406,7 @@ public:
         // coordinate system that SDL3 wants, then convert it into an `SDL_Rect`
         const auto r = to<SDL_Rect>(
             screen_rect
-            .with_flipped_y(main_window_dimensions().y)
+            .with_flipped_y(main_window_dimensions().y())
             .with_origin_and_dimensions_scaled_by(1.0f/os_to_main_window_device_independent_ratio())
         );
 

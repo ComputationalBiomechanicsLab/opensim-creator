@@ -2535,7 +2535,7 @@ namespace
         void draw_validation_error_message(std::span<const ScalingDocumentValidationMessage> messages)
         {
             const float contentHeight = static_cast<float>(messages.size() + 2) * ui::get_text_line_height_in_current_panel();
-            const float regionHeight = ui::get_content_region_available().y;
+            const float regionHeight = ui::get_content_region_available().y();
             const float top = 0.5f * (regionHeight - contentHeight);
 
             ui::set_cursor_panel_position({0.0f, top});
@@ -2569,7 +2569,7 @@ namespace
 
         void draw_scaling_error_message(CStringView message)
         {
-            const float h = ui::get_content_region_available().y;
+            const float h = ui::get_content_region_available().y();
             const float lineHeight = ui::get_text_line_height_in_current_panel();
             constexpr float numLines = 3.0f;
             const float top = 0.5f * (h - numLines*lineHeight);
@@ -2845,9 +2845,9 @@ namespace
                 ui::same_line();
 
                 const Vector2 oldCursorPos = ui::get_cursor_panel_position();
-                const float endX = oldCursorPos.x + ui::get_content_region_available().x;
+                const float endX = oldCursorPos.x() + ui::get_content_region_available().x();
 
-                const Vector2 newCursorPos = {endX - ui::calc_button_size(deletionButtonIcon).x, oldCursorPos.y};
+                const Vector2 newCursorPos = {endX - ui::calc_button_size(deletionButtonIcon).x(), oldCursorPos.y()};
                 ui::set_cursor_panel_position(newCursorPos);
                 if (ui::draw_small_button(deletionButtonIcon)) {
                     m_State->eraseScalingStepDeferred(step);
@@ -2900,7 +2900,7 @@ namespace
 
         void draw_add_scaling_step_context_button()
         {
-            ui::draw_button(MSMICONS_PLUS "Add Scaling Step", {ui::get_content_region_available().x, ui::calc_button_size("").y});
+            ui::draw_button(MSMICONS_PLUS "Add Scaling Step", {ui::get_content_region_available().x(), ui::calc_button_size("").y()});
             if (ui::begin_popup_context_menu("##AddScalingStepPopupMenu", ui::PopupFlag::MouseButtonLeft)) {
                 for (const auto& ptr : getScalingStepPrototypes()) {
                     ui::push_id(ptr.get());

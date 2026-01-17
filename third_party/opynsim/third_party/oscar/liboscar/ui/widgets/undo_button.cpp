@@ -21,7 +21,7 @@ void osc::UndoButton::impl_on_draw()
 
     ui::same_line();
 
-    ui::push_style_var(ui::StyleVar::FramePadding, {0.0f, ui::get_style_frame_padding().y});
+    ui::push_style_var(ui::StyleVar::FramePadding, {0.0f, ui::get_style_frame_padding().y()});
     ui::draw_arrow_down_button("##UndoMenuOpener");
     ui::pop_style_var();
 

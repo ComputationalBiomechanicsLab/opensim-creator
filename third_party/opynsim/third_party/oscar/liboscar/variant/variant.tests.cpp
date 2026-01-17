@@ -695,7 +695,7 @@ TEST(Variant, Vector2_to_Color_extracts_xy_into_the_Colors_rg_components)
     });
 
     for (const auto& test_case : test_cases) {
-        ASSERT_EQ(to<Color>(Variant{test_case}), Color(test_case.x, test_case.y, 0.0f));
+        ASSERT_EQ(to<Color>(Variant{test_case}), Color(test_case.x(), test_case.y(), 0.0f));
     }
 }
 
@@ -710,7 +710,7 @@ TEST(Variant, Vector2_to_float_extracts_x_into_the_float)
     });
 
     for (const auto& test_case : test_cases) {
-        ASSERT_EQ(to<float>(Variant{test_case}), test_case.x);
+        ASSERT_EQ(to<float>(Variant{test_case}), test_case.x());
     }
 }
 
@@ -725,7 +725,7 @@ TEST(Variant, Vector2_to_int_casts_x_into_an_int)
      });
 
     for (const auto& test_case : test_cases) {
-        ASSERT_EQ(to<int>(Variant{test_case}), static_cast<int>(test_case.x));
+        ASSERT_EQ(to<int>(Variant{test_case}), static_cast<int>(test_case.x()));
     }
 }
 
@@ -776,7 +776,7 @@ TEST(Variant, Vector2_to_vector_of_Variants_returns_a_two_element_vector_of_floa
     });
 
     for (const auto& test_case : test_cases) {
-        const auto expected = std::vector<Variant>{Variant{test_case.x}, Variant{test_case.y}};
+        const auto expected = std::vector<Variant>{Variant{test_case.x()}, Variant{test_case.y()}};
         ASSERT_EQ(to<std::vector<Variant>>(Variant{test_case}), expected);
     }
 }
@@ -835,7 +835,7 @@ TEST(Variant, Vector3_to_float_extracts_X_into_the_float)
     });
 
     for (const auto& test_case : test_cases) {
-        ASSERT_EQ(to<float>(Variant{test_case}), test_case.x);
+        ASSERT_EQ(to<float>(Variant{test_case}), test_case.x());
     }
 }
 
@@ -850,7 +850,7 @@ TEST(Variant, Vector3_to_int_extracts_x_into_the_int)
     });
 
     for (const auto& test_case : test_cases) {
-        ASSERT_EQ(to<int>(Variant{test_case}), static_cast<int>(test_case.x));
+        ASSERT_EQ(to<int>(Variant{test_case}), static_cast<int>(test_case.x()));
     }
 }
 
@@ -901,7 +901,7 @@ TEST(Variant, Vector3_to_vector_of_Variants_returns_3_element_vector_of_floats)
     });
 
     for (const auto& test_case : test_cases) {
-        const std::vector<Variant> expected = {Variant{test_case.x}, Variant{test_case.y}, Variant{test_case.z}};
+        const std::vector<Variant> expected = {Variant{test_case.x()}, Variant{test_case.y()}, Variant{test_case.z()}};
         ASSERT_EQ(to<std::vector<Variant>>(Variant{test_case}), expected);
     }
 }

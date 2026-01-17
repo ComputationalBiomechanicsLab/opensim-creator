@@ -104,7 +104,7 @@ namespace
         // coefficients together in memory (as `Vector2`s)
 
         // compute affine terms (a1 + a2*x + a3*y)
-        Vector2 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y;
+        Vector2 rv = coefs.a1 + coefs.a2*p.x() + coefs.a3*p.y();
 
         // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
         for (const TPSNonAffineTerm2D& wt : coefs.weights) {
@@ -190,8 +190,8 @@ namespace
 
             for (int row = 0; row < numPairs; ++row) {
                 L(row, pStartColumn)     = 1.0;
-                L(row, pStartColumn + 1) = landmarkPairs[row].src.x;
-                L(row, pStartColumn + 2) = landmarkPairs[row].src.y;
+                L(row, pStartColumn + 1) = landmarkPairs[row].src.x();
+                L(row, pStartColumn + 2) = landmarkPairs[row].src.y();
             }
         }
 
@@ -201,8 +201,8 @@ namespace
 
             for (int col = 0; col < numPairs; ++col) {
                 L(ptStartRow, col)     = 1.0;
-                L(ptStartRow + 1, col) = landmarkPairs[col].src.x;
-                L(ptStartRow + 2, col) = landmarkPairs[col].src.y;
+                L(ptStartRow + 1, col) = landmarkPairs[col].src.x();
+                L(ptStartRow + 2, col) = landmarkPairs[col].src.y();
             }
         }
 
@@ -222,8 +222,8 @@ namespace
         SimTK::Vector Vx(numPairs + 3, 0.0);
         SimTK::Vector Vy(numPairs + 3, 0.0);
         for (int row = 0; row < numPairs; ++row) {
-            Vx[row] = landmarkPairs[row].dest.x;
-            Vy[row] = landmarkPairs[row].dest.y;
+            Vx[row] = landmarkPairs[row].dest.x();
+            Vy[row] = landmarkPairs[row].dest.y();
         }
 
         // construct coefficient vectors that will receive the solver's result
@@ -279,7 +279,7 @@ namespace
     Mesh TPSWarpMesh(const ThinPlateWarper2D& t, const Mesh& mesh)
     {
         Mesh rv = mesh;
-        rv.transform_vertices([&t](Vector3 v) { return Vector3{t.transform(Vector2{v}), v.z}; });
+        rv.transform_vertices([&t](Vector3 v) { return Vector3{t.transform(Vector2{v}), v.z()}; });
         return rv;
     }
 }
@@ -319,7 +319,7 @@ public:
         ui::begin_panel("Input");
         {
             const Vector2 windowDims = ui::get_content_region_available();
-            const float minDim = min(windowDims.x, windowDims.y);
+            const float minDim = min(windowDims.x(), windowDims.y());
             const Vector2 texDims = {minDim, minDim};
 
             renderMesh(m_InputGrid, texDims, m_InputRender);
@@ -343,7 +343,7 @@ public:
         {
             outputWindowPos = ui::get_cursor_ui_position();
             outputWindowDims = ui::get_content_region_available();
-            const float minDim = min(outputWindowDims.x, outputWindowDims.y);
+            const float minDim = min(outputWindowDims.x(), outputWindowDims.y());
             const Vector2i texDims = Vector2i{minDim, minDim};
 
             {
@@ -369,10 +369,10 @@ public:
             const float leftPadding = 10.0f;
             const float bottomPadding = 10.0f;
             const float panelHeight = 50.0f;
-            ui::set_next_panel_ui_position({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
-            ui::set_next_panel_size({ outputWindowDims.x - leftPadding, panelHeight });
+            ui::set_next_panel_ui_position({ outputWindowPos.x() + leftPadding, outputWindowPos.y() + outputWindowDims.y() - panelHeight - bottomPadding });
+            ui::set_next_panel_size({ outputWindowDims.x() - leftPadding, panelHeight });
             ui::begin_panel("##scrubber", nullptr, ui::get_minimal_panel_flags().without(ui::PanelFlag::NoInputs));
-            ui::set_next_item_width(ui::get_content_region_available().x);
+            ui::set_next_item_width(ui::get_content_region_available().x());
             ui::draw_float_slider("##blend", &m_BlendingFactor, 0.0f, 1.0f);
             ui::end_panel();
         }

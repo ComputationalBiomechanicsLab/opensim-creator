@@ -98,8 +98,8 @@ namespace
         // |     0 |   pi/2 |  0 |  1 |  0 |
 
         return {
-            .theta = osc::atan2(direction_from_origin.x, direction_from_origin.z),
-            .phi = osc::asin(direction_from_origin.y),
+            .theta = osc::atan2(direction_from_origin.x(), direction_from_origin.z()),
+            .phi = osc::asin(direction_from_origin.y()),
         };
     }
 

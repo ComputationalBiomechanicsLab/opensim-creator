@@ -247,10 +247,10 @@ TEST(Rect, with_flipped_y_returns_expected_rect)
     const Rect result = rect.with_flipped_y(125.0f);
     const auto corners = result.corners();
 
-    ASSERT_EQ(corners.min.x, 5.0f);
-    ASSERT_EQ(corners.min.y, 75.0f);
-    ASSERT_EQ(corners.max.x, 50.0f);
-    ASSERT_EQ(corners.max.y, 120.0f);
+    ASSERT_EQ(corners.min.x(), 5.0f);
+    ASSERT_EQ(corners.min.y(), 75.0f);
+    ASSERT_EQ(corners.max.x(), 50.0f);
+    ASSERT_EQ(corners.max.y(), 120.0f);
 }
 
 TEST(Rect, with_dimensions_returns_expected_rect)

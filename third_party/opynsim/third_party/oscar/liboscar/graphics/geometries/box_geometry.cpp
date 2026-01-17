@@ -41,12 +41,12 @@ osc::BoxGeometry::BoxGeometry(const Params& p)
         size_t grid_x,
         size_t grid_y)
     {
-        const float segment_width = dims.x / static_cast<float>(grid_x);
-        const float segment_height = dims.y / static_cast<float>(grid_y);
+        const float segment_width  = dims.x() / static_cast<float>(grid_x);
+        const float segment_height = dims.y() / static_cast<float>(grid_y);
 
-        const float half_width = 0.5f * dims.x;
-        const float half_height = 0.5f * dims.y;
-        const float half_depth = 0.5f * dims.z;
+        const float half_width  = 0.5f * dims.x();
+        const float half_height = 0.5f * dims.y();
+        const float half_depth  = 0.5f * dims.z();
 
         const size_t grid_x1 = grid_x + 1;
         const size_t grid_y1 = grid_y + 1;
@@ -69,7 +69,7 @@ osc::BoxGeometry::BoxGeometry(const Params& p)
                 Vector3 normal{};
                 normal[u] = 0.0f;
                 normal[v] = 0.0f;
-                normal[w] = dims.z > 0.0f ? 1.0f : -1.0f;
+                normal[w] = dims.z() > 0.0f ? 1.0f : -1.0f;
                 normals.push_back(normal);
 
                 uvs.emplace_back(static_cast<float>(ix)/static_cast<float>(grid_x), 1.0f - static_cast<float>(iy)/static_cast<float>(grid_y));

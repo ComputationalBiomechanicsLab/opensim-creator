@@ -129,7 +129,7 @@ private:
 
     void drawFilterAndSearchRow()
     {
-        ui::set_next_item_width(ui::get_content_region_available().x);
+        ui::set_next_item_width(ui::get_content_region_available().x());
         DrawSearchBar(m_CurrentSearch);
     }
 
@@ -238,8 +238,8 @@ private:
             // handle alternating background colors
             if (row++ % 2) {
                 const auto offset = ui::get_cursor_ui_position() - ui::get_cursor_panel_position();
-                const auto topLeft = Vector2{0.0f, ui::get_cursor_panel_position().y};
-                const auto bottomRight =  topLeft + Vector2{ui::get_panel_size().x, ui::get_text_line_height_with_spacing_in_current_panel()};
+                const auto topLeft = Vector2{0.0f, ui::get_cursor_panel_position().y()};
+                const auto bottomRight =  topLeft + Vector2{ui::get_panel_size().x(), ui::get_text_line_height_with_spacing_in_current_panel()};
                 const auto rect = Rect::from_corners(offset + topLeft, offset + bottomRight);
                 const auto color = multiply_luminance(ui::get_color(ui::ColorVar::PanelBg), 1.2f);
                 ui::get_panel_draw_list().add_rect_filled(rect, color);

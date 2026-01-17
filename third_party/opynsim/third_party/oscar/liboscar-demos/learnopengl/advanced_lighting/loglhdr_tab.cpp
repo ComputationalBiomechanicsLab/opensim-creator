@@ -164,8 +164,8 @@ private:
         ui::draw_checkbox("use tonemapping", &use_tonemap_);
         ui::draw_checkbox("use 16-bit colors", &use_16bit_format_);
         ui::draw_float_input("exposure", &exposure_);
-        ui::draw_text("pos = %f,%f,%f", camera_.position().x, camera_.position().y, camera_.position().z);
-        ui::draw_text("eulers = %f,%f,%f", camera_.eulers().x.count(), camera_.eulers().y.count(), camera_.eulers().z.count());
+        ui::draw_text("pos = %f,%f,%f", camera_.position().x(), camera_.position().y(), camera_.position().z());
+        ui::draw_text("eulers = %f,%f,%f", camera_.eulers().x().count(), camera_.eulers().y().count(), camera_.eulers().z().count());
         ui::end_panel();
     }
 

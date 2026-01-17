@@ -36,6 +36,12 @@
 #include <liboscar/maths/vector3.h>
 #include <liboscar/maths/vector4.h>
 #include <liboscar/maths/vector_functions.h>
+#include <liboscar/platform/events/event_type.h>
+#include <liboscar/platform/events/key_event.h>
+#include <liboscar/platform/events/mouse_event.h>
+#include <liboscar/platform/events/mouse_wheel_event.h>
+#include <liboscar/platform/events/text_input_event.h>
+#include <liboscar/platform/events/window_event.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/cursor.h>
 #include <liboscar/platform/cursor_shape.h>
@@ -58,22 +64,16 @@
 #include <liboscar/utils/uid.h>
 
 #include <ankerl/unordered_dense.h>
+
 #define IM_VEC4_CLASS_EXTRA                                                 \
-        ImVec4(const osc::Vector4& v) { x = v.x; y = v.y; z = v.z; w = v.w; }  \
+        ImVec4(const osc::Vector4& v) { x = v.x(); y = v.y(); z = v.z(); w = v.w(); }  \
         operator osc::Vector4() const { return osc::Vector4(x, y, z, w); }        \
         ImVec4(const osc::Color& v) { x = v.r; y = v.g; z = v.b; w = v.a; } \
         operator osc::Color() const { return osc::Color{x, y, z, w};        }
 
 #define IM_VEC2_CLASS_EXTRA                                                 \
-         ImVec2(const osc::Vector2& f) { x = f.x; y = f.y; }                   \
+         ImVec2(const osc::Vector2& f) { x = f.x(); y = f.y(); }                   \
          operator osc::Vector2() const { return osc::Vector2(x,y); }
-#include <liboscar/platform/events/event_type.h>
-#include <liboscar/platform/events/key_event.h>
-#include <liboscar/platform/events/mouse_event.h>
-#include <liboscar/platform/events/mouse_wheel_event.h>
-#include <liboscar/platform/events/text_input_event.h>
-#include <liboscar/platform/events/window_event.h>
-
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
@@ -505,14 +505,14 @@ namespace
         // Project scissor/clipping rectangles from ui space, in device-independent
         // pixels, into screenspace, also in device-independent pixels.
         const Vector2 clip_off = draw_data.DisplayPos;         // (0,0) unless using multi-viewports
-        const Vector2 clip_min(draw_command.ClipRect.x - clip_off.x, draw_command.ClipRect.y - clip_off.y);
-        const Vector2 clip_max(draw_command.ClipRect.z - clip_off.x, draw_command.ClipRect.w - clip_off.y);
+        const Vector2 clip_min(draw_command.ClipRect.x - clip_off.x(), draw_command.ClipRect.y - clip_off.y());
+        const Vector2 clip_max(draw_command.ClipRect.z - clip_off.x(), draw_command.ClipRect.w - clip_off.y());
 
-        if (clip_max.x <= clip_min.x or clip_max.y <= clip_min.y) {
+        if (clip_max.x() <= clip_min.x() or clip_max.y() <= clip_min.y()) {
             return;
         }
-        const Vector2 minflip{clip_min.x, (draw_data.DisplaySize.y) - clip_max.y};
-        const Vector2 maxflip{clip_max.x, (draw_data.DisplaySize.y) - clip_min.y};
+        const Vector2 minflip{clip_min.x(), (draw_data.DisplaySize.y) - clip_max.y()};
+        const Vector2 maxflip{clip_max.x(), (draw_data.DisplaySize.y) - clip_min.y()};
 
         // setup clipping rectangle
         bd.camera.set_clear_flags(CameraClearFlag::None);
@@ -980,8 +980,8 @@ namespace
         if (ime_data->WantVisible) {
             const Vector2 input_dimensions = {1.0f, ime_data->InputLineHeight};
             const auto input_top_left_ui = to<Vector2>(ime_data->InputPos);
-            const Vector2 input_bottom_left_ui = {input_top_left_ui.x, input_top_left_ui.y + input_dimensions.y};
-            const Vector2 input_bottom_left_screen = {input_top_left_ui.x, viewport->Size.y - input_bottom_left_ui.y};
+            const Vector2 input_bottom_left_ui = {input_top_left_ui.x(), input_top_left_ui.y() + input_dimensions.y()};
+            const Vector2 input_bottom_left_screen = {input_top_left_ui.x(), viewport->Size.y - input_bottom_left_ui.y()};
 
             app.set_main_window_unicode_input_rect(Rect::from_corners(
                 input_bottom_left_screen,
@@ -1006,7 +1006,7 @@ namespace
         case EventType::MouseMove: {
             const auto& move_event = dynamic_cast<const MouseEvent&>(e);
             io.AddMouseSourceEvent(move_event.input_source() == MouseInputSource::TouchScreen ? ImGuiMouseSource_TouchScreen : ImGuiMouseSource_Mouse);
-            io.AddMousePosEvent(move_event.position().x, io.DisplaySize.y - move_event.position().y);
+            io.AddMousePosEvent(move_event.position().x(), io.DisplaySize.y - move_event.position().y());
             return true;
         }
         case EventType::MouseWheel: {
@@ -1255,7 +1255,7 @@ namespace
 
         // update mouse position
         if (const auto p = App::upd().mouse_position_in_main_window()) {
-            ImGui::GetIO().AddMousePosEvent(p->x, io.DisplaySize.y - p->y);
+            ImGui::GetIO().AddMousePosEvent(p->x(), io.DisplaySize.y - p->y());
         }
         ImGui_ImplOscar_UpdateMouseCursor(app);
     }
@@ -1562,7 +1562,7 @@ struct osc::Converter<ui::ChildPanelFlags, ImGuiChildFlags> final {
     }
 private:
     static constexpr FlagMapper<ui::ChildPanelFlag, ImGuiChildFlags> c_mappings_ = {
-        {ui::ChildPanelFlag::Border, ImGuiChildFlags_Border},
+        {ui::ChildPanelFlag::Border, ImGuiChildFlags_Borders},
     };
 };
 
@@ -2085,7 +2085,7 @@ bool osc::ui::draw_float3_input(CStringView label, float* v, const char* format,
 
 bool osc::ui::draw_vector3_input(CStringView label, Vector3& v, const char* format, TextInputFlags flags)
 {
-    return ImGui::InputFloat3(label.c_str(), &v.x, format, to<ImGuiInputTextFlags>(flags));
+    return ImGui::InputFloat3(label.c_str(), &v.x(), format, to<ImGuiInputTextFlags>(flags));
 }
 
 bool osc::ui::draw_rgb_color_editor(CStringView label, Color& color)
@@ -2795,16 +2795,16 @@ void osc::ui::apply_dark_theme()
     colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
     colors[ImGuiCol_Tab] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
     colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
-    colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
-    colors[ImGuiCol_TabUnfocused] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
-    colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
+    colors[ImGuiCol_TabSelected] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
+    colors[ImGuiCol_TabDimmed] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
+    colors[ImGuiCol_TabDimmedSelected] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
     colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
     colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
     colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
     colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
     colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
     colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
-    colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    colors[ImGuiCol_NavCursor] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
     colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 
@@ -2851,7 +2851,7 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
             modified = true;
         }
         else if (is_ctrl_or_super_down()) {
-            camera.radius *= 1.0f + 4.0f*delta.y/viewport_dimensions.y;
+            camera.radius *= 1.0f + 4.0f*delta.y()/viewport_dimensions.y();
             modified = true;
         }
         else {
@@ -2861,7 +2861,7 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
     }
     else if (ui::is_mouse_dragging(MouseButton::Right)) {
         if (is_alt_down()) {
-            camera.radius *= 1.0f + 4.0f*delta.y/viewport_dimensions.y;
+            camera.radius *= 1.0f + 4.0f*delta.y()/viewport_dimensions.y();
             modified = true;
         }
         else {
@@ -3047,10 +3047,10 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
     }
     camera.set_position(pos);
 
-    eulers.x += sensitivity * -mouseDelta.y;
-    eulers.x = clamp(eulers.x, -90_deg + 0.1_rad, 90_deg - 0.1_rad);
-    eulers.y += sensitivity * -mouseDelta.x;
-    eulers.y = mod(eulers.y, 360_deg);
+    eulers.x() += sensitivity * -mouseDelta.y();
+    eulers.x() = clamp(eulers.x(), -90_deg + 0.1_rad, 90_deg - 0.1_rad);
+    eulers.y() += sensitivity * -mouseDelta.x();
+    eulers.y() = mod(eulers.y(), 360_deg);
 
     camera.set_rotation(to_world_space_rotation_quaternion(eulers));
 }
@@ -3093,7 +3093,7 @@ Vector2 osc::ui::calc_button_size(CStringView content)
 
 float osc::ui::calc_button_width(CStringView content)
 {
-    return calc_button_size(content).x;
+    return calc_button_size(content).x();
 }
 
 bool osc::ui::draw_button_nobg(CStringView label, Vector2 dimensions)
@@ -3132,8 +3132,8 @@ Rect osc::ui::get_last_drawn_item_screen_rect()
     const auto ui_rect_corners = ui_rect.corners();
     const float ui_height = ImGui::GetIO().DisplaySize.y;
     return Rect::from_corners(
-        {ui_rect_corners.min.x, ui_height - ui_rect_corners.max.y},
-        {ui_rect_corners.max.x, ui_height - ui_rect_corners.min.y}
+        {ui_rect_corners.min.x(), ui_height - ui_rect_corners.max.y()},
+        {ui_rect_corners.max.x(), ui_height - ui_rect_corners.min.y()}
     );
 }
 
@@ -3341,7 +3341,7 @@ bool osc::ui::draw_angle3_input(
     Vector<Radians, 3>& angles,
     CStringView format)
 {
-    Vector3 dvs = {Degrees{angles.x}.count(), Degrees{angles.y}.count(), Degrees{angles.z}.count()};
+    Vector3 dvs = {Degrees{angles.x()}.count(), Degrees{angles.y()}.count(), Degrees{angles.z()}.count()};
     if (ui::draw_vector3_input(label, dvs, format.c_str())) {
         angles = Vector<Radians, 3>{Vector<Degrees, 3>{dvs}};
         return true;
@@ -3398,7 +3398,7 @@ Rect osc::ui::get_main_window_workspace_screen_space_rect()
 {
     const ImGuiViewport& viewport = *ImGui::GetMainViewport();
     const Vector2 bottom_left_ui_space = Vector2{viewport.WorkPos} + Vector2{0.0f, viewport.WorkSize.y};
-    const Vector2 bottom_left_screen_space = Vector2{bottom_left_ui_space.x, viewport.Size.y - bottom_left_ui_space.y};
+    const Vector2 bottom_left_screen_space = Vector2{bottom_left_ui_space.x(), viewport.Size.y - bottom_left_ui_space.y()};
     const Vector2 top_right_screen_space = bottom_left_screen_space + Vector2{viewport.WorkSize};
 
     return Rect::from_corners(bottom_left_screen_space, top_right_screen_space);
@@ -3434,7 +3434,7 @@ bool osc::ui::begin_main_window_top_bar(CStringView label, float height, PanelFl
 bool osc::ui::begin_main_window_bottom_bar(CStringView label)
 {
     constexpr ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-    const float height = ui::get_frame_height() + ui::get_style_panel_padding().y;
+    const float height = ui::get_frame_height() + ui::get_style_panel_padding().y();
 
     return ImGui::BeginViewportSideBar(
         label.c_str(),
@@ -3447,19 +3447,19 @@ bool osc::ui::begin_main_window_bottom_bar(CStringView label)
 
 bool osc::ui::draw_button_centered(CStringView label)
 {
-    const float button_width = ui::calc_text_size(label).x + 2.0f*ui::get_style_frame_padding().x;
-    const float midpoint = ui::get_cursor_ui_position().x + 0.5f*ui::get_content_region_available().x;
+    const float button_width = ui::calc_text_size(label).x() + 2.0f*ui::get_style_frame_padding().x();
+    const float midpoint = ui::get_cursor_ui_position().x() + 0.5f*ui::get_content_region_available().x();
     const float button_start_x = midpoint - 0.5f*button_width;
 
-    ui::set_cursor_ui_position({button_start_x, ui::get_cursor_ui_position().y});
+    ui::set_cursor_ui_position({button_start_x, ui::get_cursor_ui_position().y()});
 
     return ui::draw_button(label);
 }
 
 void osc::ui::draw_text_centered(CStringView content)
 {
-    const float panel_width = ui::get_panel_size().x;
-    const float text_width   = ui::calc_text_size(content).x;
+    const float panel_width = ui::get_panel_size().x();
+    const float text_width   = ui::calc_text_size(content).x();
 
     ui::set_cursor_panel_x(0.5f * (panel_width - text_width));
     draw_text(content);
@@ -3491,8 +3491,8 @@ void osc::ui::draw_text_disabled_and_panel_centered(CStringView content)
 void osc::ui::draw_text_column_centered(CStringView content)
 {
     const float column_width = ui::get_column_width();
-    const float column_offset = ui::get_cursor_panel_position().x;
-    const float text_width = ui::calc_text_size(content).x;
+    const float column_offset = ui::get_cursor_panel_position().x();
+    const float text_width = ui::calc_text_size(content).x();
 
     ui::set_cursor_panel_x(column_offset + 0.5f*(column_width-text_width));
     draw_text(content);
@@ -3627,10 +3627,10 @@ bool osc::ui::draw_float_circular_slider(
 
     // calculate top-level item info for early-cull checks etc.
     const Vector2 label_size = ui::calc_text_size(label, true);
-    const Vector2 frame_dims = {ImGui::CalcItemWidth(), label_size.y + 2.0f*style.FramePadding.y};
+    const Vector2 frame_dims = {ImGui::CalcItemWidth(), label_size.y() + 2.0f*style.FramePadding.y};
     const Vector2 cursor_screen_pos = ui::get_cursor_ui_position();
     const ImRect frame_bounds = {cursor_screen_pos, cursor_screen_pos + frame_dims};
-    const float label_width_with_spacing = label_size.x > 0.0f ? label_size.x + style.ItemInnerSpacing.x : 0.0f;
+    const float label_width_with_spacing = label_size.x() > 0.0f ? label_size.x() + style.ItemInnerSpacing.x : 0.0f;
     const ImRect total_bounds = {frame_bounds.Min, Vector2{frame_bounds.Max} + Vector2{label_width_with_spacing, 0.0f}};
 
     const bool temporary_text_input_allowed = (to<ImGuiSliderFlags>(flags) & ImGuiSliderFlags_NoInput) == 0;
@@ -3713,8 +3713,8 @@ bool osc::ui::draw_float_circular_slider(
         const Vector2 slider_nob_center = ::centroid_of(grab_bounding_box);
         const float slider_nob_radius = 0.75f * shortest_edge_length_of(grab_bounding_box);
         const float slider_rail_thickness = 0.5f * slider_nob_radius;
-        const float slider_rail_top_y = slider_nob_center.y - 0.5f*slider_rail_thickness;
-        const float slider_rail_bottom_y = slider_nob_center.y + 0.5f*slider_rail_thickness;
+        const float slider_rail_top_y = slider_nob_center.y() - 0.5f*slider_rail_thickness;
+        const float slider_rail_bottom_y = slider_nob_center.y() + 0.5f*slider_rail_thickness;
 
         const bool is_active = g.ActiveId == id;
         const ImU32 rail_color = ImGui::GetColorU32(is_hovered ? ImGuiCol_FrameBgHovered : is_active ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBg);
@@ -3723,7 +3723,7 @@ bool osc::ui::draw_float_circular_slider(
         // render left-hand rail (brighter)
         {
             const Vector2 lhs_rail_topleft = {frame_bounds.Min.x, slider_rail_top_y};
-            const Vector2 lhs_rail_bottomright = {slider_nob_center.x, slider_rail_bottom_y};
+            const Vector2 lhs_rail_bottomright = {slider_nob_center.x(), slider_rail_bottom_y};
             const ImU32 brightened_rail_color = brighten(rail_color, 2.0f);
 
             window->DrawList->AddRectFilled(
@@ -3736,7 +3736,7 @@ bool osc::ui::draw_float_circular_slider(
 
         // render right-hand rail
         {
-            const Vector2 rhs_rail_topleft = {slider_nob_center.x, slider_rail_top_y};
+            const Vector2 rhs_rail_topleft = {slider_nob_center.x(), slider_rail_top_y};
             const Vector2 rhs_rail_bottomright = {frame_bounds.Max.x, slider_rail_bottom_y};
 
             window->DrawList->AddRectFilled(
@@ -3765,7 +3765,7 @@ bool osc::ui::draw_float_circular_slider(
         }
 
         // render input label in remaining space
-        if (label_size.x > 0.0f) {
+        if (label_size.x() > 0.0f) {
             ImGui::RenderText(ImVec2(frame_bounds.Max.x + style.ItemInnerSpacing.x, frame_bounds.Min.y + style.FramePadding.y), label.c_str());
         }
     }
@@ -3773,7 +3773,7 @@ bool osc::ui::draw_float_circular_slider(
         // render slider background frame
         {
             const ImU32 frame_color = ImGui::GetColorU32(g.ActiveId == id ? ImGuiCol_FrameBgActive : is_hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
-            ImGui::RenderNavHighlight(frame_bounds, id);
+            ImGui::RenderNavCursor(frame_bounds, id);
             ImGui::RenderFrame(frame_bounds.Min, frame_bounds.Max, frame_color, true, g.Style.FrameRounding);
         }
 
@@ -3793,7 +3793,7 @@ bool osc::ui::draw_float_circular_slider(
         }
 
         // render input label in remaining space
-        if (label_size.x > 0.0f) {
+        if (label_size.x() > 0.0f) {
             ImGui::RenderText(ImVec2(frame_bounds.Max.x + style.ItemInnerSpacing.x, frame_bounds.Min.y + style.FramePadding.y), label.c_str());
         }
     }
@@ -3824,7 +3824,7 @@ bool osc::ui::draw_gizmo_mode_selector(GizmoMode& mode)
     bool rv = false;
     size_t current_mode = std::distance(rgs::begin(modes), rgs::find(modes, mode));
     ui::push_style_var(StyleVar::FrameRounding, 0.0f);
-    ui::set_next_item_width(ui::calc_text_size(mode_labels[0]).x + 40.0f);
+    ui::set_next_item_width(ui::calc_text_size(mode_labels[0]).x() + 40.0f);
     if (ui::draw_combobox("##modeselect", &current_mode, mode_labels)) {
         mode = modes.at(current_mode);
         rv = true;
@@ -4243,8 +4243,8 @@ void osc::ui::plot::plot_line(CStringView name, std::span<const Vector2> points)
 {
     ImPlot::PlotLine(
         name.c_str(),
-        points.empty() ? nullptr : &points.front().x,
-        points.empty() ? nullptr : &points.front().y,
+        points.empty() ? nullptr : &points.front().x(),
+        points.empty() ? nullptr : &points.front().y(),
         static_cast<int>(points.size()),
         0,
         0,
@@ -4272,12 +4272,12 @@ Rect osc::ui::plot::get_plot_ui_rect()
 
 void osc::ui::plot::detail::draw_annotation_v(Vector2 position_dataspace, const Color& color, Vector2 pixel_offset, bool clamp, CStringView fmt, va_list args)
 {
-    ImPlot::AnnotationV(position_dataspace.x, position_dataspace.y, color, pixel_offset, clamp, fmt.c_str(), args);
+    ImPlot::AnnotationV(position_dataspace.x(), position_dataspace.y(), color, pixel_offset, clamp, fmt.c_str(), args);
 }
 
 bool osc::ui::plot::drag_point(int id, Vector2d* plot_point, const Color& color, float size, DragToolFlags flags)
 {
-    return ImPlot::DragPoint(id, &plot_point->x, &plot_point->y, color, size, to_ImPlotDragToolFlags(flags));
+    return ImPlot::DragPoint(id, &plot_point->x(), &plot_point->y(), color, size, to_ImPlotDragToolFlags(flags));
 }
 
 bool osc::ui::plot::drag_line_x(int id, double* plot_x, const Color& color, float thickness, DragToolFlags flags)

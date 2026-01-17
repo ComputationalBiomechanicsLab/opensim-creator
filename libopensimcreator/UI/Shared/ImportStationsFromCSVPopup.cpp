@@ -138,11 +138,11 @@ private:
                 ui::table_set_column_index(column++);
                 ui::draw_text(station.name);
                 ui::table_set_column_index(column++);
-                ui::draw_text("%f", station.position.x);
+                ui::draw_text("%f", station.position.x());
                 ui::table_set_column_index(column++);
-                ui::draw_text("%f", station.position.y);
+                ui::draw_text("%f", station.position.y());
                 ui::table_set_column_index(column++);
-                ui::draw_text("%f", station.position.z);
+                ui::draw_text("%f", station.position.z());
                 ui::pop_id();
             }
 

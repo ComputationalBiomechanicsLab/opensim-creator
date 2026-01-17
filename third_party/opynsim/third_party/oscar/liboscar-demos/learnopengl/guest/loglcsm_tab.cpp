@@ -62,12 +62,12 @@ namespace
         const Vector2uz num_grid_cells = {10, 10};
 
         std::vector<TransformedMesh> rv;
-        rv.reserve(num_grid_cells.x * num_grid_cells.y);
+        rv.reserve(num_grid_cells.x() * num_grid_cells.y());
 
-        for (size_t x = 0; x < num_grid_cells.x; ++x) {
-            for (size_t y = 0; y < num_grid_cells.y; ++y) {
+        for (size_t x = 0; x < num_grid_cells.x(); ++x) {
+            for (size_t y = 0; y < num_grid_cells.y(); ++y) {
 
-                const Vector3 cell_pos = grid_bounds.min + grid_dimensions * (Vector3{x, 0.0f, y} / Vector3{num_grid_cells.x - 1uz, 1, num_grid_cells.y - 1uz});
+                const Vector3 cell_pos = grid_bounds.min + grid_dimensions * (Vector3{x, 0.0f, y} / Vector3{num_grid_cells.x() - 1uz, 1, num_grid_cells.y() - 1uz});
                 Mesh mesh;
                 rgs::sample(possible_geometries, &mesh, 1, rng);
 
@@ -186,12 +186,12 @@ namespace
             // because the light source is directional, the bounds of the corners in light space are
             // give-or-take equivalent to the bounds of the orthogonal projection cube corners.
             rv.push_back(OrthogonalProjectionParameters{
-                .left   = light_bounds.min.x,
-                .right  = light_bounds.max.x,
-                .bottom = light_bounds.min.y,
-                .top    = light_bounds.max.y,
-                .near   = light_bounds.max.z,  // note: Z points opposite to the viewing direction
-                .far    = light_bounds.min.z,
+                .left   = light_bounds.min.x(),
+                .right  = light_bounds.max.x(),
+                .bottom = light_bounds.min.y(),
+                .top    = light_bounds.max.y(),
+                .near   = light_bounds.max.z(),  // note: Z points opposite to the viewing direction
+                .far    = light_bounds.min.z(),
             });
         }
         return rv;
@@ -312,7 +312,7 @@ private:
             const Vector4 viewer_position = {0.0f, 0.0f, -lerp(near, far, c_normalized_cascade_planes[i]), 1.0f};
             const Matrix4x4 proj = user_camera_.projection_matrix(ui::get_main_window_workspace_aspect_ratio());
             const Vector4 proj_pos = (proj * viewer_position);
-            ends.push_back(proj_pos.z);
+            ends.push_back(proj_pos.z());
         }
         csm_material_.set_array("gCascadeEndClipSpace", ends);
 
@@ -330,7 +330,7 @@ private:
         Vector2 cursor = {0.0f, 0.0f};
         for ([[maybe_unused]] const auto& cascade_raster : cascade_rasters_) {
             // graphics::blit_to_screen(cascade_raster, Rect{cursor, cursor + overlay_dimensions});  // TODO
-            cursor.x += overlay_dimensions.x;
+            cursor.x() += overlay_dimensions.x();
         }
     }
 

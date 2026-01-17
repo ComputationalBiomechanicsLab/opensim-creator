@@ -113,7 +113,7 @@ namespace osc
                 m_CachedSourceNonParticipatingLandmarks,
                 [](const TPSDocumentNonParticipatingLandmark& lm, const SimTK::fVec3& position)
                 {
-                    return lm.location.x == position[0] and lm.location.y == position[1] and lm.location.z == position[2];
+                    return lm.location.x() == position[0] and lm.location.y() == position[1] and lm.location.z() == position[2];
                 }
             );
 

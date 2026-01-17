@@ -38,7 +38,7 @@ namespace osc
     constexpr float volume_of(const AABB& aabb)
     {
         Vector3 const dims = dimensions_of(aabb);
-        return dims.x * dims.y * dims.z;
+        return dims.x() * dims.y() * dims.z();
     }
 
     // tests if `aabb` has zero width along all of its edges

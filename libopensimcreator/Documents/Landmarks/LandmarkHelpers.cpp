@@ -170,9 +170,9 @@ void osc::lm::WriteLandmarksToCSV(
     for (auto lm = landmarkProducer(); lm; lm = landmarkProducer())
     {
         using std::to_string;
-        auto x = lm->position.x;
-        auto y = lm->position.y;
-        auto z = lm->position.z;
+        auto x = lm->position.x();
+        auto y = lm->position.y();
+        auto z = lm->position.z();
 
         if (flags & LandmarkCSVFlags::NoNames)
         {

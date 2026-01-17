@@ -88,10 +88,10 @@ private:
             const Vector2& v = m_Data.emplace_back(std::forward<Args>(args)...);
 
             // update X-/Y-range
-            m_XRange.lower = min(v.x, m_XRange.lower);
-            m_XRange.upper = max(v.x, m_XRange.upper);
-            m_YRange.lower = min(v.y, m_YRange.lower);
-            m_YRange.upper = max(v.y, m_YRange.upper);
+            m_XRange.lower = min(v.x(), m_XRange.lower);
+            m_XRange.upper = max(v.x(), m_XRange.upper);
+            m_YRange.lower = min(v.y(), m_YRange.lower);
+            m_YRange.upper = max(v.y(), m_YRange.upper);
         }
 
     private:
@@ -136,7 +136,7 @@ private:
             return;  // don't try to plot null data etc.
         }
 
-        const Vector2 dimensions = Vector2{ui::get_content_region_available().x};
+        const Vector2 dimensions = Vector2{ui::get_content_region_available().x()};
         const plot::PlotFlags flags = plot::PlotFlags::NoMenus | plot::PlotFlags::NoBoxSelect | plot::PlotFlags::NoFrame | plot::PlotFlags::NoTitle;
         if (plot::begin(name(), dimensions, flags)) {
 

@@ -44,7 +44,7 @@ public:
             return on_keyup(dynamic_cast<const KeyEvent&>(ev));
         }
         else if (ev.type() == EventType::MouseWheel) {
-            const float factor = dynamic_cast<const MouseWheelEvent&>(ev).delta().y > 0 ? 0.9f : 1.11111111f;
+            const float factor = dynamic_cast<const MouseWheelEvent&>(ev).delta().y() > 0 ? 0.9f : 1.11111111f;
             apply_zoom_to_camera(ui::get_mouse_ui_position(), factor);
             return true;
         }

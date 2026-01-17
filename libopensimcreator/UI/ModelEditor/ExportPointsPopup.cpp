@@ -453,9 +453,9 @@ namespace
 
         const auto columns = std::to_array<std::string>({
             name,
-            std::to_string(position.x),
-            std::to_string(position.y),
-            std::to_string(position.z),
+            std::to_string(position.x()),
+            std::to_string(position.y()),
+            std::to_string(position.z()),
         });
 
         CSV::write_row(out, columns);

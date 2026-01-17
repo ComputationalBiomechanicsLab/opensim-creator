@@ -25,15 +25,15 @@ namespace osc
         const Vector<T, 3> u(cross(s, f));
 
         Matrix<T, 4, 4> rv(1);
-        rv[0][0] =  s.x;
-        rv[1][0] =  s.y;
-        rv[2][0] =  s.z;
-        rv[0][1] =  u.x;
-        rv[1][1] =  u.y;
-        rv[2][1] =  u.z;
-        rv[0][2] = -f.x;
-        rv[1][2] = -f.y;
-        rv[2][2] = -f.z;
+        rv[0][0] =  s.x();
+        rv[1][0] =  s.y();
+        rv[2][0] =  s.z();
+        rv[0][1] =  u.x();
+        rv[1][1] =  u.y();
+        rv[2][1] =  u.z();
+        rv[0][2] = -f.x();
+        rv[1][2] = -f.y();
+        rv[2][2] = -f.z();
         rv[3][0] = -dot(s, eye);
         rv[3][1] = -dot(u, eye);
         rv[3][2] =  dot(f, eye);
@@ -223,7 +223,7 @@ namespace osc
         const Vector<T, 4> row_0(inverted[0][0], inverted[1][0], inverted[2][0], inverted[3][0]);
 
         const Vector<T, 4> dot_0(m[0] * row_0);
-        const T dot_1 = (dot_0.x + dot_0.y) + (dot_0.z + dot_0.w);
+        const T dot_1 = (dot_0.x() + dot_0.y()) + (dot_0.z() + dot_0.w());
 
         const T one_over_determinant = static_cast<T>(1) / dot_1;
 
@@ -375,7 +375,7 @@ namespace osc
 
         // second, take care of translation (easy).
         r_translation = Vector<T, 3>(local_matrix[3]);
-        local_matrix[3] = Vector<T, 4>(0, 0, 0, local_matrix[3].w);
+        local_matrix[3] = Vector<T, 4>(0, 0, 0, local_matrix[3].w());
 
         // third/fourth, calculate the scale and shear
         Vector<T, 3> Row[3];
@@ -387,30 +387,30 @@ namespace osc
         }
 
         // compute X scale factor and normalize first row
-        r_scale.x = length(Row[0]);
+        r_scale.x() = length(Row[0]);
 
         Row[0] = detail::scale(Row[0], static_cast<T>(1));
 
         // compute XY shear factor and make 2nd row orthogonal to 1st
-        r_skew.z = dot(Row[0], Row[1]);
-        Row[1] = detail::combine(Row[1], Row[0], static_cast<T>(1), -r_skew.z);
+        r_skew.z() = dot(Row[0], Row[1]);
+        Row[1] = detail::combine(Row[1], Row[0], static_cast<T>(1), -r_skew.z());
 
         // compute Y scale and normalize 2nd row
-        r_scale.y = length(Row[1]);
+        r_scale.y() = length(Row[1]);
         Row[1] = detail::scale(Row[1], static_cast<T>(1));
-        r_skew.z /= r_scale.y;
+        r_skew.z() /= r_scale.y();
 
         // compute XZ and YZ shears, orthogonalize 3rd row
-        r_skew.y = dot(Row[0], Row[2]);
-        Row[2] = detail::combine(Row[2], Row[0], static_cast<T>(1), -r_skew.y);
-        r_skew.x = dot(Row[1], Row[2]);
-        Row[2] = detail::combine(Row[2], Row[1], static_cast<T>(1), -r_skew.x);
+        r_skew.y() = dot(Row[0], Row[2]);
+        Row[2] = detail::combine(Row[2], Row[0], static_cast<T>(1), -r_skew.y());
+        r_skew.x() = dot(Row[1], Row[2]);
+        Row[2] = detail::combine(Row[2], Row[1], static_cast<T>(1), -r_skew.x());
 
         // get Z scale and normalize 3rd row
-        r_scale.z = length(Row[2]);
+        r_scale.z() = length(Row[2]);
         Row[2] = detail::scale(Row[2], static_cast<T>(1));
-        r_skew.y /= r_scale.z;
-        r_skew.x /= r_scale.z;
+        r_skew.y() /= r_scale.z();
+        r_skew.x() /= r_scale.z();
 
         // at this point, the matrix (in rows[]) is orthonormal
         //
@@ -443,20 +443,20 @@ namespace osc
         // }
 
         int i, j, k = 0;
-        T root, trace = Row[0].x + Row[1].y + Row[2].z;
+        T root, trace = Row[0].x() + Row[1].y() + Row[2].z();
         if (trace > static_cast<T>(0)) {
             root = sqrt(trace + static_cast<T>(1.0));
             r_orientation.w = static_cast<T>(0.5) * root;
             root = static_cast<T>(0.5) / root;
-            r_orientation.x = root * (Row[1].z - Row[2].y);
-            r_orientation.y = root * (Row[2].x - Row[0].z);
-            r_orientation.z = root * (Row[0].y - Row[1].x);
+            r_orientation.x = root * (Row[1].z() - Row[2].y());
+            r_orientation.y = root * (Row[2].x() - Row[0].z());
+            r_orientation.z = root * (Row[0].y() - Row[1].x());
         } // end_panel if > 0
         else {
             static int next[3] = {1, 2, 0};
             i = 0;
-            if(Row[1].y > Row[0].x) i = 1;
-            if(Row[2].z > Row[i][i]) i = 2;
+            if(Row[1].y() > Row[0].x()) i = 1;
+            if(Row[2].z() > Row[i][i]) i = 2;
             j = next[i];
             k = next[j];
 

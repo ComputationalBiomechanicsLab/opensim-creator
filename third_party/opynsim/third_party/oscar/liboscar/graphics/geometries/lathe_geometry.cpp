@@ -43,7 +43,7 @@ osc::LatheGeometry::LatheGeometry(const Params& p)
     {
         // first vertex
         const Vector2 dv = p.points[1] - p.points[0];
-        const Vector3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
+        const Vector3 normal = {dv.y() * 1.0f, -dv.x(), dv.y() * 0.0f};
 
         init_normals.push_back(normalize(normal));
         previous_normal = normal;
@@ -51,7 +51,7 @@ osc::LatheGeometry::LatheGeometry(const Params& p)
     // in-between vertices
     for (size_t i = 1; i < p.points.size()-1; ++i) {
         const Vector2 dv = p.points[i+1] - p.points[i];
-        const Vector3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
+        const Vector3 normal = {dv.y() * 1.0f, -dv.x(), dv.y() * 0.0f};
 
         init_normals.push_back(normalize(normal + previous_normal));
         previous_normal = normal;
@@ -70,18 +70,18 @@ osc::LatheGeometry::LatheGeometry(const Params& p)
             const auto fj = static_cast<float>(j);
 
             vertices.emplace_back(
-                p.points[j].x * sin_phi,
-                p.points[j].y,
-                p.points[j].x * cos_phi
+                p.points[j].x() * sin_phi,
+                p.points[j].y(),
+                p.points[j].x() * cos_phi
             );
             uvs.emplace_back(
                 fi / fnum_segments,
                 fj / static_cast<float>(p.points.size()-1)
             );
             normals.emplace_back(
-                init_normals[j].x * sin_phi,
-                init_normals[j].y,
-                init_normals[j].x * cos_phi
+                init_normals[j].x() * sin_phi,
+                init_normals[j].y(),
+                init_normals[j].x() * cos_phi
             );
         }
     }

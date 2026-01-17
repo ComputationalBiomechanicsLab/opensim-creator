@@ -242,9 +242,9 @@ private:
 
         // rhs: search and connectee choices
         ui::push_id(static_cast<int>(i));
-        ui::set_next_item_width(ui::get_content_region_available().x);
+        ui::set_next_item_width(ui::get_content_region_available().x());
         DrawSearchBar(m_SocketSearchStrings[i]);
-        ui::begin_child_panel("##pfselector", {ui::get_content_region_available().x, 5.0f*ui::get_text_line_height_in_current_panel()});
+        ui::begin_child_panel("##pfselector", {ui::get_content_region_available().x(), 5.0f*ui::get_text_line_height_in_current_panel()});
 
         // iterate through potential connectees in model and print connect-able options
         int innerID = 0;
@@ -290,7 +290,7 @@ private:
         const OpenSim::Model& model = m_Model->getModel();
 
         // show list of choices
-        ui::begin_child_panel("##pf_ppchoices", {ui::get_content_region_available().x, 128.0f});
+        ui::begin_child_panel("##pf_ppchoices", {ui::get_content_region_available().x(), 128.0f});
 
         // choices
         for (const OpenSim::Component& c : model.getComponentList()) {
@@ -355,7 +355,7 @@ private:
     {
         const OpenSim::Model& model = m_Model->getModel();
 
-        ui::begin_child_panel("##pf_pathpoints", {ui::get_content_region_available().x, 128.0f});
+        ui::begin_child_panel("##pf_pathpoints", {ui::get_content_region_available().x(), 128.0f});
 
         std::optional<ptrdiff_t> maybeIndexToErase;
         for (ptrdiff_t i = 0; i < std::ssize(m_PathPoints); ++i) {
@@ -428,14 +428,14 @@ private:
         int imguiID = 0;
 
         ui::push_id(imguiID++);
-        ui::set_next_item_width(ui::get_content_region_available().x);
+        ui::set_next_item_width(ui::get_content_region_available().x());
         DrawSearchBar(m_PathSearchString);
         drawPathPointEditorChoices();
         ui::pop_id();
         ui::next_column();
 
         ui::push_id(imguiID++);
-        ui::draw_dummy({0.0f, ui::get_style_frame_padding().y});
+        ui::draw_dummy({0.0f, ui::get_style_frame_padding().y()});
         ui::draw_text("Chosen:");
         drawPathPointEditorAlreadyChosenPoints();
         ui::pop_id();

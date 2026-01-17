@@ -87,9 +87,9 @@ osc::TorusKnotGeometry::TorusKnotGeometry(const Params& p)
             // now calculate the final vertex position.
             // first we orient the extrusion with our basis vectors, then we add it to the current position on the curve
             const Vector3 vertex = {
-                p1.x + (cx * N.x + cy * B.x),
-                p1.y + (cx * N.y + cy * B.y),
-                p1.z + (cx * N.z + cy * B.z),
+                p1.x() + (cx * N.x() + cy * B.x()),
+                p1.y() + (cx * N.y() + cy * B.y()),
+                p1.z() + (cx * N.z() + cy * B.z()),
             };
             vertices.push_back(vertex);
 

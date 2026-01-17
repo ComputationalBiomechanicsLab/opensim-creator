@@ -709,7 +709,7 @@ namespace
 
     bool xLessThan(const Vector2& lhs, const Vector2& rhs)
     {
-        return lhs.x < rhs.x;
+        return lhs.x() < rhs.x();
     }
 
     std::optional<float> ComputeLERPedY(const Plot& p, float x)
@@ -735,7 +735,7 @@ namespace
         if (it == points.begin())
         {
             // X if off the left-hand side
-            return points.front().y;
+            return points.front().y();
         }
 
         // else: the iterator is pointing somewhere in the middle of the data
@@ -745,9 +745,9 @@ namespace
         const PlotDataPoint below = points[belowIdx];
         const PlotDataPoint above = points[aboveIdx];
 
-        const float t = (x - below.x) / (above.x - below.x); // [0..1]
+        const float t = (x - below.x()) / (above.x() - below.x()); // [0..1]
 
-        return lerp(below.y, above.y, t);
+        return lerp(below.y(), above.y(), t);
     }
 
     std::optional<PlotDataPoint> FindNearestPoint(const Plot& p, float x)
@@ -783,8 +783,8 @@ namespace
         const PlotDataPoint below = points[belowIdx];
         const PlotDataPoint above = points[aboveIdx];
 
-        const float belowDistance = abs(below.x - x);
-        const float aboveDistance = abs(above.x - x);
+        const float belowDistance = abs(below.x() - x);
+        const float aboveDistance = abs(above.x() - x);
 
         const size_t closestIdx =  aboveDistance < belowDistance  ? aboveIdx : belowIdx;
 
@@ -801,7 +801,7 @@ namespace
             return false;
         }
 
-        return points.front().x <= x && x <= points.back().x;
+        return points.front().x() <= x && x <= points.back().x();
     }
 
     std::string IthPlotLineName(const Plot& p, size_t i)
@@ -958,7 +958,7 @@ namespace
         for (const PlotDataPoint& p : *lock) {
             CSV::write_row(
                 out,
-                std::to_array({ std::to_string(p.x), std::to_string(p.y) })
+                std::to_array({ std::to_string(p.x()), std::to_string(p.y()) })
             );
         }
     }
@@ -1228,14 +1228,14 @@ namespace
     {
         // figure out mouse hover position
         const bool isHovered = plot::is_plot_hovered();
-        float mouseX = plot::get_plot_mouse_position().x;
+        float mouseX = plot::get_plot_mouse_position().x();
 
         // handle snapping the mouse's X position
         if (isHovered && snapToNearest) {
             auto maybeNearest = FindNearestPoint(lines.getActivePlot(), mouseX);
 
             if (IsXInRange(lines.getActivePlot(), mouseX) && maybeNearest) {
-                mouseX = maybeNearest->x;
+                mouseX = maybeNearest->x();
             }
         }
 
@@ -1270,7 +1270,7 @@ namespace
 
         std::optional<float> peekX() const
         {
-            return m_Cursor != m_Data.end() ? m_Cursor->x : std::optional<float>{};
+            return m_Cursor != m_Data.end() ? m_Cursor->x() : std::optional<float>{};
         }
 
         std::optional<PlotDataPoint> peek() const
@@ -1367,8 +1367,8 @@ namespace
             for (LineCursor& cursor : cursors) {
                 std::optional<PlotDataPoint> data = cursor.peek();
 
-                if (data && (data->x <= *maybeX || equal_within_epsilon(data->x, *maybeX))) {
-                    cols.push_back(std::to_string(data->y));
+                if (data && (data->x() <= *maybeX || equal_within_epsilon(data->x(), *maybeX))) {
+                    cols.push_back(std::to_string(data->y()));
                     ++cursor;
                     data = cursor.peek();  // to test the next X
                 }
@@ -1376,7 +1376,7 @@ namespace
                     cols.emplace_back();  // blank cell
                 }
 
-                const std::optional<float> maybeDataX = data ? std::optional<float>{data->x} : std::optional<float>{};
+                const std::optional<float> maybeDataX = data ? std::optional<float>{data->x()} : std::optional<float>{};
                 if (LessThanAssumingEmptyHighest(maybeDataX, maybeNextX)) {
                     maybeNextX = maybeDataX;
                 }
@@ -1625,27 +1625,27 @@ namespace
             // parameters visually (#397)
 
             const std::string muscleName = truncate_with_ellipsis(getShared().getPlotParams().getMusclePath().getComponentName(), 15);
-            const float muscleNameWidth = ui::calc_text_size(muscleName).x + 2.0f*ui::get_style_frame_padding().x;
+            const float muscleNameWidth = ui::calc_text_size(muscleName).x() + 2.0f*ui::get_style_frame_padding().x();
             const std::string outputName = truncate_with_ellipsis(getShared().getPlotParams().getPlottedOutput().getName(), 15);
-            const float outputNameWidth = ui::calc_text_size(outputName).x + 2.0f*ui::get_style_frame_padding().x;
+            const float outputNameWidth = ui::calc_text_size(outputName).x() + 2.0f*ui::get_style_frame_padding().x();
             const std::string coordName = truncate_with_ellipsis(getShared().getPlotParams().getCoordinatePath().getComponentName(), 15);
-            const float coordNameWidth = ui::calc_text_size(coordName).x + 2.0f*ui::get_style_frame_padding().x;
+            const float coordNameWidth = ui::calc_text_size(coordName).x() + 2.0f*ui::get_style_frame_padding().x();
 
             const float totalWidth =
                 muscleNameWidth +
-                ui::calc_text_size("'s").x +
-                ui::get_style_item_spacing().x +
+                ui::calc_text_size("'s").x() +
+                ui::get_style_item_spacing().x() +
                 outputNameWidth +
-                ui::get_style_item_spacing().x +
-                ui::calc_text_size("vs.").x +
-                ui::get_style_item_spacing().x +
+                ui::get_style_item_spacing().x() +
+                ui::calc_text_size("vs.").x() +
+                ui::get_style_item_spacing().x() +
                 coordNameWidth +
-                ui::get_style_item_spacing().x +
-                ui::get_style_frame_padding().x +
-                ui::calc_text_size(MSMICONS_BARS " Options").x +
-                ui::get_style_frame_padding().x;
+                ui::get_style_item_spacing().x() +
+                ui::get_style_frame_padding().x() +
+                ui::calc_text_size(MSMICONS_BARS " Options").x() +
+                ui::get_style_frame_padding().x();
 
-            const float cursorStart = 0.5f*(ui::get_content_region_available().x - totalWidth);
+            const float cursorStart = 0.5f*(ui::get_content_region_available().x() - totalWidth);
             ui::set_cursor_panel_x(cursorStart);
 
             ui::set_next_item_width(muscleNameWidth);
@@ -1664,7 +1664,7 @@ namespace
             }
 
             ui::same_line();
-            ui::set_cursor_panel_x(ui::get_cursor_panel_x() - ui::get_style_item_spacing().x);
+            ui::set_cursor_panel_x(ui::get_cursor_panel_x() - ui::get_style_item_spacing().x());
             ui::draw_text("'s");
             ui::same_line();
             ui::set_next_item_width(outputNameWidth);

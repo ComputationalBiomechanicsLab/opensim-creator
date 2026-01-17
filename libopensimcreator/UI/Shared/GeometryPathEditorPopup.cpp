@@ -267,7 +267,7 @@ private:
 
         if (auto* const pp = dynamic_cast<OpenSim::PathPoint*>(&app))
         {
-            const float inputWidth = ui::calc_text_size("0.00000").x;
+            const float inputWidth = ui::calc_text_size("0.00000").x();
 
             SimTK::Vec3& location = pp->upd_location();
 
@@ -295,7 +295,7 @@ private:
 
     void drawIthPathPointFrameCell(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        const float width = ui::calc_text_size("/bodyset/a_typical_body_name").x;
+        const float width = ui::calc_text_size("/bodyset/a_typical_body_name").x();
 
         const std::string& label = At(pps, i).getSocket("parent_frame").getConnecteePath();
 

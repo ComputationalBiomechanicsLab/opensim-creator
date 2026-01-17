@@ -136,7 +136,7 @@ public:
 
         ui::begin_child_panel(
             "mesh list",
-            Vector2{ui::get_content_region_available().x, 256},
+            Vector2{ui::get_content_region_available().x(), 256},
             ui::ChildPanelFlags{},
             ui::PanelFlag::HorizontalScrollbar);
 

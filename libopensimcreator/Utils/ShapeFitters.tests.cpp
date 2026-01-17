@@ -61,7 +61,7 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
     const Sphere sphereFit = FitSphere(sphereMesh);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, t.translation, 0.000001f)));
-    ASSERT_TRUE(equal_within_reldiff(sphereFit.radius, t.scale.x, 0.000001f));
+    ASSERT_TRUE(equal_within_reldiff(sphereFit.radius, t.scale.x(), 0.000001f));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -200,9 +200,9 @@ TEST(FitEllipsoid, ThrowsErrorIfGivenLessThan9Points)
 
         std::vector<Vector3> vertices(n);
         for (Vector3& vertex : vertices) {
-            vertex.x = radius * sin(theta) * cos(phi);
-            vertex.y = radius * sin(theta);
-            vertex.z = radius * cos(theta) * cos(phi);
+            vertex.x() = radius * sin(theta) * cos(phi);
+            vertex.y() = radius * sin(theta);
+            vertex.z() = radius * cos(theta) * cos(phi);
             theta += 360_deg / static_cast<float>(n);
             phi += 360_deg / static_cast<float>(n);
         }

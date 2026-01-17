@@ -202,7 +202,7 @@ namespace osc
             const ui::SliderFlags flags = ui::SliderFlag::Logarithmic;
 
             const CStringView label = "landmark radius";
-            ui::set_next_item_width(ui::get_content_region_available().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_State->getOverlayPadding().x);
+            ui::set_next_item_width(ui::get_content_region_available().x() - ui::calc_text_size(label).x() - ui::get_style_item_inner_spacing().x() - m_State->getOverlayPadding().x());
             ui::draw_float_slider(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
@@ -211,7 +211,7 @@ namespace osc
             ui::set_cursor_panel_x(m_CursorXAtExportButton);  // align with "export" button in row above
 
             const CStringView label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
-            ui::set_next_item_width(ui::get_content_region_available().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_OverlayPadding.x);
+            ui::set_next_item_width(ui::get_content_region_available().x() - ui::calc_text_size(label).x() - ui::get_style_item_inner_spacing().x() - m_OverlayPadding.x());
 
             float factor = m_State->getScratch().blendingFactor;
             if (ui::draw_float_slider(label, &factor, 0.0f, 1.0f))

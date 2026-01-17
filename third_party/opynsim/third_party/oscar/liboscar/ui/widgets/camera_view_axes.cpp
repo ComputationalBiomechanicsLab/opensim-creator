@@ -50,7 +50,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     auto axis_indices = std::to_array<Vector4::size_type>({0, 1, 2});
     rgs::sort(axis_indices, rgs::less{}, [&view_matrix](auto axis_index)
     {
-        return (view_matrix * Vector4{}.with_element(axis_index, 1.0f)).z;
+        return (view_matrix * Vector4{}.with_element(axis_index, 1.0f)).z();
     });
 
     // draw each edge back-to-front
@@ -59,7 +59,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     for (auto axis_index : axis_indices) {
         // calc direction vector in ui space
         Vector2 view_space_pos = Vector2{view_matrix * Vector4{}.with_element(axis_index, 1.0f)};
-        view_space_pos.y = -view_space_pos.y;  // y goes down in ui space
+        view_space_pos.y() = -view_space_pos.y();  // y goes down in ui space
 
         Color base_color = {0.15f, 0.15f, 0.15f, 1.0f};
         base_color[axis_index] = 0.7f;

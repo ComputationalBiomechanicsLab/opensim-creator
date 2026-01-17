@@ -84,7 +84,7 @@ void osc::GuiRuler::on_draw(
             // user is moused over something, so draw a line + circle between the two hitlocs
             const Vector2 end_ui_pos = mouse_ui_pos;
             const Vector2 line_ui_direction = normalize(start_ui_pos - end_ui_pos);
-            const Vector2 offset_vec = 15.0f * Vector2{line_ui_direction.y, -line_ui_direction.x};
+            const Vector2 offset_vec = 15.0f * Vector2{line_ui_direction.y(), -line_ui_direction.x()};
             const Vector2 line_midpoint = (start_ui_pos + end_ui_pos) / 2.0f;
             const float line_world_length = length(maybe_mouseover->world_position - start_world_pos_);
 

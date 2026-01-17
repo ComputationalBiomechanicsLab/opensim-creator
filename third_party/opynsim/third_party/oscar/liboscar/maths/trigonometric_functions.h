@@ -16,10 +16,7 @@ namespace osc
     }
 
     template<std::floating_point Rep, AngularUnitTraits Units>
-    Rep sin(Angle<Rep, Units> v)
-    {
-        return sin(RadiansT<Rep>{v}.count());
-    }
+    Rep sin(Angle<Rep, Units> v) { return sin(RadiansT<Rep>{v}.count()); }
 
     template<std::floating_point T, size_t N>
     Vector<T, N> sin(const Vector<T, N>& v)

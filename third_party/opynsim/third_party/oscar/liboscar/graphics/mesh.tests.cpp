@@ -1701,7 +1701,7 @@ TEST(Mesh, set_vertex_buffer_params_when_dimensionality_of_vertices_is_2_zeroes_
         {VertexAttribute::Position, VertexAttributeFormat::Float32x2},  // 2D storage
     });
 
-    const auto expected_vertices = project_into_vector(vertices, [](const Vector3& v) { return Vector3{v.x, v.y, 0.0f}; });
+    const auto expected_vertices = project_into_vector(vertices, [](const Vector3& v) { return Vector3{v.x(), v.y(), 0.0f}; });
 
     ASSERT_EQ(mesh.vertices(), expected_vertices);
 }

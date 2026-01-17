@@ -608,8 +608,8 @@ void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vector2 delta)
 
     // how much panning is done depends on how far the camera is from the
     // origin (easy, with polar coordinates) *and* the FoV of the camera.
-    const float x_amount =  delta.x * (2.0f * tan(horizontal_field_of_view / 2.0f) * radius);
-    const float y_amount = -delta.y * (2.0f * tan(vertical_field_of_view / 2.0f) * radius);
+    const float x_amount =  delta.x() * (2.0f * tan(horizontal_field_of_view / 2.0f) * radius);
+    const float y_amount = -delta.y() * (2.0f * tan(vertical_field_of_view / 2.0f) * radius);
 
     // this assumes the scene is not rotated, so we need to rotate these
     // axes to match the scene's rotation
@@ -625,8 +625,8 @@ void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vector2 delta)
 
 void osc::PolarPerspectiveCamera::drag(Vector2 delta)
 {
-    theta += 360_deg * -delta.x;
-    phi += 360_deg * delta.y;
+    theta += 360_deg * -delta.x();
+    phi += 360_deg * delta.y();
 }
 
 void osc::PolarPerspectiveCamera::rescale_znear_and_zfar_based_on_radius()
@@ -1033,14 +1033,14 @@ EulerAngles osc::extract_eulers_xyz(const Quaternion& quaternion)
 
 Vector2 osc::topleft_normalized_point_to_ndc(Vector2 normalized_point)
 {
-    normalized_point.y = 1.0f - normalized_point.y;
+    normalized_point.y() = 1.0f - normalized_point.y();
     return 2.0f*normalized_point - 1.0f;
 }
 
 Vector2 osc::ndc_point_to_topleft_normalized(Vector2 ndc_point)
 {
     ndc_point = (ndc_point + 1.0f) * 0.5f;
-    ndc_point.y = 1.0f - ndc_point.y;
+    ndc_point.y() = 1.0f - ndc_point.y();
     return ndc_point;
 }
 
@@ -1059,7 +1059,7 @@ Ray osc::perspective_unproject_topleft_normalized_pos_to_world(
     const Vector4 ray_origin_ndc = topleft_normalized_point_to_ndc_cube(normalized_point);
 
     Vector4 ray_origin_view = inverse(camera_proj_matrix) * ray_origin_ndc;
-    ray_origin_view /= ray_origin_view.w;  // perspective divide
+    ray_origin_view /= ray_origin_view.w();  // perspective divide
 
     // position of mouse in world space
     const Vector3 ray_origin_world{inverse(camera_view_matrix) * ray_origin_view};
@@ -1109,9 +1109,9 @@ Vector2 osc::project_onto_viewport_rect(
     const Rect& viewport_rect)
 {
     Vector4 ndc = projection_matrix * view_matrix * Vector4{world_space_position, 1.0f};
-    ndc /= ndc.w;  // perspective divide (clip space -> NDC)
+    ndc /= ndc.w();  // perspective divide (clip space -> NDC)
 
-    Vector2 ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down
+    Vector2 ndc2D = {ndc.x(), -ndc.y()};        // [-1, 1], Y points down
     ndc2D += 1.0f;                       // [0, 2]
     ndc2D *= 0.5f;                       // [0, 1]
     ndc2D *= viewport_rect.dimensions(); // [0, w]
@@ -1225,7 +1225,7 @@ AABB osc::transform_aabb(const Matrix4x4& mat, const AABB& aabb)
     return bounding_aabb_of(corner_vertices_of(aabb), [&](const Vector3& vertex)
     {
         const Vector4 p = mat * Vector4{vertex, 1.0f};
-        return Vector3{p / p.w};  // perspective divide
+        return Vector3{p / p.w()};  // perspective divide
     });
 }
 
@@ -1274,16 +1274,16 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     // care: `znear` and `zfar` are usually defined as positive distances from the
     //       camera but view space points along -Z
 
-    if (view_space_aabb.min.z > -znear and view_space_aabb.max.z > -znear) {
+    if (view_space_aabb.min.z() > -znear and view_space_aabb.max.z() > -znear) {
         return std::nullopt;  // AABB out of NDC bounds
     }
-    if (view_space_aabb.min.z < -zfar and view_space_aabb.max.z < -zfar) {
+    if (view_space_aabb.min.z() < -zfar and view_space_aabb.max.z() < -zfar) {
         return std::nullopt;  // AABB out of NDC bounds
     }
 
     // clamp the view space AABB to within the camera's clipping planes
-    view_space_aabb.min.z = clamp(view_space_aabb.min.z, -zfar, -znear);
-    view_space_aabb.max.z = clamp(view_space_aabb.max.z, -zfar, -znear);
+    view_space_aabb.min.z() = clamp(view_space_aabb.min.z(), -zfar, -znear);
+    view_space_aabb.max.z() = clamp(view_space_aabb.max.z(), -zfar, -znear);
 
     // transform it into an NDC-aligned NDC-space AABB
     const AABB ndc_aabb = transform_aabb(proj_mat, view_space_aabb);
@@ -1343,8 +1343,8 @@ Transform osc::cylinder_to_line_segment_transform(const LineSegment& line_segmen
 {
     const LineSegment cylinder_line{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
     Transform t = transform_between(cylinder_line, line_segment);
-    t.scale.x = radius;
-    t.scale.z = radius;
+    t.scale.x() = radius;
+    t.scale.z() = radius;
     return t;
 }
 

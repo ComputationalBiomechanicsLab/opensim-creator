@@ -102,16 +102,16 @@ std::vector<Vector4> osc::calc_tangent_vectors(
         //
         // - https://www.cs.utexas.edu/~fussell/courses/cs384g-spring2016/lectures/normal_mapping_tangent.pdf
         // - https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-        const float inv_determinant = 1.0f/(delta_uv1.x*delta_uv2.y - delta_uv2.x*delta_uv1.y);
+        const float inv_determinant = 1.0f/(delta_uv1.x()*delta_uv2.y() - delta_uv2.x()*delta_uv1.y());
         const Vector3 tangent = inv_determinant * Vector3{
-            delta_uv2.y*e1.x - delta_uv1.y*e2.x,
-            delta_uv2.y*e1.y - delta_uv1.y*e2.y,
-            delta_uv2.y*e1.z - delta_uv1.y*e2.z,
+            delta_uv2.y()*e1.x() - delta_uv1.y()*e2.x(),
+            delta_uv2.y()*e1.y() - delta_uv1.y()*e2.y(),
+            delta_uv2.y()*e1.z() - delta_uv1.y()*e2.z(),
         };
         const Vector3 bitangent = inv_determinant * Vector3{
-            -delta_uv2.x*e1.x + delta_uv1.x*e2.x,
-            -delta_uv2.x*e1.y + delta_uv1.x*e2.y,
-            -delta_uv2.x*e1.z + delta_uv1.x*e2.z,
+            -delta_uv2.x()*e1.x() + delta_uv1.x()*e2.x(),
+            -delta_uv2.x()*e1.y() + delta_uv1.x()*e2.y(),
+            -delta_uv2.x()*e1.z() + delta_uv1.x()*e2.z(),
         };
 
         // care: due to smooth shading, each normal may not actually be orthogonal
