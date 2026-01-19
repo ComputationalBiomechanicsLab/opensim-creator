@@ -1,8 +1,8 @@
 #include "GeometryPathEditorPopup.h"
 
-#include <libopensimcreator/Documents/Model/IComponentAccessor.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
+#include <libopynsim/Documents/Model/IComponentAccessor.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>

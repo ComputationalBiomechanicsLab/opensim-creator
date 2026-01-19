@@ -1,7 +1,5 @@
 #include "OpenSimBridge.h"
 
-#include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
-#include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopensimcreator/Documents/MeshImporter/Body.h>
 #include <libopensimcreator/Documents/MeshImporter/Document.h>
 #include <libopensimcreator/Documents/MeshImporter/DocumentHelpers.h>
@@ -11,6 +9,8 @@
 #include <libopensimcreator/Documents/MeshImporter/OpenSimExportFlags.h>
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 
+#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
+#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopynsim/Graphics/SimTKMeshLoader.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <libopynsim/Utils/simbody_x_oscar.h>

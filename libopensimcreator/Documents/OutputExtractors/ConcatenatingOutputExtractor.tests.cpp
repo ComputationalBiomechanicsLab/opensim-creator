@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/OutputExtractors/ConstantOutputExtractor.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
-#include <libopensimcreator/Documents/CustomComponents/BlankComponent.h>
+#include <libopynsim/Documents/CustomComponents/BlankComponent.h>
 
 #include <gtest/gtest.h>
 

@@ -1,7 +1,5 @@
 #include "MeshImporterTab.h"
 
-#include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
-#include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopensimcreator/Documents/MeshImporter/Body.h>
 #include <libopensimcreator/Documents/MeshImporter/Document.h>
 #include <libopensimcreator/Documents/MeshImporter/Ground.h>
@@ -29,6 +27,8 @@
 #include <libopensimcreator/UI/Shared/ImportStationsFromCSVPopup.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
 
+#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
+#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/formats/stl.h>
 #include <liboscar/graphics/color.h>

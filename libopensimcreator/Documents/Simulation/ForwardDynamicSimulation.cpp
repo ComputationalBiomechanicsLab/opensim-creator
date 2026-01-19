@@ -7,7 +7,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
-#include <libopensimcreator/Utils/ParamBlock.h>
+#include <libopensimcreator/Documents/ParamBlock.h>
 
 #include <liboscar/utils/synchronized_value.h>
 #include <liboscar/utils/synchronized_value_guard.h>

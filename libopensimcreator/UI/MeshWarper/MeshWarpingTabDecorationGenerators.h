@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libopensimcreator/Graphics/OverlayDecorationGenerator.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
+#include <libopynsim/Graphics/OverlayDecorationGenerator.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/scene/scene_decoration.h>

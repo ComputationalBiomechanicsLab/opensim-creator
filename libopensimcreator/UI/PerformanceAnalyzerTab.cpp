@@ -7,10 +7,10 @@
 #include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
+#include <libopensimcreator/Documents/ParamBlock.h>
+#include <libopensimcreator/Documents/ParamValue.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
-#include <libopensimcreator/Utils/ParamBlock.h>
-#include <libopensimcreator/Utils/ParamValue.h>
 
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>

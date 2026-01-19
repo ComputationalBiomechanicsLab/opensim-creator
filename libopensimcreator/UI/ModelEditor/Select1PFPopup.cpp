@@ -1,7 +1,6 @@
 #include "Select1PFPopup.h"
 
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
-
+#include <libopynsim/Documents/Model/IModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>

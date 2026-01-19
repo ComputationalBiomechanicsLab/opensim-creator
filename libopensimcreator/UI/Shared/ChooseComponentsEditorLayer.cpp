@@ -1,16 +1,16 @@
 #include "ChooseComponentsEditorLayer.h"
 
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
-#include <libopensimcreator/Graphics/ModelRendererParams.h>
-#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libopensimcreator/Graphics/OpenSimGraphicsHelpers.h>
-#include <libopensimcreator/Graphics/OverlayDecorationGenerator.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ChooseComponentsEditorLayerParameters.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
 
+#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Graphics/ModelRendererParams.h>
+#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
+#include <libopynsim/Graphics/OpenSimGraphicsHelpers.h>
+#include <libopynsim/Graphics/OverlayDecorationGenerator.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>

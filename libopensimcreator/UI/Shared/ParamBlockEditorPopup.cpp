@@ -1,7 +1,7 @@
 #include "ParamBlockEditorPopup.h"
 
 #include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
-#include <libopensimcreator/Utils/ParamBlock.h>
+#include <libopensimcreator/Documents/ParamBlock.h>
 
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>

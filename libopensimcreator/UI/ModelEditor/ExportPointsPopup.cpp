@@ -1,8 +1,8 @@
 #include "ExportPointsPopup.h"
 
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
+#include <libopynsim/Documents/Model/IModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/formats/csv.h>

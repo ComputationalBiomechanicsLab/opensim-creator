@@ -1,12 +1,12 @@
 // no associated header: this is a top-level integration test
 
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
-#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
+#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
+#include <libopynsim/Graphics/OpenSimDecorationOptions.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/utils/filesystem_helpers.h>

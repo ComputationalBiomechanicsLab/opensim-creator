@@ -1,6 +1,5 @@
 #include "BasicWidgets.h"
 
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
@@ -8,18 +7,19 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
 #include <libopensimcreator/Documents/Simulation/SimulationModelStatePair.h>
-#include <libopensimcreator/Graphics/CustomRenderingOptions.h>
-#include <libopensimcreator/Graphics/ModelRendererParams.h>
-#include <libopensimcreator/Graphics/MuscleDecorationStyle.h>
-#include <libopensimcreator/Graphics/MuscleSizingStyle.h>
-#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
+#include <libopensimcreator/Documents/ParamBlock.h>
+#include <libopensimcreator/Documents/ParamValue.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Platform/RecentFile.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
-#include <libopensimcreator/Utils/ParamBlock.h>
-#include <libopensimcreator/Utils/ParamValue.h>
 
+#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Graphics/CustomRenderingOptions.h>
+#include <libopynsim/Graphics/ModelRendererParams.h>
+#include <libopynsim/Graphics/MuscleDecorationStyle.h>
+#include <libopynsim/Graphics/MuscleSizingStyle.h>
+#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
+#include <libopynsim/Graphics/OpenSimDecorationOptions.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/formats/dae.h>

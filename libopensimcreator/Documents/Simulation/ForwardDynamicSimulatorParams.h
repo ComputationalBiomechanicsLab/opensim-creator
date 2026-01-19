@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
-#include <libopensimcreator/Utils/ParamBlock.h>
+#include <libopensimcreator/Documents/ParamBlock.h>
 
 namespace osc
 {

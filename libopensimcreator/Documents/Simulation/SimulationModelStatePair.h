@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
+#include <libopynsim/Documents/Model/IModelStatePair.h>
 #include <liboscar/utils/uid.h>
 
 #include <memory>

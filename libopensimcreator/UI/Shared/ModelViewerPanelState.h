@@ -1,9 +1,9 @@
 #pragma once
 
-#include <libopensimcreator/Graphics/CachedModelRenderer.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelFlags.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelLayer.h>
 
+#include <libopynsim/Graphics/CachedModelRenderer.h>
 #include <liboscar/graphics/scene/scene_collision.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/maths/aabb.h>

@@ -2,11 +2,11 @@
 
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
-#include <libopensimcreator/Graphics/ModelRendererParams.h>
-#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libopensimcreator/Graphics/OpenSimGraphicsHelpers.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
+#include <libopynsim/Graphics/ModelRendererParams.h>
+#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
+#include <libopynsim/Graphics/OpenSimGraphicsHelpers.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_helpers.h>

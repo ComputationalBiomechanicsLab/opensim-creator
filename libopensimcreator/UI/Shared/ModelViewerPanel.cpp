@@ -1,7 +1,5 @@
 #include "ModelViewerPanel.h"
 
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
-#include <libopensimcreator/Graphics/CachedModelRenderer.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ModelSelectionGizmo.h>
@@ -10,6 +8,8 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelRightClickEvent.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
 
+#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Graphics/CachedModelRenderer.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/rect.h>

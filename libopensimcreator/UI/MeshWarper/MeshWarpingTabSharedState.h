@@ -5,11 +5,11 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSWarpResultCache.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
-#include <libopensimcreator/Graphics/CustomRenderingOptions.h>
-#include <libopensimcreator/Graphics/OverlayDecorationOptions.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabHover.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabUserSelection.h>
 
+#include <libopynsim/Graphics/CustomRenderingOptions.h>
+#include <libopynsim/Graphics/OverlayDecorationOptions.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/materials/mesh_basic_material.h>

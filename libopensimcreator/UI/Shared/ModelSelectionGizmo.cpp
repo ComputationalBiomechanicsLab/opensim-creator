@@ -1,8 +1,8 @@
 #include "ModelSelectionGizmo.h"
 
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 
+#include <libopynsim/Documents/Model/IModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/maths/euler_angles.h>

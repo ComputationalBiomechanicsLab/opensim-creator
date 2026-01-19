@@ -1,10 +1,10 @@
 #include "BasicModelStatePair.h"
 
-#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
+#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <SimTKcommon/internal/State.h>
 

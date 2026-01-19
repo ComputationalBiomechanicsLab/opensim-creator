@@ -1,11 +1,11 @@
 #include "OutputWatchesPanel.h"
 
 #include <libopensimcreator/Documents/Model/Environment.h>
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
+#include <libopynsim/Documents/Model/IModelStatePair.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utils/uid.h>

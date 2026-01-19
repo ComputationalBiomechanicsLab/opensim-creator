@@ -3,7 +3,6 @@
 #include <libopensimcreator/Documents/ExperimentalData/AnnotatedMotion.h>
 #include <libopensimcreator/Documents/ExperimentalData/FileBackedStorage.h>
 #include <libopensimcreator/Documents/FileFilters.h>
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Platform/msmicons.h>
@@ -19,6 +18,7 @@
 #include <libopensimcreator/UI/Shared/OutputWatchesPanel.h>
 #include <libopensimcreator/UI/Shared/PropertiesPanel.h>
 
+#include <libopynsim/Documents/Model/IModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/maths/closed_interval.h>

@@ -1,7 +1,5 @@
 #include "UndoableModelActions.h"
 
-#include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
-#include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopensimcreator/Documents/FileFilters.h>
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
 #include <libopensimcreator/Documents/Model/Environment.h>
@@ -10,14 +8,16 @@
 #include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/Documents/Simulation/StoFileSimulation.h>
-#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/LoadingTab.h>
 #include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <libopensimcreator/UI/Simulation/SimulationTab.h>
 
+#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
+#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
+#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
+#include <libopynsim/Graphics/OpenSimDecorationOptions.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <libopynsim/Utils/ShapeFitters.h>
 #include <libopynsim/Utils/simbody_x_oscar.h>

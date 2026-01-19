@@ -1,9 +1,6 @@
 #include "ComponentContextMenu.h"
 
-#include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
-#include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopensimcreator/Documents/Model/Environment.h>
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
@@ -12,6 +9,9 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ModelAddMenuItems.h>
 
+#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
+#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
+#include <libopynsim/Documents/Model/IModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/os.h>

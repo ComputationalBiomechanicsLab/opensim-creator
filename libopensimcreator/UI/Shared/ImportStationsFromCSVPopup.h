@@ -1,8 +1,8 @@
 #pragma once
 
 #include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 
+#include <libopynsim/Documents/Model/IModelStatePair.h>
 #include <liboscar/ui/popups/popup.h>
 
 #include <functional>

@@ -1,7 +1,6 @@
 #include "FunctionCurveViewerPopup.h"
 
-#include <libopensimcreator/Documents/Model/IVersionedComponentAccessor.h>
-
+#include <libopynsim/Documents/Model/IVersionedComponentAccessor.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/maths/closed_interval.h>
 #include <liboscar/maths/constants.h>

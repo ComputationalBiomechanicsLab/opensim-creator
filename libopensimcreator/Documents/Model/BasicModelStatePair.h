@@ -1,7 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
-
+#include <libopynsim/Documents/Model/IModelStatePair.h>
 #include <liboscar/utils/clone_ptr.h>
 
 #include <filesystem>

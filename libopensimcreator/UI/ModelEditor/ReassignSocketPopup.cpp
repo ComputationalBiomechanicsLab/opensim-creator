@@ -1,9 +1,9 @@
 #include "ReassignSocketPopup.h"
 
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
+#include <libopynsim/Documents/Model/IModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>

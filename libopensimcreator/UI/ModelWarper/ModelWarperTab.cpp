@@ -1,14 +1,11 @@
 #include "ModelWarperTab.h"
 
-#include <libopensimcreator/Documents/CustomComponents/InMemoryMesh.h>
 #include <libopensimcreator/Documents/FileFilters.h>
 #include <libopensimcreator/Documents/Landmarks/LandmarkHelpers.h>
 #include <libopensimcreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
-#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
-#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
@@ -18,6 +15,9 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 
+#include <libopynsim/Documents/CustomComponents/InMemoryMesh.h>
+#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <libopynsim/Utils/simbody_x_oscar.h>
 #include <libopynsim/Utils/TPS3D.h>

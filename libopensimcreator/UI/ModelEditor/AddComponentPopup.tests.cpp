@@ -1,12 +1,12 @@
 #include "AddComponentPopup.h"
 
-#include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
-#include <libopensimcreator/ComponentRegistry/ComponentRegistryEntry.h>
-#include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 
 #include <gtest/gtest.h>
+#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
+#include <libopynsim/ComponentRegistry/ComponentRegistryEntry.h>
+#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/oscimgui.h>
 #include <OpenSim/Common/Component.h>

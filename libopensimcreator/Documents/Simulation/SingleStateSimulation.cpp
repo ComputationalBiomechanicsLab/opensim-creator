@@ -1,7 +1,7 @@
 #include "SingleStateSimulation.h"
 
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
-#include <libopensimcreator/Utils/ParamBlock.h>
+#include <libopensimcreator/Documents/ParamBlock.h>
 
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/utils/synchronized_value.h>
