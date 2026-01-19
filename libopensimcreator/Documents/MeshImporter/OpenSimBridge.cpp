@@ -10,10 +10,10 @@
 #include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
 #include <libopensimcreator/Documents/MeshImporter/OpenSimExportFlags.h>
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
-#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
-#include <libopensimcreator/Utils/SimTKConverters.h>
 
+#include <libopynsim/Graphics/SimTKMeshLoader.h>
+#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/matrix4x4.h>

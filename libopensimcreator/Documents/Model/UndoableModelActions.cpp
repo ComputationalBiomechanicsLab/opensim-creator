@@ -17,10 +17,10 @@
 #include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <libopensimcreator/UI/Simulation/SimulationTab.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
-#include <libopensimcreator/Utils/ShapeFitters.h>
-#include <libopensimcreator/Utils/SimTKConverters.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/Utils/ShapeFitters.h>
+#include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/maths/ellipsoid.h>
 #include <liboscar/maths/ellipsoid_functions.h>

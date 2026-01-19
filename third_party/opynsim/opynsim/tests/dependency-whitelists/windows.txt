@@ -4,3 +4,13 @@ MSVCP140.*\.dll
 VCRUNTIME140.*\.dll
 api-ms-win-crt-.*\.dll
 ucrtbase.*\.dll
+shell32\.dll
+imm32\.dll
+ole32\.dll
+version\.dll
+oleaut32\.dll
+advapi32\.dll
+user32\.dll
+winmm\.dll
+gdi32\.dll
+setupapi\.dll

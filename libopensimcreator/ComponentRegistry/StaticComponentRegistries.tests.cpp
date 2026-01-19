@@ -2,9 +2,9 @@
 
 #include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/utils/c_string_view.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>

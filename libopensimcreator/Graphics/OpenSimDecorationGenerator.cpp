@@ -6,9 +6,9 @@
 #include <libopensimcreator/Graphics/ComponentSceneDecorationFlagsTagger.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
 #include <libopensimcreator/Graphics/SimTKDecorationGenerator.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
-#include <libopensimcreator/Utils/SimTKConverters.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/scene/scene_cache.h>

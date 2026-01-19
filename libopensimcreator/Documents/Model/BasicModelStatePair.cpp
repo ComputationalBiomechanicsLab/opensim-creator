@@ -1,8 +1,8 @@
 #include "BasicModelStatePair.h"
 
 #include <libopensimcreator/Documents/Model/Environment.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <filesystem>

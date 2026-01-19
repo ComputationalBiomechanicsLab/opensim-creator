@@ -10,8 +10,8 @@
 #include <libopensimcreator/UI/ModelWarper/ModelWarperTab.h>
 #include <libopensimcreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/formats/svg.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/scene/scene_cache.h>

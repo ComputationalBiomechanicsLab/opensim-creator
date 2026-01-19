@@ -18,8 +18,8 @@
 #include <libopensimcreator/UI/Shared/NavigatorPanel.h>
 #include <libopensimcreator/UI/Shared/OutputWatchesPanel.h>
 #include <libopensimcreator/UI/Shared/PropertiesPanel.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/maths/closed_interval.h>
 #include <liboscar/maths/vector2.h>

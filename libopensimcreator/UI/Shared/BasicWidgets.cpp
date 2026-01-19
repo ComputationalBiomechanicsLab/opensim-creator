@@ -17,11 +17,11 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Platform/RecentFile.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 #include <libopensimcreator/Utils/ParamBlock.h>
 #include <libopensimcreator/Utils/ParamValue.h>
-#include <libopensimcreator/Utils/SimTKConverters.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/formats/dae.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/formats/stl.h>

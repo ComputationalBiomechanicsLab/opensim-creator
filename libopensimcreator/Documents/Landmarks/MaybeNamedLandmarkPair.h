@@ -1,8 +1,7 @@
 #pragma once
 
-#include <libopensimcreator/Utils/SimTKConverters.h>
-
 #include <libopynsim/Utils/LandmarkPair3D.h>
+#include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/utils/c_string_view.h>
 #include <SimTKcommon/SmallMatrix.h>

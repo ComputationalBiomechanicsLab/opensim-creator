@@ -1,7 +1,6 @@
 #include "RendererGeometryShaderTab.h"
 
-#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
-
+#include <libopynsim/Graphics/SimTKMeshLoader.h>
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/graphics.h>

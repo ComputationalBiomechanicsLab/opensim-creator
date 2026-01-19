@@ -10,8 +10,8 @@
 #include <libopensimcreator/UI/Shared/ChooseComponentsEditorLayerParameters.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_decoration_flags.h>

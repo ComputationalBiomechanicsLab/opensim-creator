@@ -1,8 +1,8 @@
 #include "SelectComponentPopup.h"
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
 #include <liboscar/ui/popups/popup_private.h>

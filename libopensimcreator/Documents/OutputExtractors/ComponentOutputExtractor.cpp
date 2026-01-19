@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/OutputExtractors/IOutputExtractor.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/maths/constants.h>
 #include <liboscar/maths/vector2.h>
 #include <liboscar/utils/enum_helpers.h>

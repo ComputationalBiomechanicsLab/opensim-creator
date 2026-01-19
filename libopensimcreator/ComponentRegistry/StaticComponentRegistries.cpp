@@ -3,8 +3,8 @@
 #include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
 #include <libopensimcreator/Documents/CustomComponents/InMemoryMesh.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/utils/c_string_view.h>
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Actuators/PointToPointActuator.h>

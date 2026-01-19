@@ -9,9 +9,6 @@
 #include <liboscar/ui/tabs/tab_registry.h>
 #include <liboscar/utils/assertions.h>
 #include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <OpenSim/Common/Logger.h>
-#include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <libopynsim/init.h>
 
@@ -58,34 +55,6 @@ namespace
         {"panels/Result Model/enabled", true},
     });
 
-    // an OpenSim log sink that sinks into OSC's main log
-    class OpenSimLogSink final : public OpenSim::LogSink {
-        void sinkImpl(const std::string& msg) final
-        {
-            log_info("%s", msg.c_str());
-        }
-    };
-
-    void SetupOpenSimLogToUseOSCsLog()
-    {
-        // disable OpenSim's `opensim.log` default
-        //
-        // by default, OpenSim creates an `opensim.log` file in the process's working
-        // directory. This should be disabled because it screws with running multiple
-        // instances of the UI on filesystems that use locking (e.g. Windows) and
-        // because it's incredibly obnoxious to have `opensim.log` appear in every
-        // working directory from which osc is ran
-        log_info("removing OpenSim's default log (opensim.log)");
-        OpenSim::Logger::removeFileSink();
-
-        // add OSC in-memory logger
-        //
-        // this logger collects the logs into a global mutex-protected in-memory structure
-        // that the UI can can trivially render (w/o reading files etc.)
-        log_info("attaching OpenSim to this log");
-        OpenSim::Logger::addSink(std::make_shared<OpenSimLogSink>());
-    }
-
     void GloballySetOpenSimsGeometrySearchPath(const std::filesystem::path& geometryDir)
     {
         // globally set OpenSim's geometry search path
@@ -99,35 +68,6 @@ namespace
         log_info("added geometry search path entry: %s", geometryDir.string().c_str());
     }
 
-    bool InitializeOpenSim()
-    {
-        // globally initialize OpenSim
-        log_info("initializing OpenSim (opyn::init)");
-        {
-            class LogginingInitConfiguration final : public opyn::InitConfiguration {
-                void impl_log_message(std::string_view payload, opyn::LogLevel level) final
-                {
-                    static_assert(num_options<opyn::LogLevel>() == 2);
-                    const std::string str{payload};
-                    switch (level) {
-                    case opyn::LogLevel::info: osc::log_info("%s", str.c_str()); return;
-                    case opyn::LogLevel::warn: osc::log_warn("%s", str.c_str()); return;
-                    default:                   osc::log_info("%s", str.c_str()); return;
-                    }
-                }
-            };
-            LogginingInitConfiguration config;
-            opyn::init(config);
-        }
-
-        // point OpenSim's log towards OSC's log
-        //
-        // so that users can see OpenSim log messages in OSC's UI
-        SetupOpenSimLogToUseOSCsLog();
-
-        return true;
-    }
-
     void InitializeOpenSimCreatorSpecificSettingDefaults(AppSettings& settings)
     {
         for (const auto& [setting_id, default_state] : c_default_panel_states) {
@@ -139,7 +79,7 @@ namespace
 
 bool osc::GloballyInitOpenSim()
 {
-    static const bool s_OpenSimInitialized = InitializeOpenSim();
+    static const bool s_OpenSimInitialized = opyn::init();
     return s_OpenSimInitialized;
 }
 

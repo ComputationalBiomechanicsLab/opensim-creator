@@ -1,4 +1,4 @@
-#include "SimTKConverters.h"
+#include "simbody_x_oscar.h"
 
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/math_helpers.h>

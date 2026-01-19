@@ -5,8 +5,8 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementType.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
-#include <libopensimcreator/Utils/SimTKConverters.h>
 
+#include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/utils/algorithms.h>

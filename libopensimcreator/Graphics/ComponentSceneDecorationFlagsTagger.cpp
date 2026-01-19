@@ -1,7 +1,6 @@
 #include "ComponentSceneDecorationFlagsTagger.h"
 
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
-
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 
 using namespace osc;

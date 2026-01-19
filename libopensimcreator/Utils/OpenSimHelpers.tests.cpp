@@ -1,12 +1,12 @@
-#include "OpenSimHelpers.h"
+#include <libopynsim/Utils/OpenSimHelpers.h>
 
 #include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
 #include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
-#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
+#include <libopynsim/init.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/utils/assertions.h>
@@ -69,7 +69,7 @@ namespace
 // the joint) but it shouldn't hard crash (it is)
 TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
 {
-    GloballyInitOpenSim();  // ensure muscles are available etc.
+    opyn::init();  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Leg39" / "leg39.osim";
 
@@ -145,7 +145,7 @@ TEST(OpenSimHelpers, GetAbsolutePathStringWithOutparamWorksForModel)
 
 TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    GloballyInitOpenSim();  // ensure muscles are available etc.
+    opyn::init();  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
@@ -161,7 +161,7 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
 
 TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    GloballyInitOpenSim();  // ensure muscles are available etc.
+    opyn::init();  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
@@ -178,7 +178,7 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsEmptyIfPassedANullptr)
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    GloballyInitOpenSim();  // ensure muscles are available etc.
+    opyn::init();  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
@@ -192,7 +192,7 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionFor
 // model without anything exploding (deletion failure is ok, though)
 TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFaultsOrExceptions)
 {
-    GloballyInitOpenSim();  // ensure muscles are available etc.
+    opyn::init();  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
@@ -222,7 +222,7 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
 // load and initialize those kinds of models.
 TEST(OpenSimHelpers, InitializeModelAndInitializeStateWorkOnModelWithNotOptimizedMuscles)
 {
-    GloballyInitOpenSim();  // for loading the osim
+    opyn::init();  // for loading the osim
 
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_1070_repro.osim";
@@ -354,7 +354,7 @@ TEST(OpenSimHelpers, WriteModelMultibodySystemGraphAsDotViz)
 
 TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
 {
-    GloballyInitOpenSim();  // ensure component registry is populated
+    opyn::init();  // ensure component registry is populated
 
     struct ExpectedWrap {
         OpenSim::ComponentPath geometryPathAbsPath;
@@ -414,7 +414,7 @@ TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsUntitledWhenProvidedInMemory
 
 TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsFilenameIfProvidedLoadedModel)
 {
-    GloballyInitOpenSim();
+    opyn::init();
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Blank" / "blank.osim";
     OpenSim::Model model{modelPath.string()};
     ASSERT_EQ(RecommendedDocumentName(model), "blank.osim");

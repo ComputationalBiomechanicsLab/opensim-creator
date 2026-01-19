@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/Documents/Model/Environment.h>
 #include <libopensimcreator/Documents/Model/ModelStateCommit.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/utils/algorithms.h>
 #include <liboscar/utils/assertions.h>

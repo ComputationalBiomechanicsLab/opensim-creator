@@ -5,8 +5,8 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>

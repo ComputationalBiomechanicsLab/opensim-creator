@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>

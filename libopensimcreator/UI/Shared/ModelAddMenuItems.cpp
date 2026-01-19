@@ -10,8 +10,8 @@
 #include <libopensimcreator/UI/ModelEditor/SelectComponentPopup.h>
 #include <libopensimcreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/platform/widget_private.h>

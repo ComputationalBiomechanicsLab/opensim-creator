@@ -12,12 +12,12 @@
 #include <libopensimcreator/Documents/MeshImporter/OpenSimBridge.h>
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
-#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterHover.h>
 #include <libopensimcreator/UI/MeshImporter/MeshLoader.h>
 
+#include <libopynsim/Graphics/SimTKMeshLoader.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/geometries/cone_geometry.h>

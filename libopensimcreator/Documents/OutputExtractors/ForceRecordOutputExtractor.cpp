@@ -1,12 +1,10 @@
 #include "ForceRecordOutputExtractor.h"
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <liboscar/utils/assertions.h>
 #include <liboscar/utils/hash_helpers.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
-
-#include <liboscar/platform/log.h>
 
 using namespace osc;
 

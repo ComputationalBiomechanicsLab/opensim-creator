@@ -3,9 +3,9 @@
 #include <libopensimcreator/Documents/OutputExtractors/ConstantOutputExtractor.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/utils/string_helpers.h>
 #include <OpenSim/Simulation/Model/Model.h>

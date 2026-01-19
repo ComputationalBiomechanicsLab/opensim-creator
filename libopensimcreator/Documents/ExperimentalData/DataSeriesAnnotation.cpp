@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/ExperimentalData/DataPointType.h>
 
-#include <libopensimcreator/Utils/SimTKConverters.h>
+#include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/closed_interval.h>
 #include <liboscar/maths/quaternion_functions.h>

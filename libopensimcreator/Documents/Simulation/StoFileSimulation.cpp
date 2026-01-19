@@ -3,9 +3,9 @@
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 #include <libopensimcreator/Utils/ParamBlock.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/Storage.h>

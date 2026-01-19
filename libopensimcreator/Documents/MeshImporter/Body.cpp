@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/MeshImporter/MIClass.h>
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
 #include <libopensimcreator/Platform/msmicons.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/utils/uid.h>
 

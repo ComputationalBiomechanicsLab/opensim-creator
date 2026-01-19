@@ -11,8 +11,8 @@
 #include <libopensimcreator/UI/ModelEditor/ReassignSocketPopup.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ModelAddMenuItems.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/platform/widget.h>

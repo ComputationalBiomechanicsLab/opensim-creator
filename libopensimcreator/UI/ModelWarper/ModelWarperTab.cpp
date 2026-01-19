@@ -17,9 +17,9 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanel.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
-#include <libopensimcreator/Utils/SimTKConverters.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/Utils/simbody_x_oscar.h>
 #include <libopynsim/Utils/TPS3D.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/maths/math_helpers.h>

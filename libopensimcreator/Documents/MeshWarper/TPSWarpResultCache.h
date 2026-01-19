@@ -2,9 +2,9 @@
 
 #include <libopensimcreator/Documents/MeshWarper/TPSDocument.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
-#include <libopensimcreator/Utils/OPynSimHelpers.h>
-#include <libopensimcreator/Utils/SimTKConverters.h>
 
+#include <libopynsim/Utils/OPynSimHelpers.h>
+#include <libopynsim/Utils/simbody_x_oscar.h>
 #include <libopynsim/Utils/TPS3D.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/maths/vector3.h>

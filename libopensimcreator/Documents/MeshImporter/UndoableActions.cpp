@@ -9,8 +9,8 @@
 #include <libopensimcreator/Documents/MeshImporter/MIObjectHelpers.h>
 #include <libopensimcreator/Documents/MeshImporter/Mesh.h>
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/transform.h>

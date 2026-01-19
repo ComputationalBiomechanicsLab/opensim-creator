@@ -1,8 +1,8 @@
 #include "MeshHittestTab.h"
 
-#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
+#include <libopynsim/Graphics/SimTKMeshLoader.h>
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/geometries/aabb_geometry.h>

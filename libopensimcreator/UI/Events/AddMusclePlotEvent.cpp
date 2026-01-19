@@ -1,7 +1,6 @@
 #include "AddMusclePlotEvent.h"
 
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
-
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 

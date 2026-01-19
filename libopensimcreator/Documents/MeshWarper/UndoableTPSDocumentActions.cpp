@@ -10,8 +10,8 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSWarpResultCache.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
-#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 
+#include <libopynsim/Graphics/SimTKMeshLoader.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/formats/stl.h>

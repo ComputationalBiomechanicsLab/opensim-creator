@@ -9,8 +9,8 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelRightClickEvent.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>

@@ -1,8 +1,7 @@
 #include "OpenSimHelpers.h"
 
-#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
-#include <libopensimcreator/Utils/SimTKConverters.h>
-
+#include <libopynsim/init.h>
+#include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/plane.h>
 #include <liboscar/maths/transform.h>
@@ -1066,17 +1065,17 @@ bool osc::HasModelFileExtension(const std::filesystem::path& path)
 {
     // Some ".osim" files in the wild (e.g. on SimTK.org) have a capitalized extension
     // (e.g. "SomeOldModel.OSIM"). Although technically invalid on case-sensitive
-    // filesystems/OSes, it should still be accepted (#984).
+    // filesystems/OSes, it should still be accepted (ComputationalBiomechanicsLab/opensim-creator/#984).
     return is_equal_case_insensitive(path.extension().string(), ".osim");
 }
 
 std::unique_ptr<OpenSim::Model> osc::LoadModel(const std::filesystem::path& path)
 {
-    GloballyInitOpenSim();
+    opyn::init();  // Ensure components are loaded etc.
 
     // HACK: OpenSim relies on global state changes (e.g. screwing around with
     // the process's current working directory) in order to load files, which
-    // can cause problems when multiple threads try to load a model (#1036).
+    // can cause problems when multiple threads try to load a model (ComputationalBiomechanicsLab/opensim-creator/#1036).
     static std::mutex s_loading_mutex;
     std::lock_guard g{s_loading_mutex};
     return std::make_unique<OpenSim::Model>(path.string());
@@ -1086,7 +1085,7 @@ void osc::InitializeModel(OpenSim::Model& model)
 {
     OSC_PERF("osc::InitializeModel");
     model.finalizeFromProperties();  // clears potentially-stale member components (required for `clearConnections`)
-    model.clearConnections();        // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see #263)
+    model.clearConnections();        // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see ComputationalBiomechanicsLab/opensim-creator/#263)
     model.buildSystem();             // creates a new underlying physics system
 }
 
@@ -1728,7 +1727,7 @@ void osc::OverwriteGeometry(
     InitializeState(model);
     // TODO/HACK: prefer `<attachedGeometry>` block when overwriting meshes defined
     // in frames, because we don't have a way to delete things from the generic
-    // component list (yet) #1003
+    // component list (yet) ComputationalBiomechanicsLab/opensim-creator/#1003
     if (auto* fr = dynamic_cast<OpenSim::Frame*>(owner)) {
         fr->attachGeometry(newGeometry.release());
     }

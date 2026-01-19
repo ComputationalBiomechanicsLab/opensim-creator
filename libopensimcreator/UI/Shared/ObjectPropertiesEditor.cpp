@@ -5,9 +5,9 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/FunctionCurveViewerPopup.h>
 #include <libopensimcreator/UI/Shared/GeometryPathEditorPopup.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
-#include <libopensimcreator/Utils/SimTKConverters.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/vector2.h>

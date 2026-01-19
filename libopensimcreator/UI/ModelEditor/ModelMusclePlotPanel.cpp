@@ -6,8 +6,8 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Events/AddMusclePlotEvent.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/angle.h>

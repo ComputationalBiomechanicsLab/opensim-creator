@@ -18,8 +18,8 @@
 #include <libopensimcreator/UI/Shared/NavigatorPanel.h>
 #include <libopensimcreator/UI/Shared/OutputWatchesPanel.h>
 #include <libopensimcreator/UI/Shared/PropertiesPanel.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/platform/events/drop_file_event.h>

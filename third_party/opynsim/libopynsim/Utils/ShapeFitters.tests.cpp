@@ -1,9 +1,9 @@
-#include "ShapeFitters.h"
+#include <libopynsim/Utils/ShapeFitters.h>
 
-#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
-#include <libopensimcreator/tests/testopensimcreatorconfig.h>
+#include <libopynsim/tests/testopynsimconfig.h>
 
 #include <gtest/gtest.h>
+#include <libopynsim/Graphics/SimTKMeshLoader.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/maths/angle.h>
@@ -89,7 +89,7 @@ TEST(FitSphere, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgo
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
-        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
+        std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
     const Mesh mesh = LoadMeshViaSimTK(objPath);
     const Sphere sphereFit = FitSphere(mesh);
 
@@ -136,7 +136,7 @@ TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgor
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
-        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
+        std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
     const Mesh mesh = LoadMeshViaSimTK(objPath);
     const Plane planeFit = FitPlane(mesh);
 
@@ -178,7 +178,7 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
-        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
+        std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
     const Mesh mesh = LoadMeshViaSimTK(objPath);
     const Ellipsoid fit = FitEllipsoid(mesh);
     const auto directions = axis_directions_of(fit);

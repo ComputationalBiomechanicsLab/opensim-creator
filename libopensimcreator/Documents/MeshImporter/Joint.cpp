@@ -4,8 +4,8 @@
 #include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
 #include <libopensimcreator/Platform/msmicons.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/utils/c_string_view.h>
 #include <liboscar/utils/uid.h>

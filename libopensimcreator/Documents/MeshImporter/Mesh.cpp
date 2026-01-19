@@ -4,10 +4,10 @@
 #include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
 #include <libopensimcreator/Documents/MeshImporter/MIClass.h>
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
-#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 #include <libopensimcreator/Platform/msmicons.h>
-#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
+#include <libopynsim/Graphics/SimTKMeshLoader.h>
+#include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/utils/uid.h>
