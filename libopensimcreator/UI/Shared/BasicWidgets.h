@@ -1,7 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
-
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/vector2.h>
 #include <liboscar/maths/vector3.h>

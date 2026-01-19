@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
 
+#include <libopynsim/Documents/Landmarks/NamedLandmark.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/utils/uid.h>
 

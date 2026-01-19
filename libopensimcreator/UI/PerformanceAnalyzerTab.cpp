@@ -1,7 +1,6 @@
 #include "PerformanceAnalyzerTab.h"
 
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulation.h>
 #include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulator.h>
 #include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
@@ -12,6 +11,7 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/oscimgui.h>
@@ -96,8 +96,8 @@ public:
                 }
 
                 const IntegratorMethod m = std::get<IntegratorMethod>(sim.getParams().findValue("Integrator Method").value());
-                const float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), reports.back());
-                const float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), reports.back());
+                const auto t = m_WalltimeExtractor.getValue<float>(*sim.getModel(), reports.back());
+                const auto steps = m_StepsTakenExtractor.getValue<float>(*sim.getModel(), reports.back());
 
                 ui::table_next_row();
                 int column = 0;
@@ -139,8 +139,8 @@ private:
             }
 
             const IntegratorMethod m = std::get<IntegratorMethod>(simulation.getParams().findValue("Integrator Method").value());
-            const float t = m_WalltimeExtractor.getValueFloat(*simulation.getModel(), reports.back());
-            const float steps = m_StepsTakenExtractor.getValueFloat(*simulation.getModel(), reports.back());
+            const auto t = m_WalltimeExtractor.getValue<float>(*simulation.getModel(), reports.back());
+            const auto steps = m_StepsTakenExtractor.getValue<float>(*simulation.getModel(), reports.back());
 
             out << m.label() << ',' << t << ',' << steps << '\n';
         }

@@ -1,8 +1,5 @@
 #include "UndoableTPSDocumentActions.h"
 
-#include <libopensimcreator/Documents/Landmarks/Landmark.h>
-#include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
-#include <libopensimcreator/Documents/Landmarks/LandmarkHelpers.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocument.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementID.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
@@ -11,6 +8,9 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSWarpResultCache.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
 
+#include <libopynsim/Documents/Landmarks/Landmark.h>
+#include <libopynsim/Documents/Landmarks/LandmarkCSVFlags.h>
+#include <libopynsim/Documents/Landmarks/LandmarkHelpers.h>
 #include <libopynsim/Graphics/SimTKMeshLoader.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/formats/obj.h>

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(opynsim VERSION 0.0.1 LANGUAGES CXX C)
+project(opynsim VERSION 0.0.2 LANGUAGES CXX C)
 
 option(BUILD_TESTING                  "Build test suites"                         ON)
 option(OPYN_BUILD_TESTING             "Build test suites (OPynSim-specific)"      ${BUILD_TESTING})

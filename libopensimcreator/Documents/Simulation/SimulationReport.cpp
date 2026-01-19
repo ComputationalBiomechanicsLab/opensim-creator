@@ -75,7 +75,7 @@ SimulationClock::time_point osc::SimulationReport::getTime() const
     return m_Impl->getTime();
 }
 
-const SimTK::State& osc::SimulationReport::getState() const
+const SimTK::State& osc::SimulationReport::implGetState() const
 {
     return m_Impl->getState();
 }
@@ -85,7 +85,7 @@ SimTK::State& osc::SimulationReport::updStateHACK()
     return m_Impl->updStateHACK();
 }
 
-std::optional<float> osc::SimulationReport::getAuxiliaryValue(UID id) const
+std::optional<float> osc::SimulationReport::implGetAuxiliaryValue(UID id) const
 {
     return m_Impl->getAuxiliaryValue(id);
 }

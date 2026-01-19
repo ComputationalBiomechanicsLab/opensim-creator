@@ -1,11 +1,11 @@
 #include "OutputWatchesPanel.h"
 
 #include <libopensimcreator/Documents/Model/Environment.h>
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
 #include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utils/uid.h>
@@ -83,7 +83,7 @@ public:
                 ui::draw_text(o.getName());
 
                 ui::table_set_column_index(column++);
-                ui::draw_text(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport));
+                ui::draw_text(o.getValue<std::string>(m_Model->getModel(), m_CachedReport.simulationReport));
 
                 ui::pop_id();
             }

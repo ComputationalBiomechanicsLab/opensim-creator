@@ -1,15 +1,15 @@
 #include "ForwardDynamicSimulator.h"
 
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
-#include <libopensimcreator/Documents/OutputExtractors/IOutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/IntegratorOutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/MultiBodySystemOutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
+#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/IntegratorOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/MultiBodySystemOutputExtractor.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/shims/cpp20/stop_token.h>
 #include <liboscar/shims/cpp20/thread.h>
@@ -117,9 +117,9 @@ namespace
 
         OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final
         {
-            return OutputValueExtractor{[id = m_UID](const SimulationReport& report)
+            return OutputValueExtractor{[id = m_UID](const StateViewWithMetadata& state)
             {
-                return Variant{report.getAuxiliaryValue(id).value_or(-1337.0f)};
+                return Variant{state.getAuxiliaryValue(id).value_or(-1337.0f)};
             }};
         }
 

@@ -1,9 +1,9 @@
 #include "SimulationHelpers.h"
 
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <liboscar/utils/enum_helpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -37,11 +37,11 @@ void osc::WriteOutputsAsCSV(
         for (const OutputExtractor& o : outputs) {
             static_assert(num_options<OutputExtractorDataType>() == 3);
             if (o.getOutputType() == OutputExtractorDataType::Vector2) {
-                const Vector2 v = o.getValueVector2(root, report);
+                const auto v = o.getValue<Vector2>(root, report);
                 out << ',' << v.x() << ',' << v.y();
             }
             else {
-                out << ',' << o.getValueFloat(root, report);
+                out << ',' << o.getValue<float>(root, report);
             }
         }
         out << '\n';

@@ -1,7 +1,6 @@
 #include "ForwardDynamicSimulation.h"
 
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulator.h>
 #include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
@@ -9,6 +8,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 #include <libopensimcreator/Documents/ParamBlock.h>
 
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <liboscar/utils/synchronized_value.h>
 #include <liboscar/utils/synchronized_value_guard.h>
 #include <OpenSim/Simulation/Model/Model.h>

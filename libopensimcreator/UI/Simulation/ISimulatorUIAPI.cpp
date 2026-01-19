@@ -1,9 +1,9 @@
 #include "ISimulatorUIAPI.h"
 
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationHelpers.h>
 
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>

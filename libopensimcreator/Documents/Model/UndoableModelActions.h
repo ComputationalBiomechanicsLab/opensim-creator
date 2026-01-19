@@ -1,7 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
-
+#include <libopynsim/Documents/Landmarks/NamedLandmark.h>
 #include <liboscar/maths/euler_angles.h>
 #include <liboscar/maths/vector3.h>
 

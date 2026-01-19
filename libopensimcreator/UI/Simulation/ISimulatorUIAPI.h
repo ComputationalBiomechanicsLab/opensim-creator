@@ -1,10 +1,11 @@
 #pragma once
 
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/UI/Simulation/SimulationUILoopingState.h>
 #include <libopensimcreator/UI/Simulation/SimulationUIPlaybackState.h>
+
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 
 #include <initializer_list>
 #include <optional>

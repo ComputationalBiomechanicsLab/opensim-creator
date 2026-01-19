@@ -2,9 +2,6 @@
 
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
-#include <libopensimcreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/ForceRecordOutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
 #include <libopensimcreator/Documents/Simulation/SimulationModelStatePair.h>
 #include <libopensimcreator/Documents/ParamBlock.h>
@@ -14,6 +11,9 @@
 #include <libopensimcreator/Platform/RecentFiles.h>
 
 #include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/ForceRecordOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopynsim/Graphics/CustomRenderingOptions.h>
 #include <libopynsim/Graphics/ModelRendererParams.h>
 #include <libopynsim/Graphics/MuscleDecorationStyle.h>

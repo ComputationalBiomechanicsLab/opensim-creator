@@ -1,11 +1,11 @@
 #pragma once
 
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClocks.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <liboscar/utils/synchronized_value_guard.h>
 
 #include <cstddef>

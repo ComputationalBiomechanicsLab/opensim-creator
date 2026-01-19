@@ -1,7 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
-
+#include <libopynsim/Documents/Landmarks/NamedLandmark.h>
 #include <libopynsim/Documents/Model/IModelStatePair.h>
 #include <liboscar/ui/popups/popup.h>
 

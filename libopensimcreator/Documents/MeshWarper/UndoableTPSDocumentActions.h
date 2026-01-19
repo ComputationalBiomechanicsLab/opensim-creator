@@ -1,10 +1,10 @@
 #pragma once
 
-#include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementID.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
 
+#include <libopynsim/Documents/Landmarks/LandmarkCSVFlags.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/utils/uid.h>

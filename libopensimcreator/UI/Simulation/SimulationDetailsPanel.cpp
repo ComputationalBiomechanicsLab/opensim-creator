@@ -1,12 +1,12 @@
 #include "SimulationDetailsPanel.h"
 
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
 
+#include <libopynsim/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>

@@ -1,7 +1,5 @@
 #include "SimulationTab.h"
 
-#include <libopensimcreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
@@ -24,6 +22,8 @@
 #include <libopensimcreator/UI/Simulation/SimulationToolbar.h>
 #include <libopensimcreator/UI/Simulation/SimulationUIPlaybackState.h>
 
+#include <libopynsim/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/events/event.h>
 #include <liboscar/platform/events/key_event.h>

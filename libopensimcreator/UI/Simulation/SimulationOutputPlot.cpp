@@ -1,11 +1,6 @@
 #include "SimulationOutputPlot.h"
 
 #include <libopensimcreator/Documents/Model/Environment.h>
-#include <libopensimcreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/ComponentOutputSubfield.h>
-#include <libopensimcreator/Documents/OutputExtractors/ConcatenatingOutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/IOutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
@@ -14,6 +9,11 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 
+#include <libopynsim/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/ComponentOutputSubfield.h>
+#include <libopynsim/Documents/OutputExtractors/ConcatenatingOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/math_helpers.h>
@@ -215,7 +215,7 @@ private:
         {
             OSC_PERF("collect output data");
             const std::vector<SimulationReport> reports = sim.getAllSimulationReports();
-            buf = m_OutputExtractor.slurpValuesFloat(*sim.getModel(), reports);
+            buf = m_OutputExtractor.slurpValues<float>(*sim.getModel(), reports);
         }
 
         // setup drawing area for drawing
@@ -324,7 +324,7 @@ private:
         const ptrdiff_t nReports = m_API->updSimulation().getNumReports();
         const SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
 
-        ui::draw_text_centered(m_OutputExtractor.getValueString(*sim.getModel(), r));
+        ui::draw_text_centered(m_OutputExtractor.getValue<std::string>(*sim.getModel(), r));
         TryDrawOutputContextMenuForLastItem(*m_API, sim, m_OutputExtractor);
     }
 
@@ -345,7 +345,7 @@ private:
         {
             OSC_PERF("collect output data");
             std::vector<SimulationReport> reports = sim.getAllSimulationReports();
-            buf = m_OutputExtractor.slurpValuesVector2(*sim.getModel(), reports);
+            buf = m_OutputExtractor.slurpValues<Vector2>(*sim.getModel(), reports);
         }
 
         // setup drawing area for drawing
@@ -377,7 +377,7 @@ private:
                 // overlays
                 {
                     SimulationReport currentReport = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-                    Vector2d currentVal = m_OutputExtractor.getValueVector2(*sim.getModel(), currentReport);
+                    Vector2d currentVal = m_OutputExtractor.getValue<Vector2>(*sim.getModel(), currentReport);
                     // ensure the annotation doesn't occlude the line too heavily
                     auto annotationColor = ui::get_style_color(ui::ColorVar::PopupBg).with_alpha(0.5f);
                     plot::draw_annotation(currentVal, annotationColor, {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x(), currentVal.y());

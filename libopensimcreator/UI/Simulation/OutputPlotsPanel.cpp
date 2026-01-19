@@ -1,13 +1,13 @@
 #include "OutputPlotsPanel.h"
 
 #include <libopensimcreator/Documents/Model/Environment.h>
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
 
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utils/algorithms.h>

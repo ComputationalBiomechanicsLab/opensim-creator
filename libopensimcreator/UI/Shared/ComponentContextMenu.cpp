@@ -2,8 +2,6 @@
 
 #include <libopensimcreator/Documents/Model/Environment.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
-#include <libopensimcreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/UI/Events/AddMusclePlotEvent.h>
 #include <libopensimcreator/UI/ModelEditor/ReassignSocketPopup.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
@@ -12,6 +10,8 @@
 #include <libopynsim/ComponentRegistry/ComponentRegistry.h>
 #include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/os.h>

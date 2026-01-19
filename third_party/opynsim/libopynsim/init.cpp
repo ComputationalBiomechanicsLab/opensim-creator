@@ -154,19 +154,26 @@ namespace
 
 bool opyn::init()
 {
-    // Ensure the log is *at least* default-initialized.
+    // Ensure the log is *at least* default-initialized. Callers might be able to
+    // do this before `init` is called.
     globally_ensure_log_is_default_initialized();
 
-    osc::log_info("initializing OPynSim (opyn::init)");
+    // This part should only ever be called once per process.
+    static bool s_osc_initialized = []()
+    {
+        osc::log_info("initializing OPynSim (opyn::init)");
 
-    // Make the current process globally use the same locale that OpenSim uses
-    //
-    // This is necessary because OpenSim assumes a certain locale (see function
-    // impl. for more details)
-    set_global_locale_to_match_OpenSim();
+        // Make the current process globally use the same locale that OpenSim uses
+        //
+        // This is necessary because OpenSim assumes a certain locale (see function
+        // impl. for more details)
+        set_global_locale_to_match_OpenSim();
 
-    // Register all OpenSim components with the `OpenSim::Object` registry.
-    RegisterTypes_all();
+        // Register all OpenSim components with the `OpenSim::Object` registry.
+        RegisterTypes_all();
 
-    return true;
+        return true;
+    }();
+
+    return s_osc_initialized;
 }

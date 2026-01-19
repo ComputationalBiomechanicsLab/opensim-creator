@@ -1,6 +1,5 @@
 #pragma once
 
-#include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
@@ -11,6 +10,7 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabPanel.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
+#include <libopynsim/Documents/Landmarks/NamedLandmark.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/geometries/solid_geometries.h>
 #include <liboscar/graphics/mesh.h>

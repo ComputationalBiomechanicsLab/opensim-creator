@@ -1,11 +1,11 @@
 #include "MeshWarpingTabToolbar.h"
 
-#include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
+#include <libopynsim/Documents/Landmarks/NamedLandmark.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/platform/widget_private.h>
 #include <liboscar/ui/oscimgui.h>
