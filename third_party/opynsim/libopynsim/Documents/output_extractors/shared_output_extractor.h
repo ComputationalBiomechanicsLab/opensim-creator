@@ -51,7 +51,7 @@ namespace osc
         template<typename T, std::ranges::forward_range R>
         requires (
             std::constructible_from<T, Variant&&> and
-            std::convertible_to<std::ranges::range_const_reference_t<R>, const StateViewWithMetadata&>
+            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
         )
         void getValues(
             const OpenSim::Component& component,
@@ -64,7 +64,7 @@ namespace osc
         template<typename T, std::ranges::forward_range R>
         requires (
             std::constructible_from<T, Variant&&> and
-            std::convertible_to<std::ranges::range_const_reference_t<R>, const StateViewWithMetadata&>
+            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
         )
         std::vector<T> slurpValues(const OpenSim::Component& component, const R& states) const
         {
