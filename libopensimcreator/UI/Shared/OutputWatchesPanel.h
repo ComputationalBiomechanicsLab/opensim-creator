@@ -5,7 +5,7 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class IModelStatePair; }
+namespace osc { class ModelStatePair; }
 
 namespace osc
 {
@@ -14,7 +14,7 @@ namespace osc
         explicit OutputWatchesPanel(
             Widget* parent,
             std::string_view panelName,
-            std::shared_ptr<const IModelStatePair>
+            std::shared_ptr<const ModelStatePair>
         );
 
     private:

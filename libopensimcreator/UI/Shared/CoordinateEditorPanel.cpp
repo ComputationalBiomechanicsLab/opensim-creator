@@ -5,7 +5,7 @@
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Shared/ComponentContextMenu.h>
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/platform/app.h>
@@ -35,7 +35,7 @@ public:
         CoordinateEditorPanel& owner,
         Widget* parent,
         std::string_view panelName_,
-        std::shared_ptr<IModelStatePair> model_) :
+        std::shared_ptr<ModelStatePair> model_) :
 
         PanelPrivate{owner, parent, panelName_},
         m_Model{std::move(model_)}
@@ -254,13 +254,13 @@ private:
         }
     }
 
-    std::shared_ptr<IModelStatePair> m_Model;
+    std::shared_ptr<ModelStatePair> m_Model;
 };
 
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
     Widget* parent,
     std::string_view panelName,
-    std::shared_ptr<IModelStatePair> model) :
+    std::shared_ptr<ModelStatePair> model) :
 
     Panel{std::make_unique<Impl>(*this, parent, panelName, std::move(model))}
 {}

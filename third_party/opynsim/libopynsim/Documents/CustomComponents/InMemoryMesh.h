@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/Documents/CustomComponents/ICustomDecorationGenerator.h>
+#include <libopynsim/Documents/CustomComponents/CustomDecorationGenerator.h>
 
 #include <liboscar/graphics/mesh.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -12,7 +12,7 @@ namespace osc::mow
     // exists entirely for performance reasons: this enables the warping engine to produce
     // a renderable model in-memory without having to write `obj` files or similar (which is
     // required by `OpenSim::Mesh`)
-    class InMemoryMesh : public OpenSim::Geometry, public ICustomDecorationGenerator {
+    class InMemoryMesh : public OpenSim::Geometry, public CustomDecorationGenerator {
         OpenSim_DECLARE_CONCRETE_OBJECT(InMemoryMesh, OpenSim::Geometry)
     public:
         InMemoryMesh() = default;

@@ -8,7 +8,7 @@
 #include <libopensimcreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/ComponentRegistry/ComponentRegistry.h>
 #include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
@@ -41,7 +41,7 @@ public:
     explicit Impl(
         Widget& owner,
         Widget* parent,
-        std::shared_ptr<IModelStatePair> uum_) :
+        std::shared_ptr<ModelStatePair> uum_) :
 
         WidgetPrivate{owner, parent},
         m_Model{std::move(uum_)}
@@ -348,13 +348,13 @@ private:
         App::post_event<OpenPopupEvent>(owner(), std::move(popup));
     }
 
-    std::shared_ptr<IModelStatePair> m_Model;
+    std::shared_ptr<ModelStatePair> m_Model;
     std::string m_SearchString;
     OpenSim::ComponentPath m_MaybeTargetParentComponent;
 };
 
 
-osc::ModelAddMenuItems::ModelAddMenuItems(Widget* parent, std::shared_ptr<IModelStatePair> m) :
+osc::ModelAddMenuItems::ModelAddMenuItems(Widget* parent, std::shared_ptr<ModelStatePair> m) :
     Widget{std::make_unique<Impl>(*this, parent, std::move(m))}
 {}
 

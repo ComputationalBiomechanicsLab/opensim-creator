@@ -5,13 +5,13 @@
 #include <libopensimcreator/UI/Simulation/SimulationUILoopingState.h>
 #include <libopensimcreator/UI/Simulation/SimulationUIPlaybackState.h>
 
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 
 #include <initializer_list>
 #include <optional>
 #include <span>
 
-namespace osc { class OutputExtractor; }
+namespace osc { class SharedOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
 namespace osc { class ISimulation; }
 
@@ -51,12 +51,12 @@ namespace osc
 
         std::optional<SimulationReport> trySelectReportBasedOnScrubbing() { return implTrySelectReportBasedOnScrubbing(); }
 
-        void tryPromptToSaveOutputsAsCSV(std::span<const OutputExtractor>, bool openInDefaultApp) const;
-        void tryPromptToSaveOutputsAsCSV(std::initializer_list<OutputExtractor> il, bool openInDefaultApp) const
+        void tryPromptToSaveOutputsAsCSV(std::span<const SharedOutputExtractor>, bool openInDefaultApp) const;
+        void tryPromptToSaveOutputsAsCSV(std::initializer_list<SharedOutputExtractor> il, bool openInDefaultApp) const
         {
-            tryPromptToSaveOutputsAsCSV(std::span<const OutputExtractor>{il}, openInDefaultApp);
+            tryPromptToSaveOutputsAsCSV(std::span<const SharedOutputExtractor>{il}, openInDefaultApp);
         }
-        void tryPromptToSaveAllOutputsAsCSV(std::span<const OutputExtractor>, bool andOpenInDefaultApp = false) const;
+        void tryPromptToSaveAllOutputsAsCSV(std::span<const SharedOutputExtractor>, bool andOpenInDefaultApp = false) const;
 
         SimulationModelStatePair* tryGetCurrentSimulationState() { return implTryGetCurrentSimulationState(); }
 

@@ -1,6 +1,6 @@
 #include "OpenSimGraphicsHelpers.h"
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Graphics/ComponentAbsPathDecorationTagger.h>
 #include <libopynsim/Graphics/ComponentSceneDecorationFlagsTagger.h>
 #include <libopynsim/Graphics/ModelRendererParams.h>
@@ -76,7 +76,7 @@ SceneRendererParams osc::CalcSceneRendererParams(
 
 void osc::GenerateDecorations(
     SceneCache& meshCache,
-    const IModelStatePair& msp,
+    const ModelStatePair& msp,
     const OpenSimDecorationOptions& options,
     const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out)
 {

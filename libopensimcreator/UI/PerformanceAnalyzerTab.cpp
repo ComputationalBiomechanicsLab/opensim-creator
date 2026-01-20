@@ -11,7 +11,7 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/oscimgui.h>
@@ -32,10 +32,10 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    OutputExtractor GetSimulatorOutputExtractor(std::string_view name)
+    SharedOutputExtractor GetSimulatorOutputExtractor(std::string_view name)
     {
         for (int i = 0, len = GetNumFdSimulatorOutputExtractors(); i < len; ++i) {
-            OutputExtractor o = GetFdSimulatorOutputExtractor(i);
+            SharedOutputExtractor o = GetFdSimulatorOutputExtractor(i);
             if (o.getName() == name) {
                 return o;
             }
@@ -205,8 +205,8 @@ private:
     std::vector<ForwardDynamicSimulatorParams> m_Params;
     std::vector<ForwardDynamicSimulation> m_Simulations;
 
-    OutputExtractor m_WalltimeExtractor = GetSimulatorOutputExtractor("Wall time");
-    OutputExtractor m_StepsTakenExtractor = GetSimulatorOutputExtractor("NumStepsTaken");
+    SharedOutputExtractor m_WalltimeExtractor = GetSimulatorOutputExtractor("Wall time");
+    SharedOutputExtractor m_StepsTakenExtractor = GetSimulatorOutputExtractor("NumStepsTaken");
     ParamBlockEditorPopup m_ParamEditor{&owner(), "parameditor", &m_BaseParams};
 };
 

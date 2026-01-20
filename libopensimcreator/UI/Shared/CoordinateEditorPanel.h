@@ -5,7 +5,7 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class IModelStatePair; }
+namespace osc { class ModelStatePair; }
 namespace osc { class Widget; }
 
 namespace osc
@@ -15,7 +15,7 @@ namespace osc
         explicit CoordinateEditorPanel(
             Widget* parent,
             std::string_view panelName,
-            std::shared_ptr<IModelStatePair>
+            std::shared_ptr<ModelStatePair>
         );
 
     private:

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopynsim/Documents/Landmarks/NamedLandmark.h>
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <liboscar/ui/popups/popup.h>
 
 #include <functional>
@@ -25,7 +25,7 @@ namespace osc
             Widget* parent,
             std::string_view,
             std::function<void(ImportedData)> onImport,
-            std::shared_ptr<const IModelStatePair> maybeAssociatedModel = {}
+            std::shared_ptr<const ModelStatePair> maybeAssociatedModel = {}
         );
 
     private:

@@ -1,6 +1,6 @@
 #include "IntegratorOutputExtractor.h"
 
-#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputValueExtractor.h>
 #include <libopynsim/Documents/StateViewWithMetadata.h>
 
@@ -17,9 +17,9 @@ using namespace osc;
 
 namespace
 {
-    std::vector<OutputExtractor> ConstructIntegratorOutputExtractors()
+    std::vector<SharedOutputExtractor> ConstructIntegratorOutputExtractors()
     {
-        std::vector<OutputExtractor> rv;
+        std::vector<SharedOutputExtractor> rv;
         rv.emplace_back(IntegratorOutputExtractor{
             "AccuracyInUse",
             "The accuracy which is being used for error control. Usually this is the same value that was specified to setAccuracy()",
@@ -103,9 +103,9 @@ namespace
         return rv;
     }
 
-    const std::vector<OutputExtractor>& GetAllIntegratorOutputExtractors()
+    const std::vector<SharedOutputExtractor>& GetAllIntegratorOutputExtractors()
     {
-        static const std::vector<OutputExtractor> s_IntegratorOutputs = ConstructIntegratorOutputExtractors();
+        static const std::vector<SharedOutputExtractor> s_IntegratorOutputs = ConstructIntegratorOutputExtractors();
         return s_IntegratorOutputs;
     }
 }
@@ -123,7 +123,7 @@ size_t osc::IntegratorOutputExtractor::implGetHash() const
     return hash_of(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }
 
-bool osc::IntegratorOutputExtractor::implEquals(const IOutputExtractor& other) const
+bool osc::IntegratorOutputExtractor::implEquals(const OutputExtractor& other) const
 {
     if (this == &other)
     {
@@ -153,7 +153,7 @@ const IntegratorOutputExtractor& osc::GetIntegratorOutputExtractor(int idx)
     return dynamic_cast<const IntegratorOutputExtractor&>(GetAllIntegratorOutputExtractors().at(static_cast<size_t>(idx)).getInner());
 }
 
-OutputExtractor osc::GetIntegratorOutputExtractorDynamic(int idx)
+SharedOutputExtractor osc::GetIntegratorOutputExtractorDynamic(int idx)
 {
     return GetAllIntegratorOutputExtractors().at(static_cast<size_t>(idx));
 }

@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace osc { class IModelStatePair; }
+namespace osc { class ModelStatePair; }
 namespace osc { class Widget; }
 
 namespace osc
@@ -16,7 +16,7 @@ namespace osc
     public:
         explicit MainMenuFileTab(Widget* parent);
 
-        void onDraw(std::shared_ptr<IModelStatePair> = nullptr);
+        void onDraw(std::shared_ptr<ModelStatePair> = nullptr);
 
         std::vector<std::filesystem::path> exampleOsimFiles;
 

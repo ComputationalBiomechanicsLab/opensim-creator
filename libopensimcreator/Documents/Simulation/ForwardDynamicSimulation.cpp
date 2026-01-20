@@ -8,7 +8,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 #include <libopensimcreator/Documents/ParamBlock.h>
 
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <liboscar/utils/synchronized_value.h>
 #include <liboscar/utils/synchronized_value_guard.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -43,9 +43,9 @@ namespace
         return ForwardDynamicSimulator{std::move(p), params, std::move(callback)};
     }
 
-    std::vector<OutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
+    std::vector<SharedOutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
     {
-        std::vector<OutputExtractor> rv;
+        std::vector<SharedOutputExtractor> rv;
         const int nOutputExtractors = GetNumFdSimulatorOutputExtractors();
         rv.reserve(nOutputExtractors);
         for (int i = 0; i < nOutputExtractors; ++i)
@@ -129,7 +129,7 @@ public:
         return m_ParamsAsParamBlock;
     }
 
-    std::span<const OutputExtractor> getOutputExtractors() const
+    std::span<const SharedOutputExtractor> getOutputExtractors() const
     {
         return m_SimulatorOutputExtractors;
     }
@@ -267,7 +267,7 @@ private:
     ForwardDynamicSimulator m_Simulation;
     ForwardDynamicSimulatorParams m_Params;
     ParamBlock m_ParamsAsParamBlock;
-    std::vector<OutputExtractor> m_SimulatorOutputExtractors;
+    std::vector<SharedOutputExtractor> m_SimulatorOutputExtractors;
 };
 
 
@@ -318,7 +318,7 @@ const ParamBlock& osc::ForwardDynamicSimulation::implGetParams() const
     return m_Impl->getParams();
 }
 
-std::span<const OutputExtractor> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
+std::span<const SharedOutputExtractor> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

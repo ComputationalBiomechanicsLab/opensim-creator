@@ -23,7 +23,7 @@
 #include <libopensimcreator/UI/Simulation/SimulationUIPlaybackState.h>
 
 #include <libopynsim/Documents/OutputExtractors/ComponentOutputExtractor.h>
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/events/event.h>
 #include <liboscar/platform/events/key_event.h>

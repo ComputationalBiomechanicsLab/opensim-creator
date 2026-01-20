@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 
 #include <memory>
 
@@ -12,7 +12,7 @@ namespace osc
     public:
         explicit SimulationOutputPlot(
             ISimulatorUIAPI*,
-            OutputExtractor,
+            SharedOutputExtractor,
             float height
         );
         SimulationOutputPlot(const SimulationOutputPlot&) = delete;

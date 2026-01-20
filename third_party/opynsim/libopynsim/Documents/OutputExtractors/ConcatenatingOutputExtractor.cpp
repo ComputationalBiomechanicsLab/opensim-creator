@@ -1,7 +1,7 @@
 #include "ConcatenatingOutputExtractor.h"
 
-#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputExtractorDataType.h>
 
 #include <liboscar/utils/conversion.h>
@@ -17,7 +17,7 @@ using namespace osc;
 
 namespace
 {
-    OutputExtractorDataType CalcOutputType(const OutputExtractor& a, const OutputExtractor& b)
+    OutputExtractorDataType CalcOutputType(const SharedOutputExtractor& a, const SharedOutputExtractor& b)
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
 
@@ -32,7 +32,7 @@ namespace
         }
     }
 
-    std::string CalcLabel(OutputExtractorDataType concatenatedType, const OutputExtractor& a, const OutputExtractor& b)
+    std::string CalcLabel(OutputExtractorDataType concatenatedType, const SharedOutputExtractor& a, const SharedOutputExtractor& b)
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
 
@@ -50,8 +50,8 @@ namespace
 }
 
 osc::ConcatenatingOutputExtractor::ConcatenatingOutputExtractor(
-    OutputExtractor first_,
-    OutputExtractor second_) :
+    SharedOutputExtractor first_,
+    SharedOutputExtractor second_) :
 
     m_First{std::move(first_)},
     m_Second{std::move(second_)},
@@ -87,7 +87,7 @@ size_t osc::ConcatenatingOutputExtractor::implGetHash() const
     return hash_of(m_First, m_Second);
 }
 
-bool osc::ConcatenatingOutputExtractor::implEquals(const IOutputExtractor& other) const
+bool osc::ConcatenatingOutputExtractor::implEquals(const OutputExtractor& other) const
 {
     if (&other == this) {
         return true;

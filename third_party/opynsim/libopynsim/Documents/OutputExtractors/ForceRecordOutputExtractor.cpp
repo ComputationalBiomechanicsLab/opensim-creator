@@ -46,7 +46,7 @@ public:
         }
     }
     size_t getHash() const { return hash_of(m_ForceAbsPath, m_RecordIndex, m_Label); }
-    bool equals(const IOutputExtractor& other) const
+    bool equals(const OutputExtractor& other) const
     {
         if (const auto* downcasted = dynamic_cast<const ForceRecordOutputExtractor*>(&other)) {
             return downcasted->m_Impl.get() == this or *downcasted->m_Impl == *this;
@@ -80,4 +80,4 @@ CStringView osc::ForceRecordOutputExtractor::implGetDescription() const { return
 OutputExtractorDataType osc::ForceRecordOutputExtractor::implGetOutputType() const { return m_Impl->getOutputType(); }
 OutputValueExtractor osc::ForceRecordOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const { return m_Impl->getOutputValueExtractor(component); }
 size_t osc::ForceRecordOutputExtractor::implGetHash() const { return m_Impl->getHash(); }
-bool osc::ForceRecordOutputExtractor::implEquals(const IOutputExtractor& other) const { return m_Impl->equals(other); }
+bool osc::ForceRecordOutputExtractor::implEquals(const OutputExtractor& other) const { return m_Impl->equals(other); }

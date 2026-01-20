@@ -10,7 +10,7 @@ namespace OpenSim { class Component; }
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace OpenSim { class ModelDisplayHints; }
-namespace osc { class IModelStatePair; }
+namespace osc { class ModelStatePair; }
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { struct SceneDecoration; }
 namespace osc { class SceneCache; }
@@ -33,7 +33,7 @@ namespace osc
     // as above, but more convenient to use in simple use-cases
     std::vector<SceneDecoration> GenerateModelDecorations(
         SceneCache&,
-        const IModelStatePair&,
+        const ModelStatePair&,
         const OpenSimDecorationOptions& = {},
         float fixupScaleFactor = 1.0f
     );

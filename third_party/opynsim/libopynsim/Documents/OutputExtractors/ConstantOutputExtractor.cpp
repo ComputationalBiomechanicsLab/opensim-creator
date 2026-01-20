@@ -22,7 +22,7 @@ size_t osc::ConstantOutputExtractor::implGetHash() const
     return hash_of(m_Name, m_Value);
 }
 
-bool osc::ConstantOutputExtractor::implEquals(const IOutputExtractor& other) const
+bool osc::ConstantOutputExtractor::implEquals(const OutputExtractor& other) const
 {
     return is_eq_downcasted<ConstantOutputExtractor>(*this, other);
 }

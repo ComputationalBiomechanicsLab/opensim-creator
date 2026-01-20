@@ -1,6 +1,6 @@
 #include "Select1PFPopup.h"
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
@@ -19,7 +19,7 @@ public:
         Select1PFPopup& owner,
         Widget* parent,
         std::string_view popupName,
-        std::shared_ptr<const IModelStatePair> model,
+        std::shared_ptr<const ModelStatePair> model,
         std::function<void(const OpenSim::ComponentPath&)> onSelection) :
 
         PopupPrivate{owner, parent, popupName},
@@ -46,7 +46,7 @@ public:
     }
 
 private:
-    std::shared_ptr<const IModelStatePair> m_Model;
+    std::shared_ptr<const ModelStatePair> m_Model;
     std::function<void(const OpenSim::ComponentPath&)> m_OnSelection;
 };
 
@@ -54,7 +54,7 @@ private:
 osc::Select1PFPopup::Select1PFPopup(
     Widget* parent,
     std::string_view popupName,
-    std::shared_ptr<const IModelStatePair> model,
+    std::shared_ptr<const ModelStatePair> model,
     std::function<void(const OpenSim::ComponentPath&)> onSelection) :
 
     Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(model), std::move(onSelection))}

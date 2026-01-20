@@ -9,9 +9,9 @@
 
 #include <libopynsim/ComponentRegistry/ComponentRegistry.h>
 #include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Documents/OutputExtractors/ComponentOutputExtractor.h>
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/os.h>
@@ -45,7 +45,7 @@ namespace
 {
     // draw UI element that lets user change a model joint's type
     void DrawSelectionJointTypeSwitcher(
-        IModelStatePair& model,
+        ModelStatePair& model,
         const OpenSim::ComponentPath& jointPath)
     {
         const auto* joint = FindComponent<OpenSim::Joint>(model.getModel(), jointPath);
@@ -86,7 +86,7 @@ namespace
     // draw contextual actions (buttons, sliders) for a selected physical frame
     void DrawPhysicalFrameContextualActions(
         Widget&,
-        const std::shared_ptr<IModelStatePair>& modelState,
+        const std::shared_ptr<ModelStatePair>& modelState,
         const OpenSim::ComponentPath& pfPath)
     {
         if (const auto* pf = FindComponent<OpenSim::PhysicalFrame>(modelState->getModel(), pfPath)) {
@@ -101,7 +101,7 @@ namespace
 
     // draw contextual actions (buttons, sliders) for a selected joint
     void DrawJointContextualActions(
-        IModelStatePair& modelState,
+        ModelStatePair& modelState,
         const OpenSim::ComponentPath& jointPath)
     {
         DrawSelectionJointTypeSwitcher(modelState, jointPath);
@@ -113,7 +113,7 @@ namespace
     }
 
     void DrawStationContextualActions(
-        const IModelStatePair& modelState,
+        const ModelStatePair& modelState,
         const OpenSim::Station& station)
     {
         DrawCalculateMenu(
@@ -125,7 +125,7 @@ namespace
     }
 
     void DrawMarkerContextualActions(
-        IModelStatePair& modelState,
+        ModelStatePair& modelState,
         const OpenSim::Marker& marker)
     {
         DrawCalculateMenu(
@@ -157,7 +157,7 @@ namespace
     }
 
     void DrawPointContextualActions(
-        const IModelStatePair& modelState,
+        const ModelStatePair& modelState,
         const OpenSim::Point& point)
     {
         DrawCalculateMenu(
@@ -169,7 +169,7 @@ namespace
     }
 
     void DrawEllipsoidContextualActions(
-        const IModelStatePair& modelState,
+        const ModelStatePair& modelState,
         const OpenSim::Ellipsoid& ellipsoid)
     {
         DrawCalculateMenu(
@@ -181,7 +181,7 @@ namespace
     }
 
     void DrawMeshContextualActions(
-        IModelStatePair& modelState,
+        ModelStatePair& modelState,
         const OpenSim::Mesh& mesh)
     {
         if (ui::begin_menu("Fit Analytic Geometry", modelState.canUpdModel())) {
@@ -209,7 +209,7 @@ namespace
     }
 
     void DrawGeometryContextualActions(
-        const IModelStatePair& modelState,
+        const ModelStatePair& modelState,
         const OpenSim::Geometry& geometry)
     {
         DrawCalculateMenu(
@@ -236,7 +236,7 @@ public:
         ComponentContextMenu& owner,
         Widget* parent_,
         std::string_view popupName_,
-        std::shared_ptr<IModelStatePair> model_,
+        std::shared_ptr<ModelStatePair> model_,
         OpenSim::ComponentPath path_,
         ComponentContextMenuFlags flags_) :
 
@@ -305,7 +305,7 @@ public:
             ui::end_menu();
         }
 
-        DrawWatchOutputMenu(*c, [this](const OutputExtractor& outputExtractor)
+        DrawWatchOutputMenu(*c, [this](const SharedOutputExtractor& outputExtractor)
         {
             m_Model->tryUpdEnvironment()->addUserOutputExtractor(outputExtractor);
 
@@ -621,7 +621,7 @@ private:
         }
     }
 
-    std::shared_ptr<IModelStatePair> m_Model;
+    std::shared_ptr<ModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
     ModelAddMenuItems m_ModelAddMenuItems{&owner(), m_Model};
     ComponentContextMenuFlags m_Flags;
@@ -637,7 +637,7 @@ private:
 osc::ComponentContextMenu::ComponentContextMenu(
     Widget* parent_,
     std::string_view popupName_,
-    std::shared_ptr<IModelStatePair> model_,
+    std::shared_ptr<ModelStatePair> model_,
     const OpenSim::ComponentPath& path_,
     ComponentContextMenuFlags flags_) :
 

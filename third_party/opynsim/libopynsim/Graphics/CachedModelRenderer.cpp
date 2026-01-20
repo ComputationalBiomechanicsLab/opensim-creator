@@ -1,6 +1,6 @@
 #include "CachedModelRenderer.h"
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Documents/Model/ModelStatePairInfo.h>
 #include <libopynsim/Graphics/ModelRendererParams.h>
 #include <libopynsim/Graphics/OpenSimGraphicsHelpers.h>
@@ -55,7 +55,7 @@ namespace
         }
 
         bool update(
-            const IModelStatePair& modelState,
+            const ModelStatePair& modelState,
             const ModelRendererParams& params)
         {
             OSC_PERF("CachedModelRenderer/generateDecorationsCached");
@@ -143,7 +143,7 @@ public:
     {}
 
     void autoFocusCamera(
-        const IModelStatePair& modelState,
+        const ModelStatePair& modelState,
         ModelRendererParams& params,
         float aspectRatio)
     {
@@ -154,7 +154,7 @@ public:
     }
 
     RenderTexture& onDraw(
-        const IModelStatePair& modelState,
+        const ModelStatePair& modelState,
         const ModelRendererParams& renderParams,
         Vector2 dims,
         float devicePixelRatio,
@@ -233,7 +233,7 @@ osc::CachedModelRenderer& osc::CachedModelRenderer::operator=(CachedModelRendere
 osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 
 RenderTexture& osc::CachedModelRenderer::onDraw(
-    const IModelStatePair& modelState,
+    const ModelStatePair& modelState,
     const ModelRendererParams& renderParams,
     Vector2 dims,
     float devicePixelRatio,
@@ -249,7 +249,7 @@ RenderTexture& osc::CachedModelRenderer::onDraw(
 }
 
 void osc::CachedModelRenderer::autoFocusCamera(
-    const IModelStatePair& modelState,
+    const ModelStatePair& modelState,
     ModelRendererParams& renderParams,
     float aspectRatio)
 {

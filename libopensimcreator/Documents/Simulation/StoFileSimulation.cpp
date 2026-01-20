@@ -113,7 +113,7 @@ public:
         return m_ParamBlock;
     }
 
-    std::span<const OutputExtractor> getOutputExtractors() const
+    std::span<const SharedOutputExtractor> getOutputExtractors() const
     {
         return {};
     }
@@ -190,7 +190,7 @@ const ParamBlock& osc::StoFileSimulation::implGetParams() const
     return m_Impl->getParams();
 }
 
-std::span<const OutputExtractor> osc::StoFileSimulation::implGetOutputExtractors() const
+std::span<const SharedOutputExtractor> osc::StoFileSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

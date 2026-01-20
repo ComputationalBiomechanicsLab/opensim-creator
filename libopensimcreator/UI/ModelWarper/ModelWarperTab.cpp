@@ -16,7 +16,7 @@
 #include <libopynsim/Documents/CustomComponents/InMemoryMesh.h>
 #include <libopynsim/Documents/Landmarks/LandmarkHelpers.h>
 #include <libopynsim/Documents/Landmarks/MaybeNamedLandmarkPair.h>
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <libopynsim/Utils/simbody_x_oscar.h>
@@ -1648,7 +1648,7 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
     // the source model in order to yield a scaled model.
     class ModelWarperV3Document final :
         public OpenSim::Component,
-        public IVersionedComponentAccessor {
+        public VersionedComponentAccessor {
         OpenSim_DECLARE_CONCRETE_OBJECT(ModelWarperV3Document, OpenSim::Component)
 
         OpenSim_DECLARE_LIST_PROPERTY(scaling_parameter_overrides, ScalingParameterOverride, "A sequence of `ScalingParameterOverride`s that should be used in place of the default values used by the `ScalingStep`s.");
@@ -2099,7 +2099,7 @@ namespace
         }
 
 
-        std::shared_ptr<IModelStatePair> sourceModel()
+        std::shared_ptr<ModelStatePair> sourceModel()
         {
             return m_ScalingState->upd_scratch().getSourceModelPtr();
         }
@@ -2107,9 +2107,9 @@ namespace
 
         // result model stuff (note: might not be available if there's validation issues)
         using ScaledModelOrValidationErrorsOrScalingErrors = std::variant<
-            std::shared_ptr<IModelStatePair>,               // successfully scaled model
-            std::vector<ScalingDocumentValidationMessage>,  // vaidation messages
-            std::string                                     // runtime scaling error message (i.e. after validation passed but during sclaing)
+            std::shared_ptr<ModelStatePair>,                // successfully scaled model
+            std::vector<ScalingDocumentValidationMessage>,  // validation messages
+            std::string                                     // runtime scaling error message (i.e. after validation passed but during scaling)
         >;
         ScaledModelOrValidationErrorsOrScalingErrors scaledModelOrDocumentValidationMessages()
         {
@@ -2136,7 +2136,7 @@ namespace
             }
 
             auto scalingResult = scaledModelOrDocumentValidationMessages();
-            if (not std::holds_alternative<std::shared_ptr<IModelStatePair>>(scalingResult)) {
+            if (not std::holds_alternative<std::shared_ptr<ModelStatePair>>(scalingResult)) {
                 log_error("cannot export scaled model: could not create a warped model");
                 return;
             }
@@ -2148,7 +2148,7 @@ namespace
                 return;
             }
 
-            std::shared_ptr<IModelStatePair> scaled = std::get<std::shared_ptr<IModelStatePair>>(scalingResult);
+            std::shared_ptr<ModelStatePair> scaled = std::get<std::shared_ptr<ModelStatePair>>(scalingResult);
 
             std::unique_ptr<OpenSim::Model> copy = std::make_unique<OpenSim::Model>(scaled->getModel());
             InitializeModel(*copy);
@@ -2494,13 +2494,13 @@ namespace
         void impl_draw_content() final
         {
             std::visit(Overload{
-                [this](const std::shared_ptr<IModelStatePair>& scaledModel) { draw_scaled_model_visualization(scaledModel); },
+                [this](const std::shared_ptr<ModelStatePair>& scaledModel) { draw_scaled_model_visualization(scaledModel); },
                 [this](const std::vector<ScalingDocumentValidationMessage>& messages) { draw_validation_error_message(messages); },
                 [this](const std::string& scalingErrorMessage) { draw_scaling_error_message(scalingErrorMessage); },
             }, m_State->scaledModelOrDocumentValidationMessages());
         }
 
-        void draw_scaled_model_visualization(const std::shared_ptr<IModelStatePair>& scaledModel)
+        void draw_scaled_model_visualization(const std::shared_ptr<ModelStatePair>& scaledModel)
         {
             // handle camera linking
             if (m_State->isCameraLinked()) {

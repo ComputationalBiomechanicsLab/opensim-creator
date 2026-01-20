@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputValueExtractor.h>
 
 #include <liboscar/utils/c_string_view.h>
@@ -17,7 +17,7 @@ namespace SimTK { class Integrator; }
 namespace osc
 {
     // an output extractor that extracts integrator metadata (e.g. predicted step size)
-    class IntegratorOutputExtractor final : public IOutputExtractor {
+    class IntegratorOutputExtractor final : public OutputExtractor {
     public:
         using ExtractorFn = float (*)(const SimTK::Integrator&);
 
@@ -40,7 +40,7 @@ namespace osc
         OutputExtractorDataType implGetOutputType() const override { return OutputExtractorDataType::Float; }
         OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
         size_t implGetHash() const final;
-        bool implEquals(const IOutputExtractor&) const final;
+        bool implEquals(const OutputExtractor&) const final;
 
         UID m_AuxiliaryDataID;
         std::string m_Name;
@@ -50,5 +50,5 @@ namespace osc
 
     int GetNumIntegratorOutputExtractors();
     const IntegratorOutputExtractor& GetIntegratorOutputExtractor(int idx);
-    OutputExtractor GetIntegratorOutputExtractorDynamic(int idx);
+    SharedOutputExtractor GetIntegratorOutputExtractorDynamic(int idx);
 }

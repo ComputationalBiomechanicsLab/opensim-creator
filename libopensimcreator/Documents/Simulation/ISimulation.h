@@ -5,7 +5,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <liboscar/utils/synchronized_value_guard.h>
 
 #include <cstddef>
@@ -108,7 +108,7 @@ namespace osc
             return implGetParams();
         }
 
-        std::span<const OutputExtractor> getOutputExtractors() const
+        std::span<const SharedOutputExtractor> getOutputExtractors() const
         {
             return implGetOutputExtractors();
         }
@@ -145,7 +145,7 @@ namespace osc
         virtual SimulationStatus implGetStatus() const = 0;
         virtual SimulationClocks implGetClocks() const = 0;
         virtual const ParamBlock& implGetParams() const = 0;
-        virtual std::span<const OutputExtractor> implGetOutputExtractors() const = 0;
+        virtual std::span<const SharedOutputExtractor> implGetOutputExtractors() const = 0;
 
         virtual bool implCanChangeEndTime() const { return false; }
         virtual void implRequestNewEndTime(SimulationClock::time_point) {}

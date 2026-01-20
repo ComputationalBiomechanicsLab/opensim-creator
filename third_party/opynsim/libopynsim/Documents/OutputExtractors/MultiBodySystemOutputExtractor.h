@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputValueExtractor.h>
 
 #include <liboscar/utils/c_string_view.h>
@@ -20,7 +20,7 @@ namespace osc
     // a SimTK::MultiBodySystem
     //
     // handy for extracting simulation stats (e.g. num steps taken etc.)
-    class MultiBodySystemOutputExtractor final : public IOutputExtractor {
+    class MultiBodySystemOutputExtractor final : public OutputExtractor {
     public:
         using ExtractorFn = float (*)(const SimTK::MultibodySystem&);
 
@@ -43,7 +43,7 @@ namespace osc
         OutputExtractorDataType implGetOutputType() const final { return OutputExtractorDataType::Float; }
         OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
         size_t implGetHash() const final;
-        bool implEquals(const IOutputExtractor&) const final;
+        bool implEquals(const OutputExtractor&) const final;
 
         UID m_AuxiliaryDataID;
         std::string m_Name;
@@ -53,5 +53,5 @@ namespace osc
 
     int GetNumMultiBodySystemOutputExtractors();
     const MultiBodySystemOutputExtractor& GetMultiBodySystemOutputExtractor(int idx);
-    OutputExtractor GetMultiBodySystemOutputExtractorDynamic(int idx);
+    SharedOutputExtractor GetMultiBodySystemOutputExtractorDynamic(int idx);
 }

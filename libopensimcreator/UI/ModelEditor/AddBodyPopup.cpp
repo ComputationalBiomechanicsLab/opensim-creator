@@ -7,7 +7,7 @@
 
 #include <libopynsim/ComponentRegistry/ComponentRegistry.h>
 #include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>
@@ -35,7 +35,7 @@ public:
         AddBodyPopup& owner,
         Widget* parent,
         std::string_view popupName,
-        std::shared_ptr<IModelStatePair> modelState) :
+        std::shared_ptr<ModelStatePair> modelState) :
 
         PopupPrivate{owner, parent, popupName},
         m_Model{std::move(modelState)}
@@ -233,7 +233,7 @@ private:
     }
 
     // the model that the body will be added to
-    std::shared_ptr<IModelStatePair> m_Model;
+    std::shared_ptr<ModelStatePair> m_Model;
 
     // a user-enacted search string that should be used to filter through available
     // frames that can be joined to (#21).
@@ -247,7 +247,7 @@ private:
 osc::AddBodyPopup::AddBodyPopup(
     Widget* parent,
     std::string_view popupName,
-    std::shared_ptr<IModelStatePair> modelState) :
+    std::shared_ptr<ModelStatePair> modelState) :
 
     Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(modelState))}
 {}

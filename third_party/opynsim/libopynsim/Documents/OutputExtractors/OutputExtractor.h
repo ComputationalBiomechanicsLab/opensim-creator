@@ -1,54 +1,58 @@
 #pragma once
 
-#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractorDataType.h>
 #include <libopynsim/Documents/OutputExtractors/OutputValueExtractor.h>
-#include <libopynsim/Documents/StateViewWithMetadata.h>
 
 #include <liboscar/utils/c_string_view.h>
+#include <liboscar/utils/conversion.h>
+#include <liboscar/variant/variant.h>
 
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <iosfwd>
-#include <memory>
 #include <ranges>
-#include <span>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace OpenSim { class Component; }
+namespace osc { class IOutputValueExtractorVisitor; }
+namespace osc { class StateViewWithMetadata; }
 
 namespace osc
 {
-    // concrete reference-counted value-type wrapper for an `IOutputExtractor`.
+    // an interface for something that can produce an output value extractor
+    // for a particular model against multiple states
     //
-    // This is a value-type that can be compared, hashed, etc. for easier usage
-    // by other parts of osc (e.g. aggregators, plotters)
-    class OutputExtractor final {
+    // implementors of this interface are assumed to be immutable (important,
+    // because output extractors might be shared between simulations, threads,
+    // etc.)
+    class OutputExtractor {
+    protected:
+        OutputExtractor() = default;
+        OutputExtractor(const OutputExtractor&) = default;
+        OutputExtractor(OutputExtractor&&) noexcept = default;
+        OutputExtractor& operator=(const OutputExtractor&) = default;
+        OutputExtractor& operator=(OutputExtractor&&) noexcept = default;
     public:
-        template<typename ConcreteIOutputExtractor>
-        explicit OutputExtractor(ConcreteIOutputExtractor&& output) :
-            m_Output{std::make_shared<ConcreteIOutputExtractor>(std::forward<ConcreteIOutputExtractor>(output))}
-        {}
+        virtual ~OutputExtractor() noexcept = default;
 
-        CStringView getName() const { return m_Output->getName(); }
-        CStringView getDescription() const { return m_Output->getDescription(); }
-        OutputExtractorDataType getOutputType() const { return m_Output->getOutputType(); }
+        CStringView getName() const { return implGetName(); }
+        CStringView getDescription() const { return implGetDescription(); }
 
+        OutputExtractorDataType getOutputType() const { return implGetOutputType(); }
         OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
         {
-            return m_Output->getOutputValueExtractor(component);
+            return implGetOutputValueExtractor(component);
         }
 
         template<typename T>
         requires std::constructible_from<T, Variant&&>
         T getValue(const OpenSim::Component& component, const StateViewWithMetadata& state) const
         {
-            return m_Output->getValue<T>(component, state);
+            return to<T>(getOutputValueExtractor(component)(state));
         }
 
-        template<typename T, std::ranges::forward_range R>
+        template<typename T, std::ranges::forward_range R, std::invocable<T> Consumer>
         requires (
             std::constructible_from<T, Variant&&> and
             std::convertible_to<std::ranges::range_const_reference_t<R>, const StateViewWithMetadata&>
@@ -56,9 +60,12 @@ namespace osc
         void getValues(
             const OpenSim::Component& component,
             const R& states,
-            const std::function<void(T)>& consumer) const
+            Consumer&& consumer) const
         {
-            return m_Output->getValues<T>(component, states, consumer);
+            const OutputValueExtractor extractor = getOutputValueExtractor(component);
+            for (const StateViewWithMetadata& state : states) {
+                consumer(to<T>(extractor(state)));
+            }
         }
 
         template<typename T, std::ranges::forward_range R>
@@ -68,41 +75,27 @@ namespace osc
         )
         std::vector<T> slurpValues(const OpenSim::Component& component, const R& states) const
         {
-            return m_Output->slurpValues<T>(component, states);
+            std::vector<T> rv;
+            if constexpr (std::ranges::sized_range<R>) {
+                rv.reserve(std::ranges::size(states));
+            }
+            getValues<T>(component, states, [&rv](T value) { rv.push_back(std::move(value)); });
+            return rv;
         }
 
-        size_t getHash() const { return m_Output->getHash(); }
-
-        bool equals(const IOutputExtractor& other) const { return m_Output->equals(other); }
-        operator const IOutputExtractor& () const { return *m_Output; }
-        const IOutputExtractor& getInner() const { return *m_Output; }
+        size_t getHash() const { return implGetHash(); }
+        bool equals(const OutputExtractor& other) const { return implEquals(other); }
 
         friend bool operator==(const OutputExtractor& lhs, const OutputExtractor& rhs)
         {
-            return *lhs.m_Output == *rhs.m_Output;
+            return lhs.equals(rhs);
         }
     private:
-        friend std::string to_string(const OutputExtractor&);
-        friend struct std::hash<OutputExtractor>;
-
-        std::shared_ptr<const IOutputExtractor> m_Output;
+        virtual CStringView implGetName() const = 0;
+        virtual CStringView implGetDescription() const = 0;
+        virtual OutputExtractorDataType implGetOutputType() const = 0;
+        virtual OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const = 0;
+        virtual size_t implGetHash() const = 0;
+        virtual bool implEquals(const OutputExtractor&) const = 0;
     };
-
-    template<std::derived_from<IOutputExtractor> ConcreteOutputExtractor, typename... Args>
-    requires std::constructible_from<ConcreteOutputExtractor, Args&&...>
-    OutputExtractor make_output_extractor(Args&&... args)
-    {
-        return OutputExtractor{ConcreteOutputExtractor{std::forward<Args>(args)...}};
-    }
-
-    std::ostream& operator<<(std::ostream&, const OutputExtractor&);
-    std::string to_string(const OutputExtractor&);
 }
-
-template<>
-struct std::hash<osc::OutputExtractor> final {
-    size_t operator()(const osc::OutputExtractor& o) const
-    {
-        return o.m_Output->getHash();
-    }
-};

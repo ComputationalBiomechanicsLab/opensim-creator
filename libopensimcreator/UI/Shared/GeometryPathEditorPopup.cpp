@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <libopynsim/Documents/Model/IComponentAccessor.h>
+#include <libopynsim/Documents/Model/ComponentAccessor.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
@@ -122,7 +122,7 @@ public:
         GeometryPathEditorPopup& owner,
         Widget* parent,
         std::string_view popupName_,
-        std::shared_ptr<const IComponentAccessor> targetComponent_,
+        std::shared_ptr<const ComponentAccessor> targetComponent_,
         std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
         std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
@@ -357,7 +357,7 @@ private:
         m_RequestedAction.reset();  // action handled: resets
     }
 
-    std::shared_ptr<const IComponentAccessor> m_TargetComponent;
+    std::shared_ptr<const ComponentAccessor> m_TargetComponent;
     std::function<const OpenSim::GeometryPath*()> m_GeometryPathGetter;
     std::function<void(const OpenSim::GeometryPath&)> m_OnLocalCopyEdited;
 
@@ -369,7 +369,7 @@ private:
 osc::GeometryPathEditorPopup::GeometryPathEditorPopup(
     Widget* parent_,
     std::string_view popupName_,
-    std::shared_ptr<const IComponentAccessor> targetComponent_,
+    std::shared_ptr<const ComponentAccessor> targetComponent_,
     std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
     std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 

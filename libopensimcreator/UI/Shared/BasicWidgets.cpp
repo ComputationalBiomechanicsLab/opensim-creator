@@ -10,10 +10,10 @@
 #include <libopensimcreator/Platform/RecentFile.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/ForceRecordOutputExtractor.h>
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <libopynsim/Graphics/CustomRenderingOptions.h>
 #include <libopynsim/Graphics/ModelRendererParams.h>
 #include <libopynsim/Graphics/MuscleDecorationStyle.h>
@@ -100,7 +100,7 @@ namespace
 
     bool DrawOutputWithSubfieldsMenu(
         const OpenSim::AbstractOutput& o,
-        const std::function<void(OutputExtractor)>& onUserSelection)
+        const std::function<void(SharedOutputExtractor)>& onUserSelection)
     {
         bool outputAdded = false;
         ComponentOutputSubfields supportedSubfields = GetSupportedSubfields(o);
@@ -114,7 +114,7 @@ namespace
                 {
                     if (auto label = GetOutputSubfieldLabel(f); label && ui::draw_menu_item(*label))
                     {
-                        onUserSelection(OutputExtractor{ComponentOutputExtractor{o, f}});
+                        onUserSelection(SharedOutputExtractor{ComponentOutputExtractor{o, f}});
                         outputAdded = true;
                     }
                 }
@@ -132,7 +132,7 @@ namespace
 
     bool DrawOutputWithNoSubfieldsMenuItem(
         const OpenSim::AbstractOutput& o,
-        const std::function<void(OutputExtractor)>& onUserSelection)
+        const std::function<void(SharedOutputExtractor)>& onUserSelection)
     {
         // can only plot top-level of output
 
@@ -140,7 +140,7 @@ namespace
 
         if (ui::draw_menu_item(("  " + o.getName())))
         {
-            onUserSelection(OutputExtractor{ComponentOutputExtractor{o}});
+            onUserSelection(SharedOutputExtractor{ComponentOutputExtractor{o}});
             outputAdded = true;
         }
 
@@ -361,7 +361,7 @@ void osc::DrawComponentHoverTooltip(const OpenSim::Component& hovered)
     ui::end_tooltip();
 }
 
-void osc::DrawSelectOwnerMenu(IModelStatePair& model, const OpenSim::Component& selected)
+void osc::DrawSelectOwnerMenu(ModelStatePair& model, const OpenSim::Component& selected)
 {
     if (ui::begin_menu("Select Owner"))
     {
@@ -395,7 +395,7 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, const OpenSim::Component& 
 
 bool osc::DrawRequestOutputMenuOrMenuItem(
     const OpenSim::AbstractOutput& o,
-    const std::function<void(OutputExtractor)>& onUserSelection)
+    const std::function<void(SharedOutputExtractor)>& onUserSelection)
 {
     if (GetSupportedSubfields(o) == ComponentOutputSubfield::None)
     {
@@ -409,7 +409,7 @@ bool osc::DrawRequestOutputMenuOrMenuItem(
 
 bool osc::DrawWatchOutputMenu(
     const OpenSim::Component& c,
-    const std::function<void(OutputExtractor)>& onUserSelection)
+    const std::function<void(SharedOutputExtractor)>& onUserSelection)
 {
     bool outputAdded = false;
 
@@ -429,7 +429,7 @@ bool osc::DrawWatchOutputMenu(
             for (int i = 0; i < labels.size(); ++i) {
                 ui::push_id(entriesDrawn++);
                 if (ui::draw_menu_item("  " + labels[i])) {
-                    onUserSelection(OutputExtractor{ForceRecordOutputExtractor{*f, i}});
+                    onUserSelection(SharedOutputExtractor{ForceRecordOutputExtractor{*f, i}});
                     outputAdded = true;
                 }
                 ui::pop_id();
@@ -480,7 +480,7 @@ void osc::DrawSearchBar(std::string& out)
 }
 
 void osc::DrawOutputNameColumn(
-    const IOutputExtractor& output,
+    const OutputExtractor& output,
     bool centered,
     SimulationModelStatePair* maybeActiveSate)
 {
@@ -1380,7 +1380,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(Widget& api)
     });
 }
 
-void osc::DrawSaveModelButton(const std::shared_ptr<IModelStatePair>& model)
+void osc::DrawSaveModelButton(const std::shared_ptr<ModelStatePair>& model)
 {
     if (ui::draw_button(MSMICONS_SAVE)) {
         ActionSaveModelAsync(model);
@@ -1404,7 +1404,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
     ui::draw_tooltip_if_item_hovered("Reload Model", "Reloads the model from its source osim file");
 }
 
-void osc::DrawUndoButton(IModelStatePair& model)
+void osc::DrawUndoButton(ModelStatePair& model)
 {
     auto* undoable = dynamic_cast<UndoableModelStatePair*>(&model);
     const bool disable = not (undoable != nullptr and undoable->canUndo());
@@ -1421,7 +1421,7 @@ void osc::DrawUndoButton(IModelStatePair& model)
     ui::draw_tooltip_if_item_hovered("Undo", "Undo the model to an earlier version");
 }
 
-void osc::DrawRedoButton(IModelStatePair& model)
+void osc::DrawRedoButton(ModelStatePair& model)
 {
     auto* undoable = dynamic_cast<UndoableModelStatePair*>(&model);
     const bool disable = not (undoable != nullptr and undoable->canRedo());
@@ -1438,14 +1438,14 @@ void osc::DrawRedoButton(IModelStatePair& model)
     ui::draw_tooltip_if_item_hovered("Redo", "Redo the model to an undone version");
 }
 
-void osc::DrawUndoAndRedoButtons(IModelStatePair& model)
+void osc::DrawUndoAndRedoButtons(ModelStatePair& model)
 {
     DrawUndoButton(model);
     ui::same_line();
     DrawRedoButton(model);
 }
 
-void osc::DrawToggleFramesButton(IModelStatePair& model, IconCache& icons)
+void osc::DrawToggleFramesButton(ModelStatePair& model, IconCache& icons)
 {
     const Icon& icon = icons.find_or_throw(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
 
@@ -1461,7 +1461,7 @@ void osc::DrawToggleFramesButton(IModelStatePair& model, IconCache& icons)
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Frames", "Toggles whether frames (coordinate systems) within the model should be rendered in the 3D scene.");
 }
 
-void osc::DrawToggleMarkersButton(IModelStatePair& model, IconCache& icons)
+void osc::DrawToggleMarkersButton(ModelStatePair& model, IconCache& icons)
 {
     const Icon& icon = icons.find_or_throw(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
     if (model.isReadonly()) {
@@ -1476,7 +1476,7 @@ void osc::DrawToggleMarkersButton(IModelStatePair& model, IconCache& icons)
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Markers", "Toggles whether markers should be rendered in the 3D scene");
 }
 
-void osc::DrawToggleWrapGeometryButton(IModelStatePair& model, IconCache& icons)
+void osc::DrawToggleWrapGeometryButton(ModelStatePair& model, IconCache& icons)
 {
     const Icon& icon = icons.find_or_throw(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
     if (model.isReadonly()) {
@@ -1491,7 +1491,7 @@ void osc::DrawToggleWrapGeometryButton(IModelStatePair& model, IconCache& icons)
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Wrap Geometry", "Toggles whether wrap geometry should be rendered in the 3D scene.\n\nNOTE: This is a model-log_level_ property. Individual wrap geometries *within* the model may have their visibility set to 'false', which will cause them to be hidden from the visualizer, even if this is enabled.");
 }
 
-void osc::DrawToggleContactGeometryButton(IModelStatePair& model, IconCache& icons)
+void osc::DrawToggleContactGeometryButton(ModelStatePair& model, IconCache& icons)
 {
     const Icon& icon = icons.find_or_throw(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
     if (model.isReadonly()) {
@@ -1506,7 +1506,7 @@ void osc::DrawToggleContactGeometryButton(IModelStatePair& model, IconCache& ico
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
 }
 
-void osc::DrawToggleForcesButton(IModelStatePair& model, IconCache& icons)
+void osc::DrawToggleForcesButton(ModelStatePair& model, IconCache& icons)
 {
     const Icon& icon = icons.find_or_throw(IsShowingForces(model.getModel()) ? "forces_colored" : "forces_bw");
     if (model.isReadonly()) {
@@ -1521,7 +1521,7 @@ void osc::DrawToggleForcesButton(IModelStatePair& model, IconCache& icons)
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Forces", "Toggles whether forces should be rendered in the 3D scene.\n\nNOTE: this is a model-level property that only applies to forces in OpenSim that actually check this flag. OpenSim Creator's visualizers also offer custom overlays for forces, muscles, etc. separately to this mechanism.");
 }
 
-void osc::DrawAllDecorationToggleButtons(IModelStatePair& model, IconCache& icons)
+void osc::DrawAllDecorationToggleButtons(ModelStatePair& model, IconCache& icons)
 {
     DrawToggleFramesButton(model, icons);
     ui::same_line();
@@ -1534,7 +1534,7 @@ void osc::DrawAllDecorationToggleButtons(IModelStatePair& model, IconCache& icon
     DrawToggleForcesButton(model, icons);
 }
 
-void osc::DrawSceneScaleFactorEditorControls(IModelStatePair& model)
+void osc::DrawSceneScaleFactorEditorControls(ModelStatePair& model)
 {
     ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
     ui::draw_text(MSMICONS_EXPAND_ALT);
@@ -1560,7 +1560,7 @@ void osc::DrawSceneScaleFactorEditorControls(IModelStatePair& model)
 }
 
 void osc::DrawMeshExportContextMenuContent(
-    const IModelStatePair& model,
+    const ModelStatePair& model,
     const OpenSim::Mesh& mesh)
 {
     ui::draw_text_disabled("Format:");

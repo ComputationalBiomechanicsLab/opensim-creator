@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <liboscar/utils/uid.h>
 
 #include <memory>
@@ -16,7 +16,7 @@ namespace SimTK { class State; }
 namespace osc
 {
     // a readonly model+state pair from a particular step from a simulator
-    class SimulationModelStatePair final : public IModelStatePair {
+    class SimulationModelStatePair final : public ModelStatePair {
     public:
         SimulationModelStatePair();
         SimulationModelStatePair(std::shared_ptr<Simulation>, SimulationReport);

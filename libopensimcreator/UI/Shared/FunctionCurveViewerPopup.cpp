@@ -1,6 +1,6 @@
 #include "FunctionCurveViewerPopup.h"
 
-#include <libopynsim/Documents/Model/IVersionedComponentAccessor.h>
+#include <libopynsim/Documents/Model/VersionedComponentAccessor.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/maths/closed_interval.h>
 #include <liboscar/maths/constants.h>
@@ -31,7 +31,7 @@ public:
         FunctionCurveViewerPanel& owner,
         Widget* parent,
         std::string_view popupName,
-        std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
+        std::shared_ptr<const VersionedComponentAccessor> targetComponent,
         std::function<const OpenSim::Function*()> functionGetter) :
 
         PanelPrivate{owner, parent, popupName, ui::PanelFlag::AlwaysAutoResize},
@@ -41,13 +41,13 @@ public:
 private:
     class FunctionParameters final {
     public:
-        explicit FunctionParameters(const IVersionedComponentAccessor& component) :
+        explicit FunctionParameters(const VersionedComponentAccessor& component) :
             componentVersion{component.getComponentVersion()}
         {}
 
         friend bool operator==(const FunctionParameters& lhs, const FunctionParameters& rhs) = default;
 
-        void setVersionFromComponent(const IVersionedComponentAccessor& component)
+        void setVersionFromComponent(const VersionedComponentAccessor& component)
         {
             componentVersion = component.getComponentVersion();
         }
@@ -207,7 +207,7 @@ private:
         }, "csv");
     }
 
-    std::shared_ptr<const IVersionedComponentAccessor> m_Component;
+    std::shared_ptr<const VersionedComponentAccessor> m_Component;
     std::function<const OpenSim::Function*()> m_FunctionGetter;
     FunctionParameters m_LatestParameters{*m_Component};
     std::optional<FunctionParameters> m_PlottedParameters;
@@ -218,7 +218,7 @@ private:
 osc::FunctionCurveViewerPanel::FunctionCurveViewerPanel(
     Widget* parent,
     std::string_view panelName,
-    std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
+    std::shared_ptr<const VersionedComponentAccessor> targetComponent,
     std::function<const OpenSim::Function*()> functionGetter) :
 
     Panel{std::make_unique<Impl>(*this, parent, panelName, std::move(targetComponent), std::move(functionGetter))}

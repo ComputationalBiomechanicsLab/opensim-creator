@@ -1,11 +1,11 @@
 #include "OpenSimDecorationGenerator.h"
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Graphics/ComponentAbsPathDecorationTagger.h>
 #include <libopynsim/Graphics/ComponentSceneDecorationFlagsTagger.h>
 #include <libopynsim/Graphics/OpenSimDecorationOptions.h>
 #include <libopynsim/Graphics/SimTKDecorationGenerator.h>
-#include <libopynsim/Documents/CustomComponents/ICustomDecorationGenerator.h>
+#include <libopynsim/Documents/CustomComponents/CustomDecorationGenerator.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/graphics/color.h>
@@ -1319,7 +1319,7 @@ void osc::GenerateModelDecorations(
 
 std::vector<SceneDecoration> osc::GenerateModelDecorations(
     SceneCache& cache,
-    const IModelStatePair& modelState,
+    const ModelStatePair& modelState,
     const OpenSimDecorationOptions& opts,
     float fixupScaleFactor)
 {
@@ -1387,8 +1387,8 @@ void osc::GenerateSubcomponentDecorations(
         if (not ShouldShowInUI(c)) {
             return;
         }
-        else if (const auto* const custom = dynamic_cast<const ICustomDecorationGenerator*>(&c)) {
-            // edge-case: it's a component that has an OSC-specific `ICustomDecorationGenerator`
+        else if (const auto* const custom = dynamic_cast<const CustomDecorationGenerator*>(&c)) {
+            // edge-case: it's a component that has an OSC-specific `CustomDecorationGenerator`
             //            so we can skip the song-and-dance with caches, OpenSim, SimTK, etc.
             custom->generateCustomDecorations(rendererState.getState(), [&c, &rendererState](SceneDecoration&& dec)
             {

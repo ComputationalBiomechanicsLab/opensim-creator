@@ -6,17 +6,17 @@ namespace OpenSim { class Component; }
 
 namespace osc
 {
-    class IComponentAccessor {
+    class ComponentAccessor {
     protected:
-        IComponentAccessor() = default;
-        IComponentAccessor(const IComponentAccessor&) = default;
-        IComponentAccessor(IComponentAccessor&&) noexcept = default;
-        IComponentAccessor& operator=(const IComponentAccessor&) = default;
-        IComponentAccessor& operator=(IComponentAccessor&&) noexcept = default;
+        ComponentAccessor() = default;
+        ComponentAccessor(const ComponentAccessor&) = default;
+        ComponentAccessor(ComponentAccessor&&) noexcept = default;
+        ComponentAccessor& operator=(const ComponentAccessor&) = default;
+        ComponentAccessor& operator=(ComponentAccessor&&) noexcept = default;
 
-        friend bool operator==(const IComponentAccessor&, const IComponentAccessor&) = default;
+        friend bool operator==(const ComponentAccessor&, const ComponentAccessor&) = default;
     public:
-        virtual ~IComponentAccessor() noexcept = default;
+        virtual ~ComponentAccessor() noexcept = default;
 
         const OpenSim::Component& getComponent() const { return implGetComponent(); }
         operator const OpenSim::Component& () const { return getComponent(); }
@@ -29,7 +29,7 @@ namespace osc
         // Implementors should return a const reference to an initialized (finalized properties, etc.) component
         virtual const OpenSim::Component& implGetComponent() const = 0;
 
-        // Implementors may return whether the component contained by the concrete `IComponentAccessor` implementation
+        // Implementors may return whether the component contained by the concrete `ComponentAccessor` implementation
         // can be modified in-place.
         //
         // If the response can be `true`, implementors must also override `implUpdComponent` accordingly.
@@ -41,7 +41,7 @@ namespace osc
         // If this is implemented, implementors should override `implCanUpdComponent` accordingly.
         virtual OpenSim::Component& implUpdComponent()
         {
-            throw std::runtime_error{"component updating not implemented for this IComponentAccessor"};
+            throw std::runtime_error{"component updating not implemented for this ComponentAccessor"};
         }
     };
 }

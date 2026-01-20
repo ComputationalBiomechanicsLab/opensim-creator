@@ -7,7 +7,7 @@
 #include <string_view>
 
 namespace OpenSim { class Function; }
-namespace osc { class IVersionedComponentAccessor; }
+namespace osc { class VersionedComponentAccessor; }
 
 namespace osc
 {
@@ -17,7 +17,7 @@ namespace osc
         explicit FunctionCurveViewerPanel(
             Widget* parent,
             std::string_view panelName,
-            std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
+            std::shared_ptr<const VersionedComponentAccessor> targetComponent,
             std::function<const OpenSim::Function*()> functionGetter
         );
 

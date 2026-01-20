@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/shims/cpp23/ranges.h>
@@ -17,11 +17,11 @@ osc::Environment::Environment() :
     m_ParamBlock{ToParamBlock(ForwardDynamicSimulatorParams{})}
 {}
 
-const OutputExtractor& osc::Environment::getUserOutputExtractor(int index) const
+const SharedOutputExtractor& osc::Environment::getUserOutputExtractor(int index) const
 {
     return m_OutputExtractors.at(index);
 }
-void osc::Environment::addUserOutputExtractor(const OutputExtractor& extractor)
+void osc::Environment::addUserOutputExtractor(const SharedOutputExtractor& extractor)
 {
     m_OutputExtractors.push_back(extractor);
     App::upd().upd_settings().set_value("panels/Output Watches/enabled", true);  // TODO: this should be an event... ;)
@@ -31,15 +31,15 @@ void osc::Environment::removeUserOutputExtractor(int index)
     OSC_ASSERT(0 <= index and index < static_cast<int>(m_OutputExtractors.size()));
     m_OutputExtractors.erase(m_OutputExtractors.begin() + index);
 }
-bool osc::Environment::hasUserOutputExtractor(const OutputExtractor& extractor) const
+bool osc::Environment::hasUserOutputExtractor(const SharedOutputExtractor& extractor) const
 {
     return cpp23::contains(m_OutputExtractors, extractor);
 }
-bool osc::Environment::removeUserOutputExtractor(const OutputExtractor& extractor)
+bool osc::Environment::removeUserOutputExtractor(const SharedOutputExtractor& extractor)
 {
     return std::erase(m_OutputExtractors, extractor) > 0;
 }
-bool osc::Environment::overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer)
+bool osc::Environment::overwriteOrAddNewUserOutputExtractor(const SharedOutputExtractor& old, const SharedOutputExtractor& newer)
 {
     if (auto it = find_or_nullptr(m_OutputExtractors, old)) {
         *it = newer;
@@ -51,10 +51,10 @@ bool osc::Environment::overwriteOrAddNewUserOutputExtractor(const OutputExtracto
     }
 }
 
-std::vector<OutputExtractor> osc::Environment::getAllUserOutputExtractors() const
+std::vector<SharedOutputExtractor> osc::Environment::getAllUserOutputExtractors() const
 {
     const int nOutputs = getNumUserOutputExtractors();
-    std::vector<OutputExtractor> rv;
+    std::vector<SharedOutputExtractor> rv;
     rv.reserve(nOutputs);
     for (int i = 0; i < nOutputs; ++i) {
         rv.push_back(getUserOutputExtractor(i));

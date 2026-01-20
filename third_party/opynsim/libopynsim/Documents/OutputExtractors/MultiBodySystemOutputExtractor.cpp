@@ -13,9 +13,9 @@ using namespace osc;
 
 namespace
 {
-    std::vector<OutputExtractor> ConstructMultiBodySystemOutputExtractors()
+    std::vector<SharedOutputExtractor> ConstructMultiBodySystemOutputExtractors()
     {
-        std::vector<OutputExtractor> rv;
+        std::vector<SharedOutputExtractor> rv;
 
         // SimTK::System (base class)
         rv.emplace_back(MultiBodySystemOutputExtractor{
@@ -41,9 +41,9 @@ namespace
         return rv;
     }
 
-    const std::vector<OutputExtractor>& GetAllMultiBodySystemOutputExtractors()
+    const std::vector<SharedOutputExtractor>& GetAllMultiBodySystemOutputExtractors()
     {
-        static const std::vector<OutputExtractor> s_Outputs = ConstructMultiBodySystemOutputExtractors();
+        static const std::vector<SharedOutputExtractor> s_Outputs = ConstructMultiBodySystemOutputExtractors();
         return s_Outputs;
     }
 }
@@ -61,7 +61,7 @@ size_t osc::MultiBodySystemOutputExtractor::implGetHash() const
     return hash_of(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }
 
-bool osc::MultiBodySystemOutputExtractor::implEquals(const IOutputExtractor& other) const
+bool osc::MultiBodySystemOutputExtractor::implEquals(const OutputExtractor& other) const
 {
     if (&other == this)
     {
@@ -91,7 +91,7 @@ const MultiBodySystemOutputExtractor& osc::GetMultiBodySystemOutputExtractor(int
     return dynamic_cast<const MultiBodySystemOutputExtractor&>(GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx)).getInner());
 }
 
-OutputExtractor osc::GetMultiBodySystemOutputExtractorDynamic(int idx)
+SharedOutputExtractor osc::GetMultiBodySystemOutputExtractorDynamic(int idx)
 {
     return GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx));
 }

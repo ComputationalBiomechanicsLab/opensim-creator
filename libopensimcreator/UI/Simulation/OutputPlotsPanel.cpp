@@ -6,7 +6,7 @@
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
 
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
@@ -71,7 +71,7 @@ public:
         ui::draw_vertical_spacer(5.0f/15.0f);
 
         for (int i = 0; i < m_Environment->getNumUserOutputExtractors(); ++i) {
-            OutputExtractor output = m_Environment->getUserOutputExtractor(i);
+            SharedOutputExtractor output = m_Environment->getUserOutputExtractor(i);
 
             ui::push_id(i);
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 128.0f};

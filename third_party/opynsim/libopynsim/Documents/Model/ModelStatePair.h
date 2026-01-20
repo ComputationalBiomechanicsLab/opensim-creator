@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/Documents/Model/IVersionedComponentAccessor.h>
+#include <libopynsim/Documents/Model/VersionedComponentAccessor.h>
 #include <liboscar/utils/uid.h>
 
 #include <filesystem>
@@ -17,18 +17,18 @@ namespace osc
 {
     // virtual accessor to an `OpenSim::Model` + `SimTK::State` pair, with
     // additional opt-in overrides to aid rendering/UX etc.
-    class IModelStatePair : public IVersionedComponentAccessor {
+    class ModelStatePair : public VersionedComponentAccessor {
     protected:
-        IModelStatePair() = default;
-        IModelStatePair(const IModelStatePair&) = default;
-        IModelStatePair(IModelStatePair&&) noexcept = default;
-        IModelStatePair& operator=(const IModelStatePair&) = default;
-        IModelStatePair& operator=(IModelStatePair&&) noexcept = default;
+        ModelStatePair() = default;
+        ModelStatePair(const ModelStatePair&) = default;
+        ModelStatePair(ModelStatePair&&) noexcept = default;
+        ModelStatePair& operator=(const ModelStatePair&) = default;
+        ModelStatePair& operator=(ModelStatePair&&) noexcept = default;
 
-        friend bool operator==(const IModelStatePair&, const IModelStatePair&) = default;
+        friend bool operator==(const ModelStatePair&, const ModelStatePair&) = default;
 
     public:
-        virtual ~IModelStatePair() noexcept = default;
+        virtual ~ModelStatePair() noexcept = default;
 
         const OpenSim::Model& getModel() const { return implGetModel(); }
         operator const OpenSim::Model& () const { return implGetModel(); }
@@ -93,7 +93,7 @@ namespace osc
         void setUpToDateWithFilesystem(std::filesystem::file_time_type t) { implSetUpToDateWithFilesystem(t); }
 
     private:
-        // overrides + specializes `IComponentAccessor` API
+        // overrides + specializes `ComponentAccessor` API
         const OpenSim::Component& implGetComponent() const final;
         bool implCanUpdComponent() const { return implCanUpdModel(); }
         OpenSim::Component& implUpdComponent() final;
@@ -106,7 +106,7 @@ namespace osc
         // Implementors should return a const reference to a state that's compatible with the model returned by `implGetModel`.
         virtual const SimTK::State& implGetState() const = 0;
 
-        // Implementors may return whether the model contained by the concrete `IModelStatePair` implementation can be
+        // Implementors may return whether the model contained by the concrete `ModelStatePair` implementation can be
         // modified in-place.
         //
         // If the response can be `true`, implementors should also override `implUpdModel` accordingly.

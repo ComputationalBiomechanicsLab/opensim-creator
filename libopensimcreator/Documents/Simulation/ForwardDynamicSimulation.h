@@ -16,7 +16,7 @@
 namespace OpenSim { class Model; }
 namespace osc { struct ForwardDynamicSimulatorParams; }
 namespace osc { class ParamBlock; }
-namespace osc { class OutputExtractor; }
+namespace osc { class SharedOutputExtractor; }
 
 namespace osc
 {
@@ -43,7 +43,7 @@ namespace osc
         SimulationStatus implGetStatus() const final;
         SimulationClocks implGetClocks() const final;
         const ParamBlock& implGetParams() const final;
-        std::span<const OutputExtractor> implGetOutputExtractors() const final;
+        std::span<const SharedOutputExtractor> implGetOutputExtractors() const final;
 
         bool implCanChangeEndTime() const final { return true; }
         void implRequestNewEndTime(SimulationClock::time_point) final;

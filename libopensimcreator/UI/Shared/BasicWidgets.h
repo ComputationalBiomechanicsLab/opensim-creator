@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/vector2.h>
 #include <liboscar/maths/vector3.h>
@@ -24,8 +24,8 @@ namespace OpenSim { class Sphere; }
 namespace OpenSim { class Station; }
 namespace osc { class CustomRenderingOptions; }
 namespace osc { class IconCache; }
-namespace osc { class IModelStatePair; }
-namespace osc { class IOutputExtractor; }
+namespace osc { class ModelStatePair; }
+namespace osc { class OutputExtractor; }
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { class OverlayDecorationOptions; }
 namespace osc { class ParamBlock; }
@@ -56,23 +56,23 @@ namespace osc
     );
     void DrawContextMenuSeparator();
     void DrawSelectOwnerMenu(
-        IModelStatePair&,
+        ModelStatePair&,
         const OpenSim::Component&
     );
     bool DrawRequestOutputMenuOrMenuItem(
         const OpenSim::AbstractOutput& o,
-        const std::function<void(OutputExtractor)>& onUserSelection
+        const std::function<void(SharedOutputExtractor)>& onUserSelection
     );
     bool DrawWatchOutputMenu(
         const OpenSim::Component&,
-        const std::function<void(OutputExtractor)>& onUserSelection
+        const std::function<void(SharedOutputExtractor)>& onUserSelection
     );
     void DrawSimulationParams(
         const ParamBlock&
     );
     void DrawSearchBar(std::string&);
     void DrawOutputNameColumn(
-        const IOutputExtractor& output,
+        const OutputExtractor& output,
         bool centered = true,
         SimulationModelStatePair* maybeActiveSate = nullptr
     );
@@ -263,19 +263,19 @@ namespace osc
         const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile
     );
     void DrawOpenModelButtonWithRecentFilesDropdown(Widget&);
-    void DrawSaveModelButton(const std::shared_ptr<IModelStatePair>&);
+    void DrawSaveModelButton(const std::shared_ptr<ModelStatePair>&);
     void DrawReloadModelButton(UndoableModelStatePair&);
-    void DrawUndoButton(IModelStatePair&);
-    void DrawRedoButton(IModelStatePair&);
-    void DrawUndoAndRedoButtons(IModelStatePair&);
-    void DrawToggleFramesButton(IModelStatePair&, IconCache&);
-    void DrawToggleMarkersButton(IModelStatePair&, IconCache&);
-    void DrawToggleWrapGeometryButton(IModelStatePair&, IconCache&);
-    void DrawToggleContactGeometryButton(IModelStatePair&, IconCache&);
-    void DrawToggleForcesButton(IModelStatePair&, IconCache&);
-    void DrawAllDecorationToggleButtons(IModelStatePair&, IconCache&);
-    void DrawSceneScaleFactorEditorControls(IModelStatePair&);
+    void DrawUndoButton(ModelStatePair&);
+    void DrawRedoButton(ModelStatePair&);
+    void DrawUndoAndRedoButtons(ModelStatePair&);
+    void DrawToggleFramesButton(ModelStatePair&, IconCache&);
+    void DrawToggleMarkersButton(ModelStatePair&, IconCache&);
+    void DrawToggleWrapGeometryButton(ModelStatePair&, IconCache&);
+    void DrawToggleContactGeometryButton(ModelStatePair&, IconCache&);
+    void DrawToggleForcesButton(ModelStatePair&, IconCache&);
+    void DrawAllDecorationToggleButtons(ModelStatePair&, IconCache&);
+    void DrawSceneScaleFactorEditorControls(ModelStatePair&);
 
     // mesh stuff
-    void DrawMeshExportContextMenuContent(const IModelStatePair&, const OpenSim::Mesh&);
+    void DrawMeshExportContextMenuContent(const ModelStatePair&, const OpenSim::Mesh&);
 }

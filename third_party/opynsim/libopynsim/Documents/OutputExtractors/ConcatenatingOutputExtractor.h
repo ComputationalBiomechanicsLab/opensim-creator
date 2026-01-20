@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputExtractorDataType.h>
 #include <libopynsim/Documents/OutputExtractors/OutputValueExtractor.h>
 
@@ -15,9 +15,9 @@ namespace OpenSim { class Component; }
 namespace osc
 {
     // an output extractor that concatenates the outputs from multiple output extractors
-    class ConcatenatingOutputExtractor final : public IOutputExtractor {
+    class ConcatenatingOutputExtractor final : public OutputExtractor {
     public:
-        ConcatenatingOutputExtractor(OutputExtractor first_, OutputExtractor second_);
+        ConcatenatingOutputExtractor(SharedOutputExtractor first_, SharedOutputExtractor second_);
 
     private:
         CStringView implGetName() const override { return m_Label; }
@@ -25,10 +25,10 @@ namespace osc
         OutputExtractorDataType implGetOutputType() const override { return m_OutputType; }
         OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const override;
         size_t implGetHash() const override;
-        bool implEquals(const IOutputExtractor&) const override;
+        bool implEquals(const OutputExtractor&) const override;
 
-        OutputExtractor m_First;
-        OutputExtractor m_Second;
+        SharedOutputExtractor m_First;
+        SharedOutputExtractor m_Second;
         OutputExtractorDataType m_OutputType;
         std::string m_Label;
     };

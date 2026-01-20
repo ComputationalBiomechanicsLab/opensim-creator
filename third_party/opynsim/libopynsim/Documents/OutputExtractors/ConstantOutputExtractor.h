@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputExtractorDataType.h>
 #include <libopynsim/Documents/OutputExtractors/OutputValueExtractor.h>
 
@@ -13,8 +13,8 @@
 
 namespace osc
 {
-    // an `IOutputExtractor` that always emits the same value
-    class ConstantOutputExtractor final : public IOutputExtractor {
+    // an `OutputExtractor` that always emits the same value
+    class ConstantOutputExtractor final : public OutputExtractor {
     public:
         ConstantOutputExtractor(std::string_view name, float value) :
             m_Name{name},
@@ -35,7 +35,7 @@ namespace osc
         OutputExtractorDataType implGetOutputType() const override { return m_Type; }
         OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const override;
         size_t implGetHash() const override;
-        bool implEquals(const IOutputExtractor&) const override;
+        bool implEquals(const OutputExtractor&) const override;
 
         std::string m_Name;
         Variant m_Value;

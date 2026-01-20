@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationHelpers.h>
 
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>
@@ -23,7 +23,7 @@ namespace
 {
     void TryExportOutputsToCSV(
         const ISimulation& simulation,
-        std::span<const OutputExtractor> outputs,
+        std::span<const SharedOutputExtractor> outputs,
         bool openInDefaultApp)
     {
         // Pre-write the CSV in-memory so that the asynchronous user prompt isn't
@@ -60,12 +60,12 @@ namespace
     }
 }
 
-void osc::ISimulatorUIAPI::tryPromptToSaveOutputsAsCSV(std::span<const OutputExtractor> outputs, bool openInDefaultApp) const
+void osc::ISimulatorUIAPI::tryPromptToSaveOutputsAsCSV(std::span<const SharedOutputExtractor> outputs, bool openInDefaultApp) const
 {
     TryExportOutputsToCSV(getSimulation(), outputs, openInDefaultApp);
 }
 
-void osc::ISimulatorUIAPI::tryPromptToSaveAllOutputsAsCSV(std::span<const OutputExtractor> outputs, bool openInDefaultApp) const
+void osc::ISimulatorUIAPI::tryPromptToSaveAllOutputsAsCSV(std::span<const SharedOutputExtractor> outputs, bool openInDefaultApp) const
 {
     TryExportOutputsToCSV(getSimulation(), outputs, openInDefaultApp);
 }

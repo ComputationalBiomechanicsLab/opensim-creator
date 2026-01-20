@@ -4,7 +4,7 @@
 
 #include <memory>
 
-namespace osc { class IModelStatePair; }
+namespace osc { class ModelStatePair; }
 
 namespace osc
 {
@@ -12,7 +12,7 @@ namespace osc
     public:
         explicit ModelStatusBar(
             Widget* parent,
-            std::shared_ptr<IModelStatePair>
+            std::shared_ptr<ModelStatePair>
         );
 
     private:

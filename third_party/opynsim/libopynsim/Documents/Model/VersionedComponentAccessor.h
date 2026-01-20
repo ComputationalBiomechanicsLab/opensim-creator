@@ -1,11 +1,11 @@
 #pragma once
 
-#include <libopynsim/Documents/Model/IComponentAccessor.h>
+#include <libopynsim/Documents/Model/ComponentAccessor.h>
 #include <liboscar/utils/uid.h>
 
 namespace osc
 {
-    class IVersionedComponentAccessor : public IComponentAccessor {
+    class VersionedComponentAccessor : public ComponentAccessor {
     public:
         UID getComponentVersion() const { return implGetComponentVersion(); }
         void setComponentVersion(UID id) { implSetComponentVersion(id); }

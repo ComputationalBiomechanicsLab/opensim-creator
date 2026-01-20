@@ -29,7 +29,7 @@ namespace
 {
     bool ActionSimulateAgainstAllIntegrators(
         Widget& parent,
-        const IModelStatePair& model)
+        const ModelStatePair& model)
     {
         auto tab = std::make_unique<PerformanceAnalyzerTab>(
             &parent,
@@ -47,7 +47,7 @@ public:
         Widget& owner_,
         Widget* parent_,
         std::shared_ptr<PanelManager> panelManager_,
-        std::shared_ptr<IModelStatePair> model_) :
+        std::shared_ptr<ModelStatePair> model_) :
 
         WidgetPrivate{owner_, parent_},
         m_Model{std::move(model_)},
@@ -195,7 +195,7 @@ private:
         }
     }
 
-    std::shared_ptr<IModelStatePair> m_Model;
+    std::shared_ptr<ModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
     ModelAddMenuItems m_MainMenuModelAddMenuItems{&owner(), m_Model};
     WindowMenu m_WindowMenu;
@@ -206,7 +206,7 @@ private:
 osc::ModelEditorMainMenu::ModelEditorMainMenu(
     Widget* parent_,
     std::shared_ptr<PanelManager> panelManager_,
-    std::shared_ptr<IModelStatePair> model_) :
+    std::shared_ptr<ModelStatePair> model_) :
 
     Widget{std::make_unique<Impl>(*this, parent_, std::move(panelManager_), std::move(model_))}
 {}

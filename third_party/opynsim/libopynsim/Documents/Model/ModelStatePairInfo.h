@@ -3,7 +3,7 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <liboscar/utils/uid.h>
 
-namespace osc { class IModelStatePair; }
+namespace osc { class ModelStatePair; }
 
 namespace osc
 {
@@ -13,7 +13,7 @@ namespace osc
     class ModelStatePairInfo final {
     public:
         ModelStatePairInfo();
-        explicit ModelStatePairInfo(const IModelStatePair&);
+        explicit ModelStatePairInfo(const ModelStatePair&);
 
         float getFixupScaleFactor() const { return m_FixupScaleFactor; }
 

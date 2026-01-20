@@ -7,7 +7,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
-#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/IntegratorOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/MultiBodySystemOutputExtractor.h>
 #include <liboscar/platform/log.h>
@@ -91,7 +91,7 @@ namespace
         std::atomic<int> m_Status = static_cast<int>(SimulationStatus::Initializing);
     };
 
-    class AuxiliaryVariableOutputExtractor final : public IOutputExtractor {
+    class AuxiliaryVariableOutputExtractor final : public OutputExtractor {
     public:
         AuxiliaryVariableOutputExtractor(std::string name, std::string description, UID uid) :
             m_Name{std::move(name)},
@@ -128,7 +128,7 @@ namespace
             return hash_of(m_Name, m_Description, m_UID);
         }
 
-        bool implEquals(const IOutputExtractor& other) const final
+        bool implEquals(const OutputExtractor& other) const final
         {
             if (&other == this)
             {
@@ -152,20 +152,20 @@ namespace
         UID m_UID;
     };
 
-    std::vector<OutputExtractor> CreateSimulatorOutputExtractors()
+    std::vector<SharedOutputExtractor> CreateSimulatorOutputExtractors()
     {
-        std::vector<OutputExtractor> rv;
+        std::vector<SharedOutputExtractor> rv;
         rv.reserve(2uz + GetNumIntegratorOutputExtractors() + GetNumMultiBodySystemOutputExtractors());
 
         {
-            const OutputExtractor out{AuxiliaryVariableOutputExtractor{
+            const SharedOutputExtractor out{AuxiliaryVariableOutputExtractor{
                 "Wall time",
                 "Total cumulative time spent computing the simulation",
                 GetWalltimeUID(),
             }};
             rv.push_back(out);
 
-            const OutputExtractor out2{AuxiliaryVariableOutputExtractor{
+            const SharedOutputExtractor out2{AuxiliaryVariableOutputExtractor{
                 "Step Wall Time",
                 "How long it took, in wall time, to compute the last integration step",
                 GetStepDurationUID(),
@@ -186,9 +186,9 @@ namespace
         return rv;
     }
 
-    std::vector<OutputExtractor> const& GetSimulatorOutputExtractors()
+    std::vector<SharedOutputExtractor> const& GetSimulatorOutputExtractors()
     {
-        static const std::vector<OutputExtractor> s_Outputs = CreateSimulatorOutputExtractors();
+        static const std::vector<SharedOutputExtractor> s_Outputs = CreateSimulatorOutputExtractors();
         return s_Outputs;
     }
 
@@ -441,7 +441,7 @@ int osc::GetNumFdSimulatorOutputExtractors()
     return static_cast<int>(GetSimulatorOutputExtractors().size());
 }
 
-OutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
+SharedOutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
 {
     return GetSimulatorOutputExtractors().at(static_cast<size_t>(idx));
 }

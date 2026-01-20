@@ -6,7 +6,7 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Graphics/ModelRendererParams.h>
 #include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
 #include <libopynsim/Graphics/OpenSimGraphicsHelpers.h>
@@ -43,7 +43,7 @@ namespace
     struct ChooseComponentsEditorLayerSharedState final {
 
         explicit ChooseComponentsEditorLayerSharedState(
-            std::shared_ptr<IModelStatePair> model_,
+            std::shared_ptr<ModelStatePair> model_,
             ChooseComponentsEditorLayerParameters parameters_) :
 
             model{std::move(model_)},
@@ -52,7 +52,7 @@ namespace
         }
 
         std::shared_ptr<SceneCache> meshCache = App::singleton<SceneCache>(App::resource_loader());
-        std::shared_ptr<IModelStatePair> model;
+        std::shared_ptr<ModelStatePair> model;
         ChooseComponentsEditorLayerParameters popupParams;
         ModelRendererParams renderParams;
         StringName hoveredComponent;
@@ -131,7 +131,7 @@ namespace
 class osc::ChooseComponentsEditorLayer::Impl final {
 public:
     Impl(
-        std::shared_ptr<IModelStatePair> model_,
+        std::shared_ptr<ModelStatePair> model_,
         ChooseComponentsEditorLayerParameters parameters_) :
 
         m_State{std::move(model_), std::move(parameters_)},
@@ -310,7 +310,7 @@ public:
 };
 
 osc::ChooseComponentsEditorLayer::ChooseComponentsEditorLayer(
-    std::shared_ptr<IModelStatePair> model_,
+    std::shared_ptr<ModelStatePair> model_,
     ChooseComponentsEditorLayerParameters parameters_) :
 
     m_Impl{std::make_unique<Impl>(std::move(model_), std::move(parameters_))}

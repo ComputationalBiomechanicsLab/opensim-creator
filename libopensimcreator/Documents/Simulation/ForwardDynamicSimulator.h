@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 
 #include <functional>
 #include <memory>
@@ -16,7 +16,7 @@ namespace osc
     // returns outputs (e.g. auxiliary stuff like integration steps) that the
     // FdSimulator writes into the `SimulationReport`s it emits
     int GetNumFdSimulatorOutputExtractors();
-    OutputExtractor GetFdSimulatorOutputExtractor(int);
+    SharedOutputExtractor GetFdSimulatorOutputExtractor(int);
 
     // a forward-dynamic simulation that immediately starts running on a background thread
     class ForwardDynamicSimulator final {

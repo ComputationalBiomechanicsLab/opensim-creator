@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <liboscar/utils/enum_helpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -13,13 +13,13 @@
 
 void osc::WriteOutputsAsCSV(
     const OpenSim::Component& root,
-    std::span<const OutputExtractor> outputs,
+    std::span<const SharedOutputExtractor> outputs,
     std::span<const SimulationReport> reports,
     std::ostream& out)
 {
     // header line
     out << "time";
-    for (const OutputExtractor& o : outputs) {
+    for (const SharedOutputExtractor& o : outputs) {
         static_assert(num_options<OutputExtractorDataType>() == 3);
         if (o.getOutputType() == OutputExtractorDataType::Vector2) {
             out << ',' << o.getName() << "/0";
@@ -34,7 +34,7 @@ void osc::WriteOutputsAsCSV(
     // data lines
     for (const SimulationReport& report : reports) {
         out << report.getState().getTime();  // time column
-        for (const OutputExtractor& o : outputs) {
+        for (const SharedOutputExtractor& o : outputs) {
             static_assert(num_options<OutputExtractorDataType>() == 3);
             if (o.getOutputType() == OutputExtractorDataType::Vector2) {
                 const auto v = o.getValue<Vector2>(root, report);

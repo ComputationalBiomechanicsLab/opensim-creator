@@ -7,7 +7,7 @@
 #include <string_view>
 
 namespace OpenSim { class ComponentPath; }
-namespace osc { class IModelStatePair; }
+namespace osc { class ModelStatePair; }
 
 namespace osc
 {
@@ -16,7 +16,7 @@ namespace osc
         explicit Select1PFPopup(
             Widget* parent,
             std::string_view popupName,
-            std::shared_ptr<const IModelStatePair>,
+            std::shared_ptr<const ModelStatePair>,
             std::function<void(const OpenSim::ComponentPath&)> onSelection
         );
 

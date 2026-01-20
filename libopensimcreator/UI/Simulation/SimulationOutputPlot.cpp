@@ -12,8 +12,8 @@
 #include <libopynsim/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/ComponentOutputSubfield.h>
 #include <libopynsim/Documents/OutputExtractors/ConcatenatingOutputExtractor.h>
-#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/math_helpers.h>
@@ -47,7 +47,7 @@ namespace
     // draw a menu item for toggling watching the output
     void DrawToggleWatchOutputMenuItem(
         Environment& env,
-        const OutputExtractor& output)
+        const SharedOutputExtractor& output)
     {
         if (env.hasUserOutputExtractor(output)) {
             if (ui::draw_menu_item(MSMICONS_TIMES " Stop Watching")) {
@@ -65,7 +65,7 @@ namespace
     // draw menu items for exporting the output to a CSV
     void DrawExportToCSVMenuItems(
         ISimulatorUIAPI& api,
-        const OutputExtractor& output)
+        const SharedOutputExtractor& output)
     {
         if (ui::draw_menu_item(MSMICONS_SAVE "Save as CSV")) {
             api.tryPromptToSaveOutputsAsCSV({output}, false);
@@ -79,7 +79,7 @@ namespace
     // draw a menu that prompts the user to select some other output
     void DrawSelectOtherOutputMenuContent(
         ISimulation& simulation,
-        const OutputExtractor& oneDimensionalOutputExtractor)
+        const SharedOutputExtractor& oneDimensionalOutputExtractor)
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
         OSC_ASSERT(oneDimensionalOutputExtractor.getOutputType() == OutputExtractorDataType::Float);
@@ -110,9 +110,9 @@ namespace
                 if (ui::begin_menu(component.getName())) {
                     for (const OpenSim::AbstractOutput& output : extractableOutputs) {
                         ui::push_id(id++);
-                        DrawRequestOutputMenuOrMenuItem(output, [&oneDimensionalOutputExtractor, &environment](const OutputExtractor& rhs)
+                        DrawRequestOutputMenuOrMenuItem(output, [&oneDimensionalOutputExtractor, &environment](const SharedOutputExtractor& rhs)
                         {
-                            OutputExtractor concatenating = OutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
+                            SharedOutputExtractor concatenating = SharedOutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
                             environment->overwriteOrAddNewUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
                         });
                         ui::pop_id();
@@ -127,7 +127,7 @@ namespace
     // draw menu item for plotting one output against another output
     void DrawPlotAgainstOtherOutputMenuItem(
         ISimulation& sim,
-        const OutputExtractor& output)
+        const SharedOutputExtractor& output)
     {
         if (ui::begin_menu(MSMICONS_CHART_LINE "Plot Against Other Output")) {
             DrawSelectOtherOutputMenuContent(sim, output);
@@ -138,7 +138,7 @@ namespace
     void TryDrawOutputContextMenuForLastItem(
         ISimulatorUIAPI& api,
         ISimulation& sim,
-        const OutputExtractor& output)
+        const SharedOutputExtractor& output)
     {
         if (not ui::begin_popup_context_menu("outputplotmenu")) {
             return;  // menu not open
@@ -167,7 +167,7 @@ namespace
 class osc::SimulationOutputPlot::Impl final {
 public:
 
-    Impl(ISimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
+    Impl(ISimulatorUIAPI* api, SharedOutputExtractor outputExtractor, float height) :
         m_API{api},
         m_OutputExtractor{std::move(outputExtractor)},
         m_Height{height}
@@ -210,7 +210,7 @@ private:
             return;
         }
 
-        // collect output data from the `OutputExtractor`
+        // Collect output data from the output extractor.
         std::vector<float> buf;
         {
             OSC_PERF("collect output data");
@@ -340,7 +340,7 @@ private:
             return;
         }
 
-        // collect output data from the `OutputExtractor`
+        // collect output data from the output extractor.
         std::vector<Vector2> buf;
         {
             OSC_PERF("collect output data");
@@ -397,14 +397,14 @@ private:
     }
 
     ISimulatorUIAPI* m_API;
-    OutputExtractor m_OutputExtractor;
+    SharedOutputExtractor m_OutputExtractor;
     float m_Height;
 };
 
 
 osc::SimulationOutputPlot::SimulationOutputPlot(
     ISimulatorUIAPI* api,
-    OutputExtractor outputExtractor,
+    SharedOutputExtractor outputExtractor,
     float height) :
 
     m_Impl{std::make_unique<Impl>(api, std::move(outputExtractor), height)}

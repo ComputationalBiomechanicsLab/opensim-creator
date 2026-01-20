@@ -1,6 +1,6 @@
 #include "ComponentOutputExtractor.h"
 
-#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputValueExtractor.h>
 #include <libopynsim/Documents/StateViewWithMetadata.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
@@ -107,7 +107,7 @@ public:
         return hash_of(m_ComponentAbsPath.toString(), m_OutputName, m_Label, m_OutputTypeid, m_ExtractorFunc);
     }
 
-    bool equals(const IOutputExtractor& other)
+    bool equals(const OutputExtractor& other)
     {
         const auto* const otherT = dynamic_cast<const ComponentOutputExtractor*>(&other);
         if (!otherT) {
@@ -175,7 +175,7 @@ std::size_t osc::ComponentOutputExtractor::implGetHash() const
     return m_Impl->getHash();
 }
 
-bool osc::ComponentOutputExtractor::implEquals(const IOutputExtractor& other) const
+bool osc::ComponentOutputExtractor::implEquals(const OutputExtractor& other) const
 {
     return m_Impl->equals(other);
 }

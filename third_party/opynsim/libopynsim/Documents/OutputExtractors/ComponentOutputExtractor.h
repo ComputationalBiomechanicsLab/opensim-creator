@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopynsim/Documents/OutputExtractors/ComponentOutputSubfield.h>
-#include <libopynsim/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopynsim/Documents/OutputExtractors/OutputValueExtractor.h>
 
 #include <liboscar/utils/c_string_view.h>
@@ -16,7 +16,7 @@ namespace osc
 {
     // an output extractor that uses the `OpenSim::AbstractOutput` API to extract a value
     // from a component
-    class ComponentOutputExtractor final : public IOutputExtractor {
+    class ComponentOutputExtractor final : public OutputExtractor {
     public:
         ComponentOutputExtractor(
             const OpenSim::AbstractOutput&,
@@ -36,7 +36,7 @@ namespace osc
         OutputExtractorDataType implGetOutputType() const final;
         OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
         size_t implGetHash() const final;
-        bool implEquals(const IOutputExtractor&) const final;
+        bool implEquals(const OutputExtractor&) const final;
 
         class Impl;
         ClonePtr<Impl> m_Impl;

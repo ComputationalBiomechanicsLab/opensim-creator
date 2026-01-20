@@ -12,7 +12,7 @@
 
 namespace OpenSim { class Component; }
 namespace osc { class BVH; }
-namespace osc { class IModelStatePair; }
+namespace osc { class ModelStatePair; }
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { class SceneCache; }
 namespace osc { struct ModelRendererParams; }
@@ -31,7 +31,7 @@ namespace osc
 
     void GenerateDecorations(
         SceneCache&,
-        const IModelStatePair&,
+        const ModelStatePair&,
         const OpenSimDecorationOptions&,
         const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out
     );

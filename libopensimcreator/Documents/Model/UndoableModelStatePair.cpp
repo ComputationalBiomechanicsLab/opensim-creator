@@ -40,7 +40,7 @@ namespace
         return rv;
     }
 
-    class UiModelStatePair final : public IModelStatePair {
+    class UiModelStatePair final : public ModelStatePair {
     public:
 
         UiModelStatePair() :

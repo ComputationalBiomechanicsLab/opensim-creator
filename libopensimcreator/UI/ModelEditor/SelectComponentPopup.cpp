@@ -1,6 +1,6 @@
 #include "SelectComponentPopup.h"
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
@@ -19,7 +19,7 @@ public:
         SelectComponentPopup& owner,
         Widget* parent,
         std::string_view popupName,
-        std::shared_ptr<const IModelStatePair> model,
+        std::shared_ptr<const ModelStatePair> model,
         std::function<void(const OpenSim::ComponentPath&)> onSelection,
         std::function<bool(const OpenSim::Component&)> filter) :
 
@@ -58,7 +58,7 @@ public:
     }
 
 private:
-    std::shared_ptr<const IModelStatePair> m_Model;
+    std::shared_ptr<const ModelStatePair> m_Model;
     std::function<void(const OpenSim::ComponentPath&)> m_OnSelection;
     std::function<bool(const OpenSim::Component&)> m_Filter;
 };
@@ -66,7 +66,7 @@ private:
 osc::SelectComponentPopup::SelectComponentPopup(
     Widget* parent,
     std::string_view popupName,
-    std::shared_ptr<const IModelStatePair> model,
+    std::shared_ptr<const ModelStatePair> model,
     std::function<void(const OpenSim::ComponentPath&)> onSelection,
     std::function<bool(const OpenSim::Component&)> filter) :
 

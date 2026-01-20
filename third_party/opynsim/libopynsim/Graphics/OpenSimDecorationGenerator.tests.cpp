@@ -3,7 +3,7 @@
 #include <libopynsim/tests/testopynsimconfig.h>
 
 #include <gtest/gtest.h>
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Graphics/ComponentAbsPathDecorationTagger.h>
 #include <libopynsim/Graphics/MuscleColorSource.h>
 #include <libopynsim/Graphics/OpenSimDecorationOptions.h>
@@ -377,7 +377,7 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpecte
         }
     );
 
-    class ReferenceModelStatePair : public IModelStatePair {
+    class ReferenceModelStatePair : public ModelStatePair {
     public:
         ReferenceModelStatePair(OpenSim::Model& model, SimTK::State& state) : m_Model{&model}, m_State{&state} {}
     private:

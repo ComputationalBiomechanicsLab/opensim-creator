@@ -37,7 +37,7 @@ namespace osc
         SimulationStatus implGetStatus() const final;
         SimulationClocks implGetClocks() const final;
         const ParamBlock& implGetParams() const final;
-        std::span<const OutputExtractor> implGetOutputExtractors() const final;
+        std::span<const SharedOutputExtractor> implGetOutputExtractors() const final;
 
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;

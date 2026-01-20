@@ -18,7 +18,7 @@
 
 #include <libopynsim/Documents/ExperimentalData/AnnotatedMotion.h>
 #include <libopynsim/Documents/ExperimentalData/FileBackedStorage.h>
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/maths/closed_interval.h>
@@ -56,8 +56,8 @@ namespace
 {
     class PreviewExperimentalDataUiState final {
     public:
-        std::shared_ptr<IModelStatePair> updSharedModelPtr() const { return m_Model; }
-        IModelStatePair& updModel() { return *m_Model; }
+        std::shared_ptr<ModelStatePair> updSharedModelPtr() const { return m_Model; }
+        ModelStatePair& updModel() { return *m_Model; }
 
         void on_tick()
         {

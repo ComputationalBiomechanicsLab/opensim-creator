@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <libopynsim/Utils/simbody_x_oscar.h>
 #include <liboscar/maths/euler_angles.h>
@@ -101,7 +101,7 @@ namespace
         }
     protected:
         SelectionManipulator(
-            std::shared_ptr<IModelStatePair> model_,
+            std::shared_ptr<ModelStatePair> model_,
             const AssociatedComponent& component) :
 
             m_Model{std::move(model_)},
@@ -126,7 +126,7 @@ namespace
             return m_Model->getState();
         }
 
-        IModelStatePair& getUndoableModel()
+        ModelStatePair& getUndoableModel()
         {
             return *m_Model;
         }
@@ -172,7 +172,7 @@ namespace
         virtual Matrix4x4 implGetCurrentTransformInGround(const AssociatedComponent&) const = 0;
         virtual void implOnApplyTransform(const AssociatedComponent&, const SimTK::Transform& transformInGround) = 0;
 
-        std::shared_ptr<IModelStatePair> m_Model;
+        std::shared_ptr<ModelStatePair> m_Model;
         OpenSim::ComponentPath m_ComponentAbsPath;
     };
 }
@@ -184,7 +184,7 @@ namespace
     class StationManipulator final : public SelectionManipulator<OpenSim::Station> {
     public:
         StationManipulator(
-            std::shared_ptr<IModelStatePair> model_,
+            std::shared_ptr<ModelStatePair> model_,
             const OpenSim::Station& station) :
             SelectionManipulator{std::move(model_), station}
         {}
@@ -228,7 +228,7 @@ namespace
     class PathPointManipulator : public SelectionManipulator<OpenSim::PathPoint> {
     public:
         PathPointManipulator(
-            std::shared_ptr<IModelStatePair> model_,
+            std::shared_ptr<ModelStatePair> model_,
             const OpenSim::PathPoint& pathPoint) :
             SelectionManipulator{std::move(model_), pathPoint}
         {}
@@ -282,7 +282,7 @@ namespace
     class PhysicalOffsetFrameManipulator final : public SelectionManipulator<OpenSim::PhysicalOffsetFrame> {
     public:
         PhysicalOffsetFrameManipulator(
-            std::shared_ptr<IModelStatePair> model_,
+            std::shared_ptr<ModelStatePair> model_,
             const OpenSim::PhysicalOffsetFrame& pof) :
             SelectionManipulator{std::move(model_), pof},
             m_IsChildFrameOfJoint{IsDirectChildOfAnyJoint(getModel(), pof)}
@@ -395,7 +395,7 @@ namespace
     class WrapObjectManipulator final : public SelectionManipulator<OpenSim::WrapObject> {
     public:
         WrapObjectManipulator(
-            std::shared_ptr<IModelStatePair> model_,
+            std::shared_ptr<ModelStatePair> model_,
             const OpenSim::WrapObject& wo) :
             SelectionManipulator{std::move(model_), wo}
         {}
@@ -446,7 +446,7 @@ namespace
     class ContactGeometryManipulator final : public SelectionManipulator<OpenSim::ContactGeometry> {
     public:
         ContactGeometryManipulator(
-            std::shared_ptr<IModelStatePair> model_,
+            std::shared_ptr<ModelStatePair> model_,
             const OpenSim::ContactGeometry& contactGeom) :
             SelectionManipulator{std::move(model_), contactGeom}
         {}
@@ -516,7 +516,7 @@ namespace
         }
 
         JointManipulator(
-            std::shared_ptr<IModelStatePair> model_,
+            std::shared_ptr<ModelStatePair> model_,
             const OpenSim::Joint& joint) :
             SelectionManipulator{std::move(model_), joint}
         {}
@@ -642,7 +642,7 @@ namespace
     class Scholz2015GeometryPathObstacleManipulator final : public SelectionManipulator<OpenSim::Scholz2015GeometryPathObstacle> {
     public:
         Scholz2015GeometryPathObstacleManipulator(
-            std::shared_ptr<IModelStatePair> model_,
+            std::shared_ptr<ModelStatePair> model_,
             const OpenSim::Scholz2015GeometryPathObstacle& obstacle) :
             SelectionManipulator{std::move(model_), obstacle}
         {}
@@ -752,7 +752,7 @@ namespace
         ui::Gizmo& gizmo,
         const Rect& screenRect,
         const PolarPerspectiveCamera& camera,
-        const std::shared_ptr<IModelStatePair>& model,
+        const std::shared_ptr<ModelStatePair>& model,
         const OpenSim::Component& selected)
     {
         if (not ConcreteManipulator::matches(selected)) {
@@ -774,7 +774,7 @@ namespace
         ui::Gizmo& gizmo,
         const Rect& screenRect,
         const PolarPerspectiveCamera& camera,
-        const std::shared_ptr<IModelStatePair>& model,
+        const std::shared_ptr<ModelStatePair>& model,
         const OpenSim::Component& selected,
         Typelist<ConcreteManipulator...>)
     {
@@ -782,7 +782,7 @@ namespace
     }
 }
 
-osc::ModelSelectionGizmo::ModelSelectionGizmo(std::shared_ptr<IModelStatePair> model_) :
+osc::ModelSelectionGizmo::ModelSelectionGizmo(std::shared_ptr<ModelStatePair> model_) :
     m_Model{std::move(model_)}
 {
     // Default the gizmo to local-space, because OpenSim users can confuse the

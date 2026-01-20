@@ -4,7 +4,7 @@
 
 #include <memory>
 
-namespace osc { class IModelStatePair; }
+namespace osc { class ModelStatePair; }
 namespace osc { class PanelManager; }
 namespace osc { class Widget; }
 
@@ -15,7 +15,7 @@ namespace osc
         explicit ModelEditorMainMenu(
             Widget* parent,
             std::shared_ptr<PanelManager>,
-            std::shared_ptr<IModelStatePair>
+            std::shared_ptr<ModelStatePair>
         );
     private:
         void impl_on_draw() final;

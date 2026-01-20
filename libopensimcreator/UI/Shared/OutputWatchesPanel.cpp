@@ -4,8 +4,8 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <libopynsim/Documents/Model/IModelStatePair.h>
-#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopynsim/Documents/Model/ModelStatePair.h>
+#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utils/uid.h>
@@ -25,7 +25,7 @@ namespace
         SimulationReport simulationReport;
     };
 
-    void UpdateCachedSimulationReportIfNecessary(const IModelStatePair& src, CachedSimulationReport& cache)
+    void UpdateCachedSimulationReportIfNecessary(const ModelStatePair& src, CachedSimulationReport& cache)
     {
         const UID modelVersion = src.getModelVersion();
         const UID stateVersion = src.getStateVersion();
@@ -51,7 +51,7 @@ public:
         OutputWatchesPanel& owner,
         Widget* parent,
         std::string_view panelName_,
-        std::shared_ptr<const IModelStatePair> model_) :
+        std::shared_ptr<const ModelStatePair> model_) :
 
         PanelPrivate{owner, parent, panelName_},
         m_Model{std::move(model_)}
@@ -69,7 +69,7 @@ public:
 
             for (int outputIdx = 0; outputIdx < env->getNumUserOutputExtractors(); ++outputIdx) {
                 int column = 0;
-                OutputExtractor o = env->getUserOutputExtractor(outputIdx);
+                SharedOutputExtractor o = env->getUserOutputExtractor(outputIdx);
 
                 ui::push_id(outputIdx);
 
@@ -97,14 +97,14 @@ public:
     }
 
 private:
-    std::shared_ptr<const IModelStatePair> m_Model;
+    std::shared_ptr<const ModelStatePair> m_Model;
     CachedSimulationReport m_CachedReport;
 };
 
 osc::OutputWatchesPanel::OutputWatchesPanel(
     Widget* parent,
     std::string_view panelName_,
-    std::shared_ptr<const IModelStatePair> model_) :
+    std::shared_ptr<const ModelStatePair> model_) :
 
     Panel{std::make_unique<Impl>(*this, parent, panelName_, std::move(model_))}
 {}
