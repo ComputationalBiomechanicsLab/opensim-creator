@@ -1,6 +1,7 @@
 #pragma once
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopensimcreator/Documents/Model/ModelStatePairWithSharedEnvironment.h>
+
 #include <liboscar/utils/uid.h>
 
 #include <filesystem>
@@ -15,7 +16,7 @@ namespace SimTK { class State; }
 namespace osc
 {
     // `UndoableModelStatePair` is an `ModelStatePair` that's designed for immediate UI usage.
-    class UndoableModelStatePair final : public ModelStatePair {
+    class UndoableModelStatePair final : public ModelStatePairWithSharedEnvironment {
     public:
 
         // constructs a blank model

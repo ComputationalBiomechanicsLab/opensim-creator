@@ -6,7 +6,7 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/graphics/model_renderer_params.h>
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <libopynsim/graphics/open_sim_graphics_helpers.h>

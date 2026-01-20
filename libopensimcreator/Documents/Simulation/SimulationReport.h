@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 
-#include <libopynsim/Documents/state_view_with_metadata.h>
+#include <libopynsim/documents/state_view_with_metadata.h>
 #include <liboscar/utils/uid.h>
 
 #include <optional>

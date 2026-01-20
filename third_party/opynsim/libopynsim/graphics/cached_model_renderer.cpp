@@ -1,7 +1,7 @@
 #include "cached_model_renderer.h"
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
-#include <libopynsim/Documents/Model/model_state_pair_info.h>
+#include <libopynsim/documents/model/model_state_pair.h>
+#include <libopynsim/documents/model/model_state_pair_info.h>
 #include <libopynsim/graphics/model_renderer_params.h>
 #include <libopynsim/graphics/open_sim_graphics_helpers.h>
 #include <libopynsim/graphics/overlay_decoration_generator.h>

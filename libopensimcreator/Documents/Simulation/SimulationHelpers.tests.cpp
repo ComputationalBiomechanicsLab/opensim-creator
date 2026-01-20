@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
 #include <gtest/gtest.h>
-#include <libopynsim/Documents/output_extractors/constant_output_extractor.h>
-#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/documents/output_extractors/constant_output_extractor.h>
+#include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/utils/string_helpers.h>

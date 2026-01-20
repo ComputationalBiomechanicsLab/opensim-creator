@@ -6,7 +6,7 @@
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
 
-#include <libopynsim/Documents/output_extractors/output_extractor_data_type_helpers.h>
+#include <libopynsim/documents/output_extractors/output_extractor_data_type_helpers.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>

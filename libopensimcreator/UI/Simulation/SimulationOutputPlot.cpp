@@ -9,11 +9,11 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 
-#include <libopynsim/Documents/output_extractors/component_output_extractor.h>
-#include <libopynsim/Documents/output_extractors/component_output_subfield.h>
-#include <libopynsim/Documents/output_extractors/concatenating_output_extractor.h>
-#include <libopynsim/Documents/output_extractors/output_extractor.h>
-#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/documents/output_extractors/component_output_extractor.h>
+#include <libopynsim/documents/output_extractors/component_output_subfield.h>
+#include <libopynsim/documents/output_extractors/concatenating_output_extractor.h>
+#include <libopynsim/documents/output_extractors/output_extractor.h>
+#include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/math_helpers.h>

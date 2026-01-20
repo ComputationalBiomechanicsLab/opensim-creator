@@ -1,6 +1,6 @@
 #include "open_sim_graphics_helpers.h"
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/graphics/component_abs_path_decoration_tagger.h>
 #include <libopynsim/graphics/component_scene_decoration_flags_tagger.h>
 #include <libopynsim/graphics/model_renderer_params.h>

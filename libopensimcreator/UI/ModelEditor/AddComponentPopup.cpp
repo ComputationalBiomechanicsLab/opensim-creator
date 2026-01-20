@@ -6,7 +6,7 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/platform/app.h>

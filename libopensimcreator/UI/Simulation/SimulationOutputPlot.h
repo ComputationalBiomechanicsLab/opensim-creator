@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 
 #include <memory>
 

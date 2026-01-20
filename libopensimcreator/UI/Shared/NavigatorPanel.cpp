@@ -3,7 +3,7 @@
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/shims/cpp23/ranges.h>

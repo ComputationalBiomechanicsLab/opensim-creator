@@ -1,8 +1,8 @@
 #pragma once
 
+#include <libopensimcreator/Documents/Model/ModelStatePairWithSharedEnvironment.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
 #include <liboscar/utils/uid.h>
 
 #include <memory>
@@ -16,7 +16,7 @@ namespace SimTK { class State; }
 namespace osc
 {
     // a readonly model+state pair from a particular step from a simulator
-    class SimulationModelStatePair final : public ModelStatePair {
+    class SimulationModelStatePair final : public ModelStatePairWithSharedEnvironment {
     public:
         SimulationModelStatePair();
         SimulationModelStatePair(std::shared_ptr<Simulation>, SimulationReport);
@@ -24,7 +24,7 @@ namespace osc
         SimulationModelStatePair(SimulationModelStatePair&&) noexcept;
         SimulationModelStatePair& operator=(const SimulationModelStatePair&) = delete;
         SimulationModelStatePair& operator=(SimulationModelStatePair&&) noexcept;
-        ~SimulationModelStatePair() noexcept;
+        ~SimulationModelStatePair() noexcept override;
 
         std::shared_ptr<Simulation> updSimulation();
         void setSimulation(std::shared_ptr<Simulation>);

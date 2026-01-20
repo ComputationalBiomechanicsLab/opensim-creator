@@ -5,7 +5,7 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <libopynsim/Documents/landmarks/landmark_csv_flags.h>
+#include <libopynsim/documents/landmarks/landmark_csv_flags.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
 

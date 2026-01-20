@@ -1,6 +1,7 @@
 #include "ComponentContextMenu.h"
 
 #include <libopensimcreator/Documents/Model/Environment.h>
+#include <libopensimcreator/Documents/Model/ModelStatePairWithSharedEnvironment.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/UI/Events/AddMusclePlotEvent.h>
 #include <libopensimcreator/UI/ModelEditor/ReassignSocketPopup.h>
@@ -9,9 +10,9 @@
 
 #include <libopynsim/component_registry/component_registry.h>
 #include <libopynsim/component_registry/static_component_registries.h>
-#include <libopynsim/Documents/Model/model_state_pair.h>
-#include <libopynsim/Documents/output_extractors/component_output_extractor.h>
-#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/documents/model/model_state_pair.h>
+#include <libopynsim/documents/output_extractors/component_output_extractor.h>
+#include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/os.h>
@@ -305,14 +306,16 @@ public:
             ui::end_menu();
         }
 
-        DrawWatchOutputMenu(*c, [this](const SharedOutputExtractor& outputExtractor)
-        {
-            m_Model->tryUpdEnvironment()->addUserOutputExtractor(outputExtractor);
+        if (auto* modelWithEnv = dynamic_cast<ModelStatePairWithSharedEnvironment*>(m_Model.get())) {
+            DrawWatchOutputMenu(*c, [this, modelWithEnv](const SharedOutputExtractor& outputExtractor)
+            {
+                modelWithEnv->tryUpdEnvironment()->addUserOutputExtractor(outputExtractor);
 
-            // when the user asks to watch an output, make sure the "Output Watches" panel is
-            // open, so that they can immediately see the side-effect of watching an output (#567)
-            App::post_event<OpenNamedPanelEvent>(owner(), "Output Watches");
-        });
+                // when the user asks to watch an output, make sure the "Output Watches" panel is
+                // open, so that they can immediately see the side-effect of watching an output (#567)
+                App::post_event<OpenNamedPanelEvent>(owner(), "Output Watches");
+            });
+        }
 
         drawSocketMenu(*c);
 

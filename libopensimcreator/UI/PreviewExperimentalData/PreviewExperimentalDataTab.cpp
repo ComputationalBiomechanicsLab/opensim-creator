@@ -1,6 +1,7 @@
 #include "PreviewExperimentalDataTab.h"
 
 #include <libopensimcreator/Documents/FileFilters.h>
+#include <libopensimcreator/Documents/Model/ModelStatePairWithSharedEnvironment.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Platform/msmicons.h>
@@ -16,9 +17,9 @@
 #include <libopensimcreator/UI/Shared/OutputWatchesPanel.h>
 #include <libopensimcreator/UI/Shared/PropertiesPanel.h>
 
-#include <libopynsim/Documents/experimental_data/annotated_motion.h>
-#include <libopynsim/Documents/experimental_data/file_backed_storage.h>
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/documents/experimental_data/annotated_motion.h>
+#include <libopynsim/documents/experimental_data/file_backed_storage.h>
+#include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/maths/closed_interval.h>
@@ -56,7 +57,7 @@ namespace
 {
     class PreviewExperimentalDataUiState final {
     public:
-        std::shared_ptr<ModelStatePair> updSharedModelPtr() const { return m_Model; }
+        std::shared_ptr<ModelStatePairWithSharedEnvironment> updSharedModelPtr() const { return m_Model; }
         ModelStatePair& updModel() { return *m_Model; }
 
         void on_tick()

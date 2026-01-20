@@ -10,10 +10,10 @@
 #include <libopensimcreator/Platform/RecentFile.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
-#include <libopynsim/Documents/output_extractors/component_output_extractor.h>
-#include <libopynsim/Documents/output_extractors/force_record_output_extractor.h>
-#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/documents/model/model_state_pair.h>
+#include <libopynsim/documents/output_extractors/component_output_extractor.h>
+#include <libopynsim/documents/output_extractors/force_record_output_extractor.h>
+#include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 #include <libopynsim/graphics/custom_rendering_options.h>
 #include <libopynsim/graphics/model_renderer_params.h>
 #include <libopynsim/graphics/muscle_decoration_style.h>

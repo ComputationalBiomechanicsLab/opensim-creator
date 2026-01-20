@@ -8,7 +8,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 #include <libopensimcreator/Documents/ParamBlock.h>
 
-#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 #include <liboscar/utils/synchronized_value.h>
 #include <liboscar/utils/synchronized_value_guard.h>
 #include <OpenSim/Simulation/Model/Model.h>

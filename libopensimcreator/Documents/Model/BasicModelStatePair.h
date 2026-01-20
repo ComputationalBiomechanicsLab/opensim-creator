@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopensimcreator/Documents/Model/ModelStatePairWithSharedEnvironment.h>
 #include <liboscar/utils/clone_ptr.h>
 
 #include <filesystem>
@@ -20,10 +20,10 @@ namespace osc
     //
     // this is a *basic* class that only guarantees the model is *initialized* this way. It
     // does not guarantee that everything is up-to-date after a caller mutates the model.
-    class BasicModelStatePair final : public ModelStatePair {
+    class BasicModelStatePair final : public ModelStatePairWithSharedEnvironment {
     public:
         BasicModelStatePair();
-        explicit BasicModelStatePair(const ModelStatePair&);
+        explicit BasicModelStatePair(const ModelStatePairWithSharedEnvironment&);
         explicit BasicModelStatePair(const std::filesystem::path&);
         explicit BasicModelStatePair(OpenSim::Model&&);
         BasicModelStatePair(const OpenSim::Model&, const SimTK::State&);

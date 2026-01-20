@@ -411,7 +411,7 @@ void osc::ActionEnableAllWrappingSurfaces(ModelStatePair& model)
 
 bool osc::ActionLoadSTOFileAgainstModel(
     Widget& parent,
-    const ModelStatePair& uim,
+    const ModelStatePairWithSharedEnvironment& uim,
     const std::filesystem::path& stoPath)
 {
     try {
@@ -419,7 +419,12 @@ bool osc::ActionLoadSTOFileAgainstModel(
         InitializeModel(*modelCopy);
         InitializeState(*modelCopy);
 
-        auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor(), uim.tryUpdEnvironment()});
+        auto simulation = std::make_shared<Simulation>(StoFileSimulation{
+            std::move(modelCopy),
+            stoPath,
+            uim.getFixupScaleFactor(),
+            uim.tryUpdEnvironment()
+        });
         auto tab = std::make_unique<SimulationTab>(&parent, simulation);
         App::post_event<OpenTabEvent>(parent, std::move(tab));
 
@@ -433,7 +438,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
 
 bool osc::ActionStartSimulatingModel(
     Widget& parent,
-    const ModelStatePair& uim)
+    const ModelStatePairWithSharedEnvironment& uim)
 {
     BasicModelStatePair modelState{uim};
     ForwardDynamicSimulatorParams params = FromParamBlock(uim.tryUpdEnvironment()->getSimulationParams());

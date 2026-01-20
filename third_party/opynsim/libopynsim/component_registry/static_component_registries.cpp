@@ -1,7 +1,7 @@
 #include "static_component_registries.h"
 
 #include <libopynsim/component_registry/component_registry.h>
-#include <libopynsim/Documents/custom_components/in_memory_mesh.h>
+#include <libopynsim/documents/custom_components/in_memory_mesh.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <libopynsim/init.h>
 

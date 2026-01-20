@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationHelpers.h>
 
-#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>

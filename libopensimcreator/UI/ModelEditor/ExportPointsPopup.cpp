@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
 #include <liboscar/formats/csv.h>

@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
 
-#include <libopynsim/Documents/landmarks/named_landmark.h>
+#include <libopynsim/documents/landmarks/named_landmark.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/utils/uid.h>
 

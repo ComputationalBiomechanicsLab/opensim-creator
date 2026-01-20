@@ -8,9 +8,9 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSWarpResultCache.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
 
-#include <libopynsim/Documents/landmarks/landmark.h>
-#include <libopynsim/Documents/landmarks/landmark_csv_flags.h>
-#include <libopynsim/Documents/landmarks/landmark_helpers.h>
+#include <libopynsim/documents/landmarks/landmark.h>
+#include <libopynsim/documents/landmarks/landmark_csv_flags.h>
+#include <libopynsim/documents/landmarks/landmark_helpers.h>
 #include <libopynsim/graphics/simbody_mesh_loader.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/formats/obj.h>

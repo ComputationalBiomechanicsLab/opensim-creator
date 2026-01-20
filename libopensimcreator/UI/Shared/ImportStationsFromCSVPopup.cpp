@@ -3,9 +3,9 @@
 #include <libopensimcreator/Documents/MeshImporter/UndoableActions.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <libopynsim/Documents/landmarks/landmark.h>
-#include <libopynsim/Documents/landmarks/landmark_helpers.h>
-#include <libopynsim/Documents/landmarks/named_landmark.h>
+#include <libopynsim/documents/landmarks/landmark.h>
+#include <libopynsim/documents/landmarks/landmark_helpers.h>
+#include <libopynsim/documents/landmarks/named_landmark.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/platform/app.h>

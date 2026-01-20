@@ -5,7 +5,7 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <libopynsim/Documents/landmarks/named_landmark.h>
+#include <libopynsim/documents/landmarks/named_landmark.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/platform/widget_private.h>
 #include <liboscar/ui/oscimgui.h>

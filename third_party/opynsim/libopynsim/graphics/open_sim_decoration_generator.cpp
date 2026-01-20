@@ -1,11 +1,11 @@
 #include "open_sim_decoration_generator.h"
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/graphics/component_abs_path_decoration_tagger.h>
 #include <libopynsim/graphics/component_scene_decoration_flags_tagger.h>
 #include <libopynsim/graphics/open_sim_decoration_options.h>
 #include <libopynsim/graphics/simbody_decoration_generator.h>
-#include <libopynsim/Documents/custom_components/custom_decoration_generator.h>
+#include <libopynsim/documents/custom_components/custom_decoration_generator.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
 #include <liboscar/graphics/color.h>

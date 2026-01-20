@@ -13,10 +13,10 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 
-#include <libopynsim/Documents/custom_components/in_memory_mesh.h>
-#include <libopynsim/Documents/landmarks/landmark_helpers.h>
-#include <libopynsim/Documents/landmarks/maybe_named_landmark_pair.h>
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/documents/custom_components/in_memory_mesh.h>
+#include <libopynsim/documents/landmarks/landmark_helpers.h>
+#include <libopynsim/documents/landmarks/maybe_named_landmark_pair.h>
+#include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>

@@ -3,7 +3,7 @@
 #include <libopynsim/tests/testopynsimconfig.h>
 
 #include <gtest/gtest.h>
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/graphics/component_abs_path_decoration_tagger.h>
 #include <libopynsim/graphics/muscle_color_source.h>
 #include <libopynsim/graphics/open_sim_decoration_options.h>

@@ -1,11 +1,11 @@
 #include "OutputWatchesPanel.h"
 
+#include <libopensimcreator/Documents/Model/ModelStatePairWithSharedEnvironment.h>
 #include <libopensimcreator/Documents/Model/Environment.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
-#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utils/uid.h>
@@ -51,7 +51,7 @@ public:
         OutputWatchesPanel& owner,
         Widget* parent,
         std::string_view panelName_,
-        std::shared_ptr<const ModelStatePair> model_) :
+        std::shared_ptr<const ModelStatePairWithSharedEnvironment> model_) :
 
         PanelPrivate{owner, parent, panelName_},
         m_Model{std::move(model_)}
@@ -97,14 +97,14 @@ public:
     }
 
 private:
-    std::shared_ptr<const ModelStatePair> m_Model;
+    std::shared_ptr<const ModelStatePairWithSharedEnvironment> m_Model;
     CachedSimulationReport m_CachedReport;
 };
 
 osc::OutputWatchesPanel::OutputWatchesPanel(
     Widget* parent,
     std::string_view panelName_,
-    std::shared_ptr<const ModelStatePair> model_) :
+    std::shared_ptr<const ModelStatePairWithSharedEnvironment> model_) :
 
     Panel{std::make_unique<Impl>(*this, parent, panelName_, std::move(model_))}
 {}

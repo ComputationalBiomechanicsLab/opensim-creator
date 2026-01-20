@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/Documents/landmarks/named_landmark.h>
+#include <libopynsim/documents/landmarks/named_landmark.h>
 #include <liboscar/maths/euler_angles.h>
 #include <liboscar/maths/vector3.h>
 
@@ -32,6 +32,7 @@ namespace OpenSim { class Scholz2015GeometryPathObstacle; }
 namespace OpenSim { class Station; }
 namespace OpenSim { class WrapObject; }
 namespace osc { class ModelStatePair; }
+namespace osc { class ModelStatePairWithSharedEnvironment; }
 namespace osc { class ObjectPropertyEdit; }
 namespace osc { class SceneCache; }
 namespace osc { class UndoableModelStatePair; }
@@ -88,14 +89,14 @@ namespace osc
     // loads an STO file against the current model and opens it in a new tab
     bool ActionLoadSTOFileAgainstModel(
         Widget&,
-        const ModelStatePair&,
+        const ModelStatePairWithSharedEnvironment&,
         const std::filesystem::path& stoPath
     );
 
     // start simulating the given model in a forward-dynamic simulator tab
     bool ActionStartSimulatingModel(
         Widget&,
-        const ModelStatePair&
+        const ModelStatePairWithSharedEnvironment&
     );
 
     // reload the given model from its backing file (if applicable)

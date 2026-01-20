@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/ParamBlock.h>
 
-#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 
 #include <vector>
 

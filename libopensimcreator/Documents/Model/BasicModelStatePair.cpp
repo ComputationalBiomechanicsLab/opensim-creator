@@ -20,7 +20,7 @@ public:
         InitializeState(*m_Model);
     }
 
-    explicit Impl(const ModelStatePair& p) :
+    explicit Impl(const ModelStatePairWithSharedEnvironment& p) :
         Impl{p.getModel(), p.getState(), p.getFixupScaleFactor(), p.tryUpdEnvironment()}
     {}
 
@@ -115,7 +115,7 @@ osc::BasicModelStatePair::BasicModelStatePair() :
     m_Impl{std::make_unique<Impl>()}
 {}
 
-osc::BasicModelStatePair::BasicModelStatePair(const ModelStatePair& p) :
+osc::BasicModelStatePair::BasicModelStatePair(const ModelStatePairWithSharedEnvironment& p) :
     m_Impl{std::make_unique<Impl>(p)}
 {}
 

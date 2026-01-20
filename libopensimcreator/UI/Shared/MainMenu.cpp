@@ -1,6 +1,7 @@
 #include "MainMenu.h"
 
 #include <libopensimcreator/Documents/FileFilters.h>
+#include <libopensimcreator/Documents/Model/ModelStatePairWithSharedEnvironment.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
@@ -36,6 +37,8 @@
 #include <typeinfo>
 #include <utility>
 
+#include "libopensimcreator/Documents/Model/Environment.h"
+
 namespace rgs = std::ranges;
 using namespace osc;
 
@@ -70,11 +73,19 @@ namespace
                     InitializeModel(*cpy);
                     InitializeState(*cpy);
 
-                    auto simulation = std::make_shared<Simulation>(
-                        StoFileSimulation{std::move(cpy),
+                    std::shared_ptr<Environment> env;
+                    if (auto modelWithEnv = std::dynamic_pointer_cast<ModelStatePairWithSharedEnvironment>(model)) {
+                        env = modelWithEnv->tryUpdEnvironment();
+                    }
+                    else {
+                        env = std::make_shared<Environment>();
+                    }
+
+                    auto simulation = std::make_shared<Simulation>(StoFileSimulation{
+                        std::move(cpy),
                         response.front(),
                         model->getFixupScaleFactor(),
-                        model->tryUpdEnvironment()
+                        std::move(env)
                     });
                     auto tab = std::make_unique<SimulationTab>(parent_ref.get(), simulation);
                     App::post_event<OpenTabEvent>(*parent_ref, std::move(tab));

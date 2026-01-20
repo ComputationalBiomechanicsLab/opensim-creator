@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
 
-#include <libopynsim/Documents/landmarks/landmark_csv_flags.h>
+#include <libopynsim/documents/landmarks/landmark_csv_flags.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/utils/uid.h>

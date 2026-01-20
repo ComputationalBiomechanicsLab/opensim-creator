@@ -8,7 +8,7 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelRightClickEvent.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
 
-#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/graphics/cached_model_renderer.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/maths/math_helpers.h>

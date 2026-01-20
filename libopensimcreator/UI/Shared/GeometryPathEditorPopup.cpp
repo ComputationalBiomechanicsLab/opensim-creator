@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <libopynsim/Documents/Model/component_accessor.h>
+#include <libopynsim/documents/model/component_accessor.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
