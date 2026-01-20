@@ -5,7 +5,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 #include <libopensimcreator/Documents/ParamBlock.h>
 
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/Storage.h>

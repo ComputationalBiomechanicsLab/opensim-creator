@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <libopynsim/Documents/Model/ModelStatePair.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
 #include <liboscar/ui/popups/popup_private.h>

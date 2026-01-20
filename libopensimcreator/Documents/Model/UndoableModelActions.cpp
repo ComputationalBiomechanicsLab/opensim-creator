@@ -14,13 +14,13 @@
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <libopensimcreator/UI/Simulation/SimulationTab.h>
 
-#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
-#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
-#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
-#include <libopynsim/Graphics/OpenSimDecorationOptions.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
-#include <libopynsim/Utils/ShapeFitters.h>
-#include <libopynsim/Utils/simbody_x_oscar.h>
+#include <libopynsim/component_registry/component_registry.h>
+#include <libopynsim/component_registry/static_component_registries.h>
+#include <libopynsim/graphics/open_sim_decoration_generator.h>
+#include <libopynsim/graphics/open_sim_decoration_options.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
+#include <libopynsim/utilities/shape_fitters.h>
+#include <libopynsim/utilities/simbody_x_oscar.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/maths/ellipsoid.h>
 #include <liboscar/maths/ellipsoid_functions.h>

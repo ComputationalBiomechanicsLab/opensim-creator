@@ -4,8 +4,8 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <libopynsim/Documents/Model/ModelStatePair.h>
-#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utils/uid.h>

@@ -9,11 +9,11 @@
 #include <libopensimcreator/Documents/MeshImporter/OpenSimExportFlags.h>
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 
-#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
-#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
-#include <libopynsim/Graphics/SimTKMeshLoader.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
-#include <libopynsim/Utils/simbody_x_oscar.h>
+#include <libopynsim/component_registry/component_registry.h>
+#include <libopynsim/component_registry/static_component_registries.h>
+#include <libopynsim/graphics/simbody_mesh_loader.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
+#include <libopynsim/utilities/simbody_x_oscar.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/matrix4x4.h>
@@ -561,7 +561,7 @@ namespace
             osc::Mesh meshData;
             try
             {
-                meshData = LoadMeshViaSimTK(realLocation.string());
+                meshData = LoadMeshViaSimbody(realLocation.string());
             }
             catch (const std::exception& ex)
             {

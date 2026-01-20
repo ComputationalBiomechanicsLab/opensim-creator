@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/Graphics/ModelRendererParams.h>
+#include <libopynsim/graphics/model_renderer_params.h>
 
 #include <functional>
 #include <memory>

@@ -11,7 +11,7 @@
 #include <libopensimcreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
 
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/formats/svg.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/scene/scene_cache.h>

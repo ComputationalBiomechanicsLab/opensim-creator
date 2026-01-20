@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
-#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
+#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
 
 #include <functional>
 #include <memory>

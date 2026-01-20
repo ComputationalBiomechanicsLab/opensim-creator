@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/utils/uid.h>
 

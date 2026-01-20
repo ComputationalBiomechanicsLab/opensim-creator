@@ -17,7 +17,7 @@
 #include <libopensimcreator/UI/MeshImporter/MeshImporterHover.h>
 #include <libopensimcreator/UI/MeshImporter/MeshLoader.h>
 
-#include <libopynsim/Graphics/SimTKMeshLoader.h>
+#include <libopynsim/graphics/simbody_mesh_loader.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/geometries/cone_geometry.h>

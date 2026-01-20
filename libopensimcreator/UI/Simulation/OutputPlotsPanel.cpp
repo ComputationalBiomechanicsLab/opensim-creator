@@ -6,8 +6,8 @@
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
 
-#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
-#include <libopynsim/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
+#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/Documents/output_extractors/output_extractor_data_type_helpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utils/algorithms.h>

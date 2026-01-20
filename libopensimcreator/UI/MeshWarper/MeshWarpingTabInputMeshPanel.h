@@ -10,7 +10,7 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabPanel.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <libopynsim/Documents/Landmarks/NamedLandmark.h>
+#include <libopynsim/Documents/landmarks/named_landmark.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/geometries/solid_geometries.h>
 #include <liboscar/graphics/mesh.h>

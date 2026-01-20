@@ -4,9 +4,9 @@
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <libopynsim/Graphics/ModelRendererParams.h>
-#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
-#include <libopynsim/Graphics/OpenSimGraphicsHelpers.h>
+#include <libopynsim/graphics/model_renderer_params.h>
+#include <libopynsim/graphics/open_sim_decoration_generator.h>
+#include <libopynsim/graphics/open_sim_graphics_helpers.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_helpers.h>

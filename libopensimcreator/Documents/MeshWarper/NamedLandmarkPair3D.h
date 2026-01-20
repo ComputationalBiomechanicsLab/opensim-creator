@@ -1,11 +1,11 @@
 #pragma once
 
-#include <libopynsim/Utils/LandmarkPair3D.h>
+#include <libopynsim/utilities/landmark_pair_3d.h>
 #include <liboscar/utils/string_name.h>
 
 namespace osc
 {
-    struct NamedLandmarkPair3D final : public opyn::LandmarkPair3D<float> {
+    struct NamedLandmarkPair3D final : public opyn::landmark_pair_3d<float> {
         StringName name;
     };
 }

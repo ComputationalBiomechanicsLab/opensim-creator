@@ -5,7 +5,7 @@
 #include <libopensimcreator/UI/Simulation/SimulationUILoopingState.h>
 #include <libopensimcreator/UI/Simulation/SimulationUIPlaybackState.h>
 
-#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
+#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
 
 #include <initializer_list>
 #include <optional>

@@ -6,12 +6,12 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
 
-#include <libopynsim/Documents/Model/ModelStatePair.h>
-#include <libopynsim/Graphics/ModelRendererParams.h>
-#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
-#include <libopynsim/Graphics/OpenSimGraphicsHelpers.h>
-#include <libopynsim/Graphics/OverlayDecorationGenerator.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/graphics/model_renderer_params.h>
+#include <libopynsim/graphics/open_sim_decoration_generator.h>
+#include <libopynsim/graphics/open_sim_graphics_helpers.h>
+#include <libopynsim/graphics/overlay_decoration_generator.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_decoration_flags.h>

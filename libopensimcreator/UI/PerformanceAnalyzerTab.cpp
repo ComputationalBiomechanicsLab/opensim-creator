@@ -11,7 +11,7 @@
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 
-#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
+#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/oscimgui.h>

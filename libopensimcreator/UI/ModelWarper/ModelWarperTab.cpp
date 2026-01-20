@@ -13,14 +13,14 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 
-#include <libopynsim/Documents/CustomComponents/InMemoryMesh.h>
-#include <libopynsim/Documents/Landmarks/LandmarkHelpers.h>
-#include <libopynsim/Documents/Landmarks/MaybeNamedLandmarkPair.h>
-#include <libopynsim/Documents/Model/ModelStatePair.h>
-#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
-#include <libopynsim/Utils/simbody_x_oscar.h>
-#include <libopynsim/Utils/TPS3D.h>
+#include <libopynsim/Documents/custom_components/in_memory_mesh.h>
+#include <libopynsim/Documents/landmarks/landmark_helpers.h>
+#include <libopynsim/Documents/landmarks/maybe_named_landmark_pair.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/graphics/open_sim_decoration_generator.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
+#include <libopynsim/utilities/simbody_x_oscar.h>
+#include <libopynsim/utilities/tps3d.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/transform_functions.h>

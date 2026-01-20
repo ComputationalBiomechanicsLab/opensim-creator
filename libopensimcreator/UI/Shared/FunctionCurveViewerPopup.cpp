@@ -1,6 +1,6 @@
 #include "FunctionCurveViewerPopup.h"
 
-#include <libopynsim/Documents/Model/VersionedComponentAccessor.h>
+#include <libopynsim/Documents/Model/versioned_component_accessor.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/maths/closed_interval.h>
 #include <liboscar/maths/constants.h>

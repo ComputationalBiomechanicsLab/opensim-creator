@@ -19,7 +19,7 @@
 #include <libopensimcreator/UI/Shared/OutputWatchesPanel.h>
 #include <libopensimcreator/UI/Shared/PropertiesPanel.h>
 
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/platform/events/drop_file_event.h>

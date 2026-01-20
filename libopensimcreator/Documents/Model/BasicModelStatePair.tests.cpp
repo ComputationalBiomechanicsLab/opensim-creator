@@ -4,7 +4,7 @@
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
-#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
+#include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <SimTKcommon/internal/State.h>
 

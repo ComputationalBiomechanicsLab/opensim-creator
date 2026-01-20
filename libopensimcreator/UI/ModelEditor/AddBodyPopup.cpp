@@ -5,10 +5,10 @@
 #include <libopensimcreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
-#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
-#include <libopynsim/Documents/Model/ModelStatePair.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/component_registry/component_registry.h>
+#include <libopynsim/component_registry/static_component_registries.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/events/open_popup_event.h>

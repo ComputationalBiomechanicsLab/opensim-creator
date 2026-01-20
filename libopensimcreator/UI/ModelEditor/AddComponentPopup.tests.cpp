@@ -4,9 +4,9 @@
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 
 #include <gtest/gtest.h>
-#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
-#include <libopynsim/ComponentRegistry/ComponentRegistryEntry.h>
-#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
+#include <libopynsim/component_registry/component_registry.h>
+#include <libopynsim/component_registry/component_registry_entry.h>
+#include <libopynsim/component_registry/static_component_registries.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/oscimgui.h>
 #include <OpenSim/Common/Component.h>

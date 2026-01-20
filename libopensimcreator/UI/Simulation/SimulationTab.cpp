@@ -22,8 +22,8 @@
 #include <libopensimcreator/UI/Simulation/SimulationToolbar.h>
 #include <libopensimcreator/UI/Simulation/SimulationUIPlaybackState.h>
 
-#include <libopynsim/Documents/OutputExtractors/ComponentOutputExtractor.h>
-#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
+#include <libopynsim/Documents/output_extractors/component_output_extractor.h>
+#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/events/event.h>
 #include <liboscar/platform/events/key_event.h>

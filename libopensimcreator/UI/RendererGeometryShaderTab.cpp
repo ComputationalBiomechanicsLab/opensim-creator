@@ -1,6 +1,6 @@
 #include "RendererGeometryShaderTab.h"
 
-#include <libopynsim/Graphics/SimTKMeshLoader.h>
+#include <libopynsim/graphics/simbody_mesh_loader.h>
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/graphics.h>
@@ -96,7 +96,7 @@ private:
     MeshBasicMaterial m_SceneMaterial;
     MeshNormalVectorsMaterial m_NormalsMaterial;
 
-    Mesh m_Mesh = LoadMeshViaSimTK(App::resource_filepath("OpenSimCreator/geometry/hat_ribs_scap.vtp").value_or(std::filesystem::path{"OpenSimCreator/geometry/hat_ribs_scap.vtp"}));
+    Mesh m_Mesh = LoadMeshViaSimbody(App::resource_filepath("OpenSimCreator/geometry/hat_ribs_scap.vtp").value_or(std::filesystem::path{"OpenSimCreator/geometry/hat_ribs_scap.vtp"}));
     Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
     EulerAngles m_CameraEulers;

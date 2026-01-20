@@ -5,7 +5,7 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/SimulationScrubber.h>
 
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/vector2.h>
 #include <liboscar/maths/vector4.h>

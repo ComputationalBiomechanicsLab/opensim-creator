@@ -6,8 +6,8 @@
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <libopynsim/Graphics/SimTKMeshLoader.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/graphics/simbody_mesh_loader.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/utils/uid.h>
@@ -44,7 +44,7 @@ std::optional<AABB> osc::mi::Mesh::calcBounds() const
 
 void osc::mi::Mesh::reloadMeshDataFromDisk()
 {
-    m_MeshData = LoadMeshViaSimTK(getPath());
+    m_MeshData = LoadMeshViaSimbody(getPath());
 }
 
 MIClass osc::mi::Mesh::CreateClass()

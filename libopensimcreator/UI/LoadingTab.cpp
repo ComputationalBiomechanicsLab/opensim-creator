@@ -4,7 +4,7 @@
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
 
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>

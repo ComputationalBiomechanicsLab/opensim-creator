@@ -1,7 +1,7 @@
 #include "ModelStateCommit.h"
 
-#include <libopynsim/Documents/Model/ModelStatePair.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/utils/c_string_view.h>
 #include <liboscar/utils/synchronized_value_guard.h>
 #include <liboscar/utils/uid.h>

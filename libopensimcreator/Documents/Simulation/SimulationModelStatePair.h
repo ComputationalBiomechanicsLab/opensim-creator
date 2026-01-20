@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <libopynsim/Documents/Model/ModelStatePair.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
 #include <liboscar/utils/uid.h>
 
 #include <memory>

@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <libopynsim/Graphics/OverlayDecorationGenerator.h>
+#include <libopynsim/graphics/overlay_decoration_generator.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/scene/scene_decoration.h>

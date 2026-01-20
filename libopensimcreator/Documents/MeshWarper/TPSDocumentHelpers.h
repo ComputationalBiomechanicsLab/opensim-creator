@@ -7,7 +7,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 
-#include <libopynsim/Utils/LandmarkPair3D.h>
+#include <libopynsim/utilities/landmark_pair_3d.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/utils/c_string_view.h>
@@ -106,10 +106,10 @@ namespace osc
     }
 
     // returns source + destination landmark pair, if both are fully defined; otherwise, returns std::nullopt
-    std::optional<opyn::LandmarkPair3D<float>> TryExtractLandmarkPair(const TPSDocumentLandmarkPair&);
+    std::optional<opyn::landmark_pair_3d<float>> TryExtractLandmarkPair(const TPSDocumentLandmarkPair&);
 
     // returns all fully paired landmarks in `doc`
-    std::vector<opyn::LandmarkPair3D<float>> GetLandmarkPairs(const TPSDocument&);
+    std::vector<opyn::landmark_pair_3d<float>> GetLandmarkPairs(const TPSDocument&);
 
     // returns all fully paired landmarks, incl. their names, in `doc`
     std::vector<NamedLandmarkPair3D> GetNamedLandmarkPairs(const TPSDocument&);

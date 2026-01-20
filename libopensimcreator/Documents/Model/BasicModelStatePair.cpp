@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/Environment.h>
 
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <filesystem>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libopynsim/Documents/Landmarks/NamedLandmark.h>
-#include <libopynsim/Documents/Model/ModelStatePair.h>
+#include <libopynsim/Documents/landmarks/named_landmark.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
 #include <liboscar/ui/popups/popup.h>
 
 #include <functional>

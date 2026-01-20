@@ -8,10 +8,10 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSWarpResultCache.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
 
-#include <libopynsim/Documents/Landmarks/Landmark.h>
-#include <libopynsim/Documents/Landmarks/LandmarkCSVFlags.h>
-#include <libopynsim/Documents/Landmarks/LandmarkHelpers.h>
-#include <libopynsim/Graphics/SimTKMeshLoader.h>
+#include <libopynsim/Documents/landmarks/landmark.h>
+#include <libopynsim/Documents/landmarks/landmark_csv_flags.h>
+#include <libopynsim/Documents/landmarks/landmark_helpers.h>
+#include <libopynsim/graphics/simbody_mesh_loader.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/formats/stl.h>
@@ -218,7 +218,7 @@ void osc::ActionPromptUserToLoadMeshFile(
                 return;  // Error or user somehow selected multiple options
             }
             try {
-                const auto mesh = LoadMeshViaSimTK(response.front());
+                const auto mesh = LoadMeshViaSimbody(response.front());
                 ActionLoadMesh(*doc, mesh, which);
             }
             catch (const std::exception& ex) {

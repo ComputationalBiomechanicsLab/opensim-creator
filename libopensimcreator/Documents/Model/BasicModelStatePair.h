@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/Documents/Model/ModelStatePair.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
 #include <liboscar/utils/clone_ptr.h>
 
 #include <filesystem>

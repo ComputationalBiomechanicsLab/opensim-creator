@@ -2,9 +2,9 @@
 
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 
-#include <libopynsim/Documents/Model/ModelStatePair.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
-#include <libopynsim/Utils/simbody_x_oscar.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
+#include <libopynsim/utilities/simbody_x_oscar.h>
 #include <liboscar/maths/euler_angles.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/matrix4x4.h>

@@ -4,10 +4,10 @@
 #include <libopensimcreator/UI/Shared/FunctionCurveViewerPopup.h>
 #include <libopensimcreator/UI/Shared/GeometryPathEditorPopup.h>
 
-#include <libopynsim/Documents/Model/ModelStatePair.h>
-#include <libopynsim/Documents/Model/VersionedComponentAccessor.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
-#include <libopynsim/Utils/simbody_x_oscar.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/Documents/Model/versioned_component_accessor.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
+#include <libopynsim/utilities/simbody_x_oscar.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/vector2.h>

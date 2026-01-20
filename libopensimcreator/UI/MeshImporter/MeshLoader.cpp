@@ -1,6 +1,6 @@
 #include "MeshLoader.h"
 
-#include <libopynsim/Graphics/SimTKMeshLoader.h>
+#include <libopynsim/graphics/simbody_mesh_loader.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 
@@ -18,7 +18,7 @@ osc::mi::MeshLoadResponse osc::mi::respondToMeshloadRequest(MeshLoadRequest msg)
     {
         try
         {
-            loadedMeshes.push_back(LoadedMesh{path, LoadMeshViaSimTK(path)});
+            loadedMeshes.push_back(LoadedMesh{path, LoadMeshViaSimbody(path)});
         }
         catch (const std::exception& ex)
         {

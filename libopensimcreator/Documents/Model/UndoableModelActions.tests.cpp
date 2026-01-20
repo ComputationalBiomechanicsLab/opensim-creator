@@ -6,10 +6,10 @@
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
-#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
-#include <libopynsim/ComponentRegistry/ComponentRegistryEntry.h>
-#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/component_registry/component_registry.h>
+#include <libopynsim/component_registry/component_registry_entry.h>
+#include <libopynsim/component_registry/static_component_registries.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/maths/math_helpers.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Simulation/Model/Model.h>

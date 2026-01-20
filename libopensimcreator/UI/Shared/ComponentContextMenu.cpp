@@ -7,12 +7,12 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ModelAddMenuItems.h>
 
-#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
-#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
-#include <libopynsim/Documents/Model/ModelStatePair.h>
-#include <libopynsim/Documents/OutputExtractors/ComponentOutputExtractor.h>
-#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/component_registry/component_registry.h>
+#include <libopynsim/component_registry/static_component_registries.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/Documents/output_extractors/component_output_extractor.h>
+#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/platform/widget.h>

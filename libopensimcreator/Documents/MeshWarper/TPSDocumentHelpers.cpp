@@ -6,7 +6,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
 
-#include <libopynsim/Utils/simbody_x_oscar.h>
+#include <libopynsim/utilities/simbody_x_oscar.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/utils/algorithms.h>
@@ -205,25 +205,25 @@ bool osc::ContainsElementWithName(const TPSDocument& doc, const StringName& name
         FindNonParticipatingLandmarkByName(doc, name) != nullptr;
 }
 
-std::optional<opyn::LandmarkPair3D<float>> osc::TryExtractLandmarkPair(const TPSDocumentLandmarkPair& p)
+std::optional<opyn::landmark_pair_3d<float>> osc::TryExtractLandmarkPair(const TPSDocumentLandmarkPair& p)
 {
     if (IsFullyPaired(p)) {
-        return opyn::LandmarkPair3D<float>{to<SimTK::fVec3>(*p.maybeSourceLocation), to<SimTK::fVec3>(*p.maybeDestinationLocation)};
+        return opyn::landmark_pair_3d<float>{to<SimTK::fVec3>(*p.maybeSourceLocation), to<SimTK::fVec3>(*p.maybeDestinationLocation)};
     }
     else {
         return std::nullopt;
     }
 }
 
-std::vector<opyn::LandmarkPair3D<float>> osc::GetLandmarkPairs(const TPSDocument& doc)
+std::vector<opyn::landmark_pair_3d<float>> osc::GetLandmarkPairs(const TPSDocument& doc)
 {
-    std::vector<opyn::LandmarkPair3D<float>> rv;
+    std::vector<opyn::landmark_pair_3d<float>> rv;
     rv.reserve(CountFullyPaired(doc));
     for (const auto& p : doc.landmarkPairs)
     {
         if (IsFullyPaired(p))
         {
-            rv.push_back(opyn::LandmarkPair3D<float>{to<SimTK::fVec3>(*p.maybeSourceLocation), to<SimTK::fVec3>(*p.maybeDestinationLocation)});
+            rv.push_back(opyn::landmark_pair_3d<float>{to<SimTK::fVec3>(*p.maybeSourceLocation), to<SimTK::fVec3>(*p.maybeDestinationLocation)});
         }
     }
     return rv;

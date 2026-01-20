@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
 #include <libopensimcreator/Documents/ParamBlock.h>
 
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/utils/synchronized_value.h>
 #include <liboscar/utils/synchronized_value_guard.h>
 

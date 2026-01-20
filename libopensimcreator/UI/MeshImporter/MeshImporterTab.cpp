@@ -27,8 +27,8 @@
 #include <libopensimcreator/UI/Shared/ImportStationsFromCSVPopup.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
 
-#include <libopynsim/ComponentRegistry/ComponentRegistry.h>
-#include <libopynsim/ComponentRegistry/StaticComponentRegistries.h>
+#include <libopynsim/component_registry/component_registry.h>
+#include <libopynsim/component_registry/static_component_registries.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/formats/stl.h>
 #include <liboscar/graphics/color.h>

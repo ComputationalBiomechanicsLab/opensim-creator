@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/Documents/OutputExtractors/SharedOutputExtractor.h>
+#include <libopynsim/Documents/output_extractors/shared_output_extractor.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/vector2.h>
 #include <liboscar/maths/vector3.h>

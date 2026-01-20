@@ -1,7 +1,7 @@
-#include <libopynsim/Shims/Cpp23/mdspan.h>
+#include <libopynsim/shims/cpp23/mdspan.h>
 #include <libopynsim/ui/hello_ui.h>
-#include <libopynsim/Utils/Assertions.h>
-#include <libopynsim/Utils/TPS3D.h>
+#include <libopynsim/utilities/assertions.h>
+#include <libopynsim/utilities/tps3d.h>
 
 #include <SimTKcommon/SmallMatrix.h>
 #include <nanobind/nanobind.h>

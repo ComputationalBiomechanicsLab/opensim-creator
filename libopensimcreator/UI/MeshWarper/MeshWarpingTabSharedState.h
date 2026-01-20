@@ -8,8 +8,8 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabHover.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabUserSelection.h>
 
-#include <libopynsim/Graphics/CustomRenderingOptions.h>
-#include <libopynsim/Graphics/OverlayDecorationOptions.h>
+#include <libopynsim/graphics/custom_rendering_options.h>
+#include <libopynsim/graphics/overlay_decoration_options.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/materials/mesh_basic_material.h>

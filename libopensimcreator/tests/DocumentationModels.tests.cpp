@@ -5,8 +5,8 @@
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
-#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
-#include <libopynsim/Graphics/OpenSimDecorationOptions.h>
+#include <libopynsim/graphics/open_sim_decoration_generator.h>
+#include <libopynsim/graphics/open_sim_decoration_options.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/utils/filesystem_helpers.h>

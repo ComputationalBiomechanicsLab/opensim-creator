@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <libopynsim/Graphics/SimTKMeshLoader.h>
+#include <libopynsim/graphics/simbody_mesh_loader.h>
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/geometries/aabb_geometry.h>
@@ -154,7 +154,7 @@ private:
     Camera m_Camera;
 
     MeshBasicMaterial m_Material;
-    Mesh m_Mesh = LoadMeshViaSimTK(App::resource_filepath("OpenSimCreator/geometry/hat_ribs.vtp").value_or(std::filesystem::path{"OpenSimCreator/geometry/hat_ribs.vtp"}));
+    Mesh m_Mesh = LoadMeshViaSimbody(App::resource_filepath("OpenSimCreator/geometry/hat_ribs.vtp").value_or(std::filesystem::path{"OpenSimCreator/geometry/hat_ribs.vtp"}));
     Mesh m_SphereMesh = SphereGeometry{{.num_width_segments = 12, .num_height_segments = 12}};
     Mesh m_CubeLinesMesh = AABBGeometry{}.mesh();
 

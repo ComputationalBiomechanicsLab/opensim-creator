@@ -16,10 +16,10 @@
 #include <libopensimcreator/UI/Shared/OutputWatchesPanel.h>
 #include <libopensimcreator/UI/Shared/PropertiesPanel.h>
 
-#include <libopynsim/Documents/ExperimentalData/AnnotatedMotion.h>
-#include <libopynsim/Documents/ExperimentalData/FileBackedStorage.h>
-#include <libopynsim/Documents/Model/ModelStatePair.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/Documents/experimental_data/annotated_motion.h>
+#include <libopynsim/Documents/experimental_data/file_backed_storage.h>
+#include <libopynsim/Documents/Model/model_state_pair.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/maths/closed_interval.h>
 #include <liboscar/maths/vector2.h>

@@ -3,7 +3,7 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelFlags.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelLayer.h>
 
-#include <libopynsim/Graphics/CachedModelRenderer.h>
+#include <libopynsim/graphics/cached_model_renderer.h>
 #include <liboscar/graphics/scene/scene_collision.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/maths/aabb.h>

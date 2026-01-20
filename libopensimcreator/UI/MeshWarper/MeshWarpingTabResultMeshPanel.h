@@ -6,7 +6,7 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabPanel.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <libopynsim/Documents/Landmarks/LandmarkCSVFlags.h>
+#include <libopynsim/Documents/landmarks/landmark_csv_flags.h>
 #include <liboscar/graphics/render_texture.h>
 #include <liboscar/graphics/scene/cached_scene_renderer.h>
 #include <liboscar/graphics/scene/scene_cache.h>

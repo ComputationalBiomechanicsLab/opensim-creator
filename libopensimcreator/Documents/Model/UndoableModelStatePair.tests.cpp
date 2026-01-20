@@ -4,9 +4,9 @@
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
 
 #include <gtest/gtest.h>
-#include <libopynsim/Graphics/OpenSimDecorationGenerator.h>
-#include <libopynsim/Graphics/OpenSimDecorationOptions.h>
-#include <libopynsim/Utils/OpenSimHelpers.h>
+#include <libopynsim/graphics/open_sim_decoration_generator.h>
+#include <libopynsim/graphics/open_sim_decoration_options.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/formats/dae.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
