@@ -1,8 +1,7 @@
 #include "ConstantOutputExtractor.h"
 
-#include <libopensimcreator/Documents/StateViewWithMetadata.h>
-
 #include <gtest/gtest.h>
+#include <libopynsim/Documents/StateViewWithMetadata.h>
 #include <OpenSim/Simulation/Model/Station.h>
 
 using namespace osc;

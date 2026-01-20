@@ -1,10 +1,10 @@
 #include "SimulationHelpers.h"
 
-#include <libopensimcreator/Documents/OutputExtractors/ConstantOutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
 #include <gtest/gtest.h>
+#include <libopynsim/Documents/OutputExtractors/ConstantOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopynsim/Utils/OpenSimHelpers.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/utils/string_helpers.h>

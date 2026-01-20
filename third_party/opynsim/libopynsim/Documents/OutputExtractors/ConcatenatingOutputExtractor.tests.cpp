@@ -1,10 +1,9 @@
 #include "ConcatenatingOutputExtractor.h"
 
-#include <libopensimcreator/Documents/OutputExtractors/ConstantOutputExtractor.h>
-#include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
-#include <libopensimcreator/Documents/StateViewWithMetadata.h>
-
 #include <libopynsim/Documents/CustomComponents/BlankComponent.h>
+#include <libopynsim/Documents/OutputExtractors/ConstantOutputExtractor.h>
+#include <libopynsim/Documents/OutputExtractors/OutputExtractorDataType.h>
+#include <libopynsim/Documents/StateViewWithMetadata.h>
 
 #include <gtest/gtest.h>
 
