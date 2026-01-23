@@ -33,25 +33,54 @@ OPynSim is supported on the following platform combinations:
 | >=3.12         | MacOS >= 14.5 (Sonoma)                                                       | amd64 (Intel)           |
 | >=3.12         | MacOS >= 14.5 (Sonoma)                                                       | arm64 (Apple Silicon)   |
 
+# Example Usage
 
-# Core Goals
+> [!CAUTION]
+>
+> This is currently **ALPHA** software. These examples are more like talking points, than a final API.
 
-- Make building and integrating [Simbody](https://github.com/simbody/simbody)'s and
-  [OpenSim](https://simtk.org/projects/opensim)'s C++ APIs as easy as possible, to
-  encourage new developers to work on those codebases (`libosim`).
-- Provide a straightforward infrastructure for researchers to develop new C++ and python
-  algorithms that are tested and deployed regularly.
-- Upstream stable ideas, algorithms, project designs, dependency handling methods, etc. from this
-  project to [Simbody](https://github.com/simbody/simbody) and [OpenSim](https://simtk.org/projects/opensim).
+```python
+import opynsim
+import opynsim.ui
+from pathlib import Path
+import logging
+
+# Setup globals (if necessary)
+opynsim.set_logging_level(logging.DEBUG)  # Python's `logging.LEVEL` is supported
+opynsim.add_geometry_directory(Path("/path/to/geometry/"))  # Python's `pathlib.Path` is supported
+
+# A `ModelSpecification` specifies how OPynSim should build the model.
+model_specification = opynsim.import_osim_file("/path/to/model.osim")
+
+# A `ModelSpecification` can be compiled into a `Model`. Compilation
+# validates the specification and assembles a physics system from it.
+#
+# Callers can use a `Model` to ask questions about the physics system
+# (What inputs/outputs does it have? What coordinates does it have?) and
+# produce/edit `ModelState`s.
+model = model_specification.compile()
+
+# A `ModelState` is one state of a `Model`. All `Model`s can produce an
+# initial state.
+#
+# Callers can manipulate `ModelState`s directly (e.g. manipulate state
+# vectors "in the raw"), or in tandem with a `Model`.
+state = model.initial_state()
+
+# The physics system of a `Model` can be used to update a `ModelState`s
+# stage (e.g. to compute accelerations from dynamics).
+model.realize(state, opynsim.ModelStateStage.REPORT)
+
+# OPynSim also packages a complete visualization and UI framework, ported
+# from OpenSim Creator.
+opynsim.ui.view_model_in_state(model, state)
+```
 
 # TODO
 
-- Compiling everything within Rosetta: `arch -x86_64 /usr/bin/env bash`
 - Sanity-check MSVC runtime in opynsim
 - Sanity-check MacOS SDK/ABI in opynsim
 - Python declarations `.pyd` for IDEs etc.
 - API documentation in the documentation build
 - Developer guide that specifically focuses on CLion
 - READMEs/architectural explanations
-- Integration into the opensim-creator build
-
