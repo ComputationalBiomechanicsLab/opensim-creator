@@ -59,6 +59,7 @@ endif()
 if(OSCDEPS_BUILD_OPYNSIM_DEPS)
     ExternalProject_Add(opyndeps
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opynsim/third_party
+        BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/opyndeps/  # make binary path shorter for Windows path length limit (250 chars)
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         INSTALL_COMMAND ""
         CMAKE_CACHE_ARGS
