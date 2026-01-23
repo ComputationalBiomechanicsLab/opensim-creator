@@ -40,9 +40,11 @@ if(TRUE)
     if(OPYN_STABLE_ABI)
         list(APPEND OPYN_NANOBIND_ARGS STABLE_ABI)
     endif()
-    nanobind_add_module(_opynsim_native ${OPYN_NANOBIND_ARGS}
-        opynsim/src/_opynsim_native.cpp
-    )
+    file(GLOB_RECURSE _opynsim_native_sources "opynsim/*.cpp")
+    list(FILTER _opynsim_native_sources EXCLUDE REGEX "(tests|\.tests\.cpp)")
+    nanobind_add_module(_opynsim_native ${OPYN_NANOBIND_ARGS} ${_opynsim_native_sources})
+    unset(_opynsim_native_sources)
+    target_include_directories(_opynsim_native PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/opynsim)  # so that `#include <_opynsim_native/...>` works
 
     # Set `OPYN_PYTHON_INTERPRETER_TAG` and `OPYN_PYTHON_ABI_TAG` on the native module
     #

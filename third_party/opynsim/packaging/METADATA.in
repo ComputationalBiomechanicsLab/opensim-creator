@@ -8,7 +8,7 @@ Author-email: contact@adamkewley.com
 License: Apache 2.0
 Platform: @OPYN_METADATA_PLATFORM@
 Requires-Python: >=3.12
-Requires-Dist: numpy>=1.23.5
+Requires-Dist: numpy>=1.26.0
 Keywords: biomechanics, musculoskeletal, opensim, simulation
 Classifier: @OPYN_METADATA_OS_CLASSIFIER@
 Classifier: Development Status :: 1 - Planning

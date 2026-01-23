@@ -1,0 +1,61 @@
+This removes the OpenSim::LogSink abstraction, because it's overly simplistic
+when downstream code (e.g. OPynSim, OpenSim Creator) need more information
+about a message coming via a sink (e.g. the log level the message was sent
+at).
+
+---
+
+diff --git a/OpenSim/Common/LogSink.h b/OpenSim/Common/LogSink.h
+index c0bb3416b..39ff8fdf1 100644
+--- a/OpenSim/Common/LogSink.h
++++ b/OpenSim/Common/LogSink.h
+@@ -34,20 +34,7 @@ namespace OpenSim {
+ 
+ /// Derive from this class to implement your own way of reporting logged
+ /// messages.
+-class OSIMCOMMON_API LogSink : public spdlog::sinks::base_sink<std::mutex> {
+-public:
+-    virtual ~LogSink() = default;
+-protected:
+-    /// This function is invoked whenever a message is logged at the desired
+-    /// Log::Level.
+-    virtual void sinkImpl(const std::string& msg) = 0;
+-    virtual void flushImpl() {}
+-private:
+-    void sink_it_(const spdlog::details::log_msg& msg) override final {
+-        sinkImpl(std::string(msg.payload.begin(), msg.payload.end()));
+-    }
+-    void flush_() override final { flushImpl(); }
+-};
++class LogSink : public spdlog::sinks::base_sink<std::mutex> {};
+ 
+ /// This sink stores all messages in a string. This is useful for testing the
+ /// content of logs.
+@@ -61,11 +48,11 @@ public:
+     const std::string& getString() const {
+         return m_messages;
+     }
+-protected:
+-    void sinkImpl(const std::string& msg) override {
+-        m_messages += msg + "\n";
+-    }
+ private:
++    void sink_it_(const spdlog::details::log_msg& msg) override {
++        m_messages += std::string{msg.payload.begin(), msg.payload.end()} + "\n";
++    }
++
+     std::string m_messages;
+ };
+ 
+diff --git a/OpenSim/Common/Logger.cpp b/OpenSim/Common/Logger.cpp
+index b689c53d3..b423a12fa 100644
+--- a/OpenSim/Common/Logger.cpp
++++ b/OpenSim/Common/Logger.cpp
+@@ -47,6 +47,7 @@ static std::shared_ptr<spdlog::logger> initializeLogger(
+     std::shared_ptr<spdlog::logger> l,
+     const char* pattern)
+ {
++    l->sinks().clear();
+     l->set_level(spdlog::level::info);
+     l->flush_on(spdlog::level::info);
+     l->set_pattern(pattern);

@@ -3,7 +3,7 @@
 #include <libopynsim/component_registry/component_registry.h>
 #include <libopynsim/documents/custom_components/in_memory_mesh.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
-#include <libopynsim/init.h>
+#include <libopynsim/opynsim.h>
 
 #include <liboscar/utils/c_string_view.h>
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
@@ -49,8 +49,6 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-#include "libopynsim/init.h"
 
 using namespace osc;
 namespace rgs = std::ranges;

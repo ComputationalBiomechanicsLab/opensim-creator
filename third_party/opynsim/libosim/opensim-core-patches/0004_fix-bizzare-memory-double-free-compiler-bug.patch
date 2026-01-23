@@ -1,3 +1,9 @@
+Fixes a bizzare double-free bug that was detected by libASAN/libUBSAN.
+I still haven't figured it out, it's probably something to do with switch
+lifetime scoping.
+
+---
+
 diff --git a/OpenSim/Actuators/Thelen2003Muscle.cpp b/OpenSim/Actuators/Thelen2003Muscle.cpp
 index eff537959..ee407a8aa 100644
 --- a/OpenSim/Actuators/Thelen2003Muscle.cpp

@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <libopynsim/component_registry/component_registry.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
-#include <libopynsim/init.h>
+#include <libopynsim/opynsim.h>
 #include <liboscar/utils/c_string_view.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>

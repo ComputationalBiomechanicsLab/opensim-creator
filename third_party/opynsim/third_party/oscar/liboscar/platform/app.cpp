@@ -382,20 +382,22 @@ namespace
     }
 #endif
 
-    LogLevel get_log_level_from_settings(const AppSettings& settings)
+    std::optional<LogLevel> get_log_level_from_settings(const AppSettings& settings)
     {
         if (const auto v = settings.find_value("log_level")) {
             if (auto parsed = try_parse_as_log_level(to<std::string>(*v))) {
-                return *parsed;
+                return LogLevel{*parsed};
             }
         }
-        return LogLevel::DEFAULT;
+        return std::nullopt;
     }
 
     bool configure_application_log(const AppSettings& config)
     {
         if (auto logger = global_default_logger()) {
-            logger->set_level(get_log_level_from_settings(config));
+            if (const auto level = get_log_level_from_settings(config)) {
+                logger->set_level(*level);
+            }
         }
         return true;
     }

@@ -34,20 +34,7 @@ namespace OpenSim {
 
 /// Derive from this class to implement your own way of reporting logged
 /// messages.
-class OSIMCOMMON_API LogSink : public spdlog::sinks::base_sink<std::mutex> {
-public:
-    virtual ~LogSink() = default;
-protected:
-    /// This function is invoked whenever a message is logged at the desired
-    /// Log::Level.
-    virtual void sinkImpl(const std::string& msg) = 0;
-    virtual void flushImpl() {}
-private:
-    void sink_it_(const spdlog::details::log_msg& msg) override final {
-        sinkImpl(std::string(msg.payload.begin(), msg.payload.end()));
-    }
-    void flush_() override final { flushImpl(); }
-};
+class LogSink : public spdlog::sinks::base_sink<std::mutex> {};
 
 /// This sink stores all messages in a string. This is useful for testing the
 /// content of logs.
@@ -61,11 +48,11 @@ public:
     const std::string& getString() const {
         return m_messages;
     }
-protected:
-    void sinkImpl(const std::string& msg) override {
-        m_messages += msg + "\n";
-    }
 private:
+    void sink_it_(const spdlog::details::log_msg& msg) override {
+        m_messages += std::string{msg.payload.begin(), msg.payload.end()} + "\n";
+    }
+
     std::string m_messages;
 };
 

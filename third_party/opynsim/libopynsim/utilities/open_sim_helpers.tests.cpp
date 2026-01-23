@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include <libopynsim/component_registry/component_registry.h>
 #include <libopynsim/component_registry/static_component_registries.h>
-#include <libopynsim/init.h>
+#include <libopynsim/opynsim.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/utils/assertions.h>

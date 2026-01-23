@@ -8,7 +8,7 @@
 #include <libopynsim/graphics/muscle_color_source.h>
 #include <libopynsim/graphics/open_sim_decoration_options.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
-#include <libopynsim/init.h>
+#include <libopynsim/opynsim.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_helpers.h>

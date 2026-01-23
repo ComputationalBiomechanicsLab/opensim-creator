@@ -47,6 +47,7 @@ static std::shared_ptr<spdlog::logger> initializeLogger(
     std::shared_ptr<spdlog::logger> l,
     const char* pattern)
 {
+    l->sinks().clear();
     l->set_level(spdlog::level::info);
     l->flush_on(spdlog::level::info);
     l->set_pattern(pattern);

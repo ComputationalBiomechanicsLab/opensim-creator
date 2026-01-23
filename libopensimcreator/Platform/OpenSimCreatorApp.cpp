@@ -9,8 +9,7 @@
 #include <liboscar/ui/tabs/tab_registry.h>
 #include <liboscar/utils/assertions.h>
 #include <liboscar/utils/c_string_view.h>
-#include <OpenSim/Simulation/Model/ModelVisualizer.h>
-#include <libopynsim/init.h>
+#include <libopynsim/opynsim.h>
 
 #include <array>
 #include <filesystem>
@@ -55,19 +54,6 @@ namespace
         {"panels/Result Model/enabled", true},
     });
 
-    void GloballySetOpenSimsGeometrySearchPath(const std::filesystem::path& geometryDir)
-    {
-        // globally set OpenSim's geometry search path
-        //
-        // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
-        // OpenSim implementation will look in these directories for that file
-
-        // TODO: detect and overwrite existing entries?
-        log_info("registering OpenSim geometry search path to use osc resources");
-        OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometryDir.string());
-        log_info("added geometry search path entry: %s", geometryDir.string().c_str());
-    }
-
     void InitializeOpenSimCreatorSpecificSettingDefaults(AppSettings& settings)
     {
         for (const auto& [setting_id, default_state] : c_default_panel_states) {
@@ -79,13 +65,16 @@ namespace
 
 bool osc::GloballyInitOpenSim()
 {
-    static const bool s_OpenSimInitialized = opyn::init();
+    static const bool s_OpenSimInitialized = []{
+        opyn::set_log_level(osc::LogLevel::info);  // The desktop app logs a little bit more by default
+        return opyn::init();
+    }();
     return s_OpenSimInitialized;
 }
 
 void osc::GloballyAddDirectoryToOpenSimGeometrySearchPath(const std::filesystem::path& p)
 {
-    GloballySetOpenSimsGeometrySearchPath(p);
+    opyn::add_geometry_directory(p);
 }
 
 const OpenSimCreatorApp& osc::OpenSimCreatorApp::get()

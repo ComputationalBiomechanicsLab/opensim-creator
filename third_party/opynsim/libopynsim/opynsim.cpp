@@ -1,14 +1,16 @@
-#include "init.h"
+#include "opynsim.h"
 
 #include <jam-plugin/Smith2018ArticularContactForce.h>
 #include <jam-plugin/Smith2018ContactMesh.h>
 #include <liboscar/platform/log.h>
+#include <liboscar/utils/conversion.h>
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Common/RegisterTypes_osimCommon.h>
 #include <OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.h>
 #include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
+#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Tools/RegisterTypes_osimTools.h>
 
 #if defined(WIN32)
@@ -26,14 +28,38 @@
 
 using namespace opyn;
 
+template<>
+struct osc::Converter<spdlog::level::level_enum, osc::LogLevel> {
+    osc::LogLevel operator()(spdlog::level::level_enum e) const
+    {
+        switch (e) {
+        case spdlog::level::level_enum::trace:    return osc::LogLevel::trace;
+        case spdlog::level::level_enum::debug:    return osc::LogLevel::debug;
+        case spdlog::level::level_enum::info:     return osc::LogLevel::info;
+        case spdlog::level::level_enum::warn:     return osc::LogLevel::warn;
+        case spdlog::level::level_enum::err:      return osc::LogLevel::err;
+        case spdlog::level::level_enum::critical: return osc::LogLevel::critical;
+        case spdlog::level::level_enum::off:      return osc::LogLevel::off;
+        default:                                  return osc::LogLevel::DEFAULT;
+        }
+    }
+};
+
+template<>
+struct osc::Converter<spdlog::string_view_t, std::string> {
+    std::string operator()(spdlog::string_view_t s) const { return {s.begin(), s.end()}; }
+};
+
 namespace
 {
     // An OpenSim log sink that sinks into the `oscar` application log.
     class OpenSimLogSink final : public OpenSim::LogSink {
-        void sinkImpl(const std::string& msg) final
+    protected:
+        void sink_it_(const spdlog::details::log_msg& msg) final
         {
-            osc::log_info("%s", msg.c_str());
+            osc::log_message(osc::to<osc::LogLevel>(msg.level), osc::to<std::string>(msg.payload));
         }
+        virtual void flush_() {}
     };
 
     void SetupOpenSimLogToUseOSCsLog()
@@ -146,10 +172,29 @@ namespace
     {
         [[maybe_unused]] static bool s_log_initialized = []()
         {
+            osc::global_default_logger()->set_level(osc::LogLevel::err);
             SetupOpenSimLogToUseOSCsLog();
             return true;
         }();
     }
+}
+
+void opyn::set_log_level(osc::LogLevel log_level)
+{
+    globally_ensure_log_is_default_initialized();
+    osc::global_default_logger()->set_level(log_level);
+}
+
+void opyn::add_geometry_directory(const std::filesystem::path& directory)
+{
+    // globally set OpenSim's geometry search path
+    //
+    // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
+    // OpenSim implementation will look in these directories for that file
+
+    // TODO: detect and overwrite existing entries?
+    OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(directory.string());
+    osc::log_info("added geometry search path entry: %s", directory.string().c_str());
 }
 
 bool opyn::init()
@@ -176,4 +221,9 @@ bool opyn::init()
     }();
 
     return s_osc_initialized;
+}
+
+ModelSpecification opyn::import_osim_file(const std::filesystem::path& osim_file_path)
+{
+    return ModelSpecification::from_osim_file(osim_file_path);
 }

@@ -1,1 +1,1 @@
-from opynsim._opynsim_native import hello_ui
+from opynsim._opynsim_native.ui import *

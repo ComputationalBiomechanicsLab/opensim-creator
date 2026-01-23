@@ -1,1 +1,1 @@
-from ._opynsim_native import solve_coefficients
+from ._opynsim_native.tps3d import *

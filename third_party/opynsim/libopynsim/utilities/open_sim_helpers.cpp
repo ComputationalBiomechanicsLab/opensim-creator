@@ -1,7 +1,7 @@
 #include "open_sim_helpers.h"
 
-#include <libopynsim/init.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
+#include <libopynsim/opynsim.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/plane.h>
 #include <liboscar/maths/transform.h>
