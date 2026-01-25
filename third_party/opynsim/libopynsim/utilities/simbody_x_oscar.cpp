@@ -13,9 +13,7 @@
 #include <SimTKcommon/internal/Transform.h>
 #include <SimTKcommon/SmallMatrix.h>
 
-using namespace osc;
-
-SimTK::Vec3 osc::Converter<Vector3, SimTK::Vec3>::operator()(const Vector3& v) const
+SimTK::Vec3 osc::Converter<osc::Vector3, SimTK::Vec3>::operator()(const osc::Vector3& v) const
 {
     return {
         static_cast<double>(v.x()),
@@ -24,12 +22,12 @@ SimTK::Vec3 osc::Converter<Vector3, SimTK::Vec3>::operator()(const Vector3& v) c
     };
 }
 
-SimTK::fVec3 Converter<Vector3, SimTK::fVec3>::operator()(const Vector3& v) const
+SimTK::fVec3 osc::Converter<osc::Vector3, SimTK::fVec3>::operator()(const osc::Vector3& v) const
 {
     return {v.x(), v.y(), v.z()};
 }
 
-SimTK::Vec3 osc::Converter<EulerAngles, SimTK::Vec3>::operator()(const EulerAngles& v) const
+SimTK::Vec3 osc::Converter<osc::EulerAngles, SimTK::Vec3>::operator()(const osc::EulerAngles& v) const
 {
     return {
         static_cast<double>(v.x().count()),
@@ -38,7 +36,7 @@ SimTK::Vec3 osc::Converter<EulerAngles, SimTK::Vec3>::operator()(const EulerAngl
     };
 }
 
-SimTK::Mat33 osc::Converter<Matrix3x3, SimTK::Mat33>::operator()(const Matrix3x3& m) const
+SimTK::Mat33 osc::Converter<osc::Matrix3x3, SimTK::Mat33>::operator()(const osc::Matrix3x3& m) const
 {
     return SimTK::Mat33 {
         static_cast<double>(m[0][0]), static_cast<double>(m[1][0]), static_cast<double>(m[2][0]),
@@ -47,7 +45,7 @@ SimTK::Mat33 osc::Converter<Matrix3x3, SimTK::Mat33>::operator()(const Matrix3x3
     };
 }
 
-SimTK::Inertia osc::Converter<Vector3, SimTK::Inertia>::operator()(const Vector3& v) const
+SimTK::Inertia osc::Converter<osc::Vector3, SimTK::Inertia>::operator()(const osc::Vector3& v) const
 {
     return {
         static_cast<double>(v[0]),
@@ -56,46 +54,46 @@ SimTK::Inertia osc::Converter<Vector3, SimTK::Inertia>::operator()(const Vector3
     };
 }
 
-SimTK::Transform osc::Converter<Transform, SimTK::Transform>::operator()(const Transform& t) const
+SimTK::Transform osc::Converter<osc::Transform, SimTK::Transform>::operator()(const osc::Transform& t) const
 {
     return SimTK::Transform{to<SimTK::Rotation>(t.rotation), to<SimTK::Vec3>(t.translation)};
 }
 
-SimTK::Rotation osc::Converter<Quaternion, SimTK::Rotation>::operator()(const Quaternion& q) const
+SimTK::Rotation osc::Converter<osc::Quaternion, SimTK::Rotation>::operator()(const osc::Quaternion& q) const
 {
-    return SimTK::Rotation{to<SimTK::Mat33>(matrix3x3_cast(q))};
+    return SimTK::Rotation{to<SimTK::Mat33>(osc::matrix3x3_cast(q))};
 }
 
-SimTK::Rotation osc::Converter<EulerAngles, SimTK::Rotation>::operator()(const EulerAngles& eulers) const
+SimTK::Rotation osc::Converter<osc::EulerAngles, SimTK::Rotation>::operator()(const EulerAngles& eulers) const
 {
     return to<SimTK::Rotation>(to_world_space_rotation_quaternion(eulers));
 }
 
-SimTK::Vec3 osc::Converter<Color, SimTK::Vec3>::operator()(const Color& color) const
+SimTK::Vec3 osc::Converter<osc::Color, SimTK::Vec3>::operator()(const osc::Color& color) const
 {
     return {color.r, color.g, color.b};
 }
 
-Vector3 osc::Converter<SimTK::Vec3, Vector3>::operator()(const SimTK::Vec3& v) const
+osc::Vector3 osc::Converter<SimTK::Vec3, osc::Vector3>::operator()(const SimTK::Vec3& v) const
 {
-    return Vector3{
+    return osc::Vector3{
         static_cast<float>(v[0]),
         static_cast<float>(v[1]),
         static_cast<float>(v[2]),
     };
 }
 
-Vector3 osc::Converter<SimTK::fVec3, Vector3>::operator()(const SimTK::fVec3& v) const
+osc::Vector3 osc::Converter<SimTK::fVec3, osc::Vector3>::operator()(const SimTK::fVec3& v) const
 {
-    return Vector3{v[0], v[1], v[2]};
+    return {v[0], v[1], v[2]};
 }
 
-Vector3 osc::Converter<SimTK::UnitVec3, Vector3>::operator()(const SimTK::UnitVec3& v) const
+osc::Vector3 osc::Converter<SimTK::UnitVec3, osc::Vector3>::operator()(const SimTK::UnitVec3& v) const
 {
-    return to<Vector3>(SimTK::Vec3{v});
+    return to<osc::Vector3>(SimTK::Vec3{v});
 }
 
-Matrix4x4 osc::Converter<SimTK::Transform, Matrix4x4>::operator()(const SimTK::Transform& t) const
+osc::Matrix4x4 osc::Converter<SimTK::Transform, osc::Matrix4x4>::operator()(const SimTK::Transform& t) const
 {
     Matrix4x4 m{};
 
@@ -136,7 +134,7 @@ Matrix4x4 osc::Converter<SimTK::Transform, Matrix4x4>::operator()(const SimTK::T
     return m;
 }
 
-Matrix3x3 osc::Converter<SimTK::Mat33, Matrix3x3>::operator()(const SimTK::Mat33& m) const
+osc::Matrix3x3 osc::Converter<SimTK::Mat33, osc::Matrix3x3>::operator()(const SimTK::Mat33& m) const
 {
     Matrix3x3 rv{};
     for (int row = 0; row < 3; ++row) {
@@ -148,13 +146,13 @@ Matrix3x3 osc::Converter<SimTK::Mat33, Matrix3x3>::operator()(const SimTK::Mat33
     return rv;
 }
 
-Matrix4x4 osc::Converter<SimTK::Rotation, Matrix4x4>::operator()(const SimTK::Rotation& r) const
+osc::Matrix4x4 osc::Converter<SimTK::Rotation, osc::Matrix4x4>::operator()(const SimTK::Rotation& r) const
 {
     const SimTK::Transform t{r};
     return to<Matrix4x4>(t);
 }
 
-Quaternion osc::Converter<SimTK::Rotation, Quaternion>::operator()(const SimTK::Rotation& r) const
+osc::Quaternion osc::Converter<SimTK::Rotation, osc::Quaternion>::operator()(const SimTK::Rotation& r) const
 {
     const SimTK::Quaternion q = r.convertRotationToQuaternion();
 
@@ -166,9 +164,9 @@ Quaternion osc::Converter<SimTK::Rotation, Quaternion>::operator()(const SimTK::
     };
 }
 
-EulerAngles osc::Converter<SimTK::Rotation, EulerAngles>::operator()(const SimTK::Rotation& r) const
+osc::EulerAngles osc::Converter<SimTK::Rotation, osc::EulerAngles>::operator()(const SimTK::Rotation& r) const
 {
-    return EulerAngles{to<Vector3>(r.convertRotationToBodyFixedXYZ())};
+    return osc::EulerAngles{to<Vector3>(r.convertRotationToBodyFixedXYZ())};
 }
 
 std::array<float, 6> osc::Converter<SimTK::Vec6, std::array<float, 6>>::operator()(const SimTK::Vec6& v) const
@@ -183,7 +181,10 @@ std::array<float, 6> osc::Converter<SimTK::Vec6, std::array<float, 6>>::operator
     };
 }
 
-Transform osc::Converter<SimTK::Transform, Transform>::operator()(const SimTK::Transform& t) const
+osc::Transform osc::Converter<SimTK::Transform, osc::Transform>::operator()(const SimTK::Transform& t) const
 {
-    return Transform{.rotation = to<Quaternion>(t.R()), .translation = to<Vector3>(t.p())};
+    return {
+        .rotation = to<Quaternion>(t.R()),
+        .translation = to<Vector3>(t.p()),
+    };
 }

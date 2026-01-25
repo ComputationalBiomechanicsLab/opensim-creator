@@ -21,18 +21,17 @@
 #include <span>
 #include <vector>
 
-using namespace osc;
 namespace rgs = std::ranges;
 
 // generic helpers
 namespace
 {
     // returns the contents of `vs` with `subtrahend` subtracted from each element
-    std::vector<Vector3> Subtract(
-        std::span<const Vector3> vs,
-        const Vector3& subtrahend)
+    std::vector<osc::Vector3> Subtract(
+        std::span<const osc::Vector3> vs,
+        const osc::Vector3& subtrahend)
     {
-        std::vector<Vector3> rv;
+        std::vector<osc::Vector3> rv;
         rv.reserve(vs.size());
         for (const auto& v : vs) {
             rv.push_back(v - subtrahend);
@@ -41,13 +40,13 @@ namespace
     }
 
     // returns the element-wise arithmetic mean of `vs`
-    Vector3 CalcMean(std::span<const Vector3> vs)
+    osc::Vector3 CalcMean(std::span<const osc::Vector3> vs)
     {
-        Vector3d accumulator{};
+        osc::Vector3d accumulator{};
         for (const auto& v : vs) {
             accumulator += v;
         }
-        return Vector3{accumulator / static_cast<double>(vs.size())};
+        return osc::Vector3{accumulator / static_cast<double>(vs.size())};
     }
 }
 
@@ -206,7 +205,7 @@ namespace
         const auto sortedIndices = [&unsorted]()
         {
             std::array<int, N> indices{};
-            cpp23::iota(indices, 0);
+            osc::cpp23::iota(indices, 0);
             rgs::sort(indices, rgs::less{}, [&unsorted](int v) { return unsorted.second(v, v); });
             return indices;
         }();
@@ -262,13 +261,13 @@ namespace
     //
     // - lhs: 3xN matrix (rows are x y z, and columns are each point in `vs`)
     // - rhs: Nx3 matrix (rows are each point in `vs`, columns are x, y, z)
-    SimTK::Mat33 CalcCovarianceMatrix(std::span<const Vector3> vs)
+    SimTK::Mat33 CalcCovarianceMatrix(std::span<const osc::Vector3> vs)
     {
         SimTK::Mat33 rv;
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 3; ++col) {
                 double accumulator = 0.0;
-                for (const Vector3& v : vs) {
+                for (const osc::Vector3& v : vs) {
                     accumulator += v[row] * v[col];
                 }
                 rv(row, col) = accumulator;
@@ -279,20 +278,20 @@ namespace
 
     // returns `v` projected onto a plane's 2D surface, where the
     // plane's surface has basis vectors `basis1` and `basis2`
-    Vector2 Project3DPointOntoPlane(
-        const Vector3& v,
-        const Vector3& basis1,
-        const Vector3& basis2)
+    osc::Vector2 Project3DPointOntoPlane(
+        const osc::Vector3& v,
+        const osc::Vector3& basis1,
+        const osc::Vector3& basis2)
     {
         return {dot(v, basis1), dot(v, basis2)};
     }
 
     // returns `surfacePoint` un-projected from the 2D surface of a plane, where
     // the plane's surface has basis vectors `basis1` and `basis2`
-    Vector3 Unproject2DPlanePointInto3D(
-        Vector2 planeSurfacePoint,
-        const Vector3& basis1,
-        const Vector3& basis2)
+    osc::Vector3 Unproject2DPlanePointInto3D(
+        osc::Vector2 planeSurfacePoint,
+        const osc::Vector3& basis1,
+        const osc::Vector3& basis2)
     {
         return planeSurfacePoint.x()*basis1 + planeSurfacePoint.y()*basis2;
     }
@@ -302,7 +301,7 @@ namespace
     //     - Ax^2 + By^2 + Cz^2 + 2Dxy + 2Exz + 2Fyz + 2Gx + 2Hy + 2Iz + J = 0
     //
     // see: https://nl.mathworks.com/matlabcentral/fileexchange/24693-ellipsoid-fit
-    std::array<double, 9> SolveEllipsoidAlgebraicForm(std::span<const Vector3> vs)
+    std::array<double, 9> SolveEllipsoidAlgebraicForm(std::span<const osc::Vector3> vs)
     {
         // this code is translated like-for-like with the MATLAB version
         // and was checked by comparing debugger output in MATLAB from
@@ -447,7 +446,7 @@ namespace
     }
 }
 
-Sphere osc::FitSphere(const Mesh& mesh)
+osc::Sphere opyn::FitSphere(const osc::Mesh& mesh)
 {
     // # Background Reading:
     //
@@ -506,9 +505,9 @@ Sphere osc::FitSphere(const Mesh& mesh)
     //     use least-squares to solve for `c`
 
     // get mesh data (care: `osc::Mesh`es are indexed)
-    const std::vector<Vector3> points = mesh.indexed_vertices();
+    const std::vector<osc::Vector3> points = mesh.indexed_vertices();
     if (points.empty()) {
-        return Sphere{{}, 1.0f};  // edge-case: no points in input mesh
+        return osc::Sphere{{}, 1.0f};  // edge-case: no points in input mesh
     }
 
     // create `f` and `A` (explained above)
@@ -516,9 +515,9 @@ Sphere osc::FitSphere(const Mesh& mesh)
     SimTK::Vector f(numPoints, 0.0);
     SimTK::Matrix A(numPoints, 4);
     for (int i = 0; i < numPoints; ++i) {
-        const Vector3 vert = points[i];
+        const osc::Vector3 vert = points[i];
 
-        f(i) = dot(vert, vert);  // x^2 + y^2 + z^2
+        f(i) = osc::dot(vert, vert);  // x^2 + y^2 + z^2
         A(i, 0) = 2.0f*vert[0];
         A(i, 1) = 2.0f*vert[1];
         A(i, 2) = 2.0f*vert[2];
@@ -535,13 +534,13 @@ Sphere osc::FitSphere(const Mesh& mesh)
     const double z0 = c[2];
     const double r2 = c[3] + x0*x0 + y0*y0 + z0*z0;
 
-    const Vector3 origin{Vector3d{x0, y0, z0}};
+    const osc::Vector3 origin{osc::Vector3d{x0, y0, z0}};
     const auto radius = static_cast<float>(sqrt(r2));
 
-    return Sphere{origin, radius};
+    return osc::Sphere{origin, radius};
 }
 
-Plane osc::FitPlane(const Mesh& mesh)
+osc::Plane opyn::FitPlane(const osc::Mesh& mesh)
 {
     // # Background Reading:
     //
@@ -600,50 +599,50 @@ Plane osc::FitPlane(const Mesh& mesh)
     // point on the plane's surface: mathematically, they're all the same plane
 
     // extract point cloud from mesh (osc::Meshes are indexed)
-    const std::vector<Vector3> vertices = mesh.indexed_vertices();
+    const std::vector<osc::Vector3> vertices = mesh.indexed_vertices();
 
     if (vertices.empty()) {
-        return Plane{{}, {0.0f, 1.0f, 0.0f}};  // edge-case: return unit plane
+        return osc::Plane{{}, {0.0f, 1.0f, 0.0f}};  // edge-case: return unit plane
     }
 
     // determine the xyz centroid of the point cloud
-    const Vector3 mean = CalcMean(vertices);
+    const osc::Vector3 mean = CalcMean(vertices);
 
     // shift point cloud such that the centroid is at the origin
-    const std::vector<Vector3> verticesReduced = Subtract(vertices, mean);
+    const std::vector<osc::Vector3> verticesReduced = Subtract(vertices, mean);
 
     // pack the vertices into a covariance matrix, ready for principal component analysis (PCA)
     const SimTK::Mat33 covarianceMatrix = CalcCovarianceMatrix(verticesReduced);
 
     // eigen analysis to yield [N, B1, B2]
     const SimTK::Mat33 eigenVectors = EigSorted(covarianceMatrix).first;
-    const auto normal = to<Vector3>(eigenVectors.col(0));
-    const auto basis1 = to<Vector3>(eigenVectors.col(1));
-    const auto basis2 = to<Vector3>(eigenVectors.col(2));
+    const auto normal = osc::to<osc::Vector3>(eigenVectors.col(0));
+    const auto basis1 = osc::to<osc::Vector3>(eigenVectors.col(1));
+    const auto basis2 = osc::to<osc::Vector3>(eigenVectors.col(2));
 
     // project points onto B1 and B2 (plane-space) and calculate the 2D bounding box
     // of them in plane-spae
-    const Rect bounds = bounding_rect_of(verticesReduced, [&basis1, &basis2](const Vector3& v)
+    const osc::Rect bounds = bounding_rect_of(verticesReduced, [&basis1, &basis2](const osc::Vector3& v)
     {
         return Project3DPointOntoPlane(v, basis1, basis2);
     });
 
     // calculate the midpoint of those bounds in plane-space
-    const Vector2 boundsMidpointInPlaneSpace = bounds.origin();
+    const osc::Vector2 boundsMidpointInPlaneSpace = bounds.origin();
 
     // un-project the plane-space midpoint back into mesh-space
-    const Vector3 boundsMidPointInReducedSpace = Unproject2DPlanePointInto3D(
+    const osc::Vector3 boundsMidPointInReducedSpace = Unproject2DPlanePointInto3D(
         boundsMidpointInPlaneSpace,
         basis1,
         basis2
     );
-    const Vector3 boundsMidPointInMeshSpace = boundsMidPointInReducedSpace + mean;
+    const osc::Vector3 boundsMidPointInMeshSpace = boundsMidPointInReducedSpace + mean;
 
     // return normal and boundsMidPointInMeshSpace
-    return Plane{boundsMidPointInMeshSpace, normal};
+    return osc::Plane{boundsMidPointInMeshSpace, normal};
 }
 
-Ellipsoid osc::FitEllipsoid(const Mesh& mesh)
+osc::Ellipsoid opyn::FitEllipsoid(const osc::Mesh& mesh)
 {
     // # Background Reading:
     //
@@ -669,7 +668,7 @@ Ellipsoid osc::FitEllipsoid(const Mesh& mesh)
     // but that doesn't mention using eigen analysis, which I imagine Yury is using
     // as a form of PCA?
 
-    const std::vector<Vector3> meshVertices = mesh.indexed_vertices();
+    const std::vector<osc::Vector3> meshVertices = mesh.indexed_vertices();
     OSC_ASSERT_ALWAYS(meshVertices.size() >= 9 && "there must be >= 9 indexed vertices in the mesh in order to solve the ellipsoid's algebreic form");
     const auto u = SolveEllipsoidAlgebraicForm(meshVertices);
     const auto v = SolveV(u);
@@ -698,9 +697,9 @@ Ellipsoid osc::FitEllipsoid(const Mesh& mesh)
     // system, because that's what SimTK etc. use
     RightHandify(evecs);
 
-    return Ellipsoid{
-        to<Vector3>(ellipsoidOrigin),
-        to<Vector3>(SimTK::sqrt(Reciporical(Diag(evals)))),
-        quaternion_cast(to<Matrix3x3>(evecs)),
+    return osc::Ellipsoid{
+        osc::to<osc::Vector3>(ellipsoidOrigin),
+        osc::to<osc::Vector3>(SimTK::sqrt(Reciporical(Diag(evals)))),
+        osc::quaternion_cast(osc::to<osc::Matrix3x3>(evecs)),
     };
 }

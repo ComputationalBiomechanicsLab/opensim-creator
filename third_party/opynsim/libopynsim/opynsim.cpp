@@ -59,7 +59,7 @@ namespace
         {
             osc::log_message(osc::to<osc::LogLevel>(msg.level), osc::to<std::string>(msg.payload));
         }
-        virtual void flush_() {}
+        void flush_() final {}
     };
 
     void SetupOpenSimLogToUseOSCsLog()

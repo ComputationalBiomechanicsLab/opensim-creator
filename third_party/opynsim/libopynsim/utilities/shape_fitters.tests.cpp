@@ -24,44 +24,43 @@
 #include <numeric>
 #include <vector>
 
-using namespace osc;
-using namespace osc::literals;
+using namespace opyn;
 
 TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 {
-    const Mesh emptyMesh;
-    const Sphere sphereFit = FitSphere(emptyMesh);
+    const osc::Mesh emptyMesh;
+    const osc::Sphere sphereFit = FitSphere(emptyMesh);
 
     ASSERT_FALSE(emptyMesh.has_vertices());
-    ASSERT_EQ(sphereFit.origin, Vector3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(sphereFit.origin, osc::Vector3(0.0f, 0.0f, 0.0f));
     ASSERT_EQ(sphereFit.radius, 1.0f);
 }
 
 TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
 {
     // generate a UV unit sphere
-    const Mesh sphereMesh = SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
-    const Sphere sphereFit = FitSphere(sphereMesh);
+    const osc::Mesh sphereMesh = osc::SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
+    const osc::Sphere sphereFit = FitSphere(sphereMesh);
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, Vector3{}, 0.000001f)));
-    ASSERT_TRUE(equal_within_absdiff(sphereFit.radius, 1.0f, 0.000001f));
+    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphereFit.origin, osc::Vector3{}, 0.000001f)));
+    ASSERT_TRUE(osc::equal_within_absdiff(sphereFit.radius, 1.0f, 0.000001f));
 }
 
 TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
 {
-    const Transform t = {
+    const osc::Transform t = {
         .scale = {3.25f, 3.25f, 3.25f},  // keep it spherical
-        .rotation = angle_axis(45_deg, normalize(Vector3{1.0f, 1.0f, 0.0f})),
+        .rotation = osc::angle_axis(osc::Degrees{45.0f}, osc::normalize(osc::Vector3{1.0f, 1.0f, 0.0f})),
         .translation = {7.0f, 3.0f, 1.5f},
     };
 
-    Mesh sphereMesh = SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
+    osc::Mesh sphereMesh = osc::SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
     sphereMesh.transform_vertices(t);
 
-    const Sphere sphereFit = FitSphere(sphereMesh);
+    const osc::Sphere sphereFit = FitSphere(sphereMesh);
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, t.translation, 0.000001f)));
-    ASSERT_TRUE(equal_within_reldiff(sphereFit.radius, t.scale.x(), 0.000001f));
+    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphereFit.origin, t.translation, 0.000001f)));
+    ASSERT_TRUE(osc::equal_within_reldiff(sphereFit.radius, t.scale.x(), 0.000001f));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -85,26 +84,26 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
 TEST(FitSphere, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
     // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr Sphere c_ExpectedSphere{{5.0133f, -27.43f, 164.2998f}, 7.8291f};
+    constexpr osc::Sphere c_ExpectedSphere{{5.0133f, -27.43f, 164.2998f}, 7.8291f};
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
         std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const Mesh mesh = LoadMeshViaSimbody(objPath);
-    const Sphere sphereFit = FitSphere(mesh);
+    const osc::Mesh mesh = osc::LoadMeshViaSimbody(objPath);
+    const osc::Sphere sphereFit = FitSphere(mesh);
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, c_ExpectedSphere.origin, 0.0001f)));
-    ASSERT_TRUE(equal_within_absdiff(sphereFit.radius, c_ExpectedSphere.radius, 0.0001f));
+    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphereFit.origin, c_ExpectedSphere.origin, 0.0001f)));
+    ASSERT_TRUE(osc::equal_within_absdiff(sphereFit.radius, c_ExpectedSphere.radius, 0.0001f));
 }
 
 TEST(FitPlane, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
 {
-    const Mesh emptyMesh;
-    const Plane planeFit = FitPlane(emptyMesh);
+    const osc::Mesh emptyMesh;
+    const osc::Plane planeFit = FitPlane(emptyMesh);
 
     ASSERT_FALSE(emptyMesh.has_vertices());
-    ASSERT_EQ(planeFit.origin, Vector3(0.0f, 0.0f, 0.0f));
-    ASSERT_EQ(planeFit.normal, Vector3(0.0f, 1.0f, 0.0f));
+    ASSERT_EQ(planeFit.origin, osc::Vector3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(planeFit.normal, osc::Vector3(0.0f, 1.0f, 0.0f));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -128,7 +127,7 @@ TEST(FitPlane, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
 TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
     // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr Plane c_ExpectedPlane =
+    constexpr osc::Plane c_ExpectedPlane =
     {
         {4.6138f, -24.0131f, 163.1295f},
         {0.2131f, 0.94495f, -0.24833f},
@@ -137,8 +136,8 @@ TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgor
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
         std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const Mesh mesh = LoadMeshViaSimbody(objPath);
-    const Plane planeFit = FitPlane(mesh);
+    const osc::Mesh mesh = osc::LoadMeshViaSimbody(objPath);
+    const osc::Plane planeFit = FitPlane(mesh);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(planeFit.origin, c_ExpectedPlane.origin, 0.0001f)));
     ASSERT_TRUE(all_of(equal_within_absdiff(planeFit.normal, c_ExpectedPlane.normal, 0.0001f)));
@@ -165,22 +164,22 @@ TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgor
 TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
     // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr Vector3 c_ExpectedOrigin = {4.41627617443540f, -28.2484366502307f, 165.041246898544f};
-    constexpr Vector3 c_ExpectedRadii = {9.39508101198322f,   8.71324627349633f,  6.71387132216324f};
+    constexpr osc::Vector3 c_ExpectedOrigin = {4.41627617443540f, -28.2484366502307f, 165.041246898544f};
+    constexpr osc::Vector3 c_ExpectedRadii = {9.39508101198322f,   8.71324627349633f,  6.71387132216324f};
     // OSC change: the _signs_ of these direction vectors might be different from the MATLAB script because
     // OSC's implementation also gurantees that the vectors are right-handed
-    constexpr auto c_ExpectedRadiiDirections = std::to_array<Vector3>({
-        Vector3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
-        Vector3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},
-        Vector3{0.855256483340491f, -0.510429677030215f, -0.0894309371016929f},
+    constexpr auto c_ExpectedRadiiDirections = std::to_array<osc::Vector3>({
+        osc::Vector3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
+        osc::Vector3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},
+        osc::Vector3{0.855256483340491f, -0.510429677030215f, -0.0894309371016929f},
     });
     constexpr float c_MaximumAbsoluteError = 0.0001f;
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
         std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const Mesh mesh = LoadMeshViaSimbody(objPath);
-    const Ellipsoid fit = FitEllipsoid(mesh);
+    const osc::Mesh mesh = osc::LoadMeshViaSimbody(objPath);
+    const osc::Ellipsoid fit = FitEllipsoid(mesh);
     const auto directions = axis_directions_of(fit);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(fit.origin, c_ExpectedOrigin, c_MaximumAbsoluteError)));
@@ -194,22 +193,22 @@ TEST(FitEllipsoid, ThrowsErrorIfGivenLessThan9Points)
 {
     const auto generateSphericalMeshWithNPoints = [](size_t n)
     {
-        Radians theta{0.0f};
-        Radians phi{0.0f};
+        osc::Radians theta{0.0f};
+        osc::Radians phi{0.0f};
         const float radius = 1.0f;
 
-        std::vector<Vector3> vertices(n);
-        for (Vector3& vertex : vertices) {
+        std::vector<osc::Vector3> vertices(n);
+        for (osc::Vector3& vertex : vertices) {
             vertex.x() = radius * sin(theta) * cos(phi);
             vertex.y() = radius * sin(theta);
             vertex.z() = radius * cos(theta) * cos(phi);
-            theta += 360_deg / static_cast<float>(n);
-            phi += 360_deg / static_cast<float>(n);
+            theta += osc::Degrees{360.0f} / static_cast<float>(n);
+            phi += osc::Degrees{360.0f} / static_cast<float>(n);
         }
         std::vector<uint16_t> indices(n);
         std::iota(indices.begin(), indices.end(), static_cast<uint16_t>(0));
 
-        Mesh m;
+        osc::Mesh m;
         m.set_vertices(vertices);
         m.set_indices(indices);
         return m;

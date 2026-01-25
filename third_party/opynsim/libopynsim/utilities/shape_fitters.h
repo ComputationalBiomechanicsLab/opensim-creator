@@ -6,9 +6,9 @@
 
 namespace osc { class Mesh; }
 
-namespace osc
+namespace opyn
 {
-    Sphere FitSphere(const Mesh&);
-    Plane FitPlane(const Mesh&);
-    Ellipsoid FitEllipsoid(const Mesh&);
+    osc::Sphere FitSphere(const osc::Mesh&);
+    osc::Plane FitPlane(const osc::Mesh&);
+    osc::Ellipsoid FitEllipsoid(const osc::Mesh&);
 }

@@ -2165,7 +2165,7 @@ bool osc::ActionFitSphereToMesh(ModelStatePair& model, const OpenSim::Mesh& open
     Sphere sphere;
     try {
         const Mesh mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
-        sphere = FitSphere(mesh);
+        sphere = opyn::FitSphere(mesh);
     }
     catch (const std::exception&) {
         std::throw_with_nested(std::runtime_error{"error detected while trying to fit a sphere to a mesh"});
@@ -2228,7 +2228,7 @@ bool osc::ActionFitEllipsoidToMesh(ModelStatePair& model, const OpenSim::Mesh& o
     Ellipsoid ellipsoid;
     try {
         const Mesh mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
-        ellipsoid = FitEllipsoid(mesh);
+        ellipsoid = opyn::FitEllipsoid(mesh);
     }
     catch (const std::exception&) {
         std::throw_with_nested(std::runtime_error{"error detected while trying to fit an ellipsoid to a mesh"});
@@ -2303,7 +2303,7 @@ bool osc::ActionFitPlaneToMesh(ModelStatePair& model, const OpenSim::Mesh& openS
     Plane plane;
     try {
         const Mesh mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
-        plane = FitPlane(mesh);
+        plane = opyn::FitPlane(mesh);
     }
     catch (const std::exception&) {
         std::throw_with_nested(std::runtime_error{"error detected while trying to fit a plane to a mesh"});
