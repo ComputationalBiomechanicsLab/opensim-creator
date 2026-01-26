@@ -1,4 +1,4 @@
-# This configuration file is specifically used by `oscar-demo-viewer`
+# This configuration file is specifically used by `oscar_demo_viewer`
 # to ensure it can be ran from the build directory
 
 # A filesystem path relative to this configuration file to the root

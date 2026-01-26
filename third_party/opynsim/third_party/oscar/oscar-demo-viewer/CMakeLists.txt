@@ -1,11 +1,11 @@
-add_executable(oscar-demo-viewer
+add_executable(oscar_demo_viewer
     oscar_demo_viewer.cpp
 )
-target_link_libraries(oscar-demo-viewer PUBLIC oscar_demos)
+target_link_libraries(oscar_demo_viewer PUBLIC oscar_demos)
 
 if(OSCAR_INSTALL)
     include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR, _INCLUDEDIR, etc.
-    install(TARGETS oscar-demo-viewer RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(TARGETS oscar_demo_viewer RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 # Development: Ensure an `osc.toml` file is available when running the demo
@@ -22,9 +22,9 @@ configure_file(
 # see: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html?highlight=runtime#genex:TARGET_RUNTIME_DLLS
 if(WIN32)
     add_custom_command(
-        TARGET oscar-demo-viewer
+        TARGET oscar_demo_viewer
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:oscar-demo-viewer> $<TARGET_RUNTIME_DLLS:oscar-demo-viewer>
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:oscar_demo_viewer> $<TARGET_RUNTIME_DLLS:oscar_demo_viewer>
         COMMAND_EXPAND_LISTS
     )
 endif()

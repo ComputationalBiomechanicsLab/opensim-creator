@@ -1,5 +1,5 @@
 opynsim
-Copyright 2025 Adam Kewley
+Copyright 2026 Adam Kewley
 License: Apache License Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 
 This product includes software developed by third parties, listed
@@ -11,7 +11,54 @@ oscar
 -----
 
 - https://github.com/opynsim/oscar
-- Version (approx): c703f9e70f051a5475e053d27fba41eb0afbe931
+- Version (approx): df822d0b7dfcc6a6ebe123e730c8849d3d90fbec
 - Licensed under the Apache 2.0 license
 - Copyright (c) 2025 Adam Kewley
 
+Eigen
+-----
+
+- https://gitlab.com/libeigen/eigen
+- Version: 5.0.1
+- License: Mozilla Public License Version 2.0
+- Copyright jointly owned by many developers
+
+mdspan
+------
+
+- https://github.com/kokkos/mdspan
+- Version: TODO
+- License: Apache License v2.0 with LLVM Exceptions
+- Copyright (2022) National Technology & Engineering Solutions of Sandia, LLC (NTESS)
+
+nanobind
+--------
+
+- https://github.com/wjakob/nanobind
+- Version: TODO
+- License: BSD 3-Clause "New" or "Revised" License
+- Copyright (c) 2022 Wenzel Jakob <wenzel.jakob@epfl.ch>, All rights reserved.
+
+OpenBLAS
+--------
+
+- https://github.com/OpenMathLib/OpenBLAS
+- Version: TODO
+- License: BSD 3-Clause "New" or "Revised" License
+- Copyright (c) 2011-2014, The OpenBLAS Project
+
+robin-map
+---------
+
+- https://github.com/Tessil/robin-map
+- Version: TODO
+- License: MIT License
+- Copyright (c) 2017 Thibaut Goetghebuer-Planchon <tessil@gmx.com>
+
+spdlog
+------
+
+- https://github.com/gabime/spdlog
+- Version: TODO
+- License: The MIT License (MIT)
+- Copyright (c) 2016 - present, Gabi Melman and spdlog contributors.
