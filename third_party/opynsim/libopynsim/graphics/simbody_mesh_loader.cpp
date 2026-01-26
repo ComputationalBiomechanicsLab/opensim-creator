@@ -7,7 +7,7 @@
 #include <liboscar/maths/triangle_functions.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/platform/file_dialog_filter.h>
-#include <liboscar/utils/assertions.h>
+#include <liboscar/utilities/assertions.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/PolygonalMesh.h>
 

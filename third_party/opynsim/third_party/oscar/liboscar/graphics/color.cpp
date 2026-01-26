@@ -4,7 +4,7 @@
 #include <liboscar/graphics/color_hsla.h>
 #include <liboscar/graphics/unorm8.h>
 #include <liboscar/maths/common_functions.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <algorithm>
 #include <cstdint>

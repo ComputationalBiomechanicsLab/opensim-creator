@@ -5,8 +5,8 @@
 
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/uid.h>
 
 #include <iosfwd>
 

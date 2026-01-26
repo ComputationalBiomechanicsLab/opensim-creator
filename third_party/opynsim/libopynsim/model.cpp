@@ -1,7 +1,7 @@
 #include "model.h"
 
 #include <libopynsim/model_state.h>
-#include <liboscar/utils/copy_on_upd_ptr.h>
+#include <liboscar/utilities/copy_on_upd_ptr.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 class opyn::Model::Impl final {

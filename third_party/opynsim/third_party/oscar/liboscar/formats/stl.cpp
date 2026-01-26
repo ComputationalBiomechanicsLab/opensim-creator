@@ -7,9 +7,9 @@
 #include <liboscar/maths/vector3.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/platform/strings.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/object_representation.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/object_representation.h>
 
 #include <algorithm>
 #include <cstddef>

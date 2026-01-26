@@ -2,10 +2,10 @@
 
 #include <libopynsim/graphics/custom_rendering_option_flags.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/conversion.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/conversion.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/enum_helpers.h>
 #include <liboscar/variant/variant.h>
 #include <liboscar/variant/variant_type.h>
 

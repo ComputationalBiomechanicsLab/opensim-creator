@@ -10,7 +10,7 @@
 #include <libopensimcreator/UI/RendererPerfTestingTab.h>
 #include <libopensimcreator/UI/TPS2DTab.h>
 
-#include <liboscar/utils/typelist.h>
+#include <liboscar/utilities/typelist.h>
 
 namespace osc
 {

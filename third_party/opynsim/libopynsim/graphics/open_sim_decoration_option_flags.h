@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/flags.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/flags.h>
 
 #include <cstddef>
 #include <cstdint>

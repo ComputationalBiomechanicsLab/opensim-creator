@@ -33,10 +33,10 @@
 #include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/ui/events/open_tab_event.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/filesystem_helpers.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/filesystem_helpers.h>
+#include <liboscar/utilities/uid.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>

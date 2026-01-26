@@ -35,9 +35,9 @@
 #include <liboscar/ui/widgets/redo_button.h>
 #include <liboscar/ui/widgets/undo_button.h>
 #include <liboscar/ui/widgets/window_menu.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/typelist.h>
-#include <liboscar/utils/undo_redo.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/typelist.h>
+#include <liboscar/utilities/undo_redo.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapCylinder.h>

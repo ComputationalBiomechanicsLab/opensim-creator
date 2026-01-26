@@ -4,7 +4,7 @@
 #include <libopynsim/documents/output_extractors/output_extractor_data_type_list.h>
 #include <libopynsim/documents/output_extractors/output_extractor_data_type_traits.h>
 
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 #include <array>
 

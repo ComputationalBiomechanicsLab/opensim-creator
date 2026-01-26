@@ -9,7 +9,7 @@
 #include <liboscar/maths/quaternion.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/copy_on_upd_shared_value.h>
+#include <liboscar/utilities/copy_on_upd_shared_value.h>
 
 #include <iosfwd>
 #include <optional>

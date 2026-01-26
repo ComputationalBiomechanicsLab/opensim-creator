@@ -34,8 +34,8 @@
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/vector2.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/std_variant_helpers.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/std_variant_helpers.h>
+#include <liboscar/utilities/string_name.h>
 
 #include <ankerl/unordered_dense.h>
 

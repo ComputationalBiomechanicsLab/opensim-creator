@@ -6,7 +6,7 @@
 #include <liboscar/maths/geometric_functions.h>
 #include <liboscar/platform/resource_stream.h>
 #include <liboscar/tests/testoscarconfig.h>
-#include <liboscar/utils/null_ostream.h>
+#include <liboscar/utilities/null_ostream.h>
 
 #include <gtest/gtest.h>
 

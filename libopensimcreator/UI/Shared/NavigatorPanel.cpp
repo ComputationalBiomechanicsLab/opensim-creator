@@ -9,9 +9,9 @@
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/string_helpers.h>
-#include <liboscar/utils/variable_length_array.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/string_helpers.h>
+#include <liboscar/utilities/variable_length_array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>

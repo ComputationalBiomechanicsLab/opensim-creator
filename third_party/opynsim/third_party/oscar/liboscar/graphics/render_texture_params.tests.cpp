@@ -5,7 +5,7 @@
 #include <liboscar/graphics/depth_stencil_render_buffer_format.h>
 #include <liboscar/graphics/texture_dimensionality.h>
 #include <liboscar/maths/vector2.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <gtest/gtest.h>
 

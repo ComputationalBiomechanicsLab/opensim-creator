@@ -1,8 +1,8 @@
 #pragma once
 
 #include <liboscar/platform/log_level.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/string_name.h>
 
 #include <chrono>
 

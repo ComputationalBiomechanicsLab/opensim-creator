@@ -3,7 +3,7 @@
 #include <liboscar/graphics/detail/cpu_data_type.h>
 #include <liboscar/graphics/detail/cpu_image_format.h>
 #include <liboscar/graphics/depth_stencil_render_buffer_format.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 
 namespace osc::detail
 {

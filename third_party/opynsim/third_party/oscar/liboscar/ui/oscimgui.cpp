@@ -52,16 +52,16 @@
 #include <liboscar/platform/window_id.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/ui/detail/imguizmo.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/conversion.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/flags.h>
-#include <liboscar/utils/perf.h>
-#include <liboscar/utils/scope_exit.h>
-#include <liboscar/utils/std_variant_helpers.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/conversion.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/flags.h>
+#include <liboscar/utilities/perf.h>
+#include <liboscar/utilities/scope_exit.h>
+#include <liboscar/utilities/std_variant_helpers.h>
+#include <liboscar/utilities/uid.h>
 
 #include <ankerl/unordered_dense.h>
 

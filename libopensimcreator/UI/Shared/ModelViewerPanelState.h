@@ -8,7 +8,7 @@
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/rect.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 #include <OpenSim/Common/ComponentPath.h>
 
 #include <optional>

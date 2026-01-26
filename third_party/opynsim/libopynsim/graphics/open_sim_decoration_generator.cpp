@@ -23,9 +23,9 @@
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/platform/log.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/perf.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/perf.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/ForceAdapter.h>

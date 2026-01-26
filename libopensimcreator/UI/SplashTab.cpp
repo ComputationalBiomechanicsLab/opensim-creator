@@ -34,8 +34,8 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
 #include <liboscar/ui/widgets/log_viewer.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/c_string_view.h>
 
 #include <filesystem>
 #include <memory>

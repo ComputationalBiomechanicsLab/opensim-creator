@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/utils/copy_on_upd_ptr.h>
+#include <liboscar/utilities/copy_on_upd_ptr.h>
 
 namespace opyn { class Model; }
 namespace SimTK { class State; }

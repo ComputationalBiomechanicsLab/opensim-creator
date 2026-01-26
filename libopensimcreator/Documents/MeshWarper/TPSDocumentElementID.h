@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementType.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 
-#include <liboscar/utils/hash_helpers.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/hash_helpers.h>
+#include <liboscar/utilities/uid.h>
 
 #include <cstddef>
 #include <functional>

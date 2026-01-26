@@ -22,9 +22,9 @@
 #include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/perf.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/perf.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>

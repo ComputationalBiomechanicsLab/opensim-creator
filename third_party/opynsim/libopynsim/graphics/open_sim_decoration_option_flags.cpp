@@ -1,7 +1,7 @@
 #include "open_sim_decoration_option_flags.h"
 
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 #include <array>
 #include <cstddef>

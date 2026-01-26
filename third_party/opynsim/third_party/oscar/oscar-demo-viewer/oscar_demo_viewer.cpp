@@ -6,7 +6,7 @@
 #include <liboscar/ui/tabs/tab.h>
 #include <liboscar/ui/tabs/tab_registry.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/assertions.h>
+#include <liboscar/utilities/assertions.h>
 #include <liboscar-demos/oscar_demos_tab_registry.h>
 
 #include <algorithm>

@@ -4,7 +4,7 @@
 #include <libopynsim/documents/output_extractors/output_value_extractor.h>
 #include <libopynsim/documents/state_view_with_metadata.h>
 
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 
 #include <concepts>
 #include <cstddef>

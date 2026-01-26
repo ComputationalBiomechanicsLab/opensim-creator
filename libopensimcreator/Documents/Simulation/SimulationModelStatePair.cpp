@@ -6,7 +6,7 @@
 #include <libopensimcreator/Documents/Simulation/SingleStateSimulation.h>
 
 #include <libopynsim/utilities/open_sim_helpers.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>

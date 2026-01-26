@@ -10,9 +10,9 @@
 #include <libopynsim/utilities/landmark_pair_3d.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/string_name.h>
 
 #include <cstddef>
 #include <optional>

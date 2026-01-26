@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utilities/hash_helpers.h>
 
 #include <array>
 #include <compare>

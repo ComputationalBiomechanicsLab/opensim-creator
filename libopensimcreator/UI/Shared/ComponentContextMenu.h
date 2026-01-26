@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/ui/popups/popup.h>
-#include <liboscar/utils/flags.h>
+#include <liboscar/utilities/flags.h>
 
 #include <memory>
 #include <string_view>

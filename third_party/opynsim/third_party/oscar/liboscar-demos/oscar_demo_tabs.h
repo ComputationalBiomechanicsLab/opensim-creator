@@ -39,7 +39,7 @@
 #include <liboscar-demos/mesh_gen_test_tab.h>
 #include <liboscar-demos/sub_mesh_tab.h>
 
-#include <liboscar/utils/typelist.h>
+#include <liboscar/utilities/typelist.h>
 
 namespace osc
 {

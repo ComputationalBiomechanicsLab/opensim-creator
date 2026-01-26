@@ -19,10 +19,10 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/log_viewer_panel.h>
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/std_variant_helpers.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/std_variant_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 #include <simmath/LinearAlgebra.h>
 
 #include <cmath>

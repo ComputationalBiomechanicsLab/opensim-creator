@@ -1,7 +1,7 @@
 #include "texture_format.h"
 
 #include <liboscar/graphics/texture_component_format.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 #include <gtest/gtest.h>
 

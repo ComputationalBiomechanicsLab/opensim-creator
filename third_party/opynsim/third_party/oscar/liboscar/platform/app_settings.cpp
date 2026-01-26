@@ -3,12 +3,12 @@
 #include <liboscar/platform/app_setting_scope.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/conversion.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/hash_helpers.h>
-#include <liboscar/utils/synchronized_value.h>
-#include <liboscar/utils/transparent_string_hasher.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/conversion.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/hash_helpers.h>
+#include <liboscar/utilities/synchronized_value.h>
+#include <liboscar/utilities/transparent_string_hasher.h>
 #include <liboscar/variant/variant.h>
 #include <liboscar/variant/variant_type.h>
 

@@ -17,9 +17,9 @@
 #include <liboscar/maths/vector4.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/string_helpers.h>
-#include <liboscar/utils/typelist.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/string_helpers.h>
+#include <liboscar/utilities/typelist.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Model.h>

@@ -1,6 +1,6 @@
 #include "shader_property_type.h"
 
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 #include <gtest/gtest.h>
 

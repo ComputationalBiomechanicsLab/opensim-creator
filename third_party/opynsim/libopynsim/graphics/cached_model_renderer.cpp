@@ -17,7 +17,7 @@
 #include <liboscar/maths/bvh.h>
 #include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/vector2.h>
-#include <liboscar/utils/perf.h>
+#include <liboscar/utilities/perf.h>
 
 #include <cstdint>
 #include <memory>

@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-#include <liboscar/utils/assertions.h>
+#include <liboscar/utilities/assertions.h>
 
 #include <sstream>
 #include <stdexcept>

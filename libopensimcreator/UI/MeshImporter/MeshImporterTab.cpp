@@ -55,10 +55,10 @@
 #include <liboscar/ui/tabs/tab_private.h>
 #include <liboscar/ui/widgets/camera_view_axes.h>
 #include <liboscar/ui/widgets/log_viewer.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/scope_exit.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/scope_exit.h>
+#include <liboscar/utilities/uid.h>
 
 #include <cstddef>
 #include <filesystem>

@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/MeshImporter/MIObject.h>
 
 #include <liboscar/graphics/scene/scene_decoration_flags.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <concepts>
 #include <optional>

@@ -4,7 +4,7 @@
 
 #include <liboscar/maths/closed_interval.h>
 #include <liboscar/maths/normalized.h>
-#include <liboscar/utils/chrono_helpers.h>
+#include <liboscar/utilities/chrono_helpers.h>
 
 namespace osc
 {

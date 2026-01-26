@@ -3,7 +3,7 @@
 #include <libopynsim/documents/state_view_with_metadata.h>
 
 #include <liboscar/maths/constants.h>
-#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utilities/hash_helpers.h>
 #include <simbody/internal/MultibodySystem.h>
 
 #include <optional>

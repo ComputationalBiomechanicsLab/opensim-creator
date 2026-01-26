@@ -7,7 +7,7 @@
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <filesystem>
 #include <iosfwd>

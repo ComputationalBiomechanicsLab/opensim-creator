@@ -1,8 +1,8 @@
 #include "log_level.h"
 
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <algorithm>
 #include <array>

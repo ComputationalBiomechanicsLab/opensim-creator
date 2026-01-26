@@ -4,10 +4,10 @@
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 #include <libopynsim/documents/output_extractors/output_extractor_data_type.h>
 
-#include <liboscar/utils/conversion.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utilities/conversion.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/hash_helpers.h>
 
 #include <cstddef>
 #include <sstream>

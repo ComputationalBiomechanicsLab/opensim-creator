@@ -2,8 +2,8 @@
 
 #include <libopynsim/documents/output_extractors/output_value_extractor.h>
 
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/hash_helpers.h>
 
 #include <cstddef>
 

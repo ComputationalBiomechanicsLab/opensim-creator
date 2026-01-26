@@ -6,7 +6,7 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
 #include <liboscar/ui/popups/popup_private.h>
-#include <liboscar/utils/filesystem_helpers.h>
+#include <liboscar/utilities/filesystem_helpers.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <SimTKcommon/SmallMatrix.h>
 

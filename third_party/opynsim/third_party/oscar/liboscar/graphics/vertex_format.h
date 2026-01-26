@@ -3,7 +3,7 @@
 #include <liboscar/graphics/vertex_attribute.h>
 #include <liboscar/graphics/vertex_attribute_descriptor.h>
 #include <liboscar/shims/cpp23/ranges.h>
-#include <liboscar/utils/algorithms.h>
+#include <liboscar/utilities/algorithms.h>
 
 #include <cstddef>
 #include <initializer_list>

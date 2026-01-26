@@ -3,7 +3,7 @@
 #include <libopynsim/model_state.h>
 #include <libopynsim/model_state_stage.h>
 
-#include <liboscar/utils/copy_on_upd_ptr.h>
+#include <liboscar/utilities/copy_on_upd_ptr.h>
 
 namespace OpenSim { class Model; }
 

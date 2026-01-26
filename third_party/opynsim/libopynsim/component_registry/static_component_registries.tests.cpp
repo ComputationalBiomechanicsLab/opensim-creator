@@ -4,7 +4,7 @@
 #include <libopynsim/component_registry/component_registry.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <libopynsim/opynsim.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Force.h>

@@ -14,7 +14,7 @@ import os
 import re
 
 _blacklisted_directories = {'resources', '__pycache__', '_static'}
-_default_directories = ['hellooscar', 'liboscar', 'liboscar-demos', 'scripts']
+_default_directories = ['hellooscar', 'liboscar', 'liboscar-demos', "oscar-demo-viewer", 'scripts']
 
 def num_leading_tabs(s):
     rv = 0

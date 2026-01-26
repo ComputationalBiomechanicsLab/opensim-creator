@@ -1,6 +1,6 @@
 #include "resource_directory_entry.h"
 
-#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utilities/hash_helpers.h>
 
 #include <ostream>
 

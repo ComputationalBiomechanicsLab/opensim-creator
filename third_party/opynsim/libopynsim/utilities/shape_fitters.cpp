@@ -10,7 +10,7 @@
 #include <liboscar/maths/vector2.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/shims/cpp23/numeric.h>
-#include <liboscar/utils/assertions.h>
+#include <liboscar/utilities/assertions.h>
 #include <simmath/LinearAlgebra.h>
 #include <SimTKcommon/internal/VectorMath.h>
 

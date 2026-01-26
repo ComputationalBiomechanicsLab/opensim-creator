@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopynsim/utilities/landmark_pair_3d.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/string_name.h>
 
 namespace osc
 {

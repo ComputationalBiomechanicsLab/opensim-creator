@@ -8,7 +8,7 @@
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/maths/vector_functions.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <iostream>
 #include <string>

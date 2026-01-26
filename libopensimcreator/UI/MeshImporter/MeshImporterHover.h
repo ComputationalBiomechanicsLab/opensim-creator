@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
 
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 namespace osc::mi
 {

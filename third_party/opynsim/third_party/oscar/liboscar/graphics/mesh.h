@@ -11,8 +11,8 @@
 #include <liboscar/maths/vector2.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/maths/vector4.h>
-#include <liboscar/utils/copy_on_upd_shared_value.h>
-#include <liboscar/utils/object_representation.h>
+#include <liboscar/utilities/copy_on_upd_shared_value.h>
+#include <liboscar/utilities/object_representation.h>
 
 #include <cstddef>
 #include <cstdint>

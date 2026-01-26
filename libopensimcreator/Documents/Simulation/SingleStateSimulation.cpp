@@ -4,8 +4,8 @@
 #include <libopensimcreator/Documents/ParamBlock.h>
 
 #include <libopynsim/utilities/open_sim_helpers.h>
-#include <liboscar/utils/synchronized_value.h>
-#include <liboscar/utils/synchronized_value_guard.h>
+#include <liboscar/utilities/synchronized_value.h>
+#include <liboscar/utilities/synchronized_value_guard.h>
 
 using namespace osc;
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/material_property_value_types.h>
-#include <liboscar/utils/typelist.h>
+#include <liboscar/utilities/typelist.h>
 
 namespace osc
 {

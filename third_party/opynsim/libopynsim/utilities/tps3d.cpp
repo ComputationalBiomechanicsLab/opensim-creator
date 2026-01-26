@@ -1,8 +1,8 @@
 #include "tps3d.h"
 
 #include <liboscar/graphics/mesh.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/perf.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/perf.h>
 #include <simmath/LinearAlgebra.h>
 #include <SimTKcommon/internal/Vec.h>
 

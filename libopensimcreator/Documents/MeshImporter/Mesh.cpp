@@ -10,7 +10,7 @@
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/aabb_functions.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <filesystem>
 #include <ostream>

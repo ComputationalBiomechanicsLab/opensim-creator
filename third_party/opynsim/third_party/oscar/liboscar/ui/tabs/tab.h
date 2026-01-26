@@ -2,7 +2,7 @@
 
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/tabs/tab_save_result.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <future>
 #include <memory>

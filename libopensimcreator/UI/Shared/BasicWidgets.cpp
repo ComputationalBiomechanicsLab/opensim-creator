@@ -40,7 +40,7 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/widgets/camera_view_axes.h>
 #include <liboscar/ui/widgets/icon_with_menu.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Simulation/Model/Frame.h>

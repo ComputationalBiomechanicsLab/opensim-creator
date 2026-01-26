@@ -9,7 +9,7 @@
 #include <liboscar/maths/vector2.h>
 #include <liboscar/maths/vector4.h>
 #include <liboscar/tests/test_helpers.h>
-#include <liboscar/utils/object_representation.h>
+#include <liboscar/utilities/object_representation.h>
 
 #include <gtest/gtest.h>
 

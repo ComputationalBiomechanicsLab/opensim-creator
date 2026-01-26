@@ -1,7 +1,7 @@
 #include "class.h"
 
 #include <liboscar/dom/property_info.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/string_name.h>
 #include <liboscar/variant/variant.h>
 
 #include <gtest/gtest.h>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/lifetimed_ptr.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/lifetimed_ptr.h>
 
 #include <memory>
 #include <string_view>

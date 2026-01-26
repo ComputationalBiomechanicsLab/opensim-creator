@@ -8,7 +8,7 @@
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <memory>

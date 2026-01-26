@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <liboscar/maths/constants.h>
-#include <liboscar/utils/algorithms.h>
+#include <liboscar/utilities/algorithms.h>
 
 using namespace osc;
 

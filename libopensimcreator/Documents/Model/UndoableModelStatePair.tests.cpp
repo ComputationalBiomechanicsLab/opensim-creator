@@ -10,7 +10,7 @@
 #include <liboscar/formats/dae.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
-#include <liboscar/utils/null_ostream.h>
+#include <liboscar/utilities/null_ostream.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/Model.h>

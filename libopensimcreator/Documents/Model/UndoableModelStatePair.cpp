@@ -5,10 +5,10 @@
 
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/platform/log.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/perf.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/perf.h>
+#include <liboscar/utilities/uid.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/PropertyObjArray.h>

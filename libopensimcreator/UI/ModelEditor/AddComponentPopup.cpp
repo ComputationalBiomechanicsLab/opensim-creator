@@ -14,8 +14,8 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
 #include <liboscar/ui/popups/popup_private.h>
-#include <liboscar/utils/exception_helpers.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/exception_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>

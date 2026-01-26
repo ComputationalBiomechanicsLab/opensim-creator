@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopynsim/documents/model/versioned_component_accessor.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <filesystem>
 #include <memory>

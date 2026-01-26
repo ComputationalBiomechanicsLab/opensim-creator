@@ -12,10 +12,10 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
 #include <liboscar/ui/popups/popup_private.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>

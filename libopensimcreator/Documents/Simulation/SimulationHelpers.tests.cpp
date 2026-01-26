@@ -7,7 +7,7 @@
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/formats/csv.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <array>

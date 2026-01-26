@@ -1,7 +1,7 @@
 #include "log.h"
 
 #include <liboscar/platform/log_sink.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 
 #include <iostream>
 #include <mutex>

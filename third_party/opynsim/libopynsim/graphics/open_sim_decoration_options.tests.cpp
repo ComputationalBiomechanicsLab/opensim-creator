@@ -1,8 +1,8 @@
 #include "open_sim_decoration_options.h"
 
 #include <gtest/gtest.h>
-#include <liboscar/utils/conversion.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/conversion.h>
+#include <liboscar/utilities/string_helpers.h>
 #include <liboscar/variant/variant.h>
 
 #include <string_view>

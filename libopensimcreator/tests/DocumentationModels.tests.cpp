@@ -9,7 +9,7 @@
 #include <libopynsim/graphics/open_sim_decoration_options.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
-#include <liboscar/utils/filesystem_helpers.h>
+#include <liboscar/utilities/filesystem_helpers.h>
 
 #include <array>
 #include <filesystem>

@@ -8,7 +8,7 @@
 #include <libopynsim/opynsim.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/shims/cpp23/ranges.h>
-#include <liboscar/utils/assertions.h>
+#include <liboscar/utilities/assertions.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Ground.h>

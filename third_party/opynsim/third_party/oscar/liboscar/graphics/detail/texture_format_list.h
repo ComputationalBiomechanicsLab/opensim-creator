@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/texture_format.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 namespace osc::detail
 {

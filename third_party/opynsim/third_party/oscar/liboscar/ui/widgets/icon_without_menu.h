@@ -2,7 +2,7 @@
 
 #include <liboscar/maths/vector2.h>
 #include <liboscar/ui/icon.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 
 #include <string>
 

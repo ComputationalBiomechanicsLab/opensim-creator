@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <cstddef>

@@ -40,10 +40,10 @@
 #include <liboscar/ui/popups/popup_manager.h>
 #include <liboscar/ui/tabs/error_tab.h>
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/exception_helpers.h>
-#include <liboscar/utils/file_change_poller.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/exception_helpers.h>
+#include <liboscar/utilities/file_change_poller.h>
+#include <liboscar/utilities/uid.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <chrono>

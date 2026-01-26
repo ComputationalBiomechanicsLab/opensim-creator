@@ -4,8 +4,8 @@
 
 #include <liboscar/formats/csv.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/std_variant_helpers.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/std_variant_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <algorithm>
 #include <cstddef>

@@ -12,7 +12,7 @@
 
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <memory>
 #include <optional>

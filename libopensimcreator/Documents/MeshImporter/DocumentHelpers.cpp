@@ -13,10 +13,10 @@
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/shims/cpp23/ranges.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/std_variant_helpers.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/std_variant_helpers.h>
+#include <liboscar/utilities/uid.h>
 
 #include <sstream>
 #include <stdexcept>

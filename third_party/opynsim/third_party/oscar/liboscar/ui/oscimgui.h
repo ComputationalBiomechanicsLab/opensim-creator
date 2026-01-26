@@ -15,10 +15,10 @@
 #include <liboscar/platform/key.h>
 #include <liboscar/platform/key_combination.h>
 #include <liboscar/platform/resource_path.h>
-#include <liboscar/utils/copy_on_upd_ptr.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/flags.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/copy_on_upd_ptr.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/flags.h>
+#include <liboscar/utilities/uid.h>
 
 #include <concepts>
 #include <cstdarg>

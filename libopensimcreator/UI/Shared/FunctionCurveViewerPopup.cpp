@@ -7,7 +7,7 @@
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
-#include <liboscar/utils/algorithms.h>
+#include <liboscar/utilities/algorithms.h>
 #include <OpenSim/Common/Function.h>
 
 #include <array>

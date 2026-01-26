@@ -7,7 +7,7 @@
 #include <liboscar/maths/vector3.h>
 #include <liboscar/maths/vector4.h>
 #include <liboscar/tests/test_helpers.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <gtest/gtest.h>
 

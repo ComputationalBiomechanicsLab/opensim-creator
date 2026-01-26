@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <optional>
 

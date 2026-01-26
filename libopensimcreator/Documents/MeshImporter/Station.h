@@ -7,7 +7,7 @@
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <iosfwd>
 #include <stdexcept>

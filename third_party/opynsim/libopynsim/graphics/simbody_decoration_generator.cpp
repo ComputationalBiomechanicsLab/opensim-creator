@@ -11,7 +11,7 @@
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/platform/log.h>
-#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utilities/hash_helpers.h>
 #include <simbody/internal/common.h>
 #include <simbody/internal/MobilizedBody.h>
 #include <simbody/internal/SimbodyMatterSubsystem.h>

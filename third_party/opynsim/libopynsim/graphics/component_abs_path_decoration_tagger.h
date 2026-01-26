@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/string_name.h>
 
 namespace OpenSim { class Component; }
 namespace osc { struct SceneDecoration; }

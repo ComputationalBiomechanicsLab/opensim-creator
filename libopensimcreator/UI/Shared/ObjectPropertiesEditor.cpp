@@ -19,9 +19,9 @@
 #include <liboscar/ui/events/open_panel_event.h>
 #include <liboscar/ui/events/open_popup_event.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/string_helpers.h>
-#include <liboscar/utils/typelist.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/string_helpers.h>
+#include <liboscar/utilities/typelist.h>
 #include <OpenSim/Actuators/ActiveForceLengthCurve.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>

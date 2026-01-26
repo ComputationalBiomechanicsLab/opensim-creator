@@ -9,7 +9,7 @@
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 namespace osc::mi
 {

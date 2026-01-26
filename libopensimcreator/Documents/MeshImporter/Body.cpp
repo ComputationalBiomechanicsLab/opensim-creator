@@ -6,7 +6,7 @@
 
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <ostream>
 #include <string>

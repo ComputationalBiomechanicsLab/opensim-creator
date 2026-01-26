@@ -24,8 +24,8 @@
 #include <liboscar/maths/tetrahedron.h>
 #include <liboscar/maths/triangle.h>
 #include <liboscar/maths/triangle_functions.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/assertions.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/assertions.h>
 
 #include <cmath>
 #include <algorithm>

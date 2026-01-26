@@ -22,8 +22,8 @@
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/events/close_tab_event.h>
 #include <liboscar/ui/popups/popup_manager.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/uid.h>
 
 #include <concepts>
 #include <memory>

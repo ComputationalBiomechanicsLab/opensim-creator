@@ -50,7 +50,7 @@
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/transform_functions.h>
-#include <liboscar/utils/scope_exit.h>
+#include <liboscar/utilities/scope_exit.h>
 
 #include <functional>
 #include <limits>

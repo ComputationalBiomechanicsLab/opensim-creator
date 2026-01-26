@@ -2,7 +2,7 @@
 #include <_opynsim_native/ui.h>
 
 #include <liboscar/platform/log_level.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
 #include <libopynsim/model.h>
 #include <libopynsim/model_specification.h>
 #include <libopynsim/model_state.h>

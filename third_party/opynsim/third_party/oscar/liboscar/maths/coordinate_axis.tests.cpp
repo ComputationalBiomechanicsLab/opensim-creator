@@ -2,7 +2,7 @@
 
 #include <liboscar/maths/geometric_functions.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <gtest/gtest.h>
 

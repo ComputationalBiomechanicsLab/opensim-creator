@@ -4,7 +4,7 @@
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/tests/testoscarconfig.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <gtest/gtest.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/string_name.h>
 
 #include <cstddef>
 #include <functional>

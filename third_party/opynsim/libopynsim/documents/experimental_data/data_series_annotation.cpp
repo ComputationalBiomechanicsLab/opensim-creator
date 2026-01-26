@@ -6,7 +6,7 @@
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/closed_interval.h>
 #include <liboscar/maths/quaternion_functions.h>
-#include <liboscar/utils/assertions.h>
+#include <liboscar/utilities/assertions.h>
 #include <OpenSim/Common/Storage.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 

@@ -5,8 +5,8 @@
 
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Force.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/hash_helpers.h>
 
 using namespace opyn;
 

@@ -4,7 +4,7 @@
 
 #include <libopynsim/documents/landmarks/named_landmark.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <optional>
 #include <span>

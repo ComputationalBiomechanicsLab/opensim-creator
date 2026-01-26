@@ -9,8 +9,8 @@
 #include <libopensimcreator/Documents/ParamBlock.h>
 
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>
-#include <liboscar/utils/synchronized_value.h>
-#include <liboscar/utils/synchronized_value_guard.h>
+#include <liboscar/utilities/synchronized_value.h>
+#include <liboscar/utilities/synchronized_value_guard.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>

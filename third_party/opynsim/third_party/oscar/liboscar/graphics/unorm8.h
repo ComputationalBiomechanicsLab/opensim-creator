@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/unorm.h>
-#include <liboscar/utils/conversion.h>
+#include <liboscar/utilities/conversion.h>
 
 #include <cstddef>
 #include <cstdint>

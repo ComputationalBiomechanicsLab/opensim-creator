@@ -6,7 +6,7 @@
 #include <liboscar/maths/matrix.h>
 #include <liboscar/maths/qua.h>
 #include <liboscar/maths/vector.h>
-#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utilities/hash_helpers.h>
 
 #include <concepts>
 #include <cstddef>

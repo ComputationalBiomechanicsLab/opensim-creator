@@ -7,7 +7,7 @@
 #include <liboscar/maths/line_segment.h>
 #include <liboscar/maths/triangle.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 #include <cstddef>
 #include <cstdint>

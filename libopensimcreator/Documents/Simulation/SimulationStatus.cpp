@@ -1,7 +1,7 @@
 #include "SimulationStatus.h"
 
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 #include <array>
 #include <span>

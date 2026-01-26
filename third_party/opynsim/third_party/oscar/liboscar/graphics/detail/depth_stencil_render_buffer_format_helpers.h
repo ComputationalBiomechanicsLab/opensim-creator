@@ -4,8 +4,8 @@
 #include <liboscar/graphics/detail/cpu_image_format.h>
 #include <liboscar/graphics/detail/depth_stencil_render_buffer_format_list.h>
 #include <liboscar/graphics/detail/depth_stencil_render_buffer_format_traits.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 #include <array>
 

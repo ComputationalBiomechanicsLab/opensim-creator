@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/vertex_attribute.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 namespace osc::detail
 {

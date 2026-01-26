@@ -12,7 +12,7 @@
 #include <liboscar/graphics/geometries/tetrahedron_geometry.h>
 #include <liboscar/graphics/geometries/torus_geometry.h>
 #include <liboscar/graphics/geometries/torus_knot_geometry.h>
-#include <liboscar/utils/typelist.h>
+#include <liboscar/utilities/typelist.h>
 
 namespace osc
 {

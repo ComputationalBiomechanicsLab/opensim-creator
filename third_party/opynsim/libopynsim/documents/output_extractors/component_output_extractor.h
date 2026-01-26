@@ -4,8 +4,8 @@
 #include <libopynsim/documents/output_extractors/output_extractor.h>
 #include <libopynsim/documents/output_extractors/output_value_extractor.h>
 
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/clone_ptr.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/clone_ptr.h>
 
 #include <cstddef>
 

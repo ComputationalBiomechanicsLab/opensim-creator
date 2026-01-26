@@ -3,7 +3,7 @@
 #include <liboscar/graphics/color_component.h>
 #include <liboscar/maths/common_functions.h>
 #include <liboscar/maths/vector.h>
-#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utilities/hash_helpers.h>
 
 #include <algorithm>
 #include <concepts>

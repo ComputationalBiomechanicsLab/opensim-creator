@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Model/ModelStatePairWithSharedEnvironment.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <memory>
 

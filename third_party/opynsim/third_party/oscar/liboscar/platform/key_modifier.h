@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/utils/flags.h>
+#include <liboscar/utilities/flags.h>
 
 #include <cstdint>
 

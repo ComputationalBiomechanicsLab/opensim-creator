@@ -15,7 +15,7 @@
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <cstddef>
 #include <sstream>

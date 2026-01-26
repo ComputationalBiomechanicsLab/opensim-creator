@@ -18,9 +18,9 @@
 #include <liboscar/platform/native_filesystem.h>
 #include <liboscar/platform/resource_loader.h>
 #include <liboscar/platform/resource_path.h>
-#include <liboscar/utils/hash_helpers.h>
-#include <liboscar/utils/synchronized_value.h>
-#include <liboscar/utils/type_info_reference.h>
+#include <liboscar/utilities/hash_helpers.h>
+#include <liboscar/utilities/synchronized_value.h>
+#include <liboscar/utilities/type_info_reference.h>
 
 #include <ankerl/unordered_dense.h>
 

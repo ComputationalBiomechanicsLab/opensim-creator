@@ -2,7 +2,7 @@
 
 #include <SimTKcommon/internal/State.h>
 
-#include <liboscar/utils/algorithms.h>
+#include <liboscar/utilities/algorithms.h>
 
 #include <chrono>
 #include <memory>

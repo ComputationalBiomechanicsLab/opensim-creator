@@ -13,7 +13,7 @@
 #include <liboscar/maths/ray.h>
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/vector2.h>
-#include <liboscar/utils/perf.h>
+#include <liboscar/utilities/perf.h>
 
 #include <algorithm>
 #include <optional>

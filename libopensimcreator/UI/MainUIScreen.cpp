@@ -26,11 +26,11 @@
 #include <liboscar/ui/tabs/screenshot_tab.h>
 #include <liboscar/ui/tabs/tab.h>
 #include <liboscar/ui/tabs/tab_registry.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/conversion.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/perf.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/conversion.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/perf.h>
+#include <liboscar/utilities/uid.h>
 
 #include <algorithm>
 #include <chrono>

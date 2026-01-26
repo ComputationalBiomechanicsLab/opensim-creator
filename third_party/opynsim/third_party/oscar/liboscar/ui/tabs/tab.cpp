@@ -1,7 +1,7 @@
 #include "tab.h"
 
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <future>
 #include <memory>

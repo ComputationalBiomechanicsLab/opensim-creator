@@ -2,7 +2,7 @@
 
 #include <liboscar/graphics/color_space.h>
 #include <liboscar/maths/vector2.h>
-#include <liboscar/utils/assertions.h>
+#include <liboscar/utilities/assertions.h>
 
 #include <lunasvg.h>
 

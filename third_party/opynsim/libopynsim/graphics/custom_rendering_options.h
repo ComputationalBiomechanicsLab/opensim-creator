@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopynsim/graphics/custom_rendering_option_flags.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 #include <liboscar/variant/variant.h>
 
 #include <cstddef>

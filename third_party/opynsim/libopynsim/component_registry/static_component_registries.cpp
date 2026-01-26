@@ -5,7 +5,7 @@
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <libopynsim/opynsim.h>
 
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Actuators/PointToPointActuator.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>

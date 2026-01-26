@@ -6,8 +6,8 @@
 #include <liboscar/platform/app_metadata.h>
 #include <liboscar/tests/test_helpers.h>
 #include <liboscar/tests/testoscarconfig.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <gtest/gtest.h>
 

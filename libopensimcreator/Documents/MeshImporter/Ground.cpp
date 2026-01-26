@@ -5,8 +5,8 @@
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
 #include <libopensimcreator/Platform/msmicons.h>
 
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/uid.h>
 
 #include <iostream>
 

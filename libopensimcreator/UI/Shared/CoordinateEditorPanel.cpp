@@ -13,8 +13,8 @@
 #include <liboscar/ui/events/open_popup_event.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/c_string_view.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 

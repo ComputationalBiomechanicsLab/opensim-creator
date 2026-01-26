@@ -2,7 +2,7 @@
 
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/shader.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/string_name.h>
 
 #include <string_view>
 

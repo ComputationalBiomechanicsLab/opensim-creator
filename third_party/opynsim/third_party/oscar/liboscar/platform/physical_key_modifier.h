@@ -1,8 +1,8 @@
 #pragma once
 
 #include <liboscar/platform/key_modifier.h>
-#include <liboscar/utils/conversion.h>
-#include <liboscar/utils/flags.h>
+#include <liboscar/utilities/conversion.h>
+#include <liboscar/utilities/flags.h>
 
 #include <cstdint>
 

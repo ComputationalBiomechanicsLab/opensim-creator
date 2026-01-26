@@ -1,6 +1,6 @@
 #include "muscle_sizing_style.h"
 
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 #include <array>
 #include <cstddef>

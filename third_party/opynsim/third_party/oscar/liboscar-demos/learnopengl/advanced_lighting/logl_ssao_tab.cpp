@@ -17,7 +17,7 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/perf_panel.h>
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/object_representation.h>
+#include <liboscar/utilities/object_representation.h>
 
 #include <array>
 #include <cstddef>

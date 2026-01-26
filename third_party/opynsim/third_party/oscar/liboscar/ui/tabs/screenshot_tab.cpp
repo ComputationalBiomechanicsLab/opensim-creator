@@ -20,8 +20,8 @@
 #include <liboscar/platform/screenshot.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <filesystem>
 #include <fstream>

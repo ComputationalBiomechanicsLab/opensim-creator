@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/concepts/same_as_any_of.h>
-#include <liboscar/utils/std_variant_helpers.h>
+#include <liboscar/utilities/std_variant_helpers.h>
 
 #include <cstdint>
 #include <cstddef>

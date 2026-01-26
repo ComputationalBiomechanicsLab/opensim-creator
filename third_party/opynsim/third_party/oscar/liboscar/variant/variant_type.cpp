@@ -1,6 +1,6 @@
 #include "variant_type.h"
 
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
 #include <liboscar/variant/variant_type_list.h>
 #include <liboscar/variant/variant_type_traits.h>
 

@@ -49,10 +49,10 @@
 #include <liboscar/ui/panels/perf_panel.h>
 #include <liboscar/ui/tabs/tab_save_result.h>
 #include <liboscar/ui/widgets/log_viewer.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/std_variant_helpers.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/std_variant_helpers.h>
+#include <liboscar/utilities/uid.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <array>

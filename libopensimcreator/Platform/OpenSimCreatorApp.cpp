@@ -7,8 +7,8 @@
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/ui/tabs/tab_registry.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/c_string_view.h>
 #include <libopynsim/opynsim.h>
 
 #include <array>

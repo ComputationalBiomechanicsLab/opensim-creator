@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/hash_helpers.h>
+#include <liboscar/utilities/hash_helpers.h>
 
 #include <cstddef>
 #include <functional>

@@ -28,7 +28,7 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/perf_panel.h>
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/perf_clock.h>
+#include <liboscar/utilities/perf_clock.h>
 
 #include <chrono>
 #include <cinttypes>

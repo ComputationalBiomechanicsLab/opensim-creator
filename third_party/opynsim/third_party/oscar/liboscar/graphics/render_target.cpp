@@ -1,6 +1,6 @@
 #include "render_target.h"
 
-#include <liboscar/utils/assertions.h>
+#include <liboscar/utilities/assertions.h>
 
 void osc::RenderTarget::validate_or_throw() const
 {

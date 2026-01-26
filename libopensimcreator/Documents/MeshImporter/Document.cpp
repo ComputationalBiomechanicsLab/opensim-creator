@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshImporter/Ground.h>
 #include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
 
-#include <liboscar/utils/clone_ptr.h>
+#include <liboscar/utilities/clone_ptr.h>
 
 osc::mi::Document::Document() :
     m_Objects{{MIIDs::Ground(), make_cloneable<Ground>()}}

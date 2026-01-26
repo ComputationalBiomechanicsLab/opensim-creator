@@ -6,8 +6,8 @@
 #include <liboscar/platform/os.h>
 #include <liboscar/platform/widget_private.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/circular_buffer.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/circular_buffer.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 #include <sstream>
 #include <string>

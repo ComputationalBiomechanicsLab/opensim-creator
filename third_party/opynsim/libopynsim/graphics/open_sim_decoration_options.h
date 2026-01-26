@@ -5,7 +5,7 @@
 #include <libopynsim/graphics/muscle_decoration_style.h>
 #include <libopynsim/graphics/muscle_sizing_style.h>
 #include <libopynsim/graphics/open_sim_decoration_option_flags.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 #include <liboscar/variant/variant.h>
 
 #include <cstddef>

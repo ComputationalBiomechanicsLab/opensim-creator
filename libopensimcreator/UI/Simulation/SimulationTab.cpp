@@ -36,8 +36,8 @@
 #include <liboscar/ui/panels/perf_panel.h>
 #include <liboscar/ui/popups/popup_manager.h>
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/perf.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/perf.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
 

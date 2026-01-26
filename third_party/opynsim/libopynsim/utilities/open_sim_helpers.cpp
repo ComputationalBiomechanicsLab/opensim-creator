@@ -7,10 +7,10 @@
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/platform/log.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/perf.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/perf.h>
+#include <liboscar/utilities/string_helpers.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>

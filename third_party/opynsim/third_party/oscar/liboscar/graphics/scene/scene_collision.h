@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/string_name.h>
 
 #include <cstddef>
 #include <limits>

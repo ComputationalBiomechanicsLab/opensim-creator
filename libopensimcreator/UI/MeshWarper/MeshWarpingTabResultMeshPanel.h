@@ -17,7 +17,7 @@
 #include <liboscar/maths/vector3.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 
 #include <functional>
 #include <memory>

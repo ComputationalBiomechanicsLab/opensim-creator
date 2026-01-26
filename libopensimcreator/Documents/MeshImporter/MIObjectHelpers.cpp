@@ -10,7 +10,7 @@
 
 #include <liboscar/graphics/mesh_functions.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/std_variant_helpers.h>
+#include <liboscar/utilities/std_variant_helpers.h>
 
 #include <array>
 #include <variant>

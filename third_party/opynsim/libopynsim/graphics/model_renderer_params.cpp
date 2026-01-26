@@ -7,8 +7,8 @@
 #include <liboscar/graphics/scene/scene_renderer_params.h>
 #include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/platform/app_settings.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/conversion.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/conversion.h>
 #include <liboscar/variant/variant.h>
 
 #include <string>

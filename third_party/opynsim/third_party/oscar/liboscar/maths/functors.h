@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/maths/vector.h>
-#include <liboscar/utils/algorithms.h>
+#include <liboscar/utilities/algorithms.h>
 
 #include <algorithm>
 #include <concepts>

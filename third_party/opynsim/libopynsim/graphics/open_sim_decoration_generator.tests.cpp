@@ -15,7 +15,7 @@
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/platform/log.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Geometry.h>

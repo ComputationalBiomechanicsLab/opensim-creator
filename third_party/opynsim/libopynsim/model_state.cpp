@@ -1,6 +1,6 @@
 #include "model_state.h"
 
-#include <liboscar/utils/copy_on_upd_ptr.h>
+#include <liboscar/utilities/copy_on_upd_ptr.h>
 #include <SimTKcommon/internal/State.h>
 
 #include <utility>

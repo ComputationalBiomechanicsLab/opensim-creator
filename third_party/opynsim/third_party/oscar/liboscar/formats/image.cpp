@@ -4,8 +4,8 @@
 #include <liboscar/graphics/color_space.h>
 #include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/texture_format.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/object_representation.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/object_representation.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

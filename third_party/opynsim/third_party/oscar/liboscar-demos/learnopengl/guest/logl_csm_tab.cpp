@@ -21,7 +21,7 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/log_viewer_panel.h>
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/assertions.h>
+#include <liboscar/utilities/assertions.h>
 
 #include <array>
 #include <cstddef>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopensimcreator/Documents/Model/ModelStatePairWithSharedEnvironment.h>
-#include <liboscar/utils/clone_ptr.h>
+#include <liboscar/utilities/clone_ptr.h>
 
 #include <filesystem>
 #include <memory>

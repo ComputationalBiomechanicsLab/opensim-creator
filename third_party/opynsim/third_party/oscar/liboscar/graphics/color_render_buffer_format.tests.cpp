@@ -1,6 +1,6 @@
 #include "color_render_buffer_format.h"
 
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 #include <gtest/gtest.h>
 

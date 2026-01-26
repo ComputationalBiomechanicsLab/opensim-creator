@@ -1,6 +1,6 @@
 #include "anti_aliasing_level.h"
 
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <gtest/gtest.h>
 

@@ -6,7 +6,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>
-#include <liboscar/utils/synchronized_value_guard.h>
+#include <liboscar/utilities/synchronized_value_guard.h>
 
 #include <cstddef>
 #include <memory>

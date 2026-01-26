@@ -3,8 +3,8 @@
 #include <liboscar/formats/svg.h>
 #include <liboscar/platform/resource_loader.h>
 #include <liboscar/ui/icon.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/transparent_string_hasher.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/transparent_string_hasher.h>
 
 #include <ankerl/unordered_dense.h>
 

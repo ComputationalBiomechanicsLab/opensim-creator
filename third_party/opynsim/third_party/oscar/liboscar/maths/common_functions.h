@@ -3,7 +3,7 @@
 #include <liboscar/maths/constants.h>
 #include <liboscar/maths/functors.h>
 #include <liboscar/maths/vector.h>
-#include <liboscar/utils/algorithms.h>
+#include <liboscar/utilities/algorithms.h>
 
 #include <algorithm>
 #include <cmath>

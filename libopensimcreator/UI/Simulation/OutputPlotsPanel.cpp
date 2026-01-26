@@ -10,7 +10,7 @@
 #include <libopynsim/documents/output_extractors/output_extractor_data_type_helpers.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
-#include <liboscar/utils/algorithms.h>
+#include <liboscar/utilities/algorithms.h>
 
 #include <memory>
 #include <string_view>

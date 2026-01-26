@@ -2,8 +2,8 @@
 
 #include <liboscar/maths/vector.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/conversion.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/conversion.h>
 
 #include <gtest/gtest.h>
 

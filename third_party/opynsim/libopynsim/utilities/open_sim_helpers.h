@@ -5,8 +5,8 @@
 #include <liboscar/maths/ray.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/shims/cpp23/generator.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/string_name.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <SimTKcommon/internal/Transform.h>
 

@@ -2,7 +2,7 @@
 
 #include <liboscar/platform/widget_private.h>
 #include <liboscar/ui/tabs/tab.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 #include <string_view>
 

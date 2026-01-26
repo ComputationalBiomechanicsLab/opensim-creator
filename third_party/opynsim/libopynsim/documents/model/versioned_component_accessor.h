@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopynsim/documents/model/component_accessor.h>
-#include <liboscar/utils/uid.h>
+#include <liboscar/utilities/uid.h>
 
 namespace osc
 {

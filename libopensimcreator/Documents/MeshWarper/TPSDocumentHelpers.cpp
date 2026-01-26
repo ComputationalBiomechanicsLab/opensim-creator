@@ -9,9 +9,9 @@
 #include <libopynsim/utilities/simbody_x_oscar.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/maths/vector3.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/string_name.h>
 
 #include <algorithm>
 #include <concepts>

@@ -9,7 +9,7 @@
 #include <libopynsim/shims/cpp23/mdspan.h>
 #include <libopynsim/ui/hello_ui.h>
 #include <libopynsim/utilities/tps3d.h>
-#include <liboscar/utils/assertions.h>
+#include <liboscar/utilities/assertions.h>
 
 #include <nanobind/ndarray.h>
 #include <SimTKcommon/SmallMatrix.h>

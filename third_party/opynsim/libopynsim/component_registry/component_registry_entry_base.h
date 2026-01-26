@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 #include <OpenSim/Common/Component.h>
 
 #include <memory>

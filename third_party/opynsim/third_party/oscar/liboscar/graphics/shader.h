@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/shader_property_type.h>
-#include <liboscar/utils/copy_on_upd_shared_value.h>
+#include <liboscar/utilities/copy_on_upd_shared_value.h>
 
 #include <cstddef>
 #include <iosfwd>

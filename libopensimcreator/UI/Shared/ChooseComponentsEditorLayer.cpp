@@ -24,8 +24,8 @@
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/string_name.h>
 
 #include <memory>
 #include <optional>

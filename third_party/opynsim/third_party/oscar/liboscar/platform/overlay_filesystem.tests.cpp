@@ -1,7 +1,7 @@
 #include "overlay_filesystem.h"
 
 #include <liboscar/platform/native_filesystem.h>
-#include <liboscar/utils/temporary_directory.h>
+#include <liboscar/utilities/temporary_directory.h>
 
 #include <gtest/gtest.h>
 

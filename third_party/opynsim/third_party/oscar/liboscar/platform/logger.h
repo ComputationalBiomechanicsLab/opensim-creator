@@ -2,9 +2,9 @@
 
 #include <liboscar/platform/log_message_view.h>
 #include <liboscar/platform/log_sink.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/string_name.h>
 
 #include <algorithm>
 #include <cstdarg>

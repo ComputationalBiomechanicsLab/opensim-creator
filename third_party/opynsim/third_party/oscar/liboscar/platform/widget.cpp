@@ -1,7 +1,7 @@
 #include "widget.h"
 
 #include <liboscar/platform/widget_private.h>
-#include <liboscar/utils/lifetimed_ptr.h>
+#include <liboscar/utilities/lifetimed_ptr.h>
 
 using namespace osc;
 

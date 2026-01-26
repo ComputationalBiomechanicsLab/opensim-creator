@@ -1,8 +1,8 @@
 #pragma once
 
 #include <liboscar/graphics/material_property_value.h>
-#include <liboscar/utils/copy_on_upd_shared_value.h>
-#include <liboscar/utils/string_name.h>
+#include <liboscar/utilities/copy_on_upd_shared_value.h>
+#include <liboscar/utilities/string_name.h>
 
 #include <iosfwd>
 #include <optional>

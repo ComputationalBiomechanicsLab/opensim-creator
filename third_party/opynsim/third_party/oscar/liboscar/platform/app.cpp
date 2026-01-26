@@ -31,14 +31,14 @@
 #include <liboscar/platform/resource_stream.h>
 #include <liboscar/platform/screenshot.h>
 #include <liboscar/platform/widget.h>
-#include <liboscar/utils/algorithms.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/conversion.h>
-#include <liboscar/utils/enum_helpers.h>
-#include <liboscar/utils/perf.h>
-#include <liboscar/utils/scope_exit.h>
-#include <liboscar/utils/synchronized_value.h>
-#include <liboscar/utils/type_info_reference.h>
+#include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/conversion.h>
+#include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/perf.h>
+#include <liboscar/utilities/scope_exit.h>
+#include <liboscar/utilities/synchronized_value.h>
+#include <liboscar/utilities/type_info_reference.h>
 
 #include <ankerl/unordered_dense.h>
 #include <SDL3/SDL.h>

@@ -12,8 +12,8 @@
 #include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
-#include <liboscar/utils/assertions.h>
-#include <liboscar/utils/enum_helpers.h>
+#include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/enum_helpers.h>
 
 #include <array>
 #include <memory>

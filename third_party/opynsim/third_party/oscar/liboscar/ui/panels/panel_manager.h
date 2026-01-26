@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/ui/panels/toggleable_panel_flags.h>
-#include <liboscar/utils/c_string_view.h>
+#include <liboscar/utilities/c_string_view.h>
 
 #include <concepts>
 #include <cstddef>

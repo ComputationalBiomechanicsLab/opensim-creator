@@ -5,7 +5,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
-#include <liboscar/utils/synchronized_value_guard.h>
+#include <liboscar/utilities/synchronized_value_guard.h>
 
 #include <concepts>
 #include <cstddef>

@@ -22,9 +22,9 @@
 #include <liboscar/ui/events/close_tab_event.h>
 #include <liboscar/ui/events/open_tab_event.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/utils/c_string_view.h>
-#include <liboscar/utils/filesystem_helpers.h>
-#include <liboscar/utils/string_helpers.h>
+#include <liboscar/utilities/c_string_view.h>
+#include <liboscar/utilities/filesystem_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>

@@ -3,7 +3,7 @@
 #include <jam-plugin/Smith2018ArticularContactForce.h>
 #include <jam-plugin/Smith2018ContactMesh.h>
 #include <liboscar/platform/log.h>
-#include <liboscar/utils/conversion.h>
+#include <liboscar/utilities/conversion.h>
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
 #include <OpenSim/Common/LogSink.h>
