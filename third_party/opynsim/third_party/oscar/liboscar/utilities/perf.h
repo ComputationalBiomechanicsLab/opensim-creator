@@ -3,7 +3,7 @@
 #include <liboscar/utilities/filename_extractor.h>
 #include <liboscar/utilities/perf_clock.h>
 #include <liboscar/utilities/perf_measurement.h>
-#include <liboscar/oscarconfig.h>
+#include <liboscar/oscar_config.h>
 
 #include <string_view>
 #include <vector>

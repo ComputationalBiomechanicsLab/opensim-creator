@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/utilities/filename_extractor.h>
-#include <liboscar/oscarconfig.h>
+#include <liboscar/oscar_config.h>
 
 #include <string_view>
 

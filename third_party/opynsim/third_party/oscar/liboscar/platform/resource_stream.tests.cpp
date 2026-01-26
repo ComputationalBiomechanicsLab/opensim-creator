@@ -1,6 +1,6 @@
 #include "resource_stream.h"
 
-#include <liboscar/tests/testoscarconfig.h>
+#include <liboscar/tests/oscar_tests_config.h>
 
 #include <gtest/gtest.h>
 
@@ -40,7 +40,7 @@ TEST(ResourceStream, name_returns_nullstream_when_default_constructed)
 
 TEST(ResourceStream, yields_content_of_a_file_when_constructed_from_filesystem_path)
 {
-    const auto path = std::filesystem::path{OSC_TEST_RESOURCES_DIR} / "awesomeface.png";
+    const auto path = std::filesystem::path{OSCAR_TESTS_RESOURCES_DIR} / "awesomeface.png";
     ResourceStream rs{path};
 
     ASSERT_TRUE(slurp(rs) == slurp(path));
@@ -48,6 +48,6 @@ TEST(ResourceStream, yields_content_of_a_file_when_constructed_from_filesystem_p
 
 TEST(ResourceStream, name_returns_name_of_filesystem_file_when_constructed_from_a_filesystem_path)
 {
-    const auto path = std::filesystem::path{OSC_TEST_RESOURCES_DIR} / "awesomeface.png";
+    const auto path = std::filesystem::path{OSCAR_TESTS_RESOURCES_DIR} / "awesomeface.png";
     ASSERT_EQ(ResourceStream{path}.name(), path.filename().string());
 }

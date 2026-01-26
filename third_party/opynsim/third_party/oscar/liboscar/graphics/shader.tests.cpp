@@ -2,7 +2,7 @@
 
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_metadata.h>
-#include <liboscar/tests/testoscarconfig.h>
+#include <liboscar/tests/oscar_tests_config.h>
 #include <liboscar/utilities/c_string_view.h>
 #include <liboscar/utilities/string_helpers.h>
 
@@ -28,8 +28,8 @@ namespace
         static void SetUpTestSuite()
         {
             AppMetadata metadata;
-            metadata.set_organization_name(TESTOSCAR_ORGNAME_STRING);
-            metadata.set_application_name(TESTOSCAR_APPNAME_STRING);
+            metadata.set_organization_name(OSCAR_TESTS_ORGNAME_STRING);
+            metadata.set_application_name(OSCAR_TESTS_APPNAME_STRING);
             g_shader_app = std::make_unique<App>(metadata);
         }
 

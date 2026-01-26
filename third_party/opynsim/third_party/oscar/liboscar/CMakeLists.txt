@@ -19,10 +19,10 @@ find_package(lunasvg REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 find_package(Threads REQUIRED)  # implicitly required by SDL3/plutovg
 
-# generate `oscarconfig.h`
+# generate `oscar_config.h`
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/oscarconfig.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscarconfig.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/oscar_config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscar_config.h"
     @ONLY
 )
 
@@ -58,7 +58,7 @@ if(OSCAR_USE_STRICT_COMPILER_FLAGS)
 endif()
 target_include_directories(oscar PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>         # so that `#include <liboscar/HEADER.h>` works
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>  # so that `#include <liboscar/oscarconfig.h>` and `#include <liboscar/oscar.h>` work
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>  # so that `#include <liboscar/oscar_config.h>` and `#include <liboscar/oscar.h>` work
     $<INSTALL_INTERFACE:include>                              # because all headers are installed into `liboscar/`
 )
 target_link_libraries(oscar
@@ -85,9 +85,9 @@ if(OSCAR_INSTALL)
     include(GNUInstallDirs)             # `CMAKE_INSTALL_LIBDIR`, `CMAKE_INSTALL_INCLUDEDIR`
     include(CMakePackageConfigHelpers)  # `configure_package_config_file`
 
-    # Install generated `oscarconfig.h`
+    # Install generated `oscar_config.h`
     install(
-        FILES       "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscarconfig.h"
+        FILES       "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscar_config.h"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/liboscar"
     )
 

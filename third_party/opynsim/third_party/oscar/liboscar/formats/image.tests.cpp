@@ -5,7 +5,7 @@
 #include <liboscar/maths/common_functions.h>
 #include <liboscar/maths/geometric_functions.h>
 #include <liboscar/platform/resource_stream.h>
-#include <liboscar/tests/testoscarconfig.h>
+#include <liboscar/tests/oscar_tests_config.h>
 #include <liboscar/utilities/null_ostream.h>
 
 #include <gtest/gtest.h>
@@ -18,7 +18,7 @@ using namespace osc;
 
 TEST(Image, read_into_texture_respects_sRGB_color_space)
 {
-    const auto path = std::filesystem::path{OSC_TEST_RESOURCES_DIR} / "awesomeface.png";
+    const auto path = std::filesystem::path{OSCAR_TESTS_RESOURCES_DIR} / "awesomeface.png";
     const Texture2D loaded_texture = Image::read_into_texture(ResourceStream{path}, ColorSpace::sRGB);
 
     ASSERT_EQ(loaded_texture.color_space(), ColorSpace::sRGB);
@@ -26,7 +26,7 @@ TEST(Image, read_into_texture_respects_sRGB_color_space)
 
 TEST(Image, read_into_texture_respects_linear_color_space)
 {
-    const auto path = std::filesystem::path{OSC_TEST_RESOURCES_DIR} / "awesomeface.png";
+    const auto path = std::filesystem::path{OSCAR_TESTS_RESOURCES_DIR} / "awesomeface.png";
     const Texture2D loaded_texture = Image::read_into_texture(ResourceStream{path}, ColorSpace::Linear);
 
     ASSERT_EQ(loaded_texture.color_space(), ColorSpace::Linear);
@@ -34,7 +34,7 @@ TEST(Image, read_into_texture_respects_linear_color_space)
 
 TEST(Image, read_into_texture_is_compatible_with_PNG_write)
 {
-    const auto path = std::filesystem::path{OSC_TEST_RESOURCES_DIR} / "awesomeface.png";
+    const auto path = std::filesystem::path{OSCAR_TESTS_RESOURCES_DIR} / "awesomeface.png";
     const Texture2D loaded_texture = Image::read_into_texture(ResourceStream{path}, ColorSpace::Linear);
 
     NullOstream out;
@@ -44,7 +44,7 @@ TEST(Image, read_into_texture_is_compatible_with_PNG_write)
 
 TEST(Image, read_into_texture_can_load_image_from_ResourceStream)
 {
-    const auto path = std::filesystem::path{OSC_TEST_RESOURCES_DIR} / "awesomeface.png";
+    const auto path = std::filesystem::path{OSCAR_TESTS_RESOURCES_DIR} / "awesomeface.png";
     const Texture2D loaded_texture = Image::read_into_texture(
         ResourceStream{path},
         ColorSpace::sRGB
@@ -71,7 +71,7 @@ TEST(Image, read_into_texture_with_TreatComponentsAsSpatialVectors_negates_Y)
     // the pixels of the image are actually spatial vectors (e.g. as in normal
     // maps).
 
-    const auto path = std::filesystem::path{OSC_TEST_RESOURCES_DIR} / "awesomeface.png";
+    const auto path = std::filesystem::path{OSCAR_TESTS_RESOURCES_DIR} / "awesomeface.png";
 
     const Texture2D normally_loaded_texture = Image::read_into_texture(ResourceStream{path}, ColorSpace::sRGB);
     const Texture2D spatial_texture = Image::read_into_texture(ResourceStream{path}, ColorSpace::sRGB, ImageLoadingFlag::TreatComponentsAsSpatialVectors);

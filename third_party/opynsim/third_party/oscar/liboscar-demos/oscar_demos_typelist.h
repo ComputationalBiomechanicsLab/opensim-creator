@@ -37,13 +37,13 @@
 #include <liboscar-demos/im_plot_demo_tab.h>
 #include <liboscar-demos/mandelbrot_tab.h>
 #include <liboscar-demos/mesh_gen_test_tab.h>
-#include <liboscar-demos/sub_mesh_tab.h>
+#include <liboscar-demos/sub_mesh_demo.h>
 
 #include <liboscar/utilities/typelist.h>
 
 namespace osc
 {
-    using OscarDemoTabs = Typelist<
+    using OscarDemosTypelist = Typelist<
         BookOfShadersTab,
 
         LOGLBloomTab,
@@ -86,6 +86,6 @@ namespace osc
         ImGuizmoDemoTab,
         MandelbrotTab,
         MeshGenTestTab,
-        SubMeshTab
+        SubMeshDemo
     >;
 }

@@ -6,8 +6,16 @@
 #include <memory>
 #include <string_view>
 
+namespace osc { class DisplayStateChangeEvent; }
+namespace osc { class DropFileEvent; }
 namespace osc { class Event; }
+namespace osc { class KeyEvent; }
+namespace osc { class MouseEvent; }
+namespace osc { class MouseWheelEvent; }
+namespace osc { class QuitEvent; }
+namespace osc { class TextInputEvent; }
 namespace osc { class WidgetPrivate; }
+namespace osc { class WindowEvent; }
 
 #define OSC_WIDGET_DATA_GETTERS(ImplClass)                                                                    \
     const ImplClass& private_data() const { return reinterpret_cast<const ImplClass&>(base_private_data()); } \
@@ -73,6 +81,7 @@ namespace osc
 
         // Re-parents the `Widget`
         void set_parent(Widget*);
+        void set_parent(Widget& widget) { set_parent(&widget); }
 
         // Returns the name of this `Widget`, or an empty string if a name has not yet been
         // set on this instance.
@@ -86,6 +95,27 @@ namespace osc
         const WidgetPrivate& base_private_data() const { return *data_; }
         WidgetPrivate& base_private_data() { return *data_; }
 
+        // Implementors may override this to provide custom `Event` handling.
+        //
+        // Note: the default implementation is responsible for forwarding the
+        // event to specialized event handlers (below, e.g. `impl_on_key_event`), so
+        // if you override this function it's also recommended to call the base
+        // version if your implementation also uses the specialized overrides.
+        virtual bool impl_on_event(Event&);
+
+        virtual bool impl_on_display_state_change_event(DisplayStateChangeEvent&);
+        virtual bool impl_on_drop_file_event(DropFileEvent&);
+        virtual bool impl_on_key_event(KeyEvent&);
+        virtual bool impl_on_mouse_event(MouseEvent&);
+        virtual bool impl_on_mouse_wheel_event(MouseWheelEvent&);
+        virtual bool impl_on_quit_event(QuitEvent&);
+        virtual bool impl_on_text_input_event(TextInputEvent&);
+        virtual bool impl_on_window_event(WindowEvent&);
+
+        virtual void impl_on_mount();
+        virtual void impl_on_unmount();
+        virtual void impl_on_tick();
+        virtual void impl_on_draw();
     private:
         Widget(const Widget&) = delete;
         Widget& operator=(const Widget&) = delete;
@@ -93,12 +123,6 @@ namespace osc
         Widget& operator=(Widget&&) noexcept = delete;
 
         OSC_WIDGET_DATA_GETTERS(WidgetPrivate);
-
-        virtual bool impl_on_event(Event&) { return false; }
-        virtual void impl_on_mount() {}
-        virtual void impl_on_unmount() {}
-        virtual void impl_on_tick() {}
-        virtual void impl_on_draw() {}
 
         std::unique_ptr<WidgetPrivate> data_;
     };

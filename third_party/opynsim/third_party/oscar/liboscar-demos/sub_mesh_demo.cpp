@@ -1,4 +1,4 @@
-#include "sub_mesh_tab.h"
+#include "sub_mesh_demo.h"
 
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
@@ -10,8 +10,9 @@
 #include <liboscar/graphics/sub_mesh_descriptor.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
+#include <liboscar/platform/widget.h>
+#include <liboscar/platform/widget_private.h>
 #include <liboscar/ui/oscimgui.h>
-#include <liboscar/ui/tabs/tab_private.h>
 
 #include <array>
 #include <concepts>
@@ -69,13 +70,15 @@ namespace
     }
 }
 
-class osc::SubMeshTab::Impl final : public TabPrivate {
+class osc::SubMeshDemo::Impl final : public WidgetPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/SubMesh"; }
 
-    explicit Impl(SubMeshTab& owner, Widget* parent) :
-        TabPrivate{owner, parent, static_label()}
+    explicit Impl(SubMeshDemo& owner, Widget* parent) :
+        WidgetPrivate{owner, parent}
     {
+        set_name(static_label());
+
         camera_.set_background_color(Color::white());
         camera_.set_clipping_planes({0.1f, 5.0f});
         camera_.set_position({0.0f, 0.0f, -2.5f});
@@ -109,9 +112,9 @@ private:
 };
 
 
-CStringView osc::SubMeshTab::id() { return Impl::static_label(); }
+CStringView osc::SubMeshDemo::id() { return Impl::static_label(); }
 
-osc::SubMeshTab::SubMeshTab(Widget* parent) :
-    Tab{std::make_unique<Impl>(*this, parent)}
+osc::SubMeshDemo::SubMeshDemo(Widget* parent) :
+    Widget{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::SubMeshTab::impl_on_draw() { private_data().on_draw(); }
+void osc::SubMeshDemo::impl_on_draw() { private_data().on_draw(); }

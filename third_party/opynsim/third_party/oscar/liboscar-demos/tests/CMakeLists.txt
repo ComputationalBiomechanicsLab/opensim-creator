@@ -12,19 +12,16 @@ configure_file(
 )
 
 file(GLOB_RECURSE _oscar_demos_test_sources "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
-add_executable(testoscar_demos ${_oscar_demos_test_sources})
+add_executable(oscar_demos_tests ${_oscar_demos_test_sources})
 unset(_oscar_demos_test_sources)
 
-set_target_properties(testoscar_demos PROPERTIES CXX_EXTENSIONS OFF)
-target_compile_features(testoscar_demos PUBLIC cxx_std_23)
+set_target_properties(oscar_demos_tests PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(oscar_demos_tests PUBLIC cxx_std_23)
 if(OSCAR_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/oscar_strict_compiler_options.cmake)
-    target_compile_options(testoscar_demos PRIVATE ${OSCAR_STRICT_COMPILER_OPTIONS})
+    target_compile_options(oscar_demos_tests PRIVATE ${OSCAR_STRICT_COMPILER_OPTIONS})
 endif()
-target_include_directories(testoscar_demos PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <testoscar_demos/HEADER.h>` works
-)
-target_link_libraries(testoscar_demos PRIVATE
+target_link_libraries(oscar_demos_tests PRIVATE
     oscar
     oscar_demos
     GTest::gtest
@@ -32,7 +29,7 @@ target_link_libraries(testoscar_demos PRIVATE
 )
 
 if(OSCAR_DISCOVER_TESTS)
-    gtest_discover_tests(testoscar_demos)
+    gtest_discover_tests(oscar_demos_tests)
 endif()
 
 # for development on Windows, copy all runtime dlls to the exe directory
@@ -41,9 +38,9 @@ endif()
 # see: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html?highlight=runtime#genex:TARGET_RUNTIME_DLLS
 if (WIN32)
     add_custom_command(
-        TARGET testoscar_demos
+        TARGET oscar_demos_tests
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:testoscar_demos> $<TARGET_RUNTIME_DLLS:testoscar_demos>
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:oscar_demos_tests> $<TARGET_RUNTIME_DLLS:oscar_demos_tests>
         COMMAND_EXPAND_LISTS
     )
 endif()

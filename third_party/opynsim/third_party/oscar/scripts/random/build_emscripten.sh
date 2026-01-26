@@ -37,8 +37,8 @@ LDFLAGS="-fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1 -sUSE_WEBGL2=1 -sMIN_WEB
     -DCMAKE_PREFIX_PATH="${PWD}/third_party-install-Debug" \
     -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
     -DCMAKE_BUILD_TYPE=-DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE}
-emmake cmake --build build/ --target testoscar -v -j$(nproc)
+emmake cmake --build build/ --target oscar_tests -v -j$(nproc)
 emmake cmake --build build/ --target hellotriangle -v -j$(nproc)
 
 # run test suite, excluding tests that depend on window/files (work-in-progress)
-node build/liboscar/tests/testoscar/testoscar.js  --gtest_filter=-Renderer*:ShaderTest*:MaterialTest*:Image*:ResourceStream*:load_texture2D_from_image*
+node build/liboscar/tests/oscar_tests/oscar_tests.js  --gtest_filter=-Renderer*:ShaderTest*:MaterialTest*:Image*:ResourceStream*:load_texture2D_from_image*

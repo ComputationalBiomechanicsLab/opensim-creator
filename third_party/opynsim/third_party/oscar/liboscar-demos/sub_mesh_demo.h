@@ -1,16 +1,14 @@
 #pragma once
 
-#include <liboscar/ui/tabs/tab.h>
-
-namespace osc { class Widget; }
+#include <liboscar/platform/widget.h>
 
 namespace osc
 {
-    class SubMeshTab final : public Tab {
+    class SubMeshDemo final : public Widget {
     public:
         static CStringView id();
 
-        explicit SubMeshTab(Widget*);
+        explicit SubMeshDemo(Widget*);
 
     private:
         void impl_on_draw() final;
