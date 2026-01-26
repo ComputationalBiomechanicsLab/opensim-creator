@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <optional>
 
-namespace osc
+namespace opyn
 {
     enum class OpenSimDecorationOptionFlag : uint32_t {
         None                                                = 0,
@@ -27,12 +27,12 @@ namespace osc
 
         Default = ShouldShowPointToPointSprings | ShouldShowScholz2015ObstacleContactHints,
     };
-    using OpenSimDecorationOptionFlags = Flags<OpenSimDecorationOptionFlag>;
+    using OpenSimDecorationOptionFlags = osc::Flags<OpenSimDecorationOptionFlag>;
 
     struct OpenSimDecorationOptionMetadata final {
-        CStringView id;
-        CStringView label;
-        std::optional<CStringView> maybeDescription;
+        osc::CStringView id;
+        osc::CStringView label;
+        std::optional<osc::CStringView> maybeDescription;
     };
     const OpenSimDecorationOptionMetadata& GetIthOptionMetadata(size_t);
     OpenSimDecorationOptionFlag GetIthOption(size_t);

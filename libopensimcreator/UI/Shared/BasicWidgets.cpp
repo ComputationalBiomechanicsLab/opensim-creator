@@ -942,7 +942,7 @@ void osc::DrawCalculateMenu(
     }
 }
 
-bool osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts)
+bool osc::DrawMuscleRenderingOptionsRadioButtions(opyn::OpenSimDecorationOptions& opts)
 {
     const MuscleDecorationStyle currentStyle = opts.getMuscleDecorationStyle();
     bool edited = false;
@@ -957,7 +957,7 @@ bool osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts
     return edited;
 }
 
-bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
+bool osc::DrawMuscleSizingOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
 {
     const MuscleSizingStyle currentStyle = opts.getMuscleSizingStyle();
     bool edited = false;
@@ -972,7 +972,7 @@ bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
     return edited;
 }
 
-bool osc::DrawMuscleColorSourceOptionsRadioButtons(OpenSimDecorationOptions& opts)
+bool osc::DrawMuscleColorSourceOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
 {
     const MuscleColorSource currentStyle = opts.getMuscleColorSource();
     bool edited = false;
@@ -987,7 +987,7 @@ bool osc::DrawMuscleColorSourceOptionsRadioButtons(OpenSimDecorationOptions& opt
     return edited;
 }
 
-bool osc::DrawMuscleColorScalingOptionsRadioButtons(OpenSimDecorationOptions& opts)
+bool osc::DrawMuscleColorScalingOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
 {
     const MuscleColorSourceScaling currentStyle = opts.getMuscleColorSourceScaling();
     bool edited = false;
@@ -1000,7 +1000,7 @@ bool osc::DrawMuscleColorScalingOptionsRadioButtons(OpenSimDecorationOptions& op
     return edited;
 }
 
-bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
+bool osc::DrawMuscleDecorationOptionsEditor(opyn::OpenSimDecorationOptions& opts)
 {
     int id = 0;
     bool edited = false;
@@ -1075,7 +1075,7 @@ bool osc::DrawOverlayOptionsEditor(opyn::OverlayDecorationOptions& opts)
     return edited;
 }
 
-bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
+bool osc::DrawCustomDecorationOptionCheckboxes(opyn::OpenSimDecorationOptions& opts)
 {
     int imguiID = 0;
     bool edited = false;

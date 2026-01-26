@@ -17,30 +17,30 @@
 
 namespace osc { class AppSettingValue; }
 
-namespace osc
+namespace opyn
 {
     class OpenSimDecorationOptions final {
     public:
         OpenSimDecorationOptions();
 
-        MuscleDecorationStyle getMuscleDecorationStyle() const;
-        void setMuscleDecorationStyle(MuscleDecorationStyle);
+        osc::MuscleDecorationStyle getMuscleDecorationStyle() const;
+        void setMuscleDecorationStyle(osc::MuscleDecorationStyle);
 
-        MuscleColorSource getMuscleColorSource() const;
-        void setMuscleColorSource(MuscleColorSource);
+        osc::MuscleColorSource getMuscleColorSource() const;
+        void setMuscleColorSource(osc::MuscleColorSource);
 
-        MuscleSizingStyle getMuscleSizingStyle() const;
-        void setMuscleSizingStyle(MuscleSizingStyle);
+        osc::MuscleSizingStyle getMuscleSizingStyle() const;
+        void setMuscleSizingStyle(osc::MuscleSizingStyle);
 
-        MuscleColorSourceScaling getMuscleColorSourceScaling() const;
-        void setMuscleColorSourceScaling(MuscleColorSourceScaling);
+        osc::MuscleColorSourceScaling getMuscleColorSourceScaling() const;
+        void setMuscleColorSourceScaling(osc::MuscleColorSourceScaling);
 
         // the ones below here are toggle-able options with user-facing strings etc
         size_t getNumOptions() const;
         bool getOptionValue(ptrdiff_t) const;
         void setOptionValue(ptrdiff_t, bool);
-        CStringView getOptionLabel(ptrdiff_t) const;
-        std::optional<CStringView> getOptionDescription(ptrdiff_t) const;
+        osc::CStringView getOptionLabel(ptrdiff_t) const;
+        std::optional<osc::CStringView> getOptionDescription(ptrdiff_t) const;
 
         bool getShouldShowScapulo() const;
         void setShouldShowScapulo(bool);
@@ -80,16 +80,16 @@ namespace osc
 
         void setShouldShowEverything(bool);
 
-        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>&) const;
-        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, Variant>&);
+        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const osc::Variant&)>&) const;
+        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, osc::Variant>&);
 
         friend bool operator==(const OpenSimDecorationOptions&, const OpenSimDecorationOptions&) = default;
 
     private:
-        MuscleDecorationStyle m_MuscleDecorationStyle;
-        MuscleColorSource m_MuscleColorSource;
-        MuscleSizingStyle m_MuscleSizingStyle;
-        MuscleColorSourceScaling m_MuscleColourSourceScaling;
+        osc::MuscleDecorationStyle m_MuscleDecorationStyle;
+        osc::MuscleColorSource m_MuscleColorSource;
+        osc::MuscleSizingStyle m_MuscleSizingStyle;
+        osc::MuscleColorSourceScaling m_MuscleColourSourceScaling;
         OpenSimDecorationOptionFlags m_Flags;
     };
 }

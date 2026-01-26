@@ -16,7 +16,7 @@ namespace osc
     struct ModelRendererParams final {
         ModelRendererParams();
 
-        OpenSimDecorationOptions decorationOptions;
+        opyn::OpenSimDecorationOptions decorationOptions;
         opyn::OverlayDecorationOptions overlayOptions;
         CustomRenderingOptions renderingOptions;
         Color lightColor;

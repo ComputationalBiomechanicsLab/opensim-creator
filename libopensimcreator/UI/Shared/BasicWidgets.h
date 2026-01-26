@@ -22,12 +22,12 @@ namespace OpenSim { class Mesh; }
 namespace OpenSim { class Point; }
 namespace OpenSim { class Sphere; }
 namespace OpenSim { class Station; }
+namespace opyn { class OpenSimDecorationOptions; }
 namespace opyn { class OverlayDecorationOptions; }
 namespace osc { class CustomRenderingOptions; }
 namespace osc { class IconCache; }
 namespace osc { class ModelStatePair; }
 namespace osc { class OutputExtractor; }
-namespace osc { class OpenSimDecorationOptions; }
 namespace osc { class ParamBlock; }
 namespace osc { class Rect; }
 namespace osc { class SimulationModelStatePair; }
@@ -223,14 +223,14 @@ namespace osc
     );
 
     // basic wigetized parts of the 3D viewer
-    bool DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions&);
-    bool DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions&);
-    bool DrawMuscleColorSourceOptionsRadioButtons(OpenSimDecorationOptions&);
-    bool DrawMuscleColorScalingOptionsRadioButtons(OpenSimDecorationOptions&);
-    bool DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions&);
+    bool DrawMuscleRenderingOptionsRadioButtions(opyn::OpenSimDecorationOptions&);
+    bool DrawMuscleSizingOptionsRadioButtons(opyn::OpenSimDecorationOptions&);
+    bool DrawMuscleColorSourceOptionsRadioButtons(opyn::OpenSimDecorationOptions&);
+    bool DrawMuscleColorScalingOptionsRadioButtons(opyn::OpenSimDecorationOptions&);
+    bool DrawMuscleDecorationOptionsEditor(opyn::OpenSimDecorationOptions&);
     bool DrawRenderingOptionsEditor(CustomRenderingOptions&);
     bool DrawOverlayOptionsEditor(opyn::OverlayDecorationOptions&);
-    bool DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions&);
+    bool DrawCustomDecorationOptionCheckboxes(opyn::OpenSimDecorationOptions&);
     bool DrawAdvancedParamsEditor(ModelRendererParams&, std::span<const SceneDecoration>);
     bool DrawVisualAidsContextMenuContent(ModelRendererParams&);
     bool DrawViewerTopButtonRow(

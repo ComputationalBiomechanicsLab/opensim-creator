@@ -34,7 +34,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 
     // turn as many decoration options on as possible, so that the code gets tested
     // against them (#661)
-    OpenSimDecorationOptions decorationOpts;
+    opyn::OpenSimDecorationOptions decorationOpts;
     decorationOpts.setShouldShowEverything(true);
 
     const std::filesystem::path examplesDir = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models";
@@ -87,7 +87,7 @@ TEST(UndoableModelStatePair, canWriteRajagopalModelToDAE)
 
     // setup rendering state
     SceneCache meshCache;
-    OpenSimDecorationOptions decorationOpts;
+    opyn::OpenSimDecorationOptions decorationOpts;
     decorationOpts.setShouldShowEverything(true);
 
     // generate decorations

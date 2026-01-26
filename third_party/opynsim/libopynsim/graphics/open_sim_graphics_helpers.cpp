@@ -77,7 +77,7 @@ osc::SceneRendererParams opyn::CalcSceneRendererParams(
 void opyn::GenerateDecorations(
     osc::SceneCache& meshCache,
     const osc::ModelStatePair& msp,
-    const osc::OpenSimDecorationOptions& options,
+    const OpenSimDecorationOptions& options,
     const std::function<void(const OpenSim::Component&, osc::SceneDecoration&&)>& out)
 {
     osc::ComponentAbsPathDecorationTagger pathTagger{};

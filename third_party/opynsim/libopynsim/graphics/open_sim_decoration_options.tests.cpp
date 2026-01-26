@@ -8,14 +8,14 @@
 #include <string_view>
 #include <unordered_map>
 
-using namespace osc;
+using namespace opyn;
 
 TEST(OpenSimDecorationOptions, RemembersColorScaling)
 {
     OpenSimDecorationOptions opts;
-    opts.setMuscleColorSourceScaling(MuscleColorSourceScaling::ModelWide);
+    opts.setMuscleColorSourceScaling(osc::MuscleColorSourceScaling::ModelWide);
     bool emitted = false;
-    opts.forEachOptionAsAppSettingValue([&emitted](std::string_view k, const Variant& v)
+    opts.forEachOptionAsAppSettingValue([&emitted](std::string_view k, const osc::Variant& v)
     {
         // Yep, this is hard-coded: it's just here as a sanity check: change/remove
         // it if it's causing trouble.
@@ -28,12 +28,12 @@ TEST(OpenSimDecorationOptions, RemembersColorScaling)
 
 TEST(OpenSimDecorationOptions, ReadsColorScalingFromDict)
 {
-    const std::unordered_map<std::string, Variant> lookup = {
-        {"muscle_color_scaling", Variant{"model_wide"}},
+    const std::unordered_map<std::string, osc::Variant> lookup = {
+        {"muscle_color_scaling", osc::Variant{"model_wide"}},
     };
 
     OpenSimDecorationOptions opts;
-    ASSERT_NE(opts.getMuscleColorSourceScaling(), MuscleColorSourceScaling::ModelWide);
+    ASSERT_NE(opts.getMuscleColorSourceScaling(), osc::MuscleColorSourceScaling::ModelWide);
     opts.tryUpdFromValues("", lookup);
-    ASSERT_EQ(opts.getMuscleColorSourceScaling(), MuscleColorSourceScaling::ModelWide);
+    ASSERT_EQ(opts.getMuscleColorSourceScaling(), osc::MuscleColorSourceScaling::ModelWide);
 }

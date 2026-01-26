@@ -29,7 +29,7 @@ TEST(DocumentationModels, CanAllBeLoadedAndInitializedWithoutThrowingAnException
     GloballyAddDirectoryToOpenSimGeometrySearchPath(std::filesystem::path{OSC_RESOURCES_DIR} / "geometry");
 
     SceneCache cache;
-    OpenSimDecorationOptions options;
+    opyn::OpenSimDecorationOptions options;
 
     std::filesystem::path docSourcesDir{OSC_DOCS_SOURCES_DIR};
     for_each_file_with_extensions_recursive(docSourcesDir, [&cache, &options](const std::filesystem::path& osim)

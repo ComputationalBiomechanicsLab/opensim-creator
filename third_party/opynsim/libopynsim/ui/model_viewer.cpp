@@ -28,7 +28,7 @@ namespace
         const Model& model,
         const ModelState& model_state)
     {
-        osc::OpenSimDecorationOptions options;
+        OpenSimDecorationOptions options;
         return osc::GenerateModelDecorations(
             scene_cache,
             model.opensim_model(),

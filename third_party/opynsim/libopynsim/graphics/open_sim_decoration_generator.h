@@ -11,7 +11,6 @@ namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace OpenSim { class ModelDisplayHints; }
 namespace osc { class ModelStatePair; }
-namespace osc { class OpenSimDecorationOptions; }
 namespace osc { struct SceneDecoration; }
 namespace osc { class SceneCache; }
 namespace SimTK { class State; }
@@ -25,7 +24,7 @@ namespace osc
         SceneCache&,
         const OpenSim::Model&,
         const SimTK::State&,
-        const OpenSimDecorationOptions&,
+        const opyn::OpenSimDecorationOptions&,
         float fixupScaleFactor,
         const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out
     );
@@ -34,7 +33,7 @@ namespace osc
     std::vector<SceneDecoration> GenerateModelDecorations(
         SceneCache&,
         const ModelStatePair&,
-        const OpenSimDecorationOptions& = {},
+        const opyn::OpenSimDecorationOptions& = {},
         float fixupScaleFactor = 1.0f
     );
 
@@ -43,7 +42,7 @@ namespace osc
         SceneCache&,
         const OpenSim::Model&,
         const SimTK::State&,
-        const OpenSimDecorationOptions& = {},
+        const opyn::OpenSimDecorationOptions& = {},
         float fixupScaleFactor = 1.0f
     );
 
@@ -55,7 +54,7 @@ namespace osc
         const OpenSim::Model&,
         const SimTK::State&,
         const OpenSim::Component& subcomponent,
-        const OpenSimDecorationOptions&,
+        const opyn::OpenSimDecorationOptions&,
         float fixupScaleFactor,
         const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out,
         bool inclusiveOfProvidedSubcomponent = true
@@ -68,7 +67,7 @@ namespace osc
         const OpenSim::Model&,
         const SimTK::State&,
         const OpenSim::Mesh&,
-        const OpenSimDecorationOptions&,
+        const opyn::OpenSimDecorationOptions&,
         float fixupScaleFactor
     );
 
@@ -92,6 +91,6 @@ namespace osc
         SceneCache&,
         const OpenSim::Model&,
         const SimTK::State&,
-        const OpenSimDecorationOptions&
+        const opyn::OpenSimDecorationOptions&
     );
 }

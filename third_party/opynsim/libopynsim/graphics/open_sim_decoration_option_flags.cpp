@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <optional>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
@@ -87,22 +87,22 @@ namespace
         },
     });
 
-    static_assert(c_CustomDecorationOptionLabels.size() == num_flags<OpenSimDecorationOptionFlag>());
+    static_assert(c_CustomDecorationOptionLabels.size() == osc::num_flags<OpenSimDecorationOptionFlag>());
 }
 
 
-const OpenSimDecorationOptionMetadata& osc::GetIthOptionMetadata(size_t i)
+const OpenSimDecorationOptionMetadata& opyn::GetIthOptionMetadata(size_t i)
 {
     return c_CustomDecorationOptionLabels.at(i);
 }
 
-OpenSimDecorationOptionFlag osc::GetIthOption(size_t i)
+OpenSimDecorationOptionFlag opyn::GetIthOption(size_t i)
 {
-    auto v = 1u << min(i, num_flags<OpenSimDecorationOptionFlag>()-1);
+    auto v = 1u << osc::min(i, osc::num_flags<OpenSimDecorationOptionFlag>()-1);
     return static_cast<OpenSimDecorationOptionFlag>(v);
 }
 
-void osc::SetIthOption(OpenSimDecorationOptionFlags& flags, size_t i, bool v)
+void opyn::SetIthOption(OpenSimDecorationOptionFlags& flags, size_t i, bool v)
 {
     flags.set(GetIthOption(i), v);
 }
