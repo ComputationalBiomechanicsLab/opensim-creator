@@ -23,6 +23,12 @@ if(OSCAR_INSTALL)
     include(GNUInstallDirs)             # `CMAKE_INSTALL_LIBDIR`, `CMAKE_INSTALL_INCLUDEDIR`
     include(CMakePackageConfigHelpers)  # `configure_package_config_file`
 
+    # Install resources to the runtime resources directory
+    install(
+        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/oscar_demos"
+        DESTINATION "resources"
+    )
+
     # Install all of `liboscar-demos`'s header files to `include/liboscar-demos`
     install(
         DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/"

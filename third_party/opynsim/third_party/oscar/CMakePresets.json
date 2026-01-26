@@ -8,6 +8,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OSCAR_FORCE_ASSERTS_ENABLED": "ON"
             },
@@ -20,6 +21,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck/install",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OSCAR_FORCE_ASSERTS_ENABLED": "ON",
                 "CMAKE_C_COMPILER": "clang",
@@ -38,7 +40,8 @@
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "hidden": false
         },
@@ -48,7 +51,8 @@
             "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "hidden": false
         }

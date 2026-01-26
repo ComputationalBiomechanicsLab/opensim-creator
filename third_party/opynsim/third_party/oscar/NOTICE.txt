@@ -1,19 +1,11 @@
 oscar
-Copyright 2025 Adam Kewley
+Copyright 2026 Adam Kewley
 License: Apache License Version 2.0
 
 This product includes software developed by third parties, listed
 below. All third-party code uses some kind of permissive license, and
 is either used as a library (i.e. unmodified, linked), or as a source
 code fork (i.e. copied + pasted, then subsequently modified in-tree).
-
-
-Libraries
-=========
-
-This product uses software developed by third parties in an unmodified
-form. The following software libraries are used:
-
 
 glad
 ----
@@ -37,6 +29,14 @@ imgui
 - https://github.com/ocornut/imgui
 - Licensed under the MIT license
 - Copyright (c) 2014-2024 Omar Cornut
+
+ImGuizmo
+--------
+
+- https://github.com/CedricGuillemet/ImGuizmo
+- Licensed under the MIT license
+- Copyright (c) 2016 Cedric Guillemet
+- Copied and pasted into oscar, then modified
 
 ImPlot
 ------
@@ -81,16 +81,3 @@ unordered_dense
 - Copyright (c) 2022 Martin Leitner-Ankerl
 
 
-Source Code Forks (Copy + Paste + Modify)
-=========================================
-
-This product contains source code that was originally copied + pasted
-from its original project into this project's sourcetree. The
-following source code was copied, pasted, and modified in-tree:
-
-ImGuizmo
---------
-
-- https://github.com/CedricGuillemet/ImGuizmo
-- Licensed under the MIT license
-- Copyright (c) 2016 Cedric Guillemet

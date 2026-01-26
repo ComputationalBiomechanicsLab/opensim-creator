@@ -2709,15 +2709,15 @@ void osc::ui::DrawListAPI::render_to(RenderTexture& target)
     ImDrawList& drawlist = impl_get_drawlist();
 
     ImDrawData data;
-    data.Valid = true;
-    data.CmdListsCount = 1;
-    data.TotalIdxCount = drawlist.VtxBuffer.Size;
-    data.TotalIdxCount = drawlist.IdxBuffer.Size;
-    data.CmdLists.push_back(&drawlist);
+
+    // Configure output info
     data.DisplayPos = {0.0f, 0.0f};
     data.DisplaySize = target.dimensions();
     data.FramebufferScale = ImVec2{target.device_pixel_ratio(), target.device_pixel_ratio()};
     data.OwnerViewport = ImGui::GetMainViewport();
+
+    // Add the `ImDrawList`.
+    data.AddDrawList(&drawlist);
 
     graphics_backend_render(&data, &target);
 }
@@ -2735,7 +2735,8 @@ ui::DrawListView osc::ui::get_foreground_draw_list()
 osc::ui::DrawList::DrawList() :
     underlying_drawlist_{std::make_unique<ImDrawList>(ImGui::GetDrawListSharedData())}
 {
-    underlying_drawlist_->Flags |= ImDrawListFlags_AntiAliasedLines;
+    underlying_drawlist_->_ResetForNewFrame();
+    underlying_drawlist_->PushTexture(ImGui::GetIO().Fonts->TexRef);  // Ensure the draw list can use the main font texture
     underlying_drawlist_->AddDrawCmd();
 }
 osc::ui::DrawList::DrawList(DrawList&&) noexcept = default;

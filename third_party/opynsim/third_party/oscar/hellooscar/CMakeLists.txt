@@ -7,8 +7,13 @@ if(OSCAR_USE_STRICT_COMPILER_FLAGS)
 endif()
 target_link_libraries(hellooscar PRIVATE oscar)
 
-# for development on Windows, copy all runtime dlls to the exe directory
-# (because Windows doesn't have an RPATH)
+if(OSCAR_INSTALL)
+    include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR, _INCLUDEDIR, etc.
+    install(TARGETS hellooscar RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
+
+# For development on Windows, copy all runtime dlls to the binary directory
+# (because Windows doesn't have an RPATH).
 #
 # see: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html?highlight=runtime#genex:TARGET_RUNTIME_DLLS
 if(WIN32)
@@ -19,4 +24,3 @@ if(WIN32)
         COMMAND_EXPAND_LISTS
     )
 endif()
-
