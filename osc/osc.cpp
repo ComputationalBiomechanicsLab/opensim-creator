@@ -4,7 +4,6 @@
 #include <libopensimcreator/UI/MainUIScreen.h>
 #include <liboscar/platform/app_metadata.h>
 #include <liboscar/ui/tabs/tab_registry.h>
-#include <liboscar-demos/oscar_demos_tab_registry.h>
 
 #include <cstdlib>
 #include <filesystem>
@@ -60,11 +59,6 @@ int main(int argc, char* argv[])
 
     // init top-level application state
     OpenSimCreatorApp app{GetOpenSimCreatorAppMetadata()};
-
-#ifdef OSC_BUNDLE_OSCAR_DEMOS
-    // also, register the demo tabs
-    register_demo_tabs(app.upd_tab_registry());
-#endif
 
     // init top-level widget (tab host)
     auto tabbed_widget = std::make_unique<MainUIScreen>();

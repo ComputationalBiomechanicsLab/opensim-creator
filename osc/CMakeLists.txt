@@ -35,8 +35,6 @@ set(
     "a longer, user-friendly name of the application"
 )
 mark_as_advanced(OSC_LONG_APPNAME)
-option(OSC_BUNDLE_OSCAR_DEMOS "enable/disable bundling oscar demos with the `osc` application" OFF)
-mark_as_advanced(OSC_BUNDLE_OSCAR_DEMOS)
 
 # set OSC_BUILD_ID
 if(DEFINED ENV{OSC_BUILD_ID})
@@ -73,7 +71,7 @@ if(OSC_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../libopensimcreator/cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
     target_compile_options(osc PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
 endif()
-target_link_libraries(osc PRIVATE opensimcreator $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:oscar_demos>)
+target_link_libraries(osc PRIVATE opensimcreator)
 target_include_directories(osc
     # so that `#include <osc/osc_config.h>` works
     PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/
