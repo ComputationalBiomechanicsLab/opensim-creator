@@ -1,6 +1,6 @@
 #include "open_sim_helpers.h"
 
-#include <libopynsim/tests/testopynsimconfig.h>
+#include <libopynsim/tests/opynsim_tests_config.h>
 
 #include <gtest/gtest.h>
 #include <libopynsim/component_registry/component_registry.h>
@@ -70,7 +70,7 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
 {
     opyn::init();  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models" / "Leg39" / "leg39.osim";
+    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "Leg39" / "leg39.osim";
 
     OpenSim::Model model{modelPath.string()};
     InitializeModel(model);
@@ -145,7 +145,7 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
 {
     opyn::init();  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     std::string outparam;
@@ -161,7 +161,7 @@ TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexM
 {
     opyn::init();  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     for (const OpenSim::Component& c : m.getComponentList()) {
@@ -178,7 +178,7 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionFor
 {
     opyn::init();  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     for (const OpenSim::Component& c : m.getComponentList()) {
@@ -192,7 +192,7 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
 {
     opyn::init();  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     const OpenSim::Model originalModel{modelPath.string()};
     OpenSim::Model modifiedModel{originalModel};
@@ -223,7 +223,7 @@ TEST(OpenSimHelpers, InitializeModelAndInitializeStateWorkOnModelWithNotOptimize
     opyn::init();  // for loading the osim
 
     const std::filesystem::path brokenFilePath =
-        std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "opensim-creator_1070_repro.osim";
+        std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "opensim-creator_1070_repro.osim";
     OpenSim::Model model{brokenFilePath.string()};
     InitializeModel(model);  // shouldn't throw
 
@@ -286,7 +286,7 @@ TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
 TEST(OpenSimHelpers, DISABLED_FinalizeConnectionsWithUnusualJointTopologyDoesNotSegfault)
 {
     const std::filesystem::path brokenFilePath =
-        std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "opensim-creator_773-2_repro.osim";
+        std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "opensim-creator_773-2_repro.osim";
     OpenSim::Model model{brokenFilePath.string()};
     model.finalizeFromProperties();
 
@@ -365,7 +365,7 @@ TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
         {OpenSim::ComponentPath{"/forceset/gaslat_r/path"}, {"GasLat_at_shank_r", "Gastroc_at_condyles_r"}},
     });
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
     OpenSim::Model m{modelPath.string()};
     InitializeModel(m);
     InitializeState(m);
@@ -413,7 +413,7 @@ TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsUntitledWhenProvidedInMemory
 TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsFilenameIfProvidedLoadedModel)
 {
     opyn::init();
-    std::filesystem::path modelPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models" / "Blank" / "blank.osim";
+    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "Blank" / "blank.osim";
     OpenSim::Model model{modelPath.string()};
     ASSERT_EQ(RecommendedDocumentName(model), "blank.osim");
 }

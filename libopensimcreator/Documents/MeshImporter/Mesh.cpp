@@ -44,7 +44,7 @@ std::optional<AABB> osc::mi::Mesh::calcBounds() const
 
 void osc::mi::Mesh::reloadMeshDataFromDisk()
 {
-    m_MeshData = LoadMeshViaSimbody(getPath());
+    m_MeshData = opyn::LoadMeshViaSimbody(getPath());
 }
 
 MIClass osc::mi::Mesh::CreateClass()

@@ -3,9 +3,9 @@
 // char[]
 //
 // full application name string
-#define TESTOPYNSIM_APPNAME_STRING "testopynsim"
+#define OPYNSIM_TESTS_APPNAME_STRING "opynsim_tests"
 
 // char[]
 //
 // absolute path to the resources directory for the opynsim test suite
-#define OPYN_TESTING_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/resources"
+#define OPYNSIM_TESTS_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/resources"

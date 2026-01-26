@@ -22,12 +22,12 @@ namespace OpenSim { class Mesh; }
 namespace OpenSim { class Point; }
 namespace OpenSim { class Sphere; }
 namespace OpenSim { class Station; }
+namespace opyn { class OverlayDecorationOptions; }
 namespace osc { class CustomRenderingOptions; }
 namespace osc { class IconCache; }
 namespace osc { class ModelStatePair; }
 namespace osc { class OutputExtractor; }
 namespace osc { class OpenSimDecorationOptions; }
-namespace osc { class OverlayDecorationOptions; }
 namespace osc { class ParamBlock; }
 namespace osc { class Rect; }
 namespace osc { class SimulationModelStatePair; }
@@ -229,7 +229,7 @@ namespace osc
     bool DrawMuscleColorScalingOptionsRadioButtons(OpenSimDecorationOptions&);
     bool DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions&);
     bool DrawRenderingOptionsEditor(CustomRenderingOptions&);
-    bool DrawOverlayOptionsEditor(OverlayDecorationOptions&);
+    bool DrawOverlayOptionsEditor(opyn::OverlayDecorationOptions&);
     bool DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions&);
     bool DrawAdvancedParamsEditor(ModelRendererParams&, std::span<const SceneDecoration>);
     bool DrawVisualAidsContextMenuContent(ModelRendererParams&);

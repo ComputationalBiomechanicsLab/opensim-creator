@@ -18,7 +18,7 @@
 #include <string_view>
 #include <vector>
 
-using namespace osc;
+using namespace opyn;
 using namespace std::literals;
 namespace rgs = std::ranges;
 
@@ -26,15 +26,15 @@ namespace
 {
     constexpr auto c_supported_mesh_extensions = std::to_array({"obj"sv, "vtp"sv, "stl"sv, "stla"sv});
 
-    std::span<const FileDialogFilter> get_file_dialog_filters()
+    std::span<const osc::FileDialogFilter> get_file_dialog_filters()
     {
-        static const auto s_filters = std::to_array<FileDialogFilter>({
-            FileDialogFilter{"Mesh Data (*.obj, *.vtp, *.stl, *.stla)", "obj;vtp;stl;stla"},
-            FileDialogFilter{"Wavefront (*.obj)", "obj"},
-            FileDialogFilter{"VTK PolyData (*.vtp)", "vtp"},
-            FileDialogFilter{"STL (*.stl)", "stl"},
-            FileDialogFilter{"ASCII STL (*.stla)", "stla"},
-            FileDialogFilter::all_files(),
+        static const auto s_filters = std::to_array<osc::FileDialogFilter>({
+            osc::FileDialogFilter{"Mesh Data (*.obj, *.vtp, *.stl, *.stla)", "obj;vtp;stl;stla"},
+            osc::FileDialogFilter{"Wavefront (*.obj)", "obj"},
+            osc::FileDialogFilter{"VTK PolyData (*.vtp)", "vtp"},
+            osc::FileDialogFilter{"STL (*.stl)", "stl"},
+            osc::FileDialogFilter{"ASCII STL (*.stla)", "stla"},
+            osc::FileDialogFilter::all_files(),
         });
         return s_filters;
     }
@@ -68,11 +68,11 @@ namespace
     }
 }
 
-Mesh osc::ToOscMesh(const SimTK::PolygonalMesh& mesh)
+osc::Mesh opyn::ToOscMesh(const SimTK::PolygonalMesh& mesh)
 {
     const auto metrics = CalcMeshMetrics(mesh);
 
-    std::vector<Vector3> vertices;
+    std::vector<osc::Vector3> vertices;
     vertices.reserve(metrics.numVertices);
 
     std::vector<uint32_t> indices;
@@ -94,7 +94,7 @@ Mesh osc::ToOscMesh(const SimTK::PolygonalMesh& mesh)
 
     // copy all vertex positions from the source mesh
     for (int i = 0; i < mesh.getNumVertices(); ++i) {
-        vertices.push_back(to<Vector3>(mesh.getVertexPosition(i)));
+        vertices.push_back(osc::to<osc::Vector3>(mesh.getVertexPosition(i)));
     }
 
     // build up the index list while triangulating any n>3 faces
@@ -133,7 +133,7 @@ Mesh osc::ToOscMesh(const SimTK::PolygonalMesh& mesh)
             // polygon: triangulate each edge with a centroid
 
             // compute+add centroid vertex
-            Vector3 centroid_of{};
+            osc::Vector3 centroid_of{};
             for (int vert = 0; vert < numFaceVerts; ++vert) {
                 centroid_of += vertices.at(mesh.getFaceVertex(face, vert));
             }
@@ -156,36 +156,36 @@ Mesh osc::ToOscMesh(const SimTK::PolygonalMesh& mesh)
         }
     }
 
-    Mesh rv;
+    osc::Mesh rv;
     rv.set_vertices(vertices);
     rv.set_indices(indices);
     rv.recalculate_normals();
     return rv;
 }
 
-std::span<const std::string_view> osc::GetSupportedSimTKMeshFormats()
+std::span<const std::string_view> opyn::GetSupportedSimTKMeshFormats()
 {
     return c_supported_mesh_extensions;
 }
 
-std::span<const FileDialogFilter> osc::GetSupportedSimTKMeshFormatsAsFilters()
+std::span<const osc::FileDialogFilter> opyn::GetSupportedSimTKMeshFormatsAsFilters()
 {
     return get_file_dialog_filters();
 }
 
-Mesh osc::LoadMeshViaSimbody(const std::filesystem::path& p)
+osc::Mesh opyn::LoadMeshViaSimbody(const std::filesystem::path& p)
 {
     const SimTK::DecorativeMeshFile dmf{p.string()};
     const SimTK::PolygonalMesh& mesh = dmf.getMesh();
     return ToOscMesh(mesh);
 }
 
-void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<const Vector3> vertices, MeshIndicesView indices)
+void opyn::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<const osc::Vector3> vertices, osc::MeshIndicesView indices)
 {
     mesh.clear();
 
     // assign vertices
-    for (const Vector3& vertex : vertices) {
+    for (const osc::Vector3& vertex : vertices) {
         mesh.addVertex(to<SimTK::Vec3>(vertex));
     }
 

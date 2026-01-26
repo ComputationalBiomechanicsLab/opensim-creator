@@ -188,7 +188,7 @@ public:
 
         // generate decorations + rendering params
         GenerateChooseComponentsDecorations(m_State, m_Decorations);
-        const SceneRendererParams rendererParameters = CalcSceneRendererParams(
+        const SceneRendererParams rendererParameters = opyn::CalcSceneRendererParams(
             m_State.renderParams,
             panelState.viewportUiRect.dimensions(),
             App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
@@ -208,7 +208,7 @@ public:
         // do hovertest
         if (layerIsHovered)
         {
-            const std::optional<SceneCollision> collision = GetClosestCollision(
+            const std::optional<SceneCollision> collision = opyn::GetClosestCollision(
                 m_Decorations.bvh,
                 *m_State.meshCache,
                 m_Decorations.decorations,

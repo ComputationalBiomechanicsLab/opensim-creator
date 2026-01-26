@@ -8,16 +8,16 @@ namespace SimTK { class DecorativeGeometry; }
 namespace SimTK { class SimbodyMatterSubsystem; }
 namespace SimTK { class State; }
 
-namespace osc
+namespace opyn
 {
     // generates `SceneDecoration`s for the given `SimTK::DecorativeGeometry`
     // and passes them to the output consumer
     void GenerateDecorations(
-        SceneCache&,
+        osc::SceneCache&,
         const SimTK::SimbodyMatterSubsystem&,
         const SimTK::State&,
         const SimTK::DecorativeGeometry&,
         float fixupScaleFactor,
-        const std::function<void(SceneDecoration&&)>& out
+        const std::function<void(osc::SceneDecoration&&)>& out
     );
 }

@@ -3,7 +3,7 @@
 #include <array>
 #include <span>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
@@ -54,7 +54,7 @@ namespace
     });
 }
 
-CStringView osc::getLabel(OverlayDecorationOptionGroup g)
+osc::CStringView opyn::getLabel(OverlayDecorationOptionGroup g)
 {
     switch (g)
     {
@@ -66,7 +66,7 @@ CStringView osc::getLabel(OverlayDecorationOptionGroup g)
     }
 }
 
-std::span<const OverlayDecorationOptionFlagsMetadata> osc::GetAllOverlayDecorationOptionFlagsMetadata()
+std::span<const OverlayDecorationOptionFlagsMetadata> opyn::GetAllOverlayDecorationOptionFlagsMetadata()
 {
     return c_Metadata;
 }

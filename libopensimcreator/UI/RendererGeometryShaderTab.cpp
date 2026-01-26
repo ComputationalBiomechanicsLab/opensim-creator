@@ -96,7 +96,7 @@ private:
     MeshBasicMaterial m_SceneMaterial;
     MeshNormalVectorsMaterial m_NormalsMaterial;
 
-    Mesh m_Mesh = LoadMeshViaSimbody(App::resource_filepath("OpenSimCreator/geometry/hat_ribs_scap.vtp").value_or(std::filesystem::path{"OpenSimCreator/geometry/hat_ribs_scap.vtp"}));
+    Mesh m_Mesh = opyn::LoadMeshViaSimbody(App::resource_filepath("OpenSimCreator/geometry/hat_ribs_scap.vtp").value_or(std::filesystem::path{"OpenSimCreator/geometry/hat_ribs_scap.vtp"}));
     Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
     EulerAngles m_CameraEulers;

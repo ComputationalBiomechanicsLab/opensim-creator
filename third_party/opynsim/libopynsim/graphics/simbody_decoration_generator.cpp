@@ -24,7 +24,7 @@
 #include <optional>
 #include <string>
 
-using namespace osc;
+using namespace opyn;
 
 // helper functions
 namespace
@@ -34,7 +34,7 @@ namespace
     inline constexpr float c_FrameAxisThickness = 0.0025f;
 
     // extracts scale factors from geometry
-    Vector3 GetScaleFactors(const SimTK::DecorativeGeometry& geom)
+    osc::Vector3 GetScaleFactors(const SimTK::DecorativeGeometry& geom)
     {
         SimTK::Vec3 sf = geom.getScaleFactors();
 
@@ -44,7 +44,7 @@ namespace
             sf[i] = not std::isnan(sf[i]) ? sf[i] : 0.0;
         }
 
-        return to<Vector3>(sf);
+        return osc::to<osc::Vector3>(sf);
     }
 
     float GetOpacity(const SimTK::DecorativeGeometry& geometry)
@@ -54,16 +54,16 @@ namespace
     }
 
     // returns the color of `geometry`, with any defaults saturated to `1.0f`
-    Color GetColor(const SimTK::DecorativeGeometry& geometry)
+    osc::Color GetColor(const SimTK::DecorativeGeometry& geometry)
     {
-        auto rgb = to<Vector3>(geometry.getColor());
+        auto rgb = osc::to<osc::Vector3>(geometry.getColor());
 
         // Simbody uses `-1` to mean "use default`. We use a default of `1.0f`
         // whenever this, or a NaN, occurs.
         for (auto& component : rgb) {
             component = component >= 0.0f ? component : 1.0f;
         }
-        return Color{rgb, GetOpacity(geometry)};
+        return osc::Color{rgb, GetOpacity(geometry)};
     }
 
     // Returns `true` if `geometry` has a defaulted color
@@ -72,20 +72,20 @@ namespace
         return geometry.getColor() == SimTK::Vec3{-1.0, -1.0, -1.0};
     }
 
-    SceneDecorationFlags GetFlags(const SimTK::DecorativeGeometry& geom)
+    osc::SceneDecorationFlags GetFlags(const SimTK::DecorativeGeometry& geom)
     {
         switch (geom.getRepresentation()) {
         case SimTK::DecorativeGeometry::DrawWireframe:
-            return SceneDecorationFlag::OnlyWireframe;
+            return osc::SceneDecorationFlag::OnlyWireframe;
         case SimTK::DecorativeGeometry::Hide:
-            return SceneDecorationFlag::Hidden;
+            return osc::SceneDecorationFlag::Hidden;
         default:
-            return SceneDecorationFlag::Default;
+            return osc::SceneDecorationFlag::Default;
         }
     }
 
     // creates a geometry-to-ground transform for the given geometry
-    Transform ToOscTransformWithoutScaling(
+    osc::Transform ToOscTransformWithoutScaling(
         const SimTK::SimbodyMatterSubsystem& matter,
         const SimTK::State& state,
         const SimTK::DecorativeGeometry& g)
@@ -94,7 +94,7 @@ namespace
         const SimTK::Transform& body2ground = mobod.getBodyTransform(state);
         const SimTK::Transform& decoration2body = g.getTransform();
 
-        return to<Transform>(body2ground * decoration2body);
+        return osc::to<osc::Transform>(body2ground * decoration2body);
     }
 
     size_t hash_of(const SimTK::Vec3& v)
@@ -111,7 +111,7 @@ namespace
         hash = osc::hash_combine(hash, osc::hash_of(numVerts));
         for (int vert = 0; vert < numVerts; ++vert)
         {
-            hash = hash_combine(hash, hash_of(mesh.getVertexPosition(vert)));
+            hash = osc::hash_combine(hash, hash_of(mesh.getVertexPosition(vert)));
         }
 
         // combine face indices into mesh
@@ -134,11 +134,11 @@ namespace
     class GeometryImpl final : public SimTK::DecorativeGeometryImplementation {
     public:
         GeometryImpl(
-            SceneCache& meshCache,
+            osc::SceneCache& meshCache,
             const SimTK::SimbodyMatterSubsystem& matter,
             const SimTK::State& st,
             float fixupScaleFactor,
-            const std::function<void(SceneDecoration&&)>& out) :
+            const std::function<void(osc::SceneDecoration&&)>& out) :
 
             m_MeshCache{meshCache},
             m_Matter{matter},
@@ -149,12 +149,12 @@ namespace
         }
 
     private:
-        Transform ToOscTransformWithoutScaling(const SimTK::DecorativeGeometry& d) const
+        osc::Transform ToOscTransformWithoutScaling(const SimTK::DecorativeGeometry& d) const
         {
             return ::ToOscTransformWithoutScaling(m_Matter, m_State, d);
         }
 
-        Transform ToOscTransform(const SimTK::DecorativeGeometry& d) const
+        osc::Transform ToOscTransform(const SimTK::DecorativeGeometry& d) const
         {
             return ToOscTransformWithoutScaling(d).with_scale(GetScaleFactors(d));
         }
@@ -163,40 +163,40 @@ namespace
         {
             [[maybe_unused]] static const bool s_ShownWarningOnce = []()
             {
-                log_warn("this model uses implementPointGeometry, which is not yet implemented in OSC");
+                osc::log_warn("this model uses implementPointGeometry, which is not yet implemented in OSC");
                 return true;
             }();
         }
 
         void implementLineGeometry(const SimTK::DecorativeLine& d) final
         {
-            const Transform t = ToOscTransform(d);
-            const Vector3 p1 = t * to<Vector3>(d.getPoint1());
-            const Vector3 p2 = t * to<Vector3>(d.getPoint2());
+            const osc::Transform t = ToOscTransform(d);
+            const osc::Vector3 p1 = t * osc::to<osc::Vector3>(d.getPoint1());
+            const osc::Vector3 p2 = t * osc::to<osc::Vector3>(d.getPoint2());
 
             const float thickness = c_LineThickness * m_FixupScaleFactor;
 
-            Transform cylinderXform = cylinder_to_line_segment_transform({p1, p2}, thickness);
+            osc::Transform cylinderXform = osc::cylinder_to_line_segment_transform({p1, p2}, thickness);
             cylinderXform.scale *= t.scale;
 
-            m_Consumer(SceneDecoration{
+            m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.cylinder_mesh(),
                 .transform = cylinderXform,
                 .shading = GetColor(d),
-                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
+                .flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
         void implementBrickGeometry(const SimTK::DecorativeBrick& d) final
         {
-            Transform t = ToOscTransform(d);
-            t.scale *= to<Vector3>(d.getHalfLengths());
+            osc::Transform t = ToOscTransform(d);
+            t.scale *= osc::to<osc::Vector3>(d.getHalfLengths());
 
-            m_Consumer(SceneDecoration{
+            m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.brick_mesh(),
                 .transform = t,
                 .shading = GetColor(d),
-                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
+                .flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
@@ -205,14 +205,14 @@ namespace
             const auto radius = static_cast<float>(d.getRadius());
             const auto halfHeight = static_cast<float>(d.getHalfHeight());
 
-            Transform t = ToOscTransform(d);
-            t.scale *= Vector3{radius, halfHeight , radius};
+            osc::Transform t = ToOscTransform(d);
+            t.scale *= osc::Vector3{radius, halfHeight , radius};
 
-            m_Consumer(SceneDecoration{
+            m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.cylinder_mesh(),
                 .transform = t,
                 .shading = GetColor(d),
-                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
+                .flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
@@ -220,86 +220,86 @@ namespace
         {
             const auto radius = static_cast<float>(d.getRadius());
 
-            Transform t = ToOscTransform(d);
-            t.scale *= Vector3{radius, radius, 1.0f};
+            osc::Transform t = ToOscTransform(d);
+            t.scale *= osc::Vector3{radius, radius, 1.0f};
 
-            m_Consumer(SceneDecoration{
+            m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.circle_mesh(),
                 .transform = t,
                 .shading = GetColor(d),
-                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
+                .flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
         void implementSphereGeometry(const SimTK::DecorativeSphere& d) final
         {
-            Transform t = ToOscTransform(d);
+            osc::Transform t = ToOscTransform(d);
             t.scale *= m_FixupScaleFactor * static_cast<float>(d.getRadius());
 
-            m_Consumer(SceneDecoration{
+            m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.sphere_mesh(),
                 .transform = t,
                 .shading = GetColor(d),
-                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
+                .flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
         void implementEllipsoidGeometry(const SimTK::DecorativeEllipsoid& d) final
         {
-            Transform t = ToOscTransform(d);
-            t.scale *= to<Vector3>(d.getRadii());
+            osc::Transform t = ToOscTransform(d);
+            t.scale *= osc::to<osc::Vector3>(d.getRadii());
 
-            m_Consumer(SceneDecoration{
+            m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.sphere_mesh(),
                 .transform = t,
                 .shading = GetColor(d),
-                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
+                .flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
         void implementFrameGeometry(const SimTK::DecorativeFrame& d) final
         {
-            const Transform t = ToOscTransform(d);
+            const osc::Transform t = ToOscTransform(d);
 
             // if the calling code explicitly sets the color of a frame as non-white, then
             // that override should be obeyed, rather than using OSC's custom coloring
             // scheme (#985).
-            const std::optional<Color> colorOverride = IsDefaultColor(d)  or d.getColor() == SimTK::Vec3{1.0, 1.0, 1.0} ?
-                std::optional<Color>{} :
+            const std::optional<osc::Color> colorOverride = IsDefaultColor(d)  or d.getColor() == SimTK::Vec3{1.0, 1.0, 1.0} ?
+                std::optional<osc::Color>{} :
                 GetColor(d);
 
             // emit origin sphere
             {
                 const float radius = 0.05f * c_FrameAxisLengthRescale * m_FixupScaleFactor;
-                const Transform sphereXform = t.with_scale(radius);
+                const osc::Transform sphereXform = t.with_scale(radius);
 
-                m_Consumer(SceneDecoration{
+                m_Consumer(osc::SceneDecoration{
                     .mesh = m_MeshCache.sphere_mesh(),
                     .transform = sphereXform,
-                    .shading = colorOverride ? *colorOverride : Color::white(),
-                    .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
+                    .shading = colorOverride ? *colorOverride : osc::Color::white(),
+                    .flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull,
                 });
             }
 
             // emit leg cylinders
-            const Vector3 axisLengths = t.scale * static_cast<float>(d.getAxisLength());
+            const osc::Vector3 axisLengths = t.scale * static_cast<float>(d.getAxisLength());
             const float legLen = c_FrameAxisLengthRescale * m_FixupScaleFactor;
             const float legThickness = c_FrameAxisThickness * m_FixupScaleFactor;
-            const auto flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull;
+            const auto flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull;
             for (int axis = 0; axis < 3; ++axis) {
-                Vector3 direction = {0.0f, 0.0f, 0.0f};
+                osc::Vector3 direction = {0.0f, 0.0f, 0.0f};
                 direction[axis] = 1.0f;
 
-                const LineSegment lineSegment = {
+                const osc::LineSegment lineSegment = {
                     t.translation,
                     t.translation + (legLen * axisLengths[axis] * transform_direction(t, direction))
                 };
-                const Transform legXform = cylinder_to_line_segment_transform(lineSegment, legThickness);
+                const osc::Transform legXform = cylinder_to_line_segment_transform(lineSegment, legThickness);
 
-                Color color = {0.0f, 0.0f, 0.0f, 1.0f};
+                osc::Color color = {0.0f, 0.0f, 0.0f, 1.0f};
                 color[axis] = 1.0f;
 
-                m_Consumer(SceneDecoration{
+                m_Consumer(osc::SceneDecoration{
                     .mesh = m_MeshCache.cylinder_mesh(),
                     .transform = legXform,
                     .shading = colorOverride ? *colorOverride : color,
@@ -312,7 +312,7 @@ namespace
         {
             [[maybe_unused]] static const bool s_ShownWarningOnce = []()
             {
-                log_warn("this model uses implementTextGeometry, which is not yet implemented in OSC");
+                osc::log_warn("this model uses implementTextGeometry, which is not yet implemented in OSC");
                 return true;
             }();
         }
@@ -330,7 +330,7 @@ namespace
             const std::string id = std::to_string(hash_of(d.getMesh()));
             const auto meshLoaderFunc = [&d]() { return ToOscMesh(d.getMesh()); };
 
-            m_Consumer(SceneDecoration{
+            m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.get_mesh(id, meshLoaderFunc),
                 .transform = ToOscTransform(d),
                 .shading = GetColor(d),
@@ -343,7 +343,7 @@ namespace
             const std::string& path = d.getMeshFile();
             const auto meshLoader = [&d](){ return ToOscMesh(d.getMesh()); };
 
-            m_Consumer(SceneDecoration{
+            m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.get_mesh(path, meshLoader),
                 .transform = ToOscTransform(d),
                 .shading = GetColor(d),
@@ -353,15 +353,15 @@ namespace
 
         void implementArrowGeometry(const SimTK::DecorativeArrow& d) final
         {
-            const Transform t = ToOscTransformWithoutScaling(d);
-            const ArrowProperties p = {
-                .start = t * to<Vector3>(d.getStartPoint()),
-                .end = t * to<Vector3>(d.getEndPoint()),
+            const osc::Transform t = ToOscTransformWithoutScaling(d);
+            const osc::ArrowProperties p = {
+                .start = t * osc::to<osc::Vector3>(d.getStartPoint()),
+                .end = t * osc::to<osc::Vector3>(d.getEndPoint()),
                 .tip_length = static_cast<float>(d.getTipLength()),
                 .neck_thickness = m_FixupScaleFactor * static_cast<float>(d.getLineThickness()),
                 .head_thickness = 1.75f * m_FixupScaleFactor * static_cast<float>(d.getLineThickness()),
                 .color = GetColor(d),
-                .decoration_flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
+                .decoration_flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull,
             };
             draw_arrow(m_MeshCache, p, m_Consumer);
         }
@@ -371,53 +371,53 @@ namespace
             const auto tube_center_radius = static_cast<float>(d.getTorusRadius());
             const auto tube_radius = static_cast<float>(d.getTubeRadius());
 
-            m_Consumer(SceneDecoration{
+            m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.torus_mesh(tube_center_radius, tube_radius),
                 .transform = ToOscTransform(d),
                 .shading = GetColor(d),
-                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
+                .flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
         void implementConeGeometry(const SimTK::DecorativeCone& d) final
         {
-            const Transform t = ToOscTransform(d);
+            const osc::Transform t = ToOscTransform(d);
 
-            auto posBase = to<Vector3>(d.getOrigin());
-            auto posDir = to<Vector3>(d.getDirection());
+            auto posBase = osc::to<osc::Vector3>(d.getOrigin());
+            auto posDir = osc::to<osc::Vector3>(d.getDirection());
 
-            const Vector3 pos = transform_point(t, posBase);
-            const Vector3 direction = transform_direction(t, posDir);
+            const osc::Vector3 pos = transform_point(t, posBase);
+            const osc::Vector3 direction = transform_direction(t, posDir);
 
             const auto radius = static_cast<float>(d.getBaseRadius());
             const auto height = static_cast<float>(d.getHeight());
 
-            Transform coneXform = cylinder_to_line_segment_transform({pos, pos + height*direction}, radius);
+            osc::Transform coneXform = osc::cylinder_to_line_segment_transform({pos, pos + height*direction}, radius);
             coneXform.scale *= t.scale;
 
-            m_Consumer(SceneDecoration{
+            m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.cone_mesh(),
                 .transform = coneXform,
                 .shading = GetColor(d),
-                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
+                .flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
-        SceneCache& m_MeshCache;
+        osc::SceneCache& m_MeshCache;
         const SimTK::SimbodyMatterSubsystem& m_Matter;
         const SimTK::State& m_State;
         float m_FixupScaleFactor;
-        const std::function<void(SceneDecoration&&)>& m_Consumer;
+        const std::function<void(osc::SceneDecoration&&)>& m_Consumer;
     };
 }
 
-void osc::GenerateDecorations(
-    SceneCache& meshCache,
+void opyn::GenerateDecorations(
+    osc::SceneCache& meshCache,
     const SimTK::SimbodyMatterSubsystem& matter,
     const SimTK::State& state,
     const SimTK::DecorativeGeometry& geom,
     float fixupScaleFactor,
-    const std::function<void(SceneDecoration&&)>& out)
+    const std::function<void(osc::SceneDecoration&&)>& out)
 {
     GeometryImpl impl{meshCache, matter, state, fixupScaleFactor, out};
     geom.implementGeometry(impl);

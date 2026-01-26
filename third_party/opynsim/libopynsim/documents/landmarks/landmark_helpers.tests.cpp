@@ -1,6 +1,6 @@
 #include "landmark_helpers.h"
 
-#include <libopynsim/tests/testopynsimconfig.h>
+#include <libopynsim/tests/opynsim_tests_config.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/maths/vector3.h>
@@ -22,7 +22,7 @@ namespace
 {
     std::filesystem::path GetFixturesDir()
     {
-        auto p = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "Documents/Landmarks";
+        auto p = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "Documents/Landmarks";
         p = std::filesystem::weakly_canonical(p);
         return p;
     }

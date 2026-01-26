@@ -1047,7 +1047,7 @@ bool osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
     return edited;
 }
 
-bool osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
+bool osc::DrawOverlayOptionsEditor(opyn::OverlayDecorationOptions& opts)
 {
     std::optional<CStringView> lastGroupLabel;
     bool edited = false;

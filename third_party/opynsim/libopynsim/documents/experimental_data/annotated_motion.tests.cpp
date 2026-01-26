@@ -1,6 +1,6 @@
 #include "annotated_motion.h"
 
-#include <libopynsim/tests/testopynsimconfig.h>
+#include <libopynsim/tests/opynsim_tests_config.h>
 
 #include <gtest/gtest.h>
 
@@ -18,7 +18,7 @@ using namespace osc;
 TEST(AnnotatedMotion, CanLoadTRCFileContainingSuperfluousMarkers)
 {
     const std::filesystem::path reproFile =
-        std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "opensim-creator_1068_repro.trc";
+        std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "opensim-creator_1068_repro.trc";
 
     const AnnotatedMotion motion(reproFile);  // shouldn't throw
     ASSERT_EQ(motion.getNumDataSeries(), 60) << "if this is 63, then maybe you have a problem - or coerced the marker names :-)";

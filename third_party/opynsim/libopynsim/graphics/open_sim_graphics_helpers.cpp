@@ -20,11 +20,11 @@
 #include <string_view>
 #include <vector>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
-    bool collision_priority_greater(const std::optional<SceneCollision>& lhs, const SceneCollision& rhs)
+    bool collision_priority_greater(const std::optional<osc::SceneCollision>& lhs, const osc::SceneCollision& rhs)
     {
         if (not lhs) {
             return true;  // any collision is better than no collision
@@ -46,14 +46,14 @@ namespace
     }
 }
 
-SceneRendererParams osc::CalcSceneRendererParams(
-    const ModelRendererParams& renderParams,
-    Vector2 viewportDims,
+osc::SceneRendererParams opyn::CalcSceneRendererParams(
+    const osc::ModelRendererParams& renderParams,
+    osc::Vector2 viewportDims,
     float viewportDevicePixelRatio,
-    AntiAliasingLevel antiAliasingLevel,
+    osc::AntiAliasingLevel antiAliasingLevel,
     float fixupScaleFactor)
 {
-    SceneRendererParams rv;
+    osc::SceneRendererParams rv;
 
     if (viewportDims.x() >= 1.0f && viewportDims.y() >= 1.0f) {
         rv.dimensions = viewportDims;
@@ -74,16 +74,18 @@ SceneRendererParams osc::CalcSceneRendererParams(
     return rv;
 }
 
-void osc::GenerateDecorations(
-    SceneCache& meshCache,
-    const ModelStatePair& msp,
-    const OpenSimDecorationOptions& options,
-    const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out)
+void opyn::GenerateDecorations(
+    osc::SceneCache& meshCache,
+    const osc::ModelStatePair& msp,
+    const osc::OpenSimDecorationOptions& options,
+    const std::function<void(const OpenSim::Component&, osc::SceneDecoration&&)>& out)
 {
-    ComponentAbsPathDecorationTagger pathTagger{};
-    ComponentSceneDecorationFlagsTagger flagsTagger{msp.getSelected(), msp.getHovered()};
+    osc::ComponentAbsPathDecorationTagger pathTagger{};
+    osc::ComponentSceneDecorationFlagsTagger flagsTagger{msp.getSelected(), msp.getHovered()};
 
-    auto callback = [pathTagger, flagsTagger, &out](const OpenSim::Component& component, SceneDecoration&& decoration) mutable
+    auto callback = [pathTagger, flagsTagger, &out](
+        const OpenSim::Component& component,
+        osc::SceneDecoration&& decoration) mutable
     {
         pathTagger(component, decoration);
         flagsTagger(component, decoration);
@@ -100,31 +102,31 @@ void osc::GenerateDecorations(
     );
 }
 
-std::optional<SceneCollision> osc::GetClosestCollision(
-    const BVH& sceneBVH,
-    SceneCache& sceneCache,
-    std::span<const SceneDecoration> taggedDrawlist,
-    const PolarPerspectiveCamera& camera,
-    Vector2 mouseScreenPosition,
-    const Rect& viewportScreenRect)
+std::optional<osc::SceneCollision> opyn::GetClosestCollision(
+    const osc::BVH& sceneBVH,
+    osc::SceneCache& sceneCache,
+    std::span<const osc::SceneDecoration> taggedDrawlist,
+    const osc::PolarPerspectiveCamera& camera,
+    osc::Vector2 mouseScreenPosition,
+    const osc::Rect& viewportScreenRect)
 {
     OSC_PERF("osc::GetClosestCollision");
 
     // un-project 2D mouse cursor into 3D scene as a ray
-    const Vector2 mouseRenderPosition = mouseScreenPosition - viewportScreenRect.ypd_top_left();
-    const Ray worldSpaceCameraRay = camera.unproject_topleft_position_to_world_ray(
+    const osc::Vector2 mouseRenderPosition = mouseScreenPosition - viewportScreenRect.ypd_top_left();
+    const osc::Ray worldSpaceCameraRay = camera.unproject_topleft_position_to_world_ray(
         mouseRenderPosition,
         viewportScreenRect.dimensions()
     );
 
     // iterate over all collisions along the camera ray and find the best one
-    std::optional<SceneCollision> best;
+    std::optional<osc::SceneCollision> best;
     for_each_ray_collision_with_scene(
         sceneBVH,
         sceneCache,
         taggedDrawlist,
         worldSpaceCameraRay,
-        [&best](SceneCollision&& sceneCollision)
+        [&best](osc::SceneCollision&& sceneCollision)
         {
             if (not sceneCollision.decoration_id.empty()
                 and collision_priority_greater(best, sceneCollision)) {

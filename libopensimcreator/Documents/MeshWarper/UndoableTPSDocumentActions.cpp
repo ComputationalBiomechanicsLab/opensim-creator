@@ -218,14 +218,14 @@ void osc::ActionPromptUserToLoadMeshFile(
                 return;  // Error or user somehow selected multiple options
             }
             try {
-                const auto mesh = LoadMeshViaSimbody(response.front());
+                const auto mesh = opyn::LoadMeshViaSimbody(response.front());
                 ActionLoadMesh(*doc, mesh, which);
             }
             catch (const std::exception& ex) {
                 log_error("Error importing %s: %s", response.front().c_str(), ex.what());
             }
         },
-        GetSupportedSimTKMeshFormatsAsFilters()
+        opyn::GetSupportedSimTKMeshFormatsAsFilters()
     );
 }
 

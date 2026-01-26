@@ -322,7 +322,7 @@ namespace osc::mi
                     std::vector<std::filesystem::path> paths(response.begin(), response.end());
                     state->pushMeshLoadRequests(paths, attachmentPoint);
                 },
-                GetSupportedSimTKMeshFormatsAsFilters(),
+                opyn::GetSupportedSimTKMeshFormatsAsFilters(),
                 std::nullopt,
                 true
             );

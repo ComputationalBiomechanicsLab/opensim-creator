@@ -17,7 +17,7 @@ namespace osc
         ModelRendererParams();
 
         OpenSimDecorationOptions decorationOptions;
-        OverlayDecorationOptions overlayOptions;
+        opyn::OverlayDecorationOptions overlayOptions;
         CustomRenderingOptions renderingOptions;
         Color lightColor;
         Color backgroundColor;

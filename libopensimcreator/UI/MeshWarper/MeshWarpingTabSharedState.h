@@ -273,8 +273,8 @@ namespace osc
 
         const CustomRenderingOptions& getCustomRenderingOptions() const { return m_CustomRenderingOptions; }
         CustomRenderingOptions& updCustomRenderingOptions() { return m_CustomRenderingOptions; }
-        const OverlayDecorationOptions& getOverlayDecorationOptions() const { return m_OverlayDecorationOptions; }
-        OverlayDecorationOptions& updOverlayDecorationOptions() { return m_OverlayDecorationOptions; }
+        const opyn::OverlayDecorationOptions& getOverlayDecorationOptions() const { return m_OverlayDecorationOptions; }
+        opyn::OverlayDecorationOptions& updOverlayDecorationOptions() { return m_OverlayDecorationOptions; }
         bool isWireframeModeEnabled() const { return m_WireframeMode; }
         void setWireframeModeEnabled(bool v) { m_WireframeMode = v; }
 
@@ -322,7 +322,7 @@ namespace osc
         CustomRenderingOptions m_CustomRenderingOptions;
 
         // user-editable overlay decoration options
-        OverlayDecorationOptions m_OverlayDecorationOptions;
+        opyn::OverlayDecorationOptions m_OverlayDecorationOptions;
 
         // user-editable wireframe mode rendering toggle
         bool m_WireframeMode = true;

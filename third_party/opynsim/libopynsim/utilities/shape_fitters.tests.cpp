@@ -1,6 +1,6 @@
 #include "shape_fitters.h"
 
-#include <libopynsim/tests/testopynsimconfig.h>
+#include <libopynsim/tests/opynsim_tests_config.h>
 
 #include <gtest/gtest.h>
 #include <libopynsim/graphics/simbody_mesh_loader.h>
@@ -88,8 +88,8 @@ TEST(FitSphere, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgo
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
-        std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const osc::Mesh mesh = osc::LoadMeshViaSimbody(objPath);
+        std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
+    const osc::Mesh mesh = LoadMeshViaSimbody(objPath);
     const osc::Sphere sphereFit = FitSphere(mesh);
 
     ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphereFit.origin, c_ExpectedSphere.origin, 0.0001f)));
@@ -135,8 +135,8 @@ TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgor
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
-        std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const osc::Mesh mesh = osc::LoadMeshViaSimbody(objPath);
+        std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
+    const osc::Mesh mesh = LoadMeshViaSimbody(objPath);
     const osc::Plane planeFit = FitPlane(mesh);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(planeFit.origin, c_ExpectedPlane.origin, 0.0001f)));
@@ -177,8 +177,8 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
-        std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const osc::Mesh mesh = osc::LoadMeshViaSimbody(objPath);
+        std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
+    const osc::Mesh mesh = LoadMeshViaSimbody(objPath);
     const osc::Ellipsoid fit = FitEllipsoid(mesh);
     const auto directions = axis_directions_of(fit);
 

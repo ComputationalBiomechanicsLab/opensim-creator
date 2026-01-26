@@ -1,6 +1,6 @@
 #include "open_sim_decoration_generator.h"
 
-#include <libopynsim/tests/testopynsimconfig.h>
+#include <libopynsim/tests/opynsim_tests_config.h>
 
 #include <gtest/gtest.h>
 #include <libopynsim/documents/model/model_state_pair.h>
@@ -43,7 +43,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
 
     // TODO: this should be more synthetic and should just create a body with one muscle with a
     // known color that is then pumped through the pipeline etc.
-    const std::filesystem::path tugOfWarPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models/Tug_of_War/Tug_of_War.osim";
+    const std::filesystem::path tugOfWarPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models/Tug_of_War/Tug_of_War.osim";
     OpenSim::Model model{tugOfWarPath.string()};
     model.buildSystem();
     SimTK::State& state = model.initializeState();
@@ -202,7 +202,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
 
 TEST(OpenSimDecorationGenerator, ToOscMeshWorksAsIntended)
 {
-    const std::filesystem::path arrowPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "arrow.vtp";
+    const std::filesystem::path arrowPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "arrow.vtp";
 
     OpenSim::Model model;
     auto& mesh = AddComponent(model, std::make_unique<OpenSim::Mesh>(arrowPath.string()));
@@ -219,7 +219,7 @@ TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
 {
     opyn::init();  // ensure component registry is initialized
 
-    const std::filesystem::path tugOfWarPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models/Tug_of_War/Tug_of_War.osim";
+    const std::filesystem::path tugOfWarPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models/Tug_of_War/Tug_of_War.osim";
     OpenSim::Model model{tugOfWarPath.string()};
     InitializeModel(model);
     InitializeState(model);
@@ -249,7 +249,7 @@ TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
 {
     opyn::init();  // ensure component registry is initialized
 
-    const std::filesystem::path soccerKickPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models/SoccerKickingModel/SoccerKickingModel.osim";
+    const std::filesystem::path soccerKickPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models/SoccerKickingModel/SoccerKickingModel.osim";
     OpenSim::Model model{soccerKickPath.string()};
     InitializeModel(model);
     InitializeState(model);
@@ -319,7 +319,7 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelAndStateWorksAsExpected
     opyn::init();  // ensure component registry is initialized
 
     // setup model + options
-    const std::filesystem::path soccerKickPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models/SoccerKickingModel/SoccerKickingModel.osim";
+    const std::filesystem::path soccerKickPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models/SoccerKickingModel/SoccerKickingModel.osim";
     OpenSim::Model model{soccerKickPath.string()};
     InitializeModel(model);
     InitializeState(model);
@@ -354,7 +354,7 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpecte
     opyn::init();  // ensure component registry is initialized
 
     // setup model + options
-    const std::filesystem::path soccerKickPath = std::filesystem::path{OPYN_TESTING_RESOURCES_DIR} / "models/SoccerKickingModel/SoccerKickingModel.osim";
+    const std::filesystem::path soccerKickPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models/SoccerKickingModel/SoccerKickingModel.osim";
     OpenSim::Model model{soccerKickPath.string()};
     InitializeModel(model);
     SimTK::State& state = InitializeState(model);

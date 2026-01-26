@@ -19,29 +19,29 @@ namespace osc { struct ModelRendererParams; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct SceneDecoration; }
 
-namespace osc
+namespace opyn
 {
-    SceneRendererParams CalcSceneRendererParams(
-        const ModelRendererParams&,
-        Vector2 viewportDims,
+    osc::SceneRendererParams CalcSceneRendererParams(
+        const osc::ModelRendererParams&,
+        osc::Vector2 viewportDims,
         float viewportDevicePixelRatio,
-        AntiAliasingLevel,
+        osc::AntiAliasingLevel,
         float fixupScaleFactor
     );
 
     void GenerateDecorations(
-        SceneCache&,
-        const ModelStatePair&,
-        const OpenSimDecorationOptions&,
-        const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out
+        osc::SceneCache&,
+        const osc::ModelStatePair&,
+        const osc::OpenSimDecorationOptions&,
+        const std::function<void(const OpenSim::Component&, osc::SceneDecoration&&)>& out
     );
 
-    std::optional<SceneCollision> GetClosestCollision(
-        const BVH& sceneBVH,
-        SceneCache&,
-        std::span<const SceneDecoration> taggedDrawlist,
-        const PolarPerspectiveCamera&,
-        Vector2 mouseScreenPosition,
-        const Rect& viewportScreenRect
+    std::optional<osc::SceneCollision> GetClosestCollision(
+        const osc::BVH& sceneBVH,
+        osc::SceneCache&,
+        std::span<const osc::SceneDecoration> taggedDrawlist,
+        const osc::PolarPerspectiveCamera&,
+        osc::Vector2 mouseScreenPosition,
+        const osc::Rect& viewportScreenRect
     );
 }

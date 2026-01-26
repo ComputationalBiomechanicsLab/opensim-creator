@@ -114,7 +114,7 @@ public:
 private:
     SceneRendererParams calcParams(const Rect& workspaceScreenRect) const
     {
-        return CalcSceneRendererParams(
+        return opyn::CalcSceneRendererParams(
             m_ModelRendererParams,
             workspaceScreenRect.dimensions(),
             App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),

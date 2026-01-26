@@ -27,6 +27,7 @@
 #include <vector>
 
 using namespace osc;
+using namespace opyn;
 
 namespace
 {
@@ -128,7 +129,7 @@ namespace
         std::shared_ptr<SceneCache> m_MeshCache;
         ModelStatePairInfo m_PrevModelStateInfo;
         OpenSimDecorationOptions m_PrevDecorationOptions;
-        OverlayDecorationOptions m_PrevOverlayOptions;
+        opyn::OverlayDecorationOptions m_PrevOverlayOptions;
         std::vector<SceneDecoration> m_Drawlist;
         BVH m_BVH;
         std::optional<AABB> m_SceneVolume;

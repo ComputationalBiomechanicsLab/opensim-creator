@@ -8,7 +8,7 @@
 #include <span>
 #include <utility>
 
-namespace osc
+namespace opyn
 {
     enum class OverlayDecorationOptionFlags : uint32_t {
         None          = 0,
@@ -42,7 +42,7 @@ namespace osc
 
     constexpr OverlayDecorationOptionFlags IthOption(size_t i)
     {
-        i = i < num_flags<OverlayDecorationOptionFlags>() ? i : 0;
+        i = i < osc::num_flags<OverlayDecorationOptionFlags>() ? i : 0;
         return static_cast<OverlayDecorationOptionFlags>(1<<i);
     }
 
@@ -53,11 +53,11 @@ namespace osc
     };
 
     struct OverlayDecorationOptionFlagsMetadata final {
-        CStringView id;
-        CStringView label;
+        osc::CStringView id;
+        osc::CStringView label;
         OverlayDecorationOptionGroup group;
         OverlayDecorationOptionFlags value;
     };
-    CStringView getLabel(OverlayDecorationOptionGroup);
+    osc::CStringView getLabel(OverlayDecorationOptionGroup);
     std::span<const OverlayDecorationOptionFlagsMetadata> GetAllOverlayDecorationOptionFlagsMetadata();
 }

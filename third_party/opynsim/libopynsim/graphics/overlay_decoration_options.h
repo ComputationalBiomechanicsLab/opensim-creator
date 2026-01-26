@@ -9,15 +9,15 @@
 #include <string_view>
 #include <unordered_map>
 
-namespace osc
+namespace opyn
 {
     class OverlayDecorationOptions final {
     public:
         size_t getNumOptions() const;
         bool getOptionValue(ptrdiff_t) const;
         void setOptionValue(ptrdiff_t, bool);
-        CStringView getOptionLabel(ptrdiff_t) const;
-        CStringView getOptionGroupLabel(ptrdiff_t) const;
+        osc::CStringView getOptionLabel(ptrdiff_t) const;
+        osc::CStringView getOptionGroupLabel(ptrdiff_t) const;
 
         bool getDrawXZGrid() const;
         void setDrawXZGrid(bool);
@@ -37,14 +37,12 @@ namespace osc
         bool getDrawBVH() const;
         void setDrawBVH(bool);
 
-        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>&) const;
-        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, Variant>&);
+        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const osc::Variant&)>&) const;
+        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, osc::Variant>&);
 
         friend bool operator==(const OverlayDecorationOptions&, const OverlayDecorationOptions&) = default;
 
     private:
         OverlayDecorationOptionFlags m_Flags = OverlayDecorationOptionFlags::Default;
     };
-
-
 }

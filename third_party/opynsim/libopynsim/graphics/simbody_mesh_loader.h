@@ -10,18 +10,18 @@
 
 namespace SimTK { class PolygonalMesh; }
 
-namespace osc
+namespace opyn
 {
     // returns an `Mesh` converted from the given `SimTK::PolygonalMesh`
-    Mesh ToOscMesh(const SimTK::PolygonalMesh&);
+    osc::Mesh ToOscMesh(const SimTK::PolygonalMesh&);
 
     // returns a list of SimTK mesh format file suffixes (e.g. `{"vtp", "stl"}`)
     std::span<const std::string_view> GetSupportedSimTKMeshFormats();
-    std::span<const FileDialogFilter> GetSupportedSimTKMeshFormatsAsFilters();
+    std::span<const osc::FileDialogFilter> GetSupportedSimTKMeshFormatsAsFilters();
 
     // returns an `Mesh` loaded from disk via simbody's APIs
-    Mesh LoadMeshViaSimbody(const std::filesystem::path&);
+    osc::Mesh LoadMeshViaSimbody(const std::filesystem::path&);
 
     // populate the `SimTK::PolygonalMesh` from the given indexed mesh data
-    void AssignIndexedVerts(SimTK::PolygonalMesh&, std::span<const Vector3>, MeshIndicesView);
+    void AssignIndexedVerts(SimTK::PolygonalMesh&, std::span<const osc::Vector3>, osc::MeshIndicesView);
 }

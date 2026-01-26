@@ -9,13 +9,13 @@
 #include <simbody/internal/MultibodySystem.h>
 #include <simbody/internal/SimbodyMatterSubsystem.h>
 
-using namespace osc;
+using namespace opyn;
 
 // ensure the SimTKDecorationGenerator correctly tags emitted geometry with
 // a wireframe flag when given a wireframe representation decoration
 TEST(SimTKDecorationGenerator, PropagatesWireframeShadingFlag)
 {
-    SceneCache cache;
+    osc::SceneCache cache;
 
     SimTK::MultibodySystem sys;
     SimTK::SimbodyMatterSubsystem matter{sys};
@@ -27,10 +27,10 @@ TEST(SimTKDecorationGenerator, PropagatesWireframeShadingFlag)
     sphere.setRepresentation(SimTK::DecorativeGeometry::DrawWireframe);
 
     size_t ncalls = 0;
-    GenerateDecorations(cache, matter, state, sphere, 1.0f, [&ncalls](const SceneDecoration& dec)
+    GenerateDecorations(cache, matter, state, sphere, 1.0f, [&ncalls](const osc::SceneDecoration& dec)
     {
         ++ncalls;
-        ASSERT_TRUE(dec.flags & SceneDecorationFlag::DrawWireframeOverlay);
+        ASSERT_TRUE(dec.flags & osc::SceneDecorationFlag::DrawWireframeOverlay);
     });
     ASSERT_EQ(ncalls, 1) << "should only emit one is_wireframe sphere";
 }
@@ -39,7 +39,7 @@ TEST(SimTKDecorationGenerator, PropagatesWireframeShadingFlag)
 // not drawn when given a hidden representation
 TEST(SimTKDecorationGenerator, PropagatesHiddenRepresentation)
 {
-    SceneCache cache;
+    osc::SceneCache cache;
 
     SimTK::MultibodySystem sys;
     SimTK::SimbodyMatterSubsystem matter{sys};
@@ -51,10 +51,10 @@ TEST(SimTKDecorationGenerator, PropagatesHiddenRepresentation)
     sphere.setRepresentation(SimTK::DecorativeGeometry::Hide);
 
     size_t ncalls = 0;
-    osc::GenerateDecorations(cache, matter, state, sphere, 1.0f, [&ncalls](const SceneDecoration& dec)
+    GenerateDecorations(cache, matter, state, sphere, 1.0f, [&ncalls](const osc::SceneDecoration& dec)
     {
         ++ncalls;
-        ASSERT_TRUE(dec.flags & SceneDecorationFlag::NoDrawInScene);
+        ASSERT_TRUE(dec.flags & osc::SceneDecorationFlag::NoDrawInScene);
     });
     ASSERT_EQ(ncalls, 1) << "should only emit one is_wireframe sphere";
 }
@@ -63,7 +63,7 @@ TEST(SimTKDecorationGenerator, PropagatesHiddenRepresentation)
 // because some users use them to mirror-image geometry (#974)
 TEST(SimTKDecorationGenerator, PropagatesNegativeScaleFactors)
 {
-    SceneCache cache;
+    osc::SceneCache cache;
 
     SimTK::MultibodySystem sys;
     SimTK::SimbodyMatterSubsystem matter{sys};
@@ -76,7 +76,7 @@ TEST(SimTKDecorationGenerator, PropagatesNegativeScaleFactors)
     sphere.setRadius(1.0);
     sphere.setScaleFactors(SimTK::Vec3(1.0, -1.0, 1.0));  // note: negative
 
-    osc::GenerateDecorations(cache, matter, state, sphere, 1.0f, [&](const SceneDecoration& dec)
+    GenerateDecorations(cache, matter, state, sphere, 1.0f, [&](const osc::SceneDecoration& dec)
     {
         ASSERT_EQ(dec.transform.scale.y(), -1.0f);
     });
@@ -84,22 +84,22 @@ TEST(SimTKDecorationGenerator, PropagatesNegativeScaleFactors)
 
 TEST(SimTKDecorationGenerator, UsesColorOverrideWhenEmittingFrames)
 {
-    SceneCache cache;
+    osc::SceneCache cache;
 
     SimTK::MultibodySystem sys;
     SimTK::SimbodyMatterSubsystem matter{sys};
     SimTK::State state = sys.realizeTopology();
     sys.realize(state);
 
-    const Color overrideColor = Color::red();
+    const osc::Color overrideColor = osc::Color::red();
 
     SimTK::DecorativeFrame frame;
     frame.setBodyId(0);
     frame.setColor(to<SimTK::Vec3>(overrideColor));
 
-    GenerateDecorations(cache, matter, state, frame, 1.0f, [&](const SceneDecoration& dec)
+    GenerateDecorations(cache, matter, state, frame, 1.0f, [&](const osc::SceneDecoration& dec)
     {
-        ASSERT_TRUE(std::holds_alternative<Color>(dec.shading));
-        ASSERT_EQ(std::get<Color>(dec.shading), overrideColor);
+        ASSERT_TRUE(std::holds_alternative<osc::Color>(dec.shading));
+        ASSERT_EQ(std::get<osc::Color>(dec.shading), overrideColor);
     });
 }
