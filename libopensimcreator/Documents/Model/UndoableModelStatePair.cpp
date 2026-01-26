@@ -48,15 +48,15 @@ namespace
         {}
 
         explicit UiModelStatePair(const std::string& osim) :
-            UiModelStatePair{LoadModel(osim)}
+            UiModelStatePair{opyn::LoadModel(osim)}
         {}
 
         explicit UiModelStatePair(std::unique_ptr<OpenSim::Model> _model) :
             m_Model{std::move(_model)},
             m_FixupScaleFactor{1.0f}
         {
-            InitializeModel(*m_Model);
-            InitializeState(*m_Model);
+            opyn::InitializeModel(*m_Model);
+            opyn::InitializeState(*m_Model);
         }
 
         UiModelStatePair(const UiModelStatePair& other) :
@@ -65,8 +65,8 @@ namespace
             m_MaybeSelected{other.m_MaybeSelected},
             m_MaybeHovered{other.m_MaybeHovered}
         {
-            InitializeModel(*m_Model);
-            InitializeState(*m_Model);
+            opyn::InitializeModel(*m_Model);
+            opyn::InitializeState(*m_Model);
         }
 
         UiModelStatePair(UiModelStatePair&&) noexcept = default;
@@ -127,12 +127,12 @@ namespace
 
         const OpenSim::Component* implGetSelected() const final
         {
-            return FindComponent(*m_Model, m_MaybeSelected);
+            return opyn::FindComponent(*m_Model, m_MaybeSelected);
         }
 
         void implSetSelected(const OpenSim::Component* c) final
         {
-            m_MaybeSelected = GetAbsolutePathOrEmpty(c);
+            m_MaybeSelected = opyn::GetAbsolutePathOrEmpty(c);
         }
 
         const OpenSim::ComponentPath& getHoveredPath() const
@@ -147,12 +147,12 @@ namespace
 
         const OpenSim::Component* implGetHovered() const final
         {
-            return FindComponent(*m_Model, m_MaybeHovered);
+            return opyn::FindComponent(*m_Model, m_MaybeHovered);
         }
 
         void implSetHovered(const OpenSim::Component* c) final
         {
-            m_MaybeHovered = GetAbsolutePathOrEmpty(c);
+            m_MaybeHovered = opyn::GetAbsolutePathOrEmpty(c);
         }
 
     private:
@@ -197,7 +197,7 @@ public:
         m_Scratch{std::move(m)}
     {
         std::stringstream ss;
-        if (auto inputPath = TryFindInputFile(getModel())) {
+        if (auto inputPath = opyn::TryFindInputFile(getModel())) {
             ss << "loaded " << inputPath->filename().string();
         }
         else {
@@ -207,7 +207,7 @@ public:
     }
 
     explicit Impl(const std::filesystem::path& osimPath) :
-        Impl{LoadModel(osimPath)}
+        Impl{opyn::LoadModel(osimPath)}
     {
         setUpToDateWithFilesystem(std::filesystem::last_write_time(osimPath));
     }
@@ -311,7 +311,7 @@ public:
 
     void loadModel(const std::filesystem::path& path)
     {
-        setModel(LoadModel(path));
+        setModel(opyn::LoadModel(path));
         setUpToDateWithFilesystem(std::filesystem::last_write_time(path));
     }
 

@@ -55,6 +55,7 @@
 
 using namespace osc;
 using namespace osc::mow;
+using namespace opyn;
 
 // Scaling document related functions/datastructures.
 namespace
@@ -521,7 +522,7 @@ namespace
             std::vector<ScalingStepValidationMessage> messages;
 
             // Ensure the model has a filesystem location (prerequisite).
-            const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
+            const auto modelFilesystemLocation = opyn::TryFindInputFile(sourceModel);
             if (not modelFilesystemLocation) {
                 messages.emplace_back(ScalingStepValidationState::Error, "The source model has no filesystem location.");
                 return messages;

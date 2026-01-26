@@ -55,7 +55,7 @@ namespace
     struct ConnecteeOption final {
 
         explicit ConnecteeOption(const OpenSim::Component& c) :
-            absPath{GetAbsolutePath(c)},
+            absPath{opyn::GetAbsolutePath(c)},
             name{c.getName()}
         {}
 
@@ -80,13 +80,13 @@ namespace
     {
         std::vector<ConnecteeOption> rv;
 
-        const OpenSim::Component* component = FindComponent(model, params.componentPath);
+        const OpenSim::Component* component = opyn::FindComponent(model, params.componentPath);
         if (!component)
         {
             return rv;   // component isn't in model?
         }
 
-        const OpenSim::AbstractSocket* socket = FindSocket(*component, params.socketName);
+        const OpenSim::AbstractSocket* socket = opyn::FindSocket(*component, params.socketName);
         if (!socket)
         {
             return rv;  // socket isn't in model?
@@ -104,7 +104,7 @@ namespace
                 continue;  // filtered out by search string
             }
 
-            if (!IsAbleToConnectTo(*socket, other))
+            if (not opyn::IsAbleToConnectTo(*socket, other))
             {
                 continue;  // connection would be rejected anyway
             }
@@ -146,14 +146,14 @@ public:
         }
 
         // check: ensure the "from" side of the socket still exists
-        const OpenSim::Component* component = FindComponent(m_Model->getModel(), m_Params.componentPath);
+        const OpenSim::Component* component = opyn::FindComponent(m_Model->getModel(), m_Params.componentPath);
         if (not component) {
             request_close();
             return;
         }
 
         // check: ensure the socket still exists
-        const OpenSim::AbstractSocket* socket = FindSocket(*component, m_Params.socketName);
+        const OpenSim::AbstractSocket* socket = opyn::FindSocket(*component, m_Params.socketName);
         if (not socket) {
             request_close();
             return;
@@ -198,7 +198,7 @@ public:
                 SocketReassignmentFlags::TryReexpressComponentInNewConnectee :
                 SocketReassignmentFlags::None;
 
-            const OpenSim::Component* selected = FindComponent(m_Model->getModel(), *m_UserSelectionAbsPath);
+            const OpenSim::Component* selected = opyn::FindComponent(m_Model->getModel(), *m_UserSelectionAbsPath);
 
             if (selected && ActionReassignComponentSocket(*m_Model, m_Params.componentPath, m_Params.socketName, *selected, flags, m_Error))
             {
@@ -256,7 +256,7 @@ private:
         }
 
         const auto componentSpatialRepresentation =
-            TryGetSpatialRepresentation(component, m_Model->getState());
+            opyn::TryGetSpatialRepresentation(component, m_Model->getState());
         if (not componentSpatialRepresentation) {
             bool v = false;  // always `false`
             ui::begin_disabled();

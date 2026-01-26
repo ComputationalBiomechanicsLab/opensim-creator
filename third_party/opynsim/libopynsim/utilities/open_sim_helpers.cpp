@@ -76,12 +76,12 @@
 #include <utility>
 #include <vector>
 
-using namespace osc;
+using namespace opyn;
 namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr Vector3 c_ContactHalfSpaceUpwardsNormal = {-1.0f, 0.0f, 0.0f};
+    constexpr osc::Vector3 c_ContactHalfSpaceUpwardsNormal = {-1.0f, 0.0f, 0.0f};
 }
 
 // helpers
@@ -191,10 +191,10 @@ namespace
         return {0, pfds.size() - 1};
     }
 
-    Vector3 GetLocationInGround(OpenSim::PointForceDirection& pf, const SimTK::State& st)
+    osc::Vector3 GetLocationInGround(OpenSim::PointForceDirection& pf, const SimTK::State& st)
     {
         const SimTK::Vec3 location = pf.frame().findStationLocationInGround(st, pf.point());
-        return to<Vector3>(location);
+        return osc::to<osc::Vector3>(location);
     }
 
     struct LinesOfActionConfig final {
@@ -224,17 +224,17 @@ namespace
             return std::nullopt;  // not enough *unique* PFDs to compute a line of action
         }
 
-        const Vector3 originPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first), st);
-        const Vector3 pointAfterOriginPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first + 1), st);
-        const Vector3 originDir = normalize(pointAfterOriginPos - originPos);
+        const osc::Vector3 originPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first), st);
+        const osc::Vector3 pointAfterOriginPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first + 1), st);
+        const osc::Vector3 originDir = normalize(pointAfterOriginPos - originPos);
 
-        const Vector3 insertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second), st);
-        const Vector3 pointAfterInsertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second - 1), st);
-        const Vector3 insertionDir = normalize(pointAfterInsertionPos - insertionPos);
+        const osc::Vector3 insertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second), st);
+        const osc::Vector3 pointAfterInsertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second - 1), st);
+        const osc::Vector3 insertionDir = osc::normalize(pointAfterInsertionPos - insertionPos);
 
         return LinesOfAction{
-            Ray{originPos, originDir},
-            Ray{insertionPos, insertionDir},
+            osc::Ray{originPos, originDir},
+            osc::Ray{insertionPos, insertionDir},
         };
     }
 
@@ -280,17 +280,17 @@ namespace
 
 // public API
 
-bool osc::IsConcreteClassNameLexicographicallyLowerThan(const OpenSim::Component& a, const OpenSim::Component& b)
+bool opyn::IsConcreteClassNameLexicographicallyLowerThan(const OpenSim::Component& a, const OpenSim::Component& b)
 {
     return a.getConcreteClassName() < b.getConcreteClassName();
 }
 
-bool osc::IsNameLexographicallyLowerThan(const OpenSim::Component& a, const OpenSim::Component& b)
+bool opyn::IsNameLexographicallyLowerThan(const OpenSim::Component& a, const OpenSim::Component& b)
 {
     return a.getName() < b.getName();
 }
 
-OpenSim::Component* osc::UpdOwner(OpenSim::Component& root, const OpenSim::Component& c)
+OpenSim::Component* opyn::UpdOwner(OpenSim::Component& root, const OpenSim::Component& c)
 {
     if (const auto* constOwner = GetOwner(c)) {
         return FindComponentMut(root, GetAbsolutePath(*constOwner));
@@ -300,7 +300,7 @@ OpenSim::Component* osc::UpdOwner(OpenSim::Component& root, const OpenSim::Compo
     }
 }
 
-OpenSim::Component& osc::UpdOwnerOrThrow(OpenSim::Component& root, const OpenSim::Component& c)
+OpenSim::Component& opyn::UpdOwnerOrThrow(OpenSim::Component& root, const OpenSim::Component& c)
 {
     auto* p = UpdOwner(root, c);
     if (not p) {
@@ -309,33 +309,33 @@ OpenSim::Component& osc::UpdOwnerOrThrow(OpenSim::Component& root, const OpenSim
     return *p;
 }
 
-const OpenSim::Component& osc::GetOwnerOrThrow(const OpenSim::AbstractOutput& ao)
+const OpenSim::Component& opyn::GetOwnerOrThrow(const OpenSim::AbstractOutput& ao)
 {
     return ao.getOwner();
 }
 
-const OpenSim::Component& osc::GetOwnerOrThrow(const OpenSim::Component& c)
+const OpenSim::Component& opyn::GetOwnerOrThrow(const OpenSim::Component& c)
 {
     return c.getOwner();
 }
 
-const OpenSim::Component& osc::GetOwnerOr(const OpenSim::Component& c, const OpenSim::Component& fallback)
+const OpenSim::Component& opyn::GetOwnerOr(const OpenSim::Component& c, const OpenSim::Component& fallback)
 {
     return c.hasOwner() ? c.getOwner() : fallback;
 }
 
-const OpenSim::Component* osc::GetOwner(const OpenSim::Component& c)
+const OpenSim::Component* opyn::GetOwner(const OpenSim::Component& c)
 {
     return c.hasOwner() ? &c.getOwner() : nullptr;
 }
 
-std::optional<std::string> osc::TryGetOwnerName(const OpenSim::Component& c)
+std::optional<std::string> opyn::TryGetOwnerName(const OpenSim::Component& c)
 {
     const OpenSim::Component* owner = GetOwner(c);
     return owner ? owner->getName() : std::optional<std::string>{};
 }
 
-size_t osc::DistanceFromRoot(const OpenSim::Component& c)
+size_t opyn::DistanceFromRoot(const OpenSim::Component& c)
 {
     size_t dist = 0;
     for (const OpenSim::Component* p = &c; p; p = GetOwner(*p)) {
@@ -344,22 +344,22 @@ size_t osc::DistanceFromRoot(const OpenSim::Component& c)
     return dist;
 }
 
-OpenSim::ComponentPath osc::GetRootComponentPath()
+OpenSim::ComponentPath opyn::GetRootComponentPath()
 {
     return OpenSim::ComponentPath{"/"};
 }
 
-bool osc::IsEmpty(const OpenSim::ComponentPath& cp)
+bool opyn::IsEmpty(const OpenSim::ComponentPath& cp)
 {
     return cp == OpenSim::ComponentPath{};
 }
 
-void osc::Clear(OpenSim::ComponentPath& cp)
+void opyn::Clear(OpenSim::ComponentPath& cp)
 {
     cp = OpenSim::ComponentPath{};
 }
 
-std::vector<const OpenSim::Component*> osc::GetPathElements(const OpenSim::Component& c)
+std::vector<const OpenSim::Component*> opyn::GetPathElements(const OpenSim::Component& c)
 {
     std::vector<const OpenSim::Component*> rv;
     rv.reserve(DistanceFromRoot(c));
@@ -373,7 +373,7 @@ std::vector<const OpenSim::Component*> osc::GetPathElements(const OpenSim::Compo
     return rv;
 }
 
-void osc::ForEachComponent(
+void opyn::ForEachComponent(
     const OpenSim::Component& component,
     const std::function<void(const OpenSim::Component&)>& f)
 {
@@ -382,7 +382,7 @@ void osc::ForEachComponent(
     }
 }
 
-void osc::ForEachComponentInclusive(
+void opyn::ForEachComponentInclusive(
     const OpenSim::Component& component,
     const std::function<void(const OpenSim::Component&)>& f)
 {
@@ -390,7 +390,7 @@ void osc::ForEachComponentInclusive(
     ForEachComponent(component, f);
 }
 
-size_t osc::GetNumChildren(const OpenSim::Component& c)
+size_t opyn::GetNumChildren(const OpenSim::Component& c)
 {
     size_t rv = 0;
     for (const OpenSim::Component& descendant : c.getComponentList()) {
@@ -401,7 +401,7 @@ size_t osc::GetNumChildren(const OpenSim::Component& c)
     return rv;
 }
 
-bool osc::IsInclusiveChildOf(const OpenSim::Component* parent, const OpenSim::Component* c)
+bool opyn::IsInclusiveChildOf(const OpenSim::Component* parent, const OpenSim::Component* c)
 {
     if (parent == nullptr) {
         return false;
@@ -416,7 +416,7 @@ bool osc::IsInclusiveChildOf(const OpenSim::Component* parent, const OpenSim::Co
     return false;
 }
 
-const OpenSim::Component* osc::IsInclusiveChildOf(std::span<const OpenSim::Component*> parents, const OpenSim::Component* c)
+const OpenSim::Component* opyn::IsInclusiveChildOf(std::span<const OpenSim::Component*> parents, const OpenSim::Component* c)
 {
     // TODO: this method signature makes no sense and should be refactored
     for (; c; c = GetOwner(*c)) {
@@ -427,7 +427,7 @@ const OpenSim::Component* osc::IsInclusiveChildOf(std::span<const OpenSim::Compo
     return nullptr;
 }
 
-const OpenSim::Component* osc::FindFirstAncestorInclusive(const OpenSim::Component* c, bool(*pred)(const OpenSim::Component*))
+const OpenSim::Component* opyn::FindFirstAncestorInclusive(const OpenSim::Component* c, bool(*pred)(const OpenSim::Component*))
 {
     for (; c; c = GetOwner(*c)) {
         if (pred(c)) {
@@ -437,7 +437,7 @@ const OpenSim::Component* osc::FindFirstAncestorInclusive(const OpenSim::Compone
     return nullptr;
 }
 
-const OpenSim::Component* osc::FindFirstDescendentInclusive(
+const OpenSim::Component* opyn::FindFirstDescendentInclusive(
     const OpenSim::Component& component,
     bool(*predicate)(const OpenSim::Component&))
 {
@@ -449,7 +449,7 @@ const OpenSim::Component* osc::FindFirstDescendentInclusive(
     }
 }
 
-const OpenSim::Component* osc::FindFirstDescendent(
+const OpenSim::Component* opyn::FindFirstDescendent(
     const OpenSim::Component& component,
     bool(*predicate)(const OpenSim::Component&))
 {
@@ -461,7 +461,7 @@ const OpenSim::Component* osc::FindFirstDescendent(
     return nullptr;
 }
 
-OpenSim::Component* osc::FindFirstDescendentMut(
+OpenSim::Component* opyn::FindFirstDescendentMut(
     OpenSim::Component& component,
     bool(*predicate)(const OpenSim::Component&))
 {
@@ -473,14 +473,14 @@ OpenSim::Component* osc::FindFirstDescendentMut(
     return nullptr;
 }
 
-std::vector<const OpenSim::Coordinate*> osc::GetCoordinatesInModel(const OpenSim::Model& model)
+std::vector<const OpenSim::Coordinate*> opyn::GetCoordinatesInModel(const OpenSim::Model& model)
 {
     std::vector<const OpenSim::Coordinate*> rv;
     GetCoordinatesInModel(model, rv);
     return rv;
 }
 
-void osc::GetCoordinatesInModel(
+void opyn::GetCoordinatesInModel(
     const OpenSim::Model& m,
     std::vector<const OpenSim::Coordinate*>& out)
 {
@@ -492,7 +492,7 @@ void osc::GetCoordinatesInModel(
     }
 }
 
-std::vector<OpenSim::Coordinate*> osc::UpdDefaultLockedCoordinatesInModel(OpenSim::Model& model)
+std::vector<OpenSim::Coordinate*> opyn::UpdDefaultLockedCoordinatesInModel(OpenSim::Model& model)
 {
     std::vector<OpenSim::Coordinate*> rv;
     for (auto& c : model.updComponentList<OpenSim::Coordinate>()) {
@@ -504,29 +504,29 @@ std::vector<OpenSim::Coordinate*> osc::UpdDefaultLockedCoordinatesInModel(OpenSi
 }
 
 
-float osc::ConvertCoordValueToDisplayValue(const OpenSim::Coordinate& c, double v)
+float opyn::ConvertCoordValueToDisplayValue(const OpenSim::Coordinate& c, double v)
 {
     auto rv = static_cast<float>(v);
 
     if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational) {
-        rv = Degrees{Radians{rv}}.count();
+        rv = osc::Degrees{osc::Radians{rv}}.count();
     }
 
     return rv;
 }
 
-double osc::ConvertCoordDisplayValueToStorageValue(const OpenSim::Coordinate& c, float v)
+double opyn::ConvertCoordDisplayValueToStorageValue(const OpenSim::Coordinate& c, float v)
 {
     auto rv = static_cast<double>(v);
 
     if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational) {
-        rv = Radians{Degrees{rv}}.count();
+        rv = osc::Radians{osc::Degrees{rv}}.count();
     }
 
     return rv;
 }
 
-CStringView osc::GetCoordDisplayValueUnitsString(const OpenSim::Coordinate& c)
+osc::CStringView opyn::GetCoordDisplayValueUnitsString(const OpenSim::Coordinate& c)
 {
     switch (c.getMotionType()) {
     case OpenSim::Coordinate::MotionType::Translational:
@@ -538,12 +538,12 @@ CStringView osc::GetCoordDisplayValueUnitsString(const OpenSim::Coordinate& c)
     }
 }
 
-std::vector<std::string> osc::GetSocketNames(const OpenSim::Component& c)
+std::vector<std::string> opyn::GetSocketNames(const OpenSim::Component& c)
 {
     return c.getSocketNames();
 }
 
-std::vector<const OpenSim::AbstractSocket*> osc::GetAllSockets(const OpenSim::Component& c)
+std::vector<const OpenSim::AbstractSocket*> opyn::GetAllSockets(const OpenSim::Component& c)
 {
     std::vector<const OpenSim::AbstractSocket*> rv;
 
@@ -587,7 +587,7 @@ namespace
     }
 }
 
-void osc::WriteComponentTopologyGraphAsDotViz(
+void opyn::WriteComponentTopologyGraphAsDotViz(
     const OpenSim::Component& root,
     std::ostream& out)
 {
@@ -630,7 +630,7 @@ void osc::WriteComponentTopologyGraphAsDotViz(
     emitGraph(edges, out);
 }
 
-void osc::WriteModelMultibodySystemGraphAsDotViz(
+void opyn::WriteModelMultibodySystemGraphAsDotViz(
     const OpenSim::Model& model,
     std::ostream& out)
 {
@@ -646,7 +646,7 @@ void osc::WriteModelMultibodySystemGraphAsDotViz(
     emitGraph(edges, out);
 }
 
-std::vector<OpenSim::AbstractSocket*> osc::UpdAllSockets(OpenSim::Component& c)
+std::vector<OpenSim::AbstractSocket*> opyn::UpdAllSockets(OpenSim::Component& c)
 {
     std::vector<OpenSim::AbstractSocket*> rv;
 
@@ -657,42 +657,42 @@ std::vector<OpenSim::AbstractSocket*> osc::UpdAllSockets(OpenSim::Component& c)
     return rv;
 }
 
-const OpenSim::Component* osc::FindComponent(
+const OpenSim::Component* opyn::FindComponent(
     const OpenSim::Component& root,
     const OpenSim::ComponentPath& cp)
 {
     return FindComponentGeneric(root, cp);
 }
 
-const OpenSim::Component* osc::FindComponent(
+const OpenSim::Component* opyn::FindComponent(
     const OpenSim::Model& model,
     const std::string& absPath)
 {
     return FindComponent(model, OpenSim::ComponentPath{absPath});
 }
 
-const OpenSim::Component* osc::FindComponent(
+const OpenSim::Component* opyn::FindComponent(
     const OpenSim::Model& model,
-    const StringName& absPath)
+    const osc::StringName& absPath)
 {
     return FindComponent(model, std::string{absPath});
 }
 
-OpenSim::Component* osc::FindComponentMut(
+OpenSim::Component* opyn::FindComponentMut(
     OpenSim::Component& root,
     const OpenSim::ComponentPath& cp)
 {
     return FindComponentGeneric(root, cp);
 }
 
-bool osc::ContainsComponent(
+bool opyn::ContainsComponent(
     const OpenSim::Component& root,
     const OpenSim::ComponentPath& cp)
 {
     return FindComponent(root, cp) != nullptr;
 }
 
-const OpenSim::AbstractSocket* osc::FindSocket(
+const OpenSim::AbstractSocket* opyn::FindSocket(
     const OpenSim::Component& c,
     const std::string& name)
 {
@@ -704,7 +704,7 @@ const OpenSim::AbstractSocket* osc::FindSocket(
     }
 }
 
-OpenSim::AbstractSocket* osc::FindSocketMut(
+OpenSim::AbstractSocket* opyn::FindSocketMut(
     OpenSim::Component& c,
     const std::string& name)
 {
@@ -716,21 +716,21 @@ OpenSim::AbstractSocket* osc::FindSocketMut(
     }
 }
 
-bool osc::IsConnectedTo(
+bool opyn::IsConnectedTo(
     const OpenSim::AbstractSocket& s,
     const OpenSim::Component& c)
 {
     return &s.getConnecteeAsObject() == &c;
 }
 
-bool osc::IsAbleToConnectTo(
+bool opyn::IsAbleToConnectTo(
     const OpenSim::AbstractSocket& s,
     const OpenSim::Component& c)
 {
     return s.canConnectTo(c);
 }
 
-void osc::RecursivelyReassignAllSockets(
+void opyn::RecursivelyReassignAllSockets(
     OpenSim::Component& root,
     const OpenSim::Component& from,
     const OpenSim::Component& to)
@@ -744,12 +744,12 @@ void osc::RecursivelyReassignAllSockets(
     }
 }
 
-std::ostream& osc::operator<<(std::ostream& os, const ComponentConnectionView& view)
+std::ostream& opyn::operator<<(std::ostream& os, const ComponentConnectionView& view)
 {
     return os << "ComponentConnectionView{source = " << view.source().getName() << ", target = " << view.target().getName() << ", socketName = " << view.socketName() << '}';
 }
 
-cpp23::generator<ComponentConnectionView> osc::ForEachInboundConnection(
+osc::cpp23::generator<ComponentConnectionView> opyn::ForEachInboundConnection(
     const OpenSim::Component* root,
     const OpenSim::Component* c,
     std::function<bool(const OpenSim::Component&)> filter)
@@ -774,14 +774,14 @@ cpp23::generator<ComponentConnectionView> osc::ForEachInboundConnection(
     }
 }
 
-OpenSim::AbstractProperty* osc::FindPropertyMut(
+OpenSim::AbstractProperty* opyn::FindPropertyMut(
     OpenSim::Component& c,
     const std::string& name)
 {
     return c.hasProperty(name) ? &c.updPropertyByName(name) : nullptr;
 }
 
-const OpenSim::AbstractOutput* osc::FindOutput(
+const OpenSim::AbstractOutput* opyn::FindOutput(
     const OpenSim::Component& c,
     const std::string& outputName)
 {
@@ -795,7 +795,7 @@ const OpenSim::AbstractOutput* osc::FindOutput(
     return rv;
 }
 
-const OpenSim::AbstractOutput* osc::FindOutput(
+const OpenSim::AbstractOutput* opyn::FindOutput(
     const OpenSim::Component& root,
     const OpenSim::ComponentPath& path,
     const std::string& outputName)
@@ -804,13 +804,13 @@ const OpenSim::AbstractOutput* osc::FindOutput(
     return c ? FindOutput(*c, outputName) : nullptr;
 }
 
-bool osc::HasInputFileName(const OpenSim::Model& m)
+bool opyn::HasInputFileName(const OpenSim::Model& m)
 {
     const std::string& name = m.getInputFileName();
     return !name.empty() && name != "Unassigned";
 }
 
-std::optional<std::filesystem::path> osc::TryFindInputFile(const OpenSim::Model& m)
+std::optional<std::filesystem::path> opyn::TryFindInputFile(const OpenSim::Model& m)
 {
     if (not HasInputFileName(m)) {
         return std::nullopt;
@@ -824,7 +824,7 @@ std::optional<std::filesystem::path> osc::TryFindInputFile(const OpenSim::Model&
     return p;
 }
 
-std::string osc::RecommendedDocumentName(const OpenSim::Model& model)
+std::string opyn::RecommendedDocumentName(const OpenSim::Model& model)
 {
     if (auto inputFile = TryFindInputFile(model)) {
         return inputFile->filename().string();
@@ -834,7 +834,7 @@ std::string osc::RecommendedDocumentName(const OpenSim::Model& model)
     }
 }
 
-std::optional<std::filesystem::path> osc::FindGeometryFileAbsPath(
+std::optional<std::filesystem::path> opyn::FindGeometryFileAbsPath(
     const OpenSim::Model& model,
     const OpenSim::Mesh& mesh)
 {
@@ -859,13 +859,13 @@ std::optional<std::filesystem::path> osc::FindGeometryFileAbsPath(
     return std::optional<std::filesystem::path>{std::filesystem::weakly_canonical({attempts.back()})};
 }
 
-std::string osc::GetMeshFileName(const OpenSim::Mesh& mesh)
+std::string opyn::GetMeshFileName(const OpenSim::Mesh& mesh)
 {
     std::filesystem::path p{mesh.get_mesh_file()};
     return p.filename().string();
 }
 
-bool osc::ShouldShowInUI(const OpenSim::Component& c)
+bool opyn::ShouldShowInUI(const OpenSim::Component& c)
 {
     if (dynamic_cast<const OpenSim::PathWrapPoint*>(&c)) {
         return false;
@@ -878,17 +878,17 @@ bool osc::ShouldShowInUI(const OpenSim::Component& c)
     }
 }
 
-bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
+bool opyn::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 {
     OpenSim::Component* const owner = UpdOwner(m, c);
 
     if (!owner) {
-        log_error("cannot delete %s: it has no owner", c.getName().c_str());
+        osc::log_error("cannot delete %s: it has no owner", c.getName().c_str());
         return false;
     }
 
     if (&c.getRoot() != &m) {
-        log_error("cannot delete %s: it is not owned by the provided model", c.getName().c_str());
+        osc::log_error("cannot delete %s: it is not owned by the provided model", c.getName().c_str());
         return false;
     }
 
@@ -897,12 +897,12 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     if (auto connectees = GetAnyNonChildrenComponentsConnectedViaSocketTo(m, c); !connectees.empty())
     {
         std::stringstream ss;
-        CStringView delim;
+        osc::CStringView delim;
         for (const OpenSim::Component* connectee : connectees) {
             ss << delim << connectee->getName();
             delim = ", ";
         }
-        log_error("cannot delete %s: the following components connect to it via sockets: %s", c.getName().c_str(), std::move(ss).str().c_str());
+        osc::log_error("cannot delete %s: the following components connect to it via sockets: %s", c.getName().c_str(), std::move(ss).str().c_str());
         return false;
     }
 
@@ -912,7 +912,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     // fixed in OpenSim itself
     for (const OpenSim::PathWrap& pw : m.getComponentList<OpenSim::PathWrap>()) {
         if (pw.getWrapObject() == &c) {
-            log_error("cannot delete %s: it is used in a path wrap (%s)", c.getName().c_str(), GetAbsolutePathString(pw).c_str());
+            osc::log_error("cannot delete %s: it is used in a path wrap (%s)", c.getName().c_str(), GetAbsolutePathString(pw).c_str());
             return false;
         }
     }
@@ -997,13 +997,13 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     }
 
     if (!rv) {
-        log_error("cannot delete %s: OpenSim Creator doesn't know how to delete a %s from its parent (maybe it can't?)", c.getName().c_str(), c.getConcreteClassName().c_str());
+        osc::log_error("cannot delete %s: OpenSim Creator doesn't know how to delete a %s from its parent (maybe it can't?)", c.getName().c_str(), c.getConcreteClassName().c_str());
     }
 
     return rv;
 }
 
-void osc::CopyCommonJointProperties(const OpenSim::Joint& src, OpenSim::Joint& dest)
+void opyn::CopyCommonJointProperties(const OpenSim::Joint& src, OpenSim::Joint& dest)
 {
     dest.setName(src.getName());
 
@@ -1017,7 +1017,7 @@ void osc::CopyCommonJointProperties(const OpenSim::Joint& src, OpenSim::Joint& d
     dest.updSocket("child_frame").setConnecteePath(src.getSocket("child_frame").getConnecteePath());
 }
 
-bool osc::DeactivateAllWrapObjectsIn(OpenSim::Model& m)
+bool opyn::DeactivateAllWrapObjectsIn(OpenSim::Model& m)
 {
     bool rv = false;
     for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
@@ -1031,7 +1031,7 @@ bool osc::DeactivateAllWrapObjectsIn(OpenSim::Model& m)
     return rv;
 }
 
-bool osc::ActivateAllWrapObjectsIn(OpenSim::Model& m)
+bool opyn::ActivateAllWrapObjectsIn(OpenSim::Model& m)
 {
     bool rv = false;
     for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
@@ -1045,7 +1045,7 @@ bool osc::ActivateAllWrapObjectsIn(OpenSim::Model& m)
     return rv;
 }
 
-std::vector<const OpenSim::WrapObject*> osc::GetAllWrapObjectsReferencedBy(const OpenSim::GeometryPath& gp)
+std::vector<const OpenSim::WrapObject*> opyn::GetAllWrapObjectsReferencedBy(const OpenSim::GeometryPath& gp)
 {
     const auto& wrapSet = gp.getWrapSet();
 
@@ -1061,15 +1061,15 @@ std::vector<const OpenSim::WrapObject*> osc::GetAllWrapObjectsReferencedBy(const
     // /bodyset/pelvis/pelvis_physicalbodyoffset/pelvis_geom
 }
 
-bool osc::HasModelFileExtension(const std::filesystem::path& path)
+bool opyn::HasModelFileExtension(const std::filesystem::path& path)
 {
     // Some ".osim" files in the wild (e.g. on SimTK.org) have a capitalized extension
     // (e.g. "SomeOldModel.OSIM"). Although technically invalid on case-sensitive
     // filesystems/OSes, it should still be accepted (ComputationalBiomechanicsLab/opensim-creator/#984).
-    return is_equal_case_insensitive(path.extension().string(), ".osim");
+    return osc::is_equal_case_insensitive(path.extension().string(), ".osim");
 }
 
-std::unique_ptr<OpenSim::Model> osc::LoadModel(const std::filesystem::path& path)
+std::unique_ptr<OpenSim::Model> opyn::LoadModel(const std::filesystem::path& path)
 {
     opyn::init();  // Ensure components are loaded etc.
 
@@ -1081,7 +1081,7 @@ std::unique_ptr<OpenSim::Model> osc::LoadModel(const std::filesystem::path& path
     return std::make_unique<OpenSim::Model>(path.string());
 }
 
-void osc::InitializeModel(OpenSim::Model& model)
+void opyn::InitializeModel(OpenSim::Model& model)
 {
     OSC_PERF("osc::InitializeModel");
     model.finalizeFromProperties();  // clears potentially-stale member components (required for `clearConnections`)
@@ -1089,23 +1089,23 @@ void osc::InitializeModel(OpenSim::Model& model)
     model.buildSystem();             // creates a new underlying physics system
 }
 
-void osc::TryEquilibrateMusclesOrLogWarning(OpenSim::Model& model, SimTK::State& state)
+void opyn::TryEquilibrateMusclesOrLogWarning(OpenSim::Model& model, SimTK::State& state)
 {
     try {
         model.equilibrateMuscles(state);
     }
     catch (const std::exception& ex) {
-        log_warn("Cannot equilibrate model's muscles: %s", ex.what());
+        osc::log_warn("Cannot equilibrate model's muscles: %s", ex.what());
     }
 }
 
-void osc::FinalizeConnections(OpenSim::Model& model)
+void opyn::FinalizeConnections(OpenSim::Model& model)
 {
     OSC_PERF("osc::FinalizeConnections");
     model.finalizeConnections();
 }
 
-SimTK::State& osc::InitializeState(OpenSim::Model& model)
+SimTK::State& opyn::InitializeState(OpenSim::Model& model)
 {
     OSC_PERF("osc::InitializeState");
     SimTK::State& state = model.initializeState();  // creates+returns a new working state
@@ -1114,13 +1114,13 @@ SimTK::State& osc::InitializeState(OpenSim::Model& model)
     return state;
 }
 
-void osc::FinalizeFromProperties(OpenSim::Model& model)
+void opyn::FinalizeFromProperties(OpenSim::Model& model)
 {
     OSC_PERF("osc::FinalizeFromProperties");
     model.finalizeFromProperties();
 }
 
-std::optional<size_t> osc::FindJointInParentJointSet(const OpenSim::Joint& joint)
+std::optional<size_t> opyn::FindJointInParentJointSet(const OpenSim::Joint& joint)
 {
     const auto* parentJointSet = GetOwner<OpenSim::JointSet>(joint);
     if (not parentJointSet) {
@@ -1132,7 +1132,7 @@ std::optional<size_t> osc::FindJointInParentJointSet(const OpenSim::Joint& joint
     return IndexOf(*parentJointSet, joint);
 }
 
-std::string osc::GetDisplayName(const OpenSim::Geometry& g)
+std::string opyn::GetDisplayName(const OpenSim::Geometry& g)
 {
     if (const auto* mesh = dynamic_cast<const OpenSim::Mesh*>(&g); mesh) {
         return std::filesystem::path{mesh->getGeometryFilename()}.filename().string();
@@ -1142,7 +1142,7 @@ std::string osc::GetDisplayName(const OpenSim::Geometry& g)
     }
 }
 
-CStringView osc::GetMotionTypeDisplayName(const OpenSim::Coordinate& c)
+osc::CStringView opyn::GetMotionTypeDisplayName(const OpenSim::Coordinate& c)
 {
     switch (c.getMotionType()) {
     case OpenSim::Coordinate::MotionType::Rotational:
@@ -1156,7 +1156,7 @@ CStringView osc::GetMotionTypeDisplayName(const OpenSim::Coordinate& c)
     }
 }
 
-const OpenSim::Appearance* osc::TryGetAppearance(const OpenSim::Component& component)
+const OpenSim::Appearance* opyn::TryGetAppearance(const OpenSim::Component& component)
 {
     if (!component.hasProperty("Appearance")) {
         return nullptr;
@@ -1168,7 +1168,7 @@ const OpenSim::Appearance* osc::TryGetAppearance(const OpenSim::Component& compo
     return maybeAppearanceProperty ? &maybeAppearanceProperty->getValue() : nullptr;
 }
 
-OpenSim::Appearance* osc::TryUpdAppearance(OpenSim::Component& component)
+OpenSim::Appearance* opyn::TryUpdAppearance(OpenSim::Component& component)
 {
     if (!component.hasProperty("Appearance")) {
         return nullptr;
@@ -1180,7 +1180,7 @@ OpenSim::Appearance* osc::TryUpdAppearance(OpenSim::Component& component)
     return maybeAppearanceProperty ? &maybeAppearanceProperty->updValue() : nullptr;
 }
 
-bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
+bool opyn::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
 {
     if (OpenSim::Appearance* appearance = TryUpdAppearance(c)) {
         appearance->set_visible(v);
@@ -1191,7 +1191,7 @@ bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
     }
 }
 
-Color osc::to_color(const OpenSim::Appearance& appearance)
+osc::Color opyn::to_color(const OpenSim::Appearance& appearance)
 {
     const SimTK::Vec3& rgb = appearance.get_color();
     const double a = appearance.get_opacity();
@@ -1204,74 +1204,74 @@ Color osc::to_color(const OpenSim::Appearance& appearance)
     };
 }
 
-Color osc::GetSuggestedBoneColor()
+osc::Color opyn::GetSuggestedBoneColor()
 {
-    const Color usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
+    const osc::Color usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
     const float brightenAmount = 0.1f;
-    return lerp(usualDefault, Color::white(), brightenAmount);
+    return lerp(usualDefault, osc::Color::white(), brightenAmount);
 }
 
-bool osc::IsShowingFrames(const OpenSim::Model& model)
+bool opyn::IsShowingFrames(const OpenSim::Model& model)
 {
     return model.getDisplayHints().get_show_frames();
 }
 
-bool osc::ToggleShowingFrames(OpenSim::Model& model)
+bool opyn::ToggleShowingFrames(OpenSim::Model& model)
 {
     const bool newValue = !IsShowingFrames(model);
     model.updDisplayHints().set_show_frames(newValue);
     return newValue;
 }
 
-bool osc::IsShowingMarkers(const OpenSim::Model& model)
+bool opyn::IsShowingMarkers(const OpenSim::Model& model)
 {
     return model.getDisplayHints().get_show_markers();
 }
 
-bool osc::ToggleShowingMarkers(OpenSim::Model& model)
+bool opyn::ToggleShowingMarkers(OpenSim::Model& model)
 {
     const bool newValue = !IsShowingMarkers(model);
     model.updDisplayHints().set_show_markers(newValue);
     return newValue;
 }
 
-bool osc::IsShowingWrapGeometry(const OpenSim::Model& model)
+bool opyn::IsShowingWrapGeometry(const OpenSim::Model& model)
 {
     return model.getDisplayHints().get_show_wrap_geometry();
 }
 
-bool osc::ToggleShowingWrapGeometry(OpenSim::Model& model)
+bool opyn::ToggleShowingWrapGeometry(OpenSim::Model& model)
 {
     const bool newValue = !IsShowingWrapGeometry(model);
     model.updDisplayHints().set_show_wrap_geometry(newValue);
     return newValue;
 }
 
-bool osc::IsShowingContactGeometry(const OpenSim::Model& model)
+bool opyn::IsShowingContactGeometry(const OpenSim::Model& model)
 {
     return model.getDisplayHints().get_show_contact_geometry();
 }
 
-bool osc::IsShowingForces(const OpenSim::Model& model)
+bool opyn::IsShowingForces(const OpenSim::Model& model)
 {
     return model.getDisplayHints().get_show_forces();
 }
 
-bool osc::ToggleShowingContactGeometry(OpenSim::Model& model)
+bool opyn::ToggleShowingContactGeometry(OpenSim::Model& model)
 {
     const bool newValue = !IsShowingContactGeometry(model);
     model.updDisplayHints().set_show_contact_geometry(newValue);
     return newValue;
 }
 
-bool osc::ToggleShowingForces(OpenSim::Model& model)
+bool opyn::ToggleShowingForces(OpenSim::Model& model)
 {
     const bool newValue = !IsShowingForces(model);
     model.updDisplayHints().set_show_forces(newValue);
     return newValue;
 }
 
-void osc::GetAbsolutePathString(const OpenSim::Component& c, std::string& out)
+void opyn::GetAbsolutePathString(const OpenSim::Component& c, std::string& out)
 {
     constexpr ptrdiff_t c_MaxEls = 16;
 
@@ -1319,24 +1319,24 @@ void osc::GetAbsolutePathString(const OpenSim::Component& c, std::string& out)
     }
 }
 
-std::string osc::GetAbsolutePathString(const OpenSim::Component& c)
+std::string opyn::GetAbsolutePathString(const OpenSim::Component& c)
 {
     std::string rv;
     GetAbsolutePathString(c, rv);
     return rv;
 }
 
-StringName osc::GetAbsolutePathStringName(const OpenSim::Component& c)
+osc::StringName opyn::GetAbsolutePathStringName(const OpenSim::Component& c)
 {
-    return StringName{GetAbsolutePathString(c)};
+    return osc::StringName{GetAbsolutePathString(c)};
 }
 
-OpenSim::ComponentPath osc::GetAbsolutePath(const OpenSim::Component& c)
+OpenSim::ComponentPath opyn::GetAbsolutePath(const OpenSim::Component& c)
 {
     return OpenSim::ComponentPath{GetAbsolutePathString(c)};
 }
 
-OpenSim::ComponentPath osc::GetAbsolutePathOrEmpty(const OpenSim::Component* c)
+OpenSim::ComponentPath opyn::GetAbsolutePathOrEmpty(const OpenSim::Component* c)
 {
     if (c) {
         return GetAbsolutePath(*c);
@@ -1346,7 +1346,7 @@ OpenSim::ComponentPath osc::GetAbsolutePathOrEmpty(const OpenSim::Component* c)
     }
 }
 
-std::optional<LinesOfAction> osc::GetEffectiveLinesOfActionInGround(
+std::optional<LinesOfAction> opyn::GetEffectiveLinesOfActionInGround(
     const OpenSim::Muscle& muscle,
     const SimTK::State& state)
 {
@@ -1355,7 +1355,7 @@ std::optional<LinesOfAction> osc::GetEffectiveLinesOfActionInGround(
     return TryGetLinesOfAction(muscle, state, config);
 }
 
-std::optional<LinesOfAction> osc::GetAnatomicalLinesOfActionInGround(
+std::optional<LinesOfAction> opyn::GetAnatomicalLinesOfActionInGround(
     const OpenSim::Muscle& muscle,
     const SimTK::State& state)
 {
@@ -1364,7 +1364,7 @@ std::optional<LinesOfAction> osc::GetAnatomicalLinesOfActionInGround(
     return TryGetLinesOfAction(muscle, state, config);
 }
 
-std::vector<std::unique_ptr<OpenSim::PointForceDirection>> osc::GetPointForceDirections(
+std::vector<std::unique_ptr<OpenSim::PointForceDirection>> opyn::GetPointForceDirections(
     const OpenSim::GeometryPath& path,
     const SimTK::State& st)
 {
@@ -1379,7 +1379,7 @@ std::vector<std::unique_ptr<OpenSim::PointForceDirection>> osc::GetPointForceDir
     return rv;
 }
 
-std::vector<GeometryPathPoint> osc::GetAllPathPoints(const OpenSim::GeometryPath& gp, const SimTK::State& st)
+std::vector<GeometryPathPoint> opyn::GetAllPathPoints(const OpenSim::GeometryPath& gp, const SimTK::State& st)
 {
     const OpenSim::Array<OpenSim::AbstractPathPoint*>& pps = gp.getCurrentPath(st);
 
@@ -1395,17 +1395,17 @@ std::vector<GeometryPathPoint> osc::GetAllPathPoints(const OpenSim::GeometryPath
         }
         else if (const auto* pwp = dynamic_cast<const OpenSim::PathWrapPoint*>(ap)) {
             // special case: it's a wrapping point, so add each part of the wrap
-            const auto body2ground = to<Transform>(pwp->getParentFrame().getTransformInGround(st));
+            const auto body2ground = osc::to<osc::Transform>(pwp->getParentFrame().getTransformInGround(st));
             const OpenSim::Array<SimTK::Vec3>& wrapPath = pwp->getWrapPath(st);
 
             rv.reserve(rv.size() + size(wrapPath));
             for (size_t j = 0; j < size(wrapPath); ++j) {
-                rv.emplace_back(body2ground * to<Vector3>(At(wrapPath, j)));
+                rv.emplace_back(body2ground * osc::to<osc::Vector3>(At(wrapPath, j)));
             }
         }
         else {
             // typical case: it's a normal/computed point with a single location in ground
-            rv.emplace_back(*ap, to<Vector3>(ap->getLocationInGround(st)));
+            rv.emplace_back(*ap, osc::to<osc::Vector3>(ap->getLocationInGround(st)));
         }
     }
 
@@ -1453,8 +1453,8 @@ namespace
 
     // helper: try to extract the current (state-dependent) force+torque from a HuntCrossleyForce
     struct ForceTorque final {
-        Vector3 force;
-        Vector3 torque;
+        osc::Vector3 force;
+        osc::Vector3 torque;
     };
     std::optional<ForceTorque> CalcHCFForceOnContactHalfSpace(
         const OpenSim::HuntCrossleyForce& hcf,
@@ -1468,12 +1468,12 @@ namespace
             return std::nullopt;  // edge-case: OpenSim didn't report the expected forces
         }
 
-        const Vector3 force(-forces[offset+0], -forces[offset+1], -forces[offset+2]);
-        if (length2(force) < epsilon_v<float>) {
+        const osc::Vector3 force(-forces[offset+0], -forces[offset+1], -forces[offset+2]);
+        if (osc::length2(force) < osc::epsilon_v<float>) {
             return std::nullopt;  // edge-case: no force is actually being exerted
         }
 
-        const Vector3 torque(-forces[offset+3], -forces[offset+4], -forces[offset+5]);
+        const osc::Vector3 torque(-forces[offset+3], -forces[offset+4], -forces[offset+5]);
 
         return ForceTorque{force, torque};
     }
@@ -1481,7 +1481,7 @@ namespace
     // helper: convert an OpenSim::ContactHalfSpace, which is defined in a frame with an offset,
     //         etc. into a simpler "plane in ground-space" representation that's more useful
     //         for rendering
-    Plane ToPointNormalPlaneInGround(
+    osc::Plane ToPointNormalPlaneInGround(
         const OpenSim::ContactHalfSpace& halfSpace,
         const SimTK::State& state)
     {
@@ -1489,10 +1489,10 @@ namespace
         //
         // - if there's a plane, then the plane's location+normal are needed in order
         //   to figure out where the force is exerted
-        const auto parent2ground = to<Transform>(halfSpace.getFrame().getTransformInGround(state));
-        const auto halfspace2parent = to<Transform>(halfSpace.getTransform());
+        const auto parent2ground = osc::to<osc::Transform>(halfSpace.getFrame().getTransformInGround(state));
+        const auto halfspace2parent = osc::to<osc::Transform>(halfSpace.getTransform());
 
-        return Plane{
+        return osc::Plane{
             .origin = parent2ground * halfspace2parent.translation,
             .normal = parent2ground.rotation * halfspace2parent.rotation * c_ContactHalfSpaceUpwardsNormal,
         };
@@ -1500,19 +1500,19 @@ namespace
 
     // helper: returns the location of the center of pressure of a force+torque on a plane, or
     //         std::nullopt if the to-be-drawn force vector is too small
-    std::optional<Vector3> CalcCenterOfPressure(
-        const Plane& plane,
+    std::optional<osc::Vector3> CalcCenterOfPressure(
+        const osc::Plane& plane,
         const ForceTorque& forceTorqueInG)
     {
         const auto& [force, torque] = forceTorqueInG;
-        if (abs(dot(plane.normal, force)) < epsilon_v<float>) {
+        if (osc::abs(osc::dot(plane.normal, force)) < osc::epsilon_v<float>) {
             return std::nullopt;  // the force vector is orthogonal to the plane's surface
         }
 
         // see also: SCONE/model_tools.cpp:GetPlaneCop
         auto normal_force_scalar = dot(force, plane.normal);
         auto pos0 = cross(plane.normal, torque) / normal_force_scalar;
-        Vector3 delta_pos = pos0 - plane.origin;
+        osc::Vector3 delta_pos = pos0 - plane.origin;
         double p1 = dot(delta_pos, plane.normal);
         double p2 = dot(force, plane.normal);
         auto pos = pos0 - (p1/p2) * force;
@@ -1520,7 +1520,7 @@ namespace
     }
 }
 
-std::optional<ForcePoint> osc::TryGetContactForceInGround(
+std::optional<ForcePoint> opyn::TryGetContactForceInGround(
     const OpenSim::Model& model,
     const SimTK::State& state,
     const OpenSim::HuntCrossleyForce& hcf)
@@ -1532,7 +1532,7 @@ std::optional<ForcePoint> osc::TryGetContactForceInGround(
     }
 
     // Calculate the equivalent point-normal `Plane` for the `OpenSim::ContactHalfSpace`.
-    const Plane contactPlaneInG = ToPointNormalPlaneInGround(*contactHalfSpace->ptr, state);
+    const osc::Plane contactPlaneInG = ToPointNormalPlaneInGround(*contactHalfSpace->ptr, state);
 
     // Extract the force+torque that the HCF is applying to the `OpenSim::ContactHalfSpace`.
     const auto forceTorqueAppliedToPlane = CalcHCFForceOnContactHalfSpace(hcf, contactHalfSpace->index, state);
@@ -1549,7 +1549,7 @@ std::optional<ForcePoint> osc::TryGetContactForceInGround(
     return ForcePoint{forceTorqueAppliedToPlane->force, *contactPlaneCOP};
 }
 
-const OpenSim::PhysicalFrame& osc::GetFrameUsingExternalForceLookupHeuristic(
+const OpenSim::PhysicalFrame& opyn::GetFrameUsingExternalForceLookupHeuristic(
     const OpenSim::Model& model,
     const std::string& bodyNameOrPath)
 {
@@ -1567,12 +1567,12 @@ const OpenSim::PhysicalFrame& osc::GetFrameUsingExternalForceLookupHeuristic(
     }
 }
 
-bool osc::CanExtractPointInfoFrom(const OpenSim::Component& c, const SimTK::State& st)
+bool opyn::CanExtractPointInfoFrom(const OpenSim::Component& c, const SimTK::State& st)
 {
     return TryExtractPointInfo(c, st) != std::nullopt;
 }
 
-std::optional<PointInfo> osc::TryExtractPointInfo(
+std::optional<PointInfo> opyn::TryExtractPointInfo(
     const OpenSim::Component& c,
     const SimTK::State& st)
 {
@@ -1589,25 +1589,25 @@ std::optional<PointInfo> osc::TryExtractPointInfo(
         }
 
         return PointInfo{
-            to<Vector3>(station->get_location()),
+            osc::to<osc::Vector3>(station->get_location()),
             GetAbsolutePath(station->getParentFrame()),
         };
     }
     else if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&c)) {
         return PointInfo{
-            to<Vector3>(pp->getLocation(st)),
+            osc::to<osc::Vector3>(pp->getLocation(st)),
             GetAbsolutePath(pp->getParentFrame()),
         };
     }
     else if (const auto* point = dynamic_cast<const OpenSim::Point*>(&c)) {
         return PointInfo{
-            to<Vector3>(point->getLocationInGround(st)),
+            osc::to<osc::Vector3>(point->getLocationInGround(st)),
             OpenSim::ComponentPath{"/ground"},
         };
     }
     else if (const auto* frame = dynamic_cast<const OpenSim::Frame*>(&c)) {
         return PointInfo{
-            to<Vector3>(frame->getPositionInGround(st)),
+            osc::to<osc::Vector3>(frame->getPositionInGround(st)),
             OpenSim::ComponentPath{"/ground"},
         };
     }
@@ -1616,7 +1616,7 @@ std::optional<PointInfo> osc::TryExtractPointInfo(
     }
 }
 
-OpenSim::Component& osc::AddComponentToAppropriateSet(OpenSim::Model& m, std::unique_ptr<OpenSim::Component> c)
+OpenSim::Component& opyn::AddComponentToAppropriateSet(OpenSim::Model& m, std::unique_ptr<OpenSim::Component> c)
 {
     if (c == nullptr) {
         throw std::runtime_error{"nullptr passed to AddComponentToAppropriateSet"};
@@ -1655,63 +1655,63 @@ OpenSim::Component& osc::AddComponentToAppropriateSet(OpenSim::Model& m, std::un
     return rv;
 }
 
-OpenSim::ModelComponent& osc::AddModelComponent(OpenSim::Model& model, std::unique_ptr<OpenSim::ModelComponent>&& p)
+OpenSim::ModelComponent& opyn::AddModelComponent(OpenSim::Model& model, std::unique_ptr<OpenSim::ModelComponent>&& p)
 {
     OpenSim::ModelComponent& rv = *p;
     model.addModelComponent(std::move(p).release());
     return rv;
 }
 
-OpenSim::Component& osc::AddComponent(OpenSim::Component& c, std::unique_ptr<OpenSim::Component>&& p)
+OpenSim::Component& opyn::AddComponent(OpenSim::Component& c, std::unique_ptr<OpenSim::Component>&& p)
 {
     OpenSim::Component& rv = *p;
     c.addComponent(std::move(p).release());
     return rv;
 }
 
-OpenSim::Body& osc::AddBody(OpenSim::Model& model, std::unique_ptr<OpenSim::Body> p)
+OpenSim::Body& opyn::AddBody(OpenSim::Model& model, std::unique_ptr<OpenSim::Body> p)
 {
     OpenSim::Body& rv = *p;
     model.addBody(p.release());
     return rv;
 }
 
-OpenSim::Joint& osc::AddJoint(OpenSim::Model& model, std::unique_ptr<OpenSim::Joint> j)
+OpenSim::Joint& opyn::AddJoint(OpenSim::Model& model, std::unique_ptr<OpenSim::Joint> j)
 {
     OpenSim::Joint& rv = *j;
     model.addJoint(j.release());
     return rv;
 }
 
-OpenSim::Marker& osc::AddMarker(OpenSim::Model& model, std::unique_ptr<OpenSim::Marker> marker)
+OpenSim::Marker& opyn::AddMarker(OpenSim::Model& model, std::unique_ptr<OpenSim::Marker> marker)
 {
     OpenSim::Marker& rv = *marker;
     model.addMarker(marker.release());
     return rv;
 }
 
-OpenSim::PhysicalOffsetFrame& osc::AddFrame(OpenSim::Joint& joint, std::unique_ptr<OpenSim::PhysicalOffsetFrame> frame)
+OpenSim::PhysicalOffsetFrame& opyn::AddFrame(OpenSim::Joint& joint, std::unique_ptr<OpenSim::PhysicalOffsetFrame> frame)
 {
     OpenSim::PhysicalOffsetFrame& rv = *frame;
     joint.addFrame(frame.release());
     return rv;
 }
 
-OpenSim::WrapObject& osc::AddWrapObject(OpenSim::PhysicalFrame& physFrame, std::unique_ptr<OpenSim::WrapObject> wrapObj)
+OpenSim::WrapObject& opyn::AddWrapObject(OpenSim::PhysicalFrame& physFrame, std::unique_ptr<OpenSim::WrapObject> wrapObj)
 {
     OpenSim::WrapObject& rv = *wrapObj;
     physFrame.addWrapObject(wrapObj.release());
     return rv;
 }
 
-OpenSim::Geometry& osc::AttachGeometry(OpenSim::Frame& frame, std::unique_ptr<OpenSim::Geometry> p)
+OpenSim::Geometry& opyn::AttachGeometry(OpenSim::Frame& frame, std::unique_ptr<OpenSim::Geometry> p)
 {
     OpenSim::Geometry& rv = *p;
     frame.attachGeometry(p.release());
     return rv;
 }
 
-void osc::OverwriteGeometry(
+void opyn::OverwriteGeometry(
     OpenSim::Model& model,
     OpenSim::Geometry& oldGeometry,
     std::unique_ptr<OpenSim::Geometry> newGeometry)
@@ -1738,7 +1738,7 @@ void osc::OverwriteGeometry(
     FinalizeConnections(model);
 }
 
-const OpenSim::PhysicalFrame* osc::TryGetParentToGroundFrame(const OpenSim::Component& component)
+const OpenSim::PhysicalFrame* opyn::TryGetParentToGroundFrame(const OpenSim::Component& component)
 {
     if (const auto* station = dynamic_cast<const OpenSim::Station*>(&component)) {
         return &station->getParentFrame();
@@ -1754,7 +1754,7 @@ const OpenSim::PhysicalFrame* osc::TryGetParentToGroundFrame(const OpenSim::Comp
     }
 }
 
-std::optional<SimTK::Transform> osc::TryGetParentToGroundTransform(
+std::optional<SimTK::Transform> opyn::TryGetParentToGroundTransform(
     const OpenSim::Component& component,
     const SimTK::State& state)
 {
@@ -1766,7 +1766,7 @@ std::optional<SimTK::Transform> osc::TryGetParentToGroundTransform(
     }
 }
 
-std::optional<std::string> osc::TryGetPositionalPropertyName(
+std::optional<std::string> opyn::TryGetPositionalPropertyName(
     const OpenSim::Component& component)
 {
     if (const auto* station = dynamic_cast<const OpenSim::Station*>(&component)) {
@@ -1783,7 +1783,7 @@ std::optional<std::string> osc::TryGetPositionalPropertyName(
     }
 }
 
-std::optional<std::string> osc::TryGetOrientationalPropertyName(
+std::optional<std::string> opyn::TryGetOrientationalPropertyName(
     const OpenSim::Component& component)
 {
     if (const auto* pof = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&component)) {
@@ -1794,7 +1794,7 @@ std::optional<std::string> osc::TryGetOrientationalPropertyName(
     }
 }
 
-const OpenSim::Frame* osc::TryGetParentFrame(const OpenSim::Frame& frame)
+const OpenSim::Frame* opyn::TryGetParentFrame(const OpenSim::Frame& frame)
 {
     if (auto offset = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&frame)) {
         return &offset->getParentFrame();
@@ -1802,7 +1802,7 @@ const OpenSim::Frame* osc::TryGetParentFrame(const OpenSim::Frame& frame)
     return nullptr;
 }
 
-std::optional<ComponentSpatialRepresentation> osc::TryGetSpatialRepresentation(
+std::optional<ComponentSpatialRepresentation> opyn::TryGetSpatialRepresentation(
     const OpenSim::Component& component,
     const SimTK::State& state)
 {
@@ -1818,7 +1818,7 @@ std::optional<ComponentSpatialRepresentation> osc::TryGetSpatialRepresentation(
     return std::nullopt;
 }
 
-bool osc::IsValidOpenSimComponentNameCharacter(char c)
+bool opyn::IsValidOpenSimComponentNameCharacter(char c)
 {
     return
         std::isalpha(static_cast<uint8_t>(c)) != 0 ||
@@ -1826,7 +1826,7 @@ bool osc::IsValidOpenSimComponentNameCharacter(char c)
         (c == '-' || c == '_');
 }
 
-std::string osc::SanitizeToOpenSimComponentName(std::string_view sv)
+std::string opyn::SanitizeToOpenSimComponentName(std::string_view sv)
 {
     std::string rv;
     for (auto c : sv) {
@@ -1837,7 +1837,7 @@ std::string osc::SanitizeToOpenSimComponentName(std::string_view sv)
     return rv;
 }
 
-std::unique_ptr<OpenSim::Storage> osc::LoadStorage(
+std::unique_ptr<OpenSim::Storage> opyn::LoadStorage(
     const OpenSim::Model& model,
     const std::filesystem::path& path,
     const StorageLoadingParameters& params)
@@ -1855,7 +1855,7 @@ std::unique_ptr<OpenSim::Storage> osc::LoadStorage(
     return rv;
 }
 
-std::unordered_map<int, int> osc::CreateStorageIndexToModelStatevarMappingWithWarnings(
+std::unordered_map<int, int> opyn::CreateStorageIndexToModelStatevarMappingWithWarnings(
     const OpenSim::Model& model,
     const OpenSim::Storage& storage)
 {
@@ -1868,19 +1868,19 @@ std::unordered_map<int, int> osc::CreateStorageIndexToModelStatevarMappingWithWa
             ss << delimiter << el;
             delimiter = ", ";
         }
-        log_warn("%s", std::move(ss).str().c_str());
-        log_warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
-        log_warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
+        osc::log_warn("%s", std::move(ss).str().c_str());
+        osc::log_warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
+        osc::log_warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
     }
     return std::move(mapping.storageIndexToModelStatevarIndex);
 }
 
-StorageIndexToModelStateVarMappingResult osc::CreateStorageIndexToModelStatevarMapping(
+StorageIndexToModelStateVarMappingResult opyn::CreateStorageIndexToModelStatevarMapping(
     const OpenSim::Model& model,
     const OpenSim::Storage& storage)
 {
     // ensure the `OpenSim::Storage` holds a time sequence.
-    if (not is_equal_case_insensitive(storage.getColumnLabels()[0], "time")) {
+    if (not osc::is_equal_case_insensitive(storage.getColumnLabels()[0], "time")) {
         throw std::runtime_error{"the provided motion data does not contain a 'time' column as its first column: it cannot be processed"};
     }
 
@@ -1918,7 +1918,7 @@ StorageIndexToModelStateVarMappingResult osc::CreateStorageIndexToModelStatevarM
     return rv;
 }
 
-void osc::UpdateStateVariablesFromStorageRow(
+void opyn::UpdateStateVariablesFromStorageRow(
     OpenSim::Model& model,
     SimTK::State& state,
     const std::unordered_map<int, int>& columnIndexToModelStateVarIndex,
@@ -1948,7 +1948,7 @@ void osc::UpdateStateVariablesFromStorageRow(
     model.setStateVariableValues(state, stateValsBuf);
 }
 
-void osc::UpdateStateFromStorageTime(
+void opyn::UpdateStateFromStorageTime(
     OpenSim::Model& model,
     SimTK::State& state,
     const std::unordered_map<int, int>& columnIndexToModelStateVarIndex,
@@ -1958,7 +1958,7 @@ void osc::UpdateStateFromStorageTime(
     UpdateStateVariablesFromStorageRow(model, state, columnIndexToModelStateVarIndex, storage, storage.findIndex(time));
 }
 
-std::string osc::WriteObjectXMLToString(const OpenSim::Object& obj)
+std::string opyn::WriteObjectXMLToString(const OpenSim::Object& obj)
 {
     SimTK::Xml::Document d;
     SimTK::Xml::Element el = d.getRootElement();
@@ -1973,7 +1973,7 @@ std::string osc::WriteObjectXMLToString(const OpenSim::Object& obj)
     }
 }
 
-void osc::ScaleModelMassPreserveMassDistribution(
+void opyn::ScaleModelMassPreserveMassDistribution(
     OpenSim::Model& model,
     const SimTK::State& state,
     double newMass)

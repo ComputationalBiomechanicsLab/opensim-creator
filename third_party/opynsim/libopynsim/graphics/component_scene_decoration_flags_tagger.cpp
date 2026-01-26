@@ -3,7 +3,7 @@
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 
-using namespace osc;
+using namespace opyn;
 
 osc::ComponentSceneDecorationFlagsTagger::ComponentSceneDecorationFlagsTagger(
     const OpenSim::Component* selected_,
@@ -25,7 +25,7 @@ void osc::ComponentSceneDecorationFlagsTagger::operator()(
     decoration.flags |= m_LastFlags;
 }
 
-SceneDecorationFlags osc::ComponentSceneDecorationFlagsTagger::computeFlags(
+osc::SceneDecorationFlags osc::ComponentSceneDecorationFlagsTagger::computeFlags(
     const OpenSim::Component& component) const
 {
     SceneDecorationFlags rv = SceneDecorationFlag::Default;

@@ -249,13 +249,13 @@ namespace
             {
                 params.getModelSharedPtr()->setHovered(nullptr);
             }
-            else if (state.maybeHoveredComponentAbsPath != GetAbsolutePathOrEmpty(params.getModelSharedPtr()->getHovered()))
+            else if (state.maybeHoveredComponentAbsPath != opyn::GetAbsolutePathOrEmpty(params.getModelSharedPtr()->getHovered()))
             {
                 // care: this code must check whether the hover != current hover
                 // (even if null), because there might be multiple viewports open
                 // (#582)
                 params.getModelSharedPtr()->setHovered(
-                    FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
+                    opyn::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
                 );
                 rv = true;
             }
@@ -264,7 +264,7 @@ namespace
             if (state.isLeftClickReleasedWithoutDragging)
             {
                 params.getModelSharedPtr()->setSelected(
-                    FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
+                    opyn::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
                 );
                 rv = true;
             }
@@ -281,7 +281,7 @@ namespace
                 m_IsHandlingMouseInputs &&
                 !ui::is_mouse_dragging_with_any_button_down())
             {
-                if (const OpenSim::Component* c = FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
+                if (const OpenSim::Component* c = opyn::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
                 {
                     DrawComponentHoverTooltip(*c);
                 }

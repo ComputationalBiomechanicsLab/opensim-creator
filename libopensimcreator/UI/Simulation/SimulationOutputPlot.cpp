@@ -90,7 +90,7 @@ namespace
         auto environment = simulation.tryUpdEnvironment();
 
         int id = 0;
-        ForEachComponentInclusive(*simulation.getModel(), [&oneDimensionalOutputExtractor, environment, &id](const auto& component)
+        opyn::ForEachComponentInclusive(*simulation.getModel(), [&oneDimensionalOutputExtractor, environment, &id](const auto& component)
         {
             const auto numOutputs = component.getNumOutputs();
             if (numOutputs <= 0) {

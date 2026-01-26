@@ -74,7 +74,7 @@ namespace
 
         bool isModelLoaded() const
         {
-            return HasInputFileName(m_Model->getModel());
+            return opyn::HasInputFileName(m_Model->getModel());
         }
 
         void loadModelFile(const std::filesystem::path& p)
@@ -86,7 +86,7 @@ namespace
         void reloadAll(std::string_view label = "reloaded model")
         {
             // reload/reset model
-            if (HasInputFileName(m_Model->getModel())) {
+            if (opyn::HasInputFileName(m_Model->getModel())) {
                 SceneCache dummy;
                 ActionReloadOsimFromDisk(*m_Model, dummy);
             }
@@ -150,7 +150,7 @@ namespace
             state.setTime(newTime);
 
             if (m_AssociatedTrajectory) {
-                UpdateStateFromStorageTime(
+                opyn::UpdateStateFromStorageTime(
                     m_Model->updModel(),
                     state,
                     m_AssociatedTrajectory->mapper(),
@@ -186,7 +186,7 @@ namespace
 
             // (re)load associated trajectory
             if (m_AssociatedTrajectory) {
-                InitializeModel(m_Model->updModel());
+                opyn::InitializeModel(m_Model->updModel());
                 m_AssociatedTrajectory->reloadFromDisk(m_Model->getModel());
             }
 
@@ -204,8 +204,8 @@ namespace
             }
 
             // care: state initialization is dependent on `m_AssociatedTrajectory`
-            InitializeModel(m_Model->updModel());
-            InitializeState(m_Model->updModel());
+            opyn::InitializeModel(m_Model->updModel());
+            opyn::InitializeState(m_Model->updModel());
             m_Model->commit(label);
             setScrubTime(m_ScrubTime);
         }

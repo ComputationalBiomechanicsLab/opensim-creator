@@ -5,6 +5,8 @@
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 
+using namespace opyn;
+
 void osc::mow::InMemoryMesh::implGenerateCustomDecorations(
     const SimTK::State& state,
     const std::function<void(SceneDecoration&&)>& out) const

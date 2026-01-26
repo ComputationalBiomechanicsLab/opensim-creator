@@ -83,7 +83,7 @@ public:
 private:
     void drawTargetComponentSpecializedAdders()
     {
-        const OpenSim::Component* component = FindComponent(m_Model->getModel(), m_MaybeTargetParentComponent);
+        const OpenSim::Component* component = opyn::FindComponent(m_Model->getModel(), m_MaybeTargetParentComponent);
         if (not component) {
             return;
         }
@@ -126,7 +126,7 @@ private:
         if (not parent()) {
             return;  // can't open the select contact geometry popup.
         }
-        if (size(hcf.get_contact_parameters()) > 1) {
+        if (opyn::size(hcf.get_contact_parameters()) > 1) {
             return;  // cannot edit: has more than one HuntCrossleyForce::Parameter
         }
 
@@ -219,7 +219,7 @@ private:
 
     void drawPathWrapToggleMenuItems(const OpenSim::GeometryPath& gp)
     {
-        const auto wraps = GetAllWrapObjectsReferencedBy(gp);
+        const auto wraps = opyn::GetAllWrapObjectsReferencedBy(gp);
         for (const auto& wo : m_Model->getModel().getComponentList<OpenSim::WrapObject>()) {
             const bool enabled = cpp23::contains(wraps, &wo);
 
@@ -333,7 +333,7 @@ private:
 
         std::stringstream label;
         label << "Add " << entry.name();
-        const OpenSim::Component* target = FindComponent(*m_Model, m_MaybeTargetParentComponent);
+        const OpenSim::Component* target = opyn::FindComponent(*m_Model, m_MaybeTargetParentComponent);
         if (target) {
             label << " to " << target->getName();
         }

@@ -3,6 +3,8 @@
 #include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 
+using namespace opyn;
+
 osc::ModelStatePairInfo::ModelStatePairInfo() = default;
 
 osc::ModelStatePairInfo::ModelStatePairInfo(const ModelStatePair& msp) :

@@ -40,7 +40,7 @@ public:
         ui::end_child_panel();
 
         if (selected) {
-            m_OnSelection(GetAbsolutePath(*selected));
+            m_OnSelection(opyn::GetAbsolutePath(*selected));
             request_close();
         }
     }

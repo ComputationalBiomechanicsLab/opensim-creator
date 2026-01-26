@@ -457,21 +457,21 @@ namespace
 
         // init the model + state
 
-        InitializeModel(*model);
+        opyn::InitializeModel(*model);
 
         if (stopToken.stop_requested())
         {
             return PlottingTaskStatus::Cancelled;
         }
 
-        SimTK::State& state = InitializeState(*model);
+        SimTK::State& state = opyn::InitializeState(*model);
 
         if (stopToken.stop_requested())
         {
             return PlottingTaskStatus::Cancelled;
         }
 
-        const auto* maybeMuscle = FindComponent<OpenSim::Muscle>(*model, params.getMusclePath());
+        const auto* maybeMuscle = opyn::FindComponent<OpenSim::Muscle>(*model, params.getMusclePath());
         if (!maybeMuscle)
         {
             shared.setErrorMessage(params.getMusclePath().toString() + ": cannot find a muscle with this name");
@@ -479,7 +479,7 @@ namespace
         }
         const OpenSim::Muscle& muscle = *maybeMuscle;
 
-        const OpenSim::Coordinate* maybeCoord = FindComponentMut<OpenSim::Coordinate>(*model, params.getCoordinatePath());
+        const OpenSim::Coordinate* maybeCoord = opyn::FindComponentMut<OpenSim::Coordinate>(*model, params.getCoordinatePath());
         if (!maybeCoord)
         {
             shared.setErrorMessage(params.getCoordinatePath().toString() + ": cannot find a coordinate with this name");
@@ -526,7 +526,7 @@ namespace
 
             const double xVal = firstXValue + (i * stepBetweenXValues);
             coord.setValue(state, xVal);
-            const float xDisplayVal = ConvertCoordValueToDisplayValue(coord, xVal);
+            const float xDisplayVal = opyn::ConvertCoordValueToDisplayValue(coord, xVal);
 
             float yVal = quiet_nan_v<float>;
             try
@@ -848,7 +848,7 @@ namespace
     {
         std::stringstream ss;
         WriteXAxisName(params, ss);
-        ss << " value [" << GetCoordDisplayValueUnitsString(coord) << ']';
+        ss << " value [" << opyn::GetCoordDisplayValueUnitsString(coord) << ']';
         return std::move(ss).str();
     }
 
@@ -1553,7 +1553,7 @@ namespace
             const PlotParameters& latestParams = getShared().getPlotParams();
             auto modelGuard = latestParams.getCommit().getModel();
 
-            const auto* maybeCoord = FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
+            const auto* maybeCoord = opyn::FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
             if (!maybeCoord) {
                 ui::draw_text("(no coordinate named %s in model)", latestParams.getCoordinatePath().toString().c_str());
                 return nullptr;
@@ -1579,8 +1579,8 @@ namespace
                 plot::setup_axis_limits(
                     plot::Axis::X1,
                     ClosedInterval{
-                        ConvertCoordValueToDisplayValue(coord, GetFirstXValue(plotParams, coord)),
-                        ConvertCoordValueToDisplayValue(coord, GetLastXValue(plotParams, coord)),
+                        opyn::ConvertCoordValueToDisplayValue(coord, GetFirstXValue(plotParams, coord)),
+                        opyn::ConvertCoordValueToDisplayValue(coord, GetLastXValue(plotParams, coord)),
                     },
                     0.025f,
                     plot::Condition::Always
@@ -1651,7 +1651,7 @@ namespace
             ui::set_next_item_width(muscleNameWidth);
             if (ui::begin_combobox("##musclename", muscleName, ui::ComboFlag::NoArrowButton))
             {
-                const auto* current = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
+                const auto* current = opyn::FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
                 for (const OpenSim::Muscle& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>())
                 {
                     bool selected = &musc == current;
@@ -1687,13 +1687,13 @@ namespace
             ui::set_next_item_width(coordNameWidth);
             if (ui::begin_combobox("##coordname", coordName, ui::ComboFlag::NoArrowButton))
             {
-                const auto* current = FindComponent<OpenSim::Coordinate>(getShared().getModel().getModel(), getShared().getPlotParams().getCoordinatePath());
+                const auto* current = opyn::FindComponent<OpenSim::Coordinate>(getShared().getModel().getModel(), getShared().getPlotParams().getCoordinatePath());
                 for (const OpenSim::Coordinate& c : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>())
                 {
                     bool selected = &c == current;
                     if (ui::draw_selectable(c.getName(), &selected))
                     {
-                        updShared().updPlotParams().setCoordinatePath(GetAbsolutePath(c));
+                        updShared().updPlotParams().setCoordinatePath(opyn::GetAbsolutePath(c));
                     }
                 }
                 ui::end_combobox();
@@ -1832,7 +1832,7 @@ namespace
             const OpenSim::Coordinate& coord,
             std::optional<float> maybeMouseX)
         {
-            const double coordinateXInDegrees = ConvertCoordValueToDisplayValue(coord, coord.getValue(getShared().getModel().getState()));
+            const double coordinateXInDegrees = opyn::ConvertCoordValueToDisplayValue(coord, coord.getValue(getShared().getModel().getState()));
 
             // draw vertical drop line where the coordinate's value currently is
             {
@@ -1916,7 +1916,7 @@ namespace
                     ui::draw_tooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
                 else {
-                    const double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
+                    const double storedValue = opyn::ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
                     ActionSetCoordinateValue(updShared().updModel(), coord, storedValue);
                 }
             }
@@ -1931,7 +1931,7 @@ namespace
                     ui::draw_tooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
                 else {
-                    const double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
+                    const double storedValue = opyn::ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
                     ActionSetCoordinateValueAndSave(updShared().updModel(), coord, storedValue);
 
                     // trick: we "know" that the last edit to the model was a coordinate edit in this plot's
@@ -2105,7 +2105,7 @@ namespace
         // tries to duplicate the current plot (settings etc.) into a new plot panel
         void actionDuplicateCurrentPlotIntoNewPanel(const OpenSim::Coordinate& coord)
         {
-            const auto* musc = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
+            const auto* musc = opyn::FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
             if (musc) {
                 App::post_event<AddMusclePlotEvent>(updShared().getParentWidget(), coord, *musc);
             }
@@ -2157,7 +2157,7 @@ namespace
             ui::begin_child_panel("MomentArmPlotCoordinateSelection");
             for (const OpenSim::Coordinate* coord : coordinates) {
                 if (ui::draw_selectable(coord->getName())) {
-                    updShared().updPlotParams().setCoordinatePath(GetAbsolutePath(*coord));
+                    updShared().updPlotParams().setCoordinatePath(opyn::GetAbsolutePath(*coord));
                     rv = std::make_unique<ShowingPlotState>(updShared());
                 }
             }
@@ -2197,7 +2197,7 @@ namespace
                 ui::begin_child_panel("MomentArmPlotMuscleSelection");
                 for (const OpenSim::Muscle* musc : muscles) {
                     if (ui::draw_selectable(musc->getName())) {
-                        updShared().updPlotParams().setMusclePath(GetAbsolutePath(*musc));
+                        updShared().updPlotParams().setMusclePath(opyn::GetAbsolutePath(*musc));
                         rv = std::make_unique<PickCoordinateState>(updShared());
                     }
                 }

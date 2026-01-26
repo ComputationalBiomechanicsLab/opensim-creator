@@ -19,7 +19,7 @@
 #include <typeinfo>
 #include <utility>
 
-using namespace osc;
+using namespace opyn;
 
 // other helpers
 namespace
@@ -27,7 +27,7 @@ namespace
     std::string GenerateComponentOutputLabel(
         const OpenSim::ComponentPath& cp,
         const std::string& outputName,
-        ComponentOutputSubfield subfield)
+        osc::ComponentOutputSubfield subfield)
     {
         std::stringstream ss;
         ss << cp.toString() << '[' << outputName;
@@ -39,13 +39,13 @@ namespace
         return std::move(ss).str();
     }
 
-    OutputValueExtractor MakeNullExtractor(OutputExtractorDataType type)
+    osc::OutputValueExtractor MakeNullExtractor(osc::OutputExtractorDataType type)
     {
-        static_assert(num_options<OutputExtractorDataType>() == 3);
+        static_assert(osc::num_options<osc::OutputExtractorDataType>() == 3);
         switch (type) {
-        case OutputExtractorDataType::Float:   return OutputValueExtractor::constant(quiet_nan_v<float>);
-        case OutputExtractorDataType::Vector2: return OutputValueExtractor::constant(Vector2{quiet_nan_v<float>});
-        default:                               return OutputValueExtractor::constant(std::string{});
+        case osc::OutputExtractorDataType::Float:   return osc::OutputValueExtractor::constant(osc::quiet_nan_v<float>);
+        case osc::OutputExtractorDataType::Vector2: return osc::OutputValueExtractor::constant(osc::Vector2{osc::quiet_nan_v<float>});
+        default:                                    return osc::OutputValueExtractor::constant(std::string{});
         }
     }
 }
@@ -150,22 +150,22 @@ const OpenSim::ComponentPath& osc::ComponentOutputExtractor::getComponentAbsPath
     return m_Impl->getComponentAbsPath();
 }
 
-CStringView osc::ComponentOutputExtractor::implGetName() const
+osc::CStringView osc::ComponentOutputExtractor::implGetName() const
 {
     return m_Impl->getName();
 }
 
-CStringView osc::ComponentOutputExtractor::implGetDescription() const
+osc::CStringView osc::ComponentOutputExtractor::implGetDescription() const
 {
     return m_Impl->getDescription();
 }
 
-OutputExtractorDataType osc::ComponentOutputExtractor::implGetOutputType() const
+osc::OutputExtractorDataType osc::ComponentOutputExtractor::implGetOutputType() const
 {
     return m_Impl->getOutputType();
 }
 
-OutputValueExtractor osc::ComponentOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const
+osc::OutputValueExtractor osc::ComponentOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const
 {
     return m_Impl->getOutputValueExtractor(component);
 }

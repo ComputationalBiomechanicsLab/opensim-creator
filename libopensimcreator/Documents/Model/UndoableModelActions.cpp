@@ -76,6 +76,7 @@
 #include <utility>
 
 using namespace osc;
+using namespace opyn;
 
 // helper functions
 namespace
@@ -1195,7 +1196,7 @@ bool osc::ActionAddPathPointToGeometryPath(
         if (const auto* gpAfterFinalization = FindComponent<OpenSim::GeometryPath>(mutModel, geometryPathPath)) {
             const auto& pps = gpAfterFinalization->getPathPointSet();
             if (not empty(pps)) {
-                uim.setSelected(&At(pps, ssize(pps) - 1));
+                uim.setSelected(&opyn::At(pps, ssize(pps) - 1));
             }
         }
 
@@ -1256,7 +1257,7 @@ bool osc::ActionAddPathPointToPathActuator(
         if (const auto* paAfterFinalization = FindComponent<OpenSim::PathActuator>(mutModel, pathActuatorPath)) {
             const auto& pps = paAfterFinalization->getGeometryPath().getPathPointSet();
             if (not empty(pps)) {
-                uim.setSelected(&At(pps, ssize(pps) -1));
+                uim.setSelected(&opyn::At(pps, ssize(pps) -1));
             }
         }
 

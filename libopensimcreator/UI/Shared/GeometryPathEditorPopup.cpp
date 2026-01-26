@@ -69,29 +69,29 @@ namespace
 
     void ActionMovePathPointUp(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        if (1 <= i && i < ssize(pps))
+        if (1 <= i && i < opyn::ssize(pps))
         {
-            auto tmp = Clone(At(pps, i));
-            Assign(pps, i, At(pps, i-1));
-            Assign(pps, i-1, std::move(tmp));
+            auto tmp = opyn::Clone(opyn::At(pps, i));
+            opyn::Assign(pps, i, opyn::At(pps, i-1));
+            opyn::Assign(pps, i-1, std::move(tmp));
         }
     }
 
     void ActionMovePathPointDown(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        if (0 <= i && i < ssize(pps)-1)
+        if (0 <= i && i < opyn::ssize(pps)-1)
         {
-            auto tmp = Clone(At(pps, i));
-            Assign(pps, i, At(pps, i+1));
-            Assign(pps, i+1, std::move(tmp));
+            auto tmp = opyn::Clone(opyn::At(pps, i));
+            opyn::Assign(pps, i, opyn::At(pps, i+1));
+            opyn::Assign(pps, i+1, std::move(tmp));
         }
     }
 
     void ActionDeletePathPoint(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        if (0 <= i && i < ssize(pps))
+        if (0 <= i && i < opyn::ssize(pps))
         {
-            EraseAt(pps, i);
+            opyn::EraseAt(pps, i);
         }
     }
 
@@ -100,19 +100,19 @@ namespace
         ptrdiff_t i,
         const std::string& frameAbsPath)
     {
-        At(pps, i).updSocket("parent_frame").setConnecteePath(frameAbsPath);
+        opyn::At(pps, i).updSocket("parent_frame").setConnecteePath(frameAbsPath);
     }
 
     void ActionAddNewPathPoint(OpenSim::PathPointSet& pps)
     {
-        const std::string frame = empty(pps) ?
+        const std::string frame = opyn::empty(pps) ?
             "/ground" :
-            At(pps, size(pps)-1).getSocket("parent_frame").getConnecteePath();
+            opyn::At(pps, opyn::size(pps)-1).getSocket("parent_frame").getConnecteePath();
 
         auto pp = std::make_unique<OpenSim::PathPoint>();
         pp->updSocket("parent_frame").setConnecteePath(frame);
 
-        Append(pps, std::move(pp));
+        opyn::Append(pps, std::move(pp));
     }
 }
 
@@ -173,7 +173,7 @@ private:
             ui::table_setup_scroll_freeze(0, 1);
             ui::table_headers_row();
 
-            for (ptrdiff_t i = 0; i < ssize(pps); ++i)
+            for (ptrdiff_t i = 0; i < opyn::ssize(pps); ++i)
             {
                 ui::push_id(i);
                 drawIthPathPointTableRow(pps, i);
@@ -231,13 +231,13 @@ private:
 
         ui::same_line();
 
-        if (i+1 >= ssize(pps)) {
+        if (i+1 >= opyn::ssize(pps)) {
             ui::begin_disabled();
         }
         if (ui::draw_small_button(MSMICONS_ARROW_DOWN)) {
             m_RequestedAction = RequestedAction{RequestedAction::Type::MoveDown, i};
         }
-        if (i+1 >= ssize(pps)) {
+        if (i+1 >= opyn::ssize(pps)) {
             ui::end_disabled();
         }
 
@@ -255,7 +255,7 @@ private:
 
     void drawIthPathPointTypeCell(const OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        ui::draw_text_disabled(At(pps, i).getConcreteClassName());
+        ui::draw_text_disabled(opyn::At(pps, i).getConcreteClassName());
     }
 
     // try, because the path point type might not actually have a set location
@@ -263,7 +263,7 @@ private:
     // (e.g. `MovingPathPoint`s)
     void tryDrawIthPathPointLocationEditorCells(OpenSim::PathPointSet& pps, ptrdiff_t i, int& column)
     {
-        OpenSim::AbstractPathPoint& app = At(pps, i);
+        OpenSim::AbstractPathPoint& app = opyn::At(pps, i);
 
         if (auto* const pp = dynamic_cast<OpenSim::PathPoint*>(&app))
         {
@@ -297,7 +297,7 @@ private:
     {
         const float width = ui::calc_text_size("/bodyset/a_typical_body_name").x();
 
-        const std::string& label = At(pps, i).getSocket("parent_frame").getConnecteePath();
+        const std::string& label = opyn::At(pps, i).getSocket("parent_frame").getConnecteePath();
 
         ui::set_next_item_width(width);
         if (ui::begin_combobox("##framesel", label))
@@ -332,7 +332,7 @@ private:
 
     void tryExecuteRequestedAction(OpenSim::PathPointSet& pps)
     {
-        if (!(0 <= m_RequestedAction.pathPointIndex && m_RequestedAction.pathPointIndex < ssize(pps)))
+        if (!(0 <= m_RequestedAction.pathPointIndex && m_RequestedAction.pathPointIndex < opyn::ssize(pps)))
         {
             // edge-case: if the index is out of range, ignore the action
             m_RequestedAction.reset();

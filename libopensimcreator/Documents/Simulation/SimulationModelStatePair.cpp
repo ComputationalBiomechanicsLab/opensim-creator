@@ -49,22 +49,22 @@ public:
 
     const OpenSim::Component* getSelected() const
     {
-        return FindComponent(getModel(), m_Selected);
+        return opyn::FindComponent(getModel(), m_Selected);
     }
 
     void setSelected(const OpenSim::Component* c)
     {
-        m_Selected = GetAbsolutePathOrEmpty(c);
+        m_Selected = opyn::GetAbsolutePathOrEmpty(c);
     }
 
     const OpenSim::Component* getHovered() const
     {
-        return FindComponent(getModel(), m_Hovered);
+        return opyn::FindComponent(getModel(), m_Hovered);
     }
 
     void setHovered(const OpenSim::Component* c)
     {
-        m_Hovered = GetAbsolutePathOrEmpty(c);
+        m_Hovered = opyn::GetAbsolutePathOrEmpty(c);
     }
 
     float getFixupScaleFactor() const

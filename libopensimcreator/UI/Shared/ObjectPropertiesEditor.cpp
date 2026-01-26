@@ -425,7 +425,7 @@ namespace
             if (not component) {
                 return {};
             }
-            return GetAbsolutePath(*component);
+            return opyn::GetAbsolutePath(*component);
         }
 
         Widget* tryGetParentWidget()
@@ -776,7 +776,7 @@ namespace
                 return nullptr;  // the object is not within the tree of the root component (#800)
             }
 
-            const auto positionPropName = TryGetPositionalPropertyName(*component);
+            const auto positionPropName = opyn::TryGetPositionalPropertyName(*component);
             if (not positionPropName) {
                 return nullptr;  // the component doesn't have a logical positional property that can be edited with the transform
             }
@@ -790,7 +790,7 @@ namespace
                 return nullptr;  // the property this editor is editing isn't a logically positional one
             }
 
-            return TryGetParentToGroundFrame(*component);
+            return opyn::TryGetParentToGroundFrame(*component);
         }
 
         // if the Vec3 property has a parent frame, returns a transform that maps the Vec3
@@ -824,7 +824,7 @@ namespace
                 return std::nullopt;
             }
 
-            const auto* frame = FindComponent<OpenSim::Frame>(getRootComponent(), *m_MaybeUserSelectedFrameAbsPath);
+            const auto* frame = opyn::FindComponent<OpenSim::Frame>(getRootComponent(), *m_MaybeUserSelectedFrameAbsPath);
             if (not frame) {
                 return std::nullopt;
             }
@@ -928,7 +928,7 @@ namespace
 
                 // draw selectable for each frame in the component tree
                 for (const OpenSim::Frame& frame : getRootComponent().getComponentList<OpenSim::Frame>()) {
-                    const OpenSim::ComponentPath frameAbsPath = GetAbsolutePath(frame);
+                    const OpenSim::ComponentPath frameAbsPath = opyn::GetAbsolutePath(frame);
 
                     ui::push_id(imguiID++);
                     bool selected = frameAbsPath == m_MaybeUserSelectedFrameAbsPath;
@@ -1267,7 +1267,7 @@ namespace
 
             bool shouldSave = false;
 
-            Color color = to_color(m_EditedProperty.getValue());
+            Color color = opyn::to_color(m_EditedProperty.getValue());
             ui::set_next_item_width(ui::get_content_region_available().x());
 
             if (ui::draw_rgba_color_editor("##coloreditor", color)) {
@@ -1336,7 +1336,7 @@ namespace
             }
             const property_type& prop = *maybeProp;
 
-            if (empty(prop.getValue())) {
+            if (opyn::empty(prop.getValue())) {
                 return std::nullopt;  // no editable contact set on the property
             }
 
@@ -1362,8 +1362,8 @@ namespace
                 rv = [=](OpenSim::AbstractProperty& p) mutable
                 {
                     auto* downcasted = dynamic_cast<OpenSim::Property<OpenSim::HuntCrossleyForce::ContactParametersSet>*>(&p);
-                    if (downcasted and not empty(downcasted->getValue())) {
-                        OpenSim::HuntCrossleyForce::ContactParameters& contactParams = At(downcasted->updValue(), 0);
+                    if (downcasted and not opyn::empty(downcasted->getValue())) {
+                        OpenSim::HuntCrossleyForce::ContactParameters& contactParams = opyn::At(downcasted->updValue(), 0);
                         if (params.hasProperty(resp->getPropertyName())) {
                             OpenSim::AbstractProperty& childP = contactParams.updPropertyByName(resp->getPropertyName());
                             resp->apply(childP);
@@ -1507,7 +1507,7 @@ namespace
                             componentPtr,
                             [component = componentPtr, parentPath = tryGetObjectAbsPath(), propname = prop->getName()]() -> const OpenSim::Function*
                             {
-                                auto* parentComponent = FindComponent(*component, parentPath);
+                                auto* parentComponent = opyn::FindComponent(*component, parentPath);
                                 if (not parentComponent) {
                                     return nullptr;
                                 }

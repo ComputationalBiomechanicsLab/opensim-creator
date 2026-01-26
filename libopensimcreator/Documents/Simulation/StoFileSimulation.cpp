@@ -32,7 +32,7 @@ namespace
         int row)
     {
         SimTK::State state = model.getWorkingState();
-        UpdateStateVariablesFromStorageRow(model, state, lut, storage, row);
+        opyn::UpdateStateVariablesFromStorageRow(model, state, lut, storage, row);
         model.assemble(state);
         model.realizeReport(state);
         return state;
@@ -43,16 +43,16 @@ namespace
         const std::filesystem::path& stoFilePath)
     {
         // load+condition the underlying `OpenSim::Storage`
-        const auto storage = LoadStorage(model, stoFilePath, StorageLoadingParameters{
+        const auto storage = opyn::LoadStorage(model, stoFilePath, opyn::StorageLoadingParameters{
             .resampleToFrequency = 1.0/100.0,  // resample the state trajectory at 100FPS (#708)
         });
 
         // map column header indices in the `OpenSim::Storage` to the `OpenSim::Model`'s state variables' indices
-        const auto lut = CreateStorageIndexToModelStatevarMappingWithWarnings(model, *storage);
+        const auto lut = opyn::CreateStorageIndexToModelStatevarMappingWithWarnings(model, *storage);
 
         // init the model+state with unlocked coordinates
-        InitializeModel(model);
-        InitializeState(model);
+        opyn::InitializeModel(model);
+        opyn::InitializeState(model);
 
         // convert each timestep in the `OpenSim::Storage` as a `SimulationReport`
         std::vector<SimulationReport> rv;

@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+using namespace opyn;
+
 osc::FileBackedStorage::FileBackedStorage(const OpenSim::Model& model, std::filesystem::path sourceFile) :
     m_SourceFile{std::move(sourceFile)},
     m_Storage{LoadStorage(model, m_SourceFile)},

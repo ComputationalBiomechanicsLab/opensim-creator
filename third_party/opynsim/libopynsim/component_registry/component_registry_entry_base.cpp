@@ -7,6 +7,8 @@
 #include <string_view>
 #include <utility>
 
+using namespace opyn;
+
 osc::ComponentRegistryEntryBase::ComponentRegistryEntryBase(
     std::string_view name_,
     std::string_view description_,

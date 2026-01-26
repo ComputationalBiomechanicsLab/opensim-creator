@@ -23,6 +23,6 @@ Description-Content-Type: text/markdown
 Description:
  OPynSim is a musculoskeletal modelling library that provides Python-native
  bindings for common modelling tasks, maintained by the developer of [OpenSim Creator](https://opensimcreator.com).
- 
+
  **This project is currently in a prototype phase**, see the
  [project page](https://github.com/opynsim/opynsim) for more details.

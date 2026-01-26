@@ -125,7 +125,7 @@ public:
     bool on_event(Event& e)
     {
         if (const auto* dropfile = dynamic_cast<const DropFileEvent*>(&e)) {
-            if (HasModelFileExtension(dropfile->path())) {
+            if (opyn::HasModelFileExtension(dropfile->path())) {
                 auto tab = std::make_unique<LoadingTab>(&owner(), dropfile->path());
                 App::post_event<OpenTabEvent>(owner(), std::move(tab));
                 return true;

@@ -43,7 +43,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
     size_t nExamplesTested = 0;
     for (const std::filesystem::directory_entry& e : std::filesystem::recursive_directory_iterator{examplesDir})
     {
-        if (e.is_regular_file() and HasModelFileExtension(e.path()))
+        if (e.is_regular_file() and opyn::HasModelFileExtension(e.path()))
         {
             // all files are loadable
             UndoableModelStatePair p{e.path()};
@@ -58,7 +58,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
                 1.0f,  // 1:1 scaling
                 [&decorations](const OpenSim::Component& component, SceneDecoration&& dec)
                 {
-                    dec.id = GetAbsolutePathStringName(component);
+                    dec.id = opyn::GetAbsolutePathStringName(component);
                     decorations.push_back(std::move(dec));
                 }
             );
@@ -100,7 +100,7 @@ TEST(UndoableModelStatePair, canWriteRajagopalModelToDAE)
         1.0f,  // 1:1 scaling
         [&decorations](const OpenSim::Component& component, SceneDecoration&& dec)
         {
-            dec.id = GetAbsolutePathStringName(component);
+            dec.id = opyn::GetAbsolutePathStringName(component);
             decorations.push_back(std::move(dec));
         }
     );

@@ -49,7 +49,7 @@ namespace
         ModelStatePair& model,
         const OpenSim::ComponentPath& jointPath)
     {
-        const auto* joint = FindComponent<OpenSim::Joint>(model.getModel(), jointPath);
+        const auto* joint = opyn::FindComponent<OpenSim::Joint>(model.getModel(), jointPath);
         if (not joint) {
             return;
         }
@@ -90,7 +90,7 @@ namespace
         const std::shared_ptr<ModelStatePair>& modelState,
         const OpenSim::ComponentPath& pfPath)
     {
-        if (const auto* pf = FindComponent<OpenSim::PhysicalFrame>(modelState->getModel(), pfPath)) {
+        if (const auto* pf = opyn::FindComponent<OpenSim::PhysicalFrame>(modelState->getModel(), pfPath)) {
             DrawCalculateMenu(
                 modelState->getModel(),
                 modelState->getState(),
@@ -143,8 +143,8 @@ namespace
 
             // Only enable this option if the marker isn't already part of the model's `MarkerSet`
             // (otherwise, we assume it's remove-able from its current owner).
-            const OpenSim::Component* owner = GetOwner<OpenSim::MarkerSet>(marker);
-            bool disabled = (owner != nullptr) and GetOwner<OpenSim::Model>(*owner) == &modelState.getModel();
+            const OpenSim::Component* owner = opyn::GetOwner<OpenSim::MarkerSet>(marker);
+            bool disabled = (owner != nullptr) and opyn::GetOwner<OpenSim::Model>(*owner) == &modelState.getModel();
 
             if (ui::draw_menu_item("/markerset", std::nullopt, nullptr, not disabled)) {
                 ActionMoveMarkerToModelMarkerSet(modelState, marker);
@@ -223,9 +223,9 @@ namespace
 
     bool AnyDescendentInclusiveHasAppearanceProperty(const OpenSim::Component& component)
     {
-        const OpenSim::Component* const c = FindFirstDescendentInclusive(
+        const OpenSim::Component* const c = opyn::FindFirstDescendentInclusive(
             component,
-            [](const OpenSim::Component& desc) -> bool { return TryGetAppearance(desc) != nullptr; }
+            [](const OpenSim::Component& desc) -> bool { return opyn::TryGetAppearance(desc) != nullptr; }
         );
         return c != nullptr;
     }
@@ -252,7 +252,7 @@ public:
 
     void draw_content()
     {
-        const OpenSim::Component* c = FindComponent(m_Model->getModel(), m_Path);
+        const OpenSim::Component* c = opyn::FindComponent(m_Model->getModel(), m_Path);
         if (not c) {
             // draw context menu content that's shown when nothing was right-clicked
             DrawNothingRightClickedContextMenuHeader();
@@ -271,7 +271,7 @@ public:
             // in the model (#422)
             if (ui::begin_menu("Display", m_Model->canUpdModel())) {
                 if (ui::draw_menu_item("Show All")) {
-                    ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetRootComponentPath(), true);
+                    ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, opyn::GetRootComponentPath(), true);
                 }
                 ui::draw_tooltip_if_item_hovered("Show All", "Sets the visiblity of all components within the model to 'visible', handy for undoing selective hiding etc.");
                 ui::draw_vertical_spacer(0.5f);
@@ -324,14 +324,14 @@ public:
                 set_clipboard_text(c->getName());
             }
             if (ui::draw_menu_item("Absolute Path to Clipboard")) {
-                set_clipboard_text(GetAbsolutePathString(*c));
+                set_clipboard_text(opyn::GetAbsolutePathString(*c));
             }
             ui::draw_tooltip_if_item_hovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
             if (ui::draw_menu_item("Concrete Class Name to Clipboard")) {
                 set_clipboard_text(c->getConcreteClassName());
             }
             if (ui::draw_menu_item("Component XML to Clipboard")) {
-                set_clipboard_text(WriteObjectXMLToString(*c));
+                set_clipboard_text(opyn::WriteObjectXMLToString(*c));
             }
             ui::end_menu();
         }
@@ -382,15 +382,15 @@ private:
         // togges that are specific to this components (+ its descendants)
 
         if (ui::draw_menu_item("Show", {}, nullptr, isEnabled)) {
-            ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(c), true);
+            ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, opyn::GetAbsolutePath(c), true);
         }
 
         if (ui::draw_menu_item("Show Only This", {}, nullptr, isEnabled)) {
-            ActionShowOnlyComponentAndAllChildren(*m_Model, GetAbsolutePath(c));
+            ActionShowOnlyComponentAndAllChildren(*m_Model, opyn::GetAbsolutePath(c));
         }
 
         if (ui::draw_menu_item("Hide", {}, nullptr, isEnabled)) {
-            ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(c), false);
+            ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, opyn::GetAbsolutePath(c), false);
         }
 
         // add a seperator between probably commonly-used, simple, diplay toggles and the more
@@ -401,7 +401,7 @@ private:
         // to "know" that they need to right-click in the middle of nowhere or on the
         // model
         if (ui::draw_menu_item("Show All", {}, nullptr, isEnabled)) {
-            ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetRootComponentPath(), true);
+            ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, opyn::GetRootComponentPath(), true);
         }
 
         {
@@ -411,7 +411,7 @@ private:
             if (ui::draw_menu_item(label, {}, nullptr, isEnabled)) {
                 ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                     *m_Model,
-                    GetAbsolutePath(m_Model->getModel()),
+                    opyn::GetAbsolutePath(m_Model->getModel()),
                     c.getConcreteClassName(),
                     true
                 );
@@ -425,7 +425,7 @@ private:
             if (ui::draw_menu_item(label, {}, nullptr, isEnabled)) {
                 ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                     *m_Model,
-                    GetAbsolutePath(m_Model->getModel()),
+                    opyn::GetAbsolutePath(m_Model->getModel()),
                     c.getConcreteClassName(),
                     false
                 );
@@ -468,7 +468,7 @@ private:
 
     void drawOutboundSocketsTable(const OpenSim::Component& c)
     {
-        const std::vector<std::string> socketNames = GetSocketNames(c);
+        const std::vector<std::string> socketNames = opyn::GetSocketNames(c);
         ui::push_style_var(ui::StyleVar::CellPadding, ui::get_text_line_height_in_current_panel() * Vector2{0.5f});
 
         if (ui::begin_table("outbound sockets table", 4, {ui::TableFlag::SizingStretchProp, ui::TableFlag::BordersInner, ui::TableFlag::PadOuterX})) {
@@ -510,7 +510,7 @@ private:
                         &owner(),
                         "Reassign " + socket.getName(),
                         m_Model,
-                        GetAbsolutePathString(c),
+                        opyn::GetAbsolutePathString(c),
                         socketName
                     );
                     App::post_event<OpenPopupEvent>(owner(), std::move(popup));
@@ -527,10 +527,10 @@ private:
     void drawInboundConnectionsInfo(const OpenSim::Component& c)
     {
         const auto filter = m_ShouldFilterInboundConnections ?
-            [](const OpenSim::Component& c) { return ShouldShowInUI(c) and dynamic_cast<const OpenSim::FrameGeometry*>(&c) == nullptr; } :
+            [](const OpenSim::Component& c) { return opyn::ShouldShowInUI(c) and dynamic_cast<const OpenSim::FrameGeometry*>(&c) == nullptr; } :
             [](const OpenSim::Component&)   { return true; };
 
-        auto els = ForEachInboundConnection(&m_Model->getModel(), &c, filter);
+        auto els = opyn::ForEachInboundConnection(&m_Model->getModel(), &c, filter);
         auto it = els.begin();
         const auto end = els.end();
 
@@ -567,7 +567,7 @@ private:
             // draw data rows
             int id = 0;
             for (; it != end; ++it) {
-                const ComponentConnectionView view{*it};
+                const opyn::ComponentConnectionView view{*it};
 
                 int column = 0;
                 ui::push_id(id++);
@@ -594,7 +594,7 @@ private:
                         &owner(),
                         "Reassign " + view.socketName(),
                         m_Model,
-                        GetAbsolutePathString(view.source()),
+                        opyn::GetAbsolutePathString(view.source()),
                         view.socketName()
                     );
                     App::post_event<OpenPopupEvent>(owner(), std::move(popup));

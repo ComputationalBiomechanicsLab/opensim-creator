@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
@@ -76,7 +76,7 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
     InitializeModel(model);
     InitializeState(model);
 
-    const auto& registry = GetComponentRegistry<OpenSim::Joint>();
+    const auto& registry = osc::GetComponentRegistry<OpenSim::Joint>();
     auto maybeIdx = IndexOf<OpenSim::FreeJoint>(registry);
     ASSERT_TRUE(maybeIdx) << "can't find FreeJoint in type registry?";
     auto idx = *maybeIdx;
@@ -122,7 +122,7 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
         InitializeModel(model);
         InitializeState(model);
 
-        log_info("%s", msg.c_str());
+        osc::log_info("%s", msg.c_str());
     }
 }
 
@@ -205,7 +205,7 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
         // (it may have been indirectly deleted), then try to delete it
         if (OpenSim::Component* lookup = FindComponentMut(modifiedModel, c.getAbsolutePath())) {
             if (TryDeleteComponentFromModel(modifiedModel, *lookup)) {
-                log_info("deleted %s (%s)", c.getName().c_str(), c.getConcreteClassName().c_str());
+                osc::log_info("deleted %s (%s)", c.getName().c_str(), c.getConcreteClassName().c_str());
                 InitializeModel(modifiedModel);
                 InitializeState(modifiedModel);
             }
@@ -374,7 +374,7 @@ TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
         const auto* gp = FindComponent<OpenSim::GeometryPath>(m, geomAbsPath);
         OSC_ASSERT_ALWAYS(gp != nullptr && "maybe the rajagopal model has changed?");
         for (const OpenSim::WrapObject* wo : GetAllWrapObjectsReferencedBy(*gp)) {
-            ASSERT_TRUE(cpp23::contains(expectedWrapObjectNames, wo->getName()));
+            ASSERT_TRUE(osc::cpp23::contains(expectedWrapObjectNames, wo->getName()));
         }
     }
 }
@@ -466,7 +466,7 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
     InitializeModel(model);
 
     // helper: makes testing easier
-    const auto slurp = []<typename T>(cpp23::generator<T> g)
+    const auto slurp = []<typename T>(osc::cpp23::generator<T> g)
     {
         std::vector<T> rv;
         for (T&& el : g) {

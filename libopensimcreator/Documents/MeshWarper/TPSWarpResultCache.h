@@ -3,7 +3,6 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocument.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
 
-#include <libopynsim/utilities/opynsim_helpers.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
 #include <libopynsim/utilities/tps3d.h>
 #include <liboscar/graphics/mesh.h>

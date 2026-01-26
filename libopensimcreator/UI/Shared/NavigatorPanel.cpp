@@ -43,7 +43,7 @@ namespace
         ComponentTreePathPointers rv;
 
         // populate child --> parent
-        for (; child != nullptr; child = GetOwner(*child)) {
+        for (; child != nullptr; child = opyn::GetOwner(*child)) {
             rv.push_back(child);
 
             if (!child->hasOwner() || child == ancestor) {
@@ -158,7 +158,7 @@ private:
         const OpenSim::Component* selected = m_Model->getSelected();
         const OpenSim::Component* hovered = m_Model->getHovered();
 
-        OpenSim::ComponentPath selectedPath = GetAbsolutePathOrEmpty(selected);
+        OpenSim::ComponentPath selectedPath = opyn::GetAbsolutePathOrEmpty(selected);
 
         const ComponentTreePathPointers selectedPathPointers = selected ?
             computeComponentTreePath(root, selected) :
@@ -200,9 +200,9 @@ private:
                     shouldRender = false;
                 }
                 else if (const auto* wos = dynamic_cast<const OpenSim::WrapObjectSet*>(&c)) {
-                    shouldRender = !empty(*wos);
+                    shouldRender = !opyn::empty(*wos);
                 }
-                else if (!ShouldShowInUI(c)) {
+                else if (!opyn::ShouldShowInUI(c)) {
                     shouldRender = false;
                 }
 
@@ -296,7 +296,7 @@ private:
                 rv.ptr = cur;
             }
             if (userRightClickedThisTreeNode) {
-                m_OnRightClick(GetAbsolutePath(*cur));
+                m_OnRightClick(opyn::GetAbsolutePath(*cur));
             }
             if (cur == selected and
                 selectedPath != m_PreviousSelectionPath and
@@ -318,7 +318,7 @@ private:
 
         // cache the previous selection path, so we can observe when it has changed (#908)
         if (rv.type == ResponseType::SelectionChanged) {
-            m_PreviousSelectionPath = GetAbsolutePathOrEmpty(rv.ptr);
+            m_PreviousSelectionPath = opyn::GetAbsolutePathOrEmpty(rv.ptr);
         }
         else {
             m_PreviousSelectionPath = std::move(selectedPath);

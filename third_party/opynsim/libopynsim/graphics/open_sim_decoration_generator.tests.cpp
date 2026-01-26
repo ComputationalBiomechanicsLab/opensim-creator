@@ -31,6 +31,7 @@
 #include <vector>
 
 using namespace osc;
+using namespace opyn;
 namespace rgs = std::ranges;
 
 // test that telling OSC to generate OpenSim-colored muscles
@@ -583,7 +584,7 @@ TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNTranslation)
 TEST(GenerateModelDecorations, RadiusOfContactSphereIsCorrectlyUpdated)
 {
     OpenSim::Model model;
-    auto& sphere = osc::AddComponent<OpenSim::ContactSphere>(model);
+    auto& sphere = opyn::AddComponent<OpenSim::ContactSphere>(model);
     sphere.setRadius(0.1);
     sphere.setFrame(model.getGround());
     model.buildSystem();

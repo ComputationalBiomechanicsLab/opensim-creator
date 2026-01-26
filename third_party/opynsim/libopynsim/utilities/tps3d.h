@@ -2,6 +2,8 @@
 
 #include <libopynsim/shims/cpp23/mdspan.h>
 #include <libopynsim/utilities/landmark_pair_3d.h>
+
+#include <liboscar/graphics/mesh.h>
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <concepts>
@@ -107,4 +109,6 @@ namespace opyn
 
     // applies the 3D TPS warp in-place to each SimTK::Vec3 in the provided span
     void TPSWarpPointsInPlace(const TPSCoefficients3D<float>&, std::span<SimTK::Vec<3, float>>, float blendingFactor);
+
+    osc::Mesh TPSWarpMesh(TPSCoefficients3D<float>&, const osc::Mesh&, float blendingFactor);
 }

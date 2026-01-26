@@ -5,8 +5,8 @@
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-using namespace osc;
-using namespace osc::mow;
+using namespace opyn;
+using osc::mow::InMemoryMesh;
 
 TEST(InMemoryMesh, CanDefaultConstruct)
 {
@@ -23,8 +23,8 @@ TEST(InMemoryMesh, DefaultConstructedEmitsABlankMesh)
     SimTK::State& state = InitializeState(model);
 
     int nEmitted = 0;
-    SceneDecoration latestDecoration;
-    mesh.generateCustomDecorations(state, [&nEmitted, &latestDecoration](SceneDecoration&& decoration)
+    osc::SceneDecoration latestDecoration;
+    mesh.generateCustomDecorations(state, [&nEmitted, &latestDecoration](osc::SceneDecoration&& decoration)
     {
         ++nEmitted;
         latestDecoration = std::move(decoration);

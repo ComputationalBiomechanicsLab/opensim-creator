@@ -8,7 +8,7 @@
 #include <liboscar/utils/assertions.h>
 #include <liboscar/utils/hash_helpers.h>
 
-using namespace osc;
+using namespace opyn;
 
 class osc::ForceRecordOutputExtractor::Impl final {
 public:
@@ -72,12 +72,12 @@ osc::ForceRecordOutputExtractor::ForceRecordOutputExtractor(
 {}
 osc::ForceRecordOutputExtractor::ForceRecordOutputExtractor(const ForceRecordOutputExtractor&) = default;
 osc::ForceRecordOutputExtractor::ForceRecordOutputExtractor(ForceRecordOutputExtractor&&) noexcept = default;
-ForceRecordOutputExtractor& osc::ForceRecordOutputExtractor::operator=(const ForceRecordOutputExtractor&) = default;
-ForceRecordOutputExtractor& osc::ForceRecordOutputExtractor::operator=(ForceRecordOutputExtractor&&) noexcept = default;
+osc::ForceRecordOutputExtractor& osc::ForceRecordOutputExtractor::operator=(const ForceRecordOutputExtractor&) = default;
+osc::ForceRecordOutputExtractor& osc::ForceRecordOutputExtractor::operator=(ForceRecordOutputExtractor&&) noexcept = default;
 osc::ForceRecordOutputExtractor::~ForceRecordOutputExtractor() noexcept = default;
-CStringView osc::ForceRecordOutputExtractor::implGetName() const { return m_Impl->getName(); }
-CStringView osc::ForceRecordOutputExtractor::implGetDescription() const { return m_Impl->getDescription(); }
-OutputExtractorDataType osc::ForceRecordOutputExtractor::implGetOutputType() const { return m_Impl->getOutputType(); }
-OutputValueExtractor osc::ForceRecordOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const { return m_Impl->getOutputValueExtractor(component); }
+osc::CStringView osc::ForceRecordOutputExtractor::implGetName() const { return m_Impl->getName(); }
+osc::CStringView osc::ForceRecordOutputExtractor::implGetDescription() const { return m_Impl->getDescription(); }
+osc::OutputExtractorDataType osc::ForceRecordOutputExtractor::implGetOutputType() const { return m_Impl->getOutputType(); }
+osc::OutputValueExtractor osc::ForceRecordOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const { return m_Impl->getOutputValueExtractor(component); }
 size_t osc::ForceRecordOutputExtractor::implGetHash() const { return m_Impl->getHash(); }
 bool osc::ForceRecordOutputExtractor::implEquals(const OutputExtractor& other) const { return m_Impl->equals(other); }

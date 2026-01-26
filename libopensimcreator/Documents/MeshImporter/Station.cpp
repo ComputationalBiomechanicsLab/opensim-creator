@@ -27,7 +27,7 @@ osc::mi::StationEl::StationEl(
     m_ID{id},
     m_Attachment{attachment},
     m_Position{position},
-    m_Name{SanitizeToOpenSimComponentName(name)}
+    m_Name{opyn::SanitizeToOpenSimComponentName(name)}
 {
 }
 
@@ -38,7 +38,7 @@ osc::mi::StationEl::StationEl(
 
     m_Attachment{attachment},
     m_Position{position},
-    m_Name{SanitizeToOpenSimComponentName(name)}
+    m_Name{opyn::SanitizeToOpenSimComponentName(name)}
 {
 }
 
@@ -74,5 +74,5 @@ std::ostream& osc::mi::StationEl::implWriteToStream(std::ostream& o) const
 
 void osc::mi::StationEl::implSetLabel(std::string_view sv)
 {
-    m_Name = SanitizeToOpenSimComponentName(sv);
+    m_Name = opyn::SanitizeToOpenSimComponentName(sv);
 }

@@ -58,6 +58,7 @@
 #include <utility>
 #include <vector>
 
+using namespace opyn;
 using namespace osc;
 using namespace osc::literals;
 namespace rgs = std::ranges;

@@ -6,7 +6,7 @@ Building OPynSim As a C++ Library
 
     **The OPynSim C++ API is unstable.** This guide is aimed at C++ developers that
     accept the risks.
-    
+
     Apart from a few patches, the OpenSim and Simbody API are pulled as-is from their
     central repositories, so those C++ APIs should be as stable as those upstreams. This
     means that, in principle, you can write new C++ codes for OpenSim/Simbody using
@@ -65,7 +65,7 @@ cmake projects can use any of these dependencies, or OPynSim, with ``find_packag
 .. code-block:: cmake
 
     # Example CMakeLists.txt
-    
+
     cmake_minimum_required(VERSION 3.25)
     project(your-project VERSION 0.0.1 LANGUAGES CXX)
 

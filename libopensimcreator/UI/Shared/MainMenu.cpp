@@ -70,8 +70,8 @@ namespace
 
                 try {
                     std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(model->getModel());
-                    InitializeModel(*cpy);
-                    InitializeState(*cpy);
+                    opyn::InitializeModel(*cpy);
+                    opyn::InitializeState(*cpy);
 
                     std::shared_ptr<Environment> env;
                     if (auto modelWithEnv = std::dynamic_pointer_cast<ModelStatePairWithSharedEnvironment>(model)) {
@@ -233,7 +233,7 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<ModelStatePair> maybeModel)  /
     ui::draw_separator();
 
     {
-        const bool modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
+        const bool modelHasBackingFile = maybeModel != nullptr && opyn::HasInputFileName(maybeModel->getModel());
 
         if (ui::draw_menu_item(MSMICONS_RECYCLE " Reload", Key::F5, false, undoableModel != nullptr and undoableModel->canUpdModel() and modelHasBackingFile) and undoableModel != nullptr) {
             ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());

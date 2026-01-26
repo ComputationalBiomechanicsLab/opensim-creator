@@ -40,7 +40,7 @@ namespace
         ui::next_column();
         ui::push_style_color(ui::ColorVar::Text, Color::yellow());
         if (ui::draw_button(MSMICONS_BOLT) or ui::is_item_clicked(ui::MouseButton::Right)) {
-            App::post_event<OpenComponentContextMenuEvent>(parent, GetAbsolutePath(*selection));
+            App::post_event<OpenComponentContextMenuEvent>(parent, opyn::GetAbsolutePath(*selection));
         }
         ui::pop_style_color();
         ui::next_column();
@@ -85,7 +85,7 @@ namespace
             ui::set_next_item_width(ui::get_content_region_available().x());
             ui::draw_string_input("##nameeditor", m_EditedName);
             if (ui::should_save_last_drawn_item_value()) {
-                ActionSetComponentName(*m_Model, GetAbsolutePath(*selected), m_EditedName);
+                ActionSetComponentName(*m_Model, opyn::GetAbsolutePath(*selected), m_EditedName);
             }
             ui::add_screenshot_annotation_to_last_drawn_item("PropertiesPanel/name");
 

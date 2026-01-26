@@ -64,7 +64,7 @@ namespace SimTK { class State; }
 namespace SimTK { class SimbodyMatterSubsystem; }
 
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
-namespace osc
+namespace opyn
 {
     // Is satisfied if `T` has a `.clone()` member method that returns a raw `T*` pointer.
     template<typename T>
@@ -242,7 +242,7 @@ namespace osc
     // name than the component pointed to by second argument
     //
     // (it's a helper method that's handy for use with pointers, unique_ptr, shared_ptr, etc.)
-    template<DereferencesTo<const OpenSim::Component&> ComponentPtrLike>
+    template<osc::DereferencesTo<const OpenSim::Component&> ComponentPtrLike>
     bool IsConcreteClassNameLexicographicallyLowerThan(
         const ComponentPtrLike& a,
         const ComponentPtrLike& b)
@@ -255,7 +255,7 @@ namespace osc
         const OpenSim::Component&
     );
 
-    template<DereferencesTo<const OpenSim::Component&> Ptr>
+    template<osc::DereferencesTo<const OpenSim::Component&> Ptr>
     bool IsNameLexographicallyLowerThan(
         const Ptr& a,
         const Ptr& b)
@@ -263,7 +263,7 @@ namespace osc
         return IsNameLexographicallyLowerThan(*a, *b);
     }
 
-    template<DereferencesTo<const OpenSim::Component&> Ptr>
+    template<osc::DereferencesTo<const OpenSim::Component&> Ptr>
     bool IsNameLexographicallyGreaterThan(
         const Ptr& a,
         const Ptr& b)
@@ -445,7 +445,7 @@ namespace osc
     double ConvertCoordDisplayValueToStorageValue(const OpenSim::Coordinate&, float v);
 
     // returns a user-facing string that describes a coordinate's units
-    CStringView GetCoordDisplayValueUnitsString(const OpenSim::Coordinate&);
+    osc::CStringView GetCoordDisplayValueUnitsString(const OpenSim::Coordinate&);
 
     // returns the names of a component's sockets
     std::vector<std::string> GetSocketNames(const OpenSim::Component&);
@@ -473,7 +473,7 @@ namespace osc
     // returns a pointer if the given path resolves a component relative to root
     const OpenSim::Component* FindComponent(const OpenSim::Component& root, const OpenSim::ComponentPath&);
     const OpenSim::Component* FindComponent(const OpenSim::Model&, const std::string& absPath);
-    const OpenSim::Component* FindComponent(const OpenSim::Model&, const StringName& absPath);
+    const OpenSim::Component* FindComponent(const OpenSim::Model&, const osc::StringName& absPath);
 
     // return non-nullptr if the given path resolves a component of type T relative to root
     template<std::derived_from<OpenSim::Component> T>
@@ -489,7 +489,7 @@ namespace osc
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    const T* FindComponent(const OpenSim::Model& root, const StringName& cp)
+    const T* FindComponent(const OpenSim::Model& root, const osc::StringName& cp)
     {
         return dynamic_cast<const T*>(FindComponent(root, cp));
     }
@@ -565,7 +565,7 @@ namespace osc
 
         const OpenSim::Component& source() const { return *m_Source; }
         const OpenSim::Component& target() const { return *m_Target; }
-        CStringView socketName() const { return m_SocketName; }
+        osc::CStringView socketName() const { return m_SocketName; }
     private:
         const OpenSim::Component* m_Source;
         const OpenSim::Component* m_Target;
@@ -575,7 +575,7 @@ namespace osc
 
     // Returns a generator that yields `ComponentConnectionView` for each socket of each component
     // in `root` that points to `c`.
-    cpp23::generator<ComponentConnectionView> ForEachInboundConnection(
+    osc::cpp23::generator<ComponentConnectionView> ForEachInboundConnection(
         const OpenSim::Component* root,
         const OpenSim::Component* c,
         std::function<bool(const OpenSim::Component&)> filter = [](const OpenSim::Component&){ return true; }
@@ -700,7 +700,7 @@ namespace osc
     std::string GetDisplayName(const OpenSim::Geometry&);
 
     // returns a user-visible string for a coordinate's motion type
-    CStringView GetMotionTypeDisplayName(const OpenSim::Coordinate&);
+    osc::CStringView GetMotionTypeDisplayName(const OpenSim::Coordinate&);
 
     // returns a pointer to the component's appearance property, or `nullptr` if it doesn't have one
     const OpenSim::Appearance* TryGetAppearance(const OpenSim::Component&);
@@ -713,9 +713,9 @@ namespace osc
     bool TrySetAppearancePropertyIsVisibleTo(OpenSim::Component&, bool);
 
     // returns the color part of the `OpenSim::Appearance` as an `osc::Color`
-    Color to_color(const OpenSim::Appearance&);
+    osc::Color to_color(const OpenSim::Appearance&);
 
-    Color GetSuggestedBoneColor();  // best guess, based on shaders etc.
+    osc::Color GetSuggestedBoneColor();  // best guess, based on shaders etc.
 
     // returns `true` if the given model's display properties asks to show frames
     bool IsShowingFrames(const OpenSim::Model&);
@@ -752,7 +752,7 @@ namespace osc
     // (custom OSC version that may be faster than OpenSim::Component::getAbsolutePathString)
     void GetAbsolutePathString(const OpenSim::Component&, std::string&);
     std::string GetAbsolutePathString(const OpenSim::Component&);
-    StringName GetAbsolutePathStringName(const OpenSim::Component&);
+    osc::StringName GetAbsolutePathStringName(const OpenSim::Component&);
 
     // returns the absolute path to a component within its hierarchy (e.g. /jointset/joint/somejoint)
     //
@@ -772,8 +772,8 @@ namespace osc
     // the reason they return `optional` is to handle edge-cases like the path containing an
     // insufficient number of points (shouldn't happen, but you never know)
     struct LinesOfAction final {
-        Ray origin;
-        Ray insertion;
+        osc::Ray origin;
+        osc::Ray insertion;
     };
     std::optional<LinesOfAction> GetEffectiveLinesOfActionInGround(const OpenSim::Muscle&, const SimTK::State&);
     std::optional<LinesOfAction> GetAnatomicalLinesOfActionInGround(const OpenSim::Muscle&, const SimTK::State&);
@@ -786,21 +786,20 @@ namespace osc
     // helper functions for pulling path points out of geometry paths (e.g. for rendering)
     struct GeometryPathPoint final {
 
-        explicit GeometryPathPoint(const Vector3& locationInGround_) :
+        explicit GeometryPathPoint(const osc::Vector3& locationInGround_) :
             locationInGround{locationInGround_}
-        {
-        }
+        {}
 
         GeometryPathPoint(
             const OpenSim::AbstractPathPoint& underlyingUserPathPoint,
-            const Vector3& locationInGround_) :
+            const osc::Vector3& locationInGround_) :
             maybeUnderlyingUserPathPoint{&underlyingUserPathPoint},
             locationInGround{locationInGround_}
         {
         }
 
         const OpenSim::AbstractPathPoint* maybeUnderlyingUserPathPoint = nullptr;
-        Vector3 locationInGround{};
+        osc::Vector3 locationInGround{};
     };
     std::vector<GeometryPathPoint> GetAllPathPoints(const OpenSim::GeometryPath&, const SimTK::State&);
 
@@ -808,8 +807,8 @@ namespace osc
     //
     // helper functions for pulling contact forces out of the model (e.g. for rendering)
     struct ForcePoint final {
-        Vector3 force;
-        Vector3 point;
+        osc::Vector3 force;
+        osc::Vector3 point;
     };
     std::optional<ForcePoint> TryGetContactForceInGround(
         const OpenSim::Model&,
@@ -830,14 +829,14 @@ namespace osc
     // extract point-like information from generic OpenSim components
     struct PointInfo final {
         PointInfo(
-            Vector3 location_,
+            osc::Vector3 location_,
             OpenSim::ComponentPath frameAbsPath_) :
 
             location{location_},
             frameAbsPath{std::move(frameAbsPath_)}
         {}
 
-        Vector3 location;
+        osc::Vector3 location;
         OpenSim::ComponentPath frameAbsPath;
     };
     bool CanExtractPointInfoFrom(const OpenSim::Component&, const SimTK::State&);

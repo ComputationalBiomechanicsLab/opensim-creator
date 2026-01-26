@@ -8,8 +8,8 @@ osc::AddMusclePlotEvent::AddMusclePlotEvent(
     const OpenSim::Coordinate& coordinate,
     const OpenSim::Muscle& muscle) :
 
-    m_CoordinateAbsPath{GetAbsolutePath(coordinate)},
-    m_MuscleAbsPath{GetAbsolutePath(muscle)}
+    m_CoordinateAbsPath{opyn::GetAbsolutePath(coordinate)},
+    m_MuscleAbsPath{opyn::GetAbsolutePath(muscle)}
 {
     enable_propagation();
 }

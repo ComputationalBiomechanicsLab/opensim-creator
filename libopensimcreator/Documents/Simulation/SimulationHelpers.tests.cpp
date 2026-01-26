@@ -19,8 +19,8 @@ using namespace osc;
 TEST(SimulationHelpers, WriteOutputsAsCSVWritesFloatDataCorrectly)
 {
     OpenSim::Model model;
-    InitializeModel(model);
-    InitializeState(model);
+    opyn::InitializeModel(model);
+    opyn::InitializeState(model);
 
     const auto extractors = std::to_array({
         make_output_extractor<ConstantOutputExtractor>("dummy", 1337.0f),
@@ -47,8 +47,8 @@ TEST(SimulationHelpers, WriteOutputsAsCSVWritesFloatDataCorrectly)
 TEST(SimulationHelpers, WriteOutputsAsCSVWritesVector2DataCorrectly)
 {
     OpenSim::Model model;
-    InitializeModel(model);
-    InitializeState(model);
+    opyn::InitializeModel(model);
+    opyn::InitializeState(model);
 
     const auto extractors = std::to_array({
         make_output_extractor<ConstantOutputExtractor>("dummy", Vector2{3.0f, 2.0f}),

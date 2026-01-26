@@ -1,7 +1,8 @@
 #include "tps3d.h"
 
-#include <libopynsim/utilities/assertions.h>
-
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/utils/assertions.h>
+#include <liboscar/utils/perf.h>
 #include <simmath/LinearAlgebra.h>
 #include <SimTKcommon/internal/Vec.h>
 
@@ -169,7 +170,7 @@ namespace
         // 6. Use a linear solver to solve L * [w a] = [v o] to yield [w a]
         // 8. Return the coefficients, [w a]
 
-        OPYN_ASSERT_ALWAYS(source_landmarks.size() == destination_landmarks.size());
+        OSC_ASSERT_ALWAYS(source_landmarks.size() == destination_landmarks.size());
 
         const int numPairs = static_cast<int>(source_landmarks.extent(0));
 
@@ -416,4 +417,24 @@ void opyn::TPSWarpPointsInPlace(
     {
         vert = TPSWarpPoint(coefs, vert, blendingFactor);
     });
+}
+
+osc::Mesh opyn::TPSWarpMesh(TPSCoefficients3D<float>& coefs, const osc::Mesh& mesh, float blendingFactor)
+{
+    OSC_PERF("TPSWarpMesh");
+
+    osc::Mesh rv = mesh;  // make a local copy of the input mesh
+
+    // copy out the vertices
+
+    // parallelize function evaluation, because the mesh may contain *a lot* of
+    // vertices and the TPS equation may contain *a lot* of coefficients
+    auto vertices = rv.vertices();
+    static_assert(alignof(decltype(vertices.front())) == alignof(SimTK::fVec3));
+    static_assert(sizeof(decltype(vertices.front())) == sizeof(SimTK::fVec3));
+    auto* punned = std::launder(reinterpret_cast<SimTK::fVec3*>(vertices.data()));
+    TPSWarpPointsInPlace(coefs, {punned, vertices.size()}, blendingFactor);
+    rv.set_vertices(vertices);
+
+    return rv;
 }

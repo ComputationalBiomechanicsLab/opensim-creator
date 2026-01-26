@@ -192,7 +192,7 @@ public:
     void on_mount()
     {
         App::upd().make_main_loop_waiting();
-        App::upd().set_main_window_subtitle(RecommendedDocumentName(m_Model->getModel()));
+        App::upd().set_main_window_subtitle(opyn::RecommendedDocumentName(m_Model->getModel()));
         set_name(computeTabName());
         m_PopupManager.on_mount();
         m_PanelManager->on_mount();
@@ -315,7 +315,7 @@ public:
         }
 
         // always re-update this, in case the model's document name changed
-        App::upd().set_main_window_subtitle(RecommendedDocumentName(m_Model->getModel()));
+        App::upd().set_main_window_subtitle(opyn::RecommendedDocumentName(m_Model->getModel()));
     }
 
     void tryRecoveringFromException(const std::exception& ex)
@@ -388,7 +388,7 @@ private:
     {
         std::stringstream ss;
         ss << MSMICONS_EDIT << " ";
-        ss << RecommendedDocumentName(m_Model->getModel());
+        ss << opyn::RecommendedDocumentName(m_Model->getModel());
         return std::move(ss).str();
     }
 
@@ -397,7 +397,7 @@ private:
         if (e.path().extension() == ".sto") {
             return ActionLoadSTOFileAgainstModel(owner(), *m_Model, e.path());
         }
-        else if (HasModelFileExtension(e.path())) {
+        else if (opyn::HasModelFileExtension(e.path())) {
             // if the user drops an osim file on this tab then it should be loaded
             auto tab = std::make_unique<LoadingTab>(&owner(), e.path());
             App::post_event<OpenTabEvent>(owner(), std::move(tab));
