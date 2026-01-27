@@ -9,7 +9,7 @@ using namespace osc;
 namespace
 {
     // Represents a view of a blank `SimTK::State` (can be handy for testing).
-    class BlankStateView final : public StateViewWithMetadata {
+    class BlankStateView final : public opyn::StateViewWithMetadata {
     private:
         const SimTK::State& implGetState() const final { return m_State; }
         SimTK::State m_State;

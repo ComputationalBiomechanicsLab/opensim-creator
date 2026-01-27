@@ -64,7 +64,7 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
     static_assert(num_options<OutputExtractorDataType>() == 3);
 
     if (m_OutputType == OutputExtractorDataType::Vector2) {
-        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const StateViewWithMetadata& state)
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const opyn::StateViewWithMetadata& state)
         {
             const auto lv = to<float>(lhs(state));
             const auto rv = to<float>(rhs(state));
@@ -74,7 +74,7 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
         return OutputValueExtractor{std::move(extractor)};
     }
     else {
-        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const StateViewWithMetadata& state)
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const opyn::StateViewWithMetadata& state)
         {
             return Variant{to<std::string>(lhs(state)) + to<std::string>(rhs(state))};
         };

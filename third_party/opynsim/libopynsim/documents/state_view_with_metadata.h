@@ -6,7 +6,7 @@
 
 namespace SimTK { class State; }
 
-namespace osc
+namespace opyn
 {
     // An abstract base class that represents the pairing of a readonly `SimTK::State` with metadata.
     class StateViewWithMetadata {
@@ -26,7 +26,7 @@ namespace osc
 
         // Returns a single auxiliary value (metadata) associated with the state that this
         // view is viewing.
-        std::optional<float> getAuxiliaryValue(UID id) const { return implGetAuxiliaryValue(id); }
+        std::optional<float> getAuxiliaryValue(osc::UID id) const { return implGetAuxiliaryValue(id); }
 
     private:
         // Implementors must provide a const accessor to a state
@@ -34,6 +34,6 @@ namespace osc
 
         // Implementors may provide a way of accessing auxiliary (metadata)
         // associated with the state.
-        virtual std::optional<float> implGetAuxiliaryValue(UID) const { return std::nullopt; }
+        virtual std::optional<float> implGetAuxiliaryValue(osc::UID) const { return std::nullopt; }
     };
 }

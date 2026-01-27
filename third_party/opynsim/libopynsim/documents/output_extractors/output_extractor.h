@@ -15,8 +15,8 @@
 #include <vector>
 
 namespace OpenSim { class Component; }
+namespace opyn { class StateViewWithMetadata; }
 namespace osc { class IOutputValueExtractorVisitor; }
-namespace osc { class StateViewWithMetadata; }
 
 namespace osc
 {
@@ -47,7 +47,7 @@ namespace osc
 
         template<typename T>
         requires std::constructible_from<T, Variant&&>
-        T getValue(const OpenSim::Component& component, const StateViewWithMetadata& state) const
+        T getValue(const OpenSim::Component& component, const opyn::StateViewWithMetadata& state) const
         {
             return to<T>(getOutputValueExtractor(component)(state));
         }
@@ -55,7 +55,7 @@ namespace osc
         template<typename T, std::ranges::forward_range R, std::invocable<T> Consumer>
         requires (
             std::constructible_from<T, Variant&&> and
-            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
+            std::convertible_to<std::ranges::range_value_t<R>, const opyn::StateViewWithMetadata&>
         )
         void getValues(
             const OpenSim::Component& component,
@@ -63,7 +63,7 @@ namespace osc
             Consumer&& consumer) const
         {
             const OutputValueExtractor extractor = getOutputValueExtractor(component);
-            for (const StateViewWithMetadata& state : states) {
+            for (const opyn::StateViewWithMetadata& state : states) {
                 consumer(to<T>(extractor(state)));
             }
         }
@@ -71,7 +71,7 @@ namespace osc
         template<typename T, std::ranges::forward_range R>
         requires (
             std::constructible_from<T, Variant&&> and
-            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
+            std::convertible_to<std::ranges::range_value_t<R>, const opyn::StateViewWithMetadata&>
         )
         std::vector<T> slurpValues(const OpenSim::Component& component, const R& states) const
         {

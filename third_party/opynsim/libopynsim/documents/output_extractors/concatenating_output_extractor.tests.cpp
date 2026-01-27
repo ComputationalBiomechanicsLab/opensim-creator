@@ -21,7 +21,7 @@ TEST(ConcatenatingOutputExtractor, hasExpectedOutputsWhenConcatenatingTwoFloatOu
 
     const BlankComponent unusedRoot;
 
-    class BlankStateView final : public StateViewWithMetadata {
+    class BlankStateView final : public opyn::StateViewWithMetadata {
     private:
         const SimTK::State& implGetState() const { return m_State; }
 

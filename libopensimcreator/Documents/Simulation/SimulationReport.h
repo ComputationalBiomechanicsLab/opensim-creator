@@ -14,7 +14,7 @@ namespace SimTK { class State; }
 namespace osc
 {
     // reference-counted, immutable, simulation report
-    class SimulationReport final : public StateViewWithMetadata {
+    class SimulationReport final : public opyn::StateViewWithMetadata {
     public:
         SimulationReport();
         explicit SimulationReport(SimTK::State&&);

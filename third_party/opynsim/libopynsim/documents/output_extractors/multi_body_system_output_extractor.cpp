@@ -50,7 +50,7 @@ namespace
 
 OutputValueExtractor osc::MultiBodySystemOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
 {
-    return OutputValueExtractor{[id = m_AuxiliaryDataID](const StateViewWithMetadata& state)
+    return OutputValueExtractor{[id = m_AuxiliaryDataID](const opyn::StateViewWithMetadata& state)
     {
         return Variant{state.getAuxiliaryValue(id).value_or(quiet_nan_v<float>)};
     }};
