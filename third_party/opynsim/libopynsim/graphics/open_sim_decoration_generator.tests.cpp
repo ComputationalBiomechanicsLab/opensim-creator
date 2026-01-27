@@ -327,7 +327,7 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelAndStateWorksAsExpected
     opts.setShouldShowContactForces(true);
 
     // emit decorations the hard way into a vector
-    osc::ComponentAbsPathDecorationTagger tagger;
+    ComponentAbsPathDecorationTagger tagger;
     std::vector<osc::SceneDecoration> decorations;
     GenerateModelDecorations(
         cache,
@@ -362,7 +362,7 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpecte
     opts.setShouldShowContactForces(true);
 
     // emit decorations the hard way into a vector
-    osc::ComponentAbsPathDecorationTagger tagger;
+    ComponentAbsPathDecorationTagger tagger;
     std::vector<osc::SceneDecoration> decorations;
     GenerateModelDecorations(
         cache,

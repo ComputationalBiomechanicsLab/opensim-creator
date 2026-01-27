@@ -5,9 +5,9 @@
 
 using namespace opyn;
 
-void osc::ComponentAbsPathDecorationTagger::operator()(
+void opyn::ComponentAbsPathDecorationTagger::operator()(
     const OpenSim::Component& component,
-    SceneDecoration& decoration)
+    osc::SceneDecoration& decoration)
 {
     if (&component != m_LastComponent) {
         m_ID = GetAbsolutePathStringName(component);

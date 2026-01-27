@@ -18,7 +18,7 @@ namespace opyn
 
         OpenSimDecorationOptions decorationOptions;
         OverlayDecorationOptions overlayOptions;
-        osc::CustomRenderingOptions renderingOptions;
+        CustomRenderingOptions renderingOptions;
         osc::Color lightColor;
         osc::Color backgroundColor;
         osc::Vector3 floorLocation;

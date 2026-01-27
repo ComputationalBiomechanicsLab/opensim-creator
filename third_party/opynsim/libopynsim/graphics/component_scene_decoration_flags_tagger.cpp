@@ -5,16 +5,16 @@
 
 using namespace opyn;
 
-osc::ComponentSceneDecorationFlagsTagger::ComponentSceneDecorationFlagsTagger(
+opyn::ComponentSceneDecorationFlagsTagger::ComponentSceneDecorationFlagsTagger(
     const OpenSim::Component* selected_,
     const OpenSim::Component* hovered_) :
     m_Selected{selected_},
     m_Hovered{hovered_}
 {}
 
-void osc::ComponentSceneDecorationFlagsTagger::operator()(
+void opyn::ComponentSceneDecorationFlagsTagger::operator()(
     const OpenSim::Component& component,
-    SceneDecoration& decoration)
+    osc::SceneDecoration& decoration)
 {
     if (&component != m_LastComponent)
     {
@@ -25,20 +25,20 @@ void osc::ComponentSceneDecorationFlagsTagger::operator()(
     decoration.flags |= m_LastFlags;
 }
 
-osc::SceneDecorationFlags osc::ComponentSceneDecorationFlagsTagger::computeFlags(
+osc::SceneDecorationFlags opyn::ComponentSceneDecorationFlagsTagger::computeFlags(
     const OpenSim::Component& component) const
 {
-    SceneDecorationFlags rv = SceneDecorationFlag::Default;
+    osc::SceneDecorationFlags rv = osc::SceneDecorationFlag::Default;
 
     // iterate through this component and all of its owners, because
     // selecting/highlighting a parent implies that this component
     // should also be highlighted
     for (const OpenSim::Component* p = &component; p; p = GetOwner(*p)) {
         if (p == m_Selected) {
-            rv |= SceneDecorationFlag::RimHighlight0;
+            rv |= osc::SceneDecorationFlag::RimHighlight0;
         }
         if (p == m_Hovered) {
-            rv |= SceneDecorationFlag::RimHighlight1;
+            rv |= osc::SceneDecorationFlag::RimHighlight1;
         }
     }
 

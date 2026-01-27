@@ -17,11 +17,11 @@ namespace osc { class SceneCache; }
 namespace osc { struct Ray; }
 namespace osc { struct SceneDecoration; }
 
-namespace osc
+namespace opyn
 {
     class CachedModelRenderer final {
     public:
-        explicit CachedModelRenderer(const std::shared_ptr<SceneCache>&);
+        explicit CachedModelRenderer(const std::shared_ptr<osc::SceneCache>&);
         CachedModelRenderer(const CachedModelRenderer&) = delete;
         CachedModelRenderer(CachedModelRenderer&&) noexcept;
         CachedModelRenderer& operator=(const CachedModelRenderer&) = delete;
@@ -29,40 +29,40 @@ namespace osc
         ~CachedModelRenderer() noexcept;
 
         void autoFocusCamera(
-            const ModelStatePair&,
-            opyn::ModelRendererParams&,
+            const osc::ModelStatePair&,
+            ModelRendererParams&,
             float aspectRatio
         );
 
-        RenderTexture& onDraw(
-            const ModelStatePair&,
-            const opyn::ModelRendererParams&,
-            Vector2 dims,
+        osc::RenderTexture& onDraw(
+            const osc::ModelStatePair&,
+            const ModelRendererParams&,
+            osc::Vector2 dims,
             float devicePixelRatio,
-            AntiAliasingLevel antiAliasingLevel
+            osc::AntiAliasingLevel antiAliasingLevel
         );
-        RenderTexture& updRenderTexture();
+        osc::RenderTexture& updRenderTexture();
 
-        std::span<const SceneDecoration> getDrawlist() const;
+        std::span<const osc::SceneDecoration> getDrawlist() const;
 
         // Returns an `AABB` that tightly bounds all geometry in the scene, or `std::nullopt`
         // if the scene contains no geometry.
         //
         // This includes hidden/invisible elements that exist for hittesting/rim-highlighting
         // purposes.
-        std::optional<AABB> bounds() const;
+        std::optional<osc::AABB> bounds() const;
 
         // Returns an `AABB` that tightly bounds all visible geometry in the scene, or `std::nullopt`
         // if the scene contains no visible geometry.
         //
         // This is useful if (e.g.) you want to ensure a scene camera only tries to scope the visible
         // parts of a scene (#1029).
-        std::optional<AABB> visibleBounds() const;
+        std::optional<osc::AABB> visibleBounds() const;
 
-        std::optional<SceneCollision> getClosestCollision(
-            const opyn::ModelRendererParams&,
-            Vector2 mouseScreenPosition,
-            const Rect& viewportScreenRect
+        std::optional<osc::SceneCollision> getClosestCollision(
+            const ModelRendererParams&,
+            osc::Vector2 mouseScreenPosition,
+            const osc::Rect& viewportScreenRect
         ) const;
 
     private:

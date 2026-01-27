@@ -56,12 +56,12 @@ namespace osc
             return *m_LayerQueue.emplace_back(std::move(layer));
         }
 
-        const CachedModelRenderer& getRenderer() const
+        const opyn::CachedModelRenderer& getRenderer() const
         {
             return m_CachedModelRenderer;
         }
 
-        CachedModelRenderer& updRenderer()
+        opyn::CachedModelRenderer& updRenderer()
         {
             return m_CachedModelRenderer;
         }
@@ -79,7 +79,7 @@ namespace osc
     private:
         std::string panel_name_;
         ModelViewerPanelFlags m_Flags;
-        CachedModelRenderer m_CachedModelRenderer;
+        opyn::CachedModelRenderer m_CachedModelRenderer;
         std::vector<std::unique_ptr<ModelViewerPanelLayer>> m_LayerQueue;
     };
 }

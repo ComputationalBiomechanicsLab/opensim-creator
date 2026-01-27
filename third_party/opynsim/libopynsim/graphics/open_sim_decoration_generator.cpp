@@ -88,7 +88,6 @@ using osc::sqrt;
 using osc::to;
 using osc::unit_interval;
 
-using osc::ComponentAbsPathDecorationTagger;
 using osc::CoordinateDirection;
 using osc::CustomDecorationGenerator;
 using osc::ModelStatePair;

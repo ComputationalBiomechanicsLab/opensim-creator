@@ -5,7 +5,7 @@
 namespace OpenSim { class Component; }
 namespace osc { struct SceneDecoration; }
 
-namespace osc
+namespace opyn
 {
     // functor class that sets a decoration's flags based on selection logic
     class ComponentSceneDecorationFlagsTagger final {
@@ -15,13 +15,13 @@ namespace osc
             const OpenSim::Component* hovered_
         );
 
-        void operator()(const OpenSim::Component&, SceneDecoration&);
+        void operator()(const OpenSim::Component&, osc::SceneDecoration&);
     private:
-        SceneDecorationFlags computeFlags(const OpenSim::Component&) const;
+        osc::SceneDecorationFlags computeFlags(const OpenSim::Component&) const;
 
         const OpenSim::Component* m_Selected;
         const OpenSim::Component* m_Hovered;
         const OpenSim::Component* m_LastComponent = nullptr;
-        SceneDecorationFlags m_LastFlags = SceneDecorationFlag::Default;
+        osc::SceneDecorationFlags m_LastFlags = osc::SceneDecorationFlag::Default;
     };
 }

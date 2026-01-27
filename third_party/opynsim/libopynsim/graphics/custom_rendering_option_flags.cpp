@@ -3,7 +3,7 @@
 #include <array>
 #include <span>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
@@ -42,7 +42,7 @@ namespace
     });
 }
 
-std::span<const CustomRenderingOptionFlagsMetadata> osc::GetAllCustomRenderingOptionFlagsMetadata()
+std::span<const CustomRenderingOptionFlagsMetadata> opyn::GetAllCustomRenderingOptionFlagsMetadata()
 {
     return c_Metadata;
 }

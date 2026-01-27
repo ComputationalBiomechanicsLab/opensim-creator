@@ -5,14 +5,14 @@
 namespace OpenSim { class Component; }
 namespace osc { struct SceneDecoration; }
 
-namespace osc
+namespace opyn
 {
-    // functor class that sets a decoration's ID the the component's abs path
+    // functor class that sets a decoration's ID the component's abs path
     class ComponentAbsPathDecorationTagger final {
     public:
-        void operator()(const OpenSim::Component&, SceneDecoration&);
+        void operator()(const OpenSim::Component&, osc::SceneDecoration&);
     private:
         const OpenSim::Component* m_LastComponent = nullptr;
-        StringName m_ID;
+        osc::StringName m_ID;
     };
 }

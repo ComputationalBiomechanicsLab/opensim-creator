@@ -11,14 +11,14 @@
 
 namespace osc { struct SceneRendererParams; }
 
-namespace osc
+namespace opyn
 {
     class CustomRenderingOptions final {
     public:
         size_t getNumOptions() const;
         bool getOptionValue(ptrdiff_t) const;
         void setOptionValue(ptrdiff_t, bool);
-        CStringView getOptionLabel(ptrdiff_t) const;
+        osc::CStringView getOptionLabel(ptrdiff_t) const;
 
         bool getDrawFloor() const;
         void setDrawFloor(bool);
@@ -35,10 +35,10 @@ namespace osc
         bool getOrderIndependentTransparency() const;
         void setOrderIndependentTransparency(bool);
 
-        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>&) const;
-        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, Variant>&);
+        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const osc::Variant&)>&) const;
+        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, osc::Variant>&);
 
-        void applyTo(SceneRendererParams&) const;
+        void applyTo(osc::SceneRendererParams&) const;
 
         friend bool operator==(const CustomRenderingOptions&, const CustomRenderingOptions&) = default;
 

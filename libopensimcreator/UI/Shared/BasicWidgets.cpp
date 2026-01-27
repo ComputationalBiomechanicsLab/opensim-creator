@@ -1025,7 +1025,7 @@ bool osc::DrawMuscleDecorationOptionsEditor(opyn::OpenSimDecorationOptions& opts
     return edited;
 }
 
-bool osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
+bool osc::DrawRenderingOptionsEditor(opyn::CustomRenderingOptions& opts)
 {
     bool edited = false;
     ui::draw_text_disabled("Rendering");

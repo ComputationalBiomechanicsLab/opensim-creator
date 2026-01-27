@@ -136,7 +136,7 @@ namespace
     };
 }
 
-class osc::CachedModelRenderer::Impl final {
+class opyn::CachedModelRenderer::Impl final {
 public:
     explicit Impl(const std::shared_ptr<SceneCache>& cache) :
         m_DecorationCache{cache},
@@ -226,14 +226,14 @@ private:
 };
 
 
-osc::CachedModelRenderer::CachedModelRenderer(const std::shared_ptr<SceneCache>& cache) :
+opyn::CachedModelRenderer::CachedModelRenderer(const std::shared_ptr<SceneCache>& cache) :
     m_Impl{std::make_unique<Impl>(cache)}
 {}
-osc::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = default;
-osc::CachedModelRenderer& osc::CachedModelRenderer::operator=(CachedModelRenderer&&) noexcept = default;
-osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
+opyn::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = default;
+opyn::CachedModelRenderer& opyn::CachedModelRenderer::operator=(CachedModelRenderer&&) noexcept = default;
+opyn::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 
-RenderTexture& osc::CachedModelRenderer::onDraw(
+RenderTexture& opyn::CachedModelRenderer::onDraw(
     const ModelStatePair& modelState,
     const ModelRendererParams& renderParams,
     Vector2 dims,
@@ -249,7 +249,7 @@ RenderTexture& osc::CachedModelRenderer::onDraw(
     );
 }
 
-void osc::CachedModelRenderer::autoFocusCamera(
+void opyn::CachedModelRenderer::autoFocusCamera(
     const ModelStatePair& modelState,
     ModelRendererParams& renderParams,
     float aspectRatio)
@@ -257,27 +257,27 @@ void osc::CachedModelRenderer::autoFocusCamera(
     m_Impl->autoFocusCamera(modelState, renderParams, aspectRatio);
 }
 
-RenderTexture& osc::CachedModelRenderer::updRenderTexture()
+RenderTexture& opyn::CachedModelRenderer::updRenderTexture()
 {
     return m_Impl->updRenderTexture();
 }
 
-std::span<const SceneDecoration> osc::CachedModelRenderer::getDrawlist() const
+std::span<const SceneDecoration> opyn::CachedModelRenderer::getDrawlist() const
 {
     return m_Impl->getDrawlist();
 }
 
-std::optional<AABB> osc::CachedModelRenderer::bounds() const
+std::optional<AABB> opyn::CachedModelRenderer::bounds() const
 {
     return m_Impl->bounds();
 }
 
-std::optional<AABB> osc::CachedModelRenderer::visibleBounds() const
+std::optional<AABB> opyn::CachedModelRenderer::visibleBounds() const
 {
     return m_Impl->visibleBounds();
 }
 
-std::optional<SceneCollision> osc::CachedModelRenderer::getClosestCollision(
+std::optional<SceneCollision> opyn::CachedModelRenderer::getClosestCollision(
     const ModelRendererParams& params,
     Vector2 mouseScreenPosition,
     const Rect& viewportScreenRect) const

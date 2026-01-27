@@ -7,7 +7,7 @@
 #include <span>
 #include <utility>
 
-namespace osc
+namespace opyn
 {
     enum class CustomRenderingOptionFlags : uint32_t {
         None                         = 0,
@@ -28,25 +28,23 @@ namespace osc
 
     constexpr void SetOption(CustomRenderingOptionFlags& flags, CustomRenderingOptionFlags flag, bool v)
     {
-        if (v)
-        {
+        if (v) {
             flags = static_cast<CustomRenderingOptionFlags>(std::to_underlying(flags) | std::to_underlying(flag));
         }
-        else
-        {
+        else {
             flags = static_cast<CustomRenderingOptionFlags>(std::to_underlying(flags) & ~std::to_underlying(flag));
         }
     }
 
     constexpr CustomRenderingOptionFlags CustomRenderingIthOption(size_t i)
     {
-        i = i < num_flags<CustomRenderingOptionFlags>() ? i : 0;
+        i = i < osc::num_flags<CustomRenderingOptionFlags>() ? i : 0;
         return static_cast<CustomRenderingOptionFlags>(1<<i);
     }
 
     struct CustomRenderingOptionFlagsMetadata final {
-        CStringView id;
-        CStringView label;
+        osc::CStringView id;
+        osc::CStringView label;
         CustomRenderingOptionFlags value;
     };
     std::span<const CustomRenderingOptionFlagsMetadata> GetAllCustomRenderingOptionFlagsMetadata();

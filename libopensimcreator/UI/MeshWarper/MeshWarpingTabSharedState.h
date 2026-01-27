@@ -271,8 +271,8 @@ namespace osc
             m_LinkedCameraBase = newCamera;
         }
 
-        const CustomRenderingOptions& getCustomRenderingOptions() const { return m_CustomRenderingOptions; }
-        CustomRenderingOptions& updCustomRenderingOptions() { return m_CustomRenderingOptions; }
+        const opyn::CustomRenderingOptions& getCustomRenderingOptions() const { return m_CustomRenderingOptions; }
+        opyn::CustomRenderingOptions& updCustomRenderingOptions() { return m_CustomRenderingOptions; }
         const opyn::OverlayDecorationOptions& getOverlayDecorationOptions() const { return m_OverlayDecorationOptions; }
         opyn::OverlayDecorationOptions& updOverlayDecorationOptions() { return m_OverlayDecorationOptions; }
         bool isWireframeModeEnabled() const { return m_WireframeMode; }
@@ -319,7 +319,7 @@ namespace osc
         PopupManager m_PopupManager;
 
         // user-editable rendering options
-        CustomRenderingOptions m_CustomRenderingOptions;
+        opyn::CustomRenderingOptions m_CustomRenderingOptions;
 
         // user-editable overlay decoration options
         opyn::OverlayDecorationOptions m_OverlayDecorationOptions;
