@@ -69,7 +69,7 @@ public:
 
             for (int outputIdx = 0; outputIdx < env->getNumUserOutputExtractors(); ++outputIdx) {
                 int column = 0;
-                SharedOutputExtractor o = env->getUserOutputExtractor(outputIdx);
+                opyn::SharedOutputExtractor o = env->getUserOutputExtractor(outputIdx);
 
                 ui::push_id(outputIdx);
 

@@ -37,8 +37,8 @@ namespace osc
     private:
         CStringView implGetName() const final { return m_Name; }
         CStringView implGetDescription() const final { return m_Description; }
-        OutputExtractorDataType implGetOutputType() const override { return OutputExtractorDataType::Float; }
-        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
+        opyn::OutputExtractorDataType implGetOutputType() const override { return opyn::OutputExtractorDataType::Float; }
+        opyn::OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
         size_t implGetHash() const final;
         bool implEquals(const OutputExtractor&) const final;
 
@@ -50,5 +50,5 @@ namespace osc
 
     int GetNumIntegratorOutputExtractors();
     const IntegratorOutputExtractor& GetIntegratorOutputExtractor(int idx);
-    SharedOutputExtractor GetIntegratorOutputExtractorDynamic(int idx);
+    opyn::SharedOutputExtractor GetIntegratorOutputExtractorDynamic(int idx);
 }

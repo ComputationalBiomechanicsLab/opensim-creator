@@ -39,13 +39,13 @@ namespace
         return std::move(ss).str();
     }
 
-    osc::OutputValueExtractor MakeNullExtractor(osc::OutputExtractorDataType type)
+    OutputValueExtractor MakeNullExtractor(OutputExtractorDataType type)
     {
-        static_assert(osc::num_options<osc::OutputExtractorDataType>() == 3);
+        static_assert(osc::num_options<OutputExtractorDataType>() == 3);
         switch (type) {
-        case osc::OutputExtractorDataType::Float:   return osc::OutputValueExtractor::constant(osc::quiet_nan_v<float>);
-        case osc::OutputExtractorDataType::Vector2: return osc::OutputValueExtractor::constant(osc::Vector2{osc::quiet_nan_v<float>});
-        default:                                    return osc::OutputValueExtractor::constant(std::string{});
+        case OutputExtractorDataType::Float:   return OutputValueExtractor::constant(osc::quiet_nan_v<float>);
+        case OutputExtractorDataType::Vector2: return OutputValueExtractor::constant(osc::Vector2{osc::quiet_nan_v<float>});
+        default:                               return OutputValueExtractor::constant(std::string{});
         }
     }
 }
@@ -160,12 +160,12 @@ osc::CStringView osc::ComponentOutputExtractor::implGetDescription() const
     return m_Impl->getDescription();
 }
 
-osc::OutputExtractorDataType osc::ComponentOutputExtractor::implGetOutputType() const
+opyn::OutputExtractorDataType osc::ComponentOutputExtractor::implGetOutputType() const
 {
     return m_Impl->getOutputType();
 }
 
-osc::OutputValueExtractor osc::ComponentOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const
+opyn::OutputValueExtractor osc::ComponentOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const
 {
     return m_Impl->getOutputValueExtractor(component);
 }

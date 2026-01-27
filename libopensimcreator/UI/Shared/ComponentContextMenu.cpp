@@ -307,7 +307,7 @@ public:
         }
 
         if (auto* modelWithEnv = dynamic_cast<ModelStatePairWithSharedEnvironment*>(m_Model.get())) {
-            DrawWatchOutputMenu(*c, [this, modelWithEnv](const SharedOutputExtractor& outputExtractor)
+            DrawWatchOutputMenu(*c, [this, modelWithEnv](const opyn::SharedOutputExtractor& outputExtractor)
             {
                 modelWithEnv->tryUpdEnvironment()->addUserOutputExtractor(outputExtractor);
 

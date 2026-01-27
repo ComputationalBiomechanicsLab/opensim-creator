@@ -23,7 +23,7 @@ namespace
 {
     void TryExportOutputsToCSV(
         const ISimulation& simulation,
-        std::span<const SharedOutputExtractor> outputs,
+        std::span<const opyn::SharedOutputExtractor> outputs,
         bool openInDefaultApp)
     {
         // Pre-write the CSV in-memory so that the asynchronous user prompt isn't
@@ -60,12 +60,12 @@ namespace
     }
 }
 
-void osc::ISimulatorUIAPI::tryPromptToSaveOutputsAsCSV(std::span<const SharedOutputExtractor> outputs, bool openInDefaultApp) const
+void osc::ISimulatorUIAPI::tryPromptToSaveOutputsAsCSV(std::span<const opyn::SharedOutputExtractor> outputs, bool openInDefaultApp) const
 {
     TryExportOutputsToCSV(getSimulation(), outputs, openInDefaultApp);
 }
 
-void osc::ISimulatorUIAPI::tryPromptToSaveAllOutputsAsCSV(std::span<const SharedOutputExtractor> outputs, bool openInDefaultApp) const
+void osc::ISimulatorUIAPI::tryPromptToSaveAllOutputsAsCSV(std::span<const opyn::SharedOutputExtractor> outputs, bool openInDefaultApp) const
 {
     TryExportOutputsToCSV(getSimulation(), outputs, openInDefaultApp);
 }

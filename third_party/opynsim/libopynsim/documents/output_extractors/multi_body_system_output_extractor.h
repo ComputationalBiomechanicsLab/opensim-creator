@@ -40,8 +40,8 @@ namespace osc
     private:
         CStringView implGetName() const final { return m_Name; }
         CStringView implGetDescription() const final { return m_Description; }
-        OutputExtractorDataType implGetOutputType() const final { return OutputExtractorDataType::Float; }
-        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
+        opyn::OutputExtractorDataType implGetOutputType() const final { return opyn::OutputExtractorDataType::Float; }
+        opyn::OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
         size_t implGetHash() const final;
         bool implEquals(const OutputExtractor&) const final;
 
@@ -53,5 +53,5 @@ namespace osc
 
     int GetNumMultiBodySystemOutputExtractors();
     const MultiBodySystemOutputExtractor& GetMultiBodySystemOutputExtractor(int idx);
-    SharedOutputExtractor GetMultiBodySystemOutputExtractorDynamic(int idx);
+    opyn::SharedOutputExtractor GetMultiBodySystemOutputExtractorDynamic(int idx);
 }

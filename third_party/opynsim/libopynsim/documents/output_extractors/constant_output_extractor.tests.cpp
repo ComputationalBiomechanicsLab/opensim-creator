@@ -5,6 +5,7 @@
 #include <OpenSim/Simulation/Model/Station.h>
 
 using namespace osc;
+using namespace opyn;
 
 namespace
 {

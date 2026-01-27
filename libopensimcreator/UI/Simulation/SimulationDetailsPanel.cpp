@@ -83,7 +83,7 @@ private:
         ui::same_line();
         ui::draw_help_marker("Various statistics collected when the simulation was ran");
         ui::next_column();
-        if (rgs::any_of(outputs, is_numeric, &SharedOutputExtractor::getOutputType)) {
+        if (rgs::any_of(outputs, opyn::is_numeric, &opyn::SharedOutputExtractor::getOutputType)) {
 
             ui::draw_button(MSMICONS_SAVE " Save All " MSMICONS_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft)) {
@@ -106,7 +106,7 @@ private:
 
         int imguiID = 0;
         ui::set_num_columns(2);
-        for (const SharedOutputExtractor& output : sim.getOutputs()) {
+        for (const opyn::SharedOutputExtractor& output : sim.getOutputs()) {
             ui::push_id(imguiID++);
             DrawOutputNameColumn(output, false);
             ui::next_column();

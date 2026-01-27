@@ -43,13 +43,12 @@ namespace
         return ForwardDynamicSimulator{std::move(p), params, std::move(callback)};
     }
 
-    std::vector<SharedOutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
+    std::vector<opyn::SharedOutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
     {
-        std::vector<SharedOutputExtractor> rv;
+        std::vector<opyn::SharedOutputExtractor> rv;
         const int nOutputExtractors = GetNumFdSimulatorOutputExtractors();
         rv.reserve(nOutputExtractors);
-        for (int i = 0; i < nOutputExtractors; ++i)
-        {
+        for (int i = 0; i < nOutputExtractors; ++i) {
             rv.push_back(GetFdSimulatorOutputExtractor(i));
         }
         return rv;
@@ -129,7 +128,7 @@ public:
         return m_ParamsAsParamBlock;
     }
 
-    std::span<const SharedOutputExtractor> getOutputExtractors() const
+    std::span<const opyn::SharedOutputExtractor> getOutputExtractors() const
     {
         return m_SimulatorOutputExtractors;
     }
@@ -267,7 +266,7 @@ private:
     ForwardDynamicSimulator m_Simulation;
     ForwardDynamicSimulatorParams m_Params;
     ParamBlock m_ParamsAsParamBlock;
-    std::vector<SharedOutputExtractor> m_SimulatorOutputExtractors;
+    std::vector<opyn::SharedOutputExtractor> m_SimulatorOutputExtractors;
 };
 
 
@@ -318,7 +317,7 @@ const ParamBlock& osc::ForwardDynamicSimulation::implGetParams() const
     return m_Impl->getParams();
 }
 
-std::span<const SharedOutputExtractor> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
+std::span<const opyn::SharedOutputExtractor> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

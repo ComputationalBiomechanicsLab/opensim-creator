@@ -2,7 +2,7 @@
 
 #include <libopynsim/documents/output_extractors/output_extractor_data_type.h>
 
-namespace osc
+namespace opyn
 {
     template<OutputExtractorDataType>
     struct OutputExtractorDataTypeTraits;

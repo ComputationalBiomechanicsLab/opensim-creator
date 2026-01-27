@@ -12,7 +12,7 @@ namespace osc
     public:
         explicit SimulationOutputPlot(
             ISimulatorUIAPI*,
-            SharedOutputExtractor,
+            opyn::SharedOutputExtractor,
             float height
         );
         SimulationOutputPlot(const SimulationOutputPlot&) = delete;

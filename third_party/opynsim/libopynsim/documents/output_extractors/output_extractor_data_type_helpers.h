@@ -8,14 +8,14 @@
 
 #include <array>
 
-namespace osc
+namespace opyn
 {
     constexpr bool is_numeric(OutputExtractorDataType t)
     {
-        constexpr auto lut = []<OutputExtractorDataType... Types>(OptionList<OutputExtractorDataType, Types...>) {
+        constexpr auto lut = []<OutputExtractorDataType... Types>(osc::OptionList<OutputExtractorDataType, Types...>) {
             return std::to_array({ OutputExtractorDataTypeTraits<Types>::is_numeric... });
         }(OutputExtractorDataTypeList{});
 
-        return lut.at(to_index(t));
+        return lut.at(osc::to_index(t));
     }
 }

@@ -39,8 +39,8 @@ namespace osc
         CStringView getName() const { return implGetName(); }
         CStringView getDescription() const { return implGetDescription(); }
 
-        OutputExtractorDataType getOutputType() const { return implGetOutputType(); }
-        OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
+        opyn::OutputExtractorDataType getOutputType() const { return implGetOutputType(); }
+        opyn::OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
         {
             return implGetOutputValueExtractor(component);
         }
@@ -62,7 +62,7 @@ namespace osc
             const R& states,
             Consumer&& consumer) const
         {
-            const OutputValueExtractor extractor = getOutputValueExtractor(component);
+            const opyn::OutputValueExtractor extractor = getOutputValueExtractor(component);
             for (const opyn::StateViewWithMetadata& state : states) {
                 consumer(to<T>(extractor(state)));
             }
@@ -93,8 +93,8 @@ namespace osc
     private:
         virtual CStringView implGetName() const = 0;
         virtual CStringView implGetDescription() const = 0;
-        virtual OutputExtractorDataType implGetOutputType() const = 0;
-        virtual OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const = 0;
+        virtual opyn::OutputExtractorDataType implGetOutputType() const = 0;
+        virtual opyn::OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const = 0;
         virtual size_t implGetHash() const = 0;
         virtual bool implEquals(const OutputExtractor&) const = 0;
     };

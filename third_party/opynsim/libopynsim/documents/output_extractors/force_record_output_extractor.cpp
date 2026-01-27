@@ -77,7 +77,7 @@ osc::ForceRecordOutputExtractor& osc::ForceRecordOutputExtractor::operator=(Forc
 osc::ForceRecordOutputExtractor::~ForceRecordOutputExtractor() noexcept = default;
 osc::CStringView osc::ForceRecordOutputExtractor::implGetName() const { return m_Impl->getName(); }
 osc::CStringView osc::ForceRecordOutputExtractor::implGetDescription() const { return m_Impl->getDescription(); }
-osc::OutputExtractorDataType osc::ForceRecordOutputExtractor::implGetOutputType() const { return m_Impl->getOutputType(); }
-osc::OutputValueExtractor osc::ForceRecordOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const { return m_Impl->getOutputValueExtractor(component); }
+opyn::OutputExtractorDataType osc::ForceRecordOutputExtractor::implGetOutputType() const { return m_Impl->getOutputType(); }
+opyn::OutputValueExtractor osc::ForceRecordOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const { return m_Impl->getOutputValueExtractor(component); }
 size_t osc::ForceRecordOutputExtractor::implGetHash() const { return m_Impl->getHash(); }
 bool osc::ForceRecordOutputExtractor::implEquals(const OutputExtractor& other) const { return m_Impl->equals(other); }

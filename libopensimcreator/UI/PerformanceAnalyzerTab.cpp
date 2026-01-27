@@ -32,10 +32,10 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    SharedOutputExtractor GetSimulatorOutputExtractor(std::string_view name)
+    opyn::SharedOutputExtractor GetSimulatorOutputExtractor(std::string_view name)
     {
         for (int i = 0, len = GetNumFdSimulatorOutputExtractors(); i < len; ++i) {
-            SharedOutputExtractor o = GetFdSimulatorOutputExtractor(i);
+            opyn::SharedOutputExtractor o = GetFdSimulatorOutputExtractor(i);
             if (o.getName() == name) {
                 return o;
             }
@@ -205,8 +205,8 @@ private:
     std::vector<ForwardDynamicSimulatorParams> m_Params;
     std::vector<ForwardDynamicSimulation> m_Simulations;
 
-    SharedOutputExtractor m_WalltimeExtractor = GetSimulatorOutputExtractor("Wall time");
-    SharedOutputExtractor m_StepsTakenExtractor = GetSimulatorOutputExtractor("NumStepsTaken");
+    opyn::SharedOutputExtractor m_WalltimeExtractor = GetSimulatorOutputExtractor("Wall time");
+    opyn::SharedOutputExtractor m_StepsTakenExtractor = GetSimulatorOutputExtractor("NumStepsTaken");
     ParamBlockEditorPopup m_ParamEditor{&owner(), "parameditor", &m_BaseParams};
 };
 

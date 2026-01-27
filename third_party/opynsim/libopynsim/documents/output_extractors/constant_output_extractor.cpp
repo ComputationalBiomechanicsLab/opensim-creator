@@ -9,9 +9,9 @@
 
 using namespace osc;
 
-OutputValueExtractor osc::ConstantOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
+opyn::OutputValueExtractor osc::ConstantOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
 {
-    return OutputValueExtractor{[value = this->m_Value](const opyn::StateViewWithMetadata&)
+    return opyn::OutputValueExtractor{[value = this->m_Value](const opyn::StateViewWithMetadata&)
     {
         return value;
     }};

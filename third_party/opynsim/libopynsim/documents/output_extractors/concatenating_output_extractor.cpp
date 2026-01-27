@@ -14,10 +14,11 @@
 #include <string>
 
 using namespace osc;
+using namespace opyn;
 
 namespace
 {
-    OutputExtractorDataType CalcOutputType(const SharedOutputExtractor& a, const SharedOutputExtractor& b)
+    OutputExtractorDataType CalcOutputType(const opyn::SharedOutputExtractor& a, const opyn::SharedOutputExtractor& b)
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
 
@@ -32,7 +33,7 @@ namespace
         }
     }
 
-    std::string CalcLabel(OutputExtractorDataType concatenatedType, const SharedOutputExtractor& a, const SharedOutputExtractor& b)
+    std::string CalcLabel(OutputExtractorDataType concatenatedType, const opyn::SharedOutputExtractor& a, const opyn::SharedOutputExtractor& b)
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
 
@@ -50,8 +51,8 @@ namespace
 }
 
 osc::ConcatenatingOutputExtractor::ConcatenatingOutputExtractor(
-    SharedOutputExtractor first_,
-    SharedOutputExtractor second_) :
+    opyn::SharedOutputExtractor first_,
+    opyn::SharedOutputExtractor second_) :
 
     m_First{std::move(first_)},
     m_Second{std::move(second_)},
@@ -59,7 +60,7 @@ osc::ConcatenatingOutputExtractor::ConcatenatingOutputExtractor(
     m_Label{CalcLabel(m_OutputType, m_First, m_Second)}
 {}
 
-OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& comp) const
+opyn::OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& comp) const
 {
     static_assert(num_options<OutputExtractorDataType>() == 3);
 
@@ -71,14 +72,14 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
 
             return Variant{Vector2{lv, rv}};
         };
-        return OutputValueExtractor{std::move(extractor)};
+        return opyn::OutputValueExtractor{std::move(extractor)};
     }
     else {
         auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const opyn::StateViewWithMetadata& state)
         {
             return Variant{to<std::string>(lhs(state)) + to<std::string>(rhs(state))};
         };
-        return OutputValueExtractor{std::move(extractor)};
+        return opyn::OutputValueExtractor{std::move(extractor)};
     }
 }
 

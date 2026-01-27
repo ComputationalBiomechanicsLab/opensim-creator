@@ -71,7 +71,7 @@ public:
         ui::draw_vertical_spacer(5.0f/15.0f);
 
         for (int i = 0; i < m_Environment->getNumUserOutputExtractors(); ++i) {
-            SharedOutputExtractor output = m_Environment->getUserOutputExtractor(i);
+            opyn::SharedOutputExtractor output = m_Environment->getUserOutputExtractor(i);
 
             ui::push_id(i);
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 128.0f};

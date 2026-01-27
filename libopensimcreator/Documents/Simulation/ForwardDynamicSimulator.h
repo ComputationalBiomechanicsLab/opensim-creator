@@ -16,7 +16,7 @@ namespace osc
     // returns outputs (e.g. auxiliary stuff like integration steps) that the
     // FdSimulator writes into the `SimulationReport`s it emits
     int GetNumFdSimulatorOutputExtractors();
-    SharedOutputExtractor GetFdSimulatorOutputExtractor(int);
+    opyn::SharedOutputExtractor GetFdSimulatorOutputExtractor(int);
 
     // a forward-dynamic simulation that immediately starts running on a background thread
     class ForwardDynamicSimulator final {

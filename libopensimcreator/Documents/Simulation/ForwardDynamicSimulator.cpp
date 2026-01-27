@@ -110,14 +110,14 @@ namespace
             return m_Description;
         }
 
-        OutputExtractorDataType implGetOutputType() const final
+        opyn::OutputExtractorDataType implGetOutputType() const final
         {
-            return OutputExtractorDataType::Float;
+            return opyn::OutputExtractorDataType::Float;
         }
 
-        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final
+        opyn::OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final
         {
-            return OutputValueExtractor{[id = m_UID](const opyn::StateViewWithMetadata& state)
+            return opyn::OutputValueExtractor{[id = m_UID](const opyn::StateViewWithMetadata& state)
             {
                 return Variant{state.getAuxiliaryValue(id).value_or(-1337.0f)};
             }};
@@ -152,20 +152,20 @@ namespace
         UID m_UID;
     };
 
-    std::vector<SharedOutputExtractor> CreateSimulatorOutputExtractors()
+    std::vector<opyn::SharedOutputExtractor> CreateSimulatorOutputExtractors()
     {
-        std::vector<SharedOutputExtractor> rv;
+        std::vector<opyn::SharedOutputExtractor> rv;
         rv.reserve(2uz + GetNumIntegratorOutputExtractors() + GetNumMultiBodySystemOutputExtractors());
 
         {
-            const SharedOutputExtractor out{AuxiliaryVariableOutputExtractor{
+            const opyn::SharedOutputExtractor out{AuxiliaryVariableOutputExtractor{
                 "Wall time",
                 "Total cumulative time spent computing the simulation",
                 GetWalltimeUID(),
             }};
             rv.push_back(out);
 
-            const SharedOutputExtractor out2{AuxiliaryVariableOutputExtractor{
+            const opyn::SharedOutputExtractor out2{AuxiliaryVariableOutputExtractor{
                 "Step Wall Time",
                 "How long it took, in wall time, to compute the last integration step",
                 GetStepDurationUID(),
@@ -186,9 +186,9 @@ namespace
         return rv;
     }
 
-    std::vector<SharedOutputExtractor> const& GetSimulatorOutputExtractors()
+    std::vector<opyn::SharedOutputExtractor> const& GetSimulatorOutputExtractors()
     {
-        static const std::vector<SharedOutputExtractor> s_Outputs = CreateSimulatorOutputExtractors();
+        static const std::vector<opyn::SharedOutputExtractor> s_Outputs = CreateSimulatorOutputExtractors();
         return s_Outputs;
     }
 
@@ -441,7 +441,7 @@ int osc::GetNumFdSimulatorOutputExtractors()
     return static_cast<int>(GetSimulatorOutputExtractors().size());
 }
 
-SharedOutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
+opyn::SharedOutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
 {
     return GetSimulatorOutputExtractors().at(static_cast<size_t>(idx));
 }

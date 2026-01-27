@@ -100,7 +100,7 @@ namespace
 
     bool DrawOutputWithSubfieldsMenu(
         const OpenSim::AbstractOutput& o,
-        const std::function<void(SharedOutputExtractor)>& onUserSelection)
+        const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
     {
         bool outputAdded = false;
         ComponentOutputSubfields supportedSubfields = GetSupportedSubfields(o);
@@ -114,7 +114,7 @@ namespace
                 {
                     if (auto label = GetOutputSubfieldLabel(f); label && ui::draw_menu_item(*label))
                     {
-                        onUserSelection(SharedOutputExtractor{ComponentOutputExtractor{o, f}});
+                        onUserSelection(opyn::SharedOutputExtractor{ComponentOutputExtractor{o, f}});
                         outputAdded = true;
                     }
                 }
@@ -132,7 +132,7 @@ namespace
 
     bool DrawOutputWithNoSubfieldsMenuItem(
         const OpenSim::AbstractOutput& o,
-        const std::function<void(SharedOutputExtractor)>& onUserSelection)
+        const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
     {
         // can only plot top-level of output
 
@@ -140,7 +140,7 @@ namespace
 
         if (ui::draw_menu_item(("  " + o.getName())))
         {
-            onUserSelection(SharedOutputExtractor{ComponentOutputExtractor{o}});
+            onUserSelection(opyn::SharedOutputExtractor{ComponentOutputExtractor{o}});
             outputAdded = true;
         }
 
@@ -395,7 +395,7 @@ void osc::DrawSelectOwnerMenu(ModelStatePair& model, const OpenSim::Component& s
 
 bool osc::DrawRequestOutputMenuOrMenuItem(
     const OpenSim::AbstractOutput& o,
-    const std::function<void(SharedOutputExtractor)>& onUserSelection)
+    const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
 {
     if (GetSupportedSubfields(o) == ComponentOutputSubfield::None)
     {
@@ -409,7 +409,7 @@ bool osc::DrawRequestOutputMenuOrMenuItem(
 
 bool osc::DrawWatchOutputMenu(
     const OpenSim::Component& c,
-    const std::function<void(SharedOutputExtractor)>& onUserSelection)
+    const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
 {
     bool outputAdded = false;
 
@@ -429,7 +429,7 @@ bool osc::DrawWatchOutputMenu(
             for (int i = 0; i < labels.size(); ++i) {
                 ui::push_id(entriesDrawn++);
                 if (ui::draw_menu_item("  " + labels[i])) {
-                    onUserSelection(SharedOutputExtractor{ForceRecordOutputExtractor{*f, i}});
+                    onUserSelection(opyn::SharedOutputExtractor{ForceRecordOutputExtractor{*f, i}});
                     outputAdded = true;
                 }
                 ui::pop_id();

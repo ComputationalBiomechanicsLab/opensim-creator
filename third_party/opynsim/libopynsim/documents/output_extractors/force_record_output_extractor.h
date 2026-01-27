@@ -29,8 +29,8 @@ namespace osc
     private:
         CStringView implGetName() const final;
         CStringView implGetDescription() const final;
-        OutputExtractorDataType implGetOutputType() const final;
-        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
+        opyn::OutputExtractorDataType implGetOutputType() const final;
+        opyn::OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
         size_t implGetHash() const final;
         bool implEquals(const OutputExtractor&) const final;
 

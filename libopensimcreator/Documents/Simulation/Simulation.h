@@ -13,8 +13,8 @@
 #include <span>
 #include <vector>
 
+namespace opyn { class SharedOutputExtractor; }
 namespace osc { class Environment; }
-namespace osc { class SharedOutputExtractor; }
 namespace osc { class ParamBlock; }
 namespace OpenSim { class Model; }
 namespace SimTK { class State; }
@@ -45,7 +45,7 @@ namespace osc
         SimulationClock::duration   getDuration() const { return m_Simulation->getDuration(); }
         float getProgress() const { return m_Simulation->getProgress(); }
         const ParamBlock& getParams() const { return m_Simulation->getParams(); }
-        std::span<const SharedOutputExtractor> getOutputs() const { return m_Simulation->getOutputExtractors(); }
+        std::span<const opyn::SharedOutputExtractor> getOutputs() const { return m_Simulation->getOutputExtractors(); }
 
         bool canChangeEndTime() const { return m_Simulation->canChangeEndTime(); }
         void requestNewEndTime(SimulationClock::time_point t) { m_Simulation->requestNewEndTime(t); }

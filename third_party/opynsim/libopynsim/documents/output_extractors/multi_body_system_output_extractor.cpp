@@ -13,9 +13,9 @@ using namespace osc;
 
 namespace
 {
-    std::vector<SharedOutputExtractor> ConstructMultiBodySystemOutputExtractors()
+    std::vector<opyn::SharedOutputExtractor> ConstructMultiBodySystemOutputExtractors()
     {
-        std::vector<SharedOutputExtractor> rv;
+        std::vector<opyn::SharedOutputExtractor> rv;
 
         // SimTK::System (base class)
         rv.emplace_back(MultiBodySystemOutputExtractor{
@@ -41,16 +41,16 @@ namespace
         return rv;
     }
 
-    const std::vector<SharedOutputExtractor>& GetAllMultiBodySystemOutputExtractors()
+    const std::vector<opyn::SharedOutputExtractor>& GetAllMultiBodySystemOutputExtractors()
     {
-        static const std::vector<SharedOutputExtractor> s_Outputs = ConstructMultiBodySystemOutputExtractors();
+        static const std::vector<opyn::SharedOutputExtractor> s_Outputs = ConstructMultiBodySystemOutputExtractors();
         return s_Outputs;
     }
 }
 
-OutputValueExtractor osc::MultiBodySystemOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
+opyn::OutputValueExtractor osc::MultiBodySystemOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
 {
-    return OutputValueExtractor{[id = m_AuxiliaryDataID](const opyn::StateViewWithMetadata& state)
+    return opyn::OutputValueExtractor{[id = m_AuxiliaryDataID](const opyn::StateViewWithMetadata& state)
     {
         return Variant{state.getAuxiliaryValue(id).value_or(quiet_nan_v<float>)};
     }};
@@ -91,7 +91,7 @@ const MultiBodySystemOutputExtractor& osc::GetMultiBodySystemOutputExtractor(int
     return dynamic_cast<const MultiBodySystemOutputExtractor&>(GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx)).getInner());
 }
 
-SharedOutputExtractor osc::GetMultiBodySystemOutputExtractorDynamic(int idx)
+opyn::SharedOutputExtractor osc::GetMultiBodySystemOutputExtractorDynamic(int idx)
 {
     return GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx));
 }

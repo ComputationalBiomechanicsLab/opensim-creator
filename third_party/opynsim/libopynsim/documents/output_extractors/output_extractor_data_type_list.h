@@ -4,9 +4,9 @@
 
 #include <liboscar/utilities/enum_helpers.h>
 
-namespace osc
+namespace opyn
 {
-    using OutputExtractorDataTypeList = OptionList<OutputExtractorDataType,
+    using OutputExtractorDataTypeList = osc::OptionList<OutputExtractorDataType,
         OutputExtractorDataType::Float,
         OutputExtractorDataType::Vector2,
         OutputExtractorDataType::String

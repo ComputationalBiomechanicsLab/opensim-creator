@@ -17,19 +17,19 @@ namespace osc
     // an output extractor that concatenates the outputs from multiple output extractors
     class ConcatenatingOutputExtractor final : public OutputExtractor {
     public:
-        ConcatenatingOutputExtractor(SharedOutputExtractor first_, SharedOutputExtractor second_);
+        ConcatenatingOutputExtractor(opyn::SharedOutputExtractor first_, opyn::SharedOutputExtractor second_);
 
     private:
         CStringView implGetName() const override { return m_Label; }
         CStringView implGetDescription() const override { return {}; }
-        OutputExtractorDataType implGetOutputType() const override { return m_OutputType; }
-        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const override;
+        opyn::OutputExtractorDataType implGetOutputType() const override { return m_OutputType; }
+        opyn::OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const override;
         size_t implGetHash() const override;
         bool implEquals(const OutputExtractor&) const override;
 
-        SharedOutputExtractor m_First;
-        SharedOutputExtractor m_Second;
-        OutputExtractorDataType m_OutputType;
+        opyn::SharedOutputExtractor m_First;
+        opyn::SharedOutputExtractor m_Second;
+        opyn::OutputExtractorDataType m_OutputType;
         std::string m_Label;
     };
 }

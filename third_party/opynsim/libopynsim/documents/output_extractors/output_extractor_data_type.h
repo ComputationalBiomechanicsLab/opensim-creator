@@ -1,6 +1,6 @@
 #pragma once
 
-namespace osc
+namespace opyn
 {
     // indicates the datatype that an `OutputExtractor` emits at runtime
     enum class OutputExtractorDataType {

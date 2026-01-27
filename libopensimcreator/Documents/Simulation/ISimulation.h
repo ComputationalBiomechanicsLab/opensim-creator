@@ -108,7 +108,7 @@ namespace osc
             return implGetParams();
         }
 
-        std::span<const SharedOutputExtractor> getOutputExtractors() const
+        std::span<const opyn::SharedOutputExtractor> getOutputExtractors() const
         {
             return implGetOutputExtractors();
         }
@@ -145,7 +145,7 @@ namespace osc
         virtual SimulationStatus implGetStatus() const = 0;
         virtual SimulationClocks implGetClocks() const = 0;
         virtual const ParamBlock& implGetParams() const = 0;
-        virtual std::span<const SharedOutputExtractor> implGetOutputExtractors() const = 0;
+        virtual std::span<const opyn::SharedOutputExtractor> implGetOutputExtractors() const = 0;
 
         virtual bool implCanChangeEndTime() const { return false; }
         virtual void implRequestNewEndTime(SimulationClock::time_point) {}

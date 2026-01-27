@@ -17,9 +17,9 @@ using namespace osc;
 
 namespace
 {
-    std::vector<SharedOutputExtractor> ConstructIntegratorOutputExtractors()
+    std::vector<opyn::SharedOutputExtractor> ConstructIntegratorOutputExtractors()
     {
-        std::vector<SharedOutputExtractor> rv;
+        std::vector<opyn::SharedOutputExtractor> rv;
         rv.emplace_back(IntegratorOutputExtractor{
             "AccuracyInUse",
             "The accuracy which is being used for error control. Usually this is the same value that was specified to setAccuracy()",
@@ -103,16 +103,16 @@ namespace
         return rv;
     }
 
-    const std::vector<SharedOutputExtractor>& GetAllIntegratorOutputExtractors()
+    const std::vector<opyn::SharedOutputExtractor>& GetAllIntegratorOutputExtractors()
     {
-        static const std::vector<SharedOutputExtractor> s_IntegratorOutputs = ConstructIntegratorOutputExtractors();
+        static const std::vector<opyn::SharedOutputExtractor> s_IntegratorOutputs = ConstructIntegratorOutputExtractors();
         return s_IntegratorOutputs;
     }
 }
 
-OutputValueExtractor osc::IntegratorOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
+opyn::OutputValueExtractor osc::IntegratorOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
 {
-    return OutputValueExtractor{[id = m_AuxiliaryDataID](const opyn::StateViewWithMetadata& state)
+    return opyn::OutputValueExtractor{[id = m_AuxiliaryDataID](const opyn::StateViewWithMetadata& state)
     {
         return Variant{state.getAuxiliaryValue(id).value_or(quiet_nan_v<float>)};
     }};
@@ -153,7 +153,7 @@ const IntegratorOutputExtractor& osc::GetIntegratorOutputExtractor(int idx)
     return dynamic_cast<const IntegratorOutputExtractor&>(GetAllIntegratorOutputExtractors().at(static_cast<size_t>(idx)).getInner());
 }
 
-SharedOutputExtractor osc::GetIntegratorOutputExtractorDynamic(int idx)
+opyn::SharedOutputExtractor osc::GetIntegratorOutputExtractorDynamic(int idx)
 {
     return GetAllIntegratorOutputExtractors().at(static_cast<size_t>(idx));
 }

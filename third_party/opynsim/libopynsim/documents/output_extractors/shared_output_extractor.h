@@ -19,7 +19,7 @@
 
 namespace OpenSim { class Component; }
 
-namespace osc
+namespace opyn
 {
     // concrete reference-counted value-type wrapper for an `OutputExtractor`.
     //
@@ -32,8 +32,8 @@ namespace osc
             m_Output{std::make_shared<ConcreteOutputExtractor>(std::forward<ConcreteOutputExtractor>(output))}
         {}
 
-        CStringView getName() const { return m_Output->getName(); }
-        CStringView getDescription() const { return m_Output->getDescription(); }
+        osc::CStringView getName() const { return m_Output->getName(); }
+        osc::CStringView getDescription() const { return m_Output->getDescription(); }
         OutputExtractorDataType getOutputType() const { return m_Output->getOutputType(); }
 
         OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
@@ -42,16 +42,16 @@ namespace osc
         }
 
         template<typename T>
-        requires std::constructible_from<T, Variant&&>
-        T getValue(const OpenSim::Component& component, const opyn::StateViewWithMetadata& state) const
+        requires std::constructible_from<T, osc::Variant&&>
+        T getValue(const OpenSim::Component& component, const StateViewWithMetadata& state) const
         {
             return m_Output->getValue<T>(component, state);
         }
 
         template<typename T, std::ranges::forward_range R>
         requires (
-            std::constructible_from<T, Variant&&> and
-            std::convertible_to<std::ranges::range_value_t<R>, const opyn::StateViewWithMetadata&>
+            std::constructible_from<T, osc::Variant&&> and
+            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
         )
         void getValues(
             const OpenSim::Component& component,
@@ -63,8 +63,8 @@ namespace osc
 
         template<typename T, std::ranges::forward_range R>
         requires (
-            std::constructible_from<T, Variant&&> and
-            std::convertible_to<std::ranges::range_value_t<R>, const opyn::StateViewWithMetadata&>
+            std::constructible_from<T, osc::Variant&&> and
+            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
         )
         std::vector<T> slurpValues(const OpenSim::Component& component, const R& states) const
         {
@@ -73,9 +73,9 @@ namespace osc
 
         size_t getHash() const { return m_Output->getHash(); }
 
-        bool equals(const OutputExtractor& other) const { return m_Output->equals(other); }
-        operator const OutputExtractor& () const { return *m_Output; }
-        const OutputExtractor& getInner() const { return *m_Output; }
+        bool equals(const osc::OutputExtractor& other) const { return m_Output->equals(other); }
+        operator const osc::OutputExtractor& () const { return *m_Output; }
+        const osc::OutputExtractor& getInner() const { return *m_Output; }
 
         friend bool operator==(const SharedOutputExtractor& lhs, const SharedOutputExtractor& rhs)
         {
@@ -85,10 +85,10 @@ namespace osc
         friend std::string to_string(const SharedOutputExtractor&);
         friend struct std::hash<SharedOutputExtractor>;
 
-        std::shared_ptr<const OutputExtractor> m_Output;
+        std::shared_ptr<const osc::OutputExtractor> m_Output;
     };
 
-    template<std::derived_from<OutputExtractor> ConcreteOutputExtractor, typename... Args>
+    template<std::derived_from<osc::OutputExtractor> ConcreteOutputExtractor, typename... Args>
     requires std::constructible_from<ConcreteOutputExtractor, Args&&...>
     SharedOutputExtractor make_output_extractor(Args&&... args)
     {
@@ -100,8 +100,8 @@ namespace osc
 }
 
 template<>
-struct std::hash<osc::SharedOutputExtractor> final {
-    size_t operator()(const osc::SharedOutputExtractor& o) const
+struct std::hash<opyn::SharedOutputExtractor> final {
+    size_t operator()(const opyn::SharedOutputExtractor& o) const
     {
         return o.m_Output->getHash();
     }

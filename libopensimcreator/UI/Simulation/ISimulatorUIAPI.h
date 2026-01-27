@@ -11,7 +11,7 @@
 #include <optional>
 #include <span>
 
-namespace osc { class SharedOutputExtractor; }
+namespace opyn { class SharedOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
 namespace osc { class ISimulation; }
 
@@ -51,12 +51,12 @@ namespace osc
 
         std::optional<SimulationReport> trySelectReportBasedOnScrubbing() { return implTrySelectReportBasedOnScrubbing(); }
 
-        void tryPromptToSaveOutputsAsCSV(std::span<const SharedOutputExtractor>, bool openInDefaultApp) const;
-        void tryPromptToSaveOutputsAsCSV(std::initializer_list<SharedOutputExtractor> il, bool openInDefaultApp) const
+        void tryPromptToSaveOutputsAsCSV(std::span<const opyn::SharedOutputExtractor>, bool openInDefaultApp) const;
+        void tryPromptToSaveOutputsAsCSV(std::initializer_list<opyn::SharedOutputExtractor> il, bool openInDefaultApp) const
         {
-            tryPromptToSaveOutputsAsCSV(std::span<const SharedOutputExtractor>{il}, openInDefaultApp);
+            tryPromptToSaveOutputsAsCSV(std::span<const opyn::SharedOutputExtractor>{il}, openInDefaultApp);
         }
-        void tryPromptToSaveAllOutputsAsCSV(std::span<const SharedOutputExtractor>, bool andOpenInDefaultApp = false) const;
+        void tryPromptToSaveAllOutputsAsCSV(std::span<const opyn::SharedOutputExtractor>, bool andOpenInDefaultApp = false) const;
 
         SimulationModelStatePair* tryGetCurrentSimulationState() { return implTryGetCurrentSimulationState(); }
 

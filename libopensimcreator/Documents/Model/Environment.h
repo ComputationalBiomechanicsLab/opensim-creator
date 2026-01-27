@@ -18,14 +18,14 @@ namespace osc
         ParamBlock& updSimulationParams() { return m_ParamBlock; }
 
         int getNumUserOutputExtractors() const { return static_cast<int>(m_OutputExtractors.size()); }
-        const SharedOutputExtractor& getUserOutputExtractor(int index) const;
-        void addUserOutputExtractor(const SharedOutputExtractor& extractor);
+        const opyn::SharedOutputExtractor& getUserOutputExtractor(int index) const;
+        void addUserOutputExtractor(const opyn::SharedOutputExtractor& extractor);
         void removeUserOutputExtractor(int index);
-        bool hasUserOutputExtractor(const SharedOutputExtractor& extractor) const;
-        bool removeUserOutputExtractor(const SharedOutputExtractor& extractor);
-        bool overwriteOrAddNewUserOutputExtractor(const SharedOutputExtractor& old, const SharedOutputExtractor& newer);
+        bool hasUserOutputExtractor(const opyn::SharedOutputExtractor& extractor) const;
+        bool removeUserOutputExtractor(const opyn::SharedOutputExtractor& extractor);
+        bool overwriteOrAddNewUserOutputExtractor(const opyn::SharedOutputExtractor& old, const opyn::SharedOutputExtractor& newer);
 
-        std::vector<SharedOutputExtractor> getAllUserOutputExtractors() const;
+        std::vector<opyn::SharedOutputExtractor> getAllUserOutputExtractors() const;
     private:
         // simulation params: dictates how the next simulation shall be ran
         ParamBlock m_ParamBlock;
@@ -33,6 +33,6 @@ namespace osc
         // user-initiated output extractors
         //
         // simulators should try to hook into these, if the component exists
-        std::vector<SharedOutputExtractor> m_OutputExtractors;
+        std::vector<opyn::SharedOutputExtractor> m_OutputExtractors;
     };
 }

@@ -23,7 +23,7 @@ TEST(SimulationHelpers, WriteOutputsAsCSVWritesFloatDataCorrectly)
     opyn::InitializeState(model);
 
     const auto extractors = std::to_array({
-        make_output_extractor<ConstantOutputExtractor>("dummy", 1337.0f),
+        opyn::make_output_extractor<ConstantOutputExtractor>("dummy", 1337.0f),
     });
 
     const auto reports = std::to_array({
@@ -51,7 +51,7 @@ TEST(SimulationHelpers, WriteOutputsAsCSVWritesVector2DataCorrectly)
     opyn::InitializeState(model);
 
     const auto extractors = std::to_array({
-        make_output_extractor<ConstantOutputExtractor>("dummy", Vector2{3.0f, 2.0f}),
+        opyn::make_output_extractor<ConstantOutputExtractor>("dummy", Vector2{3.0f, 2.0f}),
     });
 
     const auto reports = std::to_array({

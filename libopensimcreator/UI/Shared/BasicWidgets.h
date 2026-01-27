@@ -61,11 +61,11 @@ namespace osc
     );
     bool DrawRequestOutputMenuOrMenuItem(
         const OpenSim::AbstractOutput& o,
-        const std::function<void(SharedOutputExtractor)>& onUserSelection
+        const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection
     );
     bool DrawWatchOutputMenu(
         const OpenSim::Component&,
-        const std::function<void(SharedOutputExtractor)>& onUserSelection
+        const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection
     );
     void DrawSimulationParams(
         const ParamBlock&

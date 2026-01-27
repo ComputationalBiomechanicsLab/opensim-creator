@@ -47,7 +47,7 @@ namespace
     // draw a menu item for toggling watching the output
     void DrawToggleWatchOutputMenuItem(
         Environment& env,
-        const SharedOutputExtractor& output)
+        const opyn::SharedOutputExtractor& output)
     {
         if (env.hasUserOutputExtractor(output)) {
             if (ui::draw_menu_item(MSMICONS_TIMES " Stop Watching")) {
@@ -65,7 +65,7 @@ namespace
     // draw menu items for exporting the output to a CSV
     void DrawExportToCSVMenuItems(
         ISimulatorUIAPI& api,
-        const SharedOutputExtractor& output)
+        const opyn::SharedOutputExtractor& output)
     {
         if (ui::draw_menu_item(MSMICONS_SAVE "Save as CSV")) {
             api.tryPromptToSaveOutputsAsCSV({output}, false);
@@ -79,10 +79,10 @@ namespace
     // draw a menu that prompts the user to select some other output
     void DrawSelectOtherOutputMenuContent(
         ISimulation& simulation,
-        const SharedOutputExtractor& oneDimensionalOutputExtractor)
+        const opyn::SharedOutputExtractor& oneDimensionalOutputExtractor)
     {
-        static_assert(num_options<OutputExtractorDataType>() == 3);
-        OSC_ASSERT(oneDimensionalOutputExtractor.getOutputType() == OutputExtractorDataType::Float);
+        static_assert(num_options<opyn::OutputExtractorDataType>() == 3);
+        OSC_ASSERT(oneDimensionalOutputExtractor.getOutputType() == opyn::OutputExtractorDataType::Float);
 
         // HACK: pre-acquire the environment, because `*simulation.getModel()` acquires the model
         //       mutex for the entire duration of the `ForEachComponentInclusive`, and acquiring
@@ -110,9 +110,9 @@ namespace
                 if (ui::begin_menu(component.getName())) {
                     for (const OpenSim::AbstractOutput& output : extractableOutputs) {
                         ui::push_id(id++);
-                        DrawRequestOutputMenuOrMenuItem(output, [&oneDimensionalOutputExtractor, &environment](const SharedOutputExtractor& rhs)
+                        DrawRequestOutputMenuOrMenuItem(output, [&oneDimensionalOutputExtractor, &environment](const opyn::SharedOutputExtractor& rhs)
                         {
-                            SharedOutputExtractor concatenating = SharedOutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
+                            opyn::SharedOutputExtractor concatenating = opyn::SharedOutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
                             environment->overwriteOrAddNewUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
                         });
                         ui::pop_id();
@@ -127,7 +127,7 @@ namespace
     // draw menu item for plotting one output against another output
     void DrawPlotAgainstOtherOutputMenuItem(
         ISimulation& sim,
-        const SharedOutputExtractor& output)
+        const opyn::SharedOutputExtractor& output)
     {
         if (ui::begin_menu(MSMICONS_CHART_LINE "Plot Against Other Output")) {
             DrawSelectOtherOutputMenuContent(sim, output);
@@ -138,20 +138,20 @@ namespace
     void TryDrawOutputContextMenuForLastItem(
         ISimulatorUIAPI& api,
         ISimulation& sim,
-        const SharedOutputExtractor& output)
+        const opyn::SharedOutputExtractor& output)
     {
         if (not ui::begin_popup_context_menu("outputplotmenu")) {
             return;  // menu not open
         }
 
-        const OutputExtractorDataType dataType = output.getOutputType();
+        const opyn::OutputExtractorDataType dataType = output.getOutputType();
 
-        if (dataType == OutputExtractorDataType::Float) {
+        if (dataType == opyn::OutputExtractorDataType::Float) {
             DrawExportToCSVMenuItems(api, output);
             DrawPlotAgainstOtherOutputMenuItem(sim, output);
             DrawToggleWatchOutputMenuItem(*sim.tryUpdEnvironment(), output);
         }
-        else if (dataType == OutputExtractorDataType::Vector2) {
+        else if (dataType == opyn::OutputExtractorDataType::Vector2) {
             DrawExportToCSVMenuItems(api, output);
             DrawToggleWatchOutputMenuItem(*sim.tryUpdEnvironment(), output);
         }
@@ -167,7 +167,7 @@ namespace
 class osc::SimulationOutputPlot::Impl final {
 public:
 
-    Impl(ISimulatorUIAPI* api, SharedOutputExtractor outputExtractor, float height) :
+    Impl(ISimulatorUIAPI* api, opyn::SharedOutputExtractor outputExtractor, float height) :
         m_API{api},
         m_OutputExtractor{std::move(outputExtractor)},
         m_Height{height}
@@ -175,21 +175,21 @@ public:
 
     void onDraw()
     {
-        static_assert(num_options<OutputExtractorDataType>() == 3);
+        static_assert(num_options<opyn::OutputExtractorDataType>() == 3);
 
         const ptrdiff_t nReports = m_API->updSimulation().getNumReports();
-        OutputExtractorDataType outputType = m_OutputExtractor.getOutputType();
+        opyn::OutputExtractorDataType outputType = m_OutputExtractor.getOutputType();
 
         if (nReports <= 0) {
             ui::draw_text("no data (yet)");
         }
-        else if (outputType == OutputExtractorDataType::Float) {
+        else if (outputType == opyn::OutputExtractorDataType::Float) {
             drawFloatOutputUI();
         }
-        else if (outputType == OutputExtractorDataType::String) {
+        else if (outputType == opyn::OutputExtractorDataType::String) {
             drawStringOutputUI();
         }
-        else if (outputType == OutputExtractorDataType::Vector2) {
+        else if (outputType == opyn::OutputExtractorDataType::Vector2) {
             drawVector2OutputUI();
         }
         else {
@@ -200,7 +200,7 @@ public:
 private:
     void drawFloatOutputUI()
     {
-        OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputExtractorDataType::Float && "should've been checked before calling this function");
+        OSC_ASSERT(m_OutputExtractor.getOutputType() == opyn::OutputExtractorDataType::Float && "should've been checked before calling this function");
 
         ISimulation& sim = m_API->updSimulation();
 
@@ -330,7 +330,7 @@ private:
 
     void drawVector2OutputUI()
     {
-        OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputExtractorDataType::Vector2);
+        OSC_ASSERT(m_OutputExtractor.getOutputType() == opyn::OutputExtractorDataType::Vector2);
 
         ISimulation& sim = m_API->updSimulation();
 
@@ -397,14 +397,14 @@ private:
     }
 
     ISimulatorUIAPI* m_API;
-    SharedOutputExtractor m_OutputExtractor;
+    opyn::SharedOutputExtractor m_OutputExtractor;
     float m_Height;
 };
 
 
 osc::SimulationOutputPlot::SimulationOutputPlot(
     ISimulatorUIAPI* api,
-    SharedOutputExtractor outputExtractor,
+    opyn::SharedOutputExtractor outputExtractor,
     float height) :
 
     m_Impl{std::make_unique<Impl>(api, std::move(outputExtractor), height)}
