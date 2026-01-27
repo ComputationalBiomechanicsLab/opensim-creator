@@ -13,7 +13,7 @@ using namespace opyn;
 TEST(OpenSimDecorationOptions, RemembersColorScaling)
 {
     OpenSimDecorationOptions opts;
-    opts.setMuscleColorSourceScaling(osc::MuscleColorSourceScaling::ModelWide);
+    opts.setMuscleColorSourceScaling(MuscleColorSourceScaling::ModelWide);
     bool emitted = false;
     opts.forEachOptionAsAppSettingValue([&emitted](std::string_view k, const osc::Variant& v)
     {
@@ -33,7 +33,7 @@ TEST(OpenSimDecorationOptions, ReadsColorScalingFromDict)
     };
 
     OpenSimDecorationOptions opts;
-    ASSERT_NE(opts.getMuscleColorSourceScaling(), osc::MuscleColorSourceScaling::ModelWide);
+    ASSERT_NE(opts.getMuscleColorSourceScaling(), MuscleColorSourceScaling::ModelWide);
     opts.tryUpdFromValues("", lookup);
-    ASSERT_EQ(opts.getMuscleColorSourceScaling(), osc::MuscleColorSourceScaling::ModelWide);
+    ASSERT_EQ(opts.getMuscleColorSourceScaling(), MuscleColorSourceScaling::ModelWide);
 }

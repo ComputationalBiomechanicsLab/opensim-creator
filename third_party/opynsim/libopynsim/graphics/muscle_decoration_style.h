@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <span>
 
-namespace osc
+namespace opyn
 {
     enum class MuscleDecorationStyle {
         LinesOfAction,
@@ -17,8 +17,8 @@ namespace osc
     };
 
     struct MuscleDecorationStyleMetadata final {
-        CStringView id;
-        CStringView label;
+        osc::CStringView id;
+        osc::CStringView label;
         MuscleDecorationStyle value;
     };
     std::span<const MuscleDecorationStyleMetadata> GetAllMuscleDecorationStyleMetadata();

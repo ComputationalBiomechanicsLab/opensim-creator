@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <span>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
@@ -28,20 +28,20 @@ namespace
             MuscleDecorationStyle::Hidden,
         },
     });
-    static_assert(c_Metadata.size() == num_options<MuscleDecorationStyle>());
+    static_assert(c_Metadata.size() == osc::num_options<MuscleDecorationStyle>());
 }
 
-std::span<const MuscleDecorationStyleMetadata> osc::GetAllMuscleDecorationStyleMetadata()
+std::span<const MuscleDecorationStyleMetadata> opyn::GetAllMuscleDecorationStyleMetadata()
 {
     return c_Metadata;
 }
 
-ptrdiff_t osc::GetIndexOf(MuscleDecorationStyle s)
+ptrdiff_t opyn::GetIndexOf(MuscleDecorationStyle s)
 {
     return static_cast<ptrdiff_t>(s);
 }
 
-const MuscleDecorationStyleMetadata& osc::GetMuscleDecorationStyleMetadata(MuscleDecorationStyle s)
+const MuscleDecorationStyleMetadata& opyn::GetMuscleDecorationStyleMetadata(MuscleDecorationStyle s)
 {
     return GetAllMuscleDecorationStyleMetadata()[GetIndexOf(s)];
 }

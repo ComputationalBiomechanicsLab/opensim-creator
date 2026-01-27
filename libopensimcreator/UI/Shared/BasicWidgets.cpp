@@ -193,7 +193,7 @@ namespace
         std::stringstream ss;
         {
             // load raw mesh data into an osc mesh for processing
-            Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
+            Mesh oscMesh = opyn::ToOscMesh(model, state, openSimMesh);
 
             // bake transform into mesh data
             oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
@@ -237,7 +237,7 @@ namespace
         std::stringstream ss;
         {
             // load raw mesh data into an osc mesh for processing
-            Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
+            Mesh oscMesh = opyn::ToOscMesh(model, state, openSimMesh);
 
             // bake transform into mesh data
             oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
@@ -944,12 +944,10 @@ void osc::DrawCalculateMenu(
 
 bool osc::DrawMuscleRenderingOptionsRadioButtions(opyn::OpenSimDecorationOptions& opts)
 {
-    const MuscleDecorationStyle currentStyle = opts.getMuscleDecorationStyle();
+    const opyn::MuscleDecorationStyle currentStyle = opts.getMuscleDecorationStyle();
     bool edited = false;
-    for (const auto& metadata : GetAllMuscleDecorationStyleMetadata())
-    {
-        if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle))
-        {
+    for (const auto& metadata : opyn::GetAllMuscleDecorationStyleMetadata()) {
+        if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
             opts.setMuscleDecorationStyle(metadata.value);
             edited = true;
         }
@@ -959,12 +957,10 @@ bool osc::DrawMuscleRenderingOptionsRadioButtions(opyn::OpenSimDecorationOptions
 
 bool osc::DrawMuscleSizingOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
 {
-    const MuscleSizingStyle currentStyle = opts.getMuscleSizingStyle();
+    const opyn::MuscleSizingStyle currentStyle = opts.getMuscleSizingStyle();
     bool edited = false;
-    for (const auto& metadata : GetAllMuscleSizingStyleMetadata())
-    {
-        if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle))
-        {
+    for (const auto& metadata : opyn::GetAllMuscleSizingStyleMetadata()) {
+        if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
             opts.setMuscleSizingStyle(metadata.value);
             edited = true;
         }
@@ -974,12 +970,10 @@ bool osc::DrawMuscleSizingOptionsRadioButtons(opyn::OpenSimDecorationOptions& op
 
 bool osc::DrawMuscleColorSourceOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
 {
-    const MuscleColorSource currentStyle = opts.getMuscleColorSource();
+    const opyn::MuscleColorSource currentStyle = opts.getMuscleColorSource();
     bool edited = false;
-    for (const auto& metadata : GetAllPossibleMuscleColoringSourcesMetadata())
-    {
-        if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle))
-        {
+    for (const auto& metadata : opyn::GetAllPossibleMuscleColoringSourcesMetadata()) {
+        if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
             opts.setMuscleColorSource(metadata.value);
             edited = true;
         }
@@ -989,9 +983,9 @@ bool osc::DrawMuscleColorSourceOptionsRadioButtons(opyn::OpenSimDecorationOption
 
 bool osc::DrawMuscleColorScalingOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
 {
-    const MuscleColorSourceScaling currentStyle = opts.getMuscleColorSourceScaling();
+    const opyn::MuscleColorSourceScaling currentStyle = opts.getMuscleColorSourceScaling();
     bool edited = false;
-    for (const auto& metadata : GetAllPossibleMuscleColorSourceScalingMetadata()) {
+    for (const auto& metadata : opyn::GetAllPossibleMuscleColorSourceScalingMetadata()) {
         if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
             opts.setMuscleColorSourceScaling(metadata.value);
             edited = true;
@@ -1101,7 +1095,7 @@ bool osc::DrawCustomDecorationOptionCheckboxes(opyn::OpenSimDecorationOptions& o
 }
 
 bool osc::DrawAdvancedParamsEditor(
-    ModelRendererParams& params,
+    opyn::ModelRendererParams& params,
     std::span<const SceneDecoration> drawlist)
 {
     bool edited = false;
@@ -1137,7 +1131,8 @@ bool osc::DrawAdvancedParamsEditor(
     return edited;
 }
 
-bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
+bool osc::DrawVisualAidsContextMenuContent(
+    opyn::ModelRendererParams& params)
 {
     bool edited = false;
 
@@ -1156,7 +1151,7 @@ bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
 }
 
 bool osc::DrawViewerTopButtonRow(
-    ModelRendererParams& params,
+    opyn::ModelRendererParams& params,
     std::span<const SceneDecoration>,
     IconCache& iconCache,
     const std::function<bool()>& drawExtraElements)
@@ -1193,7 +1188,7 @@ bool osc::DrawViewerTopButtonRow(
 }
 
 bool osc::DrawCameraControlButtons(
-    ModelRendererParams& params,
+    opyn::ModelRendererParams& params,
     std::span<const SceneDecoration> drawlist,
     const Rect& viewerScreenRect,
     const std::optional<AABB>& maybeSceneAABB,
@@ -1265,7 +1260,7 @@ bool osc::DrawCameraControlButtons(
 }
 
 bool osc::DrawViewerImGuiOverlays(
-    ModelRendererParams& params,
+    opyn::ModelRendererParams& params,
     std::span<const SceneDecoration> drawlist,
     std::optional<AABB> maybeSceneAABB,
     const Rect& renderRect,

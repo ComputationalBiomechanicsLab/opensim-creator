@@ -22,6 +22,7 @@ namespace OpenSim { class Mesh; }
 namespace OpenSim { class Point; }
 namespace OpenSim { class Sphere; }
 namespace OpenSim { class Station; }
+namespace opyn { struct ModelRendererParams; }
 namespace opyn { class OpenSimDecorationOptions; }
 namespace opyn { class OverlayDecorationOptions; }
 namespace osc { class CustomRenderingOptions; }
@@ -33,7 +34,6 @@ namespace osc { class Rect; }
 namespace osc { class SimulationModelStatePair; }
 namespace osc { class UndoableModelStatePair; }
 namespace osc { class Widget; }
-namespace osc { struct ModelRendererParams; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct SceneDecoration; }
 namespace SimTK { class State; }
@@ -231,16 +231,16 @@ namespace osc
     bool DrawRenderingOptionsEditor(CustomRenderingOptions&);
     bool DrawOverlayOptionsEditor(opyn::OverlayDecorationOptions&);
     bool DrawCustomDecorationOptionCheckboxes(opyn::OpenSimDecorationOptions&);
-    bool DrawAdvancedParamsEditor(ModelRendererParams&, std::span<const SceneDecoration>);
-    bool DrawVisualAidsContextMenuContent(ModelRendererParams&);
+    bool DrawAdvancedParamsEditor(opyn::ModelRendererParams&, std::span<const SceneDecoration>);
+    bool DrawVisualAidsContextMenuContent(opyn::ModelRendererParams&);
     bool DrawViewerTopButtonRow(
-        ModelRendererParams&,
+        opyn::ModelRendererParams&,
         std::span<const SceneDecoration>,
         IconCache&,
         const std::function<bool()>& drawExtraElements = []{ return false; }
     );
     bool DrawCameraControlButtons(
-        ModelRendererParams&,
+        opyn::ModelRendererParams&,
         std::span<const SceneDecoration>,
         const Rect&,
         const std::optional<AABB>& maybeSceneAABB,
@@ -248,7 +248,7 @@ namespace osc
         Vector2 desiredTopCentroid
     );
     bool DrawViewerImGuiOverlays(
-        ModelRendererParams&,
+        opyn::ModelRendererParams&,
         std::span<const SceneDecoration>,
         std::optional<AABB>,
         const Rect&,

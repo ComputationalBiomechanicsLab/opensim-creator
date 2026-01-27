@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <span>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
@@ -23,20 +23,20 @@ namespace
             MuscleSizingStyle::PcsaDerived,
         },
     });
-    static_assert(c_Metadata.size() == num_options<MuscleSizingStyle>());
+    static_assert(c_Metadata.size() == osc::num_options<MuscleSizingStyle>());
 }
 
-std::span<const MuscleSizingStyleMetadata> osc::GetAllMuscleSizingStyleMetadata()
+std::span<const MuscleSizingStyleMetadata> opyn::GetAllMuscleSizingStyleMetadata()
 {
     return c_Metadata;
 }
 
-const MuscleSizingStyleMetadata& osc::GetMuscleSizingStyleMetadata(MuscleSizingStyle s)
+const MuscleSizingStyleMetadata& opyn::GetMuscleSizingStyleMetadata(MuscleSizingStyle s)
 {
     return GetAllMuscleSizingStyleMetadata()[GetIndexOf(s)];
 }
 
-ptrdiff_t osc::GetIndexOf(MuscleSizingStyle s)
+ptrdiff_t opyn::GetIndexOf(MuscleSizingStyle s)
 {
     return static_cast<ptrdiff_t>(s);
 }

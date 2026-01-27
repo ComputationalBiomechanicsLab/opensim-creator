@@ -6,11 +6,11 @@
 #include <type_traits>
 #include <utility>
 
-using namespace osc;
+using namespace opyn;
 
 TEST(MuscleColorSourceScaling, GetAllPossibleMuscleColorSourceScalingMetadataReturnsExpectedNumberOfEntries)
 {
-    ASSERT_EQ(GetAllPossibleMuscleColorSourceScalingMetadata().size(), num_options<MuscleColorSourceScaling>());
+    ASSERT_EQ(GetAllPossibleMuscleColorSourceScalingMetadata().size(), osc::num_options<MuscleColorSourceScaling>());
 }
 
 TEST(MuscleColorSourceScaling,  GetMuscleColorSourceScalingMetadataWorksForAllOptions)

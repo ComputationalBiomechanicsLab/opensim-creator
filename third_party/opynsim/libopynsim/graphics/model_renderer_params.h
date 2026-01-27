@@ -11,22 +11,22 @@
 
 namespace osc { class AppSettings; }
 
-namespace osc
+namespace opyn
 {
     struct ModelRendererParams final {
         ModelRendererParams();
 
-        opyn::OpenSimDecorationOptions decorationOptions;
-        opyn::OverlayDecorationOptions overlayOptions;
-        CustomRenderingOptions renderingOptions;
-        Color lightColor;
-        Color backgroundColor;
-        Vector3 floorLocation;
-        PolarPerspectiveCamera camera;
+        OpenSimDecorationOptions decorationOptions;
+        OverlayDecorationOptions overlayOptions;
+        osc::CustomRenderingOptions renderingOptions;
+        osc::Color lightColor;
+        osc::Color backgroundColor;
+        osc::Vector3 floorLocation;
+        osc::PolarPerspectiveCamera camera;
     };
 
     void UpdModelRendererParamsFrom(
-        const AppSettings&,
+        const osc::AppSettings&,
         std::string_view keyPrefix,
         ModelRendererParams& params
     );
@@ -35,6 +35,6 @@ namespace osc
         const ModelRendererParams&,
         const ModelRendererParams&,
         std::string_view settingsKeyPrefix,
-        AppSettings&
+        osc::AppSettings&
     );
 }

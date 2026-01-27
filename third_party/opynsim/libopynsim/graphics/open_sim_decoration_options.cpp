@@ -14,49 +14,49 @@ using namespace opyn;
 namespace rgs = std::ranges;
 
 opyn::OpenSimDecorationOptions::OpenSimDecorationOptions() :
-    m_MuscleDecorationStyle{osc::MuscleDecorationStyle::Default},
-    m_MuscleColorSource{osc::MuscleColorSource::Default},
-    m_MuscleSizingStyle{osc::MuscleSizingStyle::Default},
-    m_MuscleColourSourceScaling{osc::MuscleColorSourceScaling::Default},
+    m_MuscleDecorationStyle{MuscleDecorationStyle::Default},
+    m_MuscleColorSource{MuscleColorSource::Default},
+    m_MuscleSizingStyle{MuscleSizingStyle::Default},
+    m_MuscleColourSourceScaling{MuscleColorSourceScaling::Default},
     m_Flags{OpenSimDecorationOptionFlag::Default}
 {}
 
-osc::MuscleDecorationStyle opyn::OpenSimDecorationOptions::getMuscleDecorationStyle() const
+MuscleDecorationStyle opyn::OpenSimDecorationOptions::getMuscleDecorationStyle() const
 {
     return m_MuscleDecorationStyle;
 }
 
-void opyn::OpenSimDecorationOptions::setMuscleDecorationStyle(osc::MuscleDecorationStyle s)
+void opyn::OpenSimDecorationOptions::setMuscleDecorationStyle(MuscleDecorationStyle s)
 {
     m_MuscleDecorationStyle = s;
 }
 
-osc::MuscleColorSource opyn::OpenSimDecorationOptions::getMuscleColorSource() const
+MuscleColorSource opyn::OpenSimDecorationOptions::getMuscleColorSource() const
 {
     return m_MuscleColorSource;
 }
 
-void opyn::OpenSimDecorationOptions::setMuscleColorSource(osc::MuscleColorSource s)
+void opyn::OpenSimDecorationOptions::setMuscleColorSource(MuscleColorSource s)
 {
     m_MuscleColorSource = s;
 }
 
-osc::MuscleSizingStyle opyn::OpenSimDecorationOptions::getMuscleSizingStyle() const
+MuscleSizingStyle opyn::OpenSimDecorationOptions::getMuscleSizingStyle() const
 {
     return m_MuscleSizingStyle;
 }
 
-void opyn::OpenSimDecorationOptions::setMuscleSizingStyle(osc::MuscleSizingStyle s)
+void opyn::OpenSimDecorationOptions::setMuscleSizingStyle(MuscleSizingStyle s)
 {
     m_MuscleSizingStyle = s;
 }
 
-osc::MuscleColorSourceScaling opyn::OpenSimDecorationOptions::getMuscleColorSourceScaling() const
+MuscleColorSourceScaling opyn::OpenSimDecorationOptions::getMuscleColorSourceScaling() const
 {
     return m_MuscleColourSourceScaling;
 }
 
-void opyn::OpenSimDecorationOptions::setMuscleColorSourceScaling(osc::MuscleColorSourceScaling s)
+void opyn::OpenSimDecorationOptions::setMuscleColorSourceScaling(MuscleColorSourceScaling s)
 {
     m_MuscleColourSourceScaling = s;
 }
@@ -252,7 +252,7 @@ void opyn::OpenSimDecorationOptions::tryUpdFromValues(
 
     if (auto* appVal = lookup("muscle_decoration_style"); appVal and appVal->type() == osc::VariantType::String)
     {
-        const auto metadata = osc::GetAllMuscleDecorationStyleMetadata();
+        const auto metadata = GetAllMuscleDecorationStyleMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleDecorationStyle = it->value;
@@ -261,7 +261,7 @@ void opyn::OpenSimDecorationOptions::tryUpdFromValues(
 
     if (auto* appVal = lookup("muscle_coloring_style"); appVal and appVal->type() == osc::VariantType::String)
     {
-        const auto metadata = osc::GetAllPossibleMuscleColoringSourcesMetadata();
+        const auto metadata = GetAllPossibleMuscleColoringSourcesMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleColorSource = it->value;
@@ -270,7 +270,7 @@ void opyn::OpenSimDecorationOptions::tryUpdFromValues(
 
     if (auto* appVal = lookup("muscle_sizing_style"); appVal and appVal->type() == osc::VariantType::String)
     {
-        const auto metadata = osc::GetAllMuscleSizingStyleMetadata();
+        const auto metadata = GetAllMuscleSizingStyleMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleSizingStyle = it->value;
@@ -279,7 +279,7 @@ void opyn::OpenSimDecorationOptions::tryUpdFromValues(
 
     if (auto* appVal = lookup("muscle_color_scaling"); appVal and appVal->type() == osc::VariantType::String)
     {
-        const auto metadata = osc::GetAllPossibleMuscleColorSourceScalingMetadata();
+        const auto metadata = GetAllPossibleMuscleColorSourceScalingMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleColourSourceScaling = it->value;

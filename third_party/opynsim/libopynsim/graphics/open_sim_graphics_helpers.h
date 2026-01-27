@@ -11,18 +11,18 @@
 #include <span>
 
 namespace OpenSim { class Component; }
+namespace opyn { struct ModelRendererParams; }
 namespace opyn { class OpenSimDecorationOptions; }
 namespace osc { class BVH; }
 namespace osc { class ModelStatePair; }
 namespace osc { class SceneCache; }
-namespace osc { struct ModelRendererParams; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct SceneDecoration; }
 
 namespace opyn
 {
     osc::SceneRendererParams CalcSceneRendererParams(
-        const osc::ModelRendererParams&,
+        const ModelRendererParams&,
         osc::Vector2 viewportDims,
         float viewportDevicePixelRatio,
         osc::AntiAliasingLevel,

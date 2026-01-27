@@ -9,12 +9,12 @@
 #include <optional>
 #include <span>
 
+namespace opyn { struct ModelRendererParams; }
 namespace osc { class ModelStatePair; }
 namespace osc { class Rect; }
 namespace osc { class RenderTexture; }
 namespace osc { class SceneCache; }
 namespace osc { struct Ray; }
-namespace osc { struct ModelRendererParams; }
 namespace osc { struct SceneDecoration; }
 
 namespace osc
@@ -30,13 +30,13 @@ namespace osc
 
         void autoFocusCamera(
             const ModelStatePair&,
-            ModelRendererParams&,
+            opyn::ModelRendererParams&,
             float aspectRatio
         );
 
         RenderTexture& onDraw(
             const ModelStatePair&,
-            const ModelRendererParams&,
+            const opyn::ModelRendererParams&,
             Vector2 dims,
             float devicePixelRatio,
             AntiAliasingLevel antiAliasingLevel
@@ -60,7 +60,7 @@ namespace osc
         std::optional<AABB> visibleBounds() const;
 
         std::optional<SceneCollision> getClosestCollision(
-            const ModelRendererParams&,
+            const opyn::ModelRendererParams&,
             Vector2 mouseScreenPosition,
             const Rect& viewportScreenRect
         ) const;

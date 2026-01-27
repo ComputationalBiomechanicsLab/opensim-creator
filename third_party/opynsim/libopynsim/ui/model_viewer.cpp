@@ -29,7 +29,7 @@ namespace
         const ModelState& model_state)
     {
         OpenSimDecorationOptions options;
-        return osc::GenerateModelDecorations(
+        return GenerateModelDecorations(
             scene_cache,
             model.opensim_model(),
             model_state.simbody_state(),

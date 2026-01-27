@@ -54,7 +54,7 @@ namespace
         std::shared_ptr<SceneCache> meshCache = App::singleton<SceneCache>(App::resource_loader());
         std::shared_ptr<ModelStatePair> model;
         ChooseComponentsEditorLayerParameters popupParams;
-        ModelRendererParams renderParams;
+        opyn::ModelRendererParams renderParams;
         StringName hoveredComponent;
         std::unordered_set<StringName> alreadyChosenComponents;
         bool shouldClosePopup = false;

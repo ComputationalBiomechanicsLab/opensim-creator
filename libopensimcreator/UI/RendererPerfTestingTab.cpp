@@ -140,7 +140,7 @@ private:
 
     SceneCache m_SceneCache{App::resource_loader()};
     SceneRenderer m_Renderer{m_SceneCache};
-    ModelRendererParams m_ModelRendererParams;
+    opyn::ModelRendererParams m_ModelRendererParams;
     std::vector<SceneDecoration> m_Decorations;
 
     UndoableModelStatePair m_Model = []()

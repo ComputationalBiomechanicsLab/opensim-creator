@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <span>
 
-namespace osc
+namespace opyn
 {
     enum class MuscleSizingStyle {
         Fixed,
@@ -16,8 +16,8 @@ namespace osc
     };
 
     struct MuscleSizingStyleMetadata final {
-        CStringView id;
-        CStringView label;
+        osc::CStringView id;
+        osc::CStringView label;
         MuscleSizingStyle value;
     };
     std::span<const MuscleSizingStyleMetadata> GetAllMuscleSizingStyleMetadata();

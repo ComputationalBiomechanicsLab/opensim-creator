@@ -37,7 +37,7 @@ TEST(BasicModelStatePair, CanGenerateDecorationsFromCopy)
 
     BasicModelStatePair p{modelPath};
     SceneCache cache;
-    ASSERT_NO_THROW({ GenerateModelDecorations(cache, p); });
+    ASSERT_NO_THROW({ opyn::GenerateModelDecorations(cache, p); });
     const BasicModelStatePair copy{p};  // NOLINT(performance-unnecessary-copy-initialization)
-    ASSERT_NO_THROW({ GenerateModelDecorations(cache, copy); });
+    ASSERT_NO_THROW({ opyn::GenerateModelDecorations(cache, copy); });
 }

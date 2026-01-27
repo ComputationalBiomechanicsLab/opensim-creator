@@ -47,7 +47,7 @@ namespace
 }
 
 osc::SceneRendererParams opyn::CalcSceneRendererParams(
-    const osc::ModelRendererParams& renderParams,
+    const ModelRendererParams& renderParams,
     osc::Vector2 viewportDims,
     float viewportDevicePixelRatio,
     osc::AntiAliasingLevel antiAliasingLevel,

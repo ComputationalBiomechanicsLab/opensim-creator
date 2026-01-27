@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <span>
 
-namespace osc
+namespace opyn
 {
     enum class MuscleColorSourceScaling {
         None,
@@ -16,8 +16,8 @@ namespace osc
     };
 
     struct MuscleColorSourceScalingMetadata final {
-        CStringView id;
-        CStringView label;
+        osc::CStringView id;
+        osc::CStringView label;
         MuscleColorSourceScaling value;
     };
 

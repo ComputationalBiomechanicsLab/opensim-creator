@@ -15,17 +15,17 @@
 #include <string_view>
 #include <unordered_map>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
-    std::unordered_map<std::string, Variant> ToValues(
+    std::unordered_map<std::string, osc::Variant> ToValues(
         std::string_view prefix,
         const ModelRendererParams& params)
     {
-        std::unordered_map<std::string, Variant> rv;
+        std::unordered_map<std::string, osc::Variant> rv;
         std::string subPrefix;
-        const auto callback = [&subPrefix, &rv](std::string_view subkey, Variant value)
+        const auto callback = [&subPrefix, &rv](std::string_view subkey, osc::Variant value)
         {
             rv.insert_or_assign(subPrefix + std::string{subkey}, std::move(value));
         };
@@ -36,8 +36,8 @@ namespace
         params.overlayOptions.forEachOptionAsAppSettingValue(callback);
         subPrefix = std::string{prefix} + std::string{"graphics/"};
         params.renderingOptions.forEachOptionAsAppSettingValue(callback);
-        rv.insert_or_assign(std::string{prefix} + "light_color", Variant{params.lightColor});
-        rv.insert_or_assign(std::string{prefix} + "background_color", Variant{params.backgroundColor});
+        rv.insert_or_assign(std::string{prefix} + "light_color", osc::Variant{params.lightColor});
+        rv.insert_or_assign(std::string{prefix} + "background_color", osc::Variant{params.backgroundColor});
         // TODO: floorLocation
 
         return rv;
@@ -45,31 +45,31 @@ namespace
 
     void UpdFromValues(
         std::string_view prefix,
-        const std::unordered_map<std::string, Variant>& values,
+        const std::unordered_map<std::string, osc::Variant>& values,
         ModelRendererParams& params)
     {
         params.decorationOptions.tryUpdFromValues(std::string{prefix} + "decorations/", values);
         params.overlayOptions.tryUpdFromValues(std::string{prefix} + "overlays/", values);
         params.renderingOptions.tryUpdFromValues(std::string{prefix} + "graphics/", values);
         if (const auto* v = lookup_or_nullptr(values, std::string{prefix} + "light_color")) {
-            params.lightColor = to<Color>(*v);
+            params.lightColor = to<osc::Color>(*v);
         }
         if (const auto* v = lookup_or_nullptr(values,std::string{prefix} + "background_color")) {
-            params.backgroundColor = to<Color>(*v);
+            params.backgroundColor = to<osc::Color>(*v);
         }
         // TODO: floorLocation
     }
 }
 
-osc::ModelRendererParams::ModelRendererParams() :
-    lightColor{SceneRendererParams::default_light_color()},
-    backgroundColor{SceneRendererParams::default_background_color()},
-    floorLocation{SceneRendererParams::default_floor_position()},
-    camera{create_camera_with_radius(5.0f)}
+opyn::ModelRendererParams::ModelRendererParams() :
+    lightColor{osc::SceneRendererParams::default_light_color()},
+    backgroundColor{osc::SceneRendererParams::default_background_color()},
+    floorLocation{osc::SceneRendererParams::default_floor_position()},
+    camera{osc::create_camera_with_radius(5.0f)}
 {}
 
-void osc::UpdModelRendererParamsFrom(
-    const AppSettings& settings,
+void opyn::UpdModelRendererParamsFrom(
+    const osc::AppSettings& settings,
     std::string_view keyPrefix,
     ModelRendererParams& params)
 {
@@ -82,11 +82,11 @@ void osc::UpdModelRendererParamsFrom(
     UpdFromValues(keyPrefix, values, params);
 }
 
-void osc::SaveModelRendererParamsDifference(
+void opyn::SaveModelRendererParamsDifference(
     const ModelRendererParams& a,
     const ModelRendererParams& b,
     std::string_view settingsKeyPrefix,
-    AppSettings& settings)
+    osc::AppSettings& settings)
 {
     const auto aVals = ToValues(settingsKeyPrefix, a);
     const auto bVals = ToValues(settingsKeyPrefix, b);

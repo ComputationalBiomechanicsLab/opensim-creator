@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <span>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
@@ -38,20 +38,20 @@ namespace
             MuscleColorSource::FiberLength,
         },
     });
-    static_assert(c_Metadata.size() == num_options<MuscleColorSource>());
+    static_assert(c_Metadata.size() == osc::num_options<MuscleColorSource>());
 }
 
-std::span<const MuscleColorSourceMetadata> osc::GetAllPossibleMuscleColoringSourcesMetadata()
+std::span<const MuscleColorSourceMetadata> opyn::GetAllPossibleMuscleColoringSourcesMetadata()
 {
     return c_Metadata;
 }
 
-const MuscleColorSourceMetadata& osc::GetMuscleColoringStyleMetadata(MuscleColorSource s)
+const MuscleColorSourceMetadata& opyn::GetMuscleColoringStyleMetadata(MuscleColorSource s)
 {
     return GetAllPossibleMuscleColoringSourcesMetadata()[GetIndexOf(s)];
 }
 
-ptrdiff_t osc::GetIndexOf(MuscleColorSource s)
+ptrdiff_t opyn::GetIndexOf(MuscleColorSource s)
 {
     return static_cast<ptrdiff_t>(s);
 }

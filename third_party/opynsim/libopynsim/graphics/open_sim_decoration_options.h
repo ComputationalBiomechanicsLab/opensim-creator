@@ -23,17 +23,17 @@ namespace opyn
     public:
         OpenSimDecorationOptions();
 
-        osc::MuscleDecorationStyle getMuscleDecorationStyle() const;
-        void setMuscleDecorationStyle(osc::MuscleDecorationStyle);
+        MuscleDecorationStyle getMuscleDecorationStyle() const;
+        void setMuscleDecorationStyle(MuscleDecorationStyle);
 
-        osc::MuscleColorSource getMuscleColorSource() const;
-        void setMuscleColorSource(osc::MuscleColorSource);
+        MuscleColorSource getMuscleColorSource() const;
+        void setMuscleColorSource(MuscleColorSource);
 
-        osc::MuscleSizingStyle getMuscleSizingStyle() const;
-        void setMuscleSizingStyle(osc::MuscleSizingStyle);
+        MuscleSizingStyle getMuscleSizingStyle() const;
+        void setMuscleSizingStyle(MuscleSizingStyle);
 
-        osc::MuscleColorSourceScaling getMuscleColorSourceScaling() const;
-        void setMuscleColorSourceScaling(osc::MuscleColorSourceScaling);
+        MuscleColorSourceScaling getMuscleColorSourceScaling() const;
+        void setMuscleColorSourceScaling(MuscleColorSourceScaling);
 
         // the ones below here are toggle-able options with user-facing strings etc
         size_t getNumOptions() const;
@@ -86,10 +86,10 @@ namespace opyn
         friend bool operator==(const OpenSimDecorationOptions&, const OpenSimDecorationOptions&) = default;
 
     private:
-        osc::MuscleDecorationStyle m_MuscleDecorationStyle;
-        osc::MuscleColorSource m_MuscleColorSource;
-        osc::MuscleSizingStyle m_MuscleSizingStyle;
-        osc::MuscleColorSourceScaling m_MuscleColourSourceScaling;
+        MuscleDecorationStyle m_MuscleDecorationStyle;
+        MuscleColorSource m_MuscleColorSource;
+        MuscleSizingStyle m_MuscleSizingStyle;
+        MuscleColorSourceScaling m_MuscleColourSourceScaling;
         OpenSimDecorationOptionFlags m_Flags;
     };
 }

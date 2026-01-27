@@ -48,11 +48,11 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
     SimTK::State& state = model.initializeState();
 
     OpenSimDecorationOptions opts;
-    opts.setMuscleColorSource(osc::MuscleColorSource::AppearanceProperty);
+    opts.setMuscleColorSource(MuscleColorSource::AppearanceProperty);
 
     osc::SceneCache meshCache;
     bool passedTest = false;
-    osc::GenerateModelDecorations(
+    GenerateModelDecorations(
         meshCache,
         model,
         state,
@@ -208,7 +208,7 @@ TEST(OpenSimDecorationGenerator, ToOscMeshWorksAsIntended)
     mesh.setFrame(model.getGround());
     InitializeModel(model);
     InitializeState(model);
-    ASSERT_NO_THROW({ osc::ToOscMesh(model, model.getWorkingState(), mesh); });
+    ASSERT_NO_THROW({ opyn::ToOscMesh(model, model.getWorkingState(), mesh); });
 }
 
 // generate decorations should only generate decorations for the provided model's
@@ -412,7 +412,6 @@ TEST(GenerateModelDecorations, GeneratesContactGeometrySphereWhenVisibilityFlagI
     const SimTK::State& state = model.initializeState();
 
     osc::SceneCache cache;
-    OpenSimDecorationOptions opts;
     const auto decorations = GenerateModelDecorations(cache, model, state);
     const auto isContactSphereDecoration = [p = sphere->getAbsolutePathString()](const osc::SceneDecoration& dec) { return dec.id == p; };
 
@@ -434,8 +433,7 @@ TEST(GenerateModelDecorations, DoesNotGenerateContactGeometrySphereWhenVisibilit
     const SimTK::State& state = model.initializeState();
 
     osc::SceneCache cache;
-    OpenSimDecorationOptions opts;
-    const auto decorations = osc::GenerateModelDecorations(cache, model, state);
+    const auto decorations = GenerateModelDecorations(cache, model, state);
     const auto isContactSphereDecoration = [p = sphere->getAbsolutePathString()](const osc::SceneDecoration& dec) { return dec.id == p; };
 
     ASSERT_EQ(rgs::count_if(decorations, isContactSphereDecoration), 0);
@@ -475,7 +473,6 @@ TEST(GenerateModelDecorations, FiltersOutCylinderWithNANRadius)
     const SimTK::State& state = model.initializeState();
 
     osc::SceneCache cache;
-    OpenSimDecorationOptions opts;
     const auto decorations = GenerateModelDecorations(cache, model, state);
 
     ASSERT_EQ(decorations.size(), 0);
@@ -521,7 +518,6 @@ TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNRotations)
     const SimTK::State& state = model.initializeState();
 
     osc::SceneCache cache;
-    OpenSimDecorationOptions opts;
     const auto decorations = GenerateModelDecorations(cache, model, state);
 
     ASSERT_EQ(decorations.size(), 0);
@@ -567,8 +563,7 @@ TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNTranslation)
     const SimTK::State& state = model.initializeState();
 
     osc::SceneCache cache;
-    OpenSimDecorationOptions opts;
-    const auto decorations = osc::GenerateModelDecorations(cache, model, state);
+    const auto decorations = GenerateModelDecorations(cache, model, state);
 
     ASSERT_EQ(decorations.size(), 0);
 }
@@ -583,14 +578,13 @@ TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNTranslation)
 TEST(GenerateModelDecorations, RadiusOfContactSphereIsCorrectlyUpdated)
 {
     OpenSim::Model model;
-    auto& sphere = opyn::AddComponent<OpenSim::ContactSphere>(model);
+    auto& sphere = AddComponent<OpenSim::ContactSphere>(model);
     sphere.setRadius(0.1);
     sphere.setFrame(model.getGround());
     model.buildSystem();
     const SimTK::State& state = model.initializeState();
 
     osc::SceneCache cache;
-    OpenSimDecorationOptions opts;
 
     // Before changing radius: it should be as-set
     {

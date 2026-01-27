@@ -59,9 +59,39 @@
 #include <vector>
 
 using namespace opyn;
-using namespace osc;
-using namespace osc::literals;
 namespace rgs = std::ranges;
+
+using osc::AABB;
+using osc::ArrowProperties;
+using osc::ClosedInterval;
+using osc::Color;
+using osc::Mesh;
+using osc::Ray;
+using osc::SceneCache;
+using osc::SceneDecoration;
+using osc::SceneDecorationFlag;
+using osc::SceneDecorationFlags;
+using osc::Transform;
+using osc::Vector3;
+using osc::abs;
+using osc::cylinder_to_line_segment_transform;
+using osc::dimensions_of;
+using osc::equal_within_scaled_epsilon;
+using osc::literals::operator ""_deg;
+using osc::log_warn;
+using osc::max;
+using osc::min;
+using osc::num_options;
+using osc::pi_v;
+using osc::saturate;
+using osc::sqrt;
+using osc::to;
+using osc::unit_interval;
+
+using osc::ComponentAbsPathDecorationTagger;
+using osc::CoordinateDirection;
+using osc::CustomDecorationGenerator;
+using osc::ModelStatePair;
 
 namespace
 {
@@ -1298,7 +1328,7 @@ namespace
     }
 }
 
-void osc::GenerateModelDecorations(
+void opyn::GenerateModelDecorations(
     SceneCache& meshCache,
     const OpenSim::Model& model,
     const SimTK::State& state,
@@ -1318,7 +1348,7 @@ void osc::GenerateModelDecorations(
     );
 }
 
-std::vector<SceneDecoration> osc::GenerateModelDecorations(
+std::vector<SceneDecoration> opyn::GenerateModelDecorations(
     SceneCache& cache,
     const ModelStatePair& modelState,
     const OpenSimDecorationOptions& opts,
@@ -1333,7 +1363,7 @@ std::vector<SceneDecoration> osc::GenerateModelDecorations(
     );
 }
 
-std::vector<SceneDecoration> osc::GenerateModelDecorations(
+std::vector<SceneDecoration> opyn::GenerateModelDecorations(
     SceneCache& cache,
     const OpenSim::Model& model,
     const SimTK::State& state,
@@ -1360,7 +1390,7 @@ std::vector<SceneDecoration> osc::GenerateModelDecorations(
     return rv;
 }
 
-void osc::GenerateSubcomponentDecorations(
+void opyn::GenerateSubcomponentDecorations(
     SceneCache& meshCache,
     const OpenSim::Model& model,
     const SimTK::State& state,
@@ -1451,7 +1481,7 @@ void osc::GenerateSubcomponentDecorations(
     }
 }
 
-Mesh osc::ToOscMesh(
+Mesh opyn::ToOscMesh(
     SceneCache& meshCache,
     const OpenSim::Model& model,
     const SimTK::State& state,
@@ -1486,7 +1516,7 @@ Mesh osc::ToOscMesh(
     return std::move(decs.front().mesh);
 }
 
-Mesh osc::ToOscMesh(
+Mesh opyn::ToOscMesh(
     const OpenSim::Model& model,
     const SimTK::State& state,
     const OpenSim::Mesh& mesh)
@@ -1496,7 +1526,7 @@ Mesh osc::ToOscMesh(
     return ToOscMesh(cache, model, state, mesh, opts, 1.0f);
 }
 
-Mesh osc::ToOscMeshBakeScaleFactors(
+Mesh opyn::ToOscMeshBakeScaleFactors(
     const OpenSim::Model& model,
     const SimTK::State& state,
     const OpenSim::Mesh& mesh)
@@ -1507,7 +1537,7 @@ Mesh osc::ToOscMeshBakeScaleFactors(
     return rv;
 }
 
-float osc::GetRecommendedScaleFactor(
+float opyn::GetRecommendedScaleFactor(
     SceneCache& meshCache,
     const OpenSim::Model& model,
     const SimTK::State& state,

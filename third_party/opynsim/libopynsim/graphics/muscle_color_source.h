@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <span>
 
-namespace osc
+namespace opyn
 {
     enum class MuscleColorSource {
         AppearanceProperty,
@@ -19,8 +19,8 @@ namespace osc
     };
 
     struct MuscleColorSourceMetadata final {
-        CStringView id;
-        CStringView label;
+        osc::CStringView id;
+        osc::CStringView label;
         MuscleColorSource value;
     };
     std::span<const MuscleColorSourceMetadata> GetAllPossibleMuscleColoringSourcesMetadata();
