@@ -89,7 +89,7 @@ namespace
     public:
         ButtonAndGizmoControlsLayer(
             std::string_view panelName_,
-            std::shared_ptr<ModelStatePair> model_) :
+            std::shared_ptr<opyn::ModelStatePair> model_) :
 
             panel_name_{panelName_},
             m_Gizmo{std::move(model_)}
@@ -381,7 +381,7 @@ public:
         m_Parameters.updRenderParams().camera = camera;
     }
 
-    void setModelState(const std::shared_ptr<ModelStatePair>& newModelState)
+    void setModelState(const std::shared_ptr<opyn::ModelStatePair>& newModelState)
     {
         m_Parameters.setModelSharedPtr(newModelState);
     }
@@ -590,7 +590,7 @@ void osc::ModelViewerPanel::focusOn(const Vector3& position) { private_data().fo
 std::optional<Rect> osc::ModelViewerPanel::getScreenRect() const { return private_data().getScreenRect(); }
 const PolarPerspectiveCamera& osc::ModelViewerPanel::getCamera() const { return private_data().getCamera(); }
 void osc::ModelViewerPanel::setCamera(const PolarPerspectiveCamera& camera) { private_data().setCamera(camera); }
-void osc::ModelViewerPanel::setModelState(const std::shared_ptr<ModelStatePair>& newModelState) { private_data().setModelState(newModelState); }
+void osc::ModelViewerPanel::setModelState(const std::shared_ptr<opyn::ModelStatePair>& newModelState) { private_data().setModelState(newModelState); }
 void osc::ModelViewerPanel::impl_draw_content() { private_data().draw_content(); }
 void osc::ModelViewerPanel::impl_before_imgui_begin() { ui::push_style_var(ui::StyleVar::PanelPadding, {0.0f, 0.0f}); }
 void osc::ModelViewerPanel::impl_after_imgui_begin() { ui::pop_style_var(); }

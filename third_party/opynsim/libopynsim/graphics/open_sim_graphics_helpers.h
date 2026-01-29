@@ -12,9 +12,9 @@
 
 namespace OpenSim { class Component; }
 namespace opyn { struct ModelRendererParams; }
+namespace opyn { class ModelStatePair; }
 namespace opyn { class OpenSimDecorationOptions; }
 namespace osc { class BVH; }
-namespace osc { class ModelStatePair; }
 namespace osc { class SceneCache; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct SceneDecoration; }
@@ -31,7 +31,7 @@ namespace opyn
 
     void GenerateDecorations(
         osc::SceneCache&,
-        const osc::ModelStatePair&,
+        const ModelStatePair&,
         const OpenSimDecorationOptions&,
         const std::function<void(const OpenSim::Component&, osc::SceneDecoration&&)>& out
     );

@@ -10,7 +10,7 @@
 #include <span>
 
 namespace opyn { struct ModelRendererParams; }
-namespace osc { class ModelStatePair; }
+namespace opyn { class ModelStatePair; }
 namespace osc { class Rect; }
 namespace osc { class RenderTexture; }
 namespace osc { class SceneCache; }
@@ -29,13 +29,13 @@ namespace opyn
         ~CachedModelRenderer() noexcept;
 
         void autoFocusCamera(
-            const osc::ModelStatePair&,
+            const ModelStatePair&,
             ModelRendererParams&,
             float aspectRatio
         );
 
         osc::RenderTexture& onDraw(
-            const osc::ModelStatePair&,
+            const ModelStatePair&,
             const ModelRendererParams&,
             osc::Vector2 dims,
             float devicePixelRatio,

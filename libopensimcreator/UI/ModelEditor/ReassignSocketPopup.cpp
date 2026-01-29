@@ -124,7 +124,7 @@ public:
         ReassignSocketPopup& owner,
         Widget* parent,
         std::string_view popupName,
-        std::shared_ptr<ModelStatePair> model,
+        std::shared_ptr<opyn::ModelStatePair> model,
         std::string_view componentAbsPath,
         std::string_view socketName) :
 
@@ -271,7 +271,7 @@ private:
         ui::draw_help_marker("Component Re-Expression", "This will recalculate the socket owner's appropriate spatial property such that it remains in the same location in ground after changing this socket.");
     }
 
-    std::shared_ptr<ModelStatePair> m_Model;
+    std::shared_ptr<opyn::ModelStatePair> m_Model;
     PopupParams m_Params;
     PopupParams m_EditedParams = m_Params;
     std::vector<ConnecteeOption> m_Options = GenerateSelectionOptions(m_Model->getModel(), m_EditedParams);
@@ -284,7 +284,7 @@ private:
 osc::ReassignSocketPopup::ReassignSocketPopup(
     Widget* parent,
     std::string_view popupName,
-    std::shared_ptr<ModelStatePair> model,
+    std::shared_ptr<opyn::ModelStatePair> model,
     std::string_view componentAbsPath,
     std::string_view socketName) :
 

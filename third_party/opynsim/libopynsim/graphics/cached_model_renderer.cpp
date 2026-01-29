@@ -56,7 +56,7 @@ namespace
         }
 
         bool update(
-            const ModelStatePair& modelState,
+            const opyn::ModelStatePair& modelState,
             const ModelRendererParams& params)
         {
             OSC_PERF("CachedModelRenderer/generateDecorationsCached");

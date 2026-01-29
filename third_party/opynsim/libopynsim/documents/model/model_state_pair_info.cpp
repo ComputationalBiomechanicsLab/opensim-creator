@@ -5,9 +5,9 @@
 
 using namespace opyn;
 
-osc::ModelStatePairInfo::ModelStatePairInfo() = default;
+opyn::ModelStatePairInfo::ModelStatePairInfo() = default;
 
-osc::ModelStatePairInfo::ModelStatePairInfo(const ModelStatePair& msp) :
+opyn::ModelStatePairInfo::ModelStatePairInfo(const ModelStatePair& msp) :
     m_ModelVersion{msp.getModelVersion()},
     m_StateVersion{msp.getStateVersion()},
     m_Selection{GetAbsolutePathOrEmpty(msp.getSelected())},

@@ -5,7 +5,7 @@
 #include <memory>
 
 namespace OpenSim { class ComponentPath; }
-namespace osc { class ModelStatePair; }
+namespace opyn { class ModelStatePair; }
 namespace osc { class Widget; }
 
 namespace osc
@@ -14,7 +14,7 @@ namespace osc
     public:
         explicit ModelAddMenuItems(
             Widget* parent,
-            std::shared_ptr<ModelStatePair> model
+            std::shared_ptr<opyn::ModelStatePair> model
         );
 
         void setTargetParentComponent(const OpenSim::ComponentPath&);

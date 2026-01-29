@@ -7,7 +7,7 @@
 #include <string_view>
 
 namespace OpenSim { class Component; }
-namespace osc { class ModelStatePair; }
+namespace opyn { class ModelStatePair; }
 namespace osc { class Widget; }
 
 namespace osc
@@ -17,7 +17,7 @@ namespace osc
         explicit AddComponentPopup(
             Widget* parent,
             std::string_view popupName,
-            std::shared_ptr<ModelStatePair>,
+            std::shared_ptr<opyn::ModelStatePair>,
             std::unique_ptr<OpenSim::Component> prototype,
             OpenSim::ComponentPath targetComponent = {}
         );

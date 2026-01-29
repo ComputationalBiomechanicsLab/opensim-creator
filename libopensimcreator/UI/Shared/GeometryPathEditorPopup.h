@@ -7,7 +7,7 @@
 #include <string_view>
 
 namespace OpenSim { class GeometryPath; }
-namespace osc { class ComponentAccessor; }
+namespace opyn { class ComponentAccessor; }
 
 namespace osc
 {
@@ -17,7 +17,7 @@ namespace osc
         explicit GeometryPathEditorPopup(
             Widget* parent_,
             std::string_view popupName_,
-            std::shared_ptr<const ComponentAccessor> targetComponent_,
+            std::shared_ptr<const opyn::ComponentAccessor> targetComponent_,
             std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
             std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_
         );

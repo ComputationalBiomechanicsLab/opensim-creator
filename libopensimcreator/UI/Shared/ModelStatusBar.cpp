@@ -22,7 +22,7 @@ public:
     explicit Impl(
         Widget& owner_,
         Widget* parent_,
-        std::shared_ptr<ModelStatePair> model_) :
+        std::shared_ptr<opyn::ModelStatePair> model_) :
 
         WidgetPrivate{owner_, parent_},
         m_Model{std::move(model_)}
@@ -94,13 +94,13 @@ private:
         }
     }
 
-    std::shared_ptr<ModelStatePair> m_Model;
+    std::shared_ptr<opyn::ModelStatePair> m_Model;
 };
 
 
 osc::ModelStatusBar::ModelStatusBar(
     Widget* parent_,
-    std::shared_ptr<ModelStatePair> model_) :
+    std::shared_ptr<opyn::ModelStatePair> model_) :
 
     Widget{std::make_unique<Impl>(*this, parent_, std::move(model_))}
 {}

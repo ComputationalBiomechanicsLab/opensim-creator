@@ -9,7 +9,7 @@
 #include <optional>
 
 namespace OpenSim { class Object; }
-namespace osc { class VersionedComponentAccessor; }
+namespace opyn { class VersionedComponentAccessor; }
 namespace osc { class Widget; }
 
 namespace osc
@@ -18,7 +18,7 @@ namespace osc
     public:
         explicit ObjectPropertiesEditor(
             Widget* parent,
-            std::shared_ptr<const VersionedComponentAccessor> targetComponent,
+            std::shared_ptr<const opyn::VersionedComponentAccessor> targetComponent,
             std::function<const OpenSim::Object*()> objectGetter
         );
 

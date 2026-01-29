@@ -40,7 +40,7 @@ namespace
         return rv;
     }
 
-    class UiModelStatePair final : public ModelStatePair {
+    class UiModelStatePair final : public opyn::ModelStatePair {
     public:
 
         UiModelStatePair() :

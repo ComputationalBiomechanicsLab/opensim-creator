@@ -16,11 +16,11 @@ using namespace osc;
 
 class osc::ModelStateCommit::Impl final {
 public:
-    Impl(const ModelStatePair& msp, std::string_view message) :
+    Impl(const opyn::ModelStatePair& msp, std::string_view message) :
         Impl{msp, message, UID::empty()}
     {}
 
-    Impl(const ModelStatePair& msp, std::string_view message, UID parent) :
+    Impl(const opyn::ModelStatePair& msp, std::string_view message, UID parent) :
         m_MaybeParentID{parent},
         m_Model{std::make_unique<OpenSim::Model>(msp.getModel())},
         m_ModelVersion{msp.getModelVersion()},
@@ -77,10 +77,10 @@ private:
 };
 
 
-osc::ModelStateCommit::ModelStateCommit(const ModelStatePair& p, std::string_view message) :
+osc::ModelStateCommit::ModelStateCommit(const opyn::ModelStatePair& p, std::string_view message) :
     m_Impl{std::make_shared<Impl>(p, message)}
 {}
-osc::ModelStateCommit::ModelStateCommit(const ModelStatePair& p, std::string_view message, UID parent) :
+osc::ModelStateCommit::ModelStateCommit(const opyn::ModelStatePair& p, std::string_view message, UID parent) :
     m_Impl{std::make_shared<Impl>(p, message, parent)}
 {}
 

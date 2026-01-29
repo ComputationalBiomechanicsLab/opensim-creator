@@ -43,7 +43,7 @@ namespace
     struct ChooseComponentsEditorLayerSharedState final {
 
         explicit ChooseComponentsEditorLayerSharedState(
-            std::shared_ptr<ModelStatePair> model_,
+            std::shared_ptr<opyn::ModelStatePair> model_,
             ChooseComponentsEditorLayerParameters parameters_) :
 
             model{std::move(model_)},
@@ -52,7 +52,7 @@ namespace
         }
 
         std::shared_ptr<SceneCache> meshCache = App::singleton<SceneCache>(App::resource_loader());
-        std::shared_ptr<ModelStatePair> model;
+        std::shared_ptr<opyn::ModelStatePair> model;
         ChooseComponentsEditorLayerParameters popupParams;
         opyn::ModelRendererParams renderParams;
         StringName hoveredComponent;
@@ -131,7 +131,7 @@ namespace
 class osc::ChooseComponentsEditorLayer::Impl final {
 public:
     Impl(
-        std::shared_ptr<ModelStatePair> model_,
+        std::shared_ptr<opyn::ModelStatePair> model_,
         ChooseComponentsEditorLayerParameters parameters_) :
 
         m_State{std::move(model_), std::move(parameters_)},
@@ -310,7 +310,7 @@ public:
 };
 
 osc::ChooseComponentsEditorLayer::ChooseComponentsEditorLayer(
-    std::shared_ptr<ModelStatePair> model_,
+    std::shared_ptr<opyn::ModelStatePair> model_,
     ChooseComponentsEditorLayerParameters parameters_) :
 
     m_Impl{std::make_unique<Impl>(std::move(model_), std::move(parameters_))}

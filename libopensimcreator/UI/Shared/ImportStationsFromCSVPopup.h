@@ -25,7 +25,7 @@ namespace osc
             Widget* parent,
             std::string_view,
             std::function<void(ImportedData)> onImport,
-            std::shared_ptr<const ModelStatePair> maybeAssociatedModel = {}
+            std::shared_ptr<const opyn::ModelStatePair> maybeAssociatedModel = {}
         );
 
     private:

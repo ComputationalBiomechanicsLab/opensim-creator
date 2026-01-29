@@ -31,7 +31,7 @@ public:
         FunctionCurveViewerPanel& owner,
         Widget* parent,
         std::string_view popupName,
-        std::shared_ptr<const VersionedComponentAccessor> targetComponent,
+        std::shared_ptr<const opyn::VersionedComponentAccessor> targetComponent,
         std::function<const OpenSim::Function*()> functionGetter) :
 
         PanelPrivate{owner, parent, popupName, ui::PanelFlag::AlwaysAutoResize},
@@ -41,13 +41,13 @@ public:
 private:
     class FunctionParameters final {
     public:
-        explicit FunctionParameters(const VersionedComponentAccessor& component) :
+        explicit FunctionParameters(const opyn::VersionedComponentAccessor& component) :
             componentVersion{component.getComponentVersion()}
         {}
 
         friend bool operator==(const FunctionParameters& lhs, const FunctionParameters& rhs) = default;
 
-        void setVersionFromComponent(const VersionedComponentAccessor& component)
+        void setVersionFromComponent(const opyn::VersionedComponentAccessor& component)
         {
             componentVersion = component.getComponentVersion();
         }
@@ -207,7 +207,7 @@ private:
         }, "csv");
     }
 
-    std::shared_ptr<const VersionedComponentAccessor> m_Component;
+    std::shared_ptr<const opyn::VersionedComponentAccessor> m_Component;
     std::function<const OpenSim::Function*()> m_FunctionGetter;
     FunctionParameters m_LatestParameters{*m_Component};
     std::optional<FunctionParameters> m_PlottedParameters;
@@ -218,7 +218,7 @@ private:
 osc::FunctionCurveViewerPanel::FunctionCurveViewerPanel(
     Widget* parent,
     std::string_view panelName,
-    std::shared_ptr<const VersionedComponentAccessor> targetComponent,
+    std::shared_ptr<const opyn::VersionedComponentAccessor> targetComponent,
     std::function<const OpenSim::Function*()> functionGetter) :
 
     Panel{std::make_unique<Impl>(*this, parent, panelName, std::move(targetComponent), std::move(functionGetter))}

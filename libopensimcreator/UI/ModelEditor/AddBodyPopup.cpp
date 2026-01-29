@@ -35,7 +35,7 @@ public:
         AddBodyPopup& owner,
         Widget* parent,
         std::string_view popupName,
-        std::shared_ptr<ModelStatePair> modelState) :
+        std::shared_ptr<opyn::ModelStatePair> modelState) :
 
         PopupPrivate{owner, parent, popupName},
         m_Model{std::move(modelState)}
@@ -233,7 +233,7 @@ private:
     }
 
     // the model that the body will be added to
-    std::shared_ptr<ModelStatePair> m_Model;
+    std::shared_ptr<opyn::ModelStatePair> m_Model;
 
     // a user-enacted search string that should be used to filter through available
     // frames that can be joined to (#21).
@@ -247,7 +247,7 @@ private:
 osc::AddBodyPopup::AddBodyPopup(
     Widget* parent,
     std::string_view popupName,
-    std::shared_ptr<ModelStatePair> modelState) :
+    std::shared_ptr<opyn::ModelStatePair> modelState) :
 
     Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(modelState))}
 {}

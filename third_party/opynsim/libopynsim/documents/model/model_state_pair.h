@@ -12,7 +12,7 @@ namespace OpenSim { class Component; }
 namespace OpenSim { class Model; }
 namespace SimTK { class State; }
 
-namespace osc
+namespace opyn
 {
     // virtual accessor to an `OpenSim::Model` + `SimTK::State` pair, with
     // additional opt-in overrides to aid rendering/UX etc.
@@ -42,9 +42,9 @@ namespace osc
         // commit current scratch state to storage
         void commit(std::string_view commitMessage) { implCommit(commitMessage); }
 
-        UID getModelVersion() const { return implGetModelVersion(); }
-        void setModelVersion(UID id) { implSetModelVersion(id); }
-        UID getStateVersion() const { return implGetStateVersion(); }
+        osc::UID getModelVersion() const { return implGetModelVersion(); }
+        void setModelVersion(osc::UID id) { implSetModelVersion(id); }
+        osc::UID getStateVersion() const { return implGetStateVersion(); }
 
         const OpenSim::Component* getSelected() const
         {
@@ -94,8 +94,8 @@ namespace osc
         const OpenSim::Component& implGetComponent() const final;
         bool implCanUpdComponent() const { return implCanUpdModel(); }
         OpenSim::Component& implUpdComponent() final;
-        UID implGetComponentVersion() const final { return implGetModelVersion(); }
-        void implSetComponentVersion(UID newVersion) final { implSetModelVersion(newVersion); }
+        osc::UID implGetComponentVersion() const final { return implGetModelVersion(); }
+        void implSetComponentVersion(osc::UID newVersion) final { implSetModelVersion(newVersion); }
 
         // Implementors should return a const reference to an initialized (finalized properties, etc.) model.
         virtual const OpenSim::Model& implGetModel() const = 0;
@@ -123,22 +123,22 @@ namespace osc
         virtual void implCommit(std::string_view) {}
 
         // Implementors may return a `UID` that uniquely identifies the current state of the model.
-        virtual UID implGetModelVersion() const
+        virtual osc::UID implGetModelVersion() const
         {
             // assume the version always changes, unless the concrete implementation
             // provides a way of knowing when it doesn't
-            return UID{};
+            return osc::UID{};
         }
 
         // Implementors may use this to manually set the version of a model (sometimes useful for caching)
-        virtual void implSetModelVersion(UID) {}
+        virtual void implSetModelVersion(osc::UID) {}
 
         // Implementors may return a  `UID` that uniquely identifies the current state of the state.
-        virtual UID implGetStateVersion() const
+        virtual osc::UID implGetStateVersion() const
         {
             // assume the version always changes, unless the concrete implementation
             // provides a way of knowing when it doesn't
-            return UID{};
+            return osc::UID{};
         }
 
         virtual const OpenSim::Component* implGetSelected() const { return nullptr; }

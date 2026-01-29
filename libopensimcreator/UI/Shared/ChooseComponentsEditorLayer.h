@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace osc { class ModelStatePair; }
+namespace opyn { class ModelStatePair; }
 namespace osc { class ModelViewerPanelParameters; }
 namespace osc { class ModelViewerPanelState; }
 
@@ -16,7 +16,7 @@ namespace osc
     class ChooseComponentsEditorLayer final : public ModelViewerPanelLayer {
     public:
         ChooseComponentsEditorLayer(
-            std::shared_ptr<ModelStatePair>,
+            std::shared_ptr<opyn::ModelStatePair>,
             ChooseComponentsEditorLayerParameters
         );
         ChooseComponentsEditorLayer(const ChooseComponentsEditorLayer&) = delete;

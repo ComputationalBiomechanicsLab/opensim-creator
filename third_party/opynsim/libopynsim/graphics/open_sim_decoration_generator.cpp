@@ -90,7 +90,6 @@ using osc::unit_interval;
 
 using osc::CoordinateDirection;
 using osc::CustomDecorationGenerator;
-using osc::ModelStatePair;
 
 namespace
 {

@@ -4,7 +4,7 @@
 
 namespace OpenSim { class Component; }
 
-namespace osc
+namespace opyn
 {
     class ComponentAccessor {
     protected:

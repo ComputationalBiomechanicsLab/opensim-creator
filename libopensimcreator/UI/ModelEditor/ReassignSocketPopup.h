@@ -5,7 +5,7 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class ModelStatePair; }
+namespace opyn { class ModelStatePair; }
 
 namespace osc
 {
@@ -14,7 +14,7 @@ namespace osc
         explicit ReassignSocketPopup(
             Widget* parent,
             std::string_view popupName,
-            std::shared_ptr<ModelStatePair>,
+            std::shared_ptr<opyn::ModelStatePair>,
             std::string_view componentAbsPath,
             std::string_view socketName
         );

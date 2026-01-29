@@ -33,7 +33,7 @@ public:
         Widget* parent,
         std::string_view popupName_,
         std::function<void(ImportedData)> onImport_,
-        std::shared_ptr<const ModelStatePair> maybeAssociatedModel_) :
+        std::shared_ptr<const opyn::ModelStatePair> maybeAssociatedModel_) :
 
         PopupPrivate{owner, parent, popupName_},
         m_OnImportCallback{std::move(onImport_)},
@@ -282,7 +282,7 @@ private:
     std::optional<std::filesystem::path> m_MaybeImportPath;
     std::vector<lm::NamedLandmark> m_ImportedLandmarks;
     std::vector<std::string> m_ImportWarnings;
-    std::shared_ptr<const ModelStatePair> m_MaybeAssociatedModel;
+    std::shared_ptr<const opyn::ModelStatePair> m_MaybeAssociatedModel;
     std::string m_TargetComponentAbsPath = "/ground";
 };
 
@@ -290,7 +290,7 @@ osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(
     Widget* parent,
     std::string_view popupName_,
     std::function<void(ImportedData)> onImport,
-    std::shared_ptr<const ModelStatePair> maybeAssociatedModel) :
+    std::shared_ptr<const opyn::ModelStatePair> maybeAssociatedModel) :
     Popup{std::make_unique<Impl>(*this, parent, popupName_, std::move(onImport), std::move(maybeAssociatedModel))}
 {}
 void osc::ImportStationsFromCSVPopup::impl_draw_content() { private_data().draw_content(); }

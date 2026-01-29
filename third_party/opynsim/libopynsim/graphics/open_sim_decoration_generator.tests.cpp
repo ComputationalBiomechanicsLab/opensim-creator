@@ -377,7 +377,7 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpecte
         }
     );
 
-    class ReferenceModelStatePair : public osc::ModelStatePair {
+    class ReferenceModelStatePair : public opyn::ModelStatePair {
     public:
         ReferenceModelStatePair(OpenSim::Model& model, SimTK::State& state) : m_Model{&model}, m_State{&state} {}
     private:

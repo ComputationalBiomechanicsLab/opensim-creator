@@ -89,7 +89,7 @@ public:
         NavigatorPanel& owner,
         Widget* parent,
         std::string_view panelName,
-        std::shared_ptr<ModelStatePair> model,
+        std::shared_ptr<opyn::ModelStatePair> model,
         std::function<void(const OpenSim::ComponentPath&)> onRightClick) :
 
         PanelPrivate{owner, parent, panelName},
@@ -325,7 +325,7 @@ private:
         }
     }
 
-    std::shared_ptr<ModelStatePair> m_Model;
+    std::shared_ptr<opyn::ModelStatePair> m_Model;
     std::function<void(const OpenSim::ComponentPath&)> m_OnRightClick;
     std::string m_CurrentSearch;
     OpenSim::ComponentPath m_PreviousSelectionPath;
@@ -335,7 +335,7 @@ private:
 osc::NavigatorPanel::NavigatorPanel(
     Widget* parent,
     std::string_view panelName,
-    std::shared_ptr<ModelStatePair> model,
+    std::shared_ptr<opyn::ModelStatePair> model,
     std::function<void(const OpenSim::ComponentPath&)> onRightClick) :
 
     Panel{std::make_unique<Impl>(*this, parent, panelName, std::move(model), std::move(onRightClick))}

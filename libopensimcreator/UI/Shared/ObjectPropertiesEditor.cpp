@@ -335,7 +335,7 @@ namespace
     // construction-time arguments for the property editor
     struct PropertyEditorArgs final {
         Widget* parent = nullptr;
-        std::shared_ptr<const VersionedComponentAccessor> component;
+        std::shared_ptr<const opyn::VersionedComponentAccessor> component;
         std::function<const OpenSim::Object*()> objectAccessor;
         std::function<const OpenSim::AbstractProperty*()> propertyAccessor;
     };
@@ -395,14 +395,14 @@ namespace
             return m_Args.component->getComponent();
         }
 
-        std::shared_ptr<const VersionedComponentAccessor> tryGetComponentSharedPtr() const
+        std::shared_ptr<const opyn::VersionedComponentAccessor> tryGetComponentSharedPtr() const
         {
             return m_Args.component;
         }
 
         const SimTK::State* tryGetState() const
         {
-            if (auto* msp = dynamic_cast<const ModelStatePair*>(m_Args.component.get())) {
+            if (auto* msp = dynamic_cast<const opyn::ModelStatePair*>(m_Args.component.get())) {
                 return &msp->getState();
             }
             else {
@@ -1421,7 +1421,7 @@ namespace
             }
         }
 
-        std::unique_ptr<Popup> createGeometryPathEditorPopup(const std::shared_ptr<const ComponentAccessor>& componentPtr)
+        std::unique_ptr<Popup> createGeometryPathEditorPopup(const std::shared_ptr<const opyn::ComponentAccessor>& componentPtr)
         {
             const auto accessor = getDowncastedPropertyAccessor();
             return std::make_unique<GeometryPathEditorPopup>(
@@ -1658,7 +1658,7 @@ public:
     explicit Impl(
         Widget& owner,
         Widget* parent,
-        std::shared_ptr<const VersionedComponentAccessor> targetComponent,
+        std::shared_ptr<const opyn::VersionedComponentAccessor> targetComponent,
         std::function<const OpenSim::Object*()> objectGetter) :
 
         WidgetPrivate{owner, parent},
@@ -1793,7 +1793,7 @@ private:
         return it->second.get();
     }
 
-    std::shared_ptr<const VersionedComponentAccessor> m_TargetComponent;
+    std::shared_ptr<const opyn::VersionedComponentAccessor> m_TargetComponent;
     std::function<const OpenSim::Object*()> m_ObjectGetter;
     std::unordered_set<std::string> m_Blacklist;
     const OpenSim::Object* m_PreviousObject = nullptr;
@@ -1803,7 +1803,7 @@ private:
 
 osc::ObjectPropertiesEditor::ObjectPropertiesEditor(
     Widget* parent,
-    std::shared_ptr<const VersionedComponentAccessor> targetComponent,
+    std::shared_ptr<const opyn::VersionedComponentAccessor> targetComponent,
     std::function<const OpenSim::Object*()> objectGetter) :
 
     Widget{std::make_unique<Impl>(*this, parent, std::move(targetComponent), std::move(objectGetter))}

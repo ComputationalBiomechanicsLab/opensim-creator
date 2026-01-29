@@ -46,7 +46,7 @@ namespace
 {
     // draw UI element that lets user change a model joint's type
     void DrawSelectionJointTypeSwitcher(
-        ModelStatePair& model,
+        opyn::ModelStatePair& model,
         const OpenSim::ComponentPath& jointPath)
     {
         const auto* joint = opyn::FindComponent<OpenSim::Joint>(model.getModel(), jointPath);
@@ -87,7 +87,7 @@ namespace
     // draw contextual actions (buttons, sliders) for a selected physical frame
     void DrawPhysicalFrameContextualActions(
         Widget&,
-        const std::shared_ptr<ModelStatePair>& modelState,
+        const std::shared_ptr<opyn::ModelStatePair>& modelState,
         const OpenSim::ComponentPath& pfPath)
     {
         if (const auto* pf = opyn::FindComponent<OpenSim::PhysicalFrame>(modelState->getModel(), pfPath)) {
@@ -102,7 +102,7 @@ namespace
 
     // draw contextual actions (buttons, sliders) for a selected joint
     void DrawJointContextualActions(
-        ModelStatePair& modelState,
+        opyn::ModelStatePair& modelState,
         const OpenSim::ComponentPath& jointPath)
     {
         DrawSelectionJointTypeSwitcher(modelState, jointPath);
@@ -114,7 +114,7 @@ namespace
     }
 
     void DrawStationContextualActions(
-        const ModelStatePair& modelState,
+        const opyn::ModelStatePair& modelState,
         const OpenSim::Station& station)
     {
         DrawCalculateMenu(
@@ -126,7 +126,7 @@ namespace
     }
 
     void DrawMarkerContextualActions(
-        ModelStatePair& modelState,
+        opyn::ModelStatePair& modelState,
         const OpenSim::Marker& marker)
     {
         DrawCalculateMenu(
@@ -158,7 +158,7 @@ namespace
     }
 
     void DrawPointContextualActions(
-        const ModelStatePair& modelState,
+        const opyn::ModelStatePair& modelState,
         const OpenSim::Point& point)
     {
         DrawCalculateMenu(
@@ -170,7 +170,7 @@ namespace
     }
 
     void DrawEllipsoidContextualActions(
-        const ModelStatePair& modelState,
+        const opyn::ModelStatePair& modelState,
         const OpenSim::Ellipsoid& ellipsoid)
     {
         DrawCalculateMenu(
@@ -182,7 +182,7 @@ namespace
     }
 
     void DrawMeshContextualActions(
-        ModelStatePair& modelState,
+        opyn::ModelStatePair& modelState,
         const OpenSim::Mesh& mesh)
     {
         if (ui::begin_menu("Fit Analytic Geometry", modelState.canUpdModel())) {
@@ -210,7 +210,7 @@ namespace
     }
 
     void DrawGeometryContextualActions(
-        const ModelStatePair& modelState,
+        const opyn::ModelStatePair& modelState,
         const OpenSim::Geometry& geometry)
     {
         DrawCalculateMenu(
@@ -237,7 +237,7 @@ public:
         ComponentContextMenu& owner,
         Widget* parent_,
         std::string_view popupName_,
-        std::shared_ptr<ModelStatePair> model_,
+        std::shared_ptr<opyn::ModelStatePair> model_,
         OpenSim::ComponentPath path_,
         ComponentContextMenuFlags flags_) :
 
@@ -624,7 +624,7 @@ private:
         }
     }
 
-    std::shared_ptr<ModelStatePair> m_Model;
+    std::shared_ptr<opyn::ModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
     ModelAddMenuItems m_ModelAddMenuItems{&owner(), m_Model};
     ComponentContextMenuFlags m_Flags;
@@ -640,7 +640,7 @@ private:
 osc::ComponentContextMenu::ComponentContextMenu(
     Widget* parent_,
     std::string_view popupName_,
-    std::shared_ptr<ModelStatePair> model_,
+    std::shared_ptr<opyn::ModelStatePair> model_,
     const OpenSim::ComponentPath& path_,
     ComponentContextMenuFlags flags_) :
 

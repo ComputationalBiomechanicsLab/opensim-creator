@@ -35,7 +35,7 @@ public:
         CoordinateEditorPanel& owner,
         Widget* parent,
         std::string_view panelName_,
-        std::shared_ptr<ModelStatePair> model_) :
+        std::shared_ptr<opyn::ModelStatePair> model_) :
 
         PanelPrivate{owner, parent, panelName_},
         m_Model{std::move(model_)}
@@ -254,13 +254,13 @@ private:
         }
     }
 
-    std::shared_ptr<ModelStatePair> m_Model;
+    std::shared_ptr<opyn::ModelStatePair> m_Model;
 };
 
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
     Widget* parent,
     std::string_view panelName,
-    std::shared_ptr<ModelStatePair> model) :
+    std::shared_ptr<opyn::ModelStatePair> model) :
 
     Panel{std::make_unique<Impl>(*this, parent, panelName, std::move(model))}
 {}

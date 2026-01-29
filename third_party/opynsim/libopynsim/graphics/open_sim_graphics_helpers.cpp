@@ -76,7 +76,7 @@ osc::SceneRendererParams opyn::CalcSceneRendererParams(
 
 void opyn::GenerateDecorations(
     osc::SceneCache& meshCache,
-    const osc::ModelStatePair& msp,
+    const opyn::ModelStatePair& msp,
     const OpenSimDecorationOptions& options,
     const std::function<void(const OpenSim::Component&, osc::SceneDecoration&&)>& out)
 {

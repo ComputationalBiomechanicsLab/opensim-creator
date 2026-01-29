@@ -72,7 +72,7 @@ public:
         AddComponentPopup& owner,
         Widget* parent,
         std::string_view popupName,
-        std::shared_ptr<ModelStatePair> model,
+        std::shared_ptr<opyn::ModelStatePair> model,
         std::unique_ptr<OpenSim::Component> prototype,
         OpenSim::ComponentPath targetComponent) :
 
@@ -486,7 +486,7 @@ private:
     }
 
     // the model that the component should be added to
-    std::shared_ptr<ModelStatePair> m_Model;
+    std::shared_ptr<opyn::ModelStatePair> m_Model;
 
     // a prototypical version of the component being added
     std::shared_ptr<OpenSim::Component> m_Proto;  // (may be shared with editor popups etc)
@@ -523,7 +523,7 @@ private:
 osc::AddComponentPopup::AddComponentPopup(
     Widget* parent,
     std::string_view popupName,
-    std::shared_ptr<ModelStatePair> model,
+    std::shared_ptr<opyn::ModelStatePair> model,
     std::unique_ptr<OpenSim::Component> prototype,
     OpenSim::ComponentPath targetComponent) :
 

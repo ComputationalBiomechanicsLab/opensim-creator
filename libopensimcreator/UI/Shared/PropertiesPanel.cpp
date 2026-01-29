@@ -25,7 +25,7 @@ using namespace osc;
 
 namespace
 {
-    void DrawActionsMenu(Widget& parent, const std::shared_ptr<ModelStatePair>& model)
+    void DrawActionsMenu(Widget& parent, const std::shared_ptr<opyn::ModelStatePair>& model)
     {
         const OpenSim::Component* const selection = model->getSelected();
         if (not selection) {
@@ -49,7 +49,7 @@ namespace
 
     class ObjectNameEditor final {
     public:
-        explicit ObjectNameEditor(std::shared_ptr<ModelStatePair> model_) :
+        explicit ObjectNameEditor(std::shared_ptr<opyn::ModelStatePair> model_) :
             m_Model{std::move(model_)}
         {}
 
@@ -98,7 +98,7 @@ namespace
             }
         }
     private:
-        std::shared_ptr<ModelStatePair> m_Model;
+        std::shared_ptr<opyn::ModelStatePair> m_Model;
         UID m_LastModelVersion;
         const OpenSim::Component* m_LastSelected = nullptr;
         std::string m_EditedName;
@@ -111,7 +111,7 @@ public:
         PropertiesPanel& owner,
         Widget* parent,
         std::string_view panelName,
-        std::shared_ptr<ModelStatePair> model) :
+        std::shared_ptr<opyn::ModelStatePair> model) :
 
         PanelPrivate{owner, parent, panelName},
         m_Model{std::move(model)},
@@ -149,7 +149,7 @@ public:
     }
 
 private:
-    std::shared_ptr<ModelStatePair> m_Model;
+    std::shared_ptr<opyn::ModelStatePair> m_Model;
     ObjectNameEditor m_NameEditor{m_Model};
     ObjectPropertiesEditor m_SelectionPropertiesEditor;
 };
@@ -157,7 +157,7 @@ private:
 osc::PropertiesPanel::PropertiesPanel(
     Widget* parent,
     std::string_view panelName,
-    std::shared_ptr<ModelStatePair> model) :
+    std::shared_ptr<opyn::ModelStatePair> model) :
     Panel{std::make_unique<Impl>(*this, parent, panelName, std::move(model))}
 {}
 void osc::PropertiesPanel::impl_draw_content() { private_data().draw_content(); }

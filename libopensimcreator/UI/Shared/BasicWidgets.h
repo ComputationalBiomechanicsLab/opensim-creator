@@ -24,12 +24,12 @@ namespace OpenSim { class Sphere; }
 namespace OpenSim { class Station; }
 namespace SimTK { class State; }
 namespace opyn { class CustomRenderingOptions; }
+namespace opyn { class ModelStatePair; }
 namespace opyn { class OpenSimDecorationOptions; }
 namespace opyn { class OutputExtractor; }
 namespace opyn { class OverlayDecorationOptions; }
 namespace opyn { struct ModelRendererParams; }
 namespace osc { class IconCache; }
-namespace osc { class ModelStatePair; }
 namespace osc { class ParamBlock; }
 namespace osc { class Rect; }
 namespace osc { class SimulationModelStatePair; }
@@ -56,7 +56,7 @@ namespace osc
     );
     void DrawContextMenuSeparator();
     void DrawSelectOwnerMenu(
-        ModelStatePair&,
+        opyn::ModelStatePair&,
         const OpenSim::Component&
     );
     bool DrawRequestOutputMenuOrMenuItem(
@@ -263,19 +263,19 @@ namespace osc
         const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile
     );
     void DrawOpenModelButtonWithRecentFilesDropdown(Widget&);
-    void DrawSaveModelButton(const std::shared_ptr<ModelStatePair>&);
+    void DrawSaveModelButton(const std::shared_ptr<opyn::ModelStatePair>&);
     void DrawReloadModelButton(UndoableModelStatePair&);
-    void DrawUndoButton(ModelStatePair&);
-    void DrawRedoButton(ModelStatePair&);
-    void DrawUndoAndRedoButtons(ModelStatePair&);
-    void DrawToggleFramesButton(ModelStatePair&, IconCache&);
-    void DrawToggleMarkersButton(ModelStatePair&, IconCache&);
-    void DrawToggleWrapGeometryButton(ModelStatePair&, IconCache&);
-    void DrawToggleContactGeometryButton(ModelStatePair&, IconCache&);
-    void DrawToggleForcesButton(ModelStatePair&, IconCache&);
-    void DrawAllDecorationToggleButtons(ModelStatePair&, IconCache&);
-    void DrawSceneScaleFactorEditorControls(ModelStatePair&);
+    void DrawUndoButton(opyn::ModelStatePair&);
+    void DrawRedoButton(opyn::ModelStatePair&);
+    void DrawUndoAndRedoButtons(opyn::ModelStatePair&);
+    void DrawToggleFramesButton(opyn::ModelStatePair&, IconCache&);
+    void DrawToggleMarkersButton(opyn::ModelStatePair&, IconCache&);
+    void DrawToggleWrapGeometryButton(opyn::ModelStatePair&, IconCache&);
+    void DrawToggleContactGeometryButton(opyn::ModelStatePair&, IconCache&);
+    void DrawToggleForcesButton(opyn::ModelStatePair&, IconCache&);
+    void DrawAllDecorationToggleButtons(opyn::ModelStatePair&, IconCache&);
+    void DrawSceneScaleFactorEditorControls(opyn::ModelStatePair&);
 
     // mesh stuff
-    void DrawMeshExportContextMenuContent(const ModelStatePair&, const OpenSim::Mesh&);
+    void DrawMeshExportContextMenuContent(const opyn::ModelStatePair&, const OpenSim::Mesh&);
 }

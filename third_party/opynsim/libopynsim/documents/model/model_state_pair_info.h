@@ -3,9 +3,9 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <liboscar/utilities/uid.h>
 
-namespace osc { class ModelStatePair; }
+namespace opyn { class ModelStatePair; }
 
-namespace osc
+namespace opyn
 {
     // a cheap-to-copy holder for top-level model+state info
     //
@@ -13,15 +13,15 @@ namespace osc
     class ModelStatePairInfo final {
     public:
         ModelStatePairInfo();
-        explicit ModelStatePairInfo(const ModelStatePair&);
+        explicit ModelStatePairInfo(const opyn::ModelStatePair&);
 
         float getFixupScaleFactor() const { return m_FixupScaleFactor; }
 
         friend bool operator==(const ModelStatePairInfo&, const ModelStatePairInfo&) = default;
 
     private:
-        UID m_ModelVersion;
-        UID m_StateVersion;
+        osc::UID m_ModelVersion;
+        osc::UID m_StateVersion;
         OpenSim::ComponentPath m_Selection;
         OpenSim::ComponentPath m_Hover;
         float m_FixupScaleFactor = 1.0f;

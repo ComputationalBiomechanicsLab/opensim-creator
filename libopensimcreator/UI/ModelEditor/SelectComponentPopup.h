@@ -8,7 +8,7 @@
 
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
-namespace osc { class ModelStatePair; }
+namespace opyn { class ModelStatePair; }
 
 namespace osc
 {
@@ -18,7 +18,7 @@ namespace osc
         explicit SelectComponentPopup(
             Widget* parent,
             std::string_view popupName,
-            std::shared_ptr<const ModelStatePair>,
+            std::shared_ptr<const opyn::ModelStatePair>,
             std::function<void(const OpenSim::ComponentPath&)> onSelection,
             std::function<bool(const OpenSim::Component&)> filter
         );

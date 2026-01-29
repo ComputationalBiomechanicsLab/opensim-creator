@@ -44,7 +44,7 @@ using namespace osc;
 
 namespace
 {
-    void LoadMotionAgainstModel(const std::shared_ptr<ModelStatePair>& model, Widget* parent)
+    void LoadMotionAgainstModel(const std::shared_ptr<opyn::ModelStatePair>& model, Widget* parent)
     {
         if (not model) {
             return;  // Nothing to load the motion against.
@@ -124,7 +124,7 @@ osc::MainMenuFileTab::MainMenuFileTab(Widget* parent) :
     exampleOsimFiles{tryLoadExampleOsimFiles()}
 {}
 
-void osc::MainMenuFileTab::onDraw(std::shared_ptr<ModelStatePair> maybeModel)  // NOLINT(performance-unnecessary-value-param)
+void osc::MainMenuFileTab::onDraw(std::shared_ptr<opyn::ModelStatePair> maybeModel)  // NOLINT(performance-unnecessary-value-param)
 {
     auto undoableModel = std::dynamic_pointer_cast<UndoableModelStatePair>(maybeModel);
 

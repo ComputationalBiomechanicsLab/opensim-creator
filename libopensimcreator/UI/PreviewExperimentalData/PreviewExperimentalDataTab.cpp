@@ -58,7 +58,7 @@ namespace
     class PreviewExperimentalDataUiState final {
     public:
         std::shared_ptr<ModelStatePairWithSharedEnvironment> updSharedModelPtr() const { return m_Model; }
-        ModelStatePair& updModel() { return *m_Model; }
+        opyn::ModelStatePair& updModel() { return *m_Model; }
 
         void on_tick()
         {
