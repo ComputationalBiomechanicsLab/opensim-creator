@@ -65,6 +65,7 @@ using osc::AABB;
 using osc::ArrowProperties;
 using osc::ClosedInterval;
 using osc::Color;
+using osc::CoordinateDirection;
 using osc::Mesh;
 using osc::Ray;
 using osc::SceneCache;
@@ -87,9 +88,6 @@ using osc::saturate;
 using osc::sqrt;
 using osc::to;
 using osc::unit_interval;
-
-using osc::CoordinateDirection;
-using osc::CustomDecorationGenerator;
 
 namespace
 {

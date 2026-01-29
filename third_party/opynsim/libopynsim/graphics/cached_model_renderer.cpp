@@ -26,14 +26,13 @@
 #include <utility>
 #include <vector>
 
-using namespace osc;
 using namespace opyn;
 
 namespace
 {
-    bool IsContributorToSceneVolume(const SceneDecoration& dec)
+    bool IsContributorToSceneVolume(const osc::SceneDecoration& dec)
     {
-        if (dec.flags & SceneDecorationFlag::NoSceneVolumeContribution) {
+        if (dec.flags & osc::SceneDecorationFlag::NoSceneVolumeContribution) {
             // If this flag is set, then the decoration shouldn't contribute to
             // the scene's volume - even if it's visible (#1071).
             return false;
@@ -43,14 +42,14 @@ namespace
         // scene's visible bounds (invisible objects may cast shadows, but they shouldn't be
         // considered part of the visible bounds, #1029).
         return
-            (not (dec.flags & SceneDecorationFlag::NoDrawInScene)) or
-            (dec.flags & SceneDecorationFlag::DrawWireframeOverlay);
+            (not (dec.flags & osc::SceneDecorationFlag::NoDrawInScene)) or
+            (dec.flags & osc::SceneDecorationFlag::DrawWireframeOverlay);
     }
 
     // cache for decorations generated from a model+state+params
     class CachedDecorationState final {
     public:
-        explicit CachedDecorationState(std::shared_ptr<SceneCache> meshCache_) :
+        explicit CachedDecorationState(std::shared_ptr<osc::SceneCache> meshCache_) :
             m_MeshCache{std::move(meshCache_)}
         {
         }
@@ -71,10 +70,10 @@ namespace
                 m_SceneVolume.reset();
 
                 // regenerate
-                const auto onComponentDecoration = [this](const OpenSim::Component&, SceneDecoration&& dec)
+                const auto onComponentDecoration = [this](const OpenSim::Component&, osc::SceneDecoration&& dec)
                 {
                     if (IsContributorToSceneVolume(dec)) {
-                        m_SceneVolume = bounding_aabb_of(m_SceneVolume, dec.world_space_bounds());
+                        m_SceneVolume = osc::bounding_aabb_of(m_SceneVolume, dec.world_space_bounds());
                     }
                     m_Drawlist.push_back(std::move(dec));
                 };
@@ -84,9 +83,9 @@ namespace
                     params.decorationOptions,
                     onComponentDecoration
                 );
-                update_scene_bvh(m_Drawlist, m_BVH);
+                osc::update_scene_bvh(m_Drawlist, m_BVH);
 
-                const auto onOverlayDecoration = [this](SceneDecoration&& dec)
+                const auto onOverlayDecoration = [this](osc::SceneDecoration&& dec)
                 {
                     m_Drawlist.push_back(std::move(dec));
                 };
@@ -109,36 +108,36 @@ namespace
             }
         }
 
-        std::span<const SceneDecoration> getDrawlist() const { return m_Drawlist; }
-        const BVH& getBVH() const { return m_BVH; }
-        std::optional<AABB> getAABB() const
+        std::span<const osc::SceneDecoration> getDrawlist() const { return m_Drawlist; }
+        const osc::BVH& getBVH() const { return m_BVH; }
+        std::optional<osc::AABB> getAABB() const
         {
             return m_BVH.bounds();
         }
-        std::optional<AABB> getVisibleAABB() const
+        std::optional<osc::AABB> getVisibleAABB() const
         {
             return m_SceneVolume;
         }
-        SceneCache& updSceneCache() const
+        osc::SceneCache& updSceneCache() const
         {
             // TODO: technically (imo) this breaks `const`
             return *m_MeshCache;
         }
 
     private:
-        std::shared_ptr<SceneCache> m_MeshCache;
+        std::shared_ptr<osc::SceneCache> m_MeshCache;
         ModelStatePairInfo m_PrevModelStateInfo;
         OpenSimDecorationOptions m_PrevDecorationOptions;
         OverlayDecorationOptions m_PrevOverlayOptions;
-        std::vector<SceneDecoration> m_Drawlist;
-        BVH m_BVH;
-        std::optional<AABB> m_SceneVolume;
+        std::vector<osc::SceneDecoration> m_Drawlist;
+        osc::BVH m_BVH;
+        std::optional<osc::AABB> m_SceneVolume;
     };
 }
 
 class opyn::CachedModelRenderer::Impl final {
 public:
-    explicit Impl(const std::shared_ptr<SceneCache>& cache) :
+    explicit Impl(const std::shared_ptr<osc::SceneCache>& cache) :
         m_DecorationCache{cache},
         m_Renderer{*cache}
     {}
@@ -149,22 +148,22 @@ public:
         float aspectRatio)
     {
         m_DecorationCache.update(modelState, params);
-        if (const std::optional<AABB> aabb = m_DecorationCache.getVisibleAABB()) {
+        if (const std::optional<osc::AABB> aabb = m_DecorationCache.getVisibleAABB()) {
             auto_focus(params.camera, *aabb, aspectRatio);
         }
     }
 
-    RenderTexture& onDraw(
+    osc::RenderTexture& onDraw(
         const ModelStatePair& modelState,
         const ModelRendererParams& renderParams,
-        Vector2 dims,
+        osc::Vector2 dims,
         float devicePixelRatio,
-        AntiAliasingLevel antiAliasingLevel)
+        osc::AntiAliasingLevel antiAliasingLevel)
     {
         OSC_PERF("CachedModelRenderer/on_draw");
 
         // setup render/rasterization parameters
-        const SceneRendererParams rendererParameters = CalcSceneRendererParams(
+        const osc::SceneRendererParams rendererParameters = CalcSceneRendererParams(
             renderParams,
             dims,
             devicePixelRatio,
@@ -184,30 +183,30 @@ public:
         return m_Renderer.upd_render_texture();
     }
 
-    RenderTexture& updRenderTexture()
+    osc::RenderTexture& updRenderTexture()
     {
         return m_Renderer.upd_render_texture();
     }
 
-    std::span<const SceneDecoration> getDrawlist() const
+    std::span<const osc::SceneDecoration> getDrawlist() const
     {
         return m_DecorationCache.getDrawlist();
     }
 
-    std::optional<AABB> bounds() const
+    std::optional<osc::AABB> bounds() const
     {
         return m_DecorationCache.getAABB();
     }
 
-    std::optional<AABB> visibleBounds() const
+    std::optional<osc::AABB> visibleBounds() const
     {
         return m_DecorationCache.getVisibleAABB();
     }
 
-    std::optional<SceneCollision> getClosestCollision(
+    std::optional<osc::SceneCollision> getClosestCollision(
         const ModelRendererParams& params,
-        Vector2 mouseScreenPosition,
-        const Rect& viewportScreenRect) const
+        osc::Vector2 mouseScreenPosition,
+        const osc::Rect& viewportScreenRect) const
     {
         return GetClosestCollision(
             m_DecorationCache.getBVH(),
@@ -221,24 +220,24 @@ public:
 
 private:
     CachedDecorationState m_DecorationCache;
-    SceneRendererParams m_PrevRendererParams;
-    SceneRenderer m_Renderer;
+    osc::SceneRendererParams m_PrevRendererParams;
+    osc::SceneRenderer m_Renderer;
 };
 
 
-opyn::CachedModelRenderer::CachedModelRenderer(const std::shared_ptr<SceneCache>& cache) :
+opyn::CachedModelRenderer::CachedModelRenderer(const std::shared_ptr<osc::SceneCache>& cache) :
     m_Impl{std::make_unique<Impl>(cache)}
 {}
 opyn::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = default;
 opyn::CachedModelRenderer& opyn::CachedModelRenderer::operator=(CachedModelRenderer&&) noexcept = default;
 opyn::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 
-RenderTexture& opyn::CachedModelRenderer::onDraw(
+osc::RenderTexture& opyn::CachedModelRenderer::onDraw(
     const ModelStatePair& modelState,
     const ModelRendererParams& renderParams,
-    Vector2 dims,
+    osc::Vector2 dims,
     float devicePixelRatio,
-    AntiAliasingLevel antiAliasingLevel)
+    osc::AntiAliasingLevel antiAliasingLevel)
 {
     return m_Impl->onDraw(
         modelState,
@@ -257,30 +256,30 @@ void opyn::CachedModelRenderer::autoFocusCamera(
     m_Impl->autoFocusCamera(modelState, renderParams, aspectRatio);
 }
 
-RenderTexture& opyn::CachedModelRenderer::updRenderTexture()
+osc::RenderTexture& opyn::CachedModelRenderer::updRenderTexture()
 {
     return m_Impl->updRenderTexture();
 }
 
-std::span<const SceneDecoration> opyn::CachedModelRenderer::getDrawlist() const
+std::span<const osc::SceneDecoration> opyn::CachedModelRenderer::getDrawlist() const
 {
     return m_Impl->getDrawlist();
 }
 
-std::optional<AABB> opyn::CachedModelRenderer::bounds() const
+std::optional<osc::AABB> opyn::CachedModelRenderer::bounds() const
 {
     return m_Impl->bounds();
 }
 
-std::optional<AABB> opyn::CachedModelRenderer::visibleBounds() const
+std::optional<osc::AABB> opyn::CachedModelRenderer::visibleBounds() const
 {
     return m_Impl->visibleBounds();
 }
 
-std::optional<SceneCollision> opyn::CachedModelRenderer::getClosestCollision(
+std::optional<osc::SceneCollision> opyn::CachedModelRenderer::getClosestCollision(
     const ModelRendererParams& params,
-    Vector2 mouseScreenPosition,
-    const Rect& viewportScreenRect) const
+    osc::Vector2 mouseScreenPosition,
+    const osc::Rect& viewportScreenRect) const
 {
     return m_Impl->getClosestCollision(params, mouseScreenPosition, viewportScreenRect);
 }

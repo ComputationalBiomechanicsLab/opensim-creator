@@ -7,7 +7,7 @@
 
 namespace OpenSim { class Storage; }
 
-namespace osc
+namespace opyn
 {
     // Holds an annotated motion track.
     //

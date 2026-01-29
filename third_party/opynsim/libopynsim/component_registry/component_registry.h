@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace osc
+namespace opyn
 {
     // Represents a sequence of named/described `OpenSim::Component`s of type `T`.
     template<typename T>

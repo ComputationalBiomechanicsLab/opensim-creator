@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-namespace osc
+namespace opyn
 {
     // Represents a type-erased sequence of named/described `OpenSim::Component`s.
     class ComponentRegistryBase {
@@ -25,8 +25,8 @@ namespace osc
         using const_iterator = const value_type*;
         using size_type = size_t;
 
-        CStringView name() const { return m_Name; }
-        CStringView description() const { return m_Description; }
+        osc::CStringView name() const { return m_Name; }
+        osc::CStringView description() const { return m_Description; }
 
         const_iterator begin() const { return m_Entries.data(); }
         const_iterator end() const { return m_Entries.data() + m_Entries.size(); }
@@ -70,4 +70,3 @@ namespace osc
         return std::nullopt;
     }
 }
-

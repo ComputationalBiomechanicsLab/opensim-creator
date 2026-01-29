@@ -6,7 +6,7 @@
 
 #include <filesystem>
 
-using namespace osc;
+using namespace opyn;
 
 // repro for issue #1068
 //

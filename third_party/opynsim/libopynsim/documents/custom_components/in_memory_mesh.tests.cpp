@@ -6,7 +6,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace opyn;
-using osc::mow::InMemoryMesh;
 
 TEST(InMemoryMesh, CanDefaultConstruct)
 {

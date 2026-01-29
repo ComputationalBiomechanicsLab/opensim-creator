@@ -2,16 +2,16 @@
 
 #include <liboscar/oscar.h>
 
-using namespace osc;
+namespace ui = osc::ui;
 
 namespace
 {
-    class HelloTriangleScreen final : public Widget {
+    class HelloTriangleScreen final : public osc::Widget {
     public:
         HelloTriangleScreen()
         {
             // setup camera
-            constexpr Vector3 viewer_position = {3.0f, 0.0f, 0.0f};
+            constexpr osc::Vector3 viewer_position = {3.0f, 0.0f, 0.0f};
             camera_.set_position(viewer_position);
             camera_.set_direction({-1.0f, 0.0f, 0.0f});
 
@@ -25,30 +25,32 @@ namespace
         void impl_on_unmount() override
         {}
 
-        bool impl_on_event(Event& e) override
+        bool impl_on_event(osc::Event& e) override
         {
             return ui_context_.on_event(e);
         }
 
         void impl_on_draw() override
         {
-            App::upd().clear_main_window();
+            osc::App::upd().clear_main_window();
 
             ui_context_.on_start_new_frame();
 
             // ensure target texture matches screen dimensions
             target_texture_.reformat({
-                .pixel_dimensions = App::get().main_window_pixel_dimensions(),
-                .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
-                .anti_aliasing_level = App::get().anti_aliasing_level()
+                .pixel_dimensions = osc::App::get().main_window_pixel_dimensions(),
+                .device_pixel_ratio = osc::App::get().main_window_device_pixel_ratio(),
+                .anti_aliasing_level = osc::App::get().anti_aliasing_level()
             });
 
             update_torus_if_params_changed();
-            const auto seconds_since_startup = App::get().frame_delta_since_startup().count();
-            const Transform transform = {.rotation = angle_axis(Radians{seconds_since_startup}, CoordinateDirection::y())};
-            graphics::draw(mesh_, transform, material_, camera_);
+            const auto seconds_since_startup = osc::App::get().frame_delta_since_startup().count();
+            const osc::Transform transform = {
+                .rotation = osc::angle_axis(osc::Radians{seconds_since_startup}, osc::CoordinateDirection::y())
+            };
+            osc::graphics::draw(mesh_, transform, material_, camera_);
             camera_.render_to(target_texture_);
-            graphics::blit_to_main_window(target_texture_);
+            osc::graphics::blit_to_main_window(target_texture_);
 
             ui::begin_panel("window");
             ui::draw_float_slider("torus_radius", &edited_torus_parameters_.torus_radius, 0.0f, 5.0f);
@@ -65,23 +67,23 @@ namespace
             if (torus_parameters_ == edited_torus_parameters_) {
                 return;
             }
-            mesh_ = TorusKnotGeometry{edited_torus_parameters_};
+            mesh_ = osc::TorusKnotGeometry{edited_torus_parameters_};
             torus_parameters_ = edited_torus_parameters_;
         }
 
-        ui::Context ui_context_{App::upd()};
-        TorusKnotGeometryParams torus_parameters_;
-        TorusKnotGeometryParams edited_torus_parameters_;
-        TorusKnotGeometry mesh_;
-        Color torus_color_ = Color::blue();
-        MeshPhongMaterial material_{{
+        ui::Context ui_context_{osc::App::upd()};
+        osc::TorusKnotGeometryParams torus_parameters_;
+        osc::TorusKnotGeometryParams edited_torus_parameters_;
+        osc::TorusKnotGeometry mesh_;
+        osc::Color torus_color_ = osc::Color::blue();
+        osc::MeshPhongMaterial material_{{
             .ambient_color = 0.2f * torus_color_,
             .diffuse_color = 0.5f * torus_color_,
             .specular_color = 0.5f * torus_color_,
         }};
-        Camera camera_;
-        RenderTexture target_texture_;
+        osc::Camera camera_;
+        osc::RenderTexture target_texture_;
     };
 }
 
-void opyn::show_hello_ui() { App::main<HelloTriangleScreen>(AppMetadata{}); }
+void opyn::show_hello_ui() { osc::App::main<HelloTriangleScreen>(osc::AppMetadata{}); }

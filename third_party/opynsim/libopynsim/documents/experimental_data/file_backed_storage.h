@@ -8,7 +8,7 @@
 namespace OpenSim { class Model; }
 namespace OpenSim { class Storage; }
 
-namespace osc
+namespace opyn
 {
     // an `OpenSim::Storage` that's backed by an on-disk file.
     class FileBackedStorage final {
@@ -26,7 +26,7 @@ namespace osc
         const std::unordered_map<int, int>& mapper() const { return m_StorageIndexToModelStateVarIndexMap; }
     private:
         std::filesystem::path m_SourceFile;
-        ClonePtr<OpenSim::Storage> m_Storage;
+        osc::ClonePtr<OpenSim::Storage> m_Storage;
         std::unordered_map<int, int> m_StorageIndexToModelStateVarIndexMap;
     };
 }

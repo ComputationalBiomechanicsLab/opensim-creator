@@ -14,7 +14,7 @@
 #include <string>
 #include <utility>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
@@ -52,13 +52,13 @@ namespace
     };
 }
 
-osc::AnnotatedMotion::AnnotatedMotion(const std::filesystem::path& path) :
+opyn::AnnotatedMotion::AnnotatedMotion(const std::filesystem::path& path) :
     AnnotatedMotion{loadPathIntoStorage(path)}
 {
     setName(path.filename().string());
 }
 
-std::shared_ptr<OpenSim::Storage> osc::AnnotatedMotion::loadPathIntoStorage(const std::filesystem::path& path)
+std::shared_ptr<OpenSim::Storage> opyn::AnnotatedMotion::loadPathIntoStorage(const std::filesystem::path& path)
 {
     if (path.extension() == ".trc") {
         // use `MarkerData`, same as OpenSim GUI's `FileLoadDataAction.java`
@@ -74,7 +74,7 @@ std::shared_ptr<OpenSim::Storage> osc::AnnotatedMotion::loadPathIntoStorage(cons
     }
 }
 
-osc::AnnotatedMotion::AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage) :
+opyn::AnnotatedMotion::AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage) :
     m_Storage{std::move(storage)}
 {
     setName(m_Storage->getName());
@@ -99,12 +99,12 @@ osc::AnnotatedMotion::AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage)
             addComponent(series.release());
         }
         catch (const std::exception& ex) {
-            log_warn("Error loading a data series from %s: %s", getName().c_str(), ex.what());
+            osc::log_warn("Error loading a data series from %s: %s", getName().c_str(), ex.what());
         }
     }
 }
 
-size_t osc::AnnotatedMotion::getNumDataSeries() const
+size_t opyn::AnnotatedMotion::getNumDataSeries() const
 {
     const auto lst = getComponentList<DataSeries>();
     return std::distance(lst.begin(), lst.end());

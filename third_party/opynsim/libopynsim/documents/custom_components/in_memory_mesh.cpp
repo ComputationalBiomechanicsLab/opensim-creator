@@ -7,13 +7,13 @@
 
 using namespace opyn;
 
-void osc::mow::InMemoryMesh::implGenerateCustomDecorations(
+void opyn::InMemoryMesh::implGenerateCustomDecorations(
     const SimTK::State& state,
-    const std::function<void(SceneDecoration&&)>& out) const
+    const std::function<void(osc::SceneDecoration&&)>& out) const
 {
-    out(SceneDecoration{
+    out(osc::SceneDecoration{
         .mesh = m_OscMesh,
-        .transform = to<Transform>(getFrame().getTransformInGround(state)),
+        .transform = osc::to<osc::Transform>(getFrame().getTransformInGround(state)),
         .shading = to_color(get_Appearance()),
     });
 }

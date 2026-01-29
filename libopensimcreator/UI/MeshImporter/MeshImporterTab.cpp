@@ -1308,7 +1308,7 @@ private:
     void drawJointTypeEditor(const Joint& jointEl)
     {
         if (ui::begin_combobox("Joint Type", jointEl.getSpecificTypeName())) {
-            for (const auto& joint : GetComponentRegistry<OpenSim::Joint>()) {
+            for (const auto& joint : opyn::GetComponentRegistry<OpenSim::Joint>()) {
                 if (ui::draw_selectable(joint.name(), joint.name() == jointEl.getSpecificTypeName())) {
                     m_Shared->updModelGraph().updByID<Joint>(jointEl.getID()).setSpecificTypeName(joint.name());
                     m_Shared->commitCurrentModelGraph("changed joint type");

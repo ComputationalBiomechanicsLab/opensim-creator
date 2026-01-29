@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-using namespace osc;
+using namespace opyn;
 namespace rgs = std::ranges;
 
 namespace
@@ -27,10 +27,10 @@ namespace
         template<DataPointType DataType, typename... ColumnHeaderStrings>
         requires
             (sizeof...(ColumnHeaderStrings) == numElementsIn(DataType)) and
-            (std::constructible_from<CStringView, ColumnHeaderStrings> && ...)
+            (std::constructible_from<osc::CStringView, ColumnHeaderStrings> && ...)
             static DataSeriesPattern forDatatype(ColumnHeaderStrings&&... headerSuffixes)
         {
-            return DataSeriesPattern{DataType, std::initializer_list<CStringView>{CStringView{std::forward<ColumnHeaderStrings>(headerSuffixes)}...}};  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+            return DataSeriesPattern{DataType, std::initializer_list<osc::CStringView>{osc::CStringView{std::forward<ColumnHeaderStrings>(headerSuffixes)}...}};  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
         }
 
         // Returns the `DataPointType` matched by this pattern.
@@ -63,13 +63,13 @@ namespace
             return columHeader;  // couldn't remove it
         }
     private:
-        DataSeriesPattern(DataPointType type, std::initializer_list<CStringView> header_suffxes) :
+        DataSeriesPattern(DataPointType type, std::initializer_list<osc::CStringView> header_suffxes) :
             m_Type{type},
             m_HeaderSuffixes{header_suffxes}
         {}
 
         DataPointType m_Type;
-        std::vector<CStringView> m_HeaderSuffixes;
+        std::vector<osc::CStringView> m_HeaderSuffixes;
     };
 
     // Describes a collection of patterns that _might_ match against the column headers
@@ -104,7 +104,7 @@ namespace
     };
 }
 
-StorageSchema osc::StorageSchema::parse(const OpenSim::Storage& storage)
+StorageSchema opyn::StorageSchema::parse(const OpenSim::Storage& storage)
 {
     const DataSeriesPatterns patterns;
     const auto& labels = storage.getColumnLabels();  // includes time

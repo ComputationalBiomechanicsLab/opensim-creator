@@ -240,7 +240,7 @@ private:
     void drawAddWrapObjectsToPhysicalFrameMenuItems(const OpenSim::ComponentPath& physicalFrameAbsPath)
     {
         // list each available `WrapObject` as something the user can add
-        const auto& registry = GetComponentRegistry<OpenSim::WrapObject>();
+        const auto& registry = opyn::GetComponentRegistry<OpenSim::WrapObject>();
         for (const auto& entry : registry) {
             ui::push_id(&entry);
             if (ui::draw_menu_item(entry.name(), {}, nullptr, m_Model->canUpdModel())) {
@@ -274,20 +274,20 @@ private:
             }
         }
 
-        renderButton(GetComponentRegistry<OpenSim::Joint>());
-        renderButton(GetComponentRegistry<OpenSim::ContactGeometry>());
-        renderButton(GetComponentRegistry<OpenSim::Constraint>());
-        renderButton(GetComponentRegistry<OpenSim::Force>());
-        renderButton(GetComponentRegistry<OpenSim::Controller>());
-        renderButton(GetComponentRegistry<OpenSim::Probe>());
-        renderButton(GetComponentRegistry<OpenSim::Component>());
-        renderButton(GetCustomComponentRegistry());
+        renderButton(opyn::GetComponentRegistry<OpenSim::Joint>());
+        renderButton(opyn::GetComponentRegistry<OpenSim::ContactGeometry>());
+        renderButton(opyn::GetComponentRegistry<OpenSim::Constraint>());
+        renderButton(opyn::GetComponentRegistry<OpenSim::Force>());
+        renderButton(opyn::GetComponentRegistry<OpenSim::Controller>());
+        renderButton(opyn::GetComponentRegistry<OpenSim::Probe>());
+        renderButton(opyn::GetComponentRegistry<OpenSim::Component>());
+        renderButton(opyn::GetCustomComponentRegistry());
     }
 
     void drawSearchResultsOrNoResults()
     {
         bool searchResultFount = false;
-        for (const auto& entry : GetAllRegisteredComponents()) {
+        for (const auto& entry : opyn::GetAllRegisteredComponents()) {
             if (contains_case_insensitive(entry.name(), m_SearchString)) {
                 if (ui::draw_menu_item(entry.name())) {
                     actionOpenComponentPopup(entry);
@@ -304,7 +304,7 @@ private:
         }
     }
 
-    void renderButton(const ComponentRegistryBase& registry)
+    void renderButton(const opyn::ComponentRegistryBase& registry)
     {
         if (ui::begin_menu(registry.name(), m_Model->canUpdModel())) {
             for (const auto& entry : registry) {
@@ -325,7 +325,7 @@ private:
         }
     }
 
-    void actionOpenComponentPopup(const ComponentRegistryEntryBase& entry)
+    void actionOpenComponentPopup(const opyn::ComponentRegistryEntryBase& entry)
     {
         if (not parent()) {
             return;  // Can't fire popup-opening event upwards.

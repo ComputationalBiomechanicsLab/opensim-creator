@@ -9,7 +9,7 @@
 
 using namespace opyn;
 
-osc::ComponentRegistryEntryBase::ComponentRegistryEntryBase(
+opyn::ComponentRegistryEntryBase::ComponentRegistryEntryBase(
     std::string_view name_,
     std::string_view description_,
     std::shared_ptr<const OpenSim::Component> prototype_) :
@@ -19,7 +19,7 @@ osc::ComponentRegistryEntryBase::ComponentRegistryEntryBase(
     m_Prototype{std::move(prototype_)}
 {}
 
-std::unique_ptr<OpenSim::Component> osc::ComponentRegistryEntryBase::instantiate() const
+std::unique_ptr<OpenSim::Component> opyn::ComponentRegistryEntryBase::instantiate() const
 {
     return Clone(*m_Prototype);
 }

@@ -11,11 +11,9 @@
 
 #include <cstddef>
 
-using namespace osc;
-
 size_t opyn::CustomRenderingOptions::getNumOptions() const
 {
-    return num_flags<CustomRenderingOptionFlags>();
+    return osc::num_flags<CustomRenderingOptionFlags>();
 }
 
 bool opyn::CustomRenderingOptions::getOptionValue(ptrdiff_t i) const
@@ -28,9 +26,9 @@ void opyn::CustomRenderingOptions::setOptionValue(ptrdiff_t i, bool v)
     SetOption(m_Flags, CustomRenderingIthOption(i), v);
 }
 
-CStringView opyn::CustomRenderingOptions::getOptionLabel(ptrdiff_t i) const
+osc::CStringView opyn::CustomRenderingOptions::getOptionLabel(ptrdiff_t i) const
 {
-    return at(GetAllCustomRenderingOptionFlagsMetadata(), i).label;
+    return osc::at(GetAllCustomRenderingOptionFlagsMetadata(), i).label;
 }
 
 bool opyn::CustomRenderingOptions::getDrawFloor() const
@@ -83,25 +81,28 @@ void opyn::CustomRenderingOptions::setOrderIndependentTransparency(bool v)
     SetOption(m_Flags, CustomRenderingOptionFlags::OrderIndependentTransparency, v);
 }
 
-void opyn::CustomRenderingOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>& callback) const
+void opyn::CustomRenderingOptions::forEachOptionAsAppSettingValue(
+    const std::function<void(std::string_view, const osc::Variant&)>& callback) const
 {
     for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
-        callback(metadata.id, Variant{m_Flags & metadata.value});
+        callback(metadata.id, osc::Variant{m_Flags & metadata.value});
     }
 }
 
-void opyn::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, Variant>& lut)
+void opyn::CustomRenderingOptions::tryUpdFromValues(
+    std::string_view keyPrefix,
+    const std::unordered_map<std::string, osc::Variant>& lut)
 {
     for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
 
         const std::string key = std::string{keyPrefix} + metadata.id;
-        if (const auto* v = lookup_or_nullptr(lut, key); v and v->type() == VariantType::Bool) {
+        if (const auto* v = lookup_or_nullptr(lut, key); v and v->type() == osc::VariantType::Bool) {
             SetOption(m_Flags, metadata.value, to<bool>(*v));
         }
     }
 }
 
-void opyn::CustomRenderingOptions::applyTo(SceneRendererParams& params) const
+void opyn::CustomRenderingOptions::applyTo(osc::SceneRendererParams& params) const
 {
     params.draw_floor = getDrawFloor();
     params.draw_rims = getDrawSelectionRims();

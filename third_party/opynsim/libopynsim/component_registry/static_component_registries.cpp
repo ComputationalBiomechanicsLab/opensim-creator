@@ -81,7 +81,7 @@ namespace
     {
         return {
             std::make_shared<OpenSim::StationDefinedFrame>(),
-            std::make_shared<osc::mow::InMemoryMesh>(),
+            std::make_shared<InMemoryMesh>(),
         };
     }
 
@@ -693,12 +693,12 @@ namespace
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    osc::ComponentRegistry<T> CreateRegistryFromLUT(
+    ComponentRegistry<T> CreateRegistryFromLUT(
         std::string_view name,
         std::string_view description,
         const std::vector<std::shared_ptr<const T>>& protoLut)
     {
-        osc::ComponentRegistry<T> rv{name, description};
+        ComponentRegistry<T> rv{name, description};
 
         // populate entries
         const auto& lut = GetComponentDescriptionLookup();
@@ -718,7 +718,7 @@ namespace
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    osc::ComponentRegistry<T> CreateRegistry(
+    ComponentRegistry<T> CreateRegistry(
         std::string_view name,
         std::string_view description,
         bool useBlacklist = true)
@@ -726,21 +726,21 @@ namespace
         return CreateRegistryFromLUT<T>(name, description, CreatePrototypeLutT<T>(useBlacklist));
     }
 
-    osc::ComponentRegistry<OpenSim::Component> CreateOtherComponentRegistry(
+    ComponentRegistry<OpenSim::Component> CreateOtherComponentRegistry(
         std::string_view name,
         std::string_view description)
     {
         return CreateRegistryFromLUT<OpenSim::Component>(name, description, CreateOtherComponentLut());
     }
 
-    osc::ComponentRegistry<OpenSim::Component> CreateCustomComponentRegistry(
+    ComponentRegistry<OpenSim::Component> CreateCustomComponentRegistry(
         std::string_view name,
         std::string_view description)
     {
         return CreateRegistryFromLUT<OpenSim::Component>(name, description, CreateCustomComponentList());
     }
 
-    osc::ComponentRegistry<OpenSim::Component> CreateAllComponentRegistry(
+    ComponentRegistry<OpenSim::Component> CreateAllComponentRegistry(
         std::string_view name,
         std::string_view description,
         bool useBlacklist = true)
@@ -754,7 +754,7 @@ namespace
 }
 
 template<>
-const osc::ComponentRegistry<OpenSim::Joint>& osc::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Joint>& opyn::GetComponentRegistry()
 {
     static const auto s_StaticReg = CreateRegistry<OpenSim::Joint>(
         "Joint",
@@ -764,7 +764,7 @@ const osc::ComponentRegistry<OpenSim::Joint>& osc::GetComponentRegistry()
 }
 
 template<>
-const osc::ComponentRegistry<OpenSim::ContactGeometry>& osc::GetComponentRegistry()
+const ComponentRegistry<OpenSim::ContactGeometry>& opyn::GetComponentRegistry()
 {
     static const auto s_StaticReg = CreateRegistry<OpenSim::ContactGeometry>(
         "Contact Geometry",
@@ -774,7 +774,7 @@ const osc::ComponentRegistry<OpenSim::ContactGeometry>& osc::GetComponentRegistr
 }
 
 template<>
-const osc::ComponentRegistry<OpenSim::Constraint>& osc::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Constraint>& opyn::GetComponentRegistry()
 {
     static const auto s_StaticReg = CreateRegistry<OpenSim::Constraint>(
         "Constraint",
@@ -784,7 +784,7 @@ const osc::ComponentRegistry<OpenSim::Constraint>& osc::GetComponentRegistry()
 }
 
 template<>
-const osc::ComponentRegistry<OpenSim::Force>& osc::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Force>& opyn::GetComponentRegistry()
 {
     static const auto s_StaticReg = CreateRegistry<OpenSim::Force>(
         "Force",
@@ -794,7 +794,7 @@ const osc::ComponentRegistry<OpenSim::Force>& osc::GetComponentRegistry()
 }
 
 template<>
-const osc::ComponentRegistry<OpenSim::Controller>& osc::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Controller>& opyn::GetComponentRegistry()
 {
     static const auto s_StaticReg = CreateRegistry<OpenSim::Controller>(
         "Controller",
@@ -804,7 +804,7 @@ const osc::ComponentRegistry<OpenSim::Controller>& osc::GetComponentRegistry()
 }
 
 template<>
-const osc::ComponentRegistry<OpenSim::Probe>& osc::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Probe>& opyn::GetComponentRegistry()
 {
     static const auto s_StaticReg = CreateRegistry<OpenSim::Probe>(
         "Probe",
@@ -814,7 +814,7 @@ const osc::ComponentRegistry<OpenSim::Probe>& osc::GetComponentRegistry()
 }
 
 template<>
-const osc::ComponentRegistry<OpenSim::WrapObject>& osc::GetComponentRegistry()
+const ComponentRegistry<OpenSim::WrapObject>& opyn::GetComponentRegistry()
 {
     static const auto s_StaticReg = CreateRegistry<OpenSim::WrapObject>(
         "WrapObject",
@@ -825,7 +825,7 @@ const osc::ComponentRegistry<OpenSim::WrapObject>& osc::GetComponentRegistry()
 }
 
 template<>
-const osc::ComponentRegistry<OpenSim::Component>& osc::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Component>& opyn::GetComponentRegistry()
 {
     static const auto s_StaticReg = CreateOtherComponentRegistry(
         "Component",
@@ -834,7 +834,7 @@ const osc::ComponentRegistry<OpenSim::Component>& osc::GetComponentRegistry()
     return s_StaticReg;
 }
 
-const osc::ComponentRegistry<OpenSim::Component>& osc::GetCustomComponentRegistry()
+const ComponentRegistry<OpenSim::Component>& opyn::GetCustomComponentRegistry()
 {
     static const auto s_StaticReg = CreateCustomComponentRegistry(
         "Experimental Components",
@@ -843,7 +843,7 @@ const osc::ComponentRegistry<OpenSim::Component>& osc::GetCustomComponentRegistr
     return s_StaticReg;
 }
 
-const osc::ComponentRegistry<OpenSim::Component>& osc::GetAllRegisteredComponents()
+const ComponentRegistry<OpenSim::Component>& opyn::GetAllRegisteredComponents()
 {
     static const auto s_StaticReg = CreateAllComponentRegistry(
         "All Components",

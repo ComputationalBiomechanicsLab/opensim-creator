@@ -5,7 +5,7 @@
 namespace osc { struct SceneDecoration; }
 namespace SimTK { class State; }
 
-namespace osc
+namespace opyn
 {
     // an interface for an object that generates decorations in an OSC-specific custom way
     //
@@ -22,14 +22,14 @@ namespace osc
 
         void generateCustomDecorations(
             const SimTK::State& state,
-            const std::function<void(SceneDecoration&&)>& callback) const
+            const std::function<void(osc::SceneDecoration&&)>& callback) const
         {
             implGenerateCustomDecorations(state, callback);
         }
     private:
         virtual void implGenerateCustomDecorations(
             const SimTK::State&,
-            const std::function<void(SceneDecoration&&)>&
+            const std::function<void(osc::SceneDecoration&&)>&
         ) const = 0;
     };
 }

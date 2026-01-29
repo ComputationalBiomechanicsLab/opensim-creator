@@ -9,7 +9,7 @@ namespace OpenSim { class Storage; }
 namespace SimTK { template<class, class> class Array_; }
 namespace SimTK { class DecorativeGeometry; }
 
-namespace osc
+namespace opyn
 {
     // A single data annotation that describes some kind of substructure (series) in
     // columnar data.

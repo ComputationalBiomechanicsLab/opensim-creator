@@ -147,7 +147,7 @@ public:
             ui::draw_help_marker("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
             ui::next_column();
             {
-                const auto& registry = GetComponentRegistry<OpenSim::Joint>();
+                const auto& registry = opyn::GetComponentRegistry<OpenSim::Joint>();
                 ui::draw_combobox(
                     "##jointtype",
                     &m_BodyDetails.jointTypeIndex,

@@ -9,19 +9,19 @@
 
 using namespace opyn;
 
-osc::FileBackedStorage::FileBackedStorage(const OpenSim::Model& model, std::filesystem::path sourceFile) :
+opyn::FileBackedStorage::FileBackedStorage(const OpenSim::Model& model, std::filesystem::path sourceFile) :
     m_SourceFile{std::move(sourceFile)},
     m_Storage{LoadStorage(model, m_SourceFile)},
     m_StorageIndexToModelStateVarIndexMap{CreateStorageIndexToModelStatevarMappingWithWarnings(model, *m_Storage)}
 {}
 
-osc::FileBackedStorage::FileBackedStorage(const FileBackedStorage&) = default;
-osc::FileBackedStorage::FileBackedStorage(FileBackedStorage&&) noexcept = default;
-osc::FileBackedStorage& osc::FileBackedStorage::operator=(const FileBackedStorage&) = default;
-osc::FileBackedStorage& osc::FileBackedStorage::operator=(FileBackedStorage&&) noexcept = default;
-osc::FileBackedStorage::~FileBackedStorage() noexcept = default;
+opyn::FileBackedStorage::FileBackedStorage(const FileBackedStorage&) = default;
+opyn::FileBackedStorage::FileBackedStorage(FileBackedStorage&&) noexcept = default;
+FileBackedStorage& opyn::FileBackedStorage::operator=(const FileBackedStorage&) = default;
+FileBackedStorage& opyn::FileBackedStorage::operator=(FileBackedStorage&&) noexcept = default;
+opyn::FileBackedStorage::~FileBackedStorage() noexcept = default;
 
-void osc::FileBackedStorage::reloadFromDisk(const OpenSim::Model& model)
+void opyn::FileBackedStorage::reloadFromDisk(const OpenSim::Model& model)
 {
     m_Storage = LoadStorage(model, m_SourceFile);
     m_StorageIndexToModelStateVarIndexMap = CreateStorageIndexToModelStatevarMappingWithWarnings(model, *m_Storage);

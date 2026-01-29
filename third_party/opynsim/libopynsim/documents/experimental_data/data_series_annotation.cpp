@@ -13,7 +13,7 @@
 #include <span>
 #include <vector>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
@@ -33,7 +33,7 @@ namespace
             SimTK::DecorativeSphere sphere{};
             sphere.setRadius(0.005);  // i.e. like little 1 cm diameter markers
             sphere.setTransform(position);
-            sphere.setColor(to<SimTK::Vec3>(Color::blue()));
+            sphere.setColor(osc::to<SimTK::Vec3>(osc::Color::blue()));
             out.push_back(sphere);
         }
     }
@@ -53,7 +53,7 @@ namespace
                 point + c_ForceArrowLengthScale * force,
             };
             arrow.setScaleFactors({1, 1, 0.00001});
-            arrow.setColor(to<SimTK::Vec3>(Color::orange()));
+            arrow.setColor(osc::to<SimTK::Vec3>(osc::Color::orange()));
             arrow.setLineThickness(0.01);
             arrow.setTipLength(0.1);
             out.push_back(arrow);
@@ -72,7 +72,7 @@ namespace
                 position.normalize(),
             };
             arrow.setScaleFactors({1, 1, 0.00001});
-            arrow.setColor(to<SimTK::Vec3>(Color::orange()));
+            arrow.setColor(osc::to<SimTK::Vec3>(osc::Color::orange()));
             arrow.setLineThickness(0.01);
             arrow.setTipLength(0.1);
             out.push_back(arrow);
@@ -84,7 +84,7 @@ namespace
         std::span<const double, 4> data,
         SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
-        const Quaternion q = normalize(Quaternion{
+        const osc::Quaternion q = osc::normalize(osc::Quaternion{
             static_cast<float>(data[0]),
             static_cast<float>(data[1]),
             static_cast<float>(data[2]),
@@ -92,18 +92,18 @@ namespace
         });
         out.push_back(SimTK::DecorativeArrow{
             SimTK::Vec3(0.0),
-            to<SimTK::Vec3>(q * Vector3{0.0f, 1.0f, 0.0f}),
+            osc::to<SimTK::Vec3>(q * osc::Vector3{0.0f, 1.0f, 0.0f}),
         });
     }
 }
 
-void osc::generateDecorations(
+void opyn::generateDecorations(
     double time,
     const OpenSim::Storage& storage,
     const DataSeriesAnnotation& annotation,
     SimTK::Array_<SimTK::DecorativeGeometry>& out)
 {
-    const ClosedInterval<double> storageTimeRange{storage.getFirstTime(), storage.getLastTime()};
+    const osc::ClosedInterval<double> storageTimeRange{storage.getFirstTime(), storage.getLastTime()};
     if (not storageTimeRange.contains(time)) {
         return;  // time out of range: generate no decorations
     }
@@ -111,7 +111,7 @@ void osc::generateDecorations(
     const auto data = extractDataPoint(time, storage, annotation);
     OSC_ASSERT_ALWAYS(data.size() == numElementsIn(annotation.dataType));
 
-    static_assert(num_options<DataPointType>() == 5);
+    static_assert(osc::num_options<DataPointType>() == 5);
     switch (annotation.dataType) {
     case DataPointType::Point:       ::generateDecorations<DataPointType::Point>(       std::span<const double, numElementsIn(DataPointType::Point)>{data},       out); break;
     case DataPointType::ForcePoint:  ::generateDecorations<DataPointType::ForcePoint>(  std::span<const double, numElementsIn(DataPointType::ForcePoint)>{data},  out); break;
@@ -123,7 +123,7 @@ void osc::generateDecorations(
     }
 }
 
-std::vector<double> osc::extractDataPoint(
+std::vector<double> opyn::extractDataPoint(
     double time,
     const OpenSim::Storage& storage,
     const DataSeriesAnnotation& annotation)

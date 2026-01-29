@@ -54,7 +54,7 @@ namespace
             return;
         }
 
-        const auto& registry = GetComponentRegistry<OpenSim::Joint>();
+        const auto& registry = opyn::GetComponentRegistry<OpenSim::Joint>();
 
         std::optional<ptrdiff_t> selectedIdx;
         if (ui::begin_menu("Change Joint Type", model.canUpdModel())) {

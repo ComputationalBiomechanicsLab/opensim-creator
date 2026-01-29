@@ -7,7 +7,7 @@
 
 namespace OpenSim { class Storage; }
 
-namespace osc
+namespace opyn
 {
     // Stores the higher-level schema associated with an `OpenSim::Storage`.
     class StorageSchema final {

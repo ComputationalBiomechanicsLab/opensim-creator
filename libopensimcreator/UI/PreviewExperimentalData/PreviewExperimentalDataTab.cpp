@@ -105,7 +105,7 @@ namespace
 
         void loadModelTrajectoryFile(const std::filesystem::path& path)
         {
-            m_AssociatedTrajectory = FileBackedStorage{m_Model->getModel(), path};
+            m_AssociatedTrajectory = opyn::FileBackedStorage{m_Model->getModel(), path};
             reloadAll("loaded trajactory");
         }
 
@@ -192,7 +192,7 @@ namespace
 
             // (re)load motions
             for (const std::filesystem::path& path : m_AssociatedMotionFiles) {
-                m_Model->updModel().addModelComponent(std::make_unique<AnnotatedMotion>(path).release());
+                m_Model->updModel().addModelComponent(std::make_unique<opyn::AnnotatedMotion>(path).release());
             }
 
             // (re)load associated XML files (e.g. `ExternalLoads`)
@@ -211,7 +211,7 @@ namespace
         }
 
         std::shared_ptr<UndoableModelStatePair> m_Model = std::make_shared<UndoableModelStatePair>();
-        std::optional<FileBackedStorage> m_AssociatedTrajectory;
+        std::optional<opyn::FileBackedStorage> m_AssociatedTrajectory;
         std::vector<std::filesystem::path> m_AssociatedMotionFiles;
         std::vector<std::filesystem::path> m_AssociatedXMLDocuments;
         ClosedInterval<float> m_TimeRange = {0.0f, 10.0f};

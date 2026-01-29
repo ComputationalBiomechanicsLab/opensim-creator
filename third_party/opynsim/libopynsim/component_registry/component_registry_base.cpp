@@ -6,7 +6,7 @@
 #include <optional>
 #include <typeinfo>
 
-std::optional<size_t> osc::IndexOf(
+std::optional<size_t> opyn::IndexOf(
     const ComponentRegistryBase& registry,
     std::string_view componentClassName)
 {
@@ -19,7 +19,7 @@ std::optional<size_t> osc::IndexOf(
     return std::nullopt;
 }
 
-std::optional<size_t> osc::IndexOf(
+std::optional<size_t> opyn::IndexOf(
     const ComponentRegistryBase& registry,
     const OpenSim::Component& component)
 {

@@ -1,9 +1,9 @@
 #pragma once
 
 namespace OpenSim { class Component; }
-namespace osc { template<typename> class ComponentRegistry; }
+namespace opyn { template<typename> class ComponentRegistry; }
 
-namespace osc
+namespace opyn
 {
     template<typename T>
     const ComponentRegistry<T>& GetComponentRegistry();

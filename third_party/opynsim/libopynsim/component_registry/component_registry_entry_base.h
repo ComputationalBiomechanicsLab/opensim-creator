@@ -7,7 +7,7 @@
 #include <string>
 #include <string_view>
 
-namespace osc
+namespace opyn
 {
     class ComponentRegistryEntryBase {
     public:
@@ -17,8 +17,8 @@ namespace osc
             std::shared_ptr<const OpenSim::Component>
         );
 
-        CStringView name() const { return m_Name; }
-        CStringView description() const { return m_Description; }
+        osc::CStringView name() const { return m_Name; }
+        osc::CStringView description() const { return m_Description; }
         const OpenSim::Component& prototype() const { return *m_Prototype; }
         std::unique_ptr<OpenSim::Component> instantiate() const;
 

@@ -5,7 +5,7 @@
 #include <liboscar/graphics/mesh.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 
-namespace osc::mow
+namespace opyn
 {
     // a custom `OpenSim::Geometry` that uses `osc::Mesh`es
     //
@@ -16,17 +16,17 @@ namespace osc::mow
         OpenSim_DECLARE_CONCRETE_OBJECT(InMemoryMesh, OpenSim::Geometry)
     public:
         InMemoryMesh() = default;
-        explicit InMemoryMesh(const Mesh& mesh_) : m_OscMesh{mesh_} {}
+        explicit InMemoryMesh(const osc::Mesh& mesh_) : m_OscMesh{mesh_} {}
 
         void implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>&) const override
         {
             // do nothing: OpenSim Creator will detect `ICustomDecorationDecorator` and use that
         }
 
-        const Mesh& getOscMesh() const { return m_OscMesh; }
+        const osc::Mesh& getOscMesh() const { return m_OscMesh; }
     private:
-        void implGenerateCustomDecorations(const SimTK::State&, const std::function<void(SceneDecoration&&)>&) const override;
+        void implGenerateCustomDecorations(const SimTK::State&, const std::function<void(osc::SceneDecoration&&)>&) const override;
 
-        Mesh m_OscMesh;
+        osc::Mesh m_OscMesh;
     };
 }

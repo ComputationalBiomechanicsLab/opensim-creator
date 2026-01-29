@@ -54,7 +54,6 @@
 #include <vector>
 
 using namespace osc;
-using namespace osc::mow;
 using namespace opyn;
 
 // Scaling document related functions/datastructures.

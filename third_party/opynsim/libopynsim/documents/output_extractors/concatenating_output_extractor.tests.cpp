@@ -8,7 +8,6 @@
 #include <gtest/gtest.h>
 
 using namespace opyn;
-using osc::BlankComponent;
 
 // Basic functionality test: a `ConcatenatingOutputExtractor` should at least be able to
 // concatenate two floating point outputs (#1025).

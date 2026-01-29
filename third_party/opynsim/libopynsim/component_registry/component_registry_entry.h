@@ -6,7 +6,7 @@
 #include <string_view>
 #include <utility>
 
-namespace osc
+namespace opyn
 {
     template<typename T>
     class ComponentRegistryEntry final : public ComponentRegistryEntryBase {
