@@ -17,7 +17,7 @@ namespace osc
     public:
         struct ImportedData final {
             std::optional<std::string> maybeLabel;
-            std::vector<lm::NamedLandmark> landmarks;
+            std::vector<opyn::NamedLandmark> landmarks;
             std::optional<std::string> maybeTargetComponentAbsPath;
         };
 

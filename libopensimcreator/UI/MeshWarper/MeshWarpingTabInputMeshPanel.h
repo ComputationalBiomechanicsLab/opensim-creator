@@ -43,8 +43,6 @@
 #include <utility>
 #include <vector>
 
-using osc::lm::LandmarkCSVFlags;
-
 namespace osc
 {
     // an "input" panel (i.e. source or destination mesh, before warping)
@@ -588,7 +586,7 @@ namespace osc
                 }
                 if (ui::draw_menu_item("Landmark Positions to CSV"))
                 {
-                    ActionPromptUserToSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier, LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
+                    ActionPromptUserToSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier, opyn::LandmarkCSVFlags::NoHeader | opyn::LandmarkCSVFlags::NoNames);
                 }
                 if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source)
                 {
@@ -598,7 +596,7 @@ namespace osc
                     }
                     if (ui::draw_menu_item("Non-Participating Landmark Positions to CSV"))
                     {
-                        ActionPromptUserToSaveNonParticipatingLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
+                        ActionPromptUserToSaveNonParticipatingLandmarksToCSV(m_State->getScratch(), opyn::LandmarkCSVFlags::NoHeader | opyn::LandmarkCSVFlags::NoNames);
                     }
                 }
                 ui::end_popup();

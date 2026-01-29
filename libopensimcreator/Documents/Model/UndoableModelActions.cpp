@@ -2365,7 +2365,7 @@ bool osc::ActionFitPlaneToMesh(ModelStatePair& model, const OpenSim::Mesh& openS
 
 bool osc::ActionImportLandmarks(
     ModelStatePair& model,
-    std::span<const lm::NamedLandmark> landmarks,
+    std::span<const opyn::NamedLandmark> landmarks,
     std::optional<std::string> maybeName,
     [[maybe_unused]] std::optional<std::string> maybeTargetFrameAbsPath)
 {

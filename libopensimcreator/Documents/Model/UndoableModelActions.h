@@ -421,7 +421,7 @@ namespace osc
     bool ActionFitPlaneToMesh(opyn::ModelStatePair&, const OpenSim::Mesh&);
     bool ActionImportLandmarks(
         opyn::ModelStatePair&,
-        std::span<const lm::NamedLandmark>,
+        std::span<const opyn::NamedLandmark>,
         std::optional<std::string> maybeName,
         std::optional<std::string> maybeTargetFrameAbsPath
     );

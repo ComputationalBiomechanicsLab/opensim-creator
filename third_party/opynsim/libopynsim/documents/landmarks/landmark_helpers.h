@@ -14,9 +14,9 @@
 #include <string_view>
 #include <vector>
 
-namespace osc { class MaybeNamedLandmarkPair; }
+namespace opyn { class MaybeNamedLandmarkPair; }
 
-namespace osc::lm
+namespace opyn
 {
     struct CSVParseWarning final {
         size_t lineNumber;

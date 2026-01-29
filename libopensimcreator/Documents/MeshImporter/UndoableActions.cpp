@@ -469,7 +469,7 @@ bool osc::mi::AddStationAtLocation(
 
 void osc::mi::ActionImportLandmarks(
     UndoableDocument& udoc,
-    std::span<const lm::NamedLandmark> landmarks,
+    std::span<const opyn::NamedLandmark> landmarks,
     std::optional<std::string> maybeName)
 {
     Document& doc = udoc.upd_scratch();

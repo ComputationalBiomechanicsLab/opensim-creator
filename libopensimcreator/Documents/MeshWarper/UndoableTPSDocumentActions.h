@@ -82,16 +82,16 @@ namespace osc
     void ActionPromptUserToLoadNonParticipatingLandmarksFromCSV(const std::shared_ptr<UndoableTPSDocument>&);
 
     // saves all source/destination landmarks to a CSV file (matches loading)
-    void ActionPromptUserToSaveLandmarksToCSV(const TPSDocument&, TPSDocumentInputIdentifier, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
+    void ActionPromptUserToSaveLandmarksToCSV(const TPSDocument&, TPSDocumentInputIdentifier, opyn::LandmarkCSVFlags = opyn::LandmarkCSVFlags::None);
 
     // writes all source/destination landmark pairs with a location to the output stream in a CSV format.
-    void ActionWriteLandmarksAsCSV(std::span<const TPSDocumentLandmarkPair>, TPSDocumentInputIdentifier, lm::LandmarkCSVFlags, std::ostream&);
+    void ActionWriteLandmarksAsCSV(std::span<const TPSDocumentLandmarkPair>, TPSDocumentInputIdentifier, opyn::LandmarkCSVFlags, std::ostream&);
 
     // saves non-participating landmarks to a CSV file (matches loading)
-    void ActionPromptUserToSaveNonParticipatingLandmarksToCSV(const TPSDocument&, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
+    void ActionPromptUserToSaveNonParticipatingLandmarksToCSV(const TPSDocument&, opyn::LandmarkCSVFlags = opyn::LandmarkCSVFlags::None);
 
     // saves all pairable landmarks in the TPS document to a user-specified CSV file
-    void ActionPromptUserToSavePairedLandmarksToCSV(const TPSDocument&, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
+    void ActionPromptUserToSavePairedLandmarksToCSV(const TPSDocument&, opyn::LandmarkCSVFlags = opyn::LandmarkCSVFlags::None);
 
     // prompts the user to save the mesh to an obj file
     void ActionPromptUserToSaveMeshToObjFile(const Mesh&, OBJWriterFlags);
@@ -103,13 +103,13 @@ namespace osc
     void ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(
         const TPSDocument&,
         TPSResultCache&,
-        lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None
+        opyn::LandmarkCSVFlags = opyn::LandmarkCSVFlags::None
     );
 
     // swaps the source and destination (incl. premultiply, etc.)
     void ActionSwapSourceDestination(UndoableTPSDocument&);
 
-    // translate the chosen landmarks by a translation vector, but don't save the the undoable output
+    // translate the chosen landmarks by a translation vector, but don't save the undoable output
     void ActionTranslateLandmarksDontSave(UndoableTPSDocument&, const std::unordered_set<TPSDocumentElementID>& landmarkIDs, const Vector3& translation);
 
     // commit/save the scratch space with a "translated landmarks" message (pair this with `ActionTranslateLandmarksDontSave`)

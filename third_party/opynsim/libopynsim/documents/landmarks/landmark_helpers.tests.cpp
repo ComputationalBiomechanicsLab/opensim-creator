@@ -15,8 +15,7 @@
 #include <utility>
 #include <vector>
 
-using namespace osc;
-using namespace osc::lm;
+using namespace opyn;
 
 namespace
 {
@@ -191,9 +190,9 @@ TEST(LandmarkHelpers, GenerateNamesGeneratesPrefixedNameForUnnamedInputs)
         {"etc.",       {1.0f, 1.0f, 0.0f}},
     };
     const std::vector<NamedLandmark> expectedOutput = {
-        {"p1", Vector3{}},
-        {"someprefix_0", Vector3{0.0f, 1.0f, 0.0f}},
-        {"etc.", Vector3{1.0f, 1.0f, 0.0f}},
+        {"p1",           osc::Vector3{}},
+        {"someprefix_0", osc::Vector3{0.0f, 1.0f, 0.0f}},
+        {"etc.",         osc::Vector3{1.0f, 1.0f, 0.0f}},
     };
     const auto output = GenerateNames(input, "someprefix_");
 

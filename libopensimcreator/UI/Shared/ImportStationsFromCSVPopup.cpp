@@ -255,11 +255,11 @@ private:
             return;
         }
 
-        std::vector<lm::Landmark> lms;
-        lm::ReadLandmarksFromCSV(
+        std::vector<opyn::Landmark> lms;
+        opyn::ReadLandmarksFromCSV(
             ifs,
-            [&lms](lm::Landmark&& lm) { lms.push_back(std::move(lm)); },
-            [this](const lm::CSVParseWarning& warning) { m_ImportWarnings.push_back(to_string(warning)); }
+            [&lms](opyn::Landmark&& lm) { lms.push_back(std::move(lm)); },
+            [this](const opyn::CSVParseWarning& warning) { m_ImportWarnings.push_back(to_string(warning)); }
         );
         m_ImportedLandmarks = GenerateNames(lms);
     }
@@ -280,7 +280,7 @@ private:
 
     std::function<void(ImportedData)> m_OnImportCallback;
     std::optional<std::filesystem::path> m_MaybeImportPath;
-    std::vector<lm::NamedLandmark> m_ImportedLandmarks;
+    std::vector<opyn::NamedLandmark> m_ImportedLandmarks;
     std::vector<std::string> m_ImportWarnings;
     std::shared_ptr<const opyn::ModelStatePair> m_MaybeAssociatedModel;
     std::string m_TargetComponentAbsPath = "/ground";

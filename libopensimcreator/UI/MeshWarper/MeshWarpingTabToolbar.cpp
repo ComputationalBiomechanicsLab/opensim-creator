@@ -107,7 +107,7 @@ private:
     void drawSaveLandmarksButton()
     {
         if (ui::draw_button(MSMICONS_SAVE)) {
-            ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch(), lm::LandmarkCSVFlags::NoNames);
+            ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch(), opyn::LandmarkCSVFlags::NoNames);
         }
         ui::draw_tooltip_if_item_hovered(
             "Save Landmarks to CSV (no names)",

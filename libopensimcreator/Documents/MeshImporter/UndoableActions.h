@@ -145,7 +145,7 @@ namespace osc::mi
 
     void ActionImportLandmarks(
         UndoableDocument&,
-        std::span<const lm::NamedLandmark>,
+        std::span<const opyn::NamedLandmark>,
         std::optional<std::string> maybeName = std::nullopt
     );
 }

@@ -25,8 +25,6 @@
 #include <utility>
 #include <vector>
 
-using osc::lm::LandmarkCSVFlags;
-
 namespace osc
 {
     // a "result" panel (i.e. after applying a warp to the source)
@@ -162,7 +160,11 @@ namespace osc
                 }
                 if (ui::draw_menu_item("Warped Non-Participating Landmark Positions to CSV"))
                 {
-                    ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->updResultCache(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
+                    ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(
+                        m_State->getScratch(),
+                        m_State->updResultCache(),
+                        opyn::LandmarkCSVFlags::NoHeader | opyn::LandmarkCSVFlags::NoNames
+                    );
                 }
                 if (ui::draw_menu_item("Landmark Pairs to CSV"))
                 {
@@ -170,7 +172,7 @@ namespace osc
                 }
                 if (ui::draw_menu_item("Landmark Pairs to CSV (no names)"))
                 {
-                    ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
+                    ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch(), opyn::LandmarkCSVFlags::NoNames);
                 }
                 ui::end_popup();
             }

@@ -302,13 +302,13 @@ namespace
         const opyn::TPSCoefficients3D<float>& lookupTPSCoefficients(const ThinPlateSplineCommonInputs& tpsInputs)
         {
             // Read source+destination landmark files into independent collections
-            const auto sourceLandmarks = lm::ReadLandmarksFromCSVIntoVectorOrThrow(tpsInputs.sourceLandmarksPath);
-            const auto destinationLandmarks = lm::ReadLandmarksFromCSVIntoVectorOrThrow(tpsInputs.destinationLandmarksPath);
+            const auto sourceLandmarks = opyn::ReadLandmarksFromCSVIntoVectorOrThrow(tpsInputs.sourceLandmarksPath);
+            const auto destinationLandmarks = opyn::ReadLandmarksFromCSVIntoVectorOrThrow(tpsInputs.destinationLandmarksPath);
 
             // Pair the source+destination landmarks together into a TPS coefficient solver's inputs
             opyn::TPSCoefficientSolverInputs3D<float> inputs;
             inputs.landmarks.reserve(max(sourceLandmarks.size(), destinationLandmarks.size()));
-            lm::TryPairingLandmarks(sourceLandmarks, destinationLandmarks, [&inputs, &tpsInputs](const MaybeNamedLandmarkPair& p)
+            opyn::TryPairingLandmarks(sourceLandmarks, destinationLandmarks, [&inputs, &tpsInputs](const MaybeNamedLandmarkPair& p)
             {
                 if (auto landmark3d = p.tryGetPairedLocations()) {
                     landmark3d->source = tpsInputs.sourceLandmarksPrescale * landmark3d->source;

@@ -23,10 +23,7 @@
 #include <variant>
 #include <vector>
 
-using osc::lm::CSVParseWarning;
-using osc::lm::Landmark;
-using osc::lm::NamedLandmark;
-using namespace osc;
+using namespace opyn;
 namespace rgs = std::ranges;
 
 namespace
@@ -37,7 +34,7 @@ namespace
 
     ParseResult ParseRow(size_t lineNum, std::span<const std::string> cols)
     {
-        if (cols.empty() || (cols.size() == 1 && strip_whitespace(cols.front()).empty()))
+        if (cols.empty() || (cols.size() == 1 && osc::strip_whitespace(cols.front()).empty()))
         {
             return SkipRow{};  // whitespace row, or trailing newline
         }
@@ -55,7 +52,7 @@ namespace
             data = data.subspan(1);
         }
 
-        const std::optional<float> x = from_chars_strip_whitespace(data.front());
+        const std::optional<float> x = osc::from_chars_strip_whitespace(data.front());
         if (!x)
         {
             if (lineNum == 0)
@@ -67,7 +64,7 @@ namespace
                 return CSVParseWarning{lineNum, "cannot parse X as a number"};
             }
         }
-        const std::optional<float> y = from_chars_strip_whitespace(data[1]);
+        const std::optional<float> y = osc::from_chars_strip_whitespace(data[1]);
         if (!y)
         {
             if (lineNum == 0)
@@ -79,7 +76,7 @@ namespace
                 return CSVParseWarning{lineNum, "cannot parse Y as a number"};
             }
         }
-        const std::optional<float> z = from_chars_strip_whitespace(data[2]);
+        const std::optional<float> z = osc::from_chars_strip_whitespace(data[2]);
         if (!z)
         {
             if (lineNum == 0)
@@ -92,7 +89,7 @@ namespace
             }
         }
 
-        return Landmark{std::move(maybeName), Vector3{*x, *y, *z}};
+        return Landmark{std::move(maybeName), osc::Vector3{*x, *y, *z}};
     }
 
     bool SameNameOrBothUnnamed(const Landmark& a, const Landmark& b)
@@ -108,7 +105,7 @@ namespace
     }
 }
 
-std::string osc::lm::to_string(const CSVParseWarning& warning)
+std::string opyn::to_string(const CSVParseWarning& warning)
 {
     std::stringstream ss;
     const size_t displayedLineNumber = warning.lineNumber+1;  // user-facing software (e.g. IDEs) start at 1
@@ -116,15 +113,15 @@ std::string osc::lm::to_string(const CSVParseWarning& warning)
     return std::move(ss).str();
 }
 
-void osc::lm::ReadLandmarksFromCSV(
+void opyn::ReadLandmarksFromCSV(
     std::istream& in,
     const std::function<void(Landmark&&)>& landmarkConsumer,
     const std::function<void(CSVParseWarning)>& warningConsumer)
 {
     std::vector<std::string> cols;
-    for (size_t line = 0; CSV::read_row_into_vector(in, cols); ++line)
+    for (size_t line = 0; osc::CSV::read_row_into_vector(in, cols); ++line)
     {
-        std::visit(Overload
+        std::visit(osc::Overload
         {
             [&landmarkConsumer](Landmark&& lm) { landmarkConsumer(std::move(lm)); },
             [&warningConsumer](CSVParseWarning&& warning) { warningConsumer(std::move(warning)); },
@@ -133,7 +130,7 @@ void osc::lm::ReadLandmarksFromCSV(
     }
 }
 
-std::vector<Landmark> osc::lm::ReadLandmarksFromCSVIntoVectorOrThrow(
+std::vector<Landmark> opyn::ReadLandmarksFromCSVIntoVectorOrThrow(
     const std::filesystem::path& path)
 {
     std::ifstream in{path};
@@ -148,7 +145,7 @@ std::vector<Landmark> osc::lm::ReadLandmarksFromCSVIntoVectorOrThrow(
     return rv;
 }
 
-void osc::lm::WriteLandmarksToCSV(
+void opyn::WriteLandmarksToCSV(
     std::ostream& out,
     const std::function<std::optional<Landmark>()>& landmarkProducer,
     LandmarkCSVFlags flags)
@@ -158,11 +155,11 @@ void osc::lm::WriteLandmarksToCSV(
     {
         if (flags & LandmarkCSVFlags::NoNames)
         {
-            CSV::write_row(out, {{"x", "y", "z"}});
+            osc::CSV::write_row(out, {{"x", "y", "z"}});
         }
         else
         {
-            CSV::write_row(out, {{"name", "x", "y", "z"}});
+            osc::CSV::write_row(out, {{"name", "x", "y", "z"}});
         }
     }
 
@@ -176,16 +173,16 @@ void osc::lm::WriteLandmarksToCSV(
 
         if (flags & LandmarkCSVFlags::NoNames)
         {
-            CSV::write_row(out, {{to_string(x), to_string(y), to_string(z)}});
+            osc::CSV::write_row(out, {{to_string(x), to_string(y), to_string(z)}});
         }
         else
         {
-            CSV::write_row(out, {{lm->maybeName.value_or("unnamed"), to_string(x), to_string(y), to_string(z)}});
+            osc::CSV::write_row(out, {{lm->maybeName.value_or("unnamed"), to_string(x), to_string(y), to_string(z)}});
         }
     }
 }
 
-std::vector<NamedLandmark> osc::lm::GenerateNames(
+std::vector<NamedLandmark> opyn::GenerateNames(
     std::span<const Landmark> lms,
     std::string_view prefix)
 {
@@ -225,7 +222,7 @@ std::vector<NamedLandmark> osc::lm::GenerateNames(
     return rv;
 }
 
-void osc::lm::TryPairingLandmarks(
+void opyn::TryPairingLandmarks(
     std::vector<Landmark> a,
     std::vector<Landmark> b,
     const std::function<void(const MaybeNamedLandmarkPair&)>& consumer)

@@ -6,14 +6,14 @@
 
 #include <string>
 
-namespace osc::lm
+namespace opyn
 {
     struct NamedLandmark final {
         // The name of this landmark.
         std::string name;
 
         // The position of the landmark in its caller-specified coordinate system.
-        Vector3 position;
+        osc::Vector3 position;
 
         friend bool operator==(const NamedLandmark&, const NamedLandmark&) = default;
         friend bool operator==(const Landmark& lhs, const NamedLandmark& rhs)

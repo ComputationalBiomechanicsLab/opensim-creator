@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace osc::lm
+namespace opyn
 {
     enum class LandmarkCSVFlags {
         None     = 0,

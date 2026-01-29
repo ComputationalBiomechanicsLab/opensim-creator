@@ -12,8 +12,6 @@
 #include <memory>
 #include <utility>
 
-using osc::lm::LandmarkCSVFlags;
-
 namespace osc
 {
     // widget: the 'file' menu (a sub menu of the main menu)
@@ -103,7 +101,7 @@ namespace osc
             }
             if (ui::draw_menu_item("Landmark Pairs to CSV (no names)"))
             {
-                ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
+                ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch(), opyn::LandmarkCSVFlags::NoNames);
             }
             if (ui::draw_menu_item("Non-Participating Landmarks to CSV"))
             {

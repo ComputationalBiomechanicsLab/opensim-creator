@@ -21,7 +21,7 @@ TEST(ActionWriteLandmarksAsCSV, worksOnBasicExample)
     });
 
     std::stringstream ss;
-    ActionWriteLandmarksAsCSV(pairs, TPSDocumentInputIdentifier::Source, lm::LandmarkCSVFlags::None, ss);
+    ActionWriteLandmarksAsCSV(pairs, TPSDocumentInputIdentifier::Source, opyn::LandmarkCSVFlags::None, ss);
     const std::string output = std::move(ss).str();
 
     ASSERT_FALSE(output.empty());

@@ -245,7 +245,7 @@ void osc::ActionPromptUserToLoadLandmarksFromCSV(
                 return;  // some kind of error opening the file
             }
 
-            lm::ReadLandmarksFromCSV(fin, [&doc, which](auto&& landmark)
+            opyn::ReadLandmarksFromCSV(fin, [&doc, which](auto&& landmark)
             {
                 AddLandmarkToInput(doc->upd_scratch(), which, landmark.position, std::move(landmark.maybeName));
             });
@@ -273,7 +273,7 @@ void osc::ActionPromptUserToLoadNonParticipatingLandmarksFromCSV(const std::shar
                 return;  // some kind of error opening the file
             }
 
-            lm::ReadLandmarksFromCSV(fin, [&doc](auto&& landmark)
+            opyn::ReadLandmarksFromCSV(fin, [&doc](auto&& landmark)
             {
                 AddNonParticipatingLandmark(doc->upd_scratch(), landmark.position, std::move(landmark.maybeName));
             });
@@ -290,7 +290,7 @@ void osc::ActionPromptUserToLoadNonParticipatingLandmarksFromCSV(const std::shar
 void osc::ActionPromptUserToSaveLandmarksToCSV(
     const TPSDocument& doc,
     TPSDocumentInputIdentifier which,
-    lm::LandmarkCSVFlags flags)
+    opyn::LandmarkCSVFlags flags)
 {
     App::upd().prompt_user_to_save_file_with_extension_async([pairs = doc.landmarkPairs, which, flags](std::optional<std::filesystem::path> p) mutable
     {
@@ -310,15 +310,15 @@ void osc::ActionPromptUserToSaveLandmarksToCSV(
 void osc::ActionWriteLandmarksAsCSV(
     std::span<const TPSDocumentLandmarkPair> pairs,
     TPSDocumentInputIdentifier which,
-    lm::LandmarkCSVFlags flags,
+    opyn::LandmarkCSVFlags flags,
     std::ostream& out)
 {
-    lm::WriteLandmarksToCSV(out, [which, it = pairs.begin(), end = pairs.end()]() mutable -> std::optional<lm::Landmark>
+    opyn::WriteLandmarksToCSV(out, [which, it = pairs.begin(), end = pairs.end()]() mutable -> std::optional<opyn::Landmark>
     {
         while (it != end) {
             const auto& pair = *it++;
             if (const auto location = GetLocation(pair, which)) {
-                return lm::Landmark{std::string{pair.name}, *location};
+                return opyn::Landmark{std::string{pair.name}, *location};
             }
         }
         return std::nullopt;
@@ -327,7 +327,7 @@ void osc::ActionWriteLandmarksAsCSV(
 
 void osc::ActionPromptUserToSaveNonParticipatingLandmarksToCSV(
     const TPSDocument& doc,
-    lm::LandmarkCSVFlags flags)
+    opyn::LandmarkCSVFlags flags)
 {
     App::upd().prompt_user_to_save_file_with_extension_async([nplms = doc.nonParticipatingLandmarks, flags](std::optional<std::filesystem::path> p)
     {
@@ -340,11 +340,11 @@ void osc::ActionPromptUserToSaveNonParticipatingLandmarksToCSV(
             return;  // couldn't open file for writing
         }
 
-        lm::WriteLandmarksToCSV(fout, [it = nplms.begin(), end = nplms.end()]() mutable
+        opyn::WriteLandmarksToCSV(fout, [it = nplms.begin(), end = nplms.end()]() mutable
         {
-            std::optional<lm::Landmark> rv;
+            std::optional<opyn::Landmark> rv;
             if (it != end) {
-                rv = lm::Landmark{std::string{it->name}, it->location};
+                rv = opyn::Landmark{std::string{it->name}, it->location};
             }
             ++it;
             return rv;
@@ -352,7 +352,7 @@ void osc::ActionPromptUserToSaveNonParticipatingLandmarksToCSV(
     }, "csv");
 }
 
-void osc::ActionPromptUserToSavePairedLandmarksToCSV(const TPSDocument& doc, lm::LandmarkCSVFlags flags)
+void osc::ActionPromptUserToSavePairedLandmarksToCSV(const TPSDocument& doc, opyn::LandmarkCSVFlags flags)
 {
     App::upd().prompt_user_to_save_file_with_extension_async([pairs = GetNamedLandmarkPairs(doc), flags](std::optional<std::filesystem::path> maybePath)
     {
@@ -365,8 +365,8 @@ void osc::ActionPromptUserToSavePairedLandmarksToCSV(const TPSDocument& doc, lm:
         }
 
         // if applicable, write header row
-        if (not (flags & lm::LandmarkCSVFlags::NoHeader)) {
-            if (flags & lm::LandmarkCSVFlags::NoNames) {
+        if (not (flags & opyn::LandmarkCSVFlags::NoHeader)) {
+            if (flags & opyn::LandmarkCSVFlags::NoNames) {
                 CSV::write_row(fout, {{"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
             }
             else {
@@ -376,11 +376,11 @@ void osc::ActionPromptUserToSavePairedLandmarksToCSV(const TPSDocument& doc, lm:
 
         // write data rows
         std::vector<std::string> cols;
-        cols.reserve(flags & lm::LandmarkCSVFlags::NoNames ? 6 : 7);
+        cols.reserve(flags & opyn::LandmarkCSVFlags::NoNames ? 6 : 7);
         for (const auto& p : pairs) {
             using std::to_string;
 
-            if (not (flags & lm::LandmarkCSVFlags::NoNames)) {
+            if (not (flags & opyn::LandmarkCSVFlags::NoNames)) {
                 cols.emplace_back(p.name);
             }
             cols.push_back(to_string(p.source[0]));
@@ -441,7 +441,7 @@ void osc::ActionPromptUserToMeshToStlFile(const Mesh& mesh)
 void osc::ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(
     const TPSDocument& doc,
     TPSResultCache& cache,
-    lm::LandmarkCSVFlags flags)
+    opyn::LandmarkCSVFlags flags)
 {
     const auto span = cache.getWarpedNonParticipatingLandmarkLocations(doc);
 
@@ -459,12 +459,12 @@ void osc::ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(
             return;  // couldn't open file for writing
         }
 
-        lm::WriteLandmarksToCSV(fout, [&warpedNplms, &nplms, i = 0uz]() mutable
+        opyn::WriteLandmarksToCSV(fout, [&warpedNplms, &nplms, i = 0uz]() mutable
         {
-            std::optional<lm::Landmark> rv;
+            std::optional<opyn::Landmark> rv;
             for (; !rv && i < warpedNplms.size(); ++i) {
                 std::string name = std::string{nplms.at(i).name};
-                rv = lm::Landmark{std::move(name), warpedNplms.at(i)};
+                rv = opyn::Landmark{std::move(name), warpedNplms.at(i)};
             }
             return rv;
         }, flags);
