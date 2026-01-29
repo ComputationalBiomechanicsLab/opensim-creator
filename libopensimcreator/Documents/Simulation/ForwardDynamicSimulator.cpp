@@ -91,7 +91,7 @@ namespace
         std::atomic<int> m_Status = static_cast<int>(SimulationStatus::Initializing);
     };
 
-    class AuxiliaryVariableOutputExtractor final : public OutputExtractor {
+    class AuxiliaryVariableOutputExtractor final : public opyn::OutputExtractor {
     public:
         AuxiliaryVariableOutputExtractor(std::string name, std::string description, UID uid) :
             m_Name{std::move(name)},
@@ -155,7 +155,7 @@ namespace
     std::vector<opyn::SharedOutputExtractor> CreateSimulatorOutputExtractors()
     {
         std::vector<opyn::SharedOutputExtractor> rv;
-        rv.reserve(2uz + GetNumIntegratorOutputExtractors() + GetNumMultiBodySystemOutputExtractors());
+        rv.reserve(2uz + opyn::GetNumIntegratorOutputExtractors() + opyn::GetNumMultiBodySystemOutputExtractors());
 
         {
             const opyn::SharedOutputExtractor out{AuxiliaryVariableOutputExtractor{
@@ -173,14 +173,14 @@ namespace
             rv.push_back(out2);
         }
 
-        for (int i = 0, len = GetNumIntegratorOutputExtractors(); i < len; ++i)
+        for (int i = 0, len = opyn::GetNumIntegratorOutputExtractors(); i < len; ++i)
         {
-            rv.push_back(GetIntegratorOutputExtractorDynamic(i));
+            rv.push_back(opyn::GetIntegratorOutputExtractorDynamic(i));
         }
 
-        for (int i = 0, len = GetNumMultiBodySystemOutputExtractors(); i < len; ++i)
+        for (int i = 0, len = opyn::GetNumMultiBodySystemOutputExtractors(); i < len; ++i)
         {
-            rv.push_back(GetMultiBodySystemOutputExtractorDynamic(i));
+            rv.push_back(opyn::GetMultiBodySystemOutputExtractorDynamic(i));
         }
 
         return rv;
@@ -233,22 +233,22 @@ namespace
 
         // populate integrator outputs
         {
-            const int numOutputs = GetNumIntegratorOutputExtractors();
+            const int numOutputs = opyn::GetNumIntegratorOutputExtractors();
             auxValues.reserve(auxValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
-                const IntegratorOutputExtractor& o = GetIntegratorOutputExtractor(i);
+                const opyn::IntegratorOutputExtractor& o = opyn::GetIntegratorOutputExtractor(i);
                 auxValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(integrator));
             }
         }
 
         // populate mbs outputs
         {
-            const int numOutputs = GetNumMultiBodySystemOutputExtractors();
+            const int numOutputs = opyn::GetNumMultiBodySystemOutputExtractors();
             auxValues.reserve(auxValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
-                const MultiBodySystemOutputExtractor& o = GetMultiBodySystemOutputExtractor(i);
+                const opyn::MultiBodySystemOutputExtractor& o = opyn::GetMultiBodySystemOutputExtractor(i);
                 auxValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(sys));
             }
         }

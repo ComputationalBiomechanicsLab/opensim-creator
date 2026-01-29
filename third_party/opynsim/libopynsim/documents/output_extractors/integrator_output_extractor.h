@@ -14,7 +14,7 @@
 namespace OpenSim { class Component; }
 namespace SimTK { class Integrator; }
 
-namespace osc
+namespace opyn
 {
     // an output extractor that extracts integrator metadata (e.g. predicted step size)
     class IntegratorOutputExtractor final : public OutputExtractor {
@@ -31,18 +31,18 @@ namespace osc
             m_Extractor{extractor}
         {}
 
-        UID getAuxiliaryDataID() const { return m_AuxiliaryDataID; }
+        osc::UID getAuxiliaryDataID() const { return m_AuxiliaryDataID; }
         ExtractorFn getExtractorFunction() const { return m_Extractor; }
 
     private:
-        CStringView implGetName() const final { return m_Name; }
-        CStringView implGetDescription() const final { return m_Description; }
-        opyn::OutputExtractorDataType implGetOutputType() const override { return opyn::OutputExtractorDataType::Float; }
-        opyn::OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
+        osc::CStringView implGetName() const final { return m_Name; }
+        osc::CStringView implGetDescription() const final { return m_Description; }
+        OutputExtractorDataType implGetOutputType() const override { return OutputExtractorDataType::Float; }
+        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
         size_t implGetHash() const final;
         bool implEquals(const OutputExtractor&) const final;
 
-        UID m_AuxiliaryDataID;
+        osc::UID m_AuxiliaryDataID;
         std::string m_Name;
         std::string m_Description;
         ExtractorFn m_Extractor;
@@ -50,5 +50,5 @@ namespace osc
 
     int GetNumIntegratorOutputExtractors();
     const IntegratorOutputExtractor& GetIntegratorOutputExtractor(int idx);
-    opyn::SharedOutputExtractor GetIntegratorOutputExtractorDynamic(int idx);
+    SharedOutputExtractor GetIntegratorOutputExtractorDynamic(int idx);
 }

@@ -10,12 +10,12 @@
 #include <optional>
 #include <span>
 
-using namespace osc;
+using namespace opyn;
 
 // constants
 namespace
 {
-    constexpr std::array<ComponentOutputSubfield, num_flags<ComponentOutputSubfield>()> c_OutputSubfieldsLut = std::to_array(
+    constexpr std::array<ComponentOutputSubfield, osc::num_flags<ComponentOutputSubfield>()> c_OutputSubfieldsLut = std::to_array(
     {
         ComponentOutputSubfield::X,
         ComponentOutputSubfield::Y,
@@ -148,9 +148,9 @@ namespace
     }
 }
 
-std::optional<CStringView> osc::GetOutputSubfieldLabel(ComponentOutputSubfield subfield)
+std::optional<osc::CStringView> opyn::GetOutputSubfieldLabel(ComponentOutputSubfield subfield)
 {
-    static_assert(num_flags<ComponentOutputSubfield>() == 8);
+    static_assert(osc::num_flags<ComponentOutputSubfield>() == 8);
 
     switch (subfield) {
     case ComponentOutputSubfield::X:          return "X";
@@ -166,12 +166,12 @@ std::optional<CStringView> osc::GetOutputSubfieldLabel(ComponentOutputSubfield s
     }
 }
 
-std::span<const ComponentOutputSubfield> osc::GetAllSupportedOutputSubfields()
+std::span<const ComponentOutputSubfield> opyn::GetAllSupportedOutputSubfields()
 {
     return c_OutputSubfieldsLut;
 }
 
-bool osc::ProducesExtractableNumericValues(const OpenSim::AbstractOutput& ao)
+bool opyn::ProducesExtractableNumericValues(const OpenSim::AbstractOutput& ao)
 {
     if (dynamic_cast<const OpenSim::Output<double>*>(&ao)) {
         return true;
@@ -184,7 +184,7 @@ bool osc::ProducesExtractableNumericValues(const OpenSim::AbstractOutput& ao)
     return false;
 }
 
-ComponentOutputSubfields osc::GetSupportedSubfields(const OpenSim::AbstractOutput& ao)
+ComponentOutputSubfields opyn::GetSupportedSubfields(const OpenSim::AbstractOutput& ao)
 {
     if (dynamic_cast<const OpenSim::Output<SimTK::Vec3>*>(&ao)) {
         return {
@@ -211,7 +211,7 @@ ComponentOutputSubfields osc::GetSupportedSubfields(const OpenSim::AbstractOutpu
     }
 }
 
-SubfieldExtractorFunc osc::GetExtractorFuncOrNull(
+SubfieldExtractorFunc opyn::GetExtractorFuncOrNull(
     const OpenSim::AbstractOutput& ao,
     ComponentOutputSubfield subfield)
 {

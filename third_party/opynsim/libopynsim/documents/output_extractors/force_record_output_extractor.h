@@ -10,7 +10,7 @@
 
 namespace OpenSim { class Force; }
 
-namespace osc
+namespace opyn
 {
     // An `OutputExtractor` that extracts the nth record from an `OpenSim::Force`'s
     // record values.
@@ -27,14 +27,14 @@ namespace osc
         ~ForceRecordOutputExtractor() noexcept override;
 
     private:
-        CStringView implGetName() const final;
-        CStringView implGetDescription() const final;
-        opyn::OutputExtractorDataType implGetOutputType() const final;
-        opyn::OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
+        osc::CStringView implGetName() const final;
+        osc::CStringView implGetDescription() const final;
+        OutputExtractorDataType implGetOutputType() const final;
+        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
         size_t implGetHash() const final;
         bool implEquals(const OutputExtractor&) const final;
 
         class Impl;
-        ClonePtr<Impl> m_Impl;
+        osc::ClonePtr<Impl> m_Impl;
     };
 }

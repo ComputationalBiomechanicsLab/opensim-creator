@@ -10,7 +10,7 @@
 
 using namespace opyn;
 
-class osc::ForceRecordOutputExtractor::Impl final {
+class opyn::ForceRecordOutputExtractor::Impl final {
 public:
     Impl(const OpenSim::Force& force, int recordIndex) :
         m_ForceAbsPath{force.getAbsolutePath()},
@@ -24,8 +24,8 @@ public:
 
     friend bool operator==(const Impl&, const Impl&) = default;
 
-    CStringView getName() const { return m_Label; }
-    CStringView getDescription() const { return {}; }
+    osc::CStringView getName() const { return m_Label; }
+    osc::CStringView getDescription() const { return {}; }
     OutputExtractorDataType getOutputType() const { return OutputExtractorDataType::Float; }
     OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& root) const
     {
@@ -34,18 +34,18 @@ public:
             {
                 const OpenSim::Array<double> values = force->getRecordValues(state.getState());
                 if (0 <= index and index < values.size()) {
-                    return Variant{static_cast<float>(values[index])};
+                    return osc::Variant{static_cast<float>(values[index])};
                 }
                 else {
-                    return Variant{quiet_nan_v<float>};  // Index out of bounds
+                    return osc::Variant{osc::quiet_nan_v<float>};  // Index out of bounds
                 }
             }};
         }
         else {
-            return OutputValueExtractor::constant(quiet_nan_v<float>);  // Invalid component
+            return OutputValueExtractor::constant(osc::quiet_nan_v<float>);  // Invalid component
         }
     }
-    size_t getHash() const { return hash_of(m_ForceAbsPath, m_RecordIndex, m_Label); }
+    size_t getHash() const { return osc::hash_of(m_ForceAbsPath, m_RecordIndex, m_Label); }
     bool equals(const OutputExtractor& other) const
     {
         if (const auto* downcasted = dynamic_cast<const ForceRecordOutputExtractor*>(&other)) {
@@ -65,19 +65,19 @@ private:
     std::string m_Label;
 };
 
-osc::ForceRecordOutputExtractor::ForceRecordOutputExtractor(
+opyn::ForceRecordOutputExtractor::ForceRecordOutputExtractor(
     const OpenSim::Force& force,
     int recordIndex) :
     m_Impl{std::make_unique<Impl>(force, recordIndex)}
 {}
-osc::ForceRecordOutputExtractor::ForceRecordOutputExtractor(const ForceRecordOutputExtractor&) = default;
-osc::ForceRecordOutputExtractor::ForceRecordOutputExtractor(ForceRecordOutputExtractor&&) noexcept = default;
-osc::ForceRecordOutputExtractor& osc::ForceRecordOutputExtractor::operator=(const ForceRecordOutputExtractor&) = default;
-osc::ForceRecordOutputExtractor& osc::ForceRecordOutputExtractor::operator=(ForceRecordOutputExtractor&&) noexcept = default;
-osc::ForceRecordOutputExtractor::~ForceRecordOutputExtractor() noexcept = default;
-osc::CStringView osc::ForceRecordOutputExtractor::implGetName() const { return m_Impl->getName(); }
-osc::CStringView osc::ForceRecordOutputExtractor::implGetDescription() const { return m_Impl->getDescription(); }
-opyn::OutputExtractorDataType osc::ForceRecordOutputExtractor::implGetOutputType() const { return m_Impl->getOutputType(); }
-opyn::OutputValueExtractor osc::ForceRecordOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const { return m_Impl->getOutputValueExtractor(component); }
-size_t osc::ForceRecordOutputExtractor::implGetHash() const { return m_Impl->getHash(); }
-bool osc::ForceRecordOutputExtractor::implEquals(const OutputExtractor& other) const { return m_Impl->equals(other); }
+opyn::ForceRecordOutputExtractor::ForceRecordOutputExtractor(const ForceRecordOutputExtractor&) = default;
+opyn::ForceRecordOutputExtractor::ForceRecordOutputExtractor(ForceRecordOutputExtractor&&) noexcept = default;
+ForceRecordOutputExtractor& opyn::ForceRecordOutputExtractor::operator=(const ForceRecordOutputExtractor&) = default;
+ForceRecordOutputExtractor& opyn::ForceRecordOutputExtractor::operator=(ForceRecordOutputExtractor&&) noexcept = default;
+opyn::ForceRecordOutputExtractor::~ForceRecordOutputExtractor() noexcept = default;
+osc::CStringView opyn::ForceRecordOutputExtractor::implGetName() const { return m_Impl->getName(); }
+osc::CStringView opyn::ForceRecordOutputExtractor::implGetDescription() const { return m_Impl->getDescription(); }
+OutputExtractorDataType opyn::ForceRecordOutputExtractor::implGetOutputType() const { return m_Impl->getOutputType(); }
+OutputValueExtractor opyn::ForceRecordOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const { return m_Impl->getOutputValueExtractor(component); }
+size_t opyn::ForceRecordOutputExtractor::implGetHash() const { return m_Impl->getHash(); }
+bool opyn::ForceRecordOutputExtractor::implEquals(const OutputExtractor& other) const { return m_Impl->equals(other); }

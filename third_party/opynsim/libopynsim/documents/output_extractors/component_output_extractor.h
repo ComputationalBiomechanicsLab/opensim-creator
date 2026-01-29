@@ -12,7 +12,7 @@
 namespace OpenSim { class AbstractOutput; }
 namespace OpenSim { class ComponentPath; }
 
-namespace osc
+namespace opyn
 {
     // an output extractor that uses the `OpenSim::AbstractOutput` API to extract a value
     // from a component
@@ -31,14 +31,14 @@ namespace osc
         const OpenSim::ComponentPath& getComponentAbsPath() const;
 
     private:
-        CStringView implGetName() const final;
-        CStringView implGetDescription() const final;
-        opyn::OutputExtractorDataType implGetOutputType() const final;
-        opyn::OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
+        osc::CStringView implGetName() const final;
+        osc::CStringView implGetDescription() const final;
+        OutputExtractorDataType implGetOutputType() const final;
+        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
         size_t implGetHash() const final;
         bool implEquals(const OutputExtractor&) const final;
 
         class Impl;
-        ClonePtr<Impl> m_Impl;
+        osc::ClonePtr<Impl> m_Impl;
     };
 }

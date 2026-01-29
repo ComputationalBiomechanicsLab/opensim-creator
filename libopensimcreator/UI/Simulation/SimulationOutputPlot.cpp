@@ -100,7 +100,7 @@ namespace
             std::vector<std::reference_wrapper<const OpenSim::AbstractOutput>> extractableOutputs;
             extractableOutputs.reserve(numOutputs);  // upper bound
             for (const auto& [name, output] : component.getOutputs()) {
-                if (ProducesExtractableNumericValues(*output)) {
+                if (opyn::ProducesExtractableNumericValues(*output)) {
                     extractableOutputs.push_back(*output);
                 }
             }
@@ -112,7 +112,7 @@ namespace
                         ui::push_id(id++);
                         DrawRequestOutputMenuOrMenuItem(output, [&oneDimensionalOutputExtractor, &environment](const opyn::SharedOutputExtractor& rhs)
                         {
-                            opyn::SharedOutputExtractor concatenating = opyn::SharedOutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
+                            opyn::SharedOutputExtractor concatenating = opyn::SharedOutputExtractor{opyn::ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
                             environment->overwriteOrAddNewUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
                         });
                         ui::pop_id();

@@ -10,7 +10,7 @@
 namespace OpenSim { class AbstractOutput; }
 namespace SimTK { class State; }
 
-namespace osc
+namespace opyn
 {
     // flag type that can be used to say what subfields an OpenSim output has
     enum class ComponentOutputSubfield : uint32_t {
@@ -27,9 +27,9 @@ namespace osc
 
         Default = None,
     };
-    using ComponentOutputSubfields = Flags<ComponentOutputSubfield>;
+    using ComponentOutputSubfields = osc::Flags<ComponentOutputSubfield>;
 
-    std::optional<CStringView> GetOutputSubfieldLabel(ComponentOutputSubfield);
+    std::optional<osc::CStringView> GetOutputSubfieldLabel(ComponentOutputSubfield);
     std::span<const ComponentOutputSubfield> GetAllSupportedOutputSubfields();
 
     // tests if the output produces numeric values (e.g. `float`, `Vector3`, etc. - as opposed to `std::string`)

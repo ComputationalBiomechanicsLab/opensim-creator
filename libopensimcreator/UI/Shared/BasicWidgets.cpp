@@ -103,18 +103,18 @@ namespace
         const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
     {
         bool outputAdded = false;
-        ComponentOutputSubfields supportedSubfields = GetSupportedSubfields(o);
+        opyn::ComponentOutputSubfields supportedSubfields = opyn::GetSupportedSubfields(o);
 
         // can plot suboutputs
         if (ui::begin_menu(("  " + o.getName())))
         {
-            for (ComponentOutputSubfield f : GetAllSupportedOutputSubfields())
+            for (opyn::ComponentOutputSubfield f : opyn::GetAllSupportedOutputSubfields())
             {
                 if (f & supportedSubfields)
                 {
                     if (auto label = GetOutputSubfieldLabel(f); label && ui::draw_menu_item(*label))
                     {
-                        onUserSelection(opyn::SharedOutputExtractor{ComponentOutputExtractor{o, f}});
+                        onUserSelection(opyn::SharedOutputExtractor{opyn::ComponentOutputExtractor{o, f}});
                         outputAdded = true;
                     }
                 }
@@ -140,7 +140,7 @@ namespace
 
         if (ui::draw_menu_item(("  " + o.getName())))
         {
-            onUserSelection(opyn::SharedOutputExtractor{ComponentOutputExtractor{o}});
+            onUserSelection(opyn::SharedOutputExtractor{opyn::ComponentOutputExtractor{o}});
             outputAdded = true;
         }
 
@@ -397,7 +397,7 @@ bool osc::DrawRequestOutputMenuOrMenuItem(
     const OpenSim::AbstractOutput& o,
     const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
 {
-    if (GetSupportedSubfields(o) == ComponentOutputSubfield::None)
+    if (opyn::GetSupportedSubfields(o) == opyn::ComponentOutputSubfield::None)
     {
         return DrawOutputWithNoSubfieldsMenuItem(o, onUserSelection);
     }
@@ -429,7 +429,7 @@ bool osc::DrawWatchOutputMenu(
             for (int i = 0; i < labels.size(); ++i) {
                 ui::push_id(entriesDrawn++);
                 if (ui::draw_menu_item("  " + labels[i])) {
-                    onUserSelection(opyn::SharedOutputExtractor{ForceRecordOutputExtractor{*f, i}});
+                    onUserSelection(opyn::SharedOutputExtractor{opyn::ForceRecordOutputExtractor{*f, i}});
                     outputAdded = true;
                 }
                 ui::pop_id();
@@ -480,7 +480,7 @@ void osc::DrawSearchBar(std::string& out)
 }
 
 void osc::DrawOutputNameColumn(
-    const OutputExtractor& output,
+    const opyn::OutputExtractor& output,
     bool centered,
     SimulationModelStatePair* maybeActiveSate)
 {
@@ -499,7 +499,7 @@ void osc::DrawOutputNameColumn(
     // (e.g. if the user mouses over the name of a component output it should make
     // the associated component the current hover to provide immediate feedback to
     // the user)
-    if (const auto* co = dynamic_cast<const ComponentOutputExtractor*>(&output); co && maybeActiveSate)
+    if (const auto* co = dynamic_cast<const opyn::ComponentOutputExtractor*>(&output); co && maybeActiveSate)
     {
         if (ui::is_item_hovered())
         {

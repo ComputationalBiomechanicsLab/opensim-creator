@@ -25,11 +25,11 @@ namespace OpenSim { class Station; }
 namespace SimTK { class State; }
 namespace opyn { class CustomRenderingOptions; }
 namespace opyn { class OpenSimDecorationOptions; }
+namespace opyn { class OutputExtractor; }
 namespace opyn { class OverlayDecorationOptions; }
 namespace opyn { struct ModelRendererParams; }
 namespace osc { class IconCache; }
 namespace osc { class ModelStatePair; }
-namespace osc { class OutputExtractor; }
 namespace osc { class ParamBlock; }
 namespace osc { class Rect; }
 namespace osc { class SimulationModelStatePair; }
@@ -72,7 +72,7 @@ namespace osc
     );
     void DrawSearchBar(std::string&);
     void DrawOutputNameColumn(
-        const OutputExtractor& output,
+        const opyn::OutputExtractor& output,
         bool centered = true,
         SimulationModelStatePair* maybeActiveSate = nullptr
     );

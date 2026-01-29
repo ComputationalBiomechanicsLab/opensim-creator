@@ -4,13 +4,12 @@
 #include <libopynsim/documents/state_view_with_metadata.h>
 #include <OpenSim/Simulation/Model/Station.h>
 
-using namespace osc;
 using namespace opyn;
 
 namespace
 {
     // Represents a view of a blank `SimTK::State` (can be handy for testing).
-    class BlankStateView final : public opyn::StateViewWithMetadata {
+    class BlankStateView final : public StateViewWithMetadata {
     private:
         const SimTK::State& implGetState() const final { return m_State; }
         SimTK::State m_State;
@@ -29,7 +28,7 @@ TEST(ConstantOutputExtractor, HasTypeFloatWhenConstructedFromFloat)
 
 TEST(ConstantOutputExtractor, HasTypeVector2WhenConstructedFromVector2)
 {
-    ASSERT_EQ(ConstantOutputExtractor("hello", Vector2{1.0f, 2.0f}).getOutputType(), OutputExtractorDataType::Vector2);
+    ASSERT_EQ(ConstantOutputExtractor("hello", osc::Vector2{1.0f, 2.0f}).getOutputType(), OutputExtractorDataType::Vector2);
 }
 
 TEST(ConstantOutputExtractor, ReturnsAnExtractorThatEmitsTheProvidedValue)
@@ -43,9 +42,9 @@ TEST(ConstantOutputExtractor, ReturnsAnExtractorThatEmitsTheProvidedValue)
 
 TEST(ConstantOutputExtractor, ReturnsAnExectactorThatEmitsVector2sWhenProviedVector2s)
 {
-    ConstantOutputExtractor coe("extractor", Vector2{2.0f, 3.0f});
+    ConstantOutputExtractor coe("extractor", osc::Vector2{2.0f, 3.0f});
     BlankStateView state;  // the state doesn't actually need any information for this type of extractor
     OpenSim::Station component;  // it doesn't matter which type of component it is for this extractor
 
-    ASSERT_EQ(coe.getValue<Vector2>(component, state), Vector2(2.0f, 3.0f));
+    ASSERT_EQ(coe.getValue<osc::Vector2>(component, state), osc::Vector2(2.0f, 3.0f));
 }

@@ -73,9 +73,9 @@ namespace opyn
 
         size_t getHash() const { return m_Output->getHash(); }
 
-        bool equals(const osc::OutputExtractor& other) const { return m_Output->equals(other); }
-        operator const osc::OutputExtractor& () const { return *m_Output; }
-        const osc::OutputExtractor& getInner() const { return *m_Output; }
+        bool equals(const OutputExtractor& other) const { return m_Output->equals(other); }
+        operator const OutputExtractor& () const { return *m_Output; }
+        const OutputExtractor& getInner() const { return *m_Output; }
 
         friend bool operator==(const SharedOutputExtractor& lhs, const SharedOutputExtractor& rhs)
         {
@@ -85,10 +85,10 @@ namespace opyn
         friend std::string to_string(const SharedOutputExtractor&);
         friend struct std::hash<SharedOutputExtractor>;
 
-        std::shared_ptr<const osc::OutputExtractor> m_Output;
+        std::shared_ptr<const OutputExtractor> m_Output;
     };
 
-    template<std::derived_from<osc::OutputExtractor> ConcreteOutputExtractor, typename... Args>
+    template<std::derived_from<OutputExtractor> ConcreteOutputExtractor, typename... Args>
     requires std::constructible_from<ConcreteOutputExtractor, Args&&...>
     SharedOutputExtractor make_output_extractor(Args&&... args)
     {

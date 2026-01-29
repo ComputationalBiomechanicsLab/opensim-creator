@@ -7,7 +7,8 @@
 
 #include <gtest/gtest.h>
 
-using namespace osc;
+using namespace opyn;
+using osc::BlankComponent;
 
 // Basic functionality test: a `ConcatenatingOutputExtractor` should at least be able to
 // concatenate two floating point outputs (#1025).
@@ -29,7 +30,7 @@ TEST(ConcatenatingOutputExtractor, hasExpectedOutputsWhenConcatenatingTwoFloatOu
     };
     const BlankStateView state;
 
-    const auto output = concat.getValue<Vector2>(unusedRoot, state);
+    const auto output = concat.getValue<osc::Vector2>(unusedRoot, state);
 
-    ASSERT_EQ(output, Vector2(1.0f, 2.0f));
+    ASSERT_EQ(output, osc::Vector2(1.0f, 2.0f));
 }

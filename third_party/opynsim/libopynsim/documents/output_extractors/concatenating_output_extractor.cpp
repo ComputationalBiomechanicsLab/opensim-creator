@@ -13,14 +13,13 @@
 #include <sstream>
 #include <string>
 
-using namespace osc;
 using namespace opyn;
 
 namespace
 {
-    OutputExtractorDataType CalcOutputType(const opyn::SharedOutputExtractor& a, const opyn::SharedOutputExtractor& b)
+    OutputExtractorDataType CalcOutputType(const SharedOutputExtractor& a, const SharedOutputExtractor& b)
     {
-        static_assert(num_options<OutputExtractorDataType>() == 3);
+        static_assert(osc::num_options<OutputExtractorDataType>() == 3);
 
         const OutputExtractorDataType aType = a.getOutputType();
         const OutputExtractorDataType bType = b.getOutputType();
@@ -33,9 +32,12 @@ namespace
         }
     }
 
-    std::string CalcLabel(OutputExtractorDataType concatenatedType, const opyn::SharedOutputExtractor& a, const opyn::SharedOutputExtractor& b)
+    std::string CalcLabel(
+        OutputExtractorDataType concatenatedType,
+        const SharedOutputExtractor& a,
+        const SharedOutputExtractor& b)
     {
-        static_assert(num_options<OutputExtractorDataType>() == 3);
+        static_assert(osc::num_options<OutputExtractorDataType>() == 3);
 
         if (concatenatedType == OutputExtractorDataType::Vector2) {
             std::stringstream ss;
@@ -50,9 +52,9 @@ namespace
     }
 }
 
-osc::ConcatenatingOutputExtractor::ConcatenatingOutputExtractor(
-    opyn::SharedOutputExtractor first_,
-    opyn::SharedOutputExtractor second_) :
+opyn::ConcatenatingOutputExtractor::ConcatenatingOutputExtractor(
+    SharedOutputExtractor first_,
+    SharedOutputExtractor second_) :
 
     m_First{std::move(first_)},
     m_Second{std::move(second_)},
@@ -60,35 +62,35 @@ osc::ConcatenatingOutputExtractor::ConcatenatingOutputExtractor(
     m_Label{CalcLabel(m_OutputType, m_First, m_Second)}
 {}
 
-opyn::OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& comp) const
+OutputValueExtractor opyn::ConcatenatingOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& comp) const
 {
-    static_assert(num_options<OutputExtractorDataType>() == 3);
+    static_assert(osc::num_options<OutputExtractorDataType>() == 3);
 
     if (m_OutputType == OutputExtractorDataType::Vector2) {
-        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const opyn::StateViewWithMetadata& state)
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const StateViewWithMetadata& state)
         {
             const auto lv = to<float>(lhs(state));
             const auto rv = to<float>(rhs(state));
 
-            return Variant{Vector2{lv, rv}};
+            return osc::Variant{osc::Vector2{lv, rv}};
         };
-        return opyn::OutputValueExtractor{std::move(extractor)};
+        return OutputValueExtractor{std::move(extractor)};
     }
     else {
-        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const opyn::StateViewWithMetadata& state)
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const StateViewWithMetadata& state)
         {
-            return Variant{to<std::string>(lhs(state)) + to<std::string>(rhs(state))};
+            return osc::Variant{to<std::string>(lhs(state)) + to<std::string>(rhs(state))};
         };
-        return opyn::OutputValueExtractor{std::move(extractor)};
+        return OutputValueExtractor{std::move(extractor)};
     }
 }
 
-size_t osc::ConcatenatingOutputExtractor::implGetHash() const
+size_t opyn::ConcatenatingOutputExtractor::implGetHash() const
 {
-    return hash_of(m_First, m_Second);
+    return osc::hash_of(m_First, m_Second);
 }
 
-bool osc::ConcatenatingOutputExtractor::implEquals(const OutputExtractor& other) const
+bool opyn::ConcatenatingOutputExtractor::implEquals(const OutputExtractor& other) const
 {
     if (&other == this) {
         return true;

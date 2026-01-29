@@ -13,13 +13,13 @@
 #include <optional>
 #include <vector>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
-    std::vector<opyn::SharedOutputExtractor> ConstructIntegratorOutputExtractors()
+    std::vector<SharedOutputExtractor> ConstructIntegratorOutputExtractors()
     {
-        std::vector<opyn::SharedOutputExtractor> rv;
+        std::vector<SharedOutputExtractor> rv;
         rv.emplace_back(IntegratorOutputExtractor{
             "AccuracyInUse",
             "The accuracy which is being used for error control. Usually this is the same value that was specified to setAccuracy()",
@@ -103,27 +103,27 @@ namespace
         return rv;
     }
 
-    const std::vector<opyn::SharedOutputExtractor>& GetAllIntegratorOutputExtractors()
+    const std::vector<SharedOutputExtractor>& GetAllIntegratorOutputExtractors()
     {
-        static const std::vector<opyn::SharedOutputExtractor> s_IntegratorOutputs = ConstructIntegratorOutputExtractors();
+        static const std::vector<SharedOutputExtractor> s_IntegratorOutputs = ConstructIntegratorOutputExtractors();
         return s_IntegratorOutputs;
     }
 }
 
-opyn::OutputValueExtractor osc::IntegratorOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
+OutputValueExtractor opyn::IntegratorOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
 {
-    return opyn::OutputValueExtractor{[id = m_AuxiliaryDataID](const opyn::StateViewWithMetadata& state)
+    return OutputValueExtractor{[id = m_AuxiliaryDataID](const StateViewWithMetadata& state)
     {
-        return Variant{state.getAuxiliaryValue(id).value_or(quiet_nan_v<float>)};
+        return osc::Variant{state.getAuxiliaryValue(id).value_or(osc::quiet_nan_v<float>)};
     }};
 }
 
-size_t osc::IntegratorOutputExtractor::implGetHash() const
+size_t opyn::IntegratorOutputExtractor::implGetHash() const
 {
-    return hash_of(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
+    return osc::hash_of(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }
 
-bool osc::IntegratorOutputExtractor::implEquals(const OutputExtractor& other) const
+bool opyn::IntegratorOutputExtractor::implEquals(const OutputExtractor& other) const
 {
     if (this == &other)
     {
@@ -143,17 +143,17 @@ bool osc::IntegratorOutputExtractor::implEquals(const OutputExtractor& other) co
         m_Extractor == otherT->m_Extractor;
 }
 
-int osc::GetNumIntegratorOutputExtractors()
+int opyn::GetNumIntegratorOutputExtractors()
 {
     return static_cast<int>(GetAllIntegratorOutputExtractors().size());
 }
 
-const IntegratorOutputExtractor& osc::GetIntegratorOutputExtractor(int idx)
+const IntegratorOutputExtractor& opyn::GetIntegratorOutputExtractor(int idx)
 {
     return dynamic_cast<const IntegratorOutputExtractor&>(GetAllIntegratorOutputExtractors().at(static_cast<size_t>(idx)).getInner());
 }
 
-opyn::SharedOutputExtractor osc::GetIntegratorOutputExtractorDynamic(int idx)
+SharedOutputExtractor opyn::GetIntegratorOutputExtractorDynamic(int idx)
 {
     return GetAllIntegratorOutputExtractors().at(static_cast<size_t>(idx));
 }

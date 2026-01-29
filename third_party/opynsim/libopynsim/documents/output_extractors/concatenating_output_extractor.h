@@ -12,24 +12,24 @@
 
 namespace OpenSim { class Component; }
 
-namespace osc
+namespace opyn
 {
     // an output extractor that concatenates the outputs from multiple output extractors
     class ConcatenatingOutputExtractor final : public OutputExtractor {
     public:
-        ConcatenatingOutputExtractor(opyn::SharedOutputExtractor first_, opyn::SharedOutputExtractor second_);
+        ConcatenatingOutputExtractor(SharedOutputExtractor first_, SharedOutputExtractor second_);
 
     private:
-        CStringView implGetName() const override { return m_Label; }
-        CStringView implGetDescription() const override { return {}; }
-        opyn::OutputExtractorDataType implGetOutputType() const override { return m_OutputType; }
-        opyn::OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const override;
+        osc::CStringView implGetName() const override { return m_Label; }
+        osc::CStringView implGetDescription() const override { return {}; }
+        OutputExtractorDataType implGetOutputType() const override { return m_OutputType; }
+        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const override;
         size_t implGetHash() const override;
         bool implEquals(const OutputExtractor&) const override;
 
-        opyn::SharedOutputExtractor m_First;
-        opyn::SharedOutputExtractor m_Second;
-        opyn::OutputExtractorDataType m_OutputType;
+        SharedOutputExtractor m_First;
+        SharedOutputExtractor m_Second;
+        OutputExtractorDataType m_OutputType;
         std::string m_Label;
     };
 }
