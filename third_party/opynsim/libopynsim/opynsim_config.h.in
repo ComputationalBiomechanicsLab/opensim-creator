@@ -1,0 +1,7 @@
+#pragma once
+
+// This header currently empty.
+//
+// This is where various compile-time configuration variables, macros, etc.
+// will go for internal and downstream consumption (e.g version numbers, static
+// flags).

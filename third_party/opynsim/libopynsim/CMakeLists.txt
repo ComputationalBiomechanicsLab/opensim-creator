@@ -9,8 +9,8 @@ endif()
 
 # Generate compile-time configuration file
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/opynsimconfig.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/opynsimconfig.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/opynsim_config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/opynsim_config.h"
     @ONLY
 )
 
@@ -27,7 +27,7 @@ PUBLIC
 target_include_directories(opynsim
 PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>          # so that `#include <libopynsim/header.h>` works
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated/>  # so that `#include <libopynsim/opynsimconfig.h>` works
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated/>  # so that `#include <libopynsim/opynsim_config.h>` works
     $<INSTALL_INTERFACE:include>                               # `libopysim` is installed into the `include` root
 )
 target_compile_features(opynsim PUBLIC cxx_std_20)  # CARE: MSVC C++23 isn't ABI-stable yet
@@ -49,9 +49,9 @@ if(TRUE)
     include(GNUInstallDirs)             # CMAKE_INSTALL_LIBDIR, _INCLUDEDIR, etc.
     include(CMakePackageConfigHelpers)  # configure_package_config_file
 
-    # Install generated `opynsimconfig.h`
+    # Install generated `opynsim_config.h`
     install(
-        FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/opynsimconfig.h"
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/opynsim_config.h"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/libopynsim"
         COMPONENT opynsim-cpp
     )
