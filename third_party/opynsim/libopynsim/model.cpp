@@ -1,8 +1,8 @@
 #include "model.h"
 
+#include <OpenSim/Simulation/Model/Model.h>
 #include <libopynsim/model_state.h>
 #include <liboscar/utilities/copy_on_upd_ptr.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
 class opyn::Model::Impl final {
 public:
@@ -29,13 +29,13 @@ public:
     void realize(ModelState& state, ModelStateStage stage) const
     {
         switch (stage) {
-        case ModelStateStage::time:         model_.realizeTime(state.simbody_state()); break;
-        case ModelStateStage::position:     model_.realizePosition(state.simbody_state()); break;
-        case ModelStateStage::velocity:     model_.realizeVelocity(state.simbody_state()); break;
-        case ModelStateStage::dynamics:     model_.realizeDynamics(state.simbody_state()); break;
+        case ModelStateStage::time:         model_.realizeTime(state.simbody_state());         break;
+        case ModelStateStage::position:     model_.realizePosition(state.simbody_state());     break;
+        case ModelStateStage::velocity:     model_.realizeVelocity(state.simbody_state());     break;
+        case ModelStateStage::dynamics:     model_.realizeDynamics(state.simbody_state());     break;
         case ModelStateStage::acceleration: model_.realizeAcceleration(state.simbody_state()); break;
-        case ModelStateStage::report:       model_.realizeReport(state.simbody_state()); break;
-        default:                            model_.realizeReport(state.simbody_state()); break;
+        case ModelStateStage::report:       model_.realizeReport(state.simbody_state());       break;
+        default:                            model_.realizeReport(state.simbody_state());       break;
         }
     }
 

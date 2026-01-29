@@ -20,7 +20,7 @@
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
-#include <libopynsim/utilities/tps3d.h>
+#include <libopynsim/tps3d.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/transform_functions.h>
@@ -205,7 +205,7 @@ namespace
             static_assert(alignof(decltype(vertices.front())) == alignof(SimTK::fVec3));
             static_assert(sizeof(decltype(vertices.front())) == sizeof(SimTK::fVec3));
             auto* punned = std::launder(reinterpret_cast<SimTK::fVec3*>(vertices.data()));
-            opyn::TPSWarpPointsInPlace(coefficients, {punned, vertices.size()}, static_cast<float>(tpsInputs.blendingFactor));
+            opyn::tps3d_warp_points_in_place(coefficients, {punned, vertices.size()}, static_cast<float>(tpsInputs.blendingFactor));
             for (auto& vertex : vertices) {
                 vertex = transform_point(transforms.landmarksToLocal, vertex);  // put vertex back into mesh frame
             }
@@ -243,7 +243,7 @@ namespace
             );
 
             const auto resultLocationInLandmarkFrame = transform_point(transforms.localToLandmarks, to<Vector3>(resultLocation));
-            const auto warpedLocationInLandmarkFrame = opyn::TPSWarpPoint(coefficients, to<SimTK::fVec3>(resultLocationInLandmarkFrame), static_cast<float>(tpsInputs.blendingFactor));
+            const auto warpedLocationInLandmarkFrame = opyn::tps3d_warp_point(coefficients, to<SimTK::fVec3>(resultLocationInLandmarkFrame), static_cast<float>(tpsInputs.blendingFactor));
             return to<SimTK::Vec3>(transform_point(transforms.landmarksToLocal, to<Vector3>(warpedLocationInLandmarkFrame)));
         }
 
@@ -318,13 +318,13 @@ namespace
                     log_warn("The landmarks %s could not be paired, might be missing in the source/destination?", p.name().c_str());
                 }
             });
-            inputs.applyAffineTranslation = tpsInputs.applyAffineTranslation;
-            inputs.applyAffineScale = tpsInputs.applyAffineScale;
-            inputs.applyAffineRotation = tpsInputs.applyAffineRotation;
-            inputs.applyNonAffineWarp = tpsInputs.applyNonAffineWarp;
+            inputs.apply_affine_translation = tpsInputs.applyAffineTranslation;
+            inputs.apply_affine_scale = tpsInputs.applyAffineScale;
+            inputs.apply_affine_rotation = tpsInputs.applyAffineRotation;
+            inputs.apply_non_affine_warp = tpsInputs.applyNonAffineWarp;
 
             // Solve the coefficients
-            m_CoefficientsTODO = opyn::TPSCalcCoefficients(inputs);
+            m_CoefficientsTODO = opyn::tps3d_solve_coefficients(inputs);
 
             return m_CoefficientsTODO;
         }

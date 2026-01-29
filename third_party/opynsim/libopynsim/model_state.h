@@ -7,6 +7,10 @@ namespace SimTK { class State; }
 
 namespace opyn
 {
+    // Represents all state information for a `Model`.
+    //
+    // Related: https://simtk.org/api_docs/simbody/3.5/classSimTK_1_1State.html#details
+    // Related: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089017/SimTK+Simulation+Concepts
     class ModelState final {
     public:
         const SimTK::State& simbody_state() const;

@@ -8,7 +8,7 @@
 #include <nanobind/stl/unique_ptr.h>
 #include <libopynsim/shims/cpp23/mdspan.h>
 #include <libopynsim/ui/hello_ui.h>
-#include <libopynsim/utilities/tps3d.h>
+#include <libopynsim/tps3d.h>
 #include <liboscar/utilities/assertions.h>
 
 #include <nanobind/ndarray.h>
@@ -37,7 +37,7 @@ namespace
         const auto destination_landmarks_mdspan = to_mdspan(destination_landmarks);
 
         // Solve the coefficients
-        return std::make_unique<TPSCoefficients3D<double>>(TPSCalcCoefficients(source_landmarks_mdspan, destination_landmarks_mdspan));
+        return std::make_unique<TPSCoefficients3D<double>>(tps3d_solve_coefficients(source_landmarks_mdspan, destination_landmarks_mdspan));
     }
 
     nb::ndarray<double, nb::shape<3>, nb::device::cpu, nb::numpy> warp_point(
@@ -45,7 +45,7 @@ namespace
         const nb::ndarray<const double, nb::shape<3>, nb::device::cpu>& python_vec3d)
     {
         const SimTK::Vec3 input = to_vec(python_vec3d);
-        const SimTK::Vec3 output = TPSWarpPoint(coefficients, input);
+        const SimTK::Vec3 output = tps3d_warp_point(coefficients, input);
         return to_owned_numpy_array(output);
     }
 
@@ -57,7 +57,7 @@ namespace
         ss << "a2 = " << coefs.a2 << ", ";
         ss << "a3 = " << coefs.a3 << ", ";
         ss << "a4 = " << coefs.a4 << ", ";
-        ss << "non_affine_terms = [" << coefs.nonAffineTerms.size() << " values]>";
+        ss << "non_affine_terms = [" << coefs.non_affine_terms.size() << " values]>";
         return std::move(ss).str();
     }
 }

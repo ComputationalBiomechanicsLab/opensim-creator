@@ -4,7 +4,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
 
 #include <libopynsim/utilities/simbody_x_oscar.h>
-#include <libopynsim/utilities/tps3d.h>
+#include <libopynsim/tps3d.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/maths/vector3.h>
 #include <SimTKcommon/SmallMatrix.h>
@@ -50,11 +50,11 @@ namespace osc
 
             if (updatedCoefficients || updatedNonParticipatingLandmarks || updatedMesh || updatedBlendingFactor || updatedRecalculateNormalsState)
             {
-                m_CachedResultMesh = TPSWarpMesh(m_CachedCoefficients, m_CachedSourceMesh, m_CachedBlendingFactor);
+                m_CachedResultMesh = tps3d_warp_mesh(m_CachedCoefficients, m_CachedSourceMesh, m_CachedBlendingFactor);
                 if (m_CachedRecalculateNormalsState) {
                     m_CachedResultMesh.recalculate_normals();
                 }
-                m_CachedResultNonParticipatingLandmarks = opyn::TPSWarpPoints(m_CachedCoefficients, m_CachedSourceNonParticipatingLandmarks, m_CachedBlendingFactor);
+                m_CachedResultNonParticipatingLandmarks = opyn::tps3d_warp_points(m_CachedCoefficients, m_CachedSourceNonParticipatingLandmarks, m_CachedBlendingFactor);
             }
         }
 
@@ -66,10 +66,10 @@ namespace osc
                 source *= doc.sourceLandmarksPrescale;
                 destination *= doc.destinationLandmarksPrescale;
             }
-            newInputs.applyAffineTranslation = doc.applyAffineTranslation;
-            newInputs.applyAffineScale = doc.applyAffineScale;
-            newInputs.applyAffineRotation = doc.applyAffineRotation;
-            newInputs.applyNonAffineWarp = doc.applyNonAffineWarp;
+            newInputs.apply_affine_translation = doc.applyAffineTranslation;
+            newInputs.apply_affine_scale = doc.applyAffineScale;
+            newInputs.apply_affine_rotation = doc.applyAffineRotation;
+            newInputs.apply_non_affine_warp = doc.applyNonAffineWarp;
 
             if (newInputs != m_CachedInputs) {
                 m_CachedInputs = std::move(newInputs);
@@ -89,7 +89,7 @@ namespace osc
                 return false;
             }
 
-            opyn::TPSCoefficients3D newCoefficients = TPSCalcCoefficients(m_CachedInputs);
+            opyn::TPSCoefficients3D newCoefficients = tps3d_solve_coefficients(m_CachedInputs);
 
             if (newCoefficients != m_CachedCoefficients)
             {

@@ -16,7 +16,7 @@ configure_file(
 
 # Gather source code (excl. tests) into a library
 file(GLOB_RECURSE LIBOPYNSIM_SOURCE_FILES "*.cpp")
-list(FILTER LIBOPYNSIM_SOURCE_FILES EXCLUDE REGEX "(tests|\.tests\.cpp)")
+list(FILTER LIBOPYNSIM_SOURCE_FILES EXCLUDE REGEX "(tests)")
 add_library(opynsim STATIC ${LIBOPYNSIM_SOURCE_FILES})
 target_link_libraries(opynsim
 PUBLIC
@@ -50,7 +50,11 @@ if(TRUE)
     include(CMakePackageConfigHelpers)  # configure_package_config_file
 
     # Install generated `opynsimconfig.h`
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/opynsimconfig.h" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/libopynsim" COMPONENT opynsim-cpp)
+    install(
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/opynsimconfig.h"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/libopynsim"
+        COMPONENT opynsim-cpp
+    )
 
     # Install all of `libopynsim`'s header files (excl. tests)
     install(
@@ -63,8 +67,16 @@ if(TRUE)
     )
 
     # Install `libopynsim` library target
-    install(TARGETS opynsim EXPORT opynsimTargets COMPONENT opynsim-cpp)
-    install(EXPORT opynsimTargets DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opynsim" COMPONENT opynsim-cpp)
+    install(
+        TARGETS opynsim
+        EXPORT opynsimTargets
+        COMPONENT opynsim-cpp
+    )
+    install(
+        EXPORT opynsimTargets
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opynsim"
+        COMPONENT opynsim-cpp
+    )
 
     # Generate + install an `opynsimConfig.cmake` file
     configure_package_config_file(
@@ -72,5 +84,9 @@ if(TRUE)
         "${CMAKE_CURRENT_BINARY_DIR}/generated/opynsimConfig.cmake"
         INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opynsim"
     )
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/opynsimConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opynsim" COMPONENT opynsim-cpp)
+    install(
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/opynsimConfig.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opynsim"
+        COMPONENT opynsim-cpp
+    )
 endif()

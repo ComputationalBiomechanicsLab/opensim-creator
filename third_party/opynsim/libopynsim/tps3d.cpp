@@ -105,15 +105,15 @@ namespace
     template<std::floating_point T>
     std::ostream& write_human_readable(std::ostream& o, const TPSNonAffineTerm3D<T>& wt)
     {
-        return o << "TPSNonAffineTerm3D{Weight = " << wt.weight << ", ControlPoint = " << wt.controlPoint << '}';
+        return o << "TPSNonAffineTerm3D{weight = " << wt.weight << ", control_point = " << wt.control_point << '}';
     }
 
     template<std::floating_point T>
     std::ostream& write_human_readable(std::ostream& o, const TPSCoefficients3D<T>& coefs)
     {
         o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3 << ", a4 = " << coefs.a4;
-        for (size_t i = 0; i < coefs.nonAffineTerms.size(); ++i) {
-            o << ", w" << i << " = " << coefs.nonAffineTerms[i];
+        for (size_t i = 0; i < coefs.non_affine_terms.size(); ++i) {
+            o << ", w" << i << " = " << coefs.non_affine_terms[i];
         }
         o << '}';
         return o;
@@ -262,11 +262,11 @@ namespace
         rv.a4 = {T(Cx[numPairs+3]), T(Cy[numPairs+3]), T(Cz[numPairs+3])};
 
         // populate `wi` coefficients (+ control points, needed at evaluation-time)
-        rv.nonAffineTerms.reserve(numPairs);
+        rv.non_affine_terms.reserve(numPairs);
         for (int i = 0; i < numPairs; ++i) {
             const SimTK::Vec<3, T> weight{T(Cx[i]), T(Cy[i]), T(Cz[i])};
             const SimTK::Vec<3, T> controlPoint{source_landmarks(i, 0), source_landmarks(i, 1), source_landmarks(i, 2)};
-            rv.nonAffineTerms.emplace_back(weight, controlPoint);
+            rv.non_affine_terms.emplace_back(weight, controlPoint);
         }
 
         return rv;
@@ -292,21 +292,21 @@ namespace
         );
 
         // If required, modify the coefficients
-        if (not inputs.applyAffineTranslation) {
+        if (not inputs.apply_affine_translation) {
             rv.a1 = SimTK::Vec<3, T>{T(0.0), T(0.0), T(0.0)};
         }
-        if (not inputs.applyAffineScale) {
+        if (not inputs.apply_affine_scale) {
             rv.a2 = rv.a2.normalize();
             rv.a3 = rv.a3.normalize();
             rv.a4 = rv.a4.normalize();
         }
-        if (not inputs.applyAffineRotation) {
+        if (not inputs.apply_affine_rotation) {
             rv.a2 = {rv.a2.norm(), T(0.0),       T(0.0)};
             rv.a3 = {T(0.0),       rv.a3.norm(), T(0.0)};
             rv.a4 = {T(0.0),       T(0.0),       rv.a4.norm()};
         }
-        if (not inputs.applyNonAffineWarp) {
-            rv.nonAffineTerms.clear();
+        if (not inputs.apply_non_affine_warp) {
+            rv.non_affine_terms.clear();
         }
 
         return rv;
@@ -322,9 +322,9 @@ namespace
         // compute affine terms (a1 + a2*x + a3*y + a4*z)
         SimTK::Vec3 rv = SimTK::Vec3{coefs.a1} + SimTK::Vec3{coefs.a2*p[0]} + SimTK::Vec3{coefs.a3*p[1]} + SimTK::Vec3{coefs.a4*p[2]};
 
-        // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
-        for (const TPSNonAffineTerm3D<T>& term : coefs.nonAffineTerms) {
-            rv += term.weight * RadialBasisFunction3D(term.controlPoint, p);
+        // accumulate non-affine terms (effectively: wi * U(||control_point - p||))
+        for (const TPSNonAffineTerm3D<T>& term : coefs.non_affine_terms) {
+            rv += term.weight * RadialBasisFunction3D(term.control_point, p);
         }
 
         return SimTK::Vec<3, T>{rv};
@@ -361,67 +361,67 @@ std::ostream& opyn::operator<<(std::ostream& o, const TPSCoefficients3D<double>&
     return write_human_readable(o, coefs);
 }
 
-TPSCoefficients3D<float> opyn::TPSCalcCoefficients(const TPSCoefficientSolverInputs3D<float>& inputs)
+TPSCoefficients3D<float> opyn::tps3d_solve_coefficients(const TPSCoefficientSolverInputs3D<float>& inputs)
 {
     return ::TPSCalcCoefficients<float>(inputs);
 }
 
-TPSCoefficients3D<double> opyn::TPSCalcCoefficients(const TPSCoefficientSolverInputs3D<double>& inputs)
+TPSCoefficients3D<double> opyn::tps3d_solve_coefficients(const TPSCoefficientSolverInputs3D<double>& inputs)
 {
     return ::TPSCalcCoefficients<double>(inputs);
 }
 
-TPSCoefficients3D<double> opyn::TPSCalcCoefficients(
+TPSCoefficients3D<double> opyn::tps3d_solve_coefficients(
     cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> source_landmarks,
     cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks)
 {
     return ::TPSCalcCoefficients<double>(source_landmarks, destination_landmarks);
 }
 
-SimTK::Vec<3, float> opyn::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> p)
+SimTK::Vec<3, float> opyn::tps3d_warp_point(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> p)
 {
     return ::TPSWarpPoint<float>(coefs, p);
 }
 
-SimTK::Vec<3, double> opyn::TPSWarpPoint(const TPSCoefficients3D<double>& coefs, SimTK::Vec<3, double> p)
+SimTK::Vec<3, double> opyn::tps3d_warp_point(const TPSCoefficients3D<double>& coefs, SimTK::Vec<3, double> p)
 {
     return ::TPSWarpPoint<double>(coefs, p);
 }
 
-SimTK::Vec<3, float> opyn::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> vert, float blendingFactor)
+SimTK::Vec<3, float> opyn::tps3d_warp_point(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> vert, float linear_interpolant)
 {
-    const SimTK::Vec<3, float> warped = TPSWarpPoint(coefs, vert);
+    const SimTK::Vec<3, float> warped = tps3d_warp_point(coefs, vert);
     return {
-        std::lerp(vert[0], warped[0], blendingFactor),
-        std::lerp(vert[1], warped[1], blendingFactor),
-        std::lerp(vert[2], warped[2], blendingFactor),
+        std::lerp(vert[0], warped[0], linear_interpolant),
+        std::lerp(vert[1], warped[1], linear_interpolant),
+        std::lerp(vert[2], warped[2], linear_interpolant),
     };
 }
 
-std::vector<SimTK::Vec<3, float>> opyn::TPSWarpPoints(
+std::vector<SimTK::Vec<3, float>> opyn::tps3d_warp_points(
     const TPSCoefficients3D<float>& coefs,
     std::span<const SimTK::Vec<3, float>> points,
-    float blendingFactor)
+    float linear_interpolant)
 {
     std::vector<SimTK::Vec<3, float>> rv(points.begin(), points.end());
-    TPSWarpPointsInPlace(coefs, rv, blendingFactor);
+    tps3d_warp_points_in_place(coefs, rv, linear_interpolant);
     return rv;
 }
 
-void opyn::TPSWarpPointsInPlace(
+void opyn::tps3d_warp_points_in_place(
     const TPSCoefficients3D<float>& coefs,
     std::span<SimTK::Vec<3, float>> points,
-    float blendingFactor)
+    float linear_interpolant)
 {
-    for_each_parallel_unsequenced(8192, points, [&coefs, blendingFactor](SimTK::Vec<3, float>& vert)
+    for_each_parallel_unsequenced(8192, points, [&coefs, linear_interpolant](SimTK::Vec<3, float>& vert)
     {
-        vert = TPSWarpPoint(coefs, vert, blendingFactor);
+        vert = tps3d_warp_point(coefs, vert, linear_interpolant);
     });
 }
 
-osc::Mesh opyn::TPSWarpMesh(TPSCoefficients3D<float>& coefs, const osc::Mesh& mesh, float blendingFactor)
+osc::Mesh opyn::tps3d_warp_mesh(TPSCoefficients3D<float>& coefs, const osc::Mesh& mesh, float linear_interpolant)
 {
-    OSC_PERF("TPSWarpMesh");
+    OSC_PERF("tps3d_warp_mesh");
 
     osc::Mesh rv = mesh;  // make a local copy of the input mesh
 
@@ -433,7 +433,7 @@ osc::Mesh opyn::TPSWarpMesh(TPSCoefficients3D<float>& coefs, const osc::Mesh& me
     static_assert(alignof(decltype(vertices.front())) == alignof(SimTK::fVec3));
     static_assert(sizeof(decltype(vertices.front())) == sizeof(SimTK::fVec3));
     auto* punned = std::launder(reinterpret_cast<SimTK::fVec3*>(vertices.data()));
-    TPSWarpPointsInPlace(coefs, {punned, vertices.size()}, blendingFactor);
+    tps3d_warp_points_in_place(coefs, {punned, vertices.size()}, linear_interpolant);
     rv.set_vertices(vertices);
 
     return rv;

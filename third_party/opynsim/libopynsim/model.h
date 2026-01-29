@@ -9,6 +9,8 @@ namespace OpenSim { class Model; }
 
 namespace opyn
 {
+    // Represents a readonly (`const`) multibody physics system compiled from
+    // a `ModelSpecification`.
     class Model final {
     private:
         friend class ModelSpecification;

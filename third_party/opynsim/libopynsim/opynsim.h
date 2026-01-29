@@ -21,7 +21,8 @@ namespace opyn
     bool init();
 
     // Globally adds `directory` to the list of geometry directories that the implementation
-    // may search when trying to find mesh files.
+    // may search when trying to find mesh (e.g. vtp) files referenced by model files
+    // (e.g. pelvis.vtp).
     void add_geometry_directory(const std::filesystem::path& directory);
 
     // Returns a `ModelSpecification` imported from `osim_file_path`, throws if there's an

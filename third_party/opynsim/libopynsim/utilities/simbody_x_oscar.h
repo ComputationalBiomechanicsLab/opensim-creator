@@ -17,6 +17,10 @@
 
 namespace osc { struct Transform; }
 
+// simbody_x_oscar
+//
+// Conversions and bindings between the `simbody` and `oscar` libraries.
+
 template<>
 struct osc::Converter<osc::Vector3, SimTK::Vec3> final {
     SimTK::Vec3 operator()(const osc::Vector3&) const;
