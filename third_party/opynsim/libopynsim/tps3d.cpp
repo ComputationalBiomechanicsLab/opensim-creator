@@ -388,13 +388,13 @@ SimTK::Vec<3, double> opyn::tps3d_warp_point(const TPSCoefficients3D<double>& co
     return ::TPSWarpPoint<double>(coefs, p);
 }
 
-SimTK::Vec<3, float> opyn::tps3d_warp_point(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> vert, float linear_interpolant)
+SimTK::Vec<3, float> opyn::tps3d_warp_point(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> p, float linear_interpolant)
 {
-    const SimTK::Vec<3, float> warped = tps3d_warp_point(coefs, vert);
+    const SimTK::Vec<3, float> warped = tps3d_warp_point(coefs, p);
     return {
-        std::lerp(vert[0], warped[0], linear_interpolant),
-        std::lerp(vert[1], warped[1], linear_interpolant),
-        std::lerp(vert[2], warped[2], linear_interpolant),
+        std::lerp(p[0], warped[0], linear_interpolant),
+        std::lerp(p[1], warped[1], linear_interpolant),
+        std::lerp(p[2], warped[2], linear_interpolant),
     };
 }
 

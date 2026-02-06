@@ -657,7 +657,7 @@ namespace osc::ui
         DrawList(DrawList&&) noexcept;
         DrawList& operator=(const DrawList&) = delete;
         DrawList& operator=(DrawList&&) noexcept;
-        ~DrawList() noexcept;
+        ~DrawList() noexcept override;
 
         operator DrawListView () { return DrawListView{underlying_drawlist_.get()}; }
 

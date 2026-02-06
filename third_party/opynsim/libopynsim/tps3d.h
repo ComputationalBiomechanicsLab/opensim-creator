@@ -131,32 +131,53 @@ namespace opyn
     // Pretty-prints the coefficients for readability/debugging.
     std::ostream& operator<<(std::ostream&, const TPSCoefficients3D<double>&);
 
-    // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
+    // Returns the coefficients of a 3D Thin-Plate Spline (TPS) point warping equation
+    // computed from the inputs.
     TPSCoefficients3D<float> tps3d_solve_coefficients(const TPSCoefficientSolverInputs3D<float>&);
+
+    // Returns the coefficients of a 3D Thin-Plate Spline (TPS) point warping equation
+    // computed from the inputs.
     TPSCoefficients3D<double> tps3d_solve_coefficients(const TPSCoefficientSolverInputs3D<double>&);
+
+    // Returns the coefficients of a 3D Thin-Plate Spline (TPS) point warping equation
+    // computed by reading source/destination landmark pairs from two strided
+    // multidimensional spans.
+    //
+    // This enables providing the point data from arbitrary third-party representations,
+    // such as the buffer layout of a Python scripting environment.
     TPSCoefficients3D<double> tps3d_solve_coefficients(
-        cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride>,
-        cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride>
+        cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> source_landmarks,
+        cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks
     );
 
-    // Evaluates the 3D Thin-Plate Spline (TPS) point warping equation for a single point.
+    // Returns a warped point computed by evaluating a 3D Thin-Plate Spline (TPS)
+    // warping equation with `p`, which should be a point in the source coordinate
+    // system.
     SimTK::Vec<3, float>  tps3d_warp_point(
         const TPSCoefficients3D<float>&,
-        SimTK::Vec<3, float>
+        SimTK::Vec<3, float> p
     );
 
-    // Evaluates the 3D Thin-Plate Spline (TPS) point warping equation for a single point.
+    // Returns a warped point computed by evaluating a 3D Thin-Plate Spline (TPS)
+    // warping equation with `p`, which should be a point in the source coordinate
+    // system.
     SimTK::Vec<3, double> tps3d_warp_point(
         const TPSCoefficients3D<double>&,
         SimTK::Vec<3, double>
     );
 
-    // Evaluates the 3D Thin-Plate Spline (TPS) point warping equation for a single point
-    // and linearly interpolates between the source point and the warped point by
-    // `linear_interpolant`.
+    // Returns a point that is linearly interpolated between `p` and a warped point
+    // computed by evaluating a 3D Thin-Plate Spline (TPS) warping equation with `p`
+    // by `linear_interpolant`.
+    //
+    // - `p` should be a point in the source coordinate system
+    // - `linear_interpolant` should be a floating point value that indicates the
+    //   linear interpolation factor between `p` and the warped point. `0.0` means
+    //   `p`, `1.0` means "the warped point". Values outside [0.0, 1.0] are
+    //   linearly extrapolated.
     SimTK::Vec<3, float> tps3d_warp_point(
         const TPSCoefficients3D<float>&,
-        SimTK::Vec<3, float>,
+        SimTK::Vec<3, float> p,
         float linear_interpolant
     );
 
@@ -174,5 +195,9 @@ namespace opyn
         float linear_interpolant
     );
 
-    osc::Mesh tps3d_warp_mesh(TPSCoefficients3D<float>&, const osc::Mesh&, float linear_interpolant);
+    osc::Mesh tps3d_warp_mesh(
+        TPSCoefficients3D<float>&,
+        const osc::Mesh&,
+        float linear_interpolant
+    );
 }
