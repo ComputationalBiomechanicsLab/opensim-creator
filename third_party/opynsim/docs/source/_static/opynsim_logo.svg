@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="128"
+   height="128"
+   viewBox="0 0 128 128"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (fcd0343856, 2026-01-01)"
+   sodipodi:docname="opynsim_logo.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="false"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showborder="false"
+     inkscape:zoom="4"
+     inkscape:cx="72.625001"
+     inkscape:cy="83.875001"
+     inkscape:window-width="1920"
+     inkscape:window-height="1011"
+     inkscape:window-x="1920"
+     inkscape:window-y="32"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1"
+     showgrid="false" />
+  <defs
+     id="defs1" />
+  <g
+     id="g39-5"
+     transform="matrix(0.8045883,-0.25974074,0.25974074,0.8045883,-472.53327,73.684667)"
+     inkscape:label="logo">
+    <path
+       style="fill:#a404d2;fill-opacity:1;stroke-width:5.71799;stroke-linejoin:bevel"
+       d="m 577.59051,188.88674 -7.00546,21.84491 c 8.60253,0.25401 15.05369,-2.56362 18.56079,-4.6057 -5.52081,-4.43251 -9.55311,-10.44822 -11.55533,-17.23921 z"
+       id="path30-3"
+       sodipodi:nodetypes="cccc"
+       transform="translate(-2.5795998e-6)"
+       inkscape:label="logo-segment-6" />
+    <path
+       style="fill:#a005cd;fill-opacity:1;stroke-width:5.71799;stroke-linejoin:bevel"
+       d="m 629.06772,208.60445 c -9.33738,5.75686 -20.84751,6.75792 -31.03855,2.69951 -7.55383,5.72306 -18.88932,9.30024 -30.25589,8.19557 l -3.69392,11.51862 c 3.53048,3.17997 7.37597,5.9917 11.47683,8.39157 45.74253,26.7683 56.84437,-13.97708 53.51153,-30.80527 z"
+       id="path29-5"
+       sodipodi:nodetypes="cccccc"
+       inkscape:label="logo-segment-5" />
+    <path
+       style="fill:#9705c2;fill-opacity:1;stroke-width:5.71799;stroke-linejoin:bevel"
+       d="m 645.48569,176.94404 c 0.66326,10.76874 -3.71666,19.49272 -8.52525,24.98485 4.13717,12.3198 2.11881,32.0705 -10.95632,45.39281 26.03395,-5.77603 62.32207,-31.9873 32.6114,-61.47497 -3.97315,-3.94333 -8.63617,-7.01329 -13.12983,-8.90269 z"
+       id="path31-6"
+       sodipodi:nodetypes="cccsc"
+       inkscape:label="logo-segment-4" />
+    <path
+       style="fill:#9005b8;fill-opacity:1;stroke-width:5.71799;stroke-linejoin:bevel"
+       d="m 663.85335,137.27074 c -13.51416,-4.30678 -28.99176,0.6902 -37.84923,9.70525 5.99771,2.45647 14.90702,8.30481 19.26825,19.74632 9.77287,2.50231 28.52373,12.79971 34.11266,33.82145 7.80927,-24.20102 1.26813,-57.91916 -15.53168,-63.27302 z"
+       id="path33-2"
+       sodipodi:nodetypes="scccs"
+       inkscape:label="logo-segment-3" />
+    <path
+       style="fill:#8805ae;fill-opacity:1;stroke-width:5.71799;stroke-linejoin:bevel"
+       d="m 629.35106,111.66237 c -50.60271,-13.877297 -59.61061,25.66714 -45.5512,45.71505 7.2417,-9.03161 18.51155,-13.85548 30.04506,-12.86028 7.72631,-10.93676 25.91728,-19.86291 43.93487,-17.26098 -7.57562,-6.8588 -17.19795,-12.51408 -28.42873,-15.59379 z"
+       id="path34-9"
+       sodipodi:nodetypes="ccccc"
+       inkscape:label="logo-segment-2" />
+    <path
+       style="fill:#7f05a3;fill-opacity:1;stroke-width:5.71799;stroke-linejoin:bevel"
+       d="m 573.00115,120.11221 c -15.22793,9.8845 -24.46515,24.40286 -28.70318,37.618 l -24.70367,77.0154 c -1.15623,3.60541 12.75569,-13.01857 21.93346,-10.07534 9.17777,2.94322 10.43927,24.43316 11.60031,20.82931 l 25.63531,-79.57174 C 566.57349,151.501 568.15695,137.11236 573.00115,120.11221 Z"
+       id="path32-1"
+       sodipodi:nodetypes="sccsscs"
+       transform="translate(-2.5795998e-6)"
+       inkscape:label="logo-segment-1"
+       onmouseout="dd" />
+  </g>
+</svg>
