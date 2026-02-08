@@ -14,6 +14,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   means that `#include`s in OpenSim Creator required updates (e.g. `#include <liboscar/Graphics/Color.h>`
   became `#include <liboscar/graphics/Color.h>`). The long-term intention is to also move files to
   snake_case, to more closely match the file/directory naming convention of Python projects.
+- Added dark mode support for the banner logo in the documentation and changed its size to match the
+  banner in the OPynSim documentation for consistency.
 
 ## [0.7.1] - 2026/01/12
 
