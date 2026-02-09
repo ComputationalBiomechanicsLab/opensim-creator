@@ -125,8 +125,9 @@ namespace osc
         // its build id (usually useful for logging, file headers, etc.)
         std::string application_name_with_version_and_buildid() const;
 
-        // returns the filesystem path to the current application executable
-        const std::filesystem::path& executable_directory() const;
+        // If running on a filesystem, returns the filesystem path of the calling
+        // process's executable. Otherwise, returns `std::nullopt`.
+        std::optional<std::filesystem::path> executable_directory() const;
 
         // returns the filesystem path to a (usually, writable) user-specific directory for the
         // application

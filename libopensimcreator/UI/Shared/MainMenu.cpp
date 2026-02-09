@@ -411,16 +411,19 @@ void osc::MainMenuAboutTab::onDraw()
     {
         ui::set_num_columns(2);
 
-        ui::draw_text("OSC Install Location");
-        ui::same_line();
-        ui::draw_help_marker("opens OSC's installation location in your OS's default file browser");
-        ui::next_column();
-        ui::push_id(id++);
-        if (ui::draw_button(MSMICONS_FOLDER " open")) {
-            open_file_in_os_default_application(App::get().executable_directory());
+        if (const auto executable_directory = App::get().executable_directory()) {
+            ui::draw_text("OSC Install Location");
+            ui::same_line();
+            ui::draw_help_marker("opens OSC's installation location in your OS's default file browser");
+            ui::next_column();
+            ui::push_id(id++);
+
+            if (ui::draw_button(MSMICONS_FOLDER " open")) {
+                open_file_in_os_default_application(*executable_directory);
+            }
+            ui::pop_id();
+            ui::next_column();
         }
-        ui::pop_id();
-        ui::next_column();
 
         ui::draw_text("User Data Dir");
         ui::same_line();

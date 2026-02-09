@@ -885,7 +885,7 @@ public:
     const AppMetadata& metadata() const { return metadata_; }
     std::string human_readable_name() const { return std::string{metadata().human_readable_application_name()}; }
     std::string application_name_with_version_and_buildid() const { return metadata().application_name_with_version_and_buildid(); }
-    const std::filesystem::path& executable_directory() const { return executable_dir_; }
+    std::optional<std::filesystem::path> executable_directory() const { return executable_dir_; }
     const std::filesystem::path& user_data_directory() const { return user_data_dir_; }
 
     void setup_main_loop(std::unique_ptr<Widget> widget)
@@ -1901,7 +1901,7 @@ std::string osc::App::application_name_with_version_and_buildid() const
     return impl_->application_name_with_version_and_buildid();
 }
 
-const std::filesystem::path& osc::App::executable_directory() const
+std::optional<std::filesystem::path> osc::App::executable_directory() const
 {
     return impl_->executable_directory();
 }
