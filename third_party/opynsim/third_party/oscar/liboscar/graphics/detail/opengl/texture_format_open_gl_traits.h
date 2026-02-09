@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/graphics/opengl/gl.h>
+#include <liboscar/graphics/detail/opengl/gl.h>
 #include <liboscar/graphics/texture_format.h>
 
 namespace osc::detail

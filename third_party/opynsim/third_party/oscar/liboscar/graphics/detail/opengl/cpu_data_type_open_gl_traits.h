@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/detail/cpu_data_type.h>
-#include <liboscar/graphics/opengl/gl.h>
+#include <liboscar/graphics/detail/opengl/gl.h>
 
 namespace osc::detail
 {

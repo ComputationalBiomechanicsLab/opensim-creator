@@ -3,6 +3,7 @@
 #include <memory>
 #include <span>
 
+namespace osc { class SceneCache; }
 namespace osc { struct SceneDecoration; }
 namespace osc { struct SceneRendererParams; }
 
@@ -11,7 +12,7 @@ namespace osc
     // pumps scenes into a `BasicRenderer` and emits the output as a `ui::Image()`
     class SceneViewer final {
     public:
-        SceneViewer();
+        explicit SceneViewer(SceneCache&);
         SceneViewer(const SceneViewer&) = delete;
         SceneViewer(SceneViewer&&) noexcept;
         SceneViewer& operator=(const SceneViewer&) = delete;

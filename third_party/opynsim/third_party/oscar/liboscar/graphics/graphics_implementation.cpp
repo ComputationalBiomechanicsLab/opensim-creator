@@ -11,6 +11,11 @@
 #include <liboscar/graphics/depth_function.h>
 #include <liboscar/graphics/depth_stencil_render_buffer_format.h>
 #include <liboscar/graphics/depth_stencil_render_buffer_params.h>
+#include <liboscar/graphics/detail/opengl/cpu_data_type_open_gl_traits.h>
+#include <liboscar/graphics/detail/opengl/cpu_image_format_open_gl_traits.h>
+#include <liboscar/graphics/detail/opengl/depth_stencil_render_buffer_format_open_gl_helpers.h>
+#include <liboscar/graphics/detail/opengl/gl.h>
+#include <liboscar/graphics/detail/opengl/texture_format_open_gl_traits.h>
 #include <liboscar/graphics/detail/cpu_data_type.h>
 #include <liboscar/graphics/detail/cpu_image_format.h>
 #include <liboscar/graphics/detail/depth_stencil_render_buffer_format_helpers.h>
@@ -36,11 +41,6 @@
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/mesh_functions.h>
 #include <liboscar/graphics/mesh_topology.h>
-#include <liboscar/graphics/opengl/cpu_data_type_open_gl_traits.h>
-#include <liboscar/graphics/opengl/cpu_image_format_open_gl_traits.h>
-#include <liboscar/graphics/opengl/depth_stencil_render_buffer_format_open_gl_helpers.h>
-#include <liboscar/graphics/opengl/gl.h>
-#include <liboscar/graphics/opengl/texture_format_open_gl_traits.h>
 #include <liboscar/graphics/render_buffer_load_action.h>
 #include <liboscar/graphics/render_buffer_store_action.h>
 #include <liboscar/graphics/render_target.h>

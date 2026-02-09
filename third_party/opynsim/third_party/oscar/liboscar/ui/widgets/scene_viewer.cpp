@@ -12,6 +12,8 @@
 class osc::SceneViewer::Impl final {
 public:
 
+    explicit Impl(SceneCache& scene_cache) : renderer_{scene_cache} {}
+
     void on_draw(
         std::span<const SceneDecoration> decorations,
         const SceneRendererParams& renderer_params)
@@ -30,14 +32,14 @@ public:
     bool is_right_clicked() const { return is_right_clicked_; }
 
 private:
-    SceneRenderer renderer_{*App::singleton<SceneCache>(App::resource_loader())};
+    SceneRenderer renderer_;
     bool is_hovered_ = false;
     bool is_left_clicked_ = false;
     bool is_right_clicked_ = false;
 };
 
-osc::SceneViewer::SceneViewer() :
-    impl_{std::make_unique<Impl>()}
+osc::SceneViewer::SceneViewer(SceneCache& scene_cache) :
+    impl_{std::make_unique<Impl>(scene_cache)}
 {}
 
 osc::SceneViewer::SceneViewer(SceneViewer&&) noexcept = default;

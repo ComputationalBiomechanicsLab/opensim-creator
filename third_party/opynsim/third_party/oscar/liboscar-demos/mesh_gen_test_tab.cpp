@@ -43,10 +43,8 @@ namespace
         return rv;
     }
 
-    std::map<std::string, Mesh> generate_mesh_lookup()
+    std::map<std::string, Mesh> generate_mesh_lookup(SceneCache& cache)
     {
-        SceneCache cache;
-
         return {
             {"sphere", cache.sphere_mesh()},
             {"cylinder", cache.cylinder_mesh()},
@@ -128,10 +126,11 @@ public:
     }
 
 private:
-    std::map<std::string, Mesh> all_meshes_ = generate_mesh_lookup();
+    SceneCache scene_cache_;
+    std::map<std::string, Mesh> all_meshes_ = generate_mesh_lookup(scene_cache_);
     std::string current_mesh_ = all_meshes_.begin()->first;
     bool draw_wireframe_ = false;
-    SceneViewer viewer_;
+    SceneViewer viewer_{scene_cache_};
     SceneRendererParams render_params_;
     PolarPerspectiveCamera camera_;
     CameraViewAxes camera_axes_ui_;

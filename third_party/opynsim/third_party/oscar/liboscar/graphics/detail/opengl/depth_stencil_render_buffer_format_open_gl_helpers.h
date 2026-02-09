@@ -1,8 +1,8 @@
 #pragma once
 
 #include <liboscar/graphics/detail/depth_stencil_render_buffer_format_list.h>
-#include <liboscar/graphics/opengl/depth_stencil_render_buffer_format_open_gl_traits.h>
-#include <liboscar/graphics/opengl/gl.h>
+#include <liboscar/graphics/detail/opengl/depth_stencil_render_buffer_format_open_gl_traits.h>
+#include <liboscar/graphics/detail/opengl/gl.h>
 #include <liboscar/utilities/enum_helpers.h>
 
 #include <array>
