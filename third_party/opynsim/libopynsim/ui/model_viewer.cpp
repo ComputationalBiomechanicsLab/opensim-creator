@@ -53,7 +53,7 @@ namespace
             // Update the scene camera state based on the user's inputs.
             osc::ui::update_polar_camera_from_all_inputs(
                 camera,
-                osc::Rect::from_origin_and_dimensions({}, osc::App::get().main_window_pixel_dimensions()),
+                osc::Rect::from_origin_and_dimensions({}, osc::App::get().main_window_dimensions()),
                 std::nullopt
             );
 

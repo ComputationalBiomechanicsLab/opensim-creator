@@ -11,7 +11,7 @@ oscar
 -----
 
 - https://github.com/opynsim/oscar
-- Version (approx): 7aa8688f4abeffe9207d7ba0c3aa6c46730b02f4
+- Version (approx): 67f60c0c1c383c592c39af5b24da1547f4c5b51b
 - Licensed under the Apache 2.0 license
 - Copyright (c) 2025 Adam Kewley
 

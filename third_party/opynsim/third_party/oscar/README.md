@@ -1,6 +1,6 @@
-# Oscar
+# Oscar <img src="oscar_logo.svg" align="right" alt="OPynSim Logo" width="128" height="128" />
 
-> Create research tools in pure C++
+> A C++ framework for realtime scientific applications.
 
 > [!CAUTION]
 > This isn't currently intended for public use (only for internal use by [opensim-creator](https://www.opensimcreator.com/)
@@ -22,7 +22,7 @@ on Linux, macOS, and Windows. This makes it ideal for building larger integrated
 
 Oscar is currently an internal project. It was developed as part of [OpenSim Creator](www.opensimcreator.com)
 between 2021-2025 and then separated into a standalone project in 2026 so that it could be
-used by [OPynSim](https://github.com/opynsim/opynsim). Long-term, the intention is to solidify what's here so
+used by [OPynSim](https://github.com/opynsim/opynsim). Long-term, the intention is to improve what's here so
 that Oscar can be used in other projects.
 
 

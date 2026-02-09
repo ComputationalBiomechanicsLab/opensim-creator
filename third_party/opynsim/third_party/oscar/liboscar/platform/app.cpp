@@ -1288,7 +1288,7 @@ public:
 
     Vector2 main_window_dimensions() const
     {
-        return main_window_pixel_dimensions() / main_window_device_pixel_ratio();
+        return Vector2{main_window_pixel_dimensions()} / main_window_device_pixel_ratio();
     }
 
     void try_async_set_main_window_dimensions(Vector2 new_dims)
@@ -1305,12 +1305,12 @@ public:
         SDL_SetWindowSize(main_window_.get(), scaled_dims.x(), scaled_dims.y());
     }
 
-    Vector2 main_window_pixel_dimensions() const
+    Vector2i main_window_pixel_dimensions() const
     {
         int w = 0;
         int h = 0;
         SDL_GetWindowSizeInPixels(main_window_.get(), &w, &h);
-        return Vector2{static_cast<float>(w), static_cast<float>(h)};
+        return Vector2i{w, h};
     }
 
     float main_window_device_pixel_ratio() const
@@ -2036,7 +2036,7 @@ void osc::App::try_async_set_main_window_dimensions(Vector2 new_dims)
     impl_->try_async_set_main_window_dimensions(new_dims);
 }
 
-Vector2 osc::App::main_window_pixel_dimensions() const
+Vector2i osc::App::main_window_pixel_dimensions() const
 {
     return impl_->main_window_pixel_dimensions();
 }

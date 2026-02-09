@@ -360,7 +360,7 @@ namespace osc
         void try_async_set_main_window_dimensions(Vector2);
 
         // Returns the dimensions of the main application window in physical pixels.
-        Vector2 main_window_pixel_dimensions() const;
+        Vector2i main_window_pixel_dimensions() const;
 
         // Returns the ratio of the resolution in physical pixels to the resolution of
         // device-independent pixels.

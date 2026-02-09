@@ -184,7 +184,7 @@ Below is a code snippet for an application that can visualize an ``OpenSim::Mode
                 // Update the scene camera state based on the user's inputs.
                 osc::ui::update_polar_camera_from_all_inputs(
                     camera,
-                    osc::Rect::from_origin_and_dimensions({}, osc::App::get().main_window_pixel_dimensions()),
+                    osc::Rect::from_origin_and_dimensions({}, osc::App::get().main_window_dimensions()),
                     std::nullopt
                 );
 
@@ -207,7 +207,7 @@ Below is a code snippet for an application that can visualize an ``OpenSim::Mode
                 //     .view_matrix          transform decorations into view-space based on the camera
                 //     .projection_matrix    project the decorations onto the screen using a perspective projection
                 osc::SceneRendererParams params;
-                params.dimensions = osc::App::get().main_window_pixel_dimensions();
+                params.dimensions = osc::App::get().main_window_dimensions();
                 params.device_pixel_ratio = osc::App::get().main_window_device_pixel_ratio();
                 params.anti_aliasing_level = osc::App::get().anti_aliasing_level();
                 params.view_matrix = camera.view_matrix();
