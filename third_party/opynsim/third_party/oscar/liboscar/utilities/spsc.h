@@ -13,19 +13,19 @@
 #include <utility>
 
 // extremely basic support for a single-producer single-consumer (sp-sc) queue
-namespace osc::spsc
+namespace osc
 {
     template<typename T>
-    class Sender;
+    class SpscSender;
 
     template<typename T>
-    class Receiver;
+    class SpscReceiver;
 
     namespace detail
     {
         // internal implementation class
         template<typename T>
-        class Impl final {
+        class SpscImplementation final {
         private:
             // queue mutex
             std::mutex mutex_;
@@ -36,39 +36,39 @@ namespace osc::spsc
             // the queue
             std::list<T> message_queue_;
 
-            // how many `Sender` classes use this Impl (should be 1/0)
+            // how many `SpscSender` classes use this SpscImplementation (should be 1/0)
             std::atomic<size_t> num_senders_ = 0;
 
-            // how many `Receiver` classes use this impl (should be 1/0)
+            // how many `SpscReceiver` classes use this impl (should be 1/0)
             std::atomic<size_t> num_receivers_ = 0;
 
             template<typename U>
-            friend std::pair<Sender<U>, Receiver<U>> channel();
-            friend class Sender<T>;
-            friend class Receiver<T>;
+            friend std::pair<SpscSender<U>, SpscReceiver<U>> make_spsc_channel();
+            friend class SpscSender<T>;
+            friend class SpscReceiver<T>;
         };
     }
 
     // a class the client can send information through
     template<typename T>
-    class Sender final {
-        std::shared_ptr<detail::Impl<T>> impl_;
+    class SpscSender final {
+        std::shared_ptr<detail::SpscImplementation<T>> impl_;
 
         template<typename U>
-        friend std::pair<Sender<U>, Receiver<U>> channel();
+        friend std::pair<SpscSender<U>, SpscReceiver<U>> make_spsc_channel();
 
-        explicit Sender(std::shared_ptr<detail::Impl<T>> impl) :
+        explicit SpscSender(std::shared_ptr<detail::SpscImplementation<T>> impl) :
             impl_{std::move(impl)}
         {
             ++impl_->num_senders_;
         }
     public:
-        Sender(const Sender&) = delete;
-        Sender(Sender&&) noexcept = default;
-        Sender& operator=(const Sender&) = delete;
-        Sender& operator=(Sender&&) noexcept = default;
+        SpscSender(const SpscSender&) = delete;
+        SpscSender(SpscSender&&) noexcept = default;
+        SpscSender& operator=(const SpscSender&) = delete;
+        SpscSender& operator=(SpscSender&&) noexcept = default;
 
-        ~Sender() noexcept
+        ~SpscSender() noexcept
         {
             if (impl_) {
                 --impl_->num_senders_;
@@ -93,23 +93,23 @@ namespace osc::spsc
 
     // a class the client can receive data from
     template<typename T>
-    class Receiver final {
-        std::shared_ptr<detail::Impl<T>> impl_;
+    class SpscReceiver final {
+        std::shared_ptr<detail::SpscImplementation<T>> impl_;
 
         template<typename U>
-        friend std::pair<Sender<U>, Receiver<U>> channel();
+        friend std::pair<SpscSender<U>, SpscReceiver<U>> make_spsc_channel();
 
-        explicit Receiver(std::shared_ptr<detail::Impl<T>> impl) :
+        explicit SpscReceiver(std::shared_ptr<detail::SpscImplementation<T>> impl) :
             impl_{std::move(impl)}
         {
             ++impl_->num_receivers_;
         }
     public:
-        Receiver(Receiver const&) = delete;
-        Receiver(Receiver&&) noexcept = default;
-        Receiver& operator=(const Receiver&) = delete;
-        Receiver& operator=(Receiver&&) noexcept = default;
-        ~Receiver() noexcept
+        SpscReceiver(SpscReceiver const&) = delete;
+        SpscReceiver(SpscReceiver&&) noexcept = default;
+        SpscReceiver& operator=(const SpscReceiver&) = delete;
+        SpscReceiver& operator=(SpscReceiver&&) noexcept = default;
+        ~SpscReceiver() noexcept
         {
             if (impl_) {
                 --impl_->num_receivers_;
@@ -173,10 +173,10 @@ namespace osc::spsc
 
     // create a new thread-safe spsc channel (sender + receiver)
     template<typename T>
-    std::pair<Sender<T>, Receiver<T>> channel()
+    std::pair<SpscSender<T>, SpscReceiver<T>> make_spsc_channel()
     {
-        auto impl = std::make_shared<detail::Impl<T>>();
-        return {Sender<T>{impl}, Receiver<T>{impl}};
+        auto impl = std::make_shared<detail::SpscImplementation<T>>();
+        return {SpscSender<T>{impl}, SpscReceiver<T>{impl}};
     }
 
     // SPSC worker: single-producer single-consumer worker abstraction
@@ -184,22 +184,22 @@ namespace osc::spsc
     // encapsulates a worker background thread with thread-safe communication
     // channels
     template<typename Input, typename Output, typename Func>
-    class Worker {
+    class SpscWorker {
 
         // worker (background thread)
         cpp20::jthread worker_thread_;
 
         // sending end of the channel: sends inputs to background thread
-        spsc::Sender<Input> sender_;
+        SpscSender<Input> sender_;
 
         // receiving end of the channel: receives outputs from background thread
-        spsc::Receiver<Output> receiver_;
+        SpscReceiver<Output> receiver_;
 
         // MAIN function for an SPSC worker thread
         static int main(
             cpp20::stop_token,
-            spsc::Receiver<Input> receiver,
-            spsc::Sender<Output> sender,
+            SpscReceiver<Input> receiver,
+            SpscSender<Output> sender,
             Func message_processor)
         {
             // continuously try to receive input messages and
@@ -217,10 +217,10 @@ namespace osc::spsc
             return 0;  // receiver hung up
         }
 
-        Worker(
+        SpscWorker(
             cpp20::jthread&& worker,
-            spsc::Sender<Input>&& sender,
-            spsc::Receiver<Output>&& receiver) :
+            SpscSender<Input>&& sender,
+            SpscReceiver<Output>&& receiver) :
 
             worker_thread_{std::move(worker)},
             sender_{std::move(sender)},
@@ -230,12 +230,12 @@ namespace osc::spsc
     public:
 
         // create a new worker
-        static Worker create(Func message_processor)
+        static SpscWorker create(Func message_processor)
         {
-            auto [request_sender, request_receiver] = spsc::channel<Input>();
-            auto [response_sender, response_receiver] = spsc::channel<Output>();
-            cpp20::jthread worker{Worker::main, std::move(request_receiver), std::move(response_sender), std::move(message_processor)};
-            return Worker{std::move(worker), std::move(request_sender), std::move(response_receiver)};
+            auto [request_sender, request_receiver] = make_spsc_channel<Input>();
+            auto [response_sender, response_receiver] = make_spsc_channel<Output>();
+            cpp20::jthread worker{SpscWorker::main, std::move(request_receiver), std::move(response_sender), std::move(message_processor)};
+            return SpscWorker{std::move(worker), std::move(request_sender), std::move(response_receiver)};
         }
 
         void send(Input req)

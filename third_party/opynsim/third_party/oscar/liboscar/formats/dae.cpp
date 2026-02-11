@@ -9,8 +9,8 @@
 #include <liboscar/maths/vector2.h>
 #include <liboscar/maths/vector3.h>
 #include <liboscar/maths/vector_functions.h>
+#include <liboscar/oscar_config.h>
 #include <liboscar/platform/os.h>
-#include <liboscar/platform/strings.h>
 
 #include <array>
 #include <cstddef>
@@ -415,7 +415,7 @@ namespace
 }
 
 osc::DAEMetadata::DAEMetadata() :
-    DAEMetadata{"unknown_author", strings::library_name()}
+    DAEMetadata{"unknown_author", OSC_LIBRARY_NAME}
 {}
 
 osc::DAEMetadata::DAEMetadata(

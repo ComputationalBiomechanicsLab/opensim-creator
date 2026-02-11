@@ -128,19 +128,28 @@ using namespace osc::detail;
 using namespace osc::literals;
 namespace rgs = std::ranges;
 
-namespace osc::sdl
+namespace
 {
     // RAII wrapper around `SDL_GLContext` that calls `SDL_GL_DeleteContext` on dtor
     //     https://wiki.libsdl.org/SDL_GL_DeleteContext
-    class GLContext final {
+    class SDLOpenGLContext final {
     public:
-        GLContext(const GLContext&) = delete;
-        GLContext(GLContext&& tmp) noexcept :
+        explicit SDLOpenGLContext(SDL_Window* window) :
+            context_handle_{SDL_GL_CreateContext(window)}
+        {
+            // https://wiki.libsdl.org/SDL_GL_CreateContext
+            if (context_handle_ == nullptr) {
+                throw std::runtime_error{std::string{"SDL_GL_CreateContext failed: "} + SDL_GetError()};
+            }
+        }
+
+        SDLOpenGLContext(const SDLOpenGLContext&) = delete;
+        SDLOpenGLContext(SDLOpenGLContext&& tmp) noexcept :
             context_handle_{std::exchange(tmp.context_handle_, nullptr)}
         {}
-        GLContext& operator=(const GLContext&) = delete;
-        GLContext& operator=(GLContext&&) = delete;
-        ~GLContext() noexcept
+        SDLOpenGLContext& operator=(const SDLOpenGLContext&) = delete;
+        SDLOpenGLContext& operator=(SDLOpenGLContext&&) = delete;
+        ~SDLOpenGLContext() noexcept
         {
             if (context_handle_) {
                 SDL_GL_DestroyContext(context_handle_);
@@ -150,27 +159,10 @@ namespace osc::sdl
         SDL_GLContext get() { return context_handle_; }
 
     private:
-        friend GLContext GL_CreateContext(SDL_Window* w);
-        explicit GLContext(SDL_GLContext _ctx) :
-            context_handle_{_ctx}
-        {}
-
         SDL_GLContext context_handle_;
     };
 
-    // https://wiki.libsdl.org/SDL_GL_CreateContext
-    inline GLContext GL_CreateContext(SDL_Window* w)
-    {
-        SDL_GLContext ctx = SDL_GL_CreateContext(w);
-
-        if (ctx == nullptr) {
-            throw std::runtime_error{std::string{"SDL_GL_CreateContext failed: "} + SDL_GetError()};
-        }
-
-        return GLContext{ctx};
-    }
-
-    inline int GetOpenGLSwapInterval()
+    inline int GetCurrentOpenGLContextSwapInterval()
     {
         int rv = 0;
         SDL_GL_GetSwapInterval(&rv);
@@ -5808,12 +5800,12 @@ namespace
     });
 
     // create an OpenGL context for an application window
-    sdl::GLContext create_opengl_context(SDL_Window& window)
+    SDLOpenGLContext create_opengl_context(SDL_Window& window)
     {
         log_debug("initializing OpenGL context");
 
         // create an OpenGL context for the application
-        sdl::GLContext ctx = sdl::GL_CreateContext(&window);
+        SDLOpenGLContext ctx{&window};
 
         // enable the OpenGL context
         if (not SDL_GL_MakeCurrent(&window, ctx.get())) {
@@ -5874,7 +5866,7 @@ namespace
     }
 
     // returns the maximum numbers of MSXAA antiAliasingLevel the active OpenGL context supports
-    AntiAliasingLevel get_opengl_max_aa_level(const sdl::GLContext&)
+    AntiAliasingLevel get_opengl_max_aa_level(const SDLOpenGLContext&)
     {
         GLint v = 1;
         glGetIntegerv(GL_MAX_SAMPLES, &v);
@@ -6063,13 +6055,13 @@ public:
             }
 
             // always read the vsync state back from SDL
-            vsync_enabled_ = sdl::GetOpenGLSwapInterval() != 0;
+            vsync_enabled_ = GetCurrentOpenGLContextSwapInterval() != 0;
         }
         else {
             // try to disable vsync
 
             SDL_GL_SetSwapInterval(0);
-            vsync_enabled_ = sdl::GetOpenGLSwapInterval() != 0;
+            vsync_enabled_ = GetCurrentOpenGLContextSwapInterval() != 0;
         }
     }
 
@@ -6202,12 +6194,12 @@ public:
 private:
 
     // active OpenGL context for the application
-    sdl::GLContext opengl_context_;
+    SDLOpenGLContext opengl_context_;
 
     // maximum number of antiAliasingLevel supported by this hardware's OpenGL MSXAA API
     AntiAliasingLevel max_aa_level_ = get_opengl_max_aa_level(opengl_context_);
 
-    bool vsync_enabled_ = sdl::GetOpenGLSwapInterval() != 0;
+    bool vsync_enabled_ = GetCurrentOpenGLContextSwapInterval() != 0;
 
     // true if OpenGL's debug mode is enabled
     bool debug_mode_enabled_ = false;

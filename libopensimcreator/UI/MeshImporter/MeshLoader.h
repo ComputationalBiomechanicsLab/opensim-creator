@@ -74,7 +74,7 @@ namespace osc::mi
         }
 
     private:
-        using Worker = spsc::Worker<
+        using Worker = SpscWorker<
             MeshLoadRequest,
             MeshLoadResponse,
             decltype(respondToMeshloadRequest)

@@ -2,8 +2,8 @@
 
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/maths/vector3.h>
+#include <liboscar/oscar_config.h>
 #include <liboscar/platform/os.h>
-#include <liboscar/platform/strings.h>
 
 #include <cstddef>
 #include <iomanip>
@@ -73,7 +73,7 @@ namespace
 }
 
 osc::OBJMetadata::OBJMetadata() :
-    OBJMetadata{strings::library_name()}
+    OBJMetadata{OSC_LIBRARY_NAME}
 {}
 
 osc::OBJMetadata::OBJMetadata(std::string_view authoring_tool_) :

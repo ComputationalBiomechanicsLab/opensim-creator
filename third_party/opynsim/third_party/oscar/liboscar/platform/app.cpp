@@ -305,49 +305,45 @@ struct osc::Converter<Uint8, osc::MouseButton> final {
     }
 };
 
-namespace osc::sdl
+namespace
 {
+    App* g_app_global = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+
     // RAII wrapper for `SDL_Init` and `SDL_Quit`
     //     https://wiki.libsdl.org/SDL_Quit
-    class Context final {
+    class SDLContext final {
     public:
-        explicit Context(Uint32 flags)
+        explicit SDLContext(Uint32 flags)
         {
             if (not SDL_Init(flags)) {
                 throw std::runtime_error{std::string{"SDL_Init: failed: "} + SDL_GetError()};
             }
         }
-        Context(const Context&) = delete;
-        Context(Context&&) noexcept = delete;
-        Context& operator=(const Context&) = delete;
-        Context& operator=(Context&&) noexcept = delete;
-        ~Context() noexcept
+        SDLContext(const SDLContext&) = delete;
+        SDLContext(SDLContext&&) noexcept = delete;
+        SDLContext& operator=(const SDLContext&) = delete;
+        SDLContext& operator=(SDLContext&&) noexcept = delete;
+        ~SDLContext() noexcept
         {
             SDL_Quit();
         }
     };
 
-    // https://wiki.libsdl.org/SDL_Init
-    inline Context Init(Uint32 flags)
-    {
-        return Context{flags};
-    }
-
     // RAII wrapper around `SDL_Window` that calls `SDL_DestroyWindow` on dtor
     //     https://wiki.libsdl.org/SDL_CreateWindow
     //     https://wiki.libsdl.org/SDL_DestroyWindow
-    class Window final {
+    class SDLWindow final {
     public:
-        explicit Window(SDL_Window * _ptr) :
+        explicit SDLWindow(SDL_Window * _ptr) :
             window_handle_{_ptr}
         {}
-        Window(const Window&) = delete;
-        Window(Window&& tmp) noexcept :
+        SDLWindow(const SDLWindow&) = delete;
+        SDLWindow(SDLWindow&& tmp) noexcept :
             window_handle_{std::exchange(tmp.window_handle_, nullptr)}
         {}
-        Window& operator=(const Window&) = delete;
-        Window& operator=(Window&&) noexcept = delete;
-        ~Window() noexcept
+        SDLWindow& operator=(const SDLWindow&) = delete;
+        SDLWindow& operator=(SDLWindow&&) noexcept = delete;
+        ~SDLWindow() noexcept
         {
             if (window_handle_) {
                 SDL_DestroyWindow(window_handle_);
@@ -361,11 +357,6 @@ namespace osc::sdl
     private:
         SDL_Window* window_handle_;
     };
-}
-
-namespace
-{
-    App* g_app_global = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 #ifndef EMSCRIPTEN
     void sdl_gl_set_attribute_or_throw(
@@ -403,7 +394,7 @@ namespace
     }
 
     // initialize the main application window
-    sdl::Window create_main_app_window(const AppSettings& settings, CStringView application_name)
+    SDLWindow create_main_app_window(const AppSettings& settings, CStringView application_name)
     {
         log_info("initializing main application window");
 
@@ -461,7 +452,7 @@ namespace
             throw std::runtime_error{std::string{"SDL_CreateWindow failed: "} + SDL_GetError()};
         }
 
-        return sdl::Window{rv};
+        return SDLWindow{rv};
     }
 
     AppClock::duration convert_perf_ticks_to_appclock_duration(Uint64 ticks, Uint64 frequency)
@@ -1767,10 +1758,10 @@ private:
     ResourceLoader resource_loader_{native_filesystem_};
 
     // SDL context (windowing, video driver, etc.)
-    sdl::Context sdl_context_{SDL_INIT_VIDEO};
+    SDLContext sdl_context_{SDL_INIT_VIDEO};
 
     // SDL main application window
-    sdl::Window main_window_ = create_main_app_window(config_, metadata_.human_readable_application_name());
+    SDLWindow main_window_ = create_main_app_window(config_, metadata_.human_readable_application_name());
 
     // cache for the current (caller-set) window subtitle
     SynchronizedValue<std::string> main_window_subtitle_;

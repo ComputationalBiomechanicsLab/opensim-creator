@@ -5,8 +5,8 @@
 #include <liboscar/maths/triangle.h>
 #include <liboscar/maths/triangle_functions.h>
 #include <liboscar/maths/vector3.h>
+#include <liboscar/oscar_config.h>
 #include <liboscar/platform/os.h>
-#include <liboscar/platform/strings.h>
 #include <liboscar/utilities/algorithms.h>
 #include <liboscar/utilities/assertions.h>
 #include <liboscar/utilities/object_representation.h>
@@ -101,7 +101,7 @@ namespace
 }
 
 osc::STLMetadata::STLMetadata() :
-    STLMetadata{strings::library_name()}
+    STLMetadata{OSC_LIBRARY_NAME}
 {}
 
 osc::STLMetadata::STLMetadata(

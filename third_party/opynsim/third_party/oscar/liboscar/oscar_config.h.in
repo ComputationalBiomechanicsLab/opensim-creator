@@ -7,3 +7,7 @@
 // define/enable/disable to toggle whether the `OSC_PERF` macro actually
 // records the runtime performance of the application
 #cmakedefine01 OSCAR_RUNTIME_PERF_MEASUREMENTS_ENABLED
+
+// Human-readable name of the library, for use in things like generated file
+// headers
+#define OSC_LIBRARY_NAME "oscar"
