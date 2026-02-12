@@ -536,7 +536,7 @@ TEST(OpenSimModel, DeleteComponentFromModelFollowedByReinitializingAndThenFinali
 // - after some manual investigations, it turned out that the problem is
 //   unrelated to renaming and that the segfault will also happen if the
 //   model's connections are re-finalized
-TEST(OpenSimModel, DISABLED_ReFinalizingAModelWithUnusualJointTopologyDoesNotSegfault)
+TEST(OpenSimModel, ReFinalizingAModelWithUnusualJointTopologyDoesNotSegfault)
 {
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_773_repro.osim";
@@ -552,7 +552,7 @@ TEST(OpenSimModel, DISABLED_ReFinalizingAModelWithUnusualJointTopologyDoesNotSeg
 //
 // this is a simplified version of #773 that only contains two bodies and three joints,
 // but still observes the same bug
-TEST(OpenSimModel, DISABLED_ReFinalizingASimplerModelWithUnusualJointTopologyDoesNotSegfault)
+TEST(OpenSimModel, ReFinalizingASimplerModelWithUnusualJointTopologyDoesNotSegfault)
 {
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_773-2_repro.osim";
@@ -571,7 +571,7 @@ TEST(OpenSimModel, DISABLED_ReFinalizingASimplerModelWithUnusualJointTopologyDoe
 // interestingly, this version of the model doesn't segfault because a (previously segfaulting)
 // failure occurs in the graph maker itself, which was patched in opensim-core/3299. It's only
 // in this test suite to spot regressions
-TEST(OpenSimModel, DISABLED_ReFinalizingAnEvenSimplerModelWithUnusualJointTopologyDoesNotSegfault)
+TEST(OpenSimModel, ReFinalizingAnEvenSimplerModelWithUnusualJointTopologyDoesNotSegfault)
 {
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_773-3_repro.osim";
