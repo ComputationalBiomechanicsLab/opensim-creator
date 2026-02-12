@@ -37,6 +37,23 @@
             }
         },
         {
+            "name": "ErrorCheck-Inlined",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/../build/third_party/ErrorCheck-Inlined",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck-Inlined/install",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_CXX_FLAGS": "-fsanitize=address",
+                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address",
+                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
+                "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
+                "OSCDEPS_BUILD_OSCAR": "OFF",
+                "OSCDEPS_BUILD_OPYNSIM": "OFF"
+            }
+        },
+        {
             "name": "Debug-Inlined",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/Debug-Inlined",
@@ -106,6 +123,7 @@
         { "name": "Development",           "configurePreset": "Development"           },
         { "name": "Development-Inlined",   "configurePreset": "Development-Inlined"   },
         { "name": "ErrorCheck",            "configurePreset": "ErrorCheck"            },
+        { "name": "ErrorCheck-Inlined",    "configurePreset": "ErrorCheck-Inlined"    },
         { "name": "Debug-Inlined",         "configurePreset": "Debug-Inlined"         },
         { "name": "RelWithDebInfo",        "configurePreset": "RelWithDebInfo"        },
         { "name": "Release",               "configurePreset": "Release"               },
@@ -133,6 +151,13 @@
             "steps": [
                 { "type": "configure", "name": "ErrorCheck" },
                 { "type": "build",     "name": "ErrorCheck" }
+            ]
+        },
+        {
+            "name": "ErrorCheck-Inlined",
+            "steps": [
+                { "type": "configure", "name": "ErrorCheck-Inlined" },
+                { "type": "build",     "name": "ErrorCheck-Inlined" }
             ]
         },
         {

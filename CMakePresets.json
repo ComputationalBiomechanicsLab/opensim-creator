@@ -57,6 +57,35 @@
             }
         },
         {
+            "name": "ErrorCheck-Inlined",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/ErrorCheck-Inlined",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck-Inlined/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/ErrorCheck-Inlined/install",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_C_FLAGS": "-fsanitize=address -fno-sanitize-recover=all",
+                "CMAKE_CXX_FLAGS": "-fsanitize=address -fno-sanitize-recover=all",
+                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address -rdynamic",
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
+
+                "OSC_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OSC_BUILD_OSCAR_INLINE": "ON",
+                "OSC_BUILD_OPYNSIM_INLINE": "ON",
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OPYN_PACKAGE": "OFF",
+                "OPYN_BUILD_DOCS": "OFF",
+                "OPYN_BUILD_PYTHON_BINDINGS": "ON",
+                "OPYN_BUILD_TESTING": "ON",
+                "OPYN_BUILD_PYTHON_TESTING": "OFF",
+                "OPYN_VENV": "${sourceDir}/.venv",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
+            }
+        },
+        {
             "name": "Debug-Inlined",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Debug-Inlined",
@@ -146,6 +175,7 @@
         { "name": "Development",           "configurePreset": "Development"           },
         { "name": "Development-Inlined",   "configurePreset": "Development-Inlined"   },
         { "name": "ErrorCheck",            "configurePreset": "ErrorCheck"            },
+        { "name": "ErrorCheck-Inlined",    "configurePreset": "ErrorCheck-Inlined"    },
         { "name": "Debug-Inlined",         "configurePreset": "Debug-Inlined"         },
         { "name": "RelWithDebInfo",        "configurePreset": "RelWithDebInfo"        },
         { "name": "Release",               "configurePreset": "Release"               },
@@ -169,6 +199,17 @@
         {
             "name": "ErrorCheck",
             "configurePreset": "ErrorCheck",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"},
+            "environment": {
+                "ASAN_OPTIONS": "abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=false:detect_stack_use_after_return=true:strict_init_order=false",
+                "LSAN_OPTIONS": "suppressions=${sourceDir}/scripts/suppressions_lsan.supp",
+                "LIBGL_ALWAYS_SOFTWARE": "1"
+            }
+        },
+        {
+            "name": "ErrorCheck-Inlined",
+            "configurePreset": "ErrorCheck-Inlined",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"},
             "environment": {
@@ -246,6 +287,14 @@
                 { "type": "configure", "name": "ErrorCheck" },
                 { "type": "build",     "name": "ErrorCheck" },
                 { "type": "test",      "name": "ErrorCheck" }
+            ]
+        },
+        {
+            "name": "ErrorCheck-Inlined",
+            "steps": [
+                { "type": "configure", "name": "ErrorCheck-Inlined" },
+                { "type": "build",     "name": "ErrorCheck-Inlined" },
+                { "type": "test",      "name": "ErrorCheck-Inlined" }
             ]
         },
         {
