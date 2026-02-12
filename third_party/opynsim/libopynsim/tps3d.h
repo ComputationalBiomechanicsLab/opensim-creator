@@ -155,7 +155,7 @@ namespace opyn
     // system.
     SimTK::Vec<3, float>  tps3d_warp_point(
         const TPSCoefficients3D<float>&,
-        SimTK::Vec<3, float> p
+        const SimTK::Vec<3, float>& p
     );
 
     // Returns a warped point computed by evaluating a 3D Thin-Plate Spline (TPS)
@@ -163,7 +163,7 @@ namespace opyn
     // system.
     SimTK::Vec<3, double> tps3d_warp_point(
         const TPSCoefficients3D<double>&,
-        SimTK::Vec<3, double>
+        const SimTK::Vec<3, double>&
     );
 
     // Returns a point that is linearly interpolated between `p` and a warped point
@@ -177,7 +177,7 @@ namespace opyn
     //   linearly extrapolated.
     SimTK::Vec<3, float> tps3d_warp_point(
         const TPSCoefficients3D<float>&,
-        SimTK::Vec<3, float> p,
+        const SimTK::Vec<3, float>& p,
         float linear_interpolant
     );
 

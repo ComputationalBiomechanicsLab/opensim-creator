@@ -36,7 +36,12 @@ if(TRUE)
     endif()
 
     # Use nanobind to declare the `_opynsim_native` Python extension module target
-    set(OPYN_NANOBIND_ARGS NB_STATIC)
+    #
+    # See https://nanobind.readthedocs.io/en/latest/api_cmake.html for API docs
+    set(OPYN_NANOBIND_ARGS
+        NB_STATIC             # Compile the nanobind library as a static library
+        NB_SUPPRESS_WARNINGS  # Mark nanobind/Python directories as SYSTEM and disable clang-tidying them
+    )
     if(OPYN_STABLE_ABI)
         list(APPEND OPYN_NANOBIND_ARGS STABLE_ABI)
     endif()

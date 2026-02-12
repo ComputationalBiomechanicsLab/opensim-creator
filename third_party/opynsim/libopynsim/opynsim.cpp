@@ -16,7 +16,7 @@
 #if defined(WIN32)
 #include <Windows.h>  // `GetEnvironmentVariableA` / `SetEnvironmentVariableA`
 #else
-#include <stdlib.h>  // `setenv`
+#include <cstdlib>  // `setenv`
 #endif
 
 #include <clocale>
@@ -93,10 +93,10 @@ namespace
     }
 
     // Helper function that sets one environment variable unsafely.
-    int setenv_wrapper(const char* name, const char* value, int overwrite)
+    int setenv_wrapper(const char* name, const char* value, bool overwrite)
     {
         // Input validation
-        if (!name || *name == '\0' || std::strchr(name, '=') != NULL || !value) {
+        if (!name || *name == '\0' || std::strchr(name, '=') != nullptr || !value) {
             return -1;
         }
 
@@ -111,7 +111,7 @@ namespace
         }
         return 0;
 #else
-        return setenv(name, value, overwrite);
+        return setenv(name, value, overwrite ? 1 : 0);  // NOLINT(concurrency-mt-unsafe)
 #endif
     }
 

@@ -38,12 +38,12 @@ namespace
         const std::string env = name + '=' + value;
         _putenv(env.c_str());
 #else
-        setenv(name.c_str(), value.c_str(), 1);
+        setenv(name.c_str(), value.c_str(), 1); // NOLINT(concurrency-mt-unsafe)
 #endif
     }
 
     // Helper: set PYTHONPATH to the given paths
-    void set_pythonpath(std::vector<std::filesystem::path> paths)
+    void set_pythonpath(const std::vector<std::filesystem::path>& paths)
     {
 #if defined(_WIN32)
         constexpr std::string_view separator = ";";
@@ -62,7 +62,7 @@ namespace
 }
 
 // This is what's ran when running `opynsim_debugger.exe`
-int main()
+int main()  // NOLINT(bugprone-exception-escape)
 {
     // Set PYTHONPATH to the local virtual environment and `opynsim`
     set_pythonpath({ "@OPYN_VENV@/Lib/site-packages", "@CMAKE_CURRENT_SOURCE_DIR@/.." });

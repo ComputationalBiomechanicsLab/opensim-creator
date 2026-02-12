@@ -381,8 +381,8 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpecte
     public:
         ReferenceModelStatePair(OpenSim::Model& model, SimTK::State& state) : m_Model{&model}, m_State{&state} {}
     private:
-        const OpenSim::Model& implGetModel() const { return *m_Model; }
-        const SimTK::State& implGetState() const { return *m_State; }
+        const OpenSim::Model& implGetModel() const override { return *m_Model; }
+        const SimTK::State& implGetState() const override { return *m_State; }
 
         OpenSim::Model* m_Model;
         SimTK::State* m_State;

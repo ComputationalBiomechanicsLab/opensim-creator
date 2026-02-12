@@ -313,7 +313,7 @@ namespace
     }
 
     template<std::floating_point T>
-    SimTK::Vec<3, T> TPSWarpPoint(const TPSCoefficients3D<T>& coefs, SimTK::Vec<3, T> p)
+    SimTK::Vec<3, T> TPSWarpPoint(const TPSCoefficients3D<T>& coefs, const SimTK::Vec<3, T>& p)
     {
         // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
         // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
@@ -378,17 +378,24 @@ TPSCoefficients3D<double> opyn::tps3d_solve_coefficients(
     return ::TPSCalcCoefficients<double>(source_landmarks, destination_landmarks);
 }
 
-SimTK::Vec<3, float> opyn::tps3d_warp_point(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> p)
+SimTK::Vec<3, float> opyn::tps3d_warp_point(
+    const TPSCoefficients3D<float>& coefs,
+    const SimTK::Vec<3, float>& p)
 {
     return ::TPSWarpPoint<float>(coefs, p);
 }
 
-SimTK::Vec<3, double> opyn::tps3d_warp_point(const TPSCoefficients3D<double>& coefs, SimTK::Vec<3, double> p)
+SimTK::Vec<3, double> opyn::tps3d_warp_point(
+    const TPSCoefficients3D<double>& coefs,
+    const SimTK::Vec<3, double>& p)
 {
     return ::TPSWarpPoint<double>(coefs, p);
 }
 
-SimTK::Vec<3, float> opyn::tps3d_warp_point(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> p, float linear_interpolant)
+SimTK::Vec<3, float> opyn::tps3d_warp_point(
+    const TPSCoefficients3D<float>& coefs,
+    const SimTK::Vec<3, float>& p,
+    float linear_interpolant)
 {
     const SimTK::Vec<3, float> warped = tps3d_warp_point(coefs, p);
     return {
