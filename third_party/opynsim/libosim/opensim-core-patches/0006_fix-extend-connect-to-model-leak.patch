@@ -1,0 +1,372 @@
+This fixes a memory leak in OpenSim::Model::extendConnectToModel where
+all joints in a model will leak if an exception is thrown during graph
+creation.
+
+---
+
+diff --git a/OpenSim/Common/ScopeExit.h b/OpenSim/Common/ScopeExit.h
+new file mode 100644
+index 000000000..1c52c1ca0
+--- /dev/null
++++ b/OpenSim/Common/ScopeExit.h
+@@ -0,0 +1,84 @@
++#ifndef OPENSIM_SCOPE_EXIT_H_
++#define OPENSIM_SCOPE_EXIT_H_
++
++/* -------------------------------------------------------------------------- *
++ *                          OpenSim: ScopeExit.h                              *
++ * -------------------------------------------------------------------------- *
++ * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
++ * See http://opensim.stanford.edu and the NOTICE file for more information.  *
++ * OpenSim is developed at Stanford University and supported by the US        *
++ * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
++ * through the Warrior Web program.                                           *
++ *                                                                            *
++ * Copyright (c) 2005-2026 Stanford University and the Authors                *
++ * Author(s): Adam Kewley                                                     *
++ *                                                                            *
++ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
++ * not use this file except in compliance with the License. You may obtain a  *
++ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
++ *                                                                            *
++ * Unless required by applicable law or agreed to in writing, software        *
++ * distributed under the License is distributed on an "AS IS" BASIS,          *
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
++ * See the License for the specific language governing permissions and        *
++ * limitations under the License.                                             *
++ * -------------------------------------------------------------------------- */
++
++#include <concepts>
++#include <utility>
++
++namespace OpenSim
++{
++    /**
++     * A general-purpose scope guard intended to call its exit function when
++     * a scope is exited - either normally, or via an exception.
++     *
++     * This utility class is effectively an OpenSim rewrite of `std::experimental::scope_exit`,
++     * which is documented here: https://en.cppreference.com/w/cpp/experimental/scope_exit.html
++     */
++    template<std::invocable EF>
++    class [[nodiscard]] ScopeExit final {
++    public:
++        /**
++         * Constructs a `ScopeExit` from a function or function object.
++         */
++        template<typename Fn>
++        requires (std::is_nothrow_constructible_v<EF, Fn>)
++        explicit ScopeExit(Fn&& fn) : exit_function_{std::forward<Fn>(fn)} {}
++
++        ScopeExit(const ScopeExit&) = delete;
++        ScopeExit(ScopeExit&&) noexcept = delete;
++        ScopeExit& operator=(const ScopeExit&) = delete;
++        ScopeExit& operator=(ScopeExit&&) noexcept = delete;
++        ~ScopeExit() noexcept(noexcept(exit_function_()))
++        {
++            if (is_active_) {
++                exit_function_();
++            }
++        }
++
++        /**
++         * Makes the `ScopeExit` inactive, meaning it will will not call its
++         * exit function on destruction.
++         *
++         * Once a `ScopeExit` is inactive, it cannot become active again.
++         */
++        void release() noexcept { is_active_ = false; }
++
++        private:
++            EF exit_function_;
++            bool is_active_ = true;
++    };
++
++    /**
++     * One template deduction guide permits the deduction of an argument of function
++     * or function object type.
++     *
++     * The argument (after function-to-pointer decay, if any) is copied or moved into
++     * the constructed scope_exit.
++     */
++    template<typename EF>
++    ScopeExit(EF) -> ScopeExit<EF>;
++}
++
++#endif  // #ifndef OPENSIM_SCOPE_EXIT_H_
+\ No newline at end of file
+diff --git a/OpenSim/Common/Test/testScopeExit.cpp b/OpenSim/Common/Test/testScopeExit.cpp
+new file mode 100644
+index 000000000..16b6e8c8e
+--- /dev/null
++++ b/OpenSim/Common/Test/testScopeExit.cpp
+@@ -0,0 +1,74 @@
++/* -------------------------------------------------------------------------- *
++ *                        OpenSim: testScopeExit.h                            *
++ * -------------------------------------------------------------------------- *
++ * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
++ * See http://opensim.stanford.edu and the NOTICE file for more information.  *
++ * OpenSim is developed at Stanford University and supported by the US        *
++ * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
++ * through the Warrior Web program.                                           *
++ *                                                                            *
++ * Copyright (c) 2005-2026 Stanford University and the Authors                *
++ * Author(s): Adam Kewley                                                     *
++ *                                                                            *
++ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
++ * not use this file except in compliance with the License. You may obtain a  *
++ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
++ *                                                                            *
++ * Unless required by applicable law or agreed to in writing, software        *
++ * distributed under the License is distributed on an "AS IS" BASIS,          *
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
++ * See the License for the specific language governing permissions and        *
++ * limitations under the License.                                             *
++ * -------------------------------------------------------------------------- */
++
++#include <OpenSim/Common/ScopeExit.h>
++
++#include <catch2/catch_all.hpp>
++
++using namespace OpenSim;
++
++TEST_CASE("ScopeExit calls exit function on normal scope exit")
++{
++    bool called = false;
++    {
++        ScopeExit exit{[&called]() { called = true; }};
++    }
++    ASSERT(called == true);
++}
++
++TEST_CASE("ScopeExit calls exit function when an exception is thrown")
++{
++    bool called = false;
++    {
++        try {
++            ScopeExit exit{[&called]() { called = true; }};
++            throw std::runtime_error{"throw something"};
++        }
++        catch (const std::exception&) {}  // ignore the exception
++    }
++    ASSERT(called == true);
++}
++
++TEST_CASE("ScopeExit release stops the exit function from being called on normal scope exit")
++{
++    bool called = false;
++    {
++        ScopeExit exit{[&called]() { called = true; }};
++        exit.release();
++    }
++    ASSERT(called == false);
++}
++
++TEST_CASE("ScopeExit release stops the exit function from being called when an exception is thrown")
++{
++    bool called = false;
++    {
++        try {
++            ScopeExit exit{[&called]() { called = true; }};
++            exit.release();
++            throw std::runtime_error{"throw something"};
++        }
++        catch (const std::exception&) {}  // ignore the exception
++    }
++    ASSERT(called == false);
++}
+diff --git a/OpenSim/Simulation/Model/Model.cpp b/OpenSim/Simulation/Model/Model.cpp
+index 4cb6392aa..a66713d15 100644
+--- a/OpenSim/Simulation/Model/Model.cpp
++++ b/OpenSim/Simulation/Model/Model.cpp
+@@ -45,6 +45,7 @@
+ #include <OpenSim/Common/IO.h>
+ #include <OpenSim/Common/Logger.h>
+ #include <OpenSim/Common/ScaleSet.h>
++#include <OpenSim/Common/ScopeExit.h>
+ #include <OpenSim/Common/Storage.h>
+ #include <OpenSim/Common/XMLDocument.h>
+ #include <OpenSim/Simulation/AssemblySolver.h>
+@@ -898,13 +899,16 @@ void Model::createMultibodyTree()
+     }
+ }
+ 
+-void Model::extendConnectToModel(Model &model)
++void Model::extendConnectToModel(Model& model)
+ {
+     Super::extendConnectToModel(model);
+ 
+-    if (&model != this){
+-        log_info("Model:: {} is being connected to model {}.", getName(),
+-                model.getName());
++    if (&model != this) {
++        log_info("Model:: {} is being connected to model {}.",
++            getName(),
++            model.getName()
++        );
++
+         // if part of another Model, that Model is in charge
+         // of creating a valid Multibody tree that includes
+         // Components of this Model.
+@@ -925,82 +929,89 @@ void Model::extendConnectToModel(Model &model)
+     Ground& ground = updGround();
+     setNextSubcomponentInSystem(ground);
+ 
+-    // The JointSet of the Model is only being manipulated for consistency with
+-    // Tool expectations. TODO fix Tools and remove
+-    JointSet& joints = upd_JointSet();
+-
+-    bool isMemoryOwner = joints.getMemoryOwner();
+-    //Temporarily set owner ship to false so we
+-    //can swap to rearrange order of the joints
+-    joints.setMemoryOwner(false);
+-
+-    // Run through all the mobilizers in the multibody tree, adding
+-    // a joint in the correct sequence. Also add massless bodies,
+-    // loop closure constraints, etc... to form the valid tree.
+-    for (int m = 0; m < _multibodyTree.getNumMobilizers(); ++m) {
+-        // Get a mobilizer from the tree, then extract its corresponding
+-        // joint and bodies. Note that these should have equivalents in OpenSim.
+-        const SimTK::MultibodyGraphMaker::Mobilizer& mob =
+-                _multibodyTree.getMobilizer(m);
+-
+-        if (mob.isSlaveMobilizer()){
+-            // add the slave body and joint
+-            Body* outbMaster = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardMasterBodyRef());
+-            Joint* useJoint = MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef());
+-            Body* outb = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardBodyRef());
+-
+-            // the joint must be added to the system next
+-            setNextSubcomponentInSystem(*useJoint);
+-
+-            if (!outb) {
+-                outb = outbMaster->addSlave();
+-                useJoint->setSlaveBodyForChild(*outb);
+-                SimTK::Transform o(SimTK::Vec3(0));
+-                //Now add the constraints that weld the slave to the master at the
+-                // body origin
+-                std::string pathName = outb->getAbsolutePathString();
+-                WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
+-                                                          *outbMaster, o, *outb, o);
+-
+-                // include within adopted list of owned components
+-                adoptSubcomponent(weld);
+-                setNextSubcomponentInSystem(*weld);
++    {
++        // The JointSet of the Model is only being manipulated for consistency with
++        // Tool expectations. TODO fix Tools and remove
++        JointSet& joints = upd_JointSet();
++
++        const bool isMemoryOwner = joints.getMemoryOwner();
++
++        // Temporarily set ownership to false so we
++        // can swap to rearrange order of the joints
++        joints.setMemoryOwner(false);
++
++        // Ensure memory ownership is reset to its original
++        // state, even when an exception is thrown, so that
++        // joint memory is correctly cleaned up.
++        const ScopeExit resetter{[isMemoryOwner, &joints]() {
++            joints.setMemoryOwner(isMemoryOwner);
++        }};
++
++        // Run through all the mobilizers in the multibody tree, adding
++        // a joint in the correct sequence. Also add massless bodies,
++        // loop closure constraints, etc... to form the valid tree.
++        for (int m = 0; m < _multibodyTree.getNumMobilizers(); ++m) {
++            // Get a mobilizer from the tree, then extract its corresponding
++            // joint and bodies. Note that these should have equivalents in OpenSim.
++            const SimTK::MultibodyGraphMaker::Mobilizer& mob =
++                    _multibodyTree.getMobilizer(m);
++
++            if (mob.isSlaveMobilizer()){
++                // add the slave body and joint
++                Body* outbMaster = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardMasterBodyRef());
++                Joint* useJoint = MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef());
++                Body* outb = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardBodyRef());
++
++                // the joint must be added to the system next
++                setNextSubcomponentInSystem(*useJoint);
++
++                if (!outb) {
++                    outb = outbMaster->addSlave();
++                    useJoint->setSlaveBodyForChild(*outb);
++                    SimTK::Transform o(SimTK::Vec3(0));
++                    //Now add the constraints that weld the slave to the master at the
++                    // body origin
++                    std::string pathName = outb->getAbsolutePathString();
++                    WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
++                                                              *outbMaster, o, *outb, o);
++
++                    // include within adopted list of owned components
++                    adoptSubcomponent(weld);
++                    setNextSubcomponentInSystem(*weld);
++                }
+             }
+-        }
+-
+-        if (mob.isAddedBaseMobilizer()){
+-            // create and add the base joint to enable these dofs
+-            Body* child = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardBodyRef());
+-            log_warn("Body '{}' not connected by a Joint."
+-                "A FreeJoint will be added to connect it to ground.",
+-                child->getName());
+-            Ground* ground = MultibodyGraphMakerPtrCast<Ground>(mob.getInboardBodyRef());
+-
+-            std::string jname = "free_" + child->getName();
+-            SimTK::Vec3 zeroVec(0.0);
+-            Joint* free = new FreeJoint(jname, *ground, *child);
+-            free->isReversed = mob.isReversedFromJoint();
+-            // TODO: Joints are currently required to be in the JointSet
+-            // When the reordering of Joints is eliminated (see following else block)
+-            // this limitation can be removed and the free joint adopted as in
+-            // internal subcomponent (similar to the weld constraint above)
+-            addJoint(free);
+-            setNextSubcomponentInSystem(*free);
+-        }
+-        else{
+-            // Update the directionality of the joint according to tree's
+-            // preferential direction
+-            MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef())->isReversed =
+-                mob.isReversedFromJoint();
+-
+-            // order the joint components in the order of the multibody tree
+-            Joint* joint = MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef());
+-            setNextSubcomponentInSystem(*joint);
+-
+ 
++            if (mob.isAddedBaseMobilizer()){
++                // create and add the base joint to enable these dofs
++                Body* child = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardBodyRef());
++                log_warn("Body '{}' not connected by a Joint."
++                    "A FreeJoint will be added to connect it to ground.",
++                    child->getName());
++                Ground* ground = MultibodyGraphMakerPtrCast<Ground>(mob.getInboardBodyRef());
++
++                std::string jname = "free_" + child->getName();
++                SimTK::Vec3 zeroVec(0.0);
++                Joint* free = new FreeJoint(jname, *ground, *child);
++                free->isReversed = mob.isReversedFromJoint();
++                // TODO: Joints are currently required to be in the JointSet
++                // When the reordering of Joints is eliminated (see following else block)
++                // this limitation can be removed and the free joint adopted as in
++                // internal subcomponent (similar to the weld constraint above)
++                addJoint(free);
++                setNextSubcomponentInSystem(*free);
++            }
++            else {
++                // Update the directionality of the joint according to tree's
++                // preferential direction
++                MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef())->isReversed =
++                    mob.isReversedFromJoint();
++
++                // order the joint components in the order of the multibody tree
++                Joint* joint = MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef());
++                setNextSubcomponentInSystem(*joint);
++            }
+         }
+     }
+-    joints.setMemoryOwner(isMemoryOwner);
+ 
+     // Add the loop joints if any.
+     for (int lcx = 0; lcx < _multibodyTree.getNumLoopConstraints(); ++lcx) {
