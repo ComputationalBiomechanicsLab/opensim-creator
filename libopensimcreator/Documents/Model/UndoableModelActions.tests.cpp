@@ -591,9 +591,7 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesWrapObjects)
 }
 
 // Test `ActionBakeStationDefinedFrames` feature (#1004) also copies any subcomponents.
-//
-// `DISABLED_` because I haven't figured out how to copy subcomponent list properties
-TEST(OpenSimActions, DISABLED_ActionBakeStationDefinedFramesCopiesSubcomponents)
+TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesSubcomponents)
 {
     // Build basic model with SDF
     UndoableModelStatePair model;
@@ -615,6 +613,12 @@ TEST(OpenSimActions, DISABLED_ActionBakeStationDefinedFramesCopiesSubcomponents)
     // hard by making them dependent on the SDF ;)).
     sdf.addComponent(std::make_unique<OpenSim::Marker>("marker1", sdf, SimTK::Vec3(1.0, 0.0, 0.0)).release());
     sdf.addComponent(std::make_unique<OpenSim::Marker>("marker2", sdf, SimTK::Vec3(0.0, 1.0, 0.0)).release());
+
+    // Add wrap objects to the SDF's component list
+    auto wrapCylinder = std::make_unique<OpenSim::WrapCylinder>();
+    wrapCylinder->setName("magical_wrap_cylinder");
+    wrapCylinder->set_radius(5.0);
+    sdf.addWrapObject(wrapCylinder.release());
 
     // Finalize/initialize the model
     model.updModel().buildSystem();
@@ -638,6 +642,13 @@ TEST(OpenSimActions, DISABLED_ActionBakeStationDefinedFramesCopiesSubcomponents)
         auto lst = pof.getComponentList<OpenSim::Marker>();
         ASSERT_EQ(std::distance(lst.begin(), lst.end()), 2);
     }
+
+    // The baked SDF should contain wrap objects
+    const OpenSim::WrapObject* wo = pof.getWrapObject("magical_wrap_cylinder");
+    ASSERT_NE(wo, nullptr);
+    const auto* cylinder = dynamic_cast<const OpenSim::WrapCylinder*>(wo);
+    ASSERT_NE(cylinder, nullptr);
+    ASSERT_EQ(cylinder->get_radius(), 5.0);
 }
 
 TEST(OpenSimActions, ActionAddPathPointToGeometryPathWorksAsExpected)

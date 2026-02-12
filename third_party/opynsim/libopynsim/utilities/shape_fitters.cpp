@@ -23,24 +23,23 @@
 
 namespace rgs = std::ranges;
 
-// generic helpers
 namespace
 {
-    // returns the contents of `vs` with `subtrahend` subtracted from each element
-    std::vector<osc::Vector3> Subtract(
-        std::span<const osc::Vector3> vs,
-        const osc::Vector3& subtrahend)
+    // Returns the contents of `lhs` with `rhs` subtracted from each element.
+    std::vector<osc::Vector3> minus(
+        std::span<const osc::Vector3> lhs,
+        const osc::Vector3& rhs)
     {
         std::vector<osc::Vector3> rv;
-        rv.reserve(vs.size());
-        for (const auto& v : vs) {
-            rv.push_back(v - subtrahend);
+        rv.reserve(lhs.size());
+        for (const auto& v : lhs) {
+            rv.push_back(v - rhs);
         }
         return rv;
     }
 
-    // returns the element-wise arithmetic mean of `vs`
-    osc::Vector3 CalcMean(std::span<const osc::Vector3> vs)
+    // Returns the element-wise arithmetic mean of `vs`.
+    osc::Vector3 mean_of(std::span<const osc::Vector3> vs)
     {
         osc::Vector3d accumulator{};
         for (const auto& v : vs) {
@@ -48,43 +47,36 @@ namespace
         }
         return osc::Vector3{accumulator / static_cast<double>(vs.size())};
     }
-}
 
-// `m4s`: "MATLAB for SimTK" helpers
-//
-// helpers that provide a few MATLAB-like utility methods for SimTK, to
-// make it easier to translate the code
-namespace
-{
-    SimTK::Matrix Eye(int size)
+    // Returns an `n` by `n` identity matrix.
+    SimTK::Matrix eye(int n)
     {
-        SimTK::Matrix rv(size, size, 0.0);
-        for (int i = 0; i < size; ++i)
-        {
+        SimTK::Matrix rv(n, n, 0.0);
+        for (int i = 0; i < n; ++i) {
             rv(i)(i) = 1.0;
         }
         return rv;
     }
 
+    // Returns the top `M` rows and `N` columns of `m`.
     template<int M, int N>
-    SimTK::Mat<M, N> TopLeft(const SimTK::Matrix& m)
+    SimTK::Mat<M, N> top_left(const SimTK::Matrix& m)
     {
         OSC_ASSERT(m.nrow() >= M);
         OSC_ASSERT(m.ncol() >= N);
 
         SimTK::Mat<M, N> rv;
-        for (int row = 0; row < M; ++row)
-        {
-            for (int col = 0; col < N; ++col)
-            {
+        for (int row = 0; row < M; ++row) {
+            for (int col = 0; col < N; ++col) {
                 rv(row, col) = m(row, col);
             }
         }
         return rv;
     }
 
+    // Returns the diagonal elements of `m`.
     template<int N>
-    SimTK::Vec<N> Diag(const SimTK::Mat<N, N>& m)
+    SimTK::Vec<N> diag(const SimTK::Mat<N, N>& m)
     {
         SimTK::Vec<N> rv;
         for (int i = 0; i < N; ++i) {
@@ -93,8 +85,13 @@ namespace
         return rv;
     }
 
+    // Returns a vector that is the same size as `vs`, but where
+    // each element of the vector is:
+    // -  `1` if the corresponsing element in `vs` is  >0
+    // -  `0` if the corresponding element in `vs` is ==0
+    // - `-1` if the corresponding element in `vs` is  <0
     template<int N>
-    SimTK::Vec<N> Sign(const SimTK::Vec<N>& vs)
+    SimTK::Vec<N> sign(const SimTK::Vec<N>& vs)
     {
         SimTK::Vec<N> rv;
         for (int i = 0; i < N; ++i) {
@@ -103,106 +100,71 @@ namespace
         return rv;
     }
 
+    // Returns a vector that is the same size as `vs`, but where
+    // each element of the vector is the reciprocal of the
+    // corresponding element from `vs`.
     template<int N>
-    SimTK::Vec<N> Multiply(const SimTK::Vec<N>& a, const SimTK::Vec<N>& b)
+    SimTK::Vec<N> reciprocal_of(const SimTK::Vec<N>& vs)
     {
-        SimTK::Vec<N> rv;
-        for (int i = 0; i < N; ++i) {
-            rv[i] = a[i] * b[i];
-        }
-        return rv;
+        return {1.0/vs[0], 1.0/vs[1], 1.0/vs[2]};
     }
 
-    template<int N>
-    SimTK::Vec<N> Reciporical(const SimTK::Vec<N>& v)
-    {
-        return {1.0/v[0], 1.0/v[1], 1.0/v[2]};
-    }
-
-    [[maybe_unused]] std::vector<std::vector<double>> DebuggableMatrix(const SimTK::Matrix& src)
-    {
-        std::vector<std::vector<double>> rv;
-        rv.reserve(src.nrow());
-        for (int row = 0; row < src.nrow(); ++row) {
-            auto& cols = rv.emplace_back();
-            cols.reserve(src.ncol());
-            for (int col = 0; col < src.ncol(); ++col) {
-                cols.push_back(src(row, col));
-            }
-        }
-        return rv;
-    }
-
-    template<int M, int N>
-    [[maybe_unused]] std::array<std::array<double, M>, N> DebuggableMatrix(const SimTK::Mat<M, N>& src)
-    {
-        std::array<std::array<double, M>, N> rv;
-        for (int row = 0; row < src.nrow(); ++row) {
-            auto& cols = rv[row];
-            for (int col = 0; col < src.ncol(); ++col) {
-                cols[col] = src(row, col);
-            }
-        }
-        return rv;
-    }
-
-    // function that behaves "as if" the caller called MATLAB's `eig` function like
-    // so:
+    // Returns a pair that contains eigenvectors (first) and eigenvalues (second)
+    //
+    // This function behaves similarly to MATLAB's `eig` function:
     //
     //     [eigenVectors, eigenValuesInDiagonalMatrix] = eig(matrix);
     //
-    // note: the returned vectors/values are not guaranteed to be in any particular
-    //       order (same behavior as MATLAB).
+    // Note: The returned vectors/values are not guaranteed to be in any particular
+    //       order (this is the same behavior as MATLAB).
     template<int N>
-    std::pair<SimTK::Mat<N, N>, SimTK::Mat<N, N>> Eig(const SimTK::Mat<N, N>& m)
+    std::pair<SimTK::Mat<N, N>, SimTK::Mat<N, N>> eig(const SimTK::Mat<N, N>& m)
     {
-        // the provided matrix must be re-packed as complex numbers (with no
-        // complex part)
+        // The provided matrix must be re-packed as complex numbers (with no
+        // complex part).
         //
-        // this is entirely because SimTK's `eigen.cpp` implementation only provides
-        // an Eigenanalysis implementation for complex numbers
+        // This is entirely because SimTK's `eigen.cpp` implementation only provides
+        // an Eigenanalysis implementation for complex numbers.
         SimTK::ComplexMatrix packed(N, N);
-        for (int row = 0; row < N; ++row)
-        {
-            for (int col = 0; col < N; ++col)
-            {
+        for (int row = 0; row < N; ++row) {
+            for (int col = 0; col < N; ++col) {
                 packed(row, col) = SimTK::Complex{m(row, col), 0.0};
             }
         }
 
-        // perform Eigenanalysis
-        SimTK::ComplexVector eigenValues(N);
-        SimTK::ComplexMatrix eigenVectors(N, N);
-        SimTK::Eigen(packed).getAllEigenValuesAndVectors(eigenValues, eigenVectors);
+        // Perform Eigenanalysis.
+        SimTK::ComplexVector eigenvalues(N);
+        SimTK::ComplexMatrix eigenvectors(N, N);
+        SimTK::Eigen(packed).getAllEigenValuesAndVectors(eigenvalues, eigenvectors);
 
-        // re-pack answer from SimTK's Eigenanalysis into a MATLAB-like form
-        SimTK::Mat<N, N> repackedEigenVectors(0.0);
-        SimTK::Mat<N, N> repackedEigenValues(0.0);
+        // Re-pack answer from SimTK's Eigenanalysis into a MATLAB-like form.
+        SimTK::Mat<N, N> repacked_eigenvectors(0.0);
+        SimTK::Mat<N, N> repacked_eigenvalues(0.0);
         for (int row = 0; row < N; ++row) {
             for (int col = 0; col < N; ++col) {
-                OSC_ASSERT(eigenVectors(row, col).imag() == 0.0);
-                repackedEigenVectors(row, col) = eigenVectors(row, col).real();
+                OSC_ASSERT(eigenvectors(row, col).imag() == 0.0);
+                repacked_eigenvectors(row, col) = eigenvectors(row, col).real();
             }
-            OSC_ASSERT(eigenValues(row).imag() == 0.0);
-            repackedEigenValues(row, row) = eigenValues(row).real();
+            OSC_ASSERT(eigenvalues(row).imag() == 0.0);
+            repacked_eigenvalues(row, row) = eigenvalues(row).real();
         }
 
-        return {repackedEigenVectors, repackedEigenValues};
+        return {repacked_eigenvectors, repacked_eigenvalues};
     }
 
-    // returns the value returned by `Eig`, but re-sorted from smallest to largest
-    // eigenvalue
+    // Returns the value returned by `eig`, but re-sorted from smallest to largest
+    // eigenvalue.
     //
     // (similar idea to "sorted eigenvalues and eigenvectors" section in MATLAB
     //  documentation for `eig`)
     template<int N>
-    std::pair<SimTK::Mat<N, N>, SimTK::Mat<N, N>> EigSorted(const SimTK::Mat<N, N>& m)
+    std::pair<SimTK::Mat<N, N>, SimTK::Mat<N, N>> eig_sorted(const SimTK::Mat<N, N>& m)
     {
         // perform unordered Eigenanalysis
-        const auto unsorted = Eig(m);
+        const auto unsorted = eig(m);
 
         // create indices into the unordered result that are sorted by increasing Eigenvalue
-        const auto sortedIndices = [&unsorted]()
+        const auto sorted_indices = [&unsorted]()
         {
             std::array<int, N> indices{};
             osc::cpp23::iota(indices, 0);
@@ -211,11 +173,11 @@ namespace
         }();
 
         // use the indices to create a sorted version of the result
-        auto sorted = [&unsorted, &sortedIndices]()
+        auto sorted = [&unsorted, &sorted_indices]()
         {
             auto copy = unsorted;
             for (int dest = 0; dest < N; ++dest) {
-                const int src = sortedIndices[dest];
+                const int src = sorted_indices[dest];
                 copy.first.col(dest) = unsorted.first.col(src);
                 copy.second(dest, dest) = unsorted.second(src, src);
             }
@@ -227,7 +189,7 @@ namespace
 
     // assuming `m` is an orthonormal matrix, ensures that the columns form
     // the vectors of a right-handed system
-    void RightHandify(SimTK::Mat33& m)
+    void right_handify(SimTK::Mat33& m)
     {
         const SimTK::Vec3 cp = SimTK::cross(m.col(0), m.col(1));
         if (SimTK::dot(cp, m.col(2)) < 0.0) {
@@ -236,7 +198,7 @@ namespace
     }
 
     // solve systems of linear equations `Ax = B` for `x`
-    SimTK::Vector SolveLinearLeastSquares(
+    SimTK::Vector solve_linear_least_squares(
         const SimTK::Matrix& A,
         const SimTK::Vector& B,
         std::optional<double> rcond = std::nullopt)
@@ -345,7 +307,7 @@ namespace
         constexpr double c_RCondReportedByMatlab = 1.202234e-16;
 
         // solve the normal system of equations
-        SimTK::Vector u = SolveLinearLeastSquares(
+        SimTK::Vector u = solve_linear_least_squares(
             D.transpose() * D,  // lhs * u = ...
             D.transpose() * d2, // ... rhs
             c_RCondReportedByMatlab
@@ -425,7 +387,7 @@ namespace
         rhs(0) = v[6];
         rhs(1) = v[7];
         rhs(2) = v[8];
-        const SimTK::Vector center = SolveLinearLeastSquares(-topLeft, rhs);
+        const SimTK::Vector center = solve_linear_least_squares(-topLeft, rhs);
 
         // pack return value into a Vec3
         OSC_ASSERT(center.size() == 3);
@@ -436,17 +398,17 @@ namespace
         const SimTK::Mat44& A,
         const SimTK::Vec3& center)
     {
-        SimTK::Matrix T = Eye(4);
+        SimTK::Matrix T = eye(4);
         T(3, 0) = center[0];
         T(3, 1) = center[1];
         T(3, 2) = center[2];
 
         const SimTK::Matrix R = T * SimTK::Matrix{A} * T.transpose();
-        return EigSorted(TopLeft<3, 3>(R) / -R(3, 3));
+        return eig_sorted(top_left<3, 3>(R) / -R(3, 3));
     }
 }
 
-osc::Sphere opyn::FitSphere(const osc::Mesh& mesh)
+osc::Sphere opyn::fit_sphere_htbad(const osc::Mesh& mesh)
 {
     // # Background Reading:
     //
@@ -525,7 +487,7 @@ osc::Sphere opyn::FitSphere(const osc::Mesh& mesh)
     }
 
     // solve `f = Ac` for `c`
-    const SimTK::Vector c = SolveLinearLeastSquares(A, f);
+    const SimTK::Vector c = solve_linear_least_squares(A, f);
     OSC_ASSERT(c.size() == 4);
 
     // unpack `c` into sphere parameters (explained above)
@@ -540,7 +502,7 @@ osc::Sphere opyn::FitSphere(const osc::Mesh& mesh)
     return osc::Sphere{origin, radius};
 }
 
-osc::Plane opyn::FitPlane(const osc::Mesh& mesh)
+osc::Plane opyn::fit_plane_htbad(const osc::Mesh& mesh)
 {
     // # Background Reading:
     //
@@ -606,16 +568,16 @@ osc::Plane opyn::FitPlane(const osc::Mesh& mesh)
     }
 
     // determine the xyz centroid of the point cloud
-    const osc::Vector3 mean = CalcMean(vertices);
+    const osc::Vector3 mean = mean_of(vertices);
 
     // shift point cloud such that the centroid is at the origin
-    const std::vector<osc::Vector3> verticesReduced = Subtract(vertices, mean);
+    const std::vector<osc::Vector3> verticesReduced = minus(vertices, mean);
 
     // pack the vertices into a covariance matrix, ready for principal component analysis (PCA)
     const SimTK::Mat33 covarianceMatrix = CalcCovarianceMatrix(verticesReduced);
 
     // eigen analysis to yield [N, B1, B2]
-    const SimTK::Mat33 eigenVectors = EigSorted(covarianceMatrix).first;
+    const SimTK::Mat33 eigenVectors = eig_sorted(covarianceMatrix).first;
     const auto normal = osc::to<osc::Vector3>(eigenVectors.col(0));
     const auto basis1 = osc::to<osc::Vector3>(eigenVectors.col(1));
     const auto basis2 = osc::to<osc::Vector3>(eigenVectors.col(2));
@@ -642,7 +604,7 @@ osc::Plane opyn::FitPlane(const osc::Mesh& mesh)
     return osc::Plane{boundsMidPointInMeshSpace, normal};
 }
 
-osc::Ellipsoid opyn::FitEllipsoid(const osc::Mesh& mesh)
+osc::Ellipsoid opyn::fit_ellipsoid_htbad(const osc::Mesh& mesh)
 {
     // # Background Reading:
     //
@@ -686,7 +648,7 @@ osc::Ellipsoid opyn::FitEllipsoid(const osc::Mesh& mesh)
     // OSC's implementation ensures radii are always positive by negating the
     // corresponding Eigenvector
     {
-        const SimTK::Vec3 signs = Sign(Diag(evals));
+        const SimTK::Vec3 signs = sign(diag(evals));
         for (int i = 0; i < 3; ++i) {
             evecs.col(i) *= signs[i];
             evals.col(i) *= signs[i];
@@ -695,11 +657,11 @@ osc::Ellipsoid opyn::FitEllipsoid(const osc::Mesh& mesh)
 
     // OpenSimCreator modification: also ensure that the Eigen vectors form a _right handed_ coordinate
     // system, because that's what SimTK etc. use
-    RightHandify(evecs);
+    right_handify(evecs);
 
     return osc::Ellipsoid{
         osc::to<osc::Vector3>(ellipsoidOrigin),
-        osc::to<osc::Vector3>(SimTK::sqrt(Reciporical(Diag(evals)))),
+        osc::to<osc::Vector3>(SimTK::sqrt(reciprocal_of(diag(evals)))),
         osc::quaternion_cast(osc::to<osc::Matrix3x3>(evecs)),
     };
 }

@@ -2166,7 +2166,7 @@ bool osc::ActionFitSphereToMesh(ModelStatePair& model, const OpenSim::Mesh& open
     Sphere sphere;
     try {
         const Mesh mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
-        sphere = opyn::FitSphere(mesh);
+        sphere = opyn::fit_sphere_htbad(mesh);
     }
     catch (const std::exception&) {
         std::throw_with_nested(std::runtime_error{"error detected while trying to fit a sphere to a mesh"});
@@ -2229,7 +2229,7 @@ bool osc::ActionFitEllipsoidToMesh(ModelStatePair& model, const OpenSim::Mesh& o
     Ellipsoid ellipsoid;
     try {
         const Mesh mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
-        ellipsoid = opyn::FitEllipsoid(mesh);
+        ellipsoid = opyn::fit_ellipsoid_htbad(mesh);
     }
     catch (const std::exception&) {
         std::throw_with_nested(std::runtime_error{"error detected while trying to fit an ellipsoid to a mesh"});
@@ -2240,7 +2240,7 @@ bool osc::ActionFitEllipsoidToMesh(ModelStatePair& model, const OpenSim::Mesh& o
     // places the origin-centered `OpenSim::Ellipsoid` at the computed ellipsoid's `origin`
     // and reorients the ellipsoid's XYZ along the computed ellipsoid directions
     //
-    // (OSC note: `FitEllipsoid` in OSC should yield a right-handed coordinate system)
+    // (OSC note: `fit_ellipsoid_htbad` in OSC should yield a right-handed coordinate system)
     auto offsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
     offsetFrame->setName("ellipsoid_fit");
     offsetFrame->connectSocket_parent(dynamic_cast<const OpenSim::PhysicalFrame&>(openSimMesh.getFrame()));
@@ -2304,7 +2304,7 @@ bool osc::ActionFitPlaneToMesh(ModelStatePair& model, const OpenSim::Mesh& openS
     Plane plane;
     try {
         const Mesh mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
-        plane = opyn::FitPlane(mesh);
+        plane = opyn::fit_plane_htbad(mesh);
     }
     catch (const std::exception&) {
         std::throw_with_nested(std::runtime_error{"error detected while trying to fit a plane to a mesh"});
@@ -2474,10 +2474,11 @@ bool osc::ActionBakeStationDefinedFrames(ModelStatePair& model)
     std::vector<OpenSim::StationDefinedFrame*> sdfsToDelete;
     std::vector<OpenSim::PhysicalOffsetFrame*> pofsToRename;
     for (auto& sdf : mutModel.updComponentList<OpenSim::StationDefinedFrame>()) {
+
+        // Create a new `PhysicalOffsetFrame`
         auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-        // TODO: copy
-        // - Subcomponents
-        // - Wrap Obects
+
+        // Copy/calculate properties for the `PhysicalOffsetFrame`
         pof->setName(sdf.getName() + "_tmp");
         const SimTK::Transform xform = sdf.findTransformInBaseFrame();
         pof->set_translation(xform.p());
@@ -2485,6 +2486,8 @@ bool osc::ActionBakeStationDefinedFrames(ModelStatePair& model)
         pof->updProperty_attached_geometry().assign(sdf.getProperty_attached_geometry());
         pof->updProperty_WrapObjectSet().assign(sdf.getProperty_WrapObjectSet());
         pof->updSocket("parent").setConnecteePath(sdf.findBaseFrame().getAbsolutePathString());
+        pof->updPropertyByName("components").assign(sdf.getPropertyByName("components"));
+
         // Add it into the model
         auto& pofPtr = *pof;
         mutModel.updComponent(sdf.getAbsolutePath().getParentPath()).addComponent(pof.release());

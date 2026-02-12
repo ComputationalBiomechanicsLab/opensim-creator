@@ -66,7 +66,7 @@ namespace
 // Effectively, this is what the joint switcher in the UI is doing. It is permitted for the
 // code to throw an exception (e.g. because other parts of the model depend on something in
 // the joint) but it shouldn't hard crash (it is)
-TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
+TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 {
     opyn::init();  // ensure muscles are available etc.
 
@@ -96,31 +96,34 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
         const OpenSim::Component& parent = joint.getOwner();
         const auto* jointSet = dynamic_cast<const OpenSim::JointSet*>(&parent);
 
-        if (!jointSet)
-        {
+        if (not jointSet) {
             continue;  // this joint doesn't count
         }
 
         int jointIdx = -1;
-        for (int i = 0; i < jointSet->getSize(); ++i)
-        {
+        for (int i = 0; i < jointSet->getSize(); ++i) {
             const OpenSim::Joint* j = &(*jointSet)[i];
-            if (j == &joint)
-            {
+            if (j == &joint) {
                 jointIdx = i;
             }
         }
 
         ASSERT_NE(jointIdx, -1) << "the joint should exist within its parent set";
 
-        auto replacement = registry[jointIdx].instantiate();
+        auto replacement = registry[idx].instantiate();
 
         CopyCommonJointProperties(joint, *replacement);
 
         // update model
-        const_cast<OpenSim::JointSet&>(*jointSet).set(static_cast<int>(idx), replacement.release());
-        InitializeModel(model);
-        InitializeState(model);
+        try {
+            const_cast<OpenSim::JointSet&>(*jointSet).set(jointIdx, replacement.release());
+            InitializeModel(model);
+            InitializeState(model);
+        }
+        catch (const std::exception& ex) {
+            osc::log_info("exception thrown: %s", ex.what());
+            osc::log_info("exceptions are skipped (this test is looking for hard-crashes, like segfaults)");
+        }
 
         osc::log_info("%s", msg.c_str());
     }
