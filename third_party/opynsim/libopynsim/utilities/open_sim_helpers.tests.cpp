@@ -286,7 +286,7 @@ TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
 // around with stale pointers to deleted slave components. This mid-level
 // test is here in case OSC is doing some kind of magic in `FinalizeConnections`
 // that `OpenSim` doesn't do
-TEST(OpenSimHelpers, DISABLED_FinalizeConnectionsWithUnusualJointTopologyDoesNotSegfault)
+TEST(OpenSimHelpers, FinalizeConnectionsWithUnusualJointTopologyDoesNotSegfault)
 {
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "opensim-creator_773-2_repro.osim";
