@@ -1,0 +1,250 @@
+This patches a bug in OpenSim that was causing memory leaks and libASAN
+issues for years (roughly 2023-2026) in OpenSim Creator.
+
+The bug is that `OpenSim::Model::finalizeConnections` wasn't cleaning out
+any adopted components before it creates a new multibody graph, which causes
+slave bodies etc. from the previous call to slip into the graph. Additionally,
+the code in that function wasn't uniformly using `adoptSubcomponent` (specifically,
+for the `OpenSim::FreeJoint` that was added during graph creation), which meant
+that the system could end up in a situation where it contains joints that shouldn't
+persist, pointing to synthesized slave bodies that might be deleted - a source
+of use-after-free issues.
+
+---
+
+diff --git a/OpenSim/Common/Component.cpp b/OpenSim/Common/Component.cpp
+index b784f0307..65b15d703 100644
+--- a/OpenSim/Common/Component.cpp
++++ b/OpenSim/Common/Component.cpp
+@@ -1473,6 +1473,22 @@ void Component::adoptSubcomponent(Component* subcomponent)
+     _adoptedSubcomponents.push_back(SimTK::ClonePtr<Component>(subcomponent));
+ }
+ 
++void Component::recursivelyAbandonAllAdoptedSubcomponents()
++{
++    // Abandon this `Component`'s adoptees.
++    _adoptedSubcomponents.clear();
++
++    // Recurse through each member subcomponent to abandon its adopted subcomponents.
++    for (unsigned int i = 0; i < _memberSubcomponents.size(); ++i) {
++        _memberSubcomponents[i]->recursivelyAbandonAllAdoptedSubcomponents();
++    }
++
++    // Recurse through each property subcomponent to abandon its adopted subcomponents.
++    for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i) {
++        _propertySubcomponents[i]->recursivelyAbandonAllAdoptedSubcomponents();
++    }
++}
++
+ std::vector<SimTK::ReferencePtr<const Component>>
+     Component::getImmediateSubcomponents() const
+ {
+diff --git a/OpenSim/Common/Component.h b/OpenSim/Common/Component.h
+index 3f01fe908..49addb93e 100644
+--- a/OpenSim/Common/Component.h
++++ b/OpenSim/Common/Component.h
+@@ -54,6 +54,7 @@
+ 
+ #include <OpenSim/Common/osimCommonDLL.h>
+ 
++#include <concepts>
+ #include <functional>
+ #include <memory>
+ #include <type_traits>
+@@ -2870,6 +2871,12 @@ protected:
+     */
+     void adoptSubcomponent(Component* subcomponent);
+ 
++    /**
++     * Recursively abandons all subcomponents that were adopted by this
++     * component, and any of its descendents, via `adoptSubcomponent`.
++     */
++    void recursivelyAbandonAllAdoptedSubcomponents();
++
+     /** Get the number of Subcomponents immediately owned by this Component */
+     size_t getNumImmediateSubcomponents() const {
+         return getNumMemberSubcomponents() + getNumPropertySubcomponents()
+@@ -2888,6 +2895,34 @@ protected:
+     std::vector<SimTK::ReferencePtr<const Component>>
+         getImmediateSubcomponents() const;
+ 
++    /**
++     * Invokes `callback` on each direct subcomponent of type `T` that
++     * was previously adopted by `this` `Component` via a call to
++     * `adoptSubcomponent`.
++     *
++     * @tparam T The type of `Component` that was previously adopted (filter).
++     * @param callback A callback that is called with a reference to each
++     * adoptee of type `T`.
++     */
++    template<
++        std::derived_from<Component> T = Component,
++        std::invocable<T&> Callback
++    >
++    void forEachAdoptedSubcomponent(Callback callback)
++    {
++        for (unsigned int i = 0; i < _adoptedSubcomponents.size(); ++i) {
++            Component& c = *_adoptedSubcomponents[i];
++            if constexpr (std::same_as<Component, T>) {
++                std::invoke(callback, c);
++            }
++            else {
++                if (auto* casted = dynamic_cast<T*>(&c)) {
++                    std::invoke(callback, *casted);
++                }
++            }
++        }
++    }
++
+ private:
+     /**
+      * Calls `callback` with a reference to each immediate subcomponent of this `Component`.
+diff --git a/OpenSim/Simulation/Model/Model.cpp b/OpenSim/Simulation/Model/Model.cpp
+index a66713d15..5654bdeb2 100644
+--- a/OpenSim/Simulation/Model/Model.cpp
++++ b/OpenSim/Simulation/Model/Model.cpp
+@@ -915,6 +915,14 @@ void Model::extendConnectToModel(Model& model)
+         return;
+     }
+ 
++    // Before doing any kind of multibody tree traversal or loop cutting
++    // clear all _adopted_ subcomponents in the entire model tree.
++    //
++    // Otherwise, the next steps (adding slave bodies, adding extra
++    // joints) may pollute the model with stale/invalid elements that
++    // no longer apply.
++    recursivelyAbandonAllAdoptedSubcomponents();
++
+     // Create the Multibody tree according to the components that
+     // form this model.
+     createMultibodyTree();
+@@ -991,13 +999,15 @@ void Model::extendConnectToModel(Model& model)
+ 
+                 std::string jname = "free_" + child->getName();
+                 SimTK::Vec3 zeroVec(0.0);
++
+                 Joint* free = new FreeJoint(jname, *ground, *child);
+                 free->isReversed = mob.isReversedFromJoint();
+-                // TODO: Joints are currently required to be in the JointSet
+-                // When the reordering of Joints is eliminated (see following else block)
+-                // this limitation can be removed and the free joint adopted as in
+-                // internal subcomponent (similar to the weld constraint above)
+-                addJoint(free);
++                adoptSubcomponent(free);
++
++                // This ensures the added `FreeJoint` is visited in-order.
++                //
++                // Previously, this was manually handled by inserting it into
++                // the `JointSet`, but commit `ad35ca5` fixed that.
+                 setNextSubcomponentInSystem(*free);
+             }
+             else {
+diff --git a/OpenSim/Simulation/SimbodyEngine/Body.cpp b/OpenSim/Simulation/SimbodyEngine/Body.cpp
+index 71dc8cd05..97e269e9f 100644
+--- a/OpenSim/Simulation/SimbodyEngine/Body.cpp
++++ b/OpenSim/Simulation/SimbodyEngine/Body.cpp
+@@ -80,7 +80,6 @@ void Body::extendFinalizeFromProperties()
+     _inertia = SimTK::Inertia{};  // forces `getInertia` to re-update from the property (#3395)
+     const SimTK::MassProperties& massProps = getMassProperties();
+     _internalRigidBody = SimTK::Body::Rigid(massProps);
+-    _slaves.clear();
+ }
+ 
+ //_____________________________________________________________________________
+@@ -92,25 +91,29 @@ void Body::extendConnectToModel(Model& aModel)
+ {
+     Super::extendConnectToModel(aModel);
+ 
+-    int nslaves = (int)_slaves.size();
+-
+-    if (nslaves){
+-        int nbods = nslaves + 1; // include the master
+-        const SimTK::MassProperties& massProps = getMassProperties();
+-        SimTK::MassProperties slaveMassProps(massProps.getMass() / nbods,
+-            massProps.getMassCenter(), massProps.getUnitInertia());
+-
+-        // update the portion taken on by the master
+-        _internalRigidBody = SimTK::Body::Rigid(slaveMassProps);
+-
+-        // and the slaves
+-        for (int i = 0; i < nslaves; ++i){
+-            _slaves[i]->_internalRigidBody = SimTK::Body::Rigid(slaveMassProps);
+-            _slaves[i]->setInertia(slaveMassProps.getUnitInertia());
+-            _slaves[i]->setMass(slaveMassProps.getMass());
+-            _slaves[i]->setMassCenter(slaveMassProps.getMassCenter());
+-        }
+-    }
++    int numSlaves = 0;
++    forEachAdoptedSubcomponent<Body>([&numSlaves](const auto&) { ++numSlaves; });
++
++    // The `MassProperties` of this body needs to be divided between this
++    // body and all slave bodies.
++    const SimTK::MassProperties& baseMassProps = getMassProperties();
++    const SimTK::MassProperties sharedMassProps{
++        baseMassProps.getMass() / (numSlaves + 1),
++        baseMassProps.getMassCenter(),
++        baseMassProps.getUnitInertia(),
++    };
++
++    // Update the potion of the mass taken by `this`.
++    _internalRigidBody = SimTK::Body::Rigid(sharedMassProps);
++
++    // Update the mass taken by the slaves.
++    forEachAdoptedSubcomponent<Body>([&sharedMassProps](Body& slave)
++    {
++        slave._internalRigidBody = SimTK::Body::Rigid(sharedMassProps);
++        slave.setInertia(sharedMassProps.getUnitInertia());
++        slave.setMass(sharedMassProps.getMass());
++        slave.setMassCenter(sharedMassProps.getMassCenter());
++    });
+ }
+ 
+ //=============================================================================
+@@ -441,15 +444,13 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+ Body* Body::addSlave()
+ {
+     Body* slave = new Body();
+-    int count = (int)_slaves.size();
++    int numSlaves = 0;
++    forEachAdoptedSubcomponent<Body>([&numSlaves](const auto&) { ++numSlaves; });
+ 
+     stringstream name;
+-    name << getName() << "_slave_" << count;
++    name << getName() << "_slave_" << numSlaves;
+     slave->setName(name.str());
+ 
+-    //add to internal list of references
+-    _slaves.push_back(SimTK::ReferencePtr<Body>(slave));
+-
+     //add to list of subcomponents to automatically add to system and initialize
+     adoptSubcomponent(slave);
+ 
+diff --git a/OpenSim/Simulation/SimbodyEngine/Body.h b/OpenSim/Simulation/SimbodyEngine/Body.h
+index 81c8b0eee..71ebf9fb9 100644
+--- a/OpenSim/Simulation/SimbodyEngine/Body.h
++++ b/OpenSim/Simulation/SimbodyEngine/Body.h
+@@ -157,11 +157,11 @@ public:
+     void extendFinalizeFromProperties() override;
+     void extendConnectToModel(Model& model) override;
+ 
++private:
+     // Underlying multibody tree building operations. Should only be called
+-    // by the connecting Joint
++    // by `OpenSim::Model`.
+     Body* addSlave();
+ 
+-private:
+     /** Component Interface */
+     void constructProperties();
+ 
+@@ -178,10 +178,6 @@ private:
+     // mutable because fist get constructs tensor from properties
+     mutable SimTK::Inertia _inertia;
+ 
+-    // Keep track of the slave bodies used to partition this Body
+-    // in order break kinematic loops
+-    SimTK::Array_<SimTK::ReferencePtr<Body>> _slaves;
+-
+     // Internal use for a Master body. Differs from its public MassProperties
+     // which is the "effective" mass of the Body including internal slave
+     // Bodies. This is just the Rigid::Body of an individual master/ slave body,

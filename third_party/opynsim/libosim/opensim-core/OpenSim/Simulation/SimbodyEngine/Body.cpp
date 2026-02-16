@@ -80,7 +80,6 @@ void Body::extendFinalizeFromProperties()
     _inertia = SimTK::Inertia{};  // forces `getInertia` to re-update from the property (#3395)
     const SimTK::MassProperties& massProps = getMassProperties();
     _internalRigidBody = SimTK::Body::Rigid(massProps);
-    _slaves.clear();
 }
 
 //_____________________________________________________________________________
@@ -92,25 +91,29 @@ void Body::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
 
-    int nslaves = (int)_slaves.size();
+    int numSlaves = 0;
+    forEachAdoptedSubcomponent<Body>([&numSlaves](const auto&) { ++numSlaves; });
 
-    if (nslaves){
-        int nbods = nslaves + 1; // include the master
-        const SimTK::MassProperties& massProps = getMassProperties();
-        SimTK::MassProperties slaveMassProps(massProps.getMass() / nbods,
-            massProps.getMassCenter(), massProps.getUnitInertia());
+    // The `MassProperties` of this body needs to be divided between this
+    // body and all slave bodies.
+    const SimTK::MassProperties& baseMassProps = getMassProperties();
+    const SimTK::MassProperties sharedMassProps{
+        baseMassProps.getMass() / (numSlaves + 1),
+        baseMassProps.getMassCenter(),
+        baseMassProps.getUnitInertia(),
+    };
 
-        // update the portion taken on by the master
-        _internalRigidBody = SimTK::Body::Rigid(slaveMassProps);
+    // Update the potion of the mass taken by `this`.
+    _internalRigidBody = SimTK::Body::Rigid(sharedMassProps);
 
-        // and the slaves
-        for (int i = 0; i < nslaves; ++i){
-            _slaves[i]->_internalRigidBody = SimTK::Body::Rigid(slaveMassProps);
-            _slaves[i]->setInertia(slaveMassProps.getUnitInertia());
-            _slaves[i]->setMass(slaveMassProps.getMass());
-            _slaves[i]->setMassCenter(slaveMassProps.getMassCenter());
-        }
-    }
+    // Update the mass taken by the slaves.
+    forEachAdoptedSubcomponent<Body>([&sharedMassProps](Body& slave)
+    {
+        slave._internalRigidBody = SimTK::Body::Rigid(sharedMassProps);
+        slave.setInertia(sharedMassProps.getUnitInertia());
+        slave.setMass(sharedMassProps.getMass());
+        slave.setMassCenter(sharedMassProps.getMassCenter());
+    });
 }
 
 //=============================================================================
@@ -441,14 +444,12 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 Body* Body::addSlave()
 {
     Body* slave = new Body();
-    int count = (int)_slaves.size();
+    int numSlaves = 0;
+    forEachAdoptedSubcomponent<Body>([&numSlaves](const auto&) { ++numSlaves; });
 
     stringstream name;
-    name << getName() << "_slave_" << count;
+    name << getName() << "_slave_" << numSlaves;
     slave->setName(name.str());
-
-    //add to internal list of references
-    _slaves.push_back(SimTK::ReferencePtr<Body>(slave));
 
     //add to list of subcomponents to automatically add to system and initialize
     adoptSubcomponent(slave);

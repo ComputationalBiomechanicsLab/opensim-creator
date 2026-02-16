@@ -577,11 +577,8 @@ TEST(OpenSimModel, ReFinalizingAnEvenSimplerModelWithUnusualJointTopologyDoesNot
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_773-3_repro.osim";
     OpenSim::Model model{brokenFilePath.string()};
 
-    for (size_t i = 0; i < 10; ++i)
-    {
-        try {
-            model.finalizeConnections();  // This may throw (it shouldn't)...
-        } catch (const std::exception&) {}  // ... but, for now, an exception is preferable to a segfault.
+    for (size_t i = 0; i < 10; ++i) {
+        model.finalizeConnections();
     }
 }
 

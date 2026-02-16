@@ -157,11 +157,11 @@ public:
     void extendFinalizeFromProperties() override;
     void extendConnectToModel(Model& model) override;
 
+private:
     // Underlying multibody tree building operations. Should only be called
-    // by the connecting Joint
+    // by `OpenSim::Model`.
     Body* addSlave();
 
-private:
     /** Component Interface */
     void constructProperties();
 
@@ -177,10 +177,6 @@ private:
 
     // mutable because fist get constructs tensor from properties
     mutable SimTK::Inertia _inertia;
-
-    // Keep track of the slave bodies used to partition this Body
-    // in order break kinematic loops
-    SimTK::Array_<SimTK::ReferencePtr<Body>> _slaves;
 
     // Internal use for a Master body. Differs from its public MassProperties
     // which is the "effective" mass of the Body including internal slave

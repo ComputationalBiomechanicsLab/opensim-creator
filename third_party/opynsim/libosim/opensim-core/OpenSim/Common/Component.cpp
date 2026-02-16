@@ -1473,6 +1473,22 @@ void Component::adoptSubcomponent(Component* subcomponent)
     _adoptedSubcomponents.push_back(SimTK::ClonePtr<Component>(subcomponent));
 }
 
+void Component::recursivelyAbandonAllAdoptedSubcomponents()
+{
+    // Abandon this `Component`'s adoptees.
+    _adoptedSubcomponents.clear();
+
+    // Recurse through each member subcomponent to abandon its adopted subcomponents.
+    for (unsigned int i = 0; i < _memberSubcomponents.size(); ++i) {
+        _memberSubcomponents[i]->recursivelyAbandonAllAdoptedSubcomponents();
+    }
+
+    // Recurse through each property subcomponent to abandon its adopted subcomponents.
+    for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i) {
+        _propertySubcomponents[i]->recursivelyAbandonAllAdoptedSubcomponents();
+    }
+}
+
 std::vector<SimTK::ReferencePtr<const Component>>
     Component::getImmediateSubcomponents() const
 {

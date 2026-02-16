@@ -54,6 +54,7 @@
 
 #include <OpenSim/Common/osimCommonDLL.h>
 
+#include <concepts>
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -2870,6 +2871,12 @@ protected:
     */
     void adoptSubcomponent(Component* subcomponent);
 
+    /**
+     * Recursively abandons all subcomponents that were adopted by this
+     * component, and any of its descendents, via `adoptSubcomponent`.
+     */
+    void recursivelyAbandonAllAdoptedSubcomponents();
+
     /** Get the number of Subcomponents immediately owned by this Component */
     size_t getNumImmediateSubcomponents() const {
         return getNumMemberSubcomponents() + getNumPropertySubcomponents()
@@ -2887,6 +2894,34 @@ protected:
         subcomponents) */
     std::vector<SimTK::ReferencePtr<const Component>>
         getImmediateSubcomponents() const;
+
+    /**
+     * Invokes `callback` on each direct subcomponent of type `T` that
+     * was previously adopted by `this` `Component` via a call to
+     * `adoptSubcomponent`.
+     *
+     * @tparam T The type of `Component` that was previously adopted (filter).
+     * @param callback A callback that is called with a reference to each
+     * adoptee of type `T`.
+     */
+    template<
+        std::derived_from<Component> T = Component,
+        std::invocable<T&> Callback
+    >
+    void forEachAdoptedSubcomponent(Callback callback)
+    {
+        for (unsigned int i = 0; i < _adoptedSubcomponents.size(); ++i) {
+            Component& c = *_adoptedSubcomponents[i];
+            if constexpr (std::same_as<Component, T>) {
+                std::invoke(callback, c);
+            }
+            else {
+                if (auto* casted = dynamic_cast<T*>(&c)) {
+                    std::invoke(callback, *casted);
+                }
+            }
+        }
+    }
 
 private:
     /**

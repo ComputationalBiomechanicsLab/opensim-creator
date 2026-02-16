@@ -915,6 +915,14 @@ void Model::extendConnectToModel(Model& model)
         return;
     }
 
+    // Before doing any kind of multibody tree traversal or loop cutting
+    // clear all _adopted_ subcomponents in the entire model tree.
+    //
+    // Otherwise, the next steps (adding slave bodies, adding extra
+    // joints) may pollute the model with stale/invalid elements that
+    // no longer apply.
+    recursivelyAbandonAllAdoptedSubcomponents();
+
     // Create the Multibody tree according to the components that
     // form this model.
     createMultibodyTree();
@@ -991,13 +999,15 @@ void Model::extendConnectToModel(Model& model)
 
                 std::string jname = "free_" + child->getName();
                 SimTK::Vec3 zeroVec(0.0);
+
                 Joint* free = new FreeJoint(jname, *ground, *child);
                 free->isReversed = mob.isReversedFromJoint();
-                // TODO: Joints are currently required to be in the JointSet
-                // When the reordering of Joints is eliminated (see following else block)
-                // this limitation can be removed and the free joint adopted as in
-                // internal subcomponent (similar to the weld constraint above)
-                addJoint(free);
+                adoptSubcomponent(free);
+
+                // This ensures the added `FreeJoint` is visited in-order.
+                //
+                // Previously, this was manually handled by inserting it into
+                // the `JointSet`, but commit `ad35ca5` fixed that.
                 setNextSubcomponentInSystem(*free);
             }
             else {

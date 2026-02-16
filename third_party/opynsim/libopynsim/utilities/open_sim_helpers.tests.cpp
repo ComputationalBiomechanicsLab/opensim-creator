@@ -294,7 +294,7 @@ TEST(OpenSimHelpers, FinalizeConnectionsWithUnusualJointTopologyDoesNotSegfault)
     model.finalizeFromProperties();
 
     for (size_t i = 0; i < 10; ++i) {
-        FinalizeConnections(model);  // the HACK should make this work fine
+        FinalizeConnections(model);
     }
 }
 
