@@ -424,16 +424,15 @@ TEST(OpenSimActions, ActionToggleForcesTogglesTheForces)
 TEST(OpenSimActions, ActionZeroAllCoordinatesZeroesAllCoordinatesInAModel)
 {
     UndoableModelStatePair model;
-    model.updModel().addBody(std::make_unique<OpenSim::Body>("somebody", 1.0, SimTK::Vec3(0.0), SimTK::Inertia{1.0}).release());  // should automatically add a FreeJoint
+    auto& body = opyn::AddBody(model.updModel(), "somebody", 1.0, SimTK::Vec3(0.0), SimTK::Inertia{1.0});
+    auto& fj = opyn::AddJoint<OpenSim::FreeJoint>(model.updModel(), "somejoint", model->getGround(), body);
     model.updModel().finalizeFromProperties();
     model.updModel().finalizeConnections();
-    auto* fj = opyn::FindFirstDescendentOfTypeMut<OpenSim::FreeJoint>(model.updModel());
-    ASSERT_NE(fj, nullptr);
-    fj->updCoordinate(OpenSim::FreeJoint::Coord::TranslationY).set_default_value(1.0);
+    fj.updCoordinate(OpenSim::FreeJoint::Coord::TranslationY).set_default_value(1.0);
 
-    ASSERT_EQ(fj->getCoordinate(OpenSim::FreeJoint::Coord::TranslationY).get_default_value(), 1.0);
+    ASSERT_EQ(fj.getCoordinate(OpenSim::FreeJoint::Coord::TranslationY).get_default_value(), 1.0);
     ActionZeroAllCoordinates(model);
-    ASSERT_EQ(fj->getCoordinate(OpenSim::FreeJoint::Coord::TranslationY).get_default_value(), 0.0);
+    ASSERT_EQ(fj.getCoordinate(OpenSim::FreeJoint::Coord::TranslationY).get_default_value(), 0.0);
 }
 
 // Test `ActionBakeStationDefinedFrames` feature (#1004) simple usage pattern.
