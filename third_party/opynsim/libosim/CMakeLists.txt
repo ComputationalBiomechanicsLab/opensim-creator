@@ -480,6 +480,7 @@ add_library(osim STATIC
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Condition.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Ground.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Bhargava2004SmoothedMuscleMetabolics.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/MeyerFregly2016Force.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/MarkersReference.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/AssemblySolver.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Manager/Manager.cpp
@@ -599,6 +600,7 @@ add_library(osim STATIC
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.cpp
     # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/osimActuatorsDLL.cpp  # unused by libopynsim (uses `opyn::init`)
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/RegisterTypes_osimActuators.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/MeyerFregly2016Muscle.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/ExampleComponents/ToyReflexController.cpp
 

@@ -18,6 +18,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   snake_case, to more closely match the file/directory naming convention of Python projects.
 - Added dark mode support for the banner logo in the documentation and changed its size to match the
   banner in the OPynSim documentation for consistency.
+- Updated OPynSim's OpenSim from `30430e4feecfef3f6385140c72b8e34a54d76d3e` to `286b1f60f147ae707edaa0693931d750305ae50b`,
+  which includes new `MeyerFregly2016Force` and `MeyerFregly2016Muscle` components.
+- Updated OPynSim's simbody to from `f9ab12cbad9d0da106473259d34c50577f934f49` to `7f35622b3c5daac919fc39a2865498c03c553e53`,
+  which contains some cable path fixes.
 
 ## [0.7.1] - 2026/01/12
 

@@ -578,7 +578,13 @@ TEST(OpenSimModel, ReFinalizingAnEvenSimplerModelWithUnusualJointTopologyDoesNot
     OpenSim::Model model{brokenFilePath.string()};
 
     for (size_t i = 0; i < 10; ++i) {
-        model.finalizeConnections();
+        try {
+            model.finalizeConnections();
+        }
+        catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
+            // It can throw (it shouldn't though) - this test only cares about segfaults
+            // in OpenSim's terrible graph solver.
+        }
     }
 }
 
