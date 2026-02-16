@@ -1,0 +1,23 @@
+Patches an initialization order issue found by libUBSAN where
+a static initializer in OpenSim runs before simbody has a chance
+to initialize its own static data.
+
+---
+
+diff --git a/OpenSim/Common/SmoothSegmentedFunction.cpp b/OpenSim/Common/SmoothSegmentedFunction.cpp
+index 11de057e6..404c14dc7 100644
+--- a/OpenSim/Common/SmoothSegmentedFunction.cpp
++++ b/OpenSim/Common/SmoothSegmentedFunction.cpp
+@@ -41,9 +41,9 @@ using namespace OpenSim;
+ using namespace std;
+ 
+ //static bool DEBUG=false;
+-static double UTOL = (double)SimTK::Eps*1e2;
+-static double INTTOL = (double)SimTK::Eps*1e2;
+-static int MAXITER = 20;
++static constexpr double UTOL = std::numeric_limits<double>::epsilon() * 1e2;
++static constexpr double INTTOL = std::numeric_limits<double>::epsilon() * 1e2;
++static constexpr int MAXITER = 20;
+ static constexpr int NUM_SAMPLE_PTS = 100;
+ static_assert(NUM_SAMPLE_PTS>0, "SmoothSegmentedFunction::NUM_SAMPLE_PTS must be larger than zero.");
+ 

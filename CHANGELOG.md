@@ -7,7 +7,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Upcoming Release]
 
 - Updated [OPynSim](github.com/opynsim/opynsim) to latest release, which includes
-  fixes for memory leaks and use-after-free issues in `OpenSim::Model::finalizeConnections`.
+  fixes for memory leaks and use-after-free issues in `OpenSim::Model::finalizeConnections` and
+  issues with static initialization order.
 - Added `OSC_LIBOPENSIMCREATOR_INSTALL` cmake option, which enables installing the `opensimcreator`
   static library and C++ header files as part of the build. This is an advanced option
   that we provide only to help us build internal prototypes: we do not provide any support/stability

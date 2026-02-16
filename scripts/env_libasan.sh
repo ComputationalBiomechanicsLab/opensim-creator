@@ -1,5 +1,5 @@
 # Setup libASAN suitable for simbody/OpenSim/Creator
-export ASAN_OPTIONS="abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=false:detect_stack_use_after_return=true:strict_init_order=false"
+export ASAN_OPTIONS="abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:strict_init_order=true"
 
 # Add suppressions to libLSAN (usually, they're just OS suppressions)
 export LSAN_OPTIONS="suppressions=${PWD}/scripts/suppressions_lsan.supp"
