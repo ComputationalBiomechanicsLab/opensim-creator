@@ -2,6 +2,8 @@
 
 set -xeuo pipefail
 
+sudo apt-get update
+
 sudo apt-get install \
     $(cat scripts/ubuntuXX_apt_build-dependencies.txt) \
     $(cat scripts/ubuntu22_apt_build-dependencies.txt) \
