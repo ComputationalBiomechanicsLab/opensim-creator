@@ -182,10 +182,19 @@ index c4b4191c7..2a7092c47 100644
 -
 -
 diff --git a/SimTKcommon/SmallMatrix/include/SimTKcommon/internal/Vec.h b/SimTKcommon/SmallMatrix/include/SimTKcommon/internal/Vec.h
-index a30c81905..c5adc6ab6 100644
+index a30c81905..69c8fb47a 100644
 --- a/SimTKcommon/SmallMatrix/include/SimTKcommon/internal/Vec.h
 +++ b/SimTKcommon/SmallMatrix/include/SimTKcommon/internal/Vec.h
-@@ -422,7 +422,7 @@ public:
+@@ -30,6 +30,8 @@
+ 
+ #include "SimTKcommon/internal/common.h"
+ 
++#include <tuple>
++
+ namespace SimTK {
+ 
+ 
+@@ -422,7 +424,7 @@ public:
      /** Default construction initializes %Vec's elements to NaN when debugging 
      but leaves them uninitialized garbage otherwise, so declarations have zero
      cost in Release builds. **/
@@ -194,7 +203,7 @@ index a30c81905..c5adc6ab6 100644
      #ifndef NDEBUG
          setToNaN();
      #endif
-@@ -435,45 +435,48 @@ public:
+@@ -435,45 +437,48 @@ public:
      /** Copy constructor copies the logically-included elements from the
      source %Vec; gaps due to stride are not accessed in either source or
      destination. **/
@@ -255,7 +264,7 @@ index a30c81905..c5adc6ab6 100644
          const E e = ne; // requires floating point negation
          for (int i=0;i<M;++i) d[i*STRIDE]=e;
      }
-@@ -487,27 +490,14 @@ public:
+@@ -487,27 +492,14 @@ public:
      // A bevy of constructors for Vecs up to length 9.
  
      /** Construct a Vec<2,E> from two elements of type E, etc. **/
@@ -291,7 +300,7 @@ index a30c81905..c5adc6ab6 100644
  
      /** Construction from a pointer to elements of any type EE assumes we're 
      pointing at a C++ array of EE's of the right length, and that EE is
-@@ -593,17 +583,17 @@ public:
+@@ -593,17 +585,17 @@ public:
      /** Select an element of this %Vec and return a const reference to it.
      This is range-checked in Debug builds but has zero overhead in Release
      builds. **/
@@ -313,7 +322,7 @@ index a30c81905..c5adc6ab6 100644
  
      ScalarNormSq normSqr() const { return scalarNormSqr(); }
      typename CNT<ScalarNormSq>::TSqrt 
-@@ -1000,6 +990,18 @@ public:
+@@ -1000,6 +992,18 @@ public:
      {   return operator[](i); }
  
  private:

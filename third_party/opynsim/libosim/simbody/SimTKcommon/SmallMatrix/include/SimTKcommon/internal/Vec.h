@@ -30,6 +30,8 @@
 
 #include "SimTKcommon/internal/common.h"
 
+#include <tuple>
+
 namespace SimTK {
 
 
