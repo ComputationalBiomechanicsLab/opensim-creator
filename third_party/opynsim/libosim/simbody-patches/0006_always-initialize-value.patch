@@ -1,0 +1,18 @@
+Ensure SimTK::Value<T> is always value initialized. Otherwise, systems
+like libUBSAN might detect undefined reads when downcasting SimTK::AbstractValue
+to SimTK::Value.
+
+---
+diff --git a/SimTKcommon/include/SimTKcommon/internal/Value.h b/SimTKcommon/include/SimTKcommon/internal/Value.h
+index ae16a7ab9..84387727d 100644
+--- a/SimTKcommon/include/SimTKcommon/internal/Value.h
++++ b/SimTKcommon/include/SimTKcommon/internal/Value.h
+@@ -229,7 +229,7 @@ public:
+     static Value& downcast(AbstractValue& value) {return updDowncast(value);}
+ 
+ private:
+-    T   m_thing;
++    T   m_thing{};
+ };
+ 
+ 

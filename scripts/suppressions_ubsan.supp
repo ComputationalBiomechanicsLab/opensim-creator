@@ -1,0 +1,5 @@
+vptr:SimTKcommon/include/SimTKcommon/internal/PrivateImplementation.h
+vptr:OpenSim/Common/ObjectGroup.cpp
+vptr:OpenSim/Common/ArrayPtrs.h
+vptr:SimTKcommon/BigMatrix/src/MatrixHelper.cpp
+vptr:SimTKcommon/BigMatrix/src/MatrixHelperRep.h

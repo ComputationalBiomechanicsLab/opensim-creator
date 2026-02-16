@@ -32,8 +32,8 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck/install",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_CXX_FLAGS": "-fsanitize=address",
-                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address"
+                "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined",
+                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined"
             }
         },
         {
@@ -45,8 +45,8 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck-Inlined/install",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_CXX_FLAGS": "-fsanitize=address",
-                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address",
+                "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined",
+                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined",
                 "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
                 "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
                 "OSCDEPS_BUILD_OSCAR": "OFF",
