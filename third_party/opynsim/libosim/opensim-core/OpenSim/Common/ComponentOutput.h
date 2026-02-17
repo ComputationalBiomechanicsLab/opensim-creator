@@ -31,7 +31,6 @@
  */
 
 // INCLUDES
-#include "Component.h"
 #include "Exception.h"
 #include "Object.h"
 
@@ -43,6 +42,7 @@
 
 namespace OpenSim {
 
+class Component;
 class AbstractInput;
 
 /** One of the values of an Output. */
@@ -355,7 +355,7 @@ public:
         return getOutput().getName() + ":" + _channelName;
     }
     std::string getPathName() const override {
-        return getOutput().getOwner().getAbsolutePathString() + "|" + getName();
+        return getOutput().getPathName();
     }
 private:
     mutable T _result;
