@@ -25,6 +25,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   which contains some cable path fixes.
 - The macOS DMG installer now has a custom splash background and layout that more clearly explains
   how to install and boot the software.
+- A new scaling step, `RecalculateWrapEllipsoidDimensionsFromStationScalingStep`, was added to the model
+  warper, which enables point-based recalculation of a `WrapEllipsoid`'s dimensions (#1160).
 
 ## [0.7.1] - 2026/01/12
 
