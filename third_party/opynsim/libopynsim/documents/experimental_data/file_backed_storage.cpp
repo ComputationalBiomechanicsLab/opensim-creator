@@ -21,6 +21,11 @@ FileBackedStorage& opyn::FileBackedStorage::operator=(const FileBackedStorage&) 
 FileBackedStorage& opyn::FileBackedStorage::operator=(FileBackedStorage&&) noexcept = default;
 opyn::FileBackedStorage::~FileBackedStorage() noexcept = default;
 
+osc::ClosedInterval<float> opyn::FileBackedStorage::timeRange() const
+{
+    return {static_cast<float>(m_Storage->getFirstTime()), static_cast<float>(m_Storage->getLastTime())};
+}
+
 void opyn::FileBackedStorage::reloadFromDisk(const OpenSim::Model& model)
 {
     m_Storage = LoadStorage(model, m_SourceFile);

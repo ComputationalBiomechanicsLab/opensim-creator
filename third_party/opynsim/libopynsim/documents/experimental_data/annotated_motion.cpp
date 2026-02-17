@@ -109,3 +109,11 @@ size_t opyn::AnnotatedMotion::getNumDataSeries() const
     const auto lst = getComponentList<DataSeries>();
     return std::distance(lst.begin(), lst.end());
 }
+
+osc::ClosedInterval<float> opyn::AnnotatedMotion::timeRange() const
+{
+    return {
+        static_cast<float>(m_Storage->getFirstTime()),
+        static_cast<float>(m_Storage->getLastTime()),
+    };
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <liboscar/maths/common_functions.h>
+#include <liboscar/utilities/algorithms.h>
 
 #include <concepts>
 #include <optional>
@@ -124,5 +125,27 @@ namespace osc
     constexpr ClosedInterval<T> bounding_interval_of(const std::optional<ClosedInterval<T>>& x, const T& y)
     {
         return x ? bounding_interval_of(*x, y) : bounding_interval_of(y);
+    }
+
+    // returns a `ClosedInterval` that tightly bounds both `x` and `y`
+    template<typename T>
+    constexpr ClosedInterval<T> bounding_interval_of(const ClosedInterval<T>& x, const ClosedInterval<T>& y)
+    {
+        return ClosedInterval<T>{min(x.lower, y.lower), max(x.upper, y.upper)};
+    }
+
+    // Returns a `ClosedInterval` that tightly bounds both `x` (if present) and `y`
+    template<typename T>
+    constexpr ClosedInterval<T> bounding_interval_of(const std::optional<ClosedInterval<T>>& x, const ClosedInterval<T>& y)
+    {
+        return x ? bounding_interval_of(*x, y) : y;
+    }
+
+    // Returns `clamp(v, interval.lower, interval.upper`.
+    template<typename T>
+    constexpr const T& clamp(const T& v, const ClosedInterval<T>& interval)
+    {
+        using osc::clamp;
+        return clamp(v, interval.lower, interval.upper);
     }
 }

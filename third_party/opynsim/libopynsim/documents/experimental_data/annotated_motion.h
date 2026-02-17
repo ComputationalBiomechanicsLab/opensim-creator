@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <liboscar/maths/closed_interval.h>
 
 #include <filesystem>
 #include <memory>
@@ -24,6 +25,9 @@ namespace opyn
 
         // Returns the number of data series in the motion.
         size_t getNumDataSeries() const;
+
+        // Returns the time range (first, last) of the loaded motion.
+        osc::ClosedInterval<float> timeRange() const;
     private:
         static std::shared_ptr<OpenSim::Storage> loadPathIntoStorage(const std::filesystem::path&);
         explicit AnnotatedMotion(std::shared_ptr<OpenSim::Storage>);

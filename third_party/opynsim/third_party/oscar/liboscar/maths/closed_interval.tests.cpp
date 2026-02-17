@@ -109,3 +109,29 @@ TEST(ClosedInterval, bounding_interval_of_for_optional_interval_and_single_value
     static_assert(bounding_interval_of<float>(std::nullopt, 1.0f) == ClosedInterval{1.0f, 1.0f});
     static_assert(bounding_interval_of<float>(std::optional<ClosedInterval<float>>{ClosedInterval<float>{0.0f, 1.0f}}, 1.5f) == ClosedInterval{0.0f, 1.5f});
 }
+
+TEST(ClosedInterval, bounding_interval_of_for_two_intervals_returns_union_of_intervals)
+{
+    static_assert(bounding_interval_of(ClosedInterval{-5.0f, -3.0f}, ClosedInterval{2.0f, 5.0f}) == ClosedInterval{-5.0f, 5.0f});
+    static_assert(bounding_interval_of(ClosedInterval{-5.0f, 10.0f}, ClosedInterval{2.0f, 5.0f}) == ClosedInterval{-5.0f, 10.0f});
+    static_assert(bounding_interval_of(ClosedInterval{-5.0f, 10.0f}, ClosedInterval{-15.f, 5.0f}) == ClosedInterval{-15.0f, 10.0f});
+    static_assert(bounding_interval_of(ClosedInterval{-5.0f, 10.0f}, ClosedInterval{-15.f, -10.0f}) == ClosedInterval{-15.0f, 10.0f});
+}
+
+TEST(ClosedInterval, bounding_interval_of_for_optional_interval_and_interval_returns_interval_if_nullopt)
+{
+    static_assert(bounding_interval_of<float>(std::nullopt, ClosedInterval{2.0f, 5.0f}) == ClosedInterval{2.0f, 5.0f});
+    static_assert(bounding_interval_of<float>(std::nullopt, ClosedInterval{-18.0f, -10.0f}) == ClosedInterval{-18.0f, -10.0f});
+}
+
+TEST(ClosedInterval, bounding_interval_of_for_optional_interval_and_interval_returns_union_if_not_nullopt)
+{
+    static_assert(bounding_interval_of<float>(std::make_optional(ClosedInterval{-5.0f, -3.0f}), ClosedInterval{2.0f, 5.0f}) == ClosedInterval{-5.0f, 5.0f});
+}
+
+TEST(ClosedInterval, clamp_returns_clamped_number)
+{
+    static_assert(clamp(5.0f, ClosedInterval{7.0f, 10.0f}) == 7.0f);
+    static_assert(clamp(5.0f, ClosedInterval{4.0f, 10.0f}) == 5.0f);
+    static_assert(clamp(5.0f, ClosedInterval{4.0f, 4.9f}) == 4.9f);
+}

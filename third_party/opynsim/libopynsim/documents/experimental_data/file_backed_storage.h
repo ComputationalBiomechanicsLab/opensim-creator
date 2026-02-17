@@ -1,5 +1,6 @@
 #pragma once
 
+#include <liboscar/maths/closed_interval.h>
 #include <liboscar/utilities/clone_ptr.h>
 
 #include <filesystem>
@@ -22,6 +23,7 @@ namespace opyn
 
         void reloadFromDisk(const OpenSim::Model&);
 
+        osc::ClosedInterval<float> timeRange() const;
         const OpenSim::Storage& storage() const { return *m_Storage; }
         const std::unordered_map<int, int>& mapper() const { return m_StorageIndexToModelStateVarIndexMap; }
     private:
