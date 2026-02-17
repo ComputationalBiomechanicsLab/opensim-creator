@@ -5,6 +5,8 @@
 
 set(CPACK_DMG_CREATE_APPLICATIONS_LINK ON)
 set(CPACK_DMG_VOLUME_NAME "${CPACK_OSC_LONG_APPNAME} ${CPACK_OSC_PROJECT_VERSION}")
+set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_CURRENT_LIST_DIR}/installer_background.png")
+set(CPACK_DMG_DS_STORE_SETUP_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/dmg_setup.scpt")
 
 # Ensure the package is named `opensimcreator-${version}-macos-${arch}.dmg`.
 if(CPACK_OSC_CMAKE_OSX_ARCHITECTURES)

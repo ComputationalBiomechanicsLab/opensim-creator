@@ -23,6 +23,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   which includes new `MeyerFregly2016Force` and `MeyerFregly2016Muscle` components.
 - Updated OPynSim's simbody to from `f9ab12cbad9d0da106473259d34c50577f934f49` to `7f35622b3c5daac919fc39a2865498c03c553e53`,
   which contains some cable path fixes.
+- The macOS DMG installer now has a custom splash background and layout that more clearly explains
+  how to install and boot the software.
 
 ## [0.7.1] - 2026/01/12
 
