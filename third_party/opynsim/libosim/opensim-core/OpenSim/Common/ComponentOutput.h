@@ -31,6 +31,7 @@
  */
 
 // INCLUDES
+#include "Component.h"
 #include "Exception.h"
 #include "Object.h"
 
@@ -42,7 +43,6 @@
 
 namespace OpenSim {
 
-class Component;
 class AbstractInput;
 
 /** One of the values of an Output. */
