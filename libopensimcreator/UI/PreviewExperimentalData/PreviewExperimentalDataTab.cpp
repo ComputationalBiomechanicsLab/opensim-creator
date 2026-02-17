@@ -57,6 +57,15 @@ namespace
 {
     class PreviewExperimentalDataUiState final {
     public:
+        // Customizes what happens when the UI is reinitialized from its
+        // on-disk data.
+        enum class ReinitializationFlag {
+            None                 =    0,
+            RecalculateTimeRange = 1<<0,
+            NUM_FLAGS            =    1,
+        };
+        using ReinitializationFlags = Flags<ReinitializationFlag>;
+
         std::shared_ptr<ModelStatePairWithSharedEnvironment> updSharedModelPtr() const { return m_Model; }
         opyn::ModelStatePair& updModel() { return *m_Model; }
 
@@ -80,10 +89,12 @@ namespace
         void loadModelFile(const std::filesystem::path& p)
         {
             m_Model->loadModel(p);
-            reinitializeModelFromBackingData("loaded model");
+            reinitializeModelFromBackingData("loaded model", ReinitializationFlag::RecalculateTimeRange);
         }
 
-        void reloadAll(std::string_view label = "reloaded model")
+        void reloadAll(
+            std::string_view label = "reloaded model",
+            ReinitializationFlags flags = ReinitializationFlag::None)
         {
             // reload/reset model
             if (opyn::HasInputFileName(m_Model->getModel())) {
@@ -100,13 +111,13 @@ namespace
             }
 
             // reinitialize everything else
-            reinitializeModelFromBackingData(label);
+            reinitializeModelFromBackingData(label, flags);
         }
 
         void loadModelTrajectoryFile(const std::filesystem::path& path)
         {
             m_AssociatedTrajectory = opyn::FileBackedStorage{m_Model->getModel(), path};
-            reloadAll("loaded trajactory");
+            reloadAll("loaded trajactory", ReinitializationFlag::RecalculateTimeRange);
         }
 
         void loadMotionFiles(std::span<const std::filesystem::path> paths)
@@ -116,7 +127,7 @@ namespace
             }
 
             m_AssociatedMotionFiles.insert(m_AssociatedMotionFiles.end(), paths.begin(), paths.end());
-            reloadAll(paths.size() == 1 ? "loaded motion" : "loaded motions");
+            reloadAll(paths.size() == 1 ? "loaded motion" : "loaded motions", ReinitializationFlag::RecalculateTimeRange);
         }
 
         void loadXMLAsOpenSimDocument(std::span<const std::filesystem::path> paths)
@@ -126,7 +137,7 @@ namespace
             }
 
             m_AssociatedXMLDocuments.insert(m_AssociatedXMLDocuments.end(), paths.begin(), paths.end());
-            reloadAll(paths.size() == 1 ? "loaded XML document" : "loaded XML documents");
+            reloadAll(paths.size() == 1 ? "loaded XML document" : "loaded XML documents", ReinitializationFlag::RecalculateTimeRange);
         }
 
         ClosedInterval<float> getTimeRange() const
@@ -174,8 +185,10 @@ namespace
             m_Model->rollback();
         }
     private:
-        void reinitializeModelFromBackingData(std::string_view label)
+        void reinitializeModelFromBackingData(std::string_view label, ReinitializationFlags flags)
         {
+            std::optional<ClosedInterval<float>> dataTimeRange;
+
             // hide forces that are computed from the model, because it's assumed that the
             // user only wants to visualize forces that come from externally-supplied data
             if (m_Model->getModel().countNumComponents() > 0) {
@@ -187,12 +200,15 @@ namespace
             // (re)load associated trajectory
             if (m_AssociatedTrajectory) {
                 opyn::InitializeModel(m_Model->updModel());
+
                 m_AssociatedTrajectory->reloadFromDisk(m_Model->getModel());
+                dataTimeRange = osc::bounding_interval_of(dataTimeRange, m_AssociatedTrajectory->timeRange());
             }
 
             // (re)load motions
             for (const std::filesystem::path& path : m_AssociatedMotionFiles) {
-                m_Model->updModel().addModelComponent(std::make_unique<opyn::AnnotatedMotion>(path).release());
+                const auto& motion = opyn::AddModelComponent<opyn::AnnotatedMotion>(m_Model->updModel(), path);
+                dataTimeRange = osc::bounding_interval_of(dataTimeRange, motion.timeRange());
             }
 
             // (re)load associated XML files (e.g. `ExternalLoads`)
@@ -207,6 +223,11 @@ namespace
             opyn::InitializeModel(m_Model->updModel());
             opyn::InitializeState(m_Model->updModel());
             m_Model->commit(label);
+
+            if (dataTimeRange and (flags & ReinitializationFlag::RecalculateTimeRange)) {
+                m_TimeRange = *dataTimeRange;
+                m_ScrubTime = clamp(m_ScrubTime, m_TimeRange);  // Ensure scrub lands within the new time range.
+            }
             setScrubTime(m_ScrubTime);
         }
 

@@ -27,6 +27,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   how to install and boot the software.
 - A new scaling step, `RecalculateWrapEllipsoidDimensionsFromStationScalingStep`, was added to the model
   warper, which enables point-based recalculation of a `WrapEllipsoid`'s dimensions (#1160).
+- The preview experimental data workflow now recalculates the start/end time of the scrubber whenever a
+  new motion is initially loaded (#1159).
 
 ## [0.7.1] - 2026/01/12
 
