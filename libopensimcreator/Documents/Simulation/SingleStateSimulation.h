@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
-#include <libopensimcreator/Documents/Simulation/ISimulation.h>
+#include <libopensimcreator/Documents/Simulation/AbstractSimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClocks.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
@@ -18,7 +18,7 @@ namespace osc { class Environment; }
 
 namespace osc
 {
-    class SingleStateSimulation final : public ISimulation {
+    class SingleStateSimulation final : public AbstractSimulation {
     public:
         explicit SingleStateSimulation(BasicModelStatePair);
         SingleStateSimulation(const SingleStateSimulation&) = delete;

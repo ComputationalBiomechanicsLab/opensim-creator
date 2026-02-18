@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/Documents/Simulation/ISimulation.h>
+#include <libopensimcreator/Documents/Simulation/AbstractSimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
@@ -21,13 +21,13 @@ namespace SimTK { class State; }
 
 namespace osc
 {
-    // a concrete value type wrapper for an `ISimulation`
+    // a concrete value type wrapper for an `AbstractSimulation`
     //
     // This is a value-type that can be compared, hashed, etc. for easier usage
     // by other parts of osc (e.g. aggregators, plotters)
     class Simulation final {
     public:
-        template<std::derived_from<ISimulation> TConcreteSimulation>
+        template<std::derived_from<AbstractSimulation> TConcreteSimulation>
         Simulation(TConcreteSimulation&& simulation) :
             m_Simulation{std::make_unique<TConcreteSimulation>(std::forward<TConcreteSimulation>(simulation))}
         {}
@@ -58,10 +58,10 @@ namespace osc
 
         std::shared_ptr<Environment> tryUpdEnvironment() { return m_Simulation->tryUpdEnvironment(); }
 
-        operator ISimulation& () { return *m_Simulation; }
-        operator const ISimulation& () const { return *m_Simulation; }
+        operator AbstractSimulation& () { return *m_Simulation; }
+        operator const AbstractSimulation& () const { return *m_Simulation; }
 
     private:
-        std::unique_ptr<ISimulation> m_Simulation;
+        std::unique_ptr<AbstractSimulation> m_Simulation;
     };
 }

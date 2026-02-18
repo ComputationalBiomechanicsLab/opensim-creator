@@ -1,6 +1,6 @@
-#include "ISimulatorUIAPI.h"
+#include "SimulatorUIAPI.h"
 
-#include <libopensimcreator/Documents/Simulation/ISimulation.h>
+#include <libopensimcreator/Documents/Simulation/AbstractSimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationHelpers.h>
 
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>
@@ -22,7 +22,7 @@ using namespace osc;
 namespace
 {
     void TryExportOutputsToCSV(
-        const ISimulation& simulation,
+        const AbstractSimulation& simulation,
         std::span<const opyn::SharedOutputExtractor> outputs,
         bool openInDefaultApp)
     {
@@ -60,12 +60,12 @@ namespace
     }
 }
 
-void osc::ISimulatorUIAPI::tryPromptToSaveOutputsAsCSV(std::span<const opyn::SharedOutputExtractor> outputs, bool openInDefaultApp) const
+void osc::SimulatorUIAPI::tryPromptToSaveOutputsAsCSV(std::span<const opyn::SharedOutputExtractor> outputs, bool openInDefaultApp) const
 {
     TryExportOutputsToCSV(getSimulation(), outputs, openInDefaultApp);
 }
 
-void osc::ISimulatorUIAPI::tryPromptToSaveAllOutputsAsCSV(std::span<const opyn::SharedOutputExtractor> outputs, bool openInDefaultApp) const
+void osc::SimulatorUIAPI::tryPromptToSaveAllOutputsAsCSV(std::span<const opyn::SharedOutputExtractor> outputs, bool openInDefaultApp) const
 {
     TryExportOutputsToCSV(getSimulation(), outputs, openInDefaultApp);
 }

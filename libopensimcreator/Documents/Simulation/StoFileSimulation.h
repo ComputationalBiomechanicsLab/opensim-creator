@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/Documents/Simulation/ISimulation.h>
+#include <libopensimcreator/Documents/Simulation/AbstractSimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClocks.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
@@ -20,9 +20,9 @@ namespace osc { class ParamBlock; }
 
 namespace osc
 {
-    // an `ISimulation` that is directly loaded from an `.sto` file (as
+    // an `AbstractSimulation` that is directly loaded from an `.sto` file (as
     // opposed to being an actual simulation ran within `osc`)
-    class StoFileSimulation final : public ISimulation {
+    class StoFileSimulation final : public AbstractSimulation {
     public:
         StoFileSimulation(
             std::unique_ptr<OpenSim::Model>,

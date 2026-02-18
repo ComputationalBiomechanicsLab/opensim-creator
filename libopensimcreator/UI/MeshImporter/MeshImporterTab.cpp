@@ -17,7 +17,7 @@
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/MeshImporter/ChooseElLayer.h>
 #include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
-#include <libopensimcreator/UI/MeshImporter/IMeshImporterUILayerHost.h>
+#include <libopensimcreator/UI/MeshImporter/MeshImporterUILayerHost.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterHover.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterSharedState.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterUILayer.h>
@@ -78,7 +78,7 @@ using namespace osc;
 // mesh importer tab implementation
 class osc::MeshImporterTab::Impl final :
     public TabPrivate,
-    public IMeshImporterUILayerHost {
+    public MeshImporterUILayerHost {
 public:
     explicit Impl(
         MeshImporterTab& owner,

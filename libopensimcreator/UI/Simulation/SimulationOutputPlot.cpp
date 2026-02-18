@@ -1,13 +1,13 @@
 #include "SimulationOutputPlot.h"
 
 #include <libopensimcreator/Documents/Model/Environment.h>
-#include <libopensimcreator/Documents/Simulation/ISimulation.h>
+#include <libopensimcreator/Documents/Simulation/AbstractSimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
-#include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
+#include <libopensimcreator/UI/Simulation/SimulatorUIAPI.h>
 
 #include <libopynsim/documents/output_extractors/component_output_extractor.h>
 #include <libopynsim/documents/output_extractors/component_output_subfield.h>
@@ -64,7 +64,7 @@ namespace
 
     // draw menu items for exporting the output to a CSV
     void DrawExportToCSVMenuItems(
-        ISimulatorUIAPI& api,
+        SimulatorUIAPI& api,
         const opyn::SharedOutputExtractor& output)
     {
         if (ui::draw_menu_item(MSMICONS_SAVE "Save as CSV")) {
@@ -78,7 +78,7 @@ namespace
 
     // draw a menu that prompts the user to select some other output
     void DrawSelectOtherOutputMenuContent(
-        ISimulation& simulation,
+        AbstractSimulation& simulation,
         const opyn::SharedOutputExtractor& oneDimensionalOutputExtractor)
     {
         static_assert(num_options<opyn::OutputExtractorDataType>() == 3);
@@ -126,7 +126,7 @@ namespace
 
     // draw menu item for plotting one output against another output
     void DrawPlotAgainstOtherOutputMenuItem(
-        ISimulation& sim,
+        AbstractSimulation& sim,
         const opyn::SharedOutputExtractor& output)
     {
         if (ui::begin_menu(MSMICONS_CHART_LINE "Plot Against Other Output")) {
@@ -136,8 +136,8 @@ namespace
     }
 
     void TryDrawOutputContextMenuForLastItem(
-        ISimulatorUIAPI& api,
-        ISimulation& sim,
+        SimulatorUIAPI& api,
+        AbstractSimulation& sim,
         const opyn::SharedOutputExtractor& output)
     {
         if (not ui::begin_popup_context_menu("outputplotmenu")) {
@@ -167,7 +167,7 @@ namespace
 class osc::SimulationOutputPlot::Impl final {
 public:
 
-    Impl(ISimulatorUIAPI* api, opyn::SharedOutputExtractor outputExtractor, float height) :
+    Impl(SimulatorUIAPI* api, opyn::SharedOutputExtractor outputExtractor, float height) :
         m_API{api},
         m_OutputExtractor{std::move(outputExtractor)},
         m_Height{height}
@@ -202,7 +202,7 @@ private:
     {
         OSC_ASSERT(m_OutputExtractor.getOutputType() == opyn::OutputExtractorDataType::Float && "should've been checked before calling this function");
 
-        ISimulation& sim = m_API->updSimulation();
+        AbstractSimulation& sim = m_API->updSimulation();
 
         const ptrdiff_t nReports = sim.getNumReports();
         if (nReports <= 0) {
@@ -320,7 +320,7 @@ private:
 
     void drawStringOutputUI()
     {
-        ISimulation& sim = m_API->updSimulation();
+        AbstractSimulation& sim = m_API->updSimulation();
         const ptrdiff_t nReports = m_API->updSimulation().getNumReports();
         const SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
 
@@ -332,7 +332,7 @@ private:
     {
         OSC_ASSERT(m_OutputExtractor.getOutputType() == opyn::OutputExtractorDataType::Vector2);
 
-        ISimulation& sim = m_API->updSimulation();
+        AbstractSimulation& sim = m_API->updSimulation();
 
         const ptrdiff_t nReports = sim.getNumReports();
         if (nReports <= 0) {
@@ -396,14 +396,14 @@ private:
         TryDrawOutputContextMenuForLastItem(*m_API, sim, m_OutputExtractor);
     }
 
-    ISimulatorUIAPI* m_API;
+    SimulatorUIAPI* m_API;
     opyn::SharedOutputExtractor m_OutputExtractor;
     float m_Height;
 };
 
 
 osc::SimulationOutputPlot::SimulationOutputPlot(
-    ISimulatorUIAPI* api,
+    SimulatorUIAPI* api,
     opyn::SharedOutputExtractor outputExtractor,
     float height) :
 

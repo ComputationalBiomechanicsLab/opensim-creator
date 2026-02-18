@@ -4,14 +4,14 @@
 
 #include <memory>
 
-namespace osc { class ISimulatorUIAPI; }
+namespace osc { class SimulatorUIAPI; }
 
 namespace osc
 {
     class SimulationOutputPlot final {
     public:
         explicit SimulationOutputPlot(
-            ISimulatorUIAPI*,
+            SimulatorUIAPI*,
             opyn::SharedOutputExtractor,
             float height
         );

@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Platform/msmicons.h>
-#include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
+#include <libopensimcreator/UI/Simulation/SimulatorUIAPI.h>
 
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/utilities/enum_helpers.h>
@@ -17,7 +17,7 @@ class osc::SimulationScrubber::Impl final {
 public:
     Impl(
         std::string_view label,
-        ISimulatorUIAPI* simulatorAPI,
+        SimulatorUIAPI* simulatorAPI,
         std::shared_ptr<const Simulation> simulation) :
 
         m_Label{label},
@@ -187,14 +187,14 @@ private:
     }
 
     std::string m_Label;
-    ISimulatorUIAPI* m_SimulatorAPI;
+    SimulatorUIAPI* m_SimulatorAPI;
     std::shared_ptr<const Simulation> m_Simulation;
 };
 
 
 osc::SimulationScrubber::SimulationScrubber(
     std::string_view label,
-    ISimulatorUIAPI* simulatorAPI,
+    SimulatorUIAPI* simulatorAPI,
     std::shared_ptr<const Simulation> simulation) :
 
     m_Impl{std::make_unique<Impl>(label, simulatorAPI, std::move(simulation))}

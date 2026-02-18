@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
-#include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
+#include <libopensimcreator/UI/Simulation/SimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
 
 #include <libopynsim/documents/output_extractors/output_extractor_data_type_helpers.h>
@@ -28,7 +28,7 @@ public:
         SimulationDetailsPanel& owner,
         Widget* parent,
         std::string_view panelName,
-        ISimulatorUIAPI* simulatorUIAPI,
+        SimulatorUIAPI* simulatorUIAPI,
         std::shared_ptr<const Simulation> simulation) :
 
         PanelPrivate{owner, parent, panelName},
@@ -118,14 +118,14 @@ private:
         ui::set_num_columns();
     }
 
-    ISimulatorUIAPI* m_SimulatorUIAPI;
+    SimulatorUIAPI* m_SimulatorUIAPI;
     std::shared_ptr<const Simulation> m_Simulation;
 };
 
 osc::SimulationDetailsPanel::SimulationDetailsPanel(
     Widget* parent,
     std::string_view panelName,
-    ISimulatorUIAPI* simulatorUIAPI,
+    SimulatorUIAPI* simulatorUIAPI,
     std::shared_ptr<const Simulation> simulation) :
 
     Panel{std::make_unique<Impl>(*this, parent, panelName, simulatorUIAPI, std::move(simulation))}

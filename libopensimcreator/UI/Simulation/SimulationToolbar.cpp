@@ -38,7 +38,7 @@ class osc::SimulationToolbar::Impl final {
 public:
     Impl(
         std::string_view label,
-        ISimulatorUIAPI* simulatorAPI,
+        SimulatorUIAPI* simulatorAPI,
         std::shared_ptr<Simulation> simulation) :
 
         m_Label{label},
@@ -100,7 +100,7 @@ private:
     }
 
     std::string m_Label;
-    ISimulatorUIAPI* m_SimulatorAPI;
+    SimulatorUIAPI* m_SimulatorAPI;
     std::shared_ptr<Simulation> m_Simulation;
 
     SimulationScrubber m_Scrubber{"##SimulationScrubber", m_SimulatorAPI, m_Simulation};
@@ -109,7 +109,7 @@ private:
 
 osc::SimulationToolbar::SimulationToolbar(
     std::string_view label,
-    ISimulatorUIAPI* simulatorAPI,
+    SimulatorUIAPI* simulatorAPI,
     std::shared_ptr<Simulation> simulation) :
 
     m_Impl{std::make_unique<Impl>(label, simulatorAPI, std::move(simulation))}

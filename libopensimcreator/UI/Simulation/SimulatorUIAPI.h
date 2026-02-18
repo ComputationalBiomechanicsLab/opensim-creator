@@ -13,25 +13,25 @@
 
 namespace opyn { class SharedOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
-namespace osc { class ISimulation; }
+namespace osc { class AbstractSimulation; }
 
 namespace osc
 {
     // virtual API for the simulator UI (e.g. the simulator tab)
     //
     // this is how individual widgets within a simulator UI communicate with the simulator UI
-    class ISimulatorUIAPI {
+    class SimulatorUIAPI {
     protected:
-        ISimulatorUIAPI() = default;
-        ISimulatorUIAPI(const ISimulatorUIAPI&) = default;
-        ISimulatorUIAPI(ISimulatorUIAPI&&) noexcept = default;
-        ISimulatorUIAPI& operator=(const ISimulatorUIAPI&) = default;
-        ISimulatorUIAPI& operator=(ISimulatorUIAPI&&) noexcept = default;
+        SimulatorUIAPI() = default;
+        SimulatorUIAPI(const SimulatorUIAPI&) = default;
+        SimulatorUIAPI(SimulatorUIAPI&&) noexcept = default;
+        SimulatorUIAPI& operator=(const SimulatorUIAPI&) = default;
+        SimulatorUIAPI& operator=(SimulatorUIAPI&&) noexcept = default;
     public:
-        virtual ~ISimulatorUIAPI() noexcept = default;
+        virtual ~SimulatorUIAPI() noexcept = default;
 
-        const ISimulation& getSimulation() const { return implGetSimulation(); }
-        ISimulation& updSimulation() { return implUpdSimulation(); }
+        const AbstractSimulation& getSimulation() const { return implGetSimulation(); }
+        AbstractSimulation& updSimulation() { return implUpdSimulation(); }
 
         SimulationUIPlaybackState getSimulationPlaybackState() { return implGetSimulationPlaybackState(); }
         void setSimulationPlaybackState(SimulationUIPlaybackState s) { implSetSimulationPlaybackState(s); }
@@ -61,8 +61,8 @@ namespace osc
         SimulationModelStatePair* tryGetCurrentSimulationState() { return implTryGetCurrentSimulationState(); }
 
     private:
-        virtual const ISimulation& implGetSimulation() const = 0;
-        virtual ISimulation& implUpdSimulation() = 0;
+        virtual const AbstractSimulation& implGetSimulation() const = 0;
+        virtual AbstractSimulation& implUpdSimulation() = 0;
 
         virtual SimulationUIPlaybackState implGetSimulationPlaybackState() = 0;
         virtual void implSetSimulationPlaybackState(SimulationUIPlaybackState) = 0;

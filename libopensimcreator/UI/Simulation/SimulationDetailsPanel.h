@@ -6,7 +6,7 @@
 #include <string_view>
 
 namespace osc { class Simulation; }
-namespace osc { class ISimulatorUIAPI; }
+namespace osc { class SimulatorUIAPI; }
 
 namespace osc
 {
@@ -15,7 +15,7 @@ namespace osc
         explicit SimulationDetailsPanel(
             Widget* parent,
             std::string_view panelName,
-            ISimulatorUIAPI*,
+            SimulatorUIAPI*,
             std::shared_ptr<const Simulation>
         );
 

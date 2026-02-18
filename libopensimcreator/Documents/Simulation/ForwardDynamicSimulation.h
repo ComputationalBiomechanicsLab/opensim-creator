@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
-#include <libopensimcreator/Documents/Simulation/ISimulation.h>
+#include <libopensimcreator/Documents/Simulation/AbstractSimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
@@ -20,9 +20,9 @@ namespace osc { class ParamBlock; }
 
 namespace osc
 {
-    // an `ISimulation` that represents a live forward-dynamic simulation
+    // an `AbstractSimulation` that represents a live forward-dynamic simulation
     // that `osc` is running
-    class ForwardDynamicSimulation final : public ISimulation {
+    class ForwardDynamicSimulation final : public AbstractSimulation {
     public:
         ForwardDynamicSimulation(BasicModelStatePair, const ForwardDynamicSimulatorParams&);
         ForwardDynamicSimulation(const ForwardDynamicSimulation&) = delete;

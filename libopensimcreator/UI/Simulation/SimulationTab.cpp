@@ -1,6 +1,6 @@
 #include "SimulationTab.h"
 
-#include <libopensimcreator/Documents/Simulation/ISimulation.h>
+#include <libopensimcreator/Documents/Simulation/AbstractSimulation.h>
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationModelStatePair.h>
@@ -15,7 +15,7 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelRightClickEvent.h>
 #include <libopensimcreator/UI/Shared/NavigatorPanel.h>
 #include <libopensimcreator/UI/Shared/PropertiesPanel.h>
-#include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
+#include <libopensimcreator/UI/Simulation/SimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/OutputPlotsPanel.h>
 #include <libopensimcreator/UI/Simulation/SimulationDetailsPanel.h>
 #include <libopensimcreator/UI/Simulation/SimulationTabMainMenu.h>
@@ -68,7 +68,7 @@ namespace
 
 class osc::SimulationTab::Impl final :
     public TabPrivate,
-    public ISimulatorUIAPI {
+    public SimulatorUIAPI {
 public:
 
     explicit Impl(
@@ -312,12 +312,12 @@ private:
         }
     }
 
-    const ISimulation& implGetSimulation() const final
+    const AbstractSimulation& implGetSimulation() const final
     {
         return *m_Simulation;
     }
 
-    ISimulation& implUpdSimulation() final
+    AbstractSimulation& implUpdSimulation() final
     {
         return *m_Simulation;
     }

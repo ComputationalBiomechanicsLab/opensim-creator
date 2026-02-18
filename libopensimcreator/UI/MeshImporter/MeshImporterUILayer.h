@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/UI/MeshImporter/IMeshImporterUILayerHost.h>
+#include <libopensimcreator/UI/MeshImporter/MeshImporterUILayerHost.h>
 
 namespace osc { class Event; }
 
@@ -16,7 +16,7 @@ namespace osc
     // a layer that is hosted by the parent
     class MeshImporterUILayer {
     protected:
-        explicit MeshImporterUILayer(IMeshImporterUILayerHost& parent) : m_Parent{&parent}
+        explicit MeshImporterUILayer(MeshImporterUILayerHost& parent) : m_Parent{&parent}
         {
         }
         MeshImporterUILayer(const MeshImporterUILayer&) = default;
@@ -52,6 +52,6 @@ namespace osc
         virtual void implTick(float) = 0;
         virtual void implOnDraw() = 0;
 
-        IMeshImporterUILayerHost* m_Parent;
+        MeshImporterUILayerHost* m_Parent;
     };
 }

@@ -1,6 +1,6 @@
 #include "SimulationHelpers.h"
 
-#include <libopensimcreator/Documents/Simulation/ISimulation.h>
+#include <libopensimcreator/Documents/Simulation/AbstractSimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>

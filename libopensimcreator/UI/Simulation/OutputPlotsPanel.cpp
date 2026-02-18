@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Model/Environment.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
-#include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
+#include <libopensimcreator/UI/Simulation/SimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
 
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>
@@ -37,7 +37,7 @@ public:
         Widget* parent,
         std::string_view panelName_,
         std::shared_ptr<Environment> environment,
-        ISimulatorUIAPI* api) :
+        SimulatorUIAPI* api) :
 
         PanelPrivate{owner, parent, panelName_},
         m_Environment{std::move(environment)},
@@ -89,14 +89,14 @@ public:
 
 private:
     std::shared_ptr<Environment> m_Environment;
-    ISimulatorUIAPI* m_SimulatorUIAPI;
+    SimulatorUIAPI* m_SimulatorUIAPI;
 };
 
 osc::OutputPlotsPanel::OutputPlotsPanel(
     Widget* parent,
     std::string_view panelName_,
     std::shared_ptr<Environment> environment,
-    ISimulatorUIAPI* api) :
+    SimulatorUIAPI* api) :
 
     Panel{std::make_unique<Impl>(*this, parent, panelName_, std::move(environment), api)}
 {}
