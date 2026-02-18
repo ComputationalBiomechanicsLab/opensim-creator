@@ -264,7 +264,7 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<opyn::ModelStatePair> maybeMod
 
     if (ui::draw_menu_item(MSMICONS_FILE_IMPORT " Import Meshes")) {
         if (parent()) {
-            auto tab = std::make_unique<mi::MeshImporterTab>(parent());
+            auto tab = std::make_unique<MeshImporterTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
     }

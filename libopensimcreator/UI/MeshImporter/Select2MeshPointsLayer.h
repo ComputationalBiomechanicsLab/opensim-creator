@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libopensimcreator/Documents/MeshImporter/Document.h>
-#include <libopensimcreator/Documents/MeshImporter/Mesh.h>
+#include <libopensimcreator/Documents/MeshImporter/MiDocument.h>
+#include <libopensimcreator/Documents/MeshImporter/MiMesh.h>
 #include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterHover.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterSharedState.h>
@@ -20,7 +20,7 @@
 #include <vector>
 
 // select 2 mesh points layer
-namespace osc::mi
+namespace osc
 {
     // runtime options for "Select two mesh points" UI layer
     struct Select2MeshPointsOptions final {
@@ -113,9 +113,9 @@ namespace osc::mi
         {
             m_DrawablesBuffer.clear();
 
-            const Document& mg = m_Shared->getModelGraph();
+            const MiDocument& mg = m_Shared->getModelGraph();
 
-            for (const Mesh& meshEl : mg.iter<Mesh>())
+            for (const MiMesh& meshEl : mg.iter<MiMesh>())
             {
                 m_DrawablesBuffer.emplace_back(m_Shared->generateMeshDrawable(meshEl));
             }

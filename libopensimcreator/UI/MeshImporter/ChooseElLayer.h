@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libopensimcreator/Documents/MeshImporter/Document.h>
-#include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
-#include <libopensimcreator/Documents/MeshImporter/MIObject.h>
+#include <libopensimcreator/Documents/MeshImporter/MiDocument.h>
+#include <libopensimcreator/Documents/MeshImporter/MiIDs.h>
+#include <libopensimcreator/Documents/MeshImporter/MiObject.h>
 #include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterHover.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterSharedState.h>
@@ -29,7 +29,7 @@
 #include <vector>
 
 // choose specific element layer
-namespace osc::mi
+namespace osc
 {
     // options for when the UI transitions into "choose something" mode
     struct ChooseElLayerOptions final {
@@ -81,19 +81,19 @@ namespace osc::mi
 
     private:
         // returns true if the user's mouse is hovering over the given scene element
-        bool isHovered(const MIObject& el) const
+        bool isHovered(const MiObject& el) const
         {
             return el.getID() == m_MaybeHover.ID;
         }
 
         // returns true if the user has already selected the given scene element
-        bool isSelected(const MIObject& el) const
+        bool isSelected(const MiObject& el) const
         {
             return cpp23::contains(m_SelectedObjectIDs, el.getID());
         }
 
         // returns true if the user can (de)select the given element
-        bool isSelectable(const MIObject& el) const
+        bool isSelectable(const MiObject& el) const
         {
             if (m_Options.maybeElsAttachingTo.contains(el.getID()))
             {
@@ -102,15 +102,15 @@ namespace osc::mi
 
             return std::visit(Overload
             {
-                [this](const Ground&)  { return m_Options.canChooseGround; },
-                [this](const Mesh&)    { return m_Options.canChooseMeshes; },
-                [this](const Body&)    { return m_Options.canChooseBodies; },
-                [this](const Joint&)   { return m_Options.canChooseJoints; },
-                [this](const StationEl&) { return m_Options.canChooseStations; },
+                [this](const MiGround&)  { return m_Options.canChooseGround; },
+                [this](const MiMesh&)    { return m_Options.canChooseMeshes; },
+                [this](const MiBody&)    { return m_Options.canChooseBodies; },
+                [this](const MiJoint&)   { return m_Options.canChooseJoints; },
+                [this](const MiStation&) { return m_Options.canChooseStations; },
             }, el.toVariant());
         }
 
-        void select(const MIObject& el)
+        void select(const MiObject& el)
         {
             if (!isSelectable(el))
             {
@@ -125,7 +125,7 @@ namespace osc::mi
             m_SelectedObjectIDs.push_back(el.getID());
         }
 
-        void deSelect(const MIObject& el)
+        void deSelect(const MiObject& el)
         {
             if (!isSelectable(el))
             {
@@ -135,14 +135,14 @@ namespace osc::mi
             std::erase_if(m_SelectedObjectIDs, [elID = el.getID()](UID id) { return id == elID; } );
         }
 
-        void tryToggleSelectionStateOf(const MIObject& el)
+        void tryToggleSelectionStateOf(const MiObject& el)
         {
             isSelected(el) ? deSelect(el) : select(el);
         }
 
         void tryToggleSelectionStateOf(UID id)
         {
-            const MIObject* el = m_Shared->getModelGraph().tryGetByID(id);
+            const MiObject* el = m_Shared->getModelGraph().tryGetByID(id);
 
             if (el)
             {
@@ -150,7 +150,7 @@ namespace osc::mi
             }
         }
 
-        SceneDecorationFlags computeFlags(const MIObject& el) const
+        SceneDecorationFlags computeFlags(const MiObject& el) const
         {
             SceneDecorationFlags rv = SceneDecorationFlag::None;
             if (isSelected(el)) {
@@ -167,12 +167,12 @@ namespace osc::mi
         {
             m_DrawablesBuffer.clear();
 
-            const Document& mg = m_Shared->getModelGraph();
+            const MiDocument& mg = m_Shared->getModelGraph();
 
             float fadedAlpha = 0.2f;
             float animScale = ease_out_elastic(m_AnimationFraction);
 
-            for (const MIObject& el : mg.iter())
+            for (const MiObject& el : mg.iter())
             {
                 size_t start = m_DrawablesBuffer.size();
                 m_Shared->appendDrawables(el, m_DrawablesBuffer);
@@ -190,8 +190,8 @@ namespace osc::mi
                         if (std::holds_alternative<Color>(d.shading)) {
                             std::get<Color>(d.shading).a = fadedAlpha;   // fade non-selectable colored scene elements
                         }
-                        d.id = MIIDs::Empty();
-                        d.groupId = MIIDs::Empty();
+                        d.id = MiIDs::Empty();
+                        d.groupId = MiIDs::Empty();
                     }
                     else
                     {
@@ -248,7 +248,7 @@ namespace osc::mi
                 return;
             }
 
-            const MIObject* se = m_Shared->getModelGraph().tryGetByID(m_MaybeHover.ID);
+            const MiObject* se = m_Shared->getModelGraph().tryGetByID(m_MaybeHover.ID);
 
             if (se)
             {

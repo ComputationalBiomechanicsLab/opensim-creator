@@ -1,8 +1,8 @@
 #pragma once
 
-namespace osc::mi { class MeshImporterUILayer; }
+namespace osc { class MeshImporterUILayer; }
 
-namespace osc::mi
+namespace osc
 {
     // the "parent" thing that is hosting the layer
     class IMeshImporterUILayerHost {

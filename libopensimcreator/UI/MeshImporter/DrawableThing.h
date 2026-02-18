@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
+#include <libopensimcreator/Documents/MeshImporter/MiIDs.h>
 
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/mesh.h>
@@ -11,12 +11,12 @@
 #include <liboscar/maths/transform.h>
 #include <liboscar/utilities/uid.h>
 
-namespace osc::mi
+namespace osc
 {
     // something that is being drawn in the scene
     struct DrawableThing final {
-        UID id = MIIDs::Empty();
-        UID groupId = MIIDs::Empty();
+        UID id = MiIDs::Empty();
+        UID groupId = MiIDs::Empty();
         osc::Mesh mesh{};
         Transform transform{};
         SceneDecorationShading shading = Color::black();

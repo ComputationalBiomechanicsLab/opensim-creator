@@ -1,17 +1,17 @@
 #pragma once
 
 #include <libopensimcreator/Documents/FileFilters.h>
-#include <libopensimcreator/Documents/MeshImporter/Body.h>
-#include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
-#include <libopensimcreator/Documents/MeshImporter/Document.h>
-#include <libopensimcreator/Documents/MeshImporter/DocumentHelpers.h>
-#include <libopensimcreator/Documents/MeshImporter/Ground.h>
-#include <libopensimcreator/Documents/MeshImporter/Joint.h>
-#include <libopensimcreator/Documents/MeshImporter/Mesh.h>
-#include <libopensimcreator/Documents/MeshImporter/MIObject.h>
-#include <libopensimcreator/Documents/MeshImporter/OpenSimBridge.h>
-#include <libopensimcreator/Documents/MeshImporter/Station.h>
-#include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
+#include <libopensimcreator/Documents/MeshImporter/MiBody.h>
+#include <libopensimcreator/Documents/MeshImporter/MiCrossrefDirection.h>
+#include <libopensimcreator/Documents/MeshImporter/MiDocument.h>
+#include <libopensimcreator/Documents/MeshImporter/MiDocumentHelpers.h>
+#include <libopensimcreator/Documents/MeshImporter/MiGround.h>
+#include <libopensimcreator/Documents/MeshImporter/MiJoint.h>
+#include <libopensimcreator/Documents/MeshImporter/MiMesh.h>
+#include <libopensimcreator/Documents/MeshImporter/MiObject.h>
+#include <libopensimcreator/Documents/MeshImporter/MiXOpenSim.h>
+#include <libopensimcreator/Documents/MeshImporter/MiStation.h>
+#include <libopensimcreator/Documents/MeshImporter/MiUndoableDocument.h>
 #include <libopensimcreator/Platform/msmicons.h>
 #include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterHover.h>
@@ -76,7 +76,7 @@ namespace osc { class Event; }
 
 using namespace osc::literals;
 
-namespace osc::mi
+namespace osc
 {
     // shared data support
     //
@@ -146,7 +146,7 @@ namespace osc::mi
                     // data and we don't want the exception to propagate all the way up to the
                     // event loop (#1050).
                     try {
-                        state->m_ModelGraphSnapshots = UndoableDocument{CreateModelFromOsimFile(response.front())};
+                        state->m_ModelGraphSnapshots = MiUndoableDocument{CreateModelFromOsimFile(response.front())};
                         state->m_MaybeModelGraphExportLocation = response.front();
                         state->m_MaybeModelGraphExportedUID = state->m_ModelGraphSnapshots.head_id();
                     }
@@ -233,17 +233,17 @@ namespace osc::mi
             return std::move(ss).str();
         }
 
-        const Document& getModelGraph() const
+        const MiDocument& getModelGraph() const
         {
             return m_ModelGraphSnapshots.scratch();
         }
 
-        Document& updModelGraph()
+        MiDocument& updModelGraph()
         {
             return m_ModelGraphSnapshots.upd_scratch();
         }
 
-        UndoableDocument& updCommittableModelGraph()
+        MiUndoableDocument& updCommittableModelGraph()
         {
             return m_ModelGraphSnapshots;
         }
@@ -302,12 +302,12 @@ namespace osc::mi
         // MESH LOADING STUFF
         //
 
-        void pushMeshLoadRequests(std::vector<std::filesystem::path> paths, UID attachmentPoint = MIIDs::Ground())
+        void pushMeshLoadRequests(std::vector<std::filesystem::path> paths, UID attachmentPoint = MiIDs::Ground())
         {
             m_MeshLoader.send(MeshLoadRequest{attachmentPoint, std::move(paths)});
         }
 
-        void promptUserForMeshFilesAndPushThemOntoMeshLoader(UID attachmentPoint = MIIDs::Ground())
+        void promptUserForMeshFilesAndPushThemOntoMeshLoader(UID attachmentPoint = MiIDs::Ground())
         {
             if (not shared_from_this()) {
                 log_critical("cannot open mesh import dialog because the mesh importer's state isn't reference-counted");
@@ -330,7 +330,7 @@ namespace osc::mi
 
         void reloadMeshes()
         {
-            for (auto& mesh : m_ModelGraphSnapshots.upd_scratch().iter<mi::Mesh>()) {
+            for (auto& mesh : m_ModelGraphSnapshots.upd_scratch().iter<MiMesh>()) {
                 try {
                     mesh.reloadMeshDataFromDisk();
                 }
@@ -365,9 +365,9 @@ namespace osc::mi
             const Color& color,
             const std::unordered_set<UID>& excludedIDs) const
         {
-            const Document& mg = getModelGraph();
+            const MiDocument& mg = getModelGraph();
 
-            for (const MIObject& el : mg.iter())
+            for (const MiObject& el : mg.iter())
             {
                 UID id = el.getID();
 
@@ -399,9 +399,9 @@ namespace osc::mi
 
         void drawConnectionLines(const MeshImporterHover& currentHover) const
         {
-            const Document& mg = getModelGraph();
+            const MiDocument& mg = getModelGraph();
 
-            for (const MIObject& el : mg.iter())
+            for (const MiObject& el : mg.iter())
             {
                 UID id = el.getID();
 
@@ -564,8 +564,8 @@ namespace osc::mi
             props.set_color(m_Colors.gridLines);
 
             return DrawableThing{
-                .id = MIIDs::Empty(),
-                .groupId = MIIDs::Empty(),
+                .id = MiIDs::Empty(),
+                .groupId = MiIDs::Empty(),
                 .mesh = App::singleton<SceneCache>(App::resource_loader())->grid_mesh(),
                 .transform = {
                     .scale = 0.5f * Vector3{m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f},
@@ -630,36 +630,36 @@ namespace osc::mi
             const bool hittestGround = isGroundInteractable();
             const bool hittestStations = isStationsInteractable();
 
-            UID closestID = MIIDs::Empty();
+            UID closestID = MiIDs::Empty();
             float closestDist = std::numeric_limits<float>::max();
             for (const DrawableThing& drawable : drawables)
             {
-                if (drawable.id == MIIDs::Empty())
+                if (drawable.id == MiIDs::Empty())
                 {
                     continue;  // no hittest data
                 }
 
-                if (drawable.groupId == MIIDs::BodyGroup() && !hittestBodies)
+                if (drawable.groupId == MiIDs::BodyGroup() && !hittestBodies)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == MIIDs::MeshGroup() && !hittestMeshes)
+                if (drawable.groupId == MiIDs::MeshGroup() && !hittestMeshes)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == MIIDs::JointGroup() && !hittestJointCenters)
+                if (drawable.groupId == MiIDs::JointGroup() && !hittestJointCenters)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == MIIDs::GroundGroup() && !hittestGround)
+                if (drawable.groupId == MiIDs::GroundGroup() && !hittestGround)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == MIIDs::StationGroup() && !hittestStations)
+                if (drawable.groupId == MiIDs::StationGroup() && !hittestStations)
                 {
                     continue;
                 }
@@ -678,7 +678,7 @@ namespace osc::mi
                 }
             }
 
-            const Vector3 hitPos = closestID != MIIDs::Empty() ? ray.origin + closestDist*ray.direction : Vector3{};
+            const Vector3 hitPos = closestID != MiIDs::Empty() ? ray.origin + closestDist*ray.direction : Vector3{};
 
             return MeshImporterHover{closestID, hitPos};
         }
@@ -701,24 +701,24 @@ namespace osc::mi
         // SCENE ELEMENT STUFF (specific methods for specific scene element types)
         //
 
-        DrawableThing generateMeshDrawable(const osc::mi::Mesh& el) const
+        DrawableThing generateMeshDrawable(const MiMesh& el) const
         {
             return DrawableThing{
                 .id = el.getID(),
-                .groupId = MIIDs::MeshGroup(),
+                .groupId = MiIDs::MeshGroup(),
                 .mesh = el.getMeshData(),
                 .transform = el.getXForm(),
-                .shading = el.getParentID() == MIIDs::Ground() || el.getParentID() == MIIDs::Empty() ? RedifyColor(getColorMesh()) : getColorMesh(),
+                .shading = el.getParentID() == MiIDs::Ground() || el.getParentID() == MiIDs::Empty() ? RedifyColor(getColorMesh()) : getColorMesh(),
             };
         }
 
         void appendDrawables(
-            const MIObject& e,
+            const MiObject& e,
             std::vector<DrawableThing>& appendOut) const
         {
             std::visit(Overload
             {
-                [this, &appendOut](const Ground&)
+                [this, &appendOut](const MiGround&)
                 {
                     if (!isShowingGround())
                     {
@@ -727,7 +727,7 @@ namespace osc::mi
 
                     appendOut.push_back(generateGroundSphere(getColorGround()));
                 },
-                [this, &appendOut](const Mesh& el)
+                [this, &appendOut](const MiMesh& el)
                 {
                     if (!isShowingMeshes())
                     {
@@ -736,7 +736,7 @@ namespace osc::mi
 
                     appendOut.push_back(generateMeshDrawable(el));
                 },
-                [this, &appendOut](const Body& el)
+                [this, &appendOut](const MiBody& el)
                 {
                     if (!isShowingBodies())
                     {
@@ -745,7 +745,7 @@ namespace osc::mi
 
                     appendBodyElAsCubeThing(el, appendOut);
                 },
-                [this, &appendOut](const Joint& el)
+                [this, &appendOut](const MiJoint& el)
                 {
                     if (!isShowingJointCenters())
                     {
@@ -754,7 +754,7 @@ namespace osc::mi
 
                     appendAsFrame(
                         el.getID(),
-                        MIIDs::JointGroup(),
+                        MiIDs::JointGroup(),
                         el.getXForm(),
                         appendOut,
                         1.0f,
@@ -762,7 +762,7 @@ namespace osc::mi
                         GetJointAxisLengths(el)
                     );
                 },
-                [this, &appendOut](const StationEl& el)
+                [this, &appendOut](const MiStation& el)
                 {
                     if (!isShowingStations())
                     {
@@ -896,16 +896,16 @@ namespace osc::mi
             }
 
             // add each loaded mesh into the model graph
-            Document& mg = updModelGraph();
+            MiDocument& mg = updModelGraph();
             mg.deSelectAll();
 
             for (const LoadedMesh& lm : ok.meshes)
             {
-                MIObject* el = mg.tryUpdByID(ok.preferredAttachmentPoint);
+                MiObject* el = mg.tryUpdByID(ok.preferredAttachmentPoint);
 
                 if (el)
                 {
-                    auto& mesh = mg.emplace<Mesh>(UID{}, ok.preferredAttachmentPoint, lm.meshData, lm.path);
+                    auto& mesh = mg.emplace<MiMesh>(UID{}, ok.preferredAttachmentPoint, lm.meshData, lm.path);
                     mesh.setXform(el->getXForm(mg));
                     mg.select(mesh);
                     mg.select(*el);
@@ -984,11 +984,11 @@ namespace osc::mi
         }
 
         void drawConnectionLines(
-            const MIObject& el,
+            const MiObject& el,
             const Color& color,
             const std::unordered_set<UID>& excludedIDs) const
         {
-            const Document& mg = getModelGraph();
+            const MiDocument& mg = getModelGraph();
             for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
             {
                 UID refID = el.getCrossReferenceConnecteeID(i);
@@ -998,7 +998,7 @@ namespace osc::mi
                     continue;
                 }
 
-                const MIObject* other = mg.tryGetByID(refID);
+                const MiObject* other = mg.tryGetByID(refID);
 
                 if (!other)
                 {
@@ -1008,7 +1008,7 @@ namespace osc::mi
                 Vector3 child = el.getPos(mg);
                 Vector3 parent = other->getPos(mg);
 
-                if (el.getCrossReferenceDirection(i) == CrossrefDirection::ToChild)
+                if (el.getCrossReferenceDirection(i) == MiCrossrefDirection::ToChild)
                 {
                     std::swap(parent, child);
                 }
@@ -1017,14 +1017,14 @@ namespace osc::mi
             }
         }
 
-        void drawConnectionLines(const MIObject& el, const Color& color) const
+        void drawConnectionLines(const MiObject& el, const Color& color) const
         {
             drawConnectionLines(el, color, std::unordered_set<UID>{});
         }
 
-        void drawConnectionLineToGround(const MIObject& el, const Color& color) const
+        void drawConnectionLineToGround(const MiObject& el, const Color& color) const
         {
-            if (el.getID() == MIIDs::Ground())
+            if (el.getID() == MiIDs::Ground())
             {
                 return;
             }
@@ -1032,15 +1032,15 @@ namespace osc::mi
             drawConnectionLine(color, Vector3{}, el.getPos(getModelGraph()));
         }
 
-        bool shouldShowConnectionLines(const MIObject& el) const
+        bool shouldShowConnectionLines(const MiObject& el) const
         {
             return std::visit(Overload
             {
-                []    (const Ground&)  { return false; },
-                [this](const Mesh&)    { return this->isShowingMeshConnectionLines(); },
-                [this](const Body&)    { return this->isShowingBodyConnectionLines(); },
-                [this](const Joint&)   { return this->isShowingJointConnectionLines(); },
-                [this](const StationEl&) { return this->isShowingMeshConnectionLines(); },
+                []    (const MiGround&)  { return false; },
+                [this](const MiMesh&)    { return this->isShowingMeshConnectionLines(); },
+                [this](const MiBody&)    { return this->isShowingBodyConnectionLines(); },
+                [this](const MiJoint&)   { return this->isShowingJointConnectionLines(); },
+                [this](const MiStation&) { return this->isShowingMeshConnectionLines(); },
             }, el.toVariant());
         }
 
@@ -1358,16 +1358,16 @@ namespace osc::mi
             m_InteractivityFlags.stations = v;
         }
 
-        void appendBodyElAsCubeThing(const Body& bodyEl, std::vector<DrawableThing>& appendOut) const
+        void appendBodyElAsCubeThing(const MiBody& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
-            appendAsCubeThing(bodyEl.getID(), MIIDs::BodyGroup(), bodyEl.getXForm(), appendOut);
+            appendAsCubeThing(bodyEl.getID(), MiIDs::BodyGroup(), bodyEl.getXForm(), appendOut);
         }
 
-        DrawableThing generateBodyElSphere(const Body& bodyEl, const Color& color) const
+        DrawableThing generateBodyElSphere(const MiBody& bodyEl, const Color& color) const
         {
             return {
                 .id = bodyEl.getID(),
-                .groupId = MIIDs::BodyGroup(),
+                .groupId = MiIDs::BodyGroup(),
                 .mesh = m_SphereMesh,
                 .transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(bodyEl.getXForm().translation)),
                 .shading = color,
@@ -1377,19 +1377,19 @@ namespace osc::mi
         DrawableThing generateGroundSphere(const Color& color) const
         {
             return {
-                .id = MIIDs::Ground(),
-                .groupId = MIIDs::GroundGroup(),
+                .id = MiIDs::Ground(),
+                .groupId = MiIDs::GroundGroup(),
                 .mesh = m_SphereMesh,
                 .transform = SphereMeshToSceneSphereTransform(sphereAtTranslation({0.0f, 0.0f, 0.0f})),
                 .shading = color,
             };
         }
 
-        DrawableThing generateStationSphere(const StationEl& el, const Color& color) const
+        DrawableThing generateStationSphere(const MiStation& el, const Color& color) const
         {
             return {
                 .id = el.getID(),
-                .groupId = MIIDs::StationGroup(),
+                .groupId = MiIDs::StationGroup(),
                 .mesh = m_SphereMesh,
                 .transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(el.getPos(getModelGraph()))),
                 .shading = color,
@@ -1423,7 +1423,7 @@ namespace osc::mi
         }
 
         // in-memory model graph (snapshots) that the user is manipulating
-        UndoableDocument m_ModelGraphSnapshots;
+        MiUndoableDocument m_ModelGraphSnapshots;
 
         // (maybe) the filesystem location where the model graph should be saved
         std::filesystem::path m_MaybeModelGraphExportLocation;

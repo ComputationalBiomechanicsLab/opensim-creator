@@ -570,7 +570,7 @@ public:
         }
 
         if (ui::draw_menu_item(MSMICONS_CUBE " Mesh Importer")) {
-            impl_select_tab(addTab(std::make_unique<mi::MeshImporterTab>(&owner())));
+            impl_select_tab(addTab(std::make_unique<MeshImporterTab>(&owner())));
         }
 
         const std::shared_ptr<const TabRegistry> tabRegistry = App::singleton<TabRegistry>();

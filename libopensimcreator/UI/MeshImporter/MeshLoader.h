@@ -21,7 +21,7 @@
 //
 // the main (UI) thread then regularly polls the response channel and handles the (loaded)
 // mesh appropriately
-namespace osc::mi
+namespace osc
 {
     // a mesh loading request
     struct MeshLoadRequest final {

@@ -9,7 +9,7 @@
 
 namespace osc { class Widget; }
 
-namespace osc::mi
+namespace osc
 {
     class MeshImporterTab final : public Tab {
     public:

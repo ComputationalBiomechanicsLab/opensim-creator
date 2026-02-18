@@ -11,7 +11,7 @@ namespace osc { class Event; }
 //
 // - normal mode (editing stuff)
 // - picking another body in the scene mode
-namespace osc::mi
+namespace osc
 {
     // a layer that is hosted by the parent
     class MeshImporterUILayer {

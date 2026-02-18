@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-osc::mi::MeshLoadResponse osc::mi::respondToMeshloadRequest(MeshLoadRequest msg)  // NOLINT(performance-unnecessary-value-param)
+osc::MeshLoadResponse osc::respondToMeshloadRequest(MeshLoadRequest msg)  // NOLINT(performance-unnecessary-value-param)
 {
     std::vector<LoadedMesh> loadedMeshes;
     loadedMeshes.reserve(msg.paths.size());

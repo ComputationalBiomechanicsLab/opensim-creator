@@ -258,7 +258,7 @@ private:
             ActionOpenModel(*parent());
         }
         if (ui::draw_menu_item(MSMICONS_FILE_IMPORT " Import Meshes")) {
-            auto tab = std::make_unique<mi::MeshImporterTab>(parent());
+            auto tab = std::make_unique<MeshImporterTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
         ui::add_screenshot_annotation_to_last_drawn_item("SplashTab/ImportMeshesMenuItem");
@@ -278,7 +278,7 @@ private:
     void drawWorkflowsMenuSectionContent()
     {
         if (ui::draw_menu_item(MSMICONS_FILE_IMPORT " Mesh Importer")) {
-            auto tab = std::make_unique<mi::MeshImporterTab>(parent());
+            auto tab = std::make_unique<MeshImporterTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
 

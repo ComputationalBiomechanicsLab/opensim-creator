@@ -18,7 +18,7 @@ namespace osc
         PreviewExperimentalDataTab,
 
         MeshWarpingTab,
-        mi::MeshImporterTab,
+        MeshImporterTab,
         ModelEditorTab,
         ModelWarperTab,
         MeshHittestTab,
