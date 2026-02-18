@@ -1,0 +1,218 @@
+#include "model_editor_main_menu.h"
+
+#include <libopensimcreator/documents/model/environment.h>
+#include <libopensimcreator/documents/model/model_state_pair_with_shared_environment.h>
+#include <libopensimcreator/documents/model/undoable_model_actions.h>
+#include <libopensimcreator/documents/model/undoable_model_state_pair.h>
+#include <libopensimcreator/platform/msmicons.h>
+#include <libopensimcreator/ui/model_editor/export_points_popup.h>
+#include <libopensimcreator/ui/model_editor/model_muscle_plot_panel.h>
+#include <libopensimcreator/ui/performance_analyzer_tab.h>
+#include <libopensimcreator/ui/shared/import_stations_from_csv_popup.h>
+#include <libopensimcreator/ui/shared/main_menu.h>
+#include <libopensimcreator/ui/shared/model_add_menu_items.h>
+#include <libopensimcreator/ui/shared/param_block_editor_popup.h>
+
+#include <libopynsim/utilities/open_sim_helpers.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/widget_private.h>
+#include <liboscar/ui/events/open_popup_event.h>
+#include <liboscar/ui/events/open_tab_event.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/widgets/window_menu.h>
+
+#include <memory>
+#include <utility>
+
+using namespace osc;
+
+namespace
+{
+    bool ActionSimulateAgainstAllIntegrators(
+        Widget& parent,
+        const ModelStatePairWithSharedEnvironment& model)
+    {
+        auto tab = std::make_unique<PerformanceAnalyzerTab>(
+            &parent,
+            BasicModelStatePair{model},
+            model.tryUpdEnvironment()->getSimulationParams()
+        );
+        App::post_event<OpenTabEvent>(parent, std::move(tab));
+        return true;
+    }
+}
+
+class osc::ModelEditorMainMenu::Impl final : public WidgetPrivate {
+public:
+    explicit Impl(
+        Widget& owner_,
+        Widget* parent_,
+        std::shared_ptr<PanelManager> panelManager_,
+        std::shared_ptr<ModelStatePairWithSharedEnvironment> model_) :
+
+        WidgetPrivate{owner_, parent_},
+        m_Model{std::move(model_)},
+        m_MainMenuFileTab{&owner_},
+        m_WindowMenu{&owner_, std::move(panelManager_)}
+    {}
+
+    void onDraw()
+    {
+        m_MainMenuFileTab.onDraw(m_Model);
+        drawMainMenuEditTab();
+        drawMainMenuAddTab();
+        drawMainMenuToolsTab();
+        drawMainMenuActionsTab();
+        m_WindowMenu.on_draw();
+        m_MainMenuAboutTab.onDraw();
+    }
+
+private:
+    void drawMainMenuEditTab()
+    {
+        if (ui::begin_menu("Edit")) {
+            auto* undoable = dynamic_cast<UndoableModelStatePair*>(m_Model.get());
+            if (ui::draw_menu_item(MSMICONS_UNDO " Undo", KeyModifier::Ctrl | Key::Z, false, undoable != nullptr and undoable->canUndo())) {
+                if (undoable) {
+                    undoable->doUndo();
+                }
+            }
+
+            if (ui::draw_menu_item(MSMICONS_REDO " Redo", KeyModifier::Ctrl | KeyModifier::Shift | Key::Z, false, undoable != nullptr and undoable->canRedo())) {
+                if (undoable) {
+                    undoable->doRedo();
+                }
+            }
+
+            ui::draw_separator();
+
+            if (ui::draw_menu_item("         Deselect", Key::Escape, false, m_Model->getSelected() != nullptr)) {
+                m_Model->clearSelected();
+            }
+
+            ui::end_menu();
+        }
+    }
+
+    void drawMainMenuAddTab()
+    {
+        if (ui::begin_menu("Add")) {
+            m_MainMenuModelAddMenuItems.on_draw();
+            ui::end_menu();
+        }
+    }
+
+    void drawMainMenuToolsTab()
+    {
+        if (ui::begin_menu("Tools")) {
+            if (ui::draw_menu_item(MSMICONS_PLAY " Simulate", KeyModifier::Ctrl | Key::R)) {
+                ActionStartSimulatingModel(owner(), *m_Model);
+            }
+
+            if (ui::draw_menu_item(MSMICONS_EDIT " Edit simulation settings")) {
+                if (parent()) {
+                    auto popup = std::make_unique<ParamBlockEditorPopup>(
+                        &owner(),
+                        "simulation parameters",
+                        &m_Model->tryUpdEnvironment()->updSimulationParams()
+                    );
+                    App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
+                }
+            }
+
+            if (ui::draw_menu_item("         Import Points", {}, nullptr, m_Model->canUpdModel())) {
+                if (parent()) {
+                    auto popup = std::make_unique<ImportStationsFromCSVPopup>(
+                        &owner(),
+                        "Import Points",
+                        [model = m_Model](auto lms)
+                        {
+                            ActionImportLandmarks(
+                                *model,
+                                lms.landmarks,
+                                lms.maybeLabel,
+                                lms.maybeTargetComponentAbsPath
+                            );
+                        },
+                        m_Model
+                    );
+                    App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
+                }
+            }
+
+            if (ui::draw_menu_item("         Export Points")) {
+                auto popup = std::make_unique<ExportPointsPopup>(&owner(), "Export Points", m_Model);
+                if (parent()) {
+                    App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
+                }
+            }
+
+            if (ui::begin_menu("         Experimental Tools")) {
+                if (ui::draw_menu_item("Simulate Against All Integrators (advanced)")) {
+                    if (parent()) {
+                        ActionSimulateAgainstAllIntegrators(*parent(), *m_Model);
+                    }
+                }
+                ui::draw_tooltip_if_item_hovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
+
+                if (ui::draw_menu_item("Export Model Graph as Dotviz")) {
+                    ActionExportModelGraphToDotviz(m_Model);
+                }
+                ui::draw_tooltip_if_item_hovered("Writes the model's data topology graph in dotviz format, so that it can be visualized in external tooling such as Graphviz Online");
+
+                if (ui::draw_menu_item("Export Model Graph as Dotviz (clipboard)")) {
+                    ActionExportModelGraphToDotvizClipboard(*m_Model);
+                }
+
+                if (ui::draw_menu_item("Export Model Multibody System as Dotviz (clipboard)")) {
+                    ActionExportModelMultibodySystemAsDotviz(*m_Model);
+                }
+                ui::draw_tooltip_if_item_hovered("Writes the model's multibody system (kinematic chain) in dotviz format, so that it can be visualized in external tooling such as Graphviz Online");
+
+                if (ui::draw_menu_item("WIP: Bake Station Defined Frames")) {
+                    ActionBakeStationDefinedFrames(*m_Model);
+                }
+                ui::draw_tooltip_if_item_hovered("WORK IN PROGRESS (WIP): Converts any `StationDefinedFrame`s in the model into `PhysicalOffsetFrame`s. Effectively, \"baking\" the current (station-defined) frame transform.\n\nThe main reason to do this is backwards compatibility, OpenSim <= v4.5 doesn't have native support for `StationDefinedFrame`s (later versions should: see opensim-core/#3694)");
+
+                ui::end_menu();
+            }
+
+            ui::end_menu();
+        }
+    }
+
+    void drawMainMenuActionsTab()
+    {
+        if (ui::begin_menu("Actions")) {
+            if (ui::draw_menu_item("Disable all wrapping surfaces", {}, nullptr, m_Model->canUpdModel())) {
+                ActionDisableAllWrappingSurfaces(*m_Model);
+            }
+
+            if (ui::draw_menu_item("Enable all wrapping surfaces", {}, nullptr, m_Model->canUpdModel())) {
+                ActionEnableAllWrappingSurfaces(*m_Model);
+            }
+
+            ui::end_menu();
+        }
+    }
+
+    std::shared_ptr<ModelStatePairWithSharedEnvironment> m_Model;
+    MainMenuFileTab m_MainMenuFileTab;
+    ModelAddMenuItems m_MainMenuModelAddMenuItems{&owner(), m_Model};
+    WindowMenu m_WindowMenu;
+    MainMenuAboutTab m_MainMenuAboutTab;
+};
+
+
+osc::ModelEditorMainMenu::ModelEditorMainMenu(
+    Widget* parent_,
+    std::shared_ptr<PanelManager> panelManager_,
+    std::shared_ptr<ModelStatePairWithSharedEnvironment> model_) :
+
+    Widget{std::make_unique<Impl>(*this, parent_, std::move(panelManager_), std::move(model_))}
+{}
+
+void osc::ModelEditorMainMenu::impl_on_draw()
+{
+    private_data().onDraw();
+}

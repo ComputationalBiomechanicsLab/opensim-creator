@@ -1,0 +1,1593 @@
+#include "basic_widgets.h"
+
+#include <libopensimcreator/documents/model/undoable_model_actions.h>
+#include <libopensimcreator/documents/model/undoable_model_state_pair.h>
+#include <libopensimcreator/documents/simulation/integrator_method.h>
+#include <libopensimcreator/documents/simulation/simulation_model_state_pair.h>
+#include <libopensimcreator/documents/param_block.h>
+#include <libopensimcreator/documents/param_value.h>
+#include <libopensimcreator/platform/msmicons.h>
+#include <libopensimcreator/platform/recent_file.h>
+#include <libopensimcreator/platform/recent_files.h>
+
+#include <libopynsim/documents/model/model_state_pair.h>
+#include <libopynsim/documents/output_extractors/component_output_extractor.h>
+#include <libopynsim/documents/output_extractors/force_record_output_extractor.h>
+#include <libopynsim/documents/output_extractors/shared_output_extractor.h>
+#include <libopynsim/graphics/custom_rendering_options.h>
+#include <libopynsim/graphics/model_renderer_params.h>
+#include <libopynsim/graphics/muscle_decoration_style.h>
+#include <libopynsim/graphics/muscle_sizing_style.h>
+#include <libopynsim/graphics/open_sim_decoration_generator.h>
+#include <libopynsim/graphics/open_sim_decoration_options.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
+#include <libopynsim/utilities/simbody_x_oscar.h>
+#include <liboscar/formats/dae.h>
+#include <liboscar/formats/obj.h>
+#include <liboscar/formats/stl.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector3.h>
+#include <liboscar/platform/app.h>
+#include <liboscar/platform/log.h>
+#include <liboscar/ui/icon_cache.h>
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/widgets/camera_view_axes.h>
+#include <liboscar/ui/widgets/icon_with_menu.h>
+#include <liboscar/utilities/string_helpers.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentOutput.h>
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Point.h>
+
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <filesystem>
+#include <fstream>
+#include <optional>
+#include <span>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <variant>
+
+using namespace osc::literals;
+using namespace osc;
+
+// export utils
+namespace
+{
+    // prompts the user for a save location and then exports a DAE file containing the 3D scene
+    void TryPromptUserToSaveAsDAE(std::span<const SceneDecoration> scene)
+    {
+        App::upd().prompt_user_to_save_file_with_extension_async([scene = std::vector(scene.begin(), scene.end())](std::optional<std::filesystem::path> p)
+        {
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+
+            std::ofstream outfile{*p};
+            if (not outfile) {
+                log_error("cannot save to %s: IO error", p->string().c_str());
+                return;
+            }
+
+            DAEMetadata daeMetadata{
+                App::get().human_readable_name(),
+                App::get().application_name_with_version_and_buildid(),
+            };
+
+            DAE::write(outfile, scene, daeMetadata);
+            log_info("wrote scene as a DAE file to %s", p->string().c_str());
+        }, "dae");
+    }
+
+    void DrawOutputTooltip(const OpenSim::AbstractOutput& o)
+    {
+        ui::begin_tooltip();
+        ui::draw_text_disabled(o.getTypeName());
+        ui::end_tooltip();
+    }
+
+    bool DrawOutputWithSubfieldsMenu(
+        const OpenSim::AbstractOutput& o,
+        const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
+    {
+        bool outputAdded = false;
+        opyn::ComponentOutputSubfields supportedSubfields = opyn::GetSupportedSubfields(o);
+
+        // can plot suboutputs
+        if (ui::begin_menu(("  " + o.getName())))
+        {
+            for (opyn::ComponentOutputSubfield f : opyn::GetAllSupportedOutputSubfields())
+            {
+                if (f & supportedSubfields)
+                {
+                    if (auto label = GetOutputSubfieldLabel(f); label && ui::draw_menu_item(*label))
+                    {
+                        onUserSelection(opyn::SharedOutputExtractor{opyn::ComponentOutputExtractor{o, f}});
+                        outputAdded = true;
+                    }
+                }
+            }
+            ui::end_menu();
+        }
+
+        if (ui::is_item_hovered())
+        {
+            DrawOutputTooltip(o);
+        }
+
+        return outputAdded;
+    }
+
+    bool DrawOutputWithNoSubfieldsMenuItem(
+        const OpenSim::AbstractOutput& o,
+        const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
+    {
+        // can only plot top-level of output
+
+        bool outputAdded = false;
+
+        if (ui::draw_menu_item(("  " + o.getName())))
+        {
+            onUserSelection(opyn::SharedOutputExtractor{opyn::ComponentOutputExtractor{o}});
+            outputAdded = true;
+        }
+
+        if (ui::is_item_hovered())
+        {
+            DrawOutputTooltip(o);
+        }
+
+        return outputAdded;
+    }
+
+    void DrawSimulationParamValue(const ParamValue& v)
+    {
+        if (std::holds_alternative<double>(v))
+        {
+            ui::draw_text("%f", static_cast<float>(std::get<double>(v)));
+        }
+        else if (std::holds_alternative<IntegratorMethod>(v))
+        {
+            ui::draw_text(std::get<IntegratorMethod>(v).label());
+        }
+        else if (std::holds_alternative<int>(v))
+        {
+            ui::draw_text("%i", std::get<int>(v));
+        }
+        else
+        {
+            ui::draw_text("(unknown value type)");
+        }
+    }
+
+    Transform CalcTransformWithRespectTo(
+        const OpenSim::Mesh& mesh,
+        const OpenSim::Frame& frame,
+        const SimTK::State& state)
+    {
+        auto rv = to<Transform>(mesh.getFrame().findTransformBetween(state, frame));
+        rv.scale = to<Vector3>(mesh.get_scale_factors());
+        return rv;
+    }
+
+    void ActionReexportMeshOBJWithRespectTo(
+        const OpenSim::Model& model,
+        const SimTK::State& state,
+        const OpenSim::Mesh& openSimMesh,
+        const OpenSim::Frame& frame)
+    {
+        // Pre-write mesh data in-memory so that the asynchronous callback isn't dependent
+        // on a bunch of state.
+        std::stringstream ss;
+        {
+            // load raw mesh data into an osc mesh for processing
+            Mesh oscMesh = opyn::ToOscMesh(model, state, openSimMesh);
+
+            // bake transform into mesh data
+            oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
+
+            const OBJMetadata objMetadata{
+                App::get().application_name_with_version_and_buildid(),
+            };
+
+            OBJ::write(ss, oscMesh, objMetadata, OBJWriterFlag::NoWriteNormals);
+        }
+
+        // Asynchronously prompt the user and write the data
+        App::upd().prompt_user_to_save_file_with_extension_async([content = std::move(ss).str()](std::optional<std::filesystem::path> p)
+        {
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+
+            // write transformed mesh to output
+            try {
+                std::ofstream ofs;
+                ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+                ofs.open(*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+
+                ofs << content;
+            }
+            catch (const std::exception& e) {
+                log_error("error saving obj output to %s: %s", p->string().c_str(), e.what());
+            }
+        }, "obj");
+    }
+
+    void ActionReexportMeshSTLWithRespectTo(
+        const OpenSim::Model& model,
+        const SimTK::State& state,
+        const OpenSim::Mesh& openSimMesh,
+        const OpenSim::Frame& frame)
+    {
+        // Pre-write the mesh data in-memory so that the asynchronous callback isn't dependent
+        // on a bunch of state.
+        std::stringstream ss;
+        {
+            // load raw mesh data into an osc mesh for processing
+            Mesh oscMesh = opyn::ToOscMesh(model, state, openSimMesh);
+
+            // bake transform into mesh data
+            oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
+
+            const STLMetadata stlMetadata{
+                App::get().application_name_with_version_and_buildid(),
+            };
+
+            STL::write(ss, oscMesh, stlMetadata);
+        }
+
+        // Asynchronously prompt the user for a save location and write the content to it.
+        App::upd().prompt_user_to_save_file_with_extension_async([content = std::move(ss).str()](std::optional<std::filesystem::path> p)
+        {
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+
+            // write transformed mesh to output
+            try {
+                std::ofstream ofs;
+                ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+                ofs.open(*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+
+                ofs << content;
+            }
+            catch (const std::exception& e) {
+                log_error("error saving obj output to %s: %s", p->string().c_str(), e.what());
+            }
+        }, "stl");
+    }
+
+    void drawTooltipOrContextMenuContentText(const OpenSim::Component& c)
+    {
+        ui::draw_text(truncate_with_ellipsis(c.getName(), 15));
+        ui::same_line();
+        ui::begin_disabled();
+        ui::draw_text(c.getConcreteClassName());
+        ui::same_line();
+        ui::draw_text(IconFor(c));
+        ui::end_disabled();
+    }
+}
+
+
+// public API
+
+CStringView osc::IconFor(const OpenSim::Component& c)
+{
+    if (dynamic_cast<const OpenSim::Muscle*>(&c)) {
+        return MSMICONS_MUSCLE;
+    }
+    else if (dynamic_cast<const OpenSim::Coordinate*>(&c)) {
+        return MSMICONS_COORDINATE;
+    }
+    else if (dynamic_cast<const OpenSim::WrapObject*>(&c)) {
+        return MSMICONS_WRAP;
+    }
+    else if (dynamic_cast<const OpenSim::Probe*>(&c)) {
+        return MSMICONS_PROBE;
+    }
+    else if (dynamic_cast<const OpenSim::Joint*>(&c)) {
+        return MSMICONS_JOINT;
+    }
+    else if (dynamic_cast<const OpenSim::Geometry*>(&c)) {
+        return MSMICONS_MESH;
+    }
+    else if (dynamic_cast<const OpenSim::Body*>(&c)) {
+        return MSMICONS_BODY;
+    }
+    else if (dynamic_cast<const OpenSim::ContactGeometry*>(&c)) {
+        return MSMICONS_CONTACT;
+    }
+    else if (dynamic_cast<const OpenSim::Station*>(&c) or dynamic_cast<const OpenSim::PathPoint*>(&c)) {
+        return MSMICONS_MARKER;
+    }
+    else if (dynamic_cast<const OpenSim::Constraint*>(&c)) {
+        return MSMICONS_CONSTRAINT;
+    }
+    else if (dynamic_cast<const OpenSim::Function*>(&c)) {
+        return MSMICONS_SPLINE;
+    }
+    else if (dynamic_cast<const OpenSim::Frame*>(&c)) {
+        return MSMICONS_FRAME;
+    }
+    else if (dynamic_cast<const OpenSim::Model*>(&c)) {
+        return MSMICONS_MODEL;
+    }
+    else {
+        return MSMICONS_COMPONENT;
+    }
+}
+
+void osc::DrawNothingRightClickedContextMenuHeader()
+{
+    ui::draw_text_disabled("(nothing selected)");
+}
+
+void osc::DrawContextMenuHeader(CStringView title, CStringView subtitle)
+{
+    ui::draw_text(title);
+    ui::same_line();
+    ui::draw_text_disabled(subtitle);
+}
+
+void osc::DrawRightClickedComponentContextMenuHeader(const OpenSim::Component& c)
+{
+    drawTooltipOrContextMenuContentText(c);
+}
+
+void osc::DrawContextMenuSeparator()
+{
+    ui::draw_separator();
+    ui::draw_vertical_spacer(3.0f/15.0f);
+}
+
+void osc::DrawComponentHoverTooltip(const OpenSim::Component& hovered)
+{
+    ui::begin_tooltip();
+    drawTooltipOrContextMenuContentText(hovered);
+    ui::end_tooltip();
+}
+
+void osc::DrawSelectOwnerMenu(opyn::ModelStatePair& model, const OpenSim::Component& selected)
+{
+    if (ui::begin_menu("Select Owner"))
+    {
+        model.setHovered(nullptr);
+
+        for (
+            const OpenSim::Component* owner = opyn::GetOwner(selected);
+            owner != nullptr;
+            owner = opyn::GetOwner(*owner))
+        {
+            const std::string menuLabel = [&owner]()
+            {
+                std::stringstream ss;
+                ss << owner->getName() << '(' << owner->getConcreteClassName() << ')';
+                return std::move(ss).str();
+            }();
+
+            if (ui::draw_menu_item(menuLabel))
+            {
+                model.setSelected(owner);
+            }
+            if (ui::is_item_hovered())
+            {
+                model.setHovered(owner);
+            }
+        }
+
+        ui::end_menu();
+    }
+}
+
+bool osc::DrawRequestOutputMenuOrMenuItem(
+    const OpenSim::AbstractOutput& o,
+    const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
+{
+    if (opyn::GetSupportedSubfields(o) == opyn::ComponentOutputSubfield::None)
+    {
+        return DrawOutputWithNoSubfieldsMenuItem(o, onUserSelection);
+    }
+    else
+    {
+        return DrawOutputWithSubfieldsMenu(o, onUserSelection);
+    }
+}
+
+bool osc::DrawWatchOutputMenu(
+    const OpenSim::Component& c,
+    const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
+{
+    bool outputAdded = false;
+
+    if (ui::begin_menu("Watch Output")) {
+        int entriesDrawn = 0;
+        for (const auto& [name, output] : c.getOutputs()) {
+            ui::push_id(entriesDrawn++);
+            if (DrawRequestOutputMenuOrMenuItem(*output, onUserSelection)) {
+                outputAdded = true;
+            }
+            ui::pop_id();
+        }
+
+        // Edge-case: `Force`s have record-based outputs, which should also be exposed
+        if (const auto* f = dynamic_cast<const OpenSim::Force*>(&c)) {
+            const OpenSim::Array<std::string> labels = f->getRecordLabels();
+            for (int i = 0; i < labels.size(); ++i) {
+                ui::push_id(entriesDrawn++);
+                if (ui::draw_menu_item("  " + labels[i])) {
+                    onUserSelection(opyn::SharedOutputExtractor{opyn::ForceRecordOutputExtractor{*f, i}});
+                    outputAdded = true;
+                }
+                ui::pop_id();
+            }
+        }
+
+        if (entriesDrawn == 0) {
+            ui::draw_text_disabled("%s has no outputs", c.getName().c_str());
+        }
+        ui::end_menu();
+    }
+
+    return outputAdded;
+}
+
+void osc::DrawSimulationParams(const ParamBlock& params)
+{
+    ui::draw_vertical_spacer(1.0f/15.0f);
+    ui::draw_text("parameters:");
+    ui::same_line();
+    ui::draw_help_marker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
+    ui::draw_separator();
+    ui::draw_vertical_spacer(2.0f/15.0f);
+
+    ui::set_num_columns(2);
+    for (int i = 0, len = params.size(); i < len; ++i)
+    {
+        const std::string& name = params.getName(i);
+        const std::string& description = params.getDescription(i);
+        const ParamValue& value = params.getValue(i);
+
+        ui::draw_text(name);
+        ui::same_line();
+        ui::draw_help_marker(name, description);
+        ui::next_column();
+
+        DrawSimulationParamValue(value);
+        ui::next_column();
+    }
+    ui::set_num_columns();
+}
+
+void osc::DrawSearchBar(std::string& out)
+{
+    ui::push_style_var(ui::StyleVar::FrameRounding, 5.0f);
+    ui::draw_string_input_with_hint("##hirarchtsearchbar", MSMICONS_SEARCH " search...",  out);
+    ui::pop_style_var();
+}
+
+void osc::DrawOutputNameColumn(
+    const opyn::OutputExtractor& output,
+    bool centered,
+    SimulationModelStatePair* maybeActiveSate)
+{
+    if (centered)
+    {
+        ui::draw_text_centered(output.getName());
+    }
+    else
+    {
+        ui::draw_text(output.getName());
+    }
+
+    // if it's specifically a component ouptut, then hover/clicking the text should
+    // propagate to the rest of the UI
+    //
+    // (e.g. if the user mouses over the name of a component output it should make
+    // the associated component the current hover to provide immediate feedback to
+    // the user)
+    if (const auto* co = dynamic_cast<const opyn::ComponentOutputExtractor*>(&output); co && maybeActiveSate)
+    {
+        if (ui::is_item_hovered())
+        {
+            maybeActiveSate->setHovered(opyn::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
+        }
+
+        if (ui::is_item_clicked(ui::MouseButton::Left))
+        {
+            maybeActiveSate->setSelected(opyn::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
+        }
+    }
+
+    if (!output.getDescription().empty())
+    {
+        ui::same_line();
+        ui::draw_help_marker(output.getName(), output.getDescription());
+    }
+}
+
+void osc::DrawWithRespectToMenuContainingMenuPerFrame(
+    const OpenSim::Component& root,
+    const std::function<void(const OpenSim::Frame&)>& onFrameMenuOpened,
+    const OpenSim::Frame* maybeParent)
+{
+    ui::draw_text_disabled("With Respect to:");
+    ui::draw_separator();
+
+    int imguiID = 0;
+
+    if (maybeParent) {
+        ui::push_id(imguiID++);
+        std::stringstream ss;
+        ss << "Parent (" << maybeParent->getName() << ')';
+        if (ui::begin_menu(std::move(ss).str())) {
+            onFrameMenuOpened(*maybeParent);
+            ui::end_menu();
+        }
+        ui::pop_id();
+        ui::draw_separator();
+    }
+
+    for (const OpenSim::Frame& frame : root.getComponentList<OpenSim::Frame>())
+    {
+        ui::push_id(imguiID++);
+        if (ui::begin_menu(frame.getName()))
+        {
+            onFrameMenuOpened(frame);
+            ui::end_menu();
+        }
+        ui::pop_id();
+    }
+}
+
+void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
+    const OpenSim::Component& root,
+    const std::function<void(const OpenSim::Frame&)>& onFrameMenuItemClicked,
+    const OpenSim::Frame* maybeParent = nullptr)
+{
+    ui::draw_text_disabled("With Respect to:");
+    ui::draw_separator();
+
+    int imguiID = 0;
+
+    if (maybeParent) {
+        ui::push_id(imguiID++);
+        if (ui::draw_menu_item("parent")) {
+            onFrameMenuItemClicked(*maybeParent);
+        }
+        ui::pop_id();
+    }
+
+    for (const OpenSim::Frame& frame : root.getComponentList<OpenSim::Frame>())
+    {
+        ui::push_id(imguiID++);
+        if (ui::draw_menu_item(frame.getName()))
+        {
+            onFrameMenuItemClicked(frame);
+        }
+        ui::pop_id();
+    }
+}
+
+void osc::DrawPointTranslationInformationWithRespectTo(
+    const OpenSim::Frame& frame,
+    const SimTK::State& state,
+    Vector3 locationInGround)
+{
+    const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
+    auto translation = to<Vector3>(groundToFrame * to<SimTK::Vec3>(locationInGround));
+
+    ui::draw_text("translation");
+    ui::same_line();
+    ui::draw_help_marker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
+    ui::same_line();
+    ui::draw_vector3_input("##translation", translation, "%.6f", ui::TextInputFlag::ReadOnly);
+}
+
+void osc::DrawDirectionInformationWithRepsectTo(
+    const OpenSim::Frame& frame,
+    const SimTK::State& state,
+    Vector3 directionInGround)
+{
+    const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
+    auto direction = to<Vector3>(groundToFrame.xformBaseVecToFrame(to<SimTK::Vec3>(directionInGround)));
+
+    ui::draw_text("direction");
+    ui::same_line();
+    ui::draw_help_marker("direction", "a unit vector expressed in the given frame");
+    ui::same_line();
+    ui::draw_vector3_input("##direction", direction, "%.6f", ui::TextInputFlag::ReadOnly);
+}
+
+void osc::DrawFrameInformationExpressedIn(
+    const OpenSim::Frame& parent,
+    const SimTK::State& state,
+    const OpenSim::Frame& otherFrame)
+{
+    const SimTK::Transform xform = parent.findTransformBetween(state, otherFrame);
+    auto translation = to<Vector3>(xform.p());
+    auto rotationEulers = to<Vector3>(xform.R().convertRotationToBodyFixedXYZ());
+
+    ui::draw_text("translation");
+    ui::same_line();
+    ui::draw_help_marker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
+    ui::same_line();
+    ui::draw_vector3_input("##translation", translation, "%.6f", ui::TextInputFlag::ReadOnly);
+
+    ui::draw_text("orientation");
+    ui::same_line();
+    ui::draw_help_marker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
+    ui::same_line();
+    ui::draw_vector3_input("##orientation", rotationEulers, "%.6f", ui::TextInputFlag::ReadOnly);
+}
+
+bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
+{
+    const CStringView label = flags & CalculateMenuFlags::NoCalculatorIcon ?
+        "Calculate" :
+        MSMICONS_CALCULATOR " Calculate";
+    return ui::begin_menu(label);
+}
+
+void osc::EndCalculateMenu()
+{
+    ui::end_menu();
+}
+
+void osc::DrawCalculatePositionMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Point& point,
+    const OpenSim::Frame* maybeParent)
+{
+    if (ui::begin_menu("Position"))
+    {
+        const auto onFrameMenuOpened = [&state, &point](const OpenSim::Frame& frame)
+        {
+            DrawPointTranslationInformationWithRespectTo(
+                frame,
+                state,
+                to<Vector3>(point.getLocationInGround(state))
+            );
+        };
+
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, maybeParent);
+        ui::end_menu();
+    }
+}
+
+void osc::DrawCalculateMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Station& station,
+    CalculateMenuFlags flags)
+{
+    if (BeginCalculateMenu(flags))
+    {
+        DrawCalculatePositionMenu(root, state, station, &station.getParentFrame());
+        EndCalculateMenu();
+    }
+}
+
+void osc::DrawCalculateMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Point& point,
+    CalculateMenuFlags flags)
+{
+    if (BeginCalculateMenu(flags))
+    {
+        DrawCalculatePositionMenu(root, state, point, nullptr);
+        EndCalculateMenu();
+    }
+}
+
+void osc::DrawCalculateTransformMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Frame& frame)
+{
+    if (ui::begin_menu("Transform"))
+    {
+        const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& otherFrame)
+        {
+            DrawFrameInformationExpressedIn(frame, state, otherFrame);
+        };
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(frame));
+        ui::end_menu();
+    }
+}
+
+void osc::DrawCalculateAxisDirectionsMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Frame& frame)
+{
+    if (ui::begin_menu("Axis Directions")) {
+        const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& other)
+        {
+            auto x = to<Vector3>(frame.expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
+            auto y = to<Vector3>(frame.expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
+            auto z = to<Vector3>(frame.expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
+
+            ui::draw_text("x axis");
+            ui::same_line();
+            ui::draw_vector3_input("##xdir", x, "%.6f", ui::TextInputFlag::ReadOnly);
+
+            ui::draw_text("y axis");
+            ui::same_line();
+            ui::draw_vector3_input("##ydir", y, "%.6f", ui::TextInputFlag::ReadOnly);
+
+            ui::draw_text("z axis");
+            ui::same_line();
+            ui::draw_vector3_input("##zdir", z, "%.6f", ui::TextInputFlag::ReadOnly);
+        };
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(frame));
+        ui::end_menu();
+    }
+}
+
+void osc::DrawCalculateOriginMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Frame& frame)
+{
+    if (ui::begin_menu("Origin")) {
+        const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& otherFrame)
+        {
+            auto v = to<Vector3>(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
+            ui::draw_text("origin");
+            ui::same_line();
+            ui::draw_vector3_input("##origin", v, "%.6f", ui::TextInputFlag::ReadOnly);
+        };
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(frame));
+        ui::end_menu();
+    }
+}
+
+void osc::DrawCalculateMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Frame& frame,
+    CalculateMenuFlags flags)
+{
+    if (BeginCalculateMenu(flags))
+    {
+        DrawCalculateTransformMenu(root, state, frame);
+        DrawCalculateOriginMenu(root, state, frame);
+        DrawCalculateAxisDirectionsMenu(root, state, frame);
+        EndCalculateMenu();
+    }
+}
+
+void osc::DrawCalculateOriginMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Sphere& sphere)
+{
+    if (ui::begin_menu("Origin"))
+    {
+        auto posInGround = to<Vector3>(sphere.getFrame().getPositionInGround(state));
+        const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
+        {
+            DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
+        };
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(sphere.getFrame()));
+
+        ui::end_menu();
+    }
+}
+
+void osc::DrawCalculateRadiusMenu(
+    const OpenSim::Component&,
+    const SimTK::State&,
+    const OpenSim::Sphere& sphere)
+{
+    if (ui::begin_menu("Radius"))
+    {
+        double d = sphere.get_radius();
+        ui::draw_double_input("radius", &d);
+        ui::end_menu();
+    }
+}
+
+void osc::DrawCalculateVolumeMenu(
+    const OpenSim::Component&,
+    const SimTK::State&,
+    const OpenSim::Sphere& sphere)
+{
+    if (ui::begin_menu("Volume"))
+    {
+        const double r = sphere.get_radius();
+        double v = 4.0/3.0 * SimTK::Pi * r*r*r;
+        ui::draw_double_input("volume", &v, 0.0, 0.0, "%.6f", ui::TextInputFlag::ReadOnly);
+        ui::end_menu();
+    }
+}
+
+void osc::DrawCalculateMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Geometry& geom,
+    CalculateMenuFlags flags)
+{
+    if (BeginCalculateMenu(flags))
+    {
+        if (const auto* spherePtr = dynamic_cast<const OpenSim::Sphere*>(&geom))
+        {
+            DrawCalculateOriginMenu(root, state, *spherePtr);
+            DrawCalculateRadiusMenu(root, state, *spherePtr);
+            DrawCalculateVolumeMenu(root, state, *spherePtr);
+        }
+        else
+        {
+            DrawCalculateTransformMenu(root, state, geom.getFrame());
+            DrawCalculateOriginMenu(root, state, geom.getFrame());
+            DrawCalculateAxisDirectionsMenu(root, state, geom.getFrame());
+        }
+        EndCalculateMenu();
+    }
+}
+
+void osc::TryDrawCalculateMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Component& selected,
+    CalculateMenuFlags flags)
+{
+    if (const auto* const frame = dynamic_cast<const OpenSim::Frame*>(&selected))
+    {
+        DrawCalculateMenu(root, state, *frame, flags);
+    }
+    else if (const auto* const point = dynamic_cast<const OpenSim::Point*>(&selected))
+    {
+        DrawCalculateMenu(root, state, *point, flags);
+    }
+}
+
+void osc::DrawCalculateOriginMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Ellipsoid& ellipsoid)
+{
+    if (ui::begin_menu("Origin")) {
+        auto posInGround = to<Vector3>(ellipsoid.getFrame().getPositionInGround(state));
+        const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
+        {
+            DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
+        };
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(ellipsoid.getFrame()));
+
+        ui::end_menu();
+    }
+}
+
+void osc::DrawCalculateRadiiMenu(
+    const OpenSim::Component&,
+    const SimTK::State&,
+    const OpenSim::Ellipsoid& ellipsoid)
+{
+    if (ui::begin_menu("Radii")) {
+        auto v = to<Vector3>(ellipsoid.get_radii());
+        ui::draw_text("radii");
+        ui::same_line();
+        ui::draw_vector3_input("##radii", v, "%.6f", ui::TextInputFlag::ReadOnly);
+        ui::end_menu();
+    }
+}
+
+void osc::DrawCalculateRadiiDirectionsMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Ellipsoid& ellipsoid)
+{
+    DrawCalculateAxisDirectionsMenu(root, state, ellipsoid.getFrame());
+}
+
+void osc::DrawCalculateScaledRadiiDirectionsMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Ellipsoid& ellipsoid)
+{
+    if (ui::begin_menu("Axis Directions (Scaled by Radii)")) {
+        const auto onFrameMenuOpened = [&state, &ellipsoid](const OpenSim::Frame& other)
+        {
+            const auto& radii = ellipsoid.get_radii();
+            auto x = to<Vector3>(radii[0] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
+            auto y = to<Vector3>(radii[1] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
+            auto z = to<Vector3>(radii[2] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
+
+            ui::draw_text("x axis");
+            ui::same_line();
+            ui::draw_vector3_input("##xdir", x, "%.6f", ui::TextInputFlag::ReadOnly);
+
+            ui::draw_text("y axis");
+            ui::same_line();
+            ui::draw_vector3_input("##ydir", y, "%.6f", ui::TextInputFlag::ReadOnly);
+
+            ui::draw_text("z axis");
+            ui::same_line();
+            ui::draw_vector3_input("##zdir", z, "%.6f", ui::TextInputFlag::ReadOnly);
+        };
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(ellipsoid.getFrame()));
+        ui::end_menu();
+    }
+}
+
+void osc::DrawCalculateMenu(
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Ellipsoid& ellipsoid,
+    CalculateMenuFlags flags)
+{
+    if (BeginCalculateMenu(flags)) {
+        DrawCalculateOriginMenu(root, state, ellipsoid);
+        DrawCalculateRadiiMenu(root, state, ellipsoid);
+        DrawCalculateRadiiDirectionsMenu(root, state, ellipsoid);
+        DrawCalculateScaledRadiiDirectionsMenu(root, state, ellipsoid);
+        EndCalculateMenu();
+    }
+}
+
+bool osc::DrawMuscleRenderingOptionsRadioButtions(opyn::OpenSimDecorationOptions& opts)
+{
+    const opyn::MuscleDecorationStyle currentStyle = opts.getMuscleDecorationStyle();
+    bool edited = false;
+    for (const auto& metadata : opyn::GetAllMuscleDecorationStyleMetadata()) {
+        if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
+            opts.setMuscleDecorationStyle(metadata.value);
+            edited = true;
+        }
+    }
+    return edited;
+}
+
+bool osc::DrawMuscleSizingOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
+{
+    const opyn::MuscleSizingStyle currentStyle = opts.getMuscleSizingStyle();
+    bool edited = false;
+    for (const auto& metadata : opyn::GetAllMuscleSizingStyleMetadata()) {
+        if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
+            opts.setMuscleSizingStyle(metadata.value);
+            edited = true;
+        }
+    }
+    return edited;
+}
+
+bool osc::DrawMuscleColorSourceOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
+{
+    const opyn::MuscleColorSource currentStyle = opts.getMuscleColorSource();
+    bool edited = false;
+    for (const auto& metadata : opyn::GetAllPossibleMuscleColoringSourcesMetadata()) {
+        if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
+            opts.setMuscleColorSource(metadata.value);
+            edited = true;
+        }
+    }
+    return edited;
+}
+
+bool osc::DrawMuscleColorScalingOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
+{
+    const opyn::MuscleColorSourceScaling currentStyle = opts.getMuscleColorSourceScaling();
+    bool edited = false;
+    for (const auto& metadata : opyn::GetAllPossibleMuscleColorSourceScalingMetadata()) {
+        if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
+            opts.setMuscleColorSourceScaling(metadata.value);
+            edited = true;
+        }
+    }
+    return edited;
+}
+
+bool osc::DrawMuscleDecorationOptionsEditor(opyn::OpenSimDecorationOptions& opts)
+{
+    int id = 0;
+    bool edited = false;
+
+    ui::push_id(id++);
+    ui::draw_text_disabled("Rendering");
+    edited = DrawMuscleRenderingOptionsRadioButtions(opts) || edited;
+    ui::pop_id();
+
+    ui::draw_vertical_spacer(0.25f);
+    ui::push_id(id++);
+    ui::draw_text_disabled("Sizing");
+    edited = DrawMuscleSizingOptionsRadioButtons(opts) || edited;
+    ui::pop_id();
+
+    ui::draw_vertical_spacer(0.25f);
+    ui::push_id(id++);
+    ui::draw_text_disabled("Color Source");
+    edited = DrawMuscleColorSourceOptionsRadioButtons(opts) || edited;
+    ui::pop_id();
+
+    ui::draw_vertical_spacer(0.25f);
+    ui::push_id(id++);
+    ui::draw_text_disabled("Color Scaling");
+    edited = DrawMuscleColorScalingOptionsRadioButtons(opts) || edited;
+    ui::pop_id();
+
+    return edited;
+}
+
+bool osc::DrawRenderingOptionsEditor(opyn::CustomRenderingOptions& opts)
+{
+    bool edited = false;
+    ui::draw_text_disabled("Rendering");
+    for (size_t i = 0; i < opts.getNumOptions(); ++i)
+    {
+        bool value = opts.getOptionValue(i);
+        if (ui::draw_checkbox(opts.getOptionLabel(i), &value))
+        {
+            opts.setOptionValue(i, value);
+            edited = true;
+        }
+    }
+    return edited;
+}
+
+bool osc::DrawOverlayOptionsEditor(opyn::OverlayDecorationOptions& opts)
+{
+    std::optional<CStringView> lastGroupLabel;
+    bool edited = false;
+    for (size_t i = 0; i < opts.getNumOptions(); ++i)
+    {
+        // print header, if necessary
+        const CStringView groupLabel = opts.getOptionGroupLabel(i);
+        if (groupLabel != lastGroupLabel)
+        {
+            if (lastGroupLabel)
+            {
+                ui::draw_vertical_spacer(0.25f);
+            }
+            ui::draw_text_disabled(groupLabel);
+            lastGroupLabel = groupLabel;
+        }
+
+        bool value = opts.getOptionValue(i);
+        if (ui::draw_checkbox(opts.getOptionLabel(i), &value))
+        {
+            opts.setOptionValue(i, value);
+            edited = true;
+        }
+    }
+    return edited;
+}
+
+bool osc::DrawCustomDecorationOptionCheckboxes(opyn::OpenSimDecorationOptions& opts)
+{
+    int imguiID = 0;
+    bool edited = false;
+    for (size_t i = 0; i < opts.getNumOptions(); ++i)
+    {
+        ui::push_id(imguiID++);
+
+        bool v = opts.getOptionValue(i);
+        if (ui::draw_checkbox(opts.getOptionLabel(i), &v))
+        {
+            opts.setOptionValue(i, v);
+            edited = true;
+        }
+        if (std::optional<CStringView> description = opts.getOptionDescription(i))
+        {
+            ui::same_line();
+            ui::draw_help_marker(*description);
+        }
+
+        ui::pop_id();
+    }
+    return edited;
+}
+
+bool osc::DrawAdvancedParamsEditor(
+    opyn::ModelRendererParams& params,
+    std::span<const SceneDecoration> drawlist)
+{
+    bool edited = false;
+
+    if (ui::draw_button("Export to .dae"))
+    {
+        TryPromptUserToSaveAsDAE(drawlist);
+    }
+    ui::draw_tooltip_body_only_if_item_hovered("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
+
+    ui::draw_vertical_spacer(10.0f/15.0f);
+    ui::draw_text("advanced camera properties:");
+    ui::draw_separator();
+    edited = ui::draw_float_meters_slider("radius", params.camera.radius, 0.0f, 10.0f) || edited;
+    edited = ui::draw_angle_slider("theta", params.camera.theta, 0_deg, 360_deg) || edited;
+    edited = ui::draw_angle_slider("phi", params.camera.phi, 0_deg, 360_deg) || edited;
+    edited = ui::draw_angle_slider("vertial FoV", params.camera.vertical_field_of_view, 0_deg, 360_deg) || edited;
+    edited = ui::draw_float_meters_input("znear", params.camera.znear) || edited;
+    edited = ui::draw_float_meters_input("zfar", params.camera.zfar) || edited;
+    ui::start_new_line();
+    edited = ui::draw_float_meters_slider("pan_x", params.camera.focus_point.x(), -100.0f, 100.0f) || edited;
+    edited = ui::draw_float_meters_slider("pan_y", params.camera.focus_point.y(), -100.0f, 100.0f) || edited;
+    edited = ui::draw_float_meters_slider("pan_z", params.camera.focus_point.z(), -100.0f, 100.0f) || edited;
+
+    ui::draw_vertical_spacer(10.0f/15.0f);
+    ui::draw_text("advanced scene properties:");
+    ui::draw_separator();
+    edited = ui::draw_rgb_color_editor("light_color", params.lightColor) || edited;
+    edited = ui::draw_rgb_color_editor("background color", params.backgroundColor) || edited;
+    edited = ui::draw_float3_meters_input("floor location", params.floorLocation) || edited;
+    ui::draw_tooltip_body_only_if_item_hovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
+
+    return edited;
+}
+
+bool osc::DrawVisualAidsContextMenuContent(
+    opyn::ModelRendererParams& params)
+{
+    bool edited = false;
+
+    // generic rendering options
+    edited = DrawRenderingOptionsEditor(params.renderingOptions) || edited;
+
+    // overlay options
+    edited = DrawOverlayOptionsEditor(params.overlayOptions) || edited;
+
+    // OpenSim-specific extra rendering options
+    ui::draw_vertical_spacer(0.25f);
+    ui::draw_text_disabled("OpenSim");
+    edited = DrawCustomDecorationOptionCheckboxes(params.decorationOptions) || edited;
+
+    return edited;
+}
+
+bool osc::DrawViewerTopButtonRow(
+    opyn::ModelRendererParams& params,
+    std::span<const SceneDecoration>,
+    IconCache& iconCache,
+    const std::function<bool()>& drawExtraElements)
+{
+    bool edited = false;
+
+    IconWithMenu muscleStylingButton
+    {
+        iconCache.find_or_throw("muscle_coloring"),
+        "Muscle Styling",
+        "Affects how muscles appear in this visualizer panel",
+        [&params]() { return DrawMuscleDecorationOptionsEditor(params.decorationOptions); },
+    };
+    edited = muscleStylingButton.on_draw() || edited;
+    ui::same_line();
+
+    IconWithMenu vizAidsButton
+    {
+        iconCache.find_or_throw("viz_aids"),
+        "Visual Aids",
+        "Affects what's shown in the 3D scene",
+        [&params]() { return DrawVisualAidsContextMenuContent(params); },
+    };
+    edited = vizAidsButton.on_draw() || edited;
+
+    ui::same_line();
+    ui::draw_vertical_separator();
+    ui::same_line();
+
+    // caller-provided extra buttons (usually, context-dependent)
+    edited = drawExtraElements() || edited;
+
+    return edited;
+}
+
+bool osc::DrawCameraControlButtons(
+    opyn::ModelRendererParams& params,
+    std::span<const SceneDecoration> drawlist,
+    const Rect& viewerScreenRect,
+    const std::optional<AABB>& maybeSceneAABB,
+    IconCache& iconCache,
+    Vector2 desiredTopCentroid)
+{
+    IconWithoutMenu zoomOutButton{
+        iconCache.find_or_throw("zoomout"),
+        "Zoom Out Camera",
+        "Moves the camera one step away from its focus point (Hotkey: -)",
+    };
+    IconWithoutMenu zoomInButton{
+        iconCache.find_or_throw("zoomin"),
+        "Zoom in Camera",
+        "Moves the camera one step towards its focus point (Hotkey: =)",
+    };
+    IconWithoutMenu autoFocusButton{
+        iconCache.find_or_throw("zoomauto"),
+        "Auto-Focus Camera",
+        "Try to automatically adjust the camera's zoom etc. to suit the model's dimensions (Hotkey: Ctrl+F)",
+    };
+    IconWithMenu sceneSettingsButton{
+        iconCache.find_or_throw("gear"),
+        "Scene Settings",
+        "Change advanced scene settings",
+        [&params, drawlist]() { return DrawAdvancedParamsEditor(params, drawlist); },
+    };
+
+    auto c = ui::get_style_color(ui::ColorVar::Button);
+    c.a *= 0.9f;
+    ui::push_style_color(ui::ColorVar::Button, c);
+
+    const float spacing = ui::get_style_item_spacing().x();
+    float width = zoomOutButton.dimensions().x() + spacing + zoomInButton.dimensions().x() + spacing + autoFocusButton.dimensions().x();
+    const Vector2 topleft = {desiredTopCentroid.x() - 0.5f*width, desiredTopCentroid.y() + 2.0f*ui::get_style_item_spacing().y()};
+    ui::set_cursor_ui_position(topleft);
+
+    bool edited = false;
+    if (zoomOutButton.on_draw()) {
+        zoom_out(params.camera);
+        edited = true;
+    }
+    ui::same_line();
+    if (zoomInButton.on_draw()) {
+        zoom_in(params.camera);
+        edited = true;
+    }
+    ui::same_line();
+    if (autoFocusButton.on_draw() && maybeSceneAABB) {
+        auto_focus(params.camera, *maybeSceneAABB, aspect_ratio_of(viewerScreenRect));
+        edited = true;
+    }
+
+    // next line (centered)
+    {
+        const Vector2 tl = {
+            desiredTopCentroid.x() - 0.5f*sceneSettingsButton.dimensions().x(),
+            ui::get_cursor_ui_position().y(),
+        };
+        ui::set_cursor_ui_position(tl);
+        if (sceneSettingsButton.on_draw()) {
+            edited = true;
+        }
+    }
+
+    ui::pop_style_color();
+
+    return edited;
+}
+
+bool osc::DrawViewerImGuiOverlays(
+    opyn::ModelRendererParams& params,
+    std::span<const SceneDecoration> drawlist,
+    std::optional<AABB> maybeSceneAABB,
+    const Rect& renderRect,
+    IconCache& iconCache,
+    const std::function<bool()>& drawExtraElementsInTop)
+{
+    bool edited = false;
+
+    // draw top-left buttons
+    const Vector2 windowPadding = ui::get_style_panel_padding();
+    ui::set_cursor_ui_position(renderRect.ypd_top_left() + windowPadding);
+    edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
+
+    // draw top-right camera manipulators
+    CameraViewAxes axes;
+    const Vector2 renderDims = renderRect.dimensions();
+    const Vector2 axesDims = axes.dimensions();
+    const Vector2 axesTopLeft = {
+        renderRect.left() + renderDims.x() - windowPadding.x() - axesDims.x(),
+        renderRect.ypd_top() + windowPadding.y(),
+    };
+
+    // draw the bottom overlays
+    ui::set_cursor_ui_position(axesTopLeft);
+    edited = axes.draw(params.camera) || edited;
+
+    const Vector2 cameraButtonsTopLeft = axesTopLeft + Vector2{0.0f, axesDims.y()};
+    ui::set_cursor_ui_position(cameraButtonsTopLeft);
+    edited = DrawCameraControlButtons(
+        params,
+        drawlist,
+        renderRect,
+        maybeSceneAABB,
+        iconCache,
+        {axesTopLeft.x() + 0.5f*axesDims.x(), axesTopLeft.y() + axesDims.y()}
+    ) || edited;
+
+    return edited;
+}
+
+bool osc::BeginToolbar(CStringView label, std::optional<Vector2> padding)
+{
+    if (padding)
+    {
+        ui::push_style_var(ui::StyleVar::PanelPadding, *padding);
+    }
+
+    const float height = ui::get_frame_height() + 2.0f*ui::get_style_panel_padding().y();
+    const ui::PanelFlags flags = {ui::PanelFlag::NoScrollbar, ui::PanelFlag::NoSavedSettings};
+    bool open = ui::begin_main_window_top_bar(label, height, flags);
+    if (padding)
+    {
+        ui::pop_style_var();
+    }
+    return open;
+}
+
+void osc::DrawNewModelButton(Widget& api)
+{
+    if (ui::draw_button(MSMICONS_FILE))
+    {
+        ActionNewModel(api);
+    }
+    ui::draw_tooltip_if_item_hovered("New Model", "Creates a new OpenSim model in a new tab");
+}
+
+void osc::DrawOpenModelButtonWithRecentFilesDropdown(
+    const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile)
+{
+    ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
+    if (ui::draw_button(MSMICONS_FOLDER_OPEN))
+    {
+        onUserClickedOpenOrSelectedFile(std::nullopt);
+    }
+    ui::draw_tooltip_if_item_hovered("Open Model", "Opens an existing osim file in a new tab");
+    ui::same_line();
+    ui::push_style_var(ui::StyleVar::FramePadding, {1.0f, ui::get_style_frame_padding().y()});
+    ui::draw_button(MSMICONS_CARET_DOWN);
+    ui::draw_tooltip_if_item_hovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
+    ui::pop_style_var();
+    ui::pop_style_var();
+
+    if (ui::begin_popup_context_menu("##RecentFilesMenu", ui::PopupFlag::MouseButtonLeft))
+    {
+        const auto recentFiles = App::singleton<RecentFiles>();
+        int imguiID = 0;
+
+        for (const RecentFile& rf : *recentFiles)
+        {
+            ui::push_id(imguiID++);
+            if (ui::draw_selectable(rf.path.filename().string()))
+            {
+                onUserClickedOpenOrSelectedFile(rf.path);
+            }
+            ui::pop_id();
+        }
+
+        ui::end_popup();
+    }
+}
+
+void osc::DrawOpenModelButtonWithRecentFilesDropdown(Widget& api)
+{
+    DrawOpenModelButtonWithRecentFilesDropdown([&api](auto maybeFile)
+    {
+        if (maybeFile) {
+            ActionOpenModel(api, *maybeFile);
+        }
+        else {
+            ActionOpenModel(api);
+        }
+    });
+}
+
+void osc::DrawSaveModelButton(const std::shared_ptr<opyn::ModelStatePair>& model)
+{
+    if (ui::draw_button(MSMICONS_SAVE)) {
+        ActionSaveModelAsync(model);
+    }
+    ui::draw_tooltip_if_item_hovered("Save Model", "Saves the model to an osim file");
+}
+
+void osc::DrawReloadModelButton(UndoableModelStatePair& model)
+{
+    const bool disable = model.isReadonly() or not opyn::HasInputFileName(model.getModel());
+
+    if (disable) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_button(MSMICONS_RECYCLE)) {
+        ActionReloadOsimFromDisk(model, *App::singleton<SceneCache>());
+    }
+    if (disable) {
+        ui::end_disabled();
+    }
+    ui::draw_tooltip_if_item_hovered("Reload Model", "Reloads the model from its source osim file");
+}
+
+void osc::DrawUndoButton(opyn::ModelStatePair& model)
+{
+    auto* undoable = dynamic_cast<UndoableModelStatePair*>(&model);
+    const bool disable = not (undoable != nullptr and undoable->canUndo());
+
+    if (disable) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_button(MSMICONS_UNDO) and undoable != nullptr) {
+        undoable->doUndo();
+    }
+    if (disable) {
+        ui::end_disabled();
+    }
+    ui::draw_tooltip_if_item_hovered("Undo", "Undo the model to an earlier version");
+}
+
+void osc::DrawRedoButton(opyn::ModelStatePair& model)
+{
+    auto* undoable = dynamic_cast<UndoableModelStatePair*>(&model);
+    const bool disable = not (undoable != nullptr and undoable->canRedo());
+
+    if (disable) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_button(MSMICONS_REDO) and undoable != nullptr) {
+        undoable->doRedo();
+    }
+    if (disable) {
+        ui::end_disabled();
+    }
+    ui::draw_tooltip_if_item_hovered("Redo", "Redo the model to an undone version");
+}
+
+void osc::DrawUndoAndRedoButtons(opyn::ModelStatePair& model)
+{
+    DrawUndoButton(model);
+    ui::same_line();
+    DrawRedoButton(model);
+}
+
+void osc::DrawToggleFramesButton(opyn::ModelStatePair& model, IconCache& icons)
+{
+    const Icon& icon = icons.find_or_throw(opyn::IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
+
+    if (model.isReadonly()) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_image_button("##toggleframes", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
+        ActionToggleFrames(model);
+    }
+    if (model.isReadonly()) {
+        ui::end_disabled();
+    }
+    ui::draw_tooltip_if_item_hovered("Toggle Rendering Frames", "Toggles whether frames (coordinate systems) within the model should be rendered in the 3D scene.");
+}
+
+void osc::DrawToggleMarkersButton(opyn::ModelStatePair& model, IconCache& icons)
+{
+    const Icon& icon = icons.find_or_throw(opyn::IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
+    if (model.isReadonly()) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_image_button("##togglemarkers", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
+        ActionToggleMarkers(model);
+    }
+    if (model.isReadonly()) {
+        ui::end_disabled();
+    }
+    ui::draw_tooltip_if_item_hovered("Toggle Rendering Markers", "Toggles whether markers should be rendered in the 3D scene");
+}
+
+void osc::DrawToggleWrapGeometryButton(opyn::ModelStatePair& model, IconCache& icons)
+{
+    const Icon& icon = icons.find_or_throw(opyn::IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
+    if (model.isReadonly()) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_image_button("##togglewrapgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
+        ActionToggleWrapGeometry(model);
+    }
+    if (model.isReadonly()) {
+        ui::end_disabled();
+    }
+    ui::draw_tooltip_if_item_hovered("Toggle Rendering Wrap Geometry", "Toggles whether wrap geometry should be rendered in the 3D scene.\n\nNOTE: This is a model-log_level_ property. Individual wrap geometries *within* the model may have their visibility set to 'false', which will cause them to be hidden from the visualizer, even if this is enabled.");
+}
+
+void osc::DrawToggleContactGeometryButton(opyn::ModelStatePair& model, IconCache& icons)
+{
+    const Icon& icon = icons.find_or_throw(opyn::IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
+    if (model.isReadonly()) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_image_button("##togglecontactgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
+        ActionToggleContactGeometry(model);
+    }
+    if (model.isReadonly()) {
+        ui::end_disabled();
+    }
+    ui::draw_tooltip_if_item_hovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
+}
+
+void osc::DrawToggleForcesButton(opyn::ModelStatePair& model, IconCache& icons)
+{
+    const Icon& icon = icons.find_or_throw(opyn::IsShowingForces(model.getModel()) ? "forces_colored" : "forces_bw");
+    if (model.isReadonly()) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_image_button("##toggleforces", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
+        ActionToggleForces(model);
+    }
+    if (model.isReadonly()) {
+        ui::end_disabled();
+    }
+    ui::draw_tooltip_if_item_hovered("Toggle Rendering Forces", "Toggles whether forces should be rendered in the 3D scene.\n\nNOTE: this is a model-level property that only applies to forces in OpenSim that actually check this flag. OpenSim Creator's visualizers also offer custom overlays for forces, muscles, etc. separately to this mechanism.");
+}
+
+void osc::DrawAllDecorationToggleButtons(opyn::ModelStatePair& model, IconCache& icons)
+{
+    DrawToggleFramesButton(model, icons);
+    ui::same_line();
+    DrawToggleMarkersButton(model, icons);
+    ui::same_line();
+    DrawToggleWrapGeometryButton(model, icons);
+    ui::same_line();
+    DrawToggleContactGeometryButton(model, icons);
+    ui::same_line();
+    DrawToggleForcesButton(model, icons);
+}
+
+void osc::DrawSceneScaleFactorEditorControls(opyn::ModelStatePair& model)
+{
+    ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
+    ui::draw_text(MSMICONS_EXPAND_ALT);
+    ui::draw_tooltip_if_item_hovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
+    ui::same_line();
+
+    {
+        float scaleFactor = model.getFixupScaleFactor();
+        ui::set_next_item_width(ui::calc_text_size("0.00000").x());
+        if (ui::draw_float_input("##scaleinput", &scaleFactor)) {
+            model.setFixupScaleFactor(scaleFactor);
+        }
+    }
+    ui::pop_style_var();
+
+    ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
+    ui::same_line();
+    if (ui::draw_button(MSMICONS_EXPAND_ARROWS_ALT)) {
+        ActionAutoscaleSceneScaleFactor(model);
+    }
+    ui::pop_style_var();
+    ui::draw_tooltip_if_item_hovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
+}
+
+void osc::DrawMeshExportContextMenuContent(
+    const opyn::ModelStatePair& model,
+    const OpenSim::Mesh& mesh)
+{
+    ui::draw_text_disabled("Format:");
+    ui::draw_separator();
+
+    if (ui::begin_menu(".obj")) {
+        const auto onFrameMenuItemClicked = [&model, &mesh](const OpenSim::Frame& frame)
+        {
+            ActionReexportMeshOBJWithRespectTo(
+                model.getModel(),
+                model.getState(),
+                mesh,
+                frame
+            );
+        };
+
+        DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
+        ui::end_menu();
+    }
+
+    if (ui::begin_menu(".stl")) {
+        const auto onFrameMenuItemClicked = [&model, &mesh](const OpenSim::Frame& frame)
+        {
+            ActionReexportMeshSTLWithRespectTo(
+                model.getModel(),
+                model.getState(),
+                mesh,
+                frame
+            );
+        };
+
+        DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
+        ui::end_menu();
+    }
+}

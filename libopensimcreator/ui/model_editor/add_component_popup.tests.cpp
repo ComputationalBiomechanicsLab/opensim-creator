@@ -1,0 +1,40 @@
+#include "add_component_popup.h"
+
+#include <libopensimcreator/documents/model/undoable_model_state_pair.h>
+#include <libopensimcreator/platform/open_sim_creator_app.h>
+
+#include <gtest/gtest.h>
+#include <libopynsim/component_registry/component_registry.h>
+#include <libopynsim/component_registry/component_registry_entry.h>
+#include <libopynsim/component_registry/static_component_registries.h>
+#include <liboscar/platform/widget.h>
+#include <liboscar/ui/oscimgui.h>
+#include <OpenSim/Common/Component.h>
+
+#include <exception>
+#include <memory>
+
+using namespace osc;
+namespace ui = osc::ui;
+
+TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPopup)
+{
+    OpenSimCreatorApp app;
+    ui::Context context{app};
+    for (const auto& entry : opyn::GetAllRegisteredComponents()) {
+        try {
+            context.on_start_new_frame();
+            Widget parent;
+            auto model = std::make_shared<UndoableModelStatePair>();
+            AddComponentPopup popup{&parent, "popupname", model, entry.instantiate()};
+            popup.open();
+            popup.begin_popup();
+            popup.on_draw();
+            popup.end_popup();
+            context.render();
+        }
+        catch (const std::exception& ex) {
+            FAIL() << entry.name() << ": " << ex.what();
+        }
+    }
+}

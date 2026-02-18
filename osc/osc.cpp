@@ -1,7 +1,7 @@
 #include <osc/osc_config.h>  // static configuration
 
-#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
-#include <libopensimcreator/UI/MainUIScreen.h>
+#include <libopensimcreator/platform/open_sim_creator_app.h>
+#include <libopensimcreator/ui/main_ui_screen.h>
 #include <liboscar/platform/app_metadata.h>
 #include <liboscar/ui/tabs/tab_registry.h>
 
