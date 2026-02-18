@@ -9,8 +9,10 @@
 #include <libopensimcreator/ui/shared/model_viewer_panel_state.h>
 
 #include <libopynsim/documents/model/model_state_pair.h>
+#include <libopynsim/documents/model/model_state_pair_info.h>
 #include <libopynsim/graphics/cached_model_renderer.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
+#include <libopynsim/utilities/simbody_x_oscar.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
@@ -24,6 +26,7 @@
 #include <liboscar/ui/widgets/gui_ruler.h>
 #include <liboscar/ui/widgets/icon_without_menu.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 #include <memory>
 #include <optional>
@@ -212,6 +215,204 @@ namespace
         ModelSelectionGizmo m_Gizmo;
     };
 
+    // `ModelViewerPanelLayer` that overlays non-interactive 2D annotations
+    // over the 3D render.
+    class InformationalOverlaysLayer final : public ModelViewerPanelLayer {
+    public:
+        explicit InformationalOverlaysLayer() = default;
+    private:
+        ModelViewerPanelLayerFlags implGetFlags() const final
+        {
+            return ModelViewerPanelLayerFlags::None;
+        }
+
+        void implOnDraw(ModelViewerPanelParameters& params, ModelViewerPanelState& state) final
+        {
+            drawCoordinateLineOverlayOrResetCache(params, state);
+        }
+
+        void drawCoordinateLineOverlayOrResetCache(ModelViewerPanelParameters& params, ModelViewerPanelState& state)
+        {
+            // Update cached `OpenSim::Joint` transform samples with respect to the
+            // selected `OpenSim::Coordinate`, if applicable.
+            auto& cache = m_CachedCoordinateOverlayState;
+            if (opyn::ModelStatePairInfo currentModelStatePair{*params.getModelSharedPtr()};
+                currentModelStatePair != m_PreviousModelStatePair) {
+
+                // Cache key has changed: clear/reset cached stuff.
+                cache.clear();
+
+                if (const auto* coordinate = params.getModelSharedPtr()->getSelectedAs<OpenSim::Coordinate>();
+                    (coordinate != nullptr) and not coordinate->getLocked(params.getModelSharedPtr()->getState())) {
+
+                    // If the caller has an `OpenSim::Coordinate` selected, and it isn't
+                    // locked, sample `[min, max]` to figure out how the joint transform
+                    // changes with respect to the coordinate.
+                    try {
+                        const auto& associatedJoint = coordinate->getJoint();
+                        const auto& associatedChildFrame = associatedJoint.getChildFrame();
+                        const ClosedInterval<double> coordinateRange{coordinate->getRangeMin(), coordinate->getRangeMax()};
+                        const double samplerStepSize = coordinateRange.step_size(c_NumCoordinateSamplePoints);
+
+                        // Save current joint transform (used for showing user current state-of-play).
+                        SimTK::State samplingState{params.getModelSharedPtr()->getState()};
+                        params.getModelSharedPtr()->getModel().realizePosition(samplingState);
+                        cache.currentTransform = associatedChildFrame.getTransformInGround(samplingState);
+
+                        // Sample along the coordinate, caching transforms.
+                        cache.sampledTransforms.reserve(c_NumCoordinateSamplePoints);
+                        for (size_t step = 0; step < c_NumCoordinateSamplePoints; ++step) {
+                            const double sampledCoordinateValue = coordinateRange.lower + static_cast<double>(step)*samplerStepSize;
+                            coordinate->setValue(samplingState, sampledCoordinateValue, false);
+                            params.getModelSharedPtr()->getModel().realizePosition(samplingState);
+                            cache.sampledTransforms.push_back(associatedChildFrame.getTransformInGround(samplingState));
+                        }
+                    }
+                    catch (const std::exception& ex) {
+                        // There was a problem sampling the points.
+                        //
+                        // Because this is a visual overlay, we recover by just not showing the overlay.
+                        cache.clear();
+                        log_warn("ModelViewerPanel: error sampling selected coordinate %s: %s",
+                            coordinate->getName().c_str(),
+                            ex.what()
+                        );
+                    }
+                }
+                m_PreviousModelStatePair = std::move(currentModelStatePair);  // Update cache key
+            }
+
+            // If the user (still) has an `OpenSim::Coordinate` selected, and the cache is
+            // populated with enough data, draw the overlay.
+            if (const auto* coordinate = params.getModelSharedPtr()->getSelectedAs<OpenSim::Coordinate>();
+                coordinate != nullptr and cache.sampledTransforms.size() >= 2) {
+
+                // Represents points projected from a transform into ui space.
+                struct ProjectedPoints {
+                    ProjectedPoints() = default;
+
+                    explicit ProjectedPoints(
+                        const PolarPerspectiveCamera& camera,
+                        const Rect& viewportUiRect,
+                        const SimTK::Transform& t)
+                    {
+                        // Calculate the height of the view frustum in world units at a given depth
+                        const float worldHeightAtDepth = 2.0f*camera.radius*tan(0.5f*camera.vertical_field_of_view);
+
+                        // Divide the height by the number of pixels to yield world units per pixel
+                        const float worldUnitsPerPixel = worldHeightAtDepth / viewportUiRect.height();
+
+                        // Then multiply that by the number of desired pixels to figure out the world-space projection amount
+                        const float scale = worldUnitsPerPixel * c_FrameLegProjectionInScreenSpace;
+
+                        const auto worldOrigin = to<Vector3>(t.shiftFrameStationToBase(SimTK::Vec3(0.0,   0.0,   0.0  )));
+                        const auto worldX      = to<Vector3>(t.shiftFrameStationToBase(SimTK::Vec3(scale, 0.0,   0.0  )));
+                        const auto worldY      = to<Vector3>(t.shiftFrameStationToBase(SimTK::Vec3(0.0,   scale, 0.0  )));
+                        const auto worldZ      = to<Vector3>(t.shiftFrameStationToBase(SimTK::Vec3(0.0,   0.0,   scale)));
+
+                        origin = camera.project_onto_viewport(worldOrigin, viewportUiRect);
+                        x      = camera.project_onto_viewport(worldX, viewportUiRect);
+                        y      = camera.project_onto_viewport(worldY, viewportUiRect);
+                        z      = camera.project_onto_viewport(worldZ, viewportUiRect);
+                    }
+
+                    Vector2 origin, x, y, z;
+                };
+
+                auto dl = ui::get_panel_draw_list();
+                const auto& viewportUiRect = state.viewportUiRect;
+                const auto& camera = params.getRenderParams().camera;
+
+                // Draw lines along the sample points, so users can see
+                // the "rail" of the coordinate.
+                {
+                    ProjectedPoints previous{camera, viewportUiRect, cache.sampledTransforms[0]};
+                    for (size_t i = 1; i < cache.sampledTransforms.size(); ++i) {
+                        ProjectedPoints current{camera, viewportUiRect, cache.sampledTransforms[i]};
+
+                        dl.add_line(previous.x, current.x, Color::red()  .with_alpha(c_CoordinateAxisAlpha), c_OverlayThickness);
+                        dl.add_line(previous.y, current.y, Color::green().with_alpha(c_CoordinateAxisAlpha), c_OverlayThickness);
+                        dl.add_line(previous.z, current.z, Color::blue() .with_alpha(c_CoordinateAxisAlpha), c_OverlayThickness);
+
+                        previous = current;
+                    }
+                }
+
+                // If the `OpenSim::Coordinate` is locked, put an endcap on the rail, so that
+                // users can see that a coordinate must stop at the ends.
+                if (coordinate->getClamped(params.getModelSharedPtr()->getState())) {
+
+                    const auto drawCaps = [](ui::DrawListView& dl, const ProjectedPoints& a, const ProjectedPoints& b)
+                    {
+                        const auto drawCap = [](ui::DrawListView& dl, const Vector2& p1, const Vector2& p2, const Color& color, float offset)
+                        {
+                            const Vector2 delta = p2 - p1;
+                            const float deltaLength = length(delta);
+                            if (deltaLength < 0.0001f) {
+                                return;  // Don't draw a cap if the last two points are basically on top of eachother
+                            }
+                            const Vector2 lineDirection = delta / deltaLength;
+                            const Vector2 endpointWithOffset = p2 + offset*lineDirection;
+                            const Vector2 endcapNorm{-lineDirection.y(), lineDirection.x()};
+                            const Vector2 endcapStart = endpointWithOffset - (2.0f*c_OverlayThickness*endcapNorm);
+                            const Vector2 endcapEnd = endpointWithOffset + (2.0f*c_OverlayThickness*endcapNorm);
+
+                            dl.add_line(endcapStart, endcapEnd, color, c_OverlayThickness);
+                        };
+                        drawCap(dl, b.origin, a.origin, Color::white().with_alpha(c_CoordinateAxisAlpha), 0.5f*c_OverlayThickness);
+                        drawCap(dl, b.x,      a.x,      Color::red()  .with_alpha(c_CoordinateAxisAlpha), 0.5f*c_OverlayThickness);
+                        drawCap(dl, b.y,      a.y,      Color::green().with_alpha(c_CoordinateAxisAlpha), 0.5f*c_OverlayThickness);
+                        drawCap(dl, b.z,      a.z,      Color::blue() .with_alpha(c_CoordinateAxisAlpha), 0.5f*c_OverlayThickness);
+                    };
+
+                    // Min caps
+                    drawCaps(
+                        dl,
+                        ProjectedPoints{camera, viewportUiRect, cache.sampledTransforms[0]},
+                        ProjectedPoints{camera, viewportUiRect, cache.sampledTransforms[1]}
+                    );
+
+                    // Max caps
+                    drawCaps(
+                        dl,
+                        ProjectedPoints(camera, viewportUiRect, cache.sampledTransforms.back()),
+                        ProjectedPoints(camera, viewportUiRect, *(cache.sampledTransforms.rbegin()+1))
+                    );
+                }
+
+                // Draw a frame-like core representing the coordinate's current state.
+                {
+                    const ProjectedPoints pp{camera, viewportUiRect, cache.currentTransform};
+
+                    // Legs
+                    dl.add_line(pp.origin, pp.x, Color::red(),   c_OverlayThickness);
+                    dl.add_line(pp.origin, pp.y, Color::green(), c_OverlayThickness);
+                    dl.add_line(pp.origin, pp.z, Color::blue(),  c_OverlayThickness);
+
+                    // Circles
+                    dl.add_circle_filled({.origin = pp.x,      .radius = c_CoreRadius}, Color::red());
+                    dl.add_circle_filled({.origin = pp.y,      .radius = c_CoreRadius}, Color::green());
+                    dl.add_circle_filled({.origin = pp.z,      .radius = c_CoreRadius}, Color::blue());
+                    dl.add_circle_filled({.origin = pp.origin, .radius = c_CoreRadius}, Color::white());
+                }
+            }
+        }
+
+        opyn::ModelStatePairInfo m_PreviousModelStatePair;
+        struct CachedCoordinateOverlayState {
+            void clear() { sampledTransforms.clear(); }
+
+            SimTK::Transform currentTransform;
+            std::vector<SimTK::Transform> sampledTransforms;
+        };
+        CachedCoordinateOverlayState m_CachedCoordinateOverlayState;
+        static constexpr size_t c_NumCoordinateSamplePoints = 100;
+        static constexpr float c_FrameLegProjectionInScreenSpace = 128.0f;
+        static constexpr float c_OverlayThickness = 5.0f;
+        static constexpr float c_CoreRadius = 1.25f*c_OverlayThickness;
+        static constexpr float c_CoordinateAxisAlpha = 0.45f;
+    };
+
     // the "base" model viewer layer, which is the last layer to handle any input
     // etc. if no upper layer decides to handle it
     class BaseInteractionLayer final : public ModelViewerPanelLayer {
@@ -336,6 +537,7 @@ public:
             m_Parameters.updRenderParams()
         );
         pushLayer(std::make_unique<BaseInteractionLayer>());
+        pushLayer(std::make_unique<InformationalOverlaysLayer>());
         pushLayer(std::make_unique<ButtonAndGizmoControlsLayer>(panelName_, m_Parameters.getModelSharedPtr()));
     }
 

@@ -31,6 +31,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   new motion is initially loaded (#1159).
 - The source code files of `libopensimcreator` were renamed to match OPynSim (specifically, Python styling)
   more closely.
+- Selecting an `OpenSim::Coordinate` in the model editor now draws overlays in the 3D viewports that show
+  the range of motion that the coordinate offers (#1157).
 
 ## [0.7.1] - 2026/01/12
 
