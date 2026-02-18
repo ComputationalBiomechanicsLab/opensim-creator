@@ -59,38 +59,13 @@ namespace osc
         }
 
     private:
-        virtual ModelViewerPanelLayerFlags implGetFlags() const
-        {
-            return ModelViewerPanelLayerFlags::Default;
-        }
+        virtual ModelViewerPanelLayerFlags implGetFlags() const { return ModelViewerPanelLayerFlags::Default; }
+        virtual float implGetBackgroundAlpha() const { return 0.0f; }
+        virtual void implOnNewFrame() {}
+        virtual bool implHandleMouseInputs(ModelViewerPanelParameters&, ModelViewerPanelState&) { return false; }
+        virtual bool implHandleKeyboardInputs(ModelViewerPanelParameters&, ModelViewerPanelState&) { return false; }
+        virtual bool implShouldClose() const { return false; }
 
-        virtual float implGetBackgroundAlpha() const
-        {
-            return 0.0f;
-        }
-
-        virtual void implOnNewFrame()
-        {
-        }
-
-        virtual bool implHandleMouseInputs(
-            ModelViewerPanelParameters&,
-            ModelViewerPanelState&)
-        {
-            return false;
-        }
-
-        virtual bool implHandleKeyboardInputs(
-            ModelViewerPanelParameters&,
-            ModelViewerPanelState&)
-        {
-            return false;
-        }
-
-        virtual void implOnDraw(
-            ModelViewerPanelParameters&,
-            ModelViewerPanelState&) = 0;
-
-        virtual bool implShouldClose() const = 0;
+        virtual void implOnDraw(ModelViewerPanelParameters&, ModelViewerPanelState&) = 0;
     };
 }
