@@ -6,33 +6,34 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- Updated [OPynSim](github.com/opynsim/opynsim) to latest release, which includes
-  fixes for memory leaks and use-after-free issues in `OpenSim::Model::finalizeConnections` and
-  issues with static initialization order.
+## [0.7.2] - 2026/02/19
+
+- Added coordinate visualization. Selecting an `OpenSim::Coordinate` in the model
+  editor now draws 2D overlays in the 3D viewers that annotate the range of motion
+  that the coordinate offers (#1157).
+- Added a new scaling step, `RecalculateWrapEllipsoidDimensionsFromStationScalingStep`, was
+  to the model, which enables point-based recalculation of a `WrapEllipsoid`'s
+  dimensions (#1160).
+- Updated [OPynSim](github.com/opynsim/opynsim) to its latest release, which includes:
+  - New `MeyerFregly2016Force` and `MeyerFregly2016Muscle` components, from OpenSim.
+  - Updates/fixes to Simbody's cable path implementation: useful for `Scholz2015GeometryPath`.
+  - Changes to uptream `liboscar`'s directory naming convention, which means that `#include`s in
+    OpenSim Creator required updates (e.g. `#include <liboscar/Graphics/Color.h>` became
+    `#include <liboscar/graphics/Color.h>`). The long-term intention is to also move files to
+    snake_case, to more closely match the file/directory naming convention of Python projects.
+  - Fixes for memory leaks and use-after-free issues in `OpenSim::Model::finalizeConnections` and
+    issues with static initialization order.
+- Added a custom splash background to the macOS DMG installer that includes the software logo and
+  tries to visually explain how to boot OpenSim Creator once it's installed.
 - Added `OSC_LIBOPENSIMCREATOR_INSTALL` cmake option, which enables installing the `opensimcreator`
   static library and C++ header files as part of the build. This is an advanced option
   that we provide only to help us build internal prototypes: we do not provide any support/stability
   for downstream C++ projects (you've been warned :wink:).
-- Upstream `liboscar`'s directory naming convention was changed from CamelCase to snake_case, which
-  means that `#include`s in OpenSim Creator required updates (e.g. `#include <liboscar/Graphics/Color.h>`
-  became `#include <liboscar/graphics/Color.h>`). The long-term intention is to also move files to
-  snake_case, to more closely match the file/directory naming convention of Python projects.
-- Added dark mode support for the banner logo in the documentation and changed its size to match the
-  banner in the OPynSim documentation for consistency.
-- Updated OPynSim's OpenSim from `30430e4feecfef3f6385140c72b8e34a54d76d3e` to `286b1f60f147ae707edaa0693931d750305ae50b`,
-  which includes new `MeyerFregly2016Force` and `MeyerFregly2016Muscle` components.
-- Updated OPynSim's simbody to from `f9ab12cbad9d0da106473259d34c50577f934f49` to `7f35622b3c5daac919fc39a2865498c03c553e53`,
-  which contains some cable path fixes.
-- The macOS DMG installer now has a custom splash background and layout that more clearly explains
-  how to install and boot the software.
-- A new scaling step, `RecalculateWrapEllipsoidDimensionsFromStationScalingStep`, was added to the model
-  warper, which enables point-based recalculation of a `WrapEllipsoid`'s dimensions (#1160).
-- The preview experimental data workflow now recalculates the start/end time of the scrubber whenever a
-  new motion is initially loaded (#1159).
-- The source code files of `libopensimcreator` were renamed to match OPynSim (specifically, Python styling)
-  more closely.
-- Selecting an `OpenSim::Coordinate` in the model editor now draws overlays in the 3D viewports that show
-  the range of motion that the coordinate offers (#1157).
+- Changed the preview experimental data workflow to recalculate the start/end time of the
+  scrubber whenever a new motion is initially loaded (#1159).
+- Changed the OpenSim Creator banner in the documentation to be bigger, matching OPynSim's documentation
+  banner size, and to also support dark mode by making the font white/black.
+- Changed the source code files of `libopensimcreator` to match OPynSim's conventions.
 
 ## [0.7.1] - 2026/01/12
 
