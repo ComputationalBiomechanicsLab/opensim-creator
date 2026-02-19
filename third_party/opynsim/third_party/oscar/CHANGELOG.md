@@ -8,4 +8,5 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fixed a scene sorting bug where transparent objects wouldn't be sorted
   from back-to-front.
-
+- `osc::project_onto_viewport_rect` now checks if the world space point is behind the
+  camera and returns NaN instead of producing bizarre negated points.

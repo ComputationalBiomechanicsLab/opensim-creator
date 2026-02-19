@@ -1108,16 +1108,20 @@ Vector2 osc::project_onto_viewport_rect(
     const Matrix4x4& projection_matrix,
     const Rect& viewport_rect)
 {
-    Vector4 ndc = projection_matrix * view_matrix * Vector4{world_space_position, 1.0f};
-    ndc /= ndc.w();  // perspective divide (clip space -> NDC)
+    const Vector4 clip = projection_matrix * view_matrix * Vector4{world_space_position, 1.0f};
+    if (clip.w() <= 0.0f) {
+        return {osc::quiet_nan_v<float>, osc::quiet_nan_v<float>};  // Point was behind the camera (invalid)
+    }
 
-    Vector2 ndc2D = {ndc.x(), -ndc.y()};        // [-1, 1], Y points down
-    ndc2D += 1.0f;                       // [0, 2]
-    ndc2D *= 0.5f;                       // [0, 1]
-    ndc2D *= viewport_rect.dimensions(); // [0, w]
-    ndc2D += viewport_rect.min_corner(); // [x, x + w]
+    const Vector3 ndc3D = Vector3{clip} / clip.w();  // perspective divide (clip space -> NDC)
 
-    return ndc2D;
+    Vector2 ndc2D = {ndc3D.x(), -ndc3D.y()};  // [-1, 1], Y points down
+    ndc2D += 1.0f;                            // [0, 2]
+    ndc2D *= 0.5f;                            // [0, 1]
+    ndc2D *= viewport_rect.dimensions();      // [0, w]
+    ndc2D += viewport_rect.min_corner();      // [x, x + w]
+
+    return ndc2D;  // It's the caller's responsibility to check if it's within 2D bounds
 }
 
 std::optional<Sphere> osc::bounding_sphere_of(std::span<const Vector3> points)
