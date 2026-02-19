@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(osc VERSION 0.7.1 LANGUAGES CXX C)
+project(osc VERSION 0.7.2 LANGUAGES CXX C)
 
 option(BUILD_TESTING            "Build test suites"                                     ON)
 option(OSC_BUILD_OPYNSIM_INLINE "Inline the OPynSim build"                              OFF)
