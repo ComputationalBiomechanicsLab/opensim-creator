@@ -296,14 +296,8 @@ namespace
                         const Rect& viewportUiRect,
                         const SimTK::Transform& t)
                     {
-                        // Calculate the height of the view frustum in world units at a given depth
-                        const float worldHeightAtDepth = 2.0f*camera.radius*tan(0.5f*camera.vertical_field_of_view);
-
-                        // Divide the height by the number of pixels to yield world units per pixel
-                        const float worldUnitsPerPixel = worldHeightAtDepth / viewportUiRect.height();
-
-                        // Then multiply that by the number of desired pixels to figure out the world-space projection amount
-                        const float scale = worldUnitsPerPixel * c_FrameLegProjectionInScreenSpace;
+                        const float viewportFillPercentage = c_FrameLegProjectionInScreenSpace / viewportUiRect.height();
+                        const float scale = viewportFillPercentage * camera.frustum_height_at_depth(camera.radius);
 
                         const auto worldOrigin = to<Vector3>(t.shiftFrameStationToBase(SimTK::Vec3(0.0,   0.0,   0.0  )));
                         const auto worldX      = to<Vector3>(t.shiftFrameStationToBase(SimTK::Vec3(scale, 0.0,   0.0  )));
@@ -338,7 +332,7 @@ namespace
                     }
                 }
 
-                // If the `OpenSim::Coordinate` is locked, put an endcap on the rail, so that
+                // If the `OpenSim::Coordinate` is clamped, put an endcap on the rail, so that
                 // users can see that a coordinate must stop at the ends.
                 if (coordinate->getClamped(params.getModelSharedPtr()->getState())) {
 
@@ -349,7 +343,7 @@ namespace
                             const Vector2 delta = p2 - p1;
                             const float deltaLength = length(delta);
                             if (deltaLength < 0.0001f) {
-                                return;  // Don't draw a cap if the last two points are basically on top of eachother
+                                return;  // Don't draw a cap if the last two points are basically on top of each other
                             }
                             const Vector2 lineDirection = delta / deltaLength;
                             const Vector2 endpointWithOffset = p2 + offset*lineDirection;
