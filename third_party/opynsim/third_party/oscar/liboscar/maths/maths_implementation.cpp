@@ -691,6 +691,11 @@ Ray osc::PolarPerspectiveCamera::unproject_topleft_position_to_world_ray(Vector2
     );
 }
 
+float osc::PolarPerspectiveCamera::frustum_height_at_depth(float depth) const
+{
+    return 2.0f * depth * tan(0.5f * vertical_field_of_view);
+}
+
 PolarPerspectiveCamera osc::create_camera_with_radius(float radius)
 {
     PolarPerspectiveCamera rv;

@@ -52,6 +52,10 @@ namespace osc
         // converts a `pos` (top-left) in the output `dimensions` into a `Ray` in world space by unprojection
         Ray unproject_topleft_position_to_world_ray(Vector2 pos, Vector2 dimensions) const;
 
+        // Returns the height of the view frustum in world units at a given depth from
+        // the camera origin (also in world units).
+        float frustum_height_at_depth(float depth) const;
+
         friend bool operator==(const PolarPerspectiveCamera&, const PolarPerspectiveCamera&) = default;
 
         float radius;
