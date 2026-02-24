@@ -5829,9 +5829,31 @@ namespace
             return std::bit_cast<void*>(std::bit_cast<uintptr_t>(function_ptr));  // necessary to avoid UB checkers
         };
         if (gladLoadGLLoader(loader_func) == 0) {
-            std::stringstream ss;
-            ss << "gladLoadGLLoader() failed: (no error message available)";
-            throw std::runtime_error{ss.str()};
+            throw std::runtime_error{"gladLoadGLLoader() failed: (no error message available)"};
+        }
+
+        // Validate that the OpenGL driver is at least version 3.3. Otherwise, there's
+        // a risk that code later on uses a 3.3 API and segfaults (e.g. because a function
+        // pointer isn't populated). This is particularly nasty on VMs
+        {
+            // Always initialize this variable in case running on an OpenGL 1.1
+            // driver, which doesn't actually support GL_MAJOR_VERSION or GL_MINOR_VERSION
+            std::pair<GLint, GLint> version = {0, 0};
+            glGetIntegerv(GL_MAJOR_VERSION, &version.first);
+            glGetIntegerv(GL_MINOR_VERSION, &version.second);
+            if (version < std::pair{3, 3}) {
+                const auto renderer = opengl_string_to_cstringview(glGetString(GL_RENDERER));
+                const auto version_string = opengl_string_to_cstringview(glGetString(GL_VERSION));
+
+                std::stringstream ss;
+                ss << "OpenGL context creation failed: oscar needs OpenGL >= v3.3, but the driver reported:\n" <<
+                    "    GL_MAJOR_VERSION == " << version.first << '\n' <<
+                    "    GL_MINOR_VERSION == " << version.second << '\n' <<
+                    "    GL_RENDERER      == " << renderer << '\n' <<
+                    "    GL_VERSION       == " << version_string << '\n' <<
+                    "Note: older OpenGL backends and backends like Windows' GDI don't support GL_MAJOR/MINOR_VERSION variables";
+                throw std::runtime_error{std::move(ss).str()};
+            }
         }
 
         // validate that the runtime OpenGL backend supports the extensions that OSC

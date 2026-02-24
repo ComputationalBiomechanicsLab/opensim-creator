@@ -45,11 +45,11 @@ if(TRUE)
     if(OPYN_STABLE_ABI)
         list(APPEND OPYN_NANOBIND_ARGS STABLE_ABI)
     endif()
-    file(GLOB_RECURSE _opynsim_native_sources "opynsim/*.cpp")
+    file(GLOB_RECURSE _opynsim_native_sources "_opynsim_native/*.cpp")
     list(FILTER _opynsim_native_sources EXCLUDE REGEX "(tests|\.tests\.cpp)")
     nanobind_add_module(_opynsim_native ${OPYN_NANOBIND_ARGS} ${_opynsim_native_sources})
     unset(_opynsim_native_sources)
-    target_include_directories(_opynsim_native PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/opynsim)  # so that `#include <_opynsim_native/...>` works
+    target_include_directories(_opynsim_native PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})  # so that `#include <_opynsim_native/...>` works
 
     # Set `OPYN_PYTHON_INTERPRETER_TAG` and `OPYN_PYTHON_ABI_TAG` on the native module
     #
@@ -108,6 +108,29 @@ if(TRUE)
         LIBRARY_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>/opynsim/
         RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>/opynsim/
     )
+
+    # Nice to have: build interface stubs directly into the Python package sourcetree
+    #
+    # This is purely a practical measure that enables typing etc. during development. A
+    # similar step is also performed during installation.
+    #
+    # See:
+    # - https://nanobind.readthedocs.io/en/latest/typing.html
+    # - https://nanobind.readthedocs.io/en/latest/api_cmake.html#command:nanobind_add_stub
+    nanobind_add_stub(
+        _opynsim_native_development_stubs
+        MODULE _opynsim_native
+        PYTHON_PATH $<TARGET_FILE_DIR:_opynsim_native>
+        DEPENDS _opynsim_native
+        MARKER_FILE py.typed
+
+        RECURSIVE
+        OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/opynsim/
+        OUTPUT
+            _opynsim_native/__init__.pyi
+            _opynsim_native/tps3d.pyi
+            _opynsim_native/ui.pyi
+    )
 endif()
 
 # Testing
@@ -135,6 +158,27 @@ if(TRUE)
         FILES $<TARGET_FILE:_opynsim_native>
         DESTINATION "${OPYN_PYTHON_INSTALL_PREFIX}"
         COMPONENT opynsim-python
+    )
+
+    # Install `_opynsim_native` interface stubs into the package
+    #
+    # See:
+    #    # - https://nanobind.readthedocs.io/en/latest/typing.html
+    #    # - https://nanobind.readthedocs.io/en/latest/api_cmake.html#command:nanobind_add_stub
+    nanobind_add_stub(
+        _opynsim_native_installation_stubs
+        INSTALL_TIME
+        MODULE _opynsim_native
+        PYTHON_PATH "${OPYN_PYTHON_INSTALL_PREFIX}"
+        MARKER_FILE py.typed
+        COMPONENT opynsim-python
+
+        RECURSIVE
+        OUTPUT_PATH "${OPYN_PYTHON_INSTALL_PREFIX}"
+        OUTPUT
+            _opynsim_native/__init__.pyi
+            _opynsim_native/tps3d.pyi
+            _opynsim_native/ui.pyi
     )
 endif()
 

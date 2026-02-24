@@ -11,3 +11,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `osc::project_onto_viewport_rect` now checks if the world space point is behind the
   camera and returns NaN instead of producing bizarre negated points.
 - Added `PolarPerspectiveCamera::frustum_height_at_depth`
+- OpenGL context initialization now performs runtime checks to ensure at least
+  OpenGL 3.3 is loaded before using any function pointers from OpenGL 3.3. This
+  affects things like KVM-based CI servers which, previously, were silently
+  failing with segfaults.
+

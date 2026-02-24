@@ -69,6 +69,11 @@
         {
             "name": "Development",
             "configurePreset": "Development",
+            "filter": {
+                "exclude": {
+                    "name": "$env{OSCAR_TEST_EXCLUDE_FILTER}"
+                }
+            },
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         },
@@ -76,6 +81,11 @@
             "name": "ErrorCheck",
             "configurePreset": "ErrorCheck",
             "output": {"outputOnFailure": true},
+            "filter": {
+                "exclude": {
+                    "name": "$env{OSCAR_TEST_EXCLUDE_FILTER}"
+                }
+            },
             "execution": {"noTestsAction": "error"},
             "environment": {
                 "LIBGL_ALWAYS_SOFTWARE": "1"
@@ -84,12 +94,22 @@
         {
             "name": "RelWithDebInfo",
             "configurePreset": "RelWithDebInfo",
+            "filter": {
+                "exclude": {
+                    "name": "$env{OSCAR_TEST_EXCLUDE_FILTER}"
+                }
+            },
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         },
         {
             "name": "Release",
             "configurePreset": "Release",
+            "filter": {
+                "exclude": {
+                    "name": "$env{OSCAR_TEST_EXCLUDE_FILTER}"
+                }
+            },
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         }

@@ -12,8 +12,10 @@ configure_file(
 )
 
 file(GLOB_RECURSE _oscar_demos_test_sources "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
-add_executable(oscar_demos_tests ${_oscar_demos_test_sources})
+file(GLOB_RECURSE _oscar_demos_test_extras "*.cpp")
+add_executable(oscar_demos_tests ${_oscar_demos_test_sources} ${_oscar_demos_test_extras})
 unset(_oscar_demos_test_sources)
+unset(_oscar_demos_test_extras)
 
 set_target_properties(oscar_demos_tests PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(oscar_demos_tests PUBLIC cxx_std_23)
@@ -25,7 +27,6 @@ target_link_libraries(oscar_demos_tests PRIVATE
     oscar
     oscar_demos
     GTest::gtest
-    GTest::gtest_main
 )
 
 if(OSCAR_DISCOVER_TESTS)

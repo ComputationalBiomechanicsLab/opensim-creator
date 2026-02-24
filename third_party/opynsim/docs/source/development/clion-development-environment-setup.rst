@@ -55,13 +55,13 @@ OPynSim's source code is stored in the `OPynSim Git Repository`_, which CLion is
 capable of cloning. The following screenshots describe how to clone the repository
 in CLion:
 
-.. figure:: _static/clion-development-environment-setup/clone-repository-button.jpg
+.. figure:: ../_static/clion-development-environment-setup/clone-repository-button.jpg
     :width: 60%
 
     When opening CLion for the first time, or when no projects are open, this screen
     is shown. Click the highlighted button.
 
-.. figure:: _static/clion-development-environment-setup/enter-repository-details-ui.jpg
+.. figure:: ../_static/clion-development-environment-setup/enter-repository-details-ui.jpg
     :width: 60%
 
     Enter the URL of the OPynSim git repository (https://github/opynsim/opynsim). Optionally,
@@ -80,7 +80,7 @@ As a concrete example, on my Windows machine, which also has `Visual Studio`_
 installed on it, I can select either MinGW (bundled with CLion) or Visual Studio's
 MSVC compiler (bundled with Visual Studio). Either should work:
 
-.. figure:: _static/clion-development-environment-setup/select-toolchain.jpg
+.. figure:: ../_static/clion-development-environment-setup/select-toolchain.jpg
     :width: 60%
 
     When first opening a project in CLion, it will ask you which toolchain

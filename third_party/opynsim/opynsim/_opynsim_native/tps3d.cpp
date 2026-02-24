@@ -65,7 +65,7 @@ namespace
 void opyn::init_tps3d_submodule(nanobind::module_& tps3d_module)
 {
     // class: TPSCoefficients3D
-    nb::class_<TPSCoefficients3D<double>>(tps3d_module, "TPSCoefficients3D")
+    nb::class_<TPSCoefficients3D<double>>(tps3d_module, "TPSCoefficients3D", "Represents Thin-Plate Spline (TPS) coefficients in 3D that were calculated from corresponding pairs of points.")
         .def("__repr__",
             [](const TPSCoefficients3D<double>& coefs) { return repr(coefs); }
         )
@@ -88,7 +88,15 @@ void opyn::init_tps3d_submodule(nanobind::module_& tps3d_module)
         .def("warp_point",
             warp_point,
             nb::arg("point"),
-            "Warps a single 3D point"
+            R"(
+                Warps a single 3D point
+
+                Args:
+                    point: a 3-element ndarray.
+
+                Returns:
+                    A 3-element ndarray that represents the warped point.
+            )"
         );
 
     tps3d_module.def(
@@ -96,6 +104,16 @@ void opyn::init_tps3d_submodule(nanobind::module_& tps3d_module)
         calc_tps_coefficients,
         nb::arg("source_landmarks"),
         nb::arg("destination_landmarks"),
-        "Pairs `source_landmarks` with `destination_landmarks` and uses the pairing to compute the Thin-Plate Spline (coefficients) of the pairing"
+        R"(
+            Returns Thin-Plate Spline (TPS) warping coefficients solved by pairing N
+            "source" points (source_landmarks) with N "destination" points (destination_landmarks).
+
+            Args:
+                source_landmarks: An (N, 3) array of 3D points.
+                destination_landmarks: An (N, 3) array of 3D points.
+
+            Returns:
+                A TPSCoefficients3D object that contains the calculated coefficients.
+        )"
     );
 }

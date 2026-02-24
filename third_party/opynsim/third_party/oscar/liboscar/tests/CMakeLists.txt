@@ -17,6 +17,7 @@ file(GLOB_RECURSE _oscar_test_sources "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cp
 file(GLOB_RECURSE _oscar_test_extras "*.cpp")
 add_executable(oscar_tests ${_oscar_test_sources} ${_oscar_test_extras})
 unset(_oscar_test_sources)
+unset(_oscar_test_extras)
 
 set_target_properties(oscar_tests PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(oscar_tests PUBLIC cxx_std_23)
@@ -27,7 +28,6 @@ target_include_directories(oscar_tests PRIVATE
 target_link_libraries(oscar_tests PRIVATE
     oscar
     GTest::gtest
-    GTest::gtest_main
 )
 
 # tell CMake (+IDEs) how to find all tests
