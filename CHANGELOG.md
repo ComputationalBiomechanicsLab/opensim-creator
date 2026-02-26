@@ -6,6 +6,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The documentation generator (Sphinx) and theme (sphinx_book_theme) were updated
+  and the sidebar was cleaned up a little.
+
 ## [0.7.2] - 2026/02/19
 
 - Added coordinate visualization. Selecting an `OpenSim::Coordinate` in the model

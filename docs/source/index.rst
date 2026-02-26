@@ -18,14 +18,12 @@ Table of Contents
 .. toctree::
    :maxdepth: 2
    :caption: Setup
-   :numbered:
 
    installation
 
 .. toctree::
    :maxdepth: 2
    :caption: Tutorials
-   :numbered:
 
    make-a-pendulum
    make-a-bouncing-block
@@ -40,7 +38,6 @@ Table of Contents
 .. toctree::
    :maxdepth: 2
    :caption: Development
-   :numbered:
 
    building-from-source
    development-environment
