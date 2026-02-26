@@ -74,7 +74,7 @@ bool osc::GloballyInitOpenSim()
 
 void osc::GloballyAddDirectoryToOpenSimGeometrySearchPath(const std::filesystem::path& p)
 {
-    opyn::add_geometry_directory(p);
+    opyn::add_opensim_geometry_directory(p);
 }
 
 const OpenSimCreatorApp& osc::OpenSimCreatorApp::get()

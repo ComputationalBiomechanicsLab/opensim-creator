@@ -19,14 +19,14 @@ namespace opyn
     public:
         static ModelSpecification from_osim_file(const std::filesystem::path&);
 
+        explicit ModelSpecification();
     private:
         class Impl;
         explicit ModelSpecification(osc::CopyOnUpdPtr<Impl>);
 
-    public:
+        friend Model compile_specification(const ModelSpecification&);
         Model compile() const;
 
-    private:
         osc::CopyOnUpdPtr<Impl> impl_;
     };
 }

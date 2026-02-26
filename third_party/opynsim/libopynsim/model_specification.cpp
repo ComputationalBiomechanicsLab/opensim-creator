@@ -6,19 +6,25 @@ using namespace opyn;
 
 class opyn::ModelSpecification::Impl final {
 public:
+    explicit Impl() = default;
+
     explicit Impl(const std::filesystem::path& osim_path) :
         model_{osc::make_cow<OpenSim::Model>(osim_path.string())}
     {}
 
     Model compile() const { return Model{*model_}; }
 private:
-    osc::CopyOnUpdPtr<OpenSim::Model> model_;
+    osc::CopyOnUpdPtr<OpenSim::Model> model_ = osc::make_cow<OpenSim::Model>();
 };
 
 opyn::ModelSpecification opyn::ModelSpecification::from_osim_file(const std::filesystem::path& osim_path)
 {
     return ModelSpecification{osc::make_cow<Impl>(osim_path)};
 }
+
+opyn::ModelSpecification::ModelSpecification() :
+    impl_{osc::make_cow<Impl>()}
+{}
 
 opyn::ModelSpecification::ModelSpecification(osc::CopyOnUpdPtr<Impl> impl) :
     impl_{std::move(impl)}

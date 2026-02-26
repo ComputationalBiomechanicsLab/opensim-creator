@@ -9,3 +9,10 @@
 //
 // absolute path to the resources directory for the opynsim test suite
 #define OPYNSIM_TESTS_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/resources"
+
+#include <filesystem>
+
+namespace opyn
+{
+    inline std::filesystem::path opynsim_tests_resources_directory() { return OPYNSIM_TESTS_RESOURCES_DIR; }
+}

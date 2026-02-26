@@ -18,6 +18,7 @@ __pycache__
 *.ilk
 *.pyd
 *.pdb
+*.pyi
 opynsim/opynsim.egg-info
 
 # runtime: opensim log files

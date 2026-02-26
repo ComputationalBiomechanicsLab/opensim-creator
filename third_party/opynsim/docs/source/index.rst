@@ -9,20 +9,32 @@ Table of Contents
 
 .. toctree::
     :maxdepth: 1
+    :caption: Getting Started
+
+    getting-started/installation
+    getting-started/quickstart
+
+.. toctree::
+    :maxdepth: 1
     :caption: API
 
+    api/configuration
+    api/modelling
+    api/application
+    api/graphics
+    api/ui
     api/tps3d
 
 .. toctree::
    :maxdepth: 2
    :caption: Development
-   :numbered:
 
-   development/clion-development-environment-setup
-   development/visual-studio-development-environment-setup
-   development/contributing-to-simbody-and-opensim
+   development/architecture-overview
+   development/clion-setup
+   development/visual-studio-setup
+   development/contributing-to-opensim
    development/updating-documentation
-   development/building-opynsim-as-a-cpp-library
+   development/opynsim-as-a-cpp-library
 
 .. toctree::
     :caption: Other Links

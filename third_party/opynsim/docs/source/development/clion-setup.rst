@@ -1,5 +1,5 @@
-CLion Development Environment Setup
-===================================
+CLion Setup
+===========
 
 .. note::
 

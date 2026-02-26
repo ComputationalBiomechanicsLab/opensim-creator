@@ -1,5 +1,5 @@
-Visual Studio Development Environment Setup
-===========================================
+Visual Studio Setup
+===================
 
 .. note::
 

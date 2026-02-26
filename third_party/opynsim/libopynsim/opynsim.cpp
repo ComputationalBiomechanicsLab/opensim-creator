@@ -201,7 +201,7 @@ void opyn::set_log_level(osc::LogLevel log_level)
     osc::global_default_logger()->set_level(log_level);
 }
 
-void opyn::add_geometry_directory(const std::filesystem::path& directory)
+void opyn::add_opensim_geometry_directory(const std::filesystem::path& directory)
 {
     OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(directory.string());
     osc::log_info("added geometry search path entry: %s", directory.string().c_str());
@@ -236,4 +236,9 @@ bool opyn::init()
 ModelSpecification opyn::import_osim_file(const std::filesystem::path& osim_file_path)
 {
     return ModelSpecification::from_osim_file(osim_file_path);
+}
+
+Model opyn::compile_specification(const ModelSpecification& model_specification)
+{
+    return model_specification.compile();
 }

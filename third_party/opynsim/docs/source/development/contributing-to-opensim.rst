@@ -1,5 +1,5 @@
-Contributing to Simbody and OpenSim
-===================================
+Contributing to OpenSim
+=======================
 
 TODO: explanation of the PR process, why it's a good idea to upstream
 improvements to the central projects, rough timelines, things to keep
