@@ -1,6 +1,3 @@
-.. _buildingfromsource:
-
-
 Building From Source
 ====================
 

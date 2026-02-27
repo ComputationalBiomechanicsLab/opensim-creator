@@ -69,7 +69,7 @@ Installing on Ubuntu (22.04 or newer)
 Building from Source
 --------------------
 
-See :ref:`buildingfromsource` for an explanation of how to do this.
+See :doc:`building-from-source` for an explanation of how to do this.
 
 .. _GitHub Releases Page: https://github.com/ComputationalBiomechanicsLab/opensim-creator/releases
 .. _Apple Gatekeeper Documentation: https://support.apple.com/en-us/102445
