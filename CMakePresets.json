@@ -82,7 +82,8 @@
                 "OPYN_BUILD_TESTING": "ON",
                 "OPYN_BUILD_PYTHON_TESTING": "OFF",
                 "OPYN_VENV": "${sourceDir}/.venv",
-                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
+                "OPYN_GENERATE_STUBS": "OFF"
             }
         },
         {
