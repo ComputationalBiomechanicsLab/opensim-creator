@@ -15,4 +15,4 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   OpenGL 3.3 is loaded before using any function pointers from OpenGL 3.3. This
   affects things like KVM-based CI servers which, previously, were silently
   failing with segfaults.
-
+- Updated ImGui to v1.92.6

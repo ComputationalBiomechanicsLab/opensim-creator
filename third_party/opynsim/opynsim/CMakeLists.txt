@@ -1,10 +1,11 @@
 include(CMakeDependentOption)
 
-option(BUILD_TESTING               "Build test suites"                    ON)
-option(OPYN_BUILD_TESTING          "Build test suites (OPynSim-specific)" ${BUILD_TESTING})
-option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites"             ${OPYN_BUILD_TESTING})
-option(OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target"    OFF)
-option(OPYN_STABLE_ABI             "Perform a python stable ABI build"    ON)
+option(BUILD_TESTING               "Build test suites"                                ON)
+option(OPYN_BUILD_TESTING          "Build test suites (OPynSim-specific)"             ${BUILD_TESTING})
+option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites"                         ${OPYN_BUILD_TESTING})
+option(OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target"                OFF)
+option(OPYN_STABLE_ABI             "Perform a python stable ABI build"                ON)
+option(OPYN_GENERATE_STUBS         "Generate Python stubs (.pyi) for native bindings" ON)
 
 # Figure out required python components
 set(OPYN_REQUIRED_PYTHON_COMPONENTS Interpreter Development.Module)
@@ -117,20 +118,22 @@ if(TRUE)
     # See:
     # - https://nanobind.readthedocs.io/en/latest/typing.html
     # - https://nanobind.readthedocs.io/en/latest/api_cmake.html#command:nanobind_add_stub
-    nanobind_add_stub(
-        _opynsim_native_development_stubs
-        MODULE _opynsim_native
-        PYTHON_PATH $<TARGET_FILE_DIR:_opynsim_native>
-        DEPENDS _opynsim_native
-        MARKER_FILE py.typed
+    if(OPYN_GENERATE_STUBS)
+        nanobind_add_stub(
+            _opynsim_native_development_stubs
+            MODULE _opynsim_native
+            PYTHON_PATH $<TARGET_FILE_DIR:_opynsim_native>
+            DEPENDS _opynsim_native
+            MARKER_FILE py.typed
 
-        RECURSIVE
-        OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/opynsim/
-        OUTPUT
-            _opynsim_native/__init__.pyi
-            _opynsim_native/tps3d.pyi
-            _opynsim_native/ui.pyi
-    )
+            RECURSIVE
+            OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/opynsim/
+            OUTPUT
+                _opynsim_native/__init__.pyi
+                _opynsim_native/tps3d.pyi
+                _opynsim_native/ui.pyi
+        )
+    endif()
 endif()
 
 # Testing
