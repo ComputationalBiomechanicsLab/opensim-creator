@@ -128,10 +128,8 @@ struct type_data {
     };
     void (*set_self_py)(void *, PyObject *) noexcept;
     bool (*keep_shared_from_this_alive)(PyObject *) noexcept;
-#if defined(Py_LIMITED_API)
     uint32_t dictoffset;
     uint32_t weaklistoffset;
-#endif
 };
 
 /// Information about a type that is only relevant when it is being created
@@ -184,6 +182,10 @@ NB_INLINE void type_extra_apply(type_init_data & t, is_generic) {
 NB_INLINE void type_extra_apply(type_init_data & t, const sig &s) {
     t.flags |= (uint32_t) type_flags::has_signature;
     t.name = s.value;
+}
+
+NB_INLINE void type_extra_apply(type_init_data &, never_destruct) {
+    // intentionally empty
 }
 
 template <typename T>
@@ -588,7 +590,9 @@ public:
             }
         }
 
-        if constexpr (std::is_destructible_v<T>) {
+        constexpr bool has_never_destruct = (std::is_same_v<Extra, never_destruct> || ...);
+
+        if constexpr (std::is_destructible_v<T> && !has_never_destruct) {
             d.flags |= (uint32_t) detail::type_flags::is_destructible;
 
             if constexpr (!std::is_trivially_destructible_v<T>) {

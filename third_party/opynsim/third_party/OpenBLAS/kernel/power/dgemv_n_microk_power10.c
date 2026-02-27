@@ -25,7 +25,49 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
+#define HAVE_KERNEL_4x2 1
+#define HAVE_KERNEL_4x1 1
 #define HAVE_KERNEL_4x4 1
+
+static void dgemv_kernel_4x2(BLASLONG n, FLOAT *a0, FLOAT *a1, FLOAT *xo, FLOAT *y, FLOAT alpha)
+{
+    FLOAT x0,x1;
+    x0 = xo[0] * alpha;
+    x1 = xo[1] * alpha;
+    __vector double   v_x0 = {x0,x0};
+    __vector double   v_x1 = {x1,x1};
+    __vector double* v_y =(__vector double*)y;
+    __vector double* va0 = (__vector double*)a0;
+    __vector double* va1 = (__vector double*)a1;
+         for (int i=0; i< n/2; i+=2)
+        {
+
+                 v_y[i]+= va0[i]   * v_x0 + va1[i]   * v_x1;
+                 v_y[i+1]+= va0[i+1] * v_x0 + va1[i+1] * v_x1;
+
+        }
+
+
+}
+
+static void dgemv_kernel_4x1(BLASLONG n, FLOAT *a0, FLOAT *xo, FLOAT *y, FLOAT alpha)
+{
+    FLOAT x0;
+    x0 = xo[0] * alpha;
+
+    __vector double   v_x0 = {x0,x0};
+    __vector double* v_y =(__vector double*)y;
+    __vector double* va0 = (__vector double*)a0;
+    for (int i=0; i< n/2; i+=2)
+    {
+
+                 v_y[i]+= va0[i]   * v_x0 ;
+                 v_y[i+1]+= va0[i+1] * v_x0 ;
+
+     }
+
+}
+
 
 static void dgemv_kernel_4x4 (long n, double *ap, long lda, double *x, double *y, double alpha)
 {
@@ -246,7 +288,7 @@ static void dgemv_kernel_4x4 (long n, double *ap, long lda, double *x, double *y
      "#n=%1 ap=%8=%12 lda=%13 x=%7=%10 y=%0=%2 alpha=%9 o16=%11\n"
      "#a0=%3 a1=%4 a2=%5 a3=%6"
      :
-       "+m" (*y),
+       "+m" (*(double (*)[n]) y),
        "+r" (n),	// 1
        "+b" (y),	// 2
        "=b" (a0),	// 3
@@ -254,8 +296,8 @@ static void dgemv_kernel_4x4 (long n, double *ap, long lda, double *x, double *y
        "=&b" (a2),	// 5
        "=&b" (a3)	// 6
      :
-       "m" (*x),
-       "m" (*ap),
+       "m" (*(double (*)[4]) x),
+       "m" (*(double (*)[4*n]) ap),
        "d" (alpha),	// 9
        "r" (x),		// 10
        "b" (16),	// 11
@@ -452,7 +494,7 @@ static void dgemv_kernel_4x8 (long n, double *ap, long lda, double *x, double *y
        "stxvp		36, 0( %2)	\n\t"	// y0, y1
 
      :
-       "+m" (*y),
+       "+m" (*(double (*)[n]) y),
        "+r" (n),	// 1
        "+b" (y),	// 2
        "=b" (a0),	// 3
@@ -465,8 +507,8 @@ static void dgemv_kernel_4x8 (long n, double *ap, long lda, double *x, double *y
        "=&b" (a7),	// 10
        "=b" (tmp)
      :
-       "m" (*x),
-       "m" (*ap),
+       "m" (*(double (*)[4]) x),
+       "m" (*(double (*)[4]) ap),
        "d" (alpha),	// 14
        "r" (x),		// 15
        "3" (ap),	// 16

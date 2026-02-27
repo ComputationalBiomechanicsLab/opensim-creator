@@ -19,6 +19,8 @@ NB_MAKE_OPAQUE(std::vector<float, std::allocator<float>>)
 
 namespace nb = nanobind;
 
+static_assert(nb::detail::has_arg_defaults_v<std::optional<bool>>);
+
 static int default_constructed = 0, value_constructed = 0, copy_constructed = 0,
            move_constructed = 0, copy_assigned = 0, move_assigned = 0,
            destructed = 0;
@@ -69,9 +71,7 @@ struct FuncWrapper {
 };
 
 int funcwrapper_tp_traverse(PyObject *self, visitproc visit, void *arg) {
-    #if PY_VERSION_HEX >= 0x03090000
-        Py_VISIT(Py_TYPE(self));
-    #endif
+    Py_VISIT(Py_TYPE(self));
 
     if (!nb::inst_ready(self)) {
         return 0;
@@ -283,6 +283,12 @@ NB_MODULE(test_stl_ext, m) {
     m.def("optional_unbound_type", [](std::optional<int> &x) { return x; }, nb::arg("x") = nb::none());
     m.def("optional_unbound_type_with_nullopt_as_default", [](std::optional<int> &x) { return x; }, nb::arg("x") = std::nullopt);
     m.def("optional_non_assignable", [](std::optional<NonAssignable> &x) { return x; });
+
+    // Regression test: std::optional<> with lossy implicit conversion on a
+    // sibling argument and no explicit nb::arg annotations (issue #1293)
+    m.def("optional_implicit_convert", [](float f, std::optional<int> o) {
+        return (double) f + o.value_or(0);
+    });
 
     // ----- test43-test50 ------
     m.def("variant_copyable", [](std::variant<Copyable, int> &) {});

@@ -4,6 +4,10 @@ if (NOT TARGET Python::Module)
   message(FATAL_ERROR "You must invoke 'find_package(Python COMPONENTS Interpreter Development REQUIRED)' prior to including nanobind.")
 endif()
 
+if (Python_VERSION VERSION_LESS "3.9")
+  message(FATAL_ERROR "nanobind requires Python 3.9 or newer (found Python ${Python_VERSION}).")
+endif()
+
 # Determine the right suffix for ordinary and stable ABI extensions.
 
 # We always need to know the extension
@@ -49,6 +53,14 @@ endif()
 # Extract Python version and extensions (e.g. free-threaded build)
 string(REGEX REPLACE "[^-]*-([^-]*)-.*" "\\1" NB_ABI "${NB_SOABI}")
 
+# Determine whether the interpreter was built without the GIL using the ABI tag
+# (free-threaded builds encode this using a trailing 't').
+set(NB_FREE_THREADED 0)
+
+if(NB_ABI MATCHES "[0-9]t")
+  set(NB_FREE_THREADED 1)
+endif()
+
 # If either suffix is missing, call Python to compute it
 if(NOT DEFINED NB_SUFFIX OR NOT DEFINED NB_SUFFIX_S)
   # Query Python directly to get the right suffix.
@@ -79,9 +91,10 @@ if(NOT DEFINED NB_SUFFIX OR NOT DEFINED NB_SUFFIX_S)
 endif()
 
 # Stash these for later use
-set(NB_SUFFIX   ${NB_SUFFIX}   CACHE INTERNAL "")
-set(NB_SUFFIX_S ${NB_SUFFIX_S} CACHE INTERNAL "")
-set(NB_ABI      ${NB_ABI}      CACHE INTERNAL "")
+set(NB_SUFFIX         ${NB_SUFFIX}         CACHE INTERNAL "")
+set(NB_SUFFIX_S       ${NB_SUFFIX_S}       CACHE INTERNAL "")
+set(NB_ABI            ${NB_ABI}            CACHE INTERNAL "")
+set(NB_FREE_THREADED  ${NB_FREE_THREADED} CACHE INTERNAL "")
 
 get_filename_component(NB_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 get_filename_component(NB_DIR "${NB_DIR}" PATH)
@@ -189,12 +202,15 @@ function (nanobind_build_library TARGET_NAME)
     ${NB_DIR}/src/nb_ndarray.cpp
     ${NB_DIR}/src/nb_static_property.cpp
     ${NB_DIR}/src/nb_ft.h
-    ${NB_DIR}/src/nb_ft.cpp
     ${NB_DIR}/src/common.cpp
     ${NB_DIR}/src/error.cpp
     ${NB_DIR}/src/trampoline.cpp
     ${NB_DIR}/src/implicit.cpp
   )
+
+  if (NB_FREE_THREADED)
+    target_sources(${TARGET_NAME} PRIVATE ${NB_DIR}/src/nb_ft.cpp)
+  endif()
 
   if (TARGET_TYPE STREQUAL "SHARED")
     nanobind_link_options(${TARGET_NAME})
@@ -246,15 +262,19 @@ function (nanobind_build_library TARGET_NAME)
   # However, if the directory _does_ exist, then the user is free to choose
   # whether nanobind uses them (based on `NB_USE_SUBMODULE_DEPS`), with a
   # preference to choose them if `NB_USE_SUBMODULE_DEPS` is not defined
-  if (NOT IS_DIRECTORY ${NB_DIR}/ext/robin_map/include OR
-      (DEFINED NB_USE_SUBMODULE_DEPS AND NOT NB_USE_SUBMODULE_DEPS))
-    include(CMakeFindDependencyMacro)
-    find_dependency(tsl-robin-map)
-    target_link_libraries(${TARGET_NAME} PRIVATE tsl::robin_map)
-  else()
-    target_include_directories(${TARGET_NAME} PRIVATE
-      ${NB_DIR}/ext/robin_map/include)
+  if(IS_DIRECTORY ${NB_DIR}/ext/robin_map/include
+       AND (NOT DEFINED NB_USE_SUBMODULE_DEPS OR NB_USE_SUBMODULE_DEPS)
+       AND NOT TARGET tsl::robin_map)
+    add_library(tsl::robin_map INTERFACE IMPORTED)
+    set_target_properties(tsl::robin_map PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES ${NB_DIR}/ext/robin_map/include)
   endif()
+
+  if(NOT TARGET tsl::robin_map)
+    include(CMakeFindDependencyMacro)
+    find_dependency(tsl-robin-map CONFIG REQUIRED)
+  endif()
+  target_link_libraries(${TARGET_NAME} PRIVATE tsl::robin_map)
 
   target_include_directories(${TARGET_NAME} ${AS_SYSINCLUDE} PUBLIC
     ${Python_INCLUDE_DIRS}
@@ -352,7 +372,7 @@ function(nanobind_add_module name)
     set(ARG_STABLE_ABI FALSE)
   endif()
 
-  if (NB_ABI MATCHES "t")
+  if (NB_ABI MATCHES "[0-9]t")
     # Free-threaded Python interpreters don't support building a nanobind
     # module that uses the stable ABI.
     set(ARG_STABLE_ABI FALSE)
@@ -480,13 +500,15 @@ function(nanobind_sanitizer_preload_env env_var)
         get_target_property(options ${tgt} ${prop})
         if(options)
           foreach(opt ${options})
-            if(opt MATCHES "-fsanitize=([^ ]+)")
+            if(opt MATCHES "-fsanitize=([^ >]+)")
               list(APPEND san_flags "${CMAKE_MATCH_1}")
             endif()
           endforeach()
         endif()
       endforeach()
     endforeach()
+
+    list(REMOVE_DUPLICATES san_flags)
 
     # Parse sanitizer flags
     foreach(flag ${san_flags})
@@ -497,6 +519,8 @@ function(nanobind_sanitizer_preload_env env_var)
           list(APPEND detected_san "asan")
         elseif(san MATCHES "^(thread|tsan)$")
           list(APPEND detected_san "tsan")
+        elseif(san MATCHES "^(realtime)$")
+          list(APPEND detected_san "rtsan")
         elseif(san MATCHES "^(undefined|ubsan)$")
           list(APPEND detected_san "ubsan")
         endif()
@@ -505,7 +529,6 @@ function(nanobind_sanitizer_preload_env env_var)
   endforeach()
 
   if (detected_san)
-    list(REMOVE_DUPLICATES detected_san)
     set(libs "")
 
     foreach(san ${detected_san})
@@ -590,7 +613,7 @@ endfunction()
 # ---------------------------------------------------------------------------
 
 function (nanobind_add_stub name)
-  cmake_parse_arguments(PARSE_ARGV 1 ARG "VERBOSE;INCLUDE_PRIVATE;EXCLUDE_DOCSTRINGS;INSTALL_TIME;RECURSIVE;EXCLUDE_FROM_ALL" "MODULE;COMPONENT;PATTERN_FILE;OUTPUT_PATH" "PYTHON_PATH;DEPENDS;MARKER_FILE;OUTPUT")
+  cmake_parse_arguments(PARSE_ARGV 1 ARG "VERBOSE;INCLUDE_PRIVATE;EXCLUDE_DOCSTRINGS;EXCLUDE_VALUES;INSTALL_TIME;RECURSIVE;EXCLUDE_FROM_ALL" "MODULE;COMPONENT;PATTERN_FILE;OUTPUT_PATH" "PYTHON_PATH;DEPENDS;MARKER_FILE;OUTPUT")
 
   if (EXISTS ${NB_DIR}/src/stubgen.py)
     set(NB_STUBGEN "${NB_DIR}/src/stubgen.py")
@@ -612,6 +635,10 @@ function (nanobind_add_stub name)
 
   if (ARG_EXCLUDE_DOCSTRINGS)
     list(APPEND NB_STUBGEN_ARGS -D)
+  endif()
+
+  if (ARG_EXCLUDE_VALUES)
+    list(APPEND NB_STUBGEN_ARGS --exclude-values)
   endif()
 
   if (ARG_RECURSIVE)

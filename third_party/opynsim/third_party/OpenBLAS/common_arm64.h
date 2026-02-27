@@ -114,9 +114,9 @@ static __inline BLASULONG rpcc(void){
   #else
   BLASULONG ret = 0;
   blasint shift;
- 
-  __asm__ __volatile__ ("isb; mrs %0,cntvct_el0":"=r"(ret));
-  __asm__ __volatile__ ("mrs %0,cntfrq_el0; clz %w0, %w0":"=&r"(shift));
+
+  __asm__ __volatile__ ("isb\n\tmrs %0,cntvct_el0":"=r"(ret));
+  __asm__ __volatile__ ("mrs %x0,cntfrq_el0\n\tclz %w0, %w0":"=&r"(shift));
 
   return ret << shift;
   #endif

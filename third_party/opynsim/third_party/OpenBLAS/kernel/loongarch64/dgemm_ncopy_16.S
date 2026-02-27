@@ -113,15 +113,15 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     SDARG      $r29, $sp,  0x30
     SDARG      $r30, $sp,  0x38
     SDARG      $r31, $sp,  0x40
-    ST         $f23, $sp,  0x48
-    ST         $f24, $sp,  0x50
-    ST         $f25, $sp,  0x58
-    ST         $f26, $sp,  0x60
-    ST         $f27, $sp,  0x68
-    ST         $f28, $sp,  0x70
-    ST         $f29, $sp,  0x78
-    ST         $f30, $sp,  0x80
-    ST         $f31, $sp,  0x88
+    fst.d      $f23, $sp,  0x48
+    fst.d      $f24, $sp,  0x50
+    fst.d      $f25, $sp,  0x58
+    fst.d      $f26, $sp,  0x60
+    fst.d      $f27, $sp,  0x68
+    fst.d      $f28, $sp,  0x70
+    fst.d      $f29, $sp,  0x78
+    fst.d      $f30, $sp,  0x80
+    fst.d      $f31, $sp,  0x88
 
     move       TD,   DST
     move       TS,   SRC
@@ -678,15 +678,15 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     LDARG      $r29, $sp,  0x30
     LDARG      $r30, $sp,  0x38
     LDARG      $r31, $sp,  0x40
-    LD         $f23, $sp,  0x48
-    LD         $f24, $sp,  0x50
-    LD         $f25, $sp,  0x58
-    LD         $f26, $sp,  0x60
-    LD         $f27, $sp,  0x68
-    LD         $f28, $sp,  0x70
-    LD         $f29, $sp,  0x78
-    LD         $f30, $sp,  0x80
-    LD         $f31, $sp,  0x88
+    fld.d      $f23, $sp,  0x48
+    fld.d      $f24, $sp,  0x50
+    fld.d      $f25, $sp,  0x58
+    fld.d      $f26, $sp,  0x60
+    fld.d      $f27, $sp,  0x68
+    fld.d      $f28, $sp,  0x70
+    fld.d      $f29, $sp,  0x78
+    fld.d      $f30, $sp,  0x80
+    fld.d      $f31, $sp,  0x88
     addi.d     $sp,  $sp,  0x90
     jirl       $r0,  $r1,  0x00
 

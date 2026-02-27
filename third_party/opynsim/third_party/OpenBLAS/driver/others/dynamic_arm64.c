@@ -128,6 +128,12 @@ extern gotoblas_t gotoblas_ARMV9SME;
 #else
 #define gotoblas_ARMV9SME gotoblas_ARMV8
 #endif
+#ifdef DYN_VORTEXM4
+extern gotoblas_t gotoblas_VORTEXM4;
+#else
+#error "dont have vortexm4"
+#define gotoblas_VORTEXM4 gotoblas_ARMV8
+#endif
 #ifdef DYN_CORTEXA55
 extern gotoblas_t  gotoblas_CORTEXA55;
 #else
@@ -155,17 +161,26 @@ extern gotoblas_t  gotoblas_NEOVERSEV1;
 extern gotoblas_t  gotoblas_NEOVERSEN2;
 extern gotoblas_t  gotoblas_ARMV8SVE;
 extern gotoblas_t  gotoblas_A64FX;
-#ifndef NO_SME
-extern gotoblas_t  gotoblas_ARMV9SME;
-#else
-#define gotoblas_ARMV9SME gotoblas_ARMV8SVE
-#endif
 #else
 #define gotoblas_NEOVERSEV1 gotoblas_ARMV8
 #define gotoblas_NEOVERSEN2 gotoblas_ARMV8
 #define gotoblas_ARMV8SVE   gotoblas_ARMV8
 #define gotoblas_A64FX      gotoblas_ARMV8
-#define gotoblas_ARMV9SME   gotoblas_ARMV8
+#endif
+#ifndef NO_SME
+extern gotoblas_t  gotoblas_ARMV9SME;
+#if defined (__clang__) && defined(OS_DARWIN)
+extern gotoblas_t  gotoblas_VORTEXM4;
+#else
+#define gotoblas_VORTEXM4 gotoblas_NEOVERSEN1
+#endif
+#else
+#ifndef NO_SVE
+#define gotoblas_ARMV9SME gotoblas_ARMV8SVE
+#else
+#define gotoblas_ARMV9SME gotoblas_NEOVERSEN1
+#endif
+#define gotoblas_VORTEXM4 gotoblas_NEOVERSEN1
 #endif
 
 extern gotoblas_t  gotoblas_THUNDERX3T110;
@@ -176,7 +191,7 @@ extern void openblas_warning(int verbose, const char * msg);
 #define FALLBACK_VERBOSE 1
 #define NEOVERSEN1_FALLBACK "OpenBLAS : Your OS does not support SVE instructions. OpenBLAS is using Neoverse N1 kernels as a fallback, which may give poorer performance.\n"
 
-#define NUM_CORETYPES   19
+#define NUM_CORETYPES   20
 
 /*
  * In case asm/hwcap.h is outdated on the build system, make sure
@@ -216,6 +231,7 @@ static char *corename[] = {
   "armv8sve",
   "a64fx",
   "armv9sme",
+  "vortexm4",
   "unknown"
 };
 
@@ -239,6 +255,7 @@ char *gotoblas_corename(void) {
   if (gotoblas == &gotoblas_ARMV8SVE)     return corename[16];
   if (gotoblas == &gotoblas_A64FX)        return corename[17];
   if (gotoblas == &gotoblas_ARMV9SME)     return corename[18];
+  if (gotoblas == &gotoblas_VORTEXM4)     return corename[19];
   return corename[NUM_CORETYPES];
 }
 
@@ -277,6 +294,7 @@ static gotoblas_t *force_coretype(char *coretype) {
     case 16: return (&gotoblas_ARMV8SVE);
     case 17: return (&gotoblas_A64FX);
     case 18: return (&gotoblas_ARMV9SME);
+    case 19: return (&gotoblas_VORTEXM4);
   }
   snprintf(message, 128, "Core not found: %s\n", coretype);
   openblas_warning(1, message);
@@ -288,11 +306,11 @@ static gotoblas_t *get_coretype(void) {
   char coremsg[128];
 
 #if defined (OS_DARWIN)
-//future	#if !defined(NO_SME)
-//  		if (support_sme1()) {
-//    			return &gotoblas_ARMV9SME;
-//		  }
-//		#endif
+#if !defined(NO_SME)
+  if (support_sme1()) {
+   	return &gotoblas_VORTEXM4;
+  }
+#endif
   return &gotoblas_NEOVERSEN1;
 #endif
 	
@@ -463,7 +481,7 @@ static gotoblas_t *get_coretype(void) {
       }
       break;
     case 0x61: // Apple
-//future	if (support_sme1()) return &gotoblas_ARMV9SME;
+	if (support_sme1()) return &gotoblas_VORTEXM4;
 	return &gotoblas_NEOVERSEN1;
       break;
     default:

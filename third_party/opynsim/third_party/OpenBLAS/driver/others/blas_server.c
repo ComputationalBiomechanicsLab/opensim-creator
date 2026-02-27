@@ -119,11 +119,11 @@ static void * blas_thread_buffer[MAX_CPU_NUMBER];
 
 /* Local Variables */
 #if   defined(USE_PTHREAD_LOCK)
-static pthread_mutex_t  server_lock    = PTHREAD_MUTEX_INITIALIZER;
+volatile static pthread_mutex_t  server_lock    = PTHREAD_MUTEX_INITIALIZER;
 #elif defined(USE_PTHREAD_SPINLOCK)
-static pthread_spinlock_t  server_lock = 0;
+volatile static pthread_spinlock_t  server_lock = 0;
 #else
-static unsigned long server_lock       = 0;
+volatile static unsigned long server_lock       = 0;
 #endif
 
 #define THREAD_STATUS_SLEEP		2
@@ -637,9 +637,7 @@ int exec_blas_async(BLASLONG pos, blas_queue_t *queue){
 
 #ifdef SMP_SERVER
   // Handle lazy re-init of the thread-pool after a POSIX fork
-  LOCK_COMMAND(&server_lock);
   if (unlikely(blas_server_avail == 0)) blas_thread_init();
-  UNLOCK_COMMAND(&server_lock);
 #endif
   BLASLONG i = 0;
   blas_queue_t *current = queue;

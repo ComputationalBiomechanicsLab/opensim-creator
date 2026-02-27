@@ -21,23 +21,13 @@
 NAMESPACE_BEGIN(NB_NAMESPACE)
 NAMESPACE_BEGIN(detail)
 
-static PyObject **nb_dict_ptr(PyObject *self) {
-    PyTypeObject *tp = Py_TYPE(self);
-#if defined(Py_LIMITED_API)
+static PyObject **nb_dict_ptr(PyObject *self, PyTypeObject *tp) {
     Py_ssize_t dictoffset = nb_type_data(tp)->dictoffset;
-#else
-    Py_ssize_t dictoffset = tp->tp_dictoffset;
-#endif
     return dictoffset ? (PyObject **) ((uint8_t *) self + dictoffset) : nullptr;
 }
 
-static PyObject **nb_weaklist_ptr(PyObject *self) {
-    PyTypeObject *tp = Py_TYPE(self);
-#if defined(Py_LIMITED_API)
+static PyObject **nb_weaklist_ptr(PyObject *self, PyTypeObject *tp) {
     Py_ssize_t weaklistoffset = nb_type_data(tp)->weaklistoffset;
-#else
-    Py_ssize_t weaklistoffset = tp->tp_weaklistoffset;
-#endif
     return weaklistoffset ? (PyObject **) ((uint8_t *) self + weaklistoffset) : nullptr;
 }
 
@@ -47,19 +37,19 @@ static PyGetSetDef inst_getset[] = {
 };
 
 static int inst_clear(PyObject *self) {
-    PyObject **dict = nb_dict_ptr(self);
+    PyTypeObject *tp = Py_TYPE(self);
+    PyObject **dict = nb_dict_ptr(self, tp);
     if (dict)
         Py_CLEAR(*dict);
     return 0;
 }
 
 static int inst_traverse(PyObject *self, visitproc visit, void *arg) {
-    PyObject **dict = nb_dict_ptr(self);
+    PyTypeObject *tp = Py_TYPE(self);
+    PyObject **dict = nb_dict_ptr(self, tp);
     if (dict)
         Py_VISIT(*dict);
-#if PY_VERSION_HEX >= 0x03090000
-    Py_VISIT(Py_TYPE(self));
-#endif
+    Py_VISIT(tp);
     return 0;
 }
 
@@ -88,7 +78,7 @@ PyObject *inst_new_int(PyTypeObject *tp, PyObject * /* args */,
         uintptr_t payload = (uintptr_t) (self + 1);
 
         if (NB_UNLIKELY(align > sizeof(void *)))
-            payload = (payload + align - 1) / align * align;
+            payload = (payload + align - 1) & ~(uintptr_t(align) - 1);
 
         self->offset = (int32_t) ((intptr_t) payload - (intptr_t) self);
         self->direct = 1;
@@ -227,16 +217,16 @@ static void inst_dealloc(PyObject *self) {
         PyObject_GC_UnTrack(self);
 
         if (t->flags & (uint32_t) type_flags::has_dynamic_attr) {
-            PyObject **dict = nb_dict_ptr(self);
+            PyObject **dict = nb_dict_ptr(self, tp);
             if (dict)
                 Py_CLEAR(*dict);
         }
     }
 
     if (t->flags & (uint32_t) type_flags::is_weak_referenceable &&
-        nb_weaklist_ptr(self) != nullptr) {
+        nb_weaklist_ptr(self, tp) != nullptr) {
 #if defined(PYPY_VERSION)
-        PyObject **weaklist = nb_weaklist_ptr(self);
+        PyObject **weaklist = nb_weaklist_ptr(self, tp);
         if (weaklist)
             Py_CLEAR(*weaklist);
 #else
@@ -355,9 +345,9 @@ type_data *nb_type_c2p(nb_internals *internals_,
     nb_type_map_fast &type_c2p_fast = internals_->type_c2p_fast;
 #endif
 
-    nb_type_map_fast::iterator it_fast = type_c2p_fast.find(type);
+    nb_type_map_fast::iterator it_fast = type_c2p_fast.find((void *) type);
     if (it_fast != type_c2p_fast.end())
-        return it_fast->second;
+        return (type_data *) it_fast->second;
 
     lock_internals guard(internals_);
     nb_type_map_slow &type_c2p_slow = internals_->type_c2p_slow;
@@ -377,7 +367,7 @@ type_data *nb_type_c2p(nb_internals *internals_,
         d->alias_chain = chain;
 #endif
 
-        type_c2p_fast[type] = d;
+        type_c2p_fast[(void *) type] = d;
         return d;
     }
 
@@ -413,14 +403,14 @@ void nb_type_unregister(type_data *t) noexcept {
     bool fail = n_del_slow != 1;
 #else
     nb_type_map_fast &type_c2p_fast = internals_->type_c2p_fast;
-    size_t n_del_fast = type_c2p_fast.erase(t->type);
+    size_t n_del_fast = type_c2p_fast.erase((void *) t->type);
 
     bool fail = n_del_fast != 1 || n_del_slow != 1;
     if (!fail) {
         nb_alias_chain *cur = t->alias_chain;
         while (cur) {
             nb_alias_chain *next = cur->next;
-            n_del_fast = type_c2p_fast.erase(cur->value);
+            n_del_fast = type_c2p_fast.erase((void *) cur->value);
             if (n_del_fast != 1) {
                 fail = true;
                 break;
@@ -447,8 +437,12 @@ static void nb_type_dealloc(PyObject *o) {
         PyMem_Free(t->implicit.py);
     }
 
+    bool initialized = t->name != nullptr;
     free((char *) t->name);
     NB_SLOT(PyType_Type, tp_dealloc)(o);
+
+    if (initialized)
+        internals_dec_ref();
 }
 
 /// Called when a C++ type is extended from within Python
@@ -502,6 +496,8 @@ static int nb_type_init(PyObject *self, PyObject *args, PyObject *kwds) {
 #else
     ((PyTypeObject *) self)->tp_vectorcall = nullptr;
 #endif
+
+    internals_inc_ref();
 
     return 0;
 }
@@ -598,11 +594,6 @@ template <size_t I1, size_t I2, size_t Offset1, size_t Offset2> nb_slot constexp
     Ei<i1, Py_##p2##_##name,                           \
        offsetof(PyHeapTypeObject, p1),                 \
        offsetof(PyHeapTypeObject, p1.p2##_##name)>()
-
-#if PY_VERSION_HEX < 0x03090000
-#  define Py_bf_getbuffer 1
-#  define Py_bf_releasebuffer 2
-#endif
 
 static constexpr nb_slot type_slots[] {
     E(1,  as_buffer, bf, getbuffer),
@@ -718,23 +709,32 @@ static PyObject *nb_type_from_metaclass(PyTypeObject *meta, PyObject *mod,
        is why nanobind can only target the stable ABI on version 3.12+. */
 
     const char *name = strrchr(spec->name, '.');
-    if (name)
+    PyObject *modname_o = nullptr;
+    if (name) {
+        modname_o = PyUnicode_FromStringAndSize(spec->name, name - spec->name);
+        if (!modname_o)
+            return nullptr;
         name++;
-    else
+    } else {
         name = spec->name;
+    }
 
     PyObject *name_o = PyUnicode_InternFromString(name);
-    if (!name_o)
+    if (!name_o) {
+        Py_XDECREF(modname_o);
         return nullptr;
+    }
 
     const char *name_cstr = PyUnicode_AsUTF8AndSize(name_o, nullptr);
     if (!name_cstr) {
+        Py_XDECREF(modname_o);
         Py_DECREF(name_o);
         return nullptr;
     }
 
     PyHeapTypeObject *ht = (PyHeapTypeObject *) PyType_GenericAlloc(meta, 0);
     if (!ht) {
+        Py_XDECREF(modname_o);
         Py_DECREF(name_o);
         return nullptr;
     }
@@ -743,14 +743,10 @@ static PyObject *nb_type_from_metaclass(PyTypeObject *meta, PyObject *mod,
     ht->ht_qualname = name_o;
     Py_INCREF(name_o);
 
-#if PY_VERSION_HEX >= 0x03090000
     if (mod) {
         Py_INCREF(mod);
         ht->ht_module = mod;
     }
-#else
-    (void) mod;
-#endif
 
     PyTypeObject *tp = &ht->ht_type;
     tp->tp_name = name_cstr;
@@ -828,6 +824,14 @@ static PyObject *nb_type_from_metaclass(PyTypeObject *meta, PyObject *mod,
         }
     }
 
+    if (modname_o && !fail) {
+        tp->tp_dict = PyDict_New();
+        if (!tp->tp_dict ||
+            PyDict_SetItemString(tp->tp_dict, "__module__", modname_o) < 0)
+            fail = true;
+    }
+    Py_XDECREF(modname_o);
+
     if (fail || PyType_Ready(tp) != 0) {
         Py_DECREF(tp);
         return nullptr;
@@ -838,6 +842,92 @@ static PyObject *nb_type_from_metaclass(PyTypeObject *meta, PyObject *mod,
 }
 
 extern int nb_type_setattro(PyObject* obj, PyObject* name, PyObject* value);
+
+// Implements the vector call protocol directly on type objects to construct
+// instances more efficiently.
+static PyObject *nb_type_vectorcall(PyObject *self, PyObject *const *args_in,
+                                    size_t nargsf,
+                                    PyObject *kwargs_in) noexcept {
+    PyTypeObject *tp = (PyTypeObject *) self;
+    type_data *td = nb_type_data(tp);
+    nb_func *func = (nb_func *) td->init;
+    bool is_init = (td->flags & (uint32_t) type_flags::has_new) == 0;
+    Py_ssize_t nargs = PyVectorcall_NARGS(nargsf);
+
+    if (NB_UNLIKELY(!func)) {
+        PyErr_Format(PyExc_TypeError, "%s: no constructor defined!", td->name);
+        return nullptr;
+    }
+
+    if (NB_LIKELY(is_init)) {
+        self = inst_new_int(tp, nullptr, nullptr);
+        if (!self)
+            return nullptr;
+    } else if (nargs == 0 && !kwargs_in &&
+               !(td->flags & (uint32_t) type_flags::has_nullary_new)) {
+        // When the bindings define a custom __new__ operator, nanobind always
+        // provides a no-argument dummy __new__ constructor to handle unpickling
+        // via __setstate__. This is an implementation detail that should not be
+        // exposed. Therefore, only allow argument-less calls if there is an
+        // actual __new__ overload with a compatible signature. This is
+        // detected in nb_func.cpp based on whether any __init__ overload can
+        // accept no arguments.
+
+        return func->vectorcall((PyObject *) func, nullptr, 0, nullptr);
+    }
+
+    const size_t buf_size = 5;
+    PyObject **args, *buf[buf_size], *temp = nullptr;
+    bool alloc = false;
+
+    if (NB_LIKELY(nargsf & PY_VECTORCALL_ARGUMENTS_OFFSET)) {
+        args = (PyObject **) (args_in - 1);
+        temp = args[0];
+    } else {
+        size_t size = nargs + 1;
+        if (kwargs_in)
+            size += NB_TUPLE_GET_SIZE(kwargs_in);
+
+        if (size < buf_size) {
+            args = buf;
+        } else {
+            args = (PyObject **) PyMem_Malloc(size * sizeof(PyObject *));
+            if (!args) {
+                if (is_init)
+                    Py_DECREF(self);
+                return PyErr_NoMemory();
+            }
+            alloc = true;
+        }
+
+        memcpy(args + 1, args_in, sizeof(PyObject *) * (size - 1));
+    }
+
+    args[0] = self;
+
+    PyObject *rv =
+        func->vectorcall((PyObject *) func, args, nargs + 1, kwargs_in);
+
+    args[0] = temp;
+
+    if (NB_UNLIKELY(alloc))
+        PyMem_Free(args);
+
+    if (NB_LIKELY(is_init)) {
+        if (!rv) {
+            Py_DECREF(self);
+            return nullptr;
+        }
+
+        // __init__ constructor: 'rv' is None
+        Py_DECREF(rv);
+        return self;
+    } else {
+        // __new__ constructor
+        return rv;
+    }
+}
+
 
 static PyTypeObject *nb_type_tp(size_t supplement) noexcept {
     object key = steal(PyLong_FromSize_t(supplement));
@@ -854,27 +944,6 @@ static PyTypeObject *nb_type_tp(size_t supplement) noexcept {
         if (tp)
             return tp;
 
-#if defined(Py_LIMITED_API)
-        PyMemberDef members[] = {
-            { "__vectorcalloffset__", Py_T_PYSSIZET, 0, Py_READONLY, nullptr },
-            { nullptr, 0, 0, 0, nullptr }
-        };
-
-        // Workaround because __vectorcalloffset__ does not support Py_RELATIVE_OFFSET
-        members[0].offset = internals_->type_data_offset + offsetof(type_data, vectorcall);
-#endif
-
-        PyType_Slot slots[] = {
-            { Py_tp_base, &PyType_Type },
-            { Py_tp_dealloc, (void *) nb_type_dealloc },
-            { Py_tp_setattro, (void *) nb_type_setattro },
-            { Py_tp_init, (void *) nb_type_init },
-#if defined(Py_LIMITED_API)
-            { Py_tp_members, (void *) members },
-#endif
-            { 0, nullptr }
-        };
-
 #if PY_VERSION_HEX >= 0x030C0000
         int basicsize = -(int) (sizeof(type_data) + supplement),
             itemsize = 0;
@@ -886,24 +955,42 @@ static PyTypeObject *nb_type_tp(size_t supplement) noexcept {
         char name[17 + 20 + 1];
         snprintf(name, sizeof(name), "nanobind.nb_type_%zu", supplement);
 
+        PyType_Slot slots[] = {
+            { Py_tp_base, &PyType_Type },
+            { Py_tp_dealloc, (void *) nb_type_dealloc },
+            { Py_tp_setattro, (void *) nb_type_setattro },
+            { Py_tp_init, (void *) nb_type_init },
+            { 0, nullptr },
+            { 0, nullptr }
+        };
+
         PyType_Spec spec = {
             /* .name = */ name,
             /* .basicsize = */ basicsize,
             /* .itemsize = */ itemsize,
-            /* .flags = */ Py_TPFLAGS_DEFAULT,
+            /* .flags = */ Py_TPFLAGS_DEFAULT | NB_TPFLAGS_IMMUTABLETYPE,
             /* .slots = */ slots
         };
 
 #if defined(Py_LIMITED_API)
-        spec.flags |= Py_TPFLAGS_HAVE_VECTORCALL;
+        PyMemberDef members[] = {
+            { "__vectorcalloffset__", Py_T_PYSSIZET, 0, Py_READONLY, nullptr },
+            { nullptr, 0, 0, 0, nullptr }
+        };
+
+        // Workaround because __vectorcalloffset__ does not support Py_RELATIVE_OFFSET
+        members[0].offset = internals_->type_data_offset + offsetof(type_data, vectorcall);
+
+        if (NB_DYNAMIC_VERSION < 0x030E0000) {
+            slots[4] = { Py_tp_members, (void *) members };
+            spec.flags |= Py_TPFLAGS_HAVE_VECTORCALL;
+        }
 #endif
 
         tp = (PyTypeObject *) nb_type_from_metaclass(
             internals_->nb_meta, internals_->nb_module, &spec);
 
         make_immortal((PyObject *) tp);
-
-        handle(tp).attr("__module__") = "nanobind";
 
         int rv = 1;
         if (tp)
@@ -957,97 +1044,10 @@ NB_NOINLINE char *extract_name(const char *cmd, const char *prefix, const char *
     return result;
 }
 
-#if PY_VERSION_HEX >= 0x03090000
 static PyMethodDef class_getitem_method[] = {
     { "__class_getitem__", Py_GenericAlias, METH_O | METH_CLASS, nullptr },
     { nullptr }
 };
-#endif
-
-// Implements the vector call protocol directly on type objects to construct
-// instances more efficiently.
-static PyObject *nb_type_vectorcall(PyObject *self, PyObject *const *args_in,
-                                    size_t nargsf,
-                                    PyObject *kwargs_in) noexcept {
-    PyTypeObject *tp = (PyTypeObject *) self;
-    type_data *td = nb_type_data(tp);
-    nb_func *func = (nb_func *) td->init;
-    bool is_init = (td->flags & (uint32_t) type_flags::has_new) == 0;
-    Py_ssize_t nargs = NB_VECTORCALL_NARGS(nargsf);
-
-    if (NB_UNLIKELY(!func)) {
-        PyErr_Format(PyExc_TypeError, "%s: no constructor defined!", td->name);
-        return nullptr;
-    }
-
-    if (NB_LIKELY(is_init)) {
-        self = inst_new_int(tp, nullptr, nullptr);
-        if (!self)
-            return nullptr;
-    } else if (nargs == 0 && !kwargs_in &&
-               !(td->flags & (uint32_t) type_flags::has_nullary_new)) {
-        // When the bindings define a custom __new__ operator, nanobind always
-        // provides a no-argument dummy __new__ constructor to handle unpickling
-        // via __setstate__. This is an implementation detail that should not be
-        // exposed. Therefore, only allow argument-less calls if there is an
-        // actual __new__ overload with a compatible signature. This is
-        // detected in nb_func.cpp based on whether any __init__ overload can
-        // accept no arguments.
-
-        return func->vectorcall((PyObject *) func, nullptr, 0, nullptr);
-    }
-
-    const size_t buf_size = 5;
-    PyObject **args, *buf[buf_size], *temp = nullptr;
-    bool alloc = false;
-
-    if (NB_LIKELY(nargsf & NB_VECTORCALL_ARGUMENTS_OFFSET)) {
-        args = (PyObject **) (args_in - 1);
-        temp = args[0];
-    } else {
-        size_t size = nargs + 1;
-        if (kwargs_in)
-            size += NB_TUPLE_GET_SIZE(kwargs_in);
-
-        if (size < buf_size) {
-            args = buf;
-        } else {
-            args = (PyObject **) PyMem_Malloc(size * sizeof(PyObject *));
-            if (!args) {
-                if (is_init)
-                    Py_DECREF(self);
-                return PyErr_NoMemory();
-            }
-            alloc = true;
-        }
-
-        memcpy(args + 1, args_in, sizeof(PyObject *) * (size - 1));
-    }
-
-    args[0] = self;
-
-    PyObject *rv =
-        func->vectorcall((PyObject *) func, args, nargs + 1, kwargs_in);
-
-    args[0] = temp;
-
-    if (NB_UNLIKELY(alloc))
-        PyMem_Free(args);
-
-    if (NB_LIKELY(is_init)) {
-        if (!rv) {
-            Py_DECREF(self);
-            return nullptr;
-        }
-
-        // __init__ constructor: 'rv' is None
-        Py_DECREF(rv);
-        return self;
-    } else {
-        // __new__ constructor
-        return rv;
-    }
-}
 
 /// Called when a C++ type is bound via nb::class_<>
 PyObject *nb_type_new(const type_init_data *t) noexcept {
@@ -1118,17 +1118,16 @@ PyObject *nb_type_new(const type_init_data *t) noexcept {
 
     PyObject *base = nullptr;
 
-#if PY_VERSION_HEX >= 0x03090000
+#if !defined(PYPY_VERSION) // see https://github.com/pypy/pypy/issues/4914
     bool generic_base = false;
 #endif
-
     if (has_base_py) {
         check(!has_base,
               "nanobind::detail::nb_type_new(\"%s\"): multiple base types "
               "specified!", t_name);
         base = (PyObject *) t->base_py;
 
-        #if PY_VERSION_HEX >= 0x03090000 && !defined(PYPY_VERSION) // see https://github.com/pypy/pypy/issues/4914
+#if !defined(PYPY_VERSION) // see https://github.com/pypy/pypy/issues/4914
         if (Py_TYPE(base) == &Py_GenericAliasType) {
             base = PyObject_GetAttrString(base, "__origin__");
             check(base != nullptr,
@@ -1136,7 +1135,7 @@ PyObject *nb_type_new(const type_init_data *t) noexcept {
             Py_DECREF(base);
             generic_base = true;
         }
-        #endif
+#endif
 
         check(nb_type_check(base),
               "nanobind::detail::nb_type_new(\"%s\"): base type is not a "
@@ -1194,7 +1193,7 @@ PyObject *nb_type_new(const type_init_data *t) noexcept {
 
     char *name_copy = strdup_check(name.c_str());
 
-    constexpr size_t nb_type_max_slots = 11,
+    constexpr size_t nb_type_max_slots = 12,
                      nb_extra_slots = 80,
                      nb_total_slots = nb_type_max_slots +
                                       nb_extra_slots + 1;
@@ -1302,14 +1301,11 @@ PyObject *nb_type_new(const type_init_data *t) noexcept {
     if (num_members > 0)
         *s++ = { Py_tp_members, (void*) members };
 
-#if PY_VERSION_HEX < 0x03090000
-    // Features that are unsupported in Python 3.8
-    (void) is_generic;
-    type_vectorcall = nullptr;
-#else
     if (is_generic)
         *s++ = { Py_tp_methods, (void*) class_getitem_method };
-#endif
+
+    if (NB_DYNAMIC_VERSION >= 0x030E0000 && type_vectorcall)
+        *s++ = { Py_tp_vectorcall, (void *) type_vectorcall };
 
     if (has_traverse)
         spec.flags |= Py_TPFLAGS_HAVE_GC;
@@ -1329,6 +1325,7 @@ PyObject *nb_type_new(const type_init_data *t) noexcept {
     Py_DECREF(metaclass);
 
     make_immortal(result);
+    internals_inc_ref();
 
     type_data *to = nb_type_data((PyTypeObject *) result);
 
@@ -1346,11 +1343,17 @@ PyObject *nb_type_new(const type_init_data *t) noexcept {
         to->keep_shared_from_this_alive = tb->keep_shared_from_this_alive;
     }
 
-    #if defined(Py_LIMITED_API)
-        to->vectorcall = type_vectorcall;
-    #else
-        ((PyTypeObject *) result)->tp_vectorcall = type_vectorcall;
-    #endif
+    if (NB_DYNAMIC_VERSION < 0x030E0000) {
+        // On Python 3.14+, use Py_tp_vectorcall to set the type vectorcall
+        // slot. Otherwise, assign tp_vectorcall or use a workaround (via
+        // tp_vectorcall_offset) for stable ABI builds.
+
+        #if defined(Py_LIMITED_API)
+            to->vectorcall = type_vectorcall;
+        #else
+            ((PyTypeObject *) result)->tp_vectorcall = type_vectorcall;
+        #endif
+    }
 
     to->name = name_copy;
     to->type_py = (PyTypeObject *) result;
@@ -1362,13 +1365,10 @@ PyObject *nb_type_new(const type_init_data *t) noexcept {
     if (is_weak_referenceable)
         to->flags |= (uint32_t) type_flags::is_weak_referenceable;
 
-    #if defined(Py_LIMITED_API)
-        /* These must be set unconditionally so that nb_dict_ptr() /
-           nb_weaklist_ptr() return null (rather than garbage) on
-           objects whose types don't use the corresponding feature. */
-        to->dictoffset = (uint32_t) dictoffset;
-        to->weaklistoffset = (uint32_t) weaklistoffset;
-    #endif
+    // Always cache dictoffset/weaklistoffset so nb_dict_ptr()/nb_weaklist_ptr()
+    // only access dicts/weaklists created by nanobind, not those added by Python
+    to->dictoffset = (uint32_t) dictoffset;
+    to->weaklistoffset = (uint32_t) weaklistoffset;
 
     if (t->scope != nullptr)
         setattr(t->scope, t_name, result);
@@ -1383,7 +1383,7 @@ PyObject *nb_type_new(const type_init_data *t) noexcept {
         internals_->type_c2p_slow[t->type] = to;
 
         #if !defined(NB_FREE_THREADED)
-            internals_->type_c2p_fast[t->type] = to;
+            internals_->type_c2p_fast[(void *) t->type] = to;
         #endif
     }
 
@@ -1392,7 +1392,7 @@ PyObject *nb_type_new(const type_init_data *t) noexcept {
         free((char *) t_name);
     }
 
-#if PY_VERSION_HEX >= 0x03090000
+#if !defined(PYPY_VERSION)
     if (generic_base)
         setattr(result, "__orig_bases__", make_tuple(handle(t->base_py)));
 #endif
@@ -1402,21 +1402,9 @@ PyObject *nb_type_new(const type_init_data *t) noexcept {
 
 
 PyObject *call_one_arg(PyObject *fn, PyObject *arg) noexcept {
-    PyObject *result;
-#if PY_VERSION_HEX < 0x03090000
-    PyObject *args = PyTuple_New(1);
-    if (!args)
-        return nullptr;
-    Py_INCREF(arg);
-    NB_TUPLE_SET_ITEM(args, 0, arg);
-    result = PyObject_CallObject(fn, args);
-    Py_DECREF(args);
-#else
-    PyObject *args[2] = { nullptr, arg };
-    result = PyObject_Vectorcall(fn, args + 1,
-                                 NB_VECTORCALL_ARGUMENTS_OFFSET + 1, nullptr);
-#endif
-    return result;
+    PyObject *argv[2] = { nullptr, arg };
+    return PyObject_Vectorcall(fn, argv + 1,
+                               PY_VECTORCALL_ARGUMENTS_OFFSET + 1, nullptr);
 }
 
 /// Encapsulates the implicit conversion part of nb_type_get()

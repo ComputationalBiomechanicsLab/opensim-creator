@@ -540,7 +540,7 @@ The program has the following command line options:
 .. code-block:: text
 
    usage: python -m nanobind.stubgen [-h] [-o FILE] [-O PATH] [-i PATH] [-m MODULE]
-                                     [-r] [-M FILE] [-P] [-D] [-q]
+                                     [-r] [-M FILE] [-P] [-D] [--exclude-values] [-q]
 
    Generate stubs for nanobind-based extensions.
 
@@ -559,6 +559,7 @@ The program has the following command line options:
      -P, --include-private         include private members (with single leading or
                                    trailing underscore)
      -D, --exclude-docstrings      exclude docstrings from the generated stub
+     --exclude-values              force the use of ... for values
      -q, --quiet                   do not generate any output in the absence of failures
 
 
@@ -713,6 +714,6 @@ you may use the special ``\from`` escape code to import them:
        def lookup(array: Array[T], index: Literal[0] = 0) -> _Opt[T]:
            \doc
 
-You may also add free-form text the beginning or the end of the generated stub.
-To do so, add an entry that matches on ``module_name.__prefix__`` or
-``module_name.__suffix__``.
+You may also add free-form text the beginning or the end of the generated stub
+module or of a class. To do so, add an entry that matches on ``name.__prefix__``
+or ``name.__suffix__`` where ``name`` is the name of the module or class.

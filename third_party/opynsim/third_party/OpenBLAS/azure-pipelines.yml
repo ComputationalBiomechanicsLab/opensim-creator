@@ -95,7 +95,7 @@ jobs:
      vmImage: 'windows-latest'
   steps:   
   - script: |
-      mingw32-make CC=gcc FC=gfortran DYNAMIC_ARCH=1 DYNAMIC_LIST="SANDYBRIDGE"
+      mingw32-make CC=gcc NOLAPACK=1 DYNAMIC_ARCH=1 DYNAMIC_LIST="SANDYBRIDGE"
 
 - job: Windows_clang_cmake
   pool:
@@ -155,7 +155,7 @@ jobs:
 
 - job: OSX_OpenMP
   pool:
-     vmImage: 'macOS-13'
+     vmImage: 'macOS-14'
   steps:   
   - script: |
       brew update
@@ -165,19 +165,19 @@ jobs:
      
 - job: OSX_GCC_Nothreads
   pool:
-     vmImage: 'macOS-13'
+     vmImage: 'macOS-14'
   steps:   
   - script: |
       brew update
       make USE_THREADS=0 CC=gcc-13 FC=gfortran-13
      
-- job: OSX_GCC12
+- job: OSX_GCC15
   pool:
      vmImage: 'macOS-latest'
   steps:   
   - script: |
       brew update
-      make CC=gcc-12 FC=gfortran-12
+      make CC=gcc-15 FC=gfortran-15
 
 - job: OSX_LLVM_flangnew
   pool:
@@ -201,7 +201,7 @@ jobs:
   - script: |
       brew update
       brew install llvm libomp
-      make TARGET=CORE2 USE_OPENMP=1 DYNAMIC_ARCH=1 CC=/usr/local/opt/llvm/bin/clang NOFORTRAN=1
+      make TARGET=CORE2 USE_OPENMP=1 DYNAMIC_ARCH=1 DYNAMIC_LIST='NEHALEM HASWELL SKYLAKEX' CC=/usr/local/opt/llvm/bin/clang NOFORTRAN=1
 
 - job: OSX_OpenMP_Clang_cmake
   pool:
@@ -215,13 +215,13 @@ jobs:
       brew install llvm libomp
       mkdir build
       cd build
-      cmake -DTARGET=CORE2 -DUSE_OPENMP=1 -DINTERFACE64=1 -DDYNAMIC_ARCH=1 -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang -DNOFORTRAN=1 -DNO_AVX512=1 ..
+      cmake -DTARGET=CORE2 -DUSE_OPENMP=1 -DINTERFACE64=1 -DDYNAMIC_ARCH=1 -DDYNAMIC_LIST='NEHALEM HASWELL SKYLAKEX' -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang -DNOFORTRAN=1 -DNO_AVX512=1 ..
       make
       ctest
       
 - job: OSX_dynarch_cmake
   pool:
-     vmImage: 'macOS-13'
+     vmImage: 'macOS-14'
   variables:
      LD_LIBRARY_PATH: /usr/local/opt/llvm/lib
      LIBRARY_PATH: /usr/local/opt/llvm/lib
@@ -268,7 +268,7 @@ jobs:
  
 - job: OSX_NDK_ARMV7
   pool:
-     vmImage: 'macOS-13'
+     vmImage: 'macOS-14'
   steps:   
   - script: | 
       brew update
@@ -278,35 +278,37 @@ jobs:
 
 - job: OSX_IOS_ARMV8
   pool:
-     vmImage: 'macOS-13'
+     vmImage: 'macOS-14'
   variables:
-     CC: /Applications/Xcode_14.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
-     CFLAGS: -O2 -Wno-macro-redefined -isysroot /Applications/Xcode_14.2.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk -arch arm64 -miphoneos-version-min=10.0
+     CC: /Applications/Xcode_16.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+     CFLAGS: -O2 -Wno-macro-redefined -isysroot /Applications/Xcode_16.2.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.2.sdk -arch arm64 -miphoneos-version-min=10.0
   steps:
   - script: |
+     ls /Applications/Xcode_16.2.app/Contents/Developer/Platforms/
+     ls /Applications/Xcode_16.2.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs
      make TARGET=ARMV8 DYNAMIC_ARCH=1 NUM_THREADS=32 HOSTCC=clang NOFORTRAN=1
 
 - job: OSX_IOS_ARMV7
   pool:
-     vmImage: 'macOS-13'
+     vmImage: 'macOS-14'
   variables:
-     CC: /Applications/Xcode_14.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
-     CFLAGS: -O2 -mno-thumb -Wno-macro-redefined -isysroot /Applications/Xcode_14.2.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk -arch armv7 -miphoneos-version-min=5.1
+     CC: /Applications/Xcode_16.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+     CFLAGS: -O2 -mno-thumb -Wno-macro-redefined -isysroot /Applications/Xcode_16.2.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.2.sdk -arch armv7 -miphoneos-version-min=5.1
   steps:
   - script: |
      make TARGET=ARMV7 DYNAMIC_ARCH=1 NUM_THREADS=32 HOSTCC=clang NOFORTRAN=1
 
 - job: OSX_xbuild_DYNAMIC_ARM64
   pool:
-     vmImage: 'macOS-13'
+     vmImage: 'macOS-14'
   variables:
-     CC: /Applications/Xcode_14.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
-     CFLAGS: -O2 -Wno-macro-redefined -isysroot /Applications/Xcode_14.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk -arch arm64
+     CC: /Applications/Xcode_16.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+     CFLAGS: -O2 -Wno-macro-redefined -isysroot /Applications/Xcode_16.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -arch arm64
   steps:
   - script: |
-     ls /Applications/Xcode_14.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+     ls /Applications/Xcode_16.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
      /Applications/Xcode_12.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch arm64 --print-supported-cpus
-     /Applications/Xcode_14.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang --version
+     /Applications/Xcode_16.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang --version
      make TARGET=ARMV8 DYNAMIC_ARCH=1 NUM_THREADS=32 HOSTCC=clang NOFORTRAN=1
 
 - job: ALPINE_MUSL

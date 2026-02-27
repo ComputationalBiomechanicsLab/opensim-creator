@@ -1108,6 +1108,11 @@ convert into an equivalent representation in one of the following frameworks:
 
    Builtin Python ``memoryview`` for CPU-resident data.
 
+.. cpp:class:: array_api
+
+   An object that both implements the buffer protocol and also has the
+   ``__dlpack__`` and ``__dlpack_device__`` attributes.
+
 Eigen convenience type aliases
 ------------------------------
 
@@ -1560,6 +1565,16 @@ include directive:
    Analogousto :cpp:func:`type_var`, create a `type variable tuple
    <https://docs.python.org/3/library/typing.html#typing.TypeVarTuple>`__
    (i.e., an instance of ``typing.TypeVarTuple``).
+
+.. cpp:function:: template <typename... Args> object param_spec(Args&&... args)
+
+   Analogous to :cpp:func:`type_var`, create a `parameter specification variable
+   <https://docs.python.org/3/library/typing.html#typing.ParamSpec>`__
+   (i.e., an instance of ``typing.ParamSpec``).
+
+   .. code-block:: cpp
+
+        m.attr("P") = nb::param_spec("P");
 
 .. cpp:function:: object any_type()
 

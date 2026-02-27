@@ -1,5 +1,121 @@
 OpenBLAS ChangeLog
 ====================================================================
+Version 0.3.31
+15-Jan-2025
+
+general:
+ - reverted a matrix partitioning optimization from 0.3.30 that could lead to 
+   race conditions and subsequent invalid results in GEMM
+ - added the bfloat16 extensions BGEMM and BGEMV
+ - added a BLAS interface for the ?GEMM_BATCH extensions
+ - added the BLAS extensions ?GEMM_BATCH_STRIDED and their CBLAS interface
+ - added the basic infrastructure for half-precision float (FP16) format 
+   using SH prefix
+ - reimplemented the LAPACK SLAED3/DLAED3 function using multithreading, thereby
+   improving the performance of the SSYEVD/DSYEVD eigensolver for symmetric matrices 
+   on all platforms
+ - limited the number of retries for initial memory allocation to avoid infinite
+   hanging on low-memory systems
+ - fixed a thread lockup situation encountered with python 3.9 or older and numpy
+ - introduced a problem size threshold for multithreading in STRMV/DTRMV
+ - introduced a problem size threshold for multithreading in CHER/CHER2/CHPR/CHPR2
+   and ZHER/ZHER2/ZHPR/ZHPR2
+ - improved the problem size thresholds for multithreading in SGER/DGER
+ - improved autodetection of the Fortran compiler
+ - fixed passing of the INTERFACE64=1 option to the flang-new compiler
+ - fixed a potential deadlock in multithreaded code after calling fork()
+ - fixed builds using CMake on FreeBSD
+ - fixed builds using CMake from within Cygwin on Windows
+ - fixed builds using CMake and the NVHPC compiler on ARM64
+ - fixed CMake build error from misdetecting compiler or OpenMP versions
+ - improved contents of the CMake-generated OpenBLASConfig.cmake file
+ - added support for cross-compilation to RISCV targets via CMake
+ - fixed cross-compilation to x86 targets from non-x86 architectures
+ - fixed failure to install cblas.h if NO_CBLAS=0 was specified
+ - fixed missing user-defined pre- and postfixes on functions in lapack.h,lapacke.h 
+ - included fixes from the Reference-LAPACK project:
+   - fix ordering bug in ?LAED/?LASD (Reference-LAPACK PR 1140)
+   - revert changes in ?GEEV from PR 1129 (Reference-LAPACK PR 1142)
+   - fix workspace allocation in LAPACKE_?TRSEN (Reference-LAPACK PR 1144)
+
+riscv:
+ - added optimized SBGEMM kernels for ZVL128B and ZVL256B targets
+ - added optimized SHGEMM kernels for ZVL128B and ZVL256B targets
+ - added optimized SBGEMV and SHGEMV kernels for ZVL128B/ZVL256B
+ - improved performance of the GEMV kernel for ZVL256B
+ - improved the performance of the CROT and ZROT kernels for ZVL128B and x280
+ - improved the detection of RVV1.0 capability 
+ - improved performance of the matrix packing helper functions for ZVL128B and ZVL256B
+ - improved performance of OMATCOPY for ZVL128B and ZVL256B
+
+arm:
+ - fixed spurious executable stack in the getarch utility
+
+arm64:
+ - fixed spurious executable stack in the getarch utility
+ - fixed compiler warnings arising from the timer macro RPCC
+ - fixed cache size detection for Qualcomm Oryon under Windows on Arm
+ - fixed argument handling in the default SVE kernel for SDOT/DDOT
+ - building the BFLOAT16 kernels is now enabled by default
+ - improved the overall performance of GEMM,SYMM and HEMM on A64FX
+ - improved the performance of SDOT/DDOT on A64FX
+ - improved the multithreading performance of SDOT/DDOT on A64FX by
+   introduction of a throttling table matching thread count to problem size
+ - improved the performance of SGER/DGER on A64FX and NEOVERSEV1
+ - improved the multithreading performance of GEMM on A64FX and NEOVERSEV1
+ - improved the performance of the GEMV kernel for SVE-capable targets
+ - improved the multithreading performance of SGEMM on NEOVERSEV1 and V2
+ - added optimized SAXPY/DAXPY SVE kernels for A64FX and NEOVERSEV1
+ - added optimized BGEMM and BGEMV kernels for NEOVERSEV1
+ - added an optimized BGEMM kernel for NEOVERSEN2
+ - added support for the NEOVERSEV2 cpu
+ - added dedicated support for the Apple M4 cpu as VORTEXM4
+ - added optimized SGEMM/SSYMM/STRMM/SSYRK/SSYR2K for SME-capable targets
+   (ARMV9SME and VORTEXM4)
+ - improved the precision of the SNRM2 kernel
+ - added cpu autodetection and compiler settings for Ampere One processors
+ - fixed cpu autodetection for Apple M systems running Linux
+ - fixed building on MacOS with AppleClang,gfortran and xcode v16 or newer
+ - fixed several errors in the C code replacements for the complex and double
+   precision complex LAPACK functions that get used (only) when compiling with
+   Microsoft C and NOFORTRAN=1 under MS Windows
+
+power:
+ - added initial support for the POWER11 architecture
+ - improved performance of DGEMM and DGEMV on POWER10
+ - fixed the default compiler flags to use "-O3" instead of the possibly unsafe 
+   "-Ofast"
+ - fixed building under MacOS (for old G4 Macs) with CMake
+ - fixed potential miscompilation of DGEMV and other assembly kernels by gcc15.1
+ - fixed compilation with recent versions of flang
+
+loongarch64:
+ - fixed warnings and potential inaccuracies arising from incorrect saving of registers
+ - fixed enumeration of logical cores on big NUMA servers
+ - fixed building with LLVM and the INTERFACE64=1 option
+
+x86:
+ - fixed building the GEMM3M kernels for the GENERIC target
+ - fixed several errors in the C code replacements for the complex and double
+   precision complex LAPACK functions that get used (only) when compiling with
+   Microsoft C and NOFORTRAN=1 under MS Windows
+
+x86_64:
+ - added cpu autodetection for Intel Lunar Lake (Core Ultra 200V)
+ - changed all ?MIN and ?MAX assembly kernels to use unaligned operations 
+ - fixed several errors in the C code replacements for the complex and double
+   precision complex LAPACK functions that get used (only) when compiling with
+   Microsoft C and NOFORTRAN=1 under MS Windows
+ - fixed potential crashes in builds for Cooper Lake, Sapphire Rapids or Zen5 cpus
+   under MS Windows
+
+zarch:
+ - added support for building with CMake
+
+sparc:
+ - fixed a potential crash in the DNRM2 kernel
+
+====================================================================
 Version 0.3.30
 19-Jun-2025
 

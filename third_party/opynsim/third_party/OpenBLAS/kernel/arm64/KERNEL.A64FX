@@ -4,3 +4,12 @@ SGEMVNKERNEL = gemv_n_sve_v4x3.c
 DGEMVNKERNEL = gemv_n_sve_v4x3.c
 SGEMVTKERNEL = gemv_t_sve_v4x3.c
 DGEMVTKERNEL = gemv_t_sve_v4x3.c
+
+DDOTKERNEL   = dot.c
+SDOTKERNEL   = dot.c
+
+SAXPYKERNEL  = axpy_sve.c
+DAXPYKERNEL  = axpy_sve.c
+
+SGERKERNEL   = ger_sve_v1x3.c
+DGERKERNEL   = ger_sve_v1x3.c

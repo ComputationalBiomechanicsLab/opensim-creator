@@ -15,6 +15,216 @@ case, both modules must use the same nanobind ABI version, or they will be
 isolated from each other. Releases that don't explicitly mention an ABI version
 below inherit that of the preceding release.
 
+Version 2.12.0 (Feb 25, 2025)
+-----------------------------
+
+- Added :cpp:class:`nb::memoryview` that wraps the Python ``memoryview`` type.
+  (PR `#1291 <https://github.com/wjakob/nanobind/pull/1291>`__).
+
+- Made stub generation compatible with the Realtime Sanitizer (RTSan)
+  from Clang 20.
+  (PR `#1285 <https://github.com/wjakob/nanobind/pull/1285>`__).
+
+- Fixed a use-after-free when calling functions after their module has been
+  deleted. The internals state is now reference-counted with references held by
+  modules, functions, and types. This also fixes memory leaks reported in issue
+  `#957 <https://github.com/wjakob/nanobind/issues/957>`__.
+  (PR `#1287 <https://github.com/wjakob/nanobind/pull/1287>`__).
+
+- Fixed two regressions from v2.11.0 related to the implicit ``std::optional``
+  :cpp:func:`.none() <arg::none>` annotation: an off-by-one error that applied
+  the annotation to the wrong argument for methods, and a missing ``convert``
+  flag that silently disabled implicit type conversions.
+  (issues `#1281 <https://github.com/wjakob/nanobind/issues/1281>`__,
+  `#1293 <https://github.com/wjakob/nanobind/issues/1293>`__,
+  commits `ed7ab31
+  <https://github.com/wjakob/nanobind/commit/ed7ab31f5ffe313b2ca945573e29112ea5e475b2>`__,
+  `1f96278
+  <https://github.com/wjakob/nanobind/commit/1f96278c09ec1f7110105f5e2e3dbd2f08dc66a4>`__).
+
+- ABI version 19.
+
+Version 2.11.0 (Jan 29, 2026)
+-----------------------------
+
+- This release improves binding performance using CPython's *adaptive
+  specializing interpreter* (`PEP 659 <https://peps.python.org/pep-0659/>`__).
+  The speedups are automatic and require no changes to binding code:
+
+  .. list-table::
+     :header-rows: 1
+
+     * - Operation
+       - Speedup
+       - Requirements
+     * - Method calls
+       - **1.22x** faster
+       - Python 3.11+
+     * - Static attribute lookups
+       - **1.63x** faster
+       - Python 3.14+
+
+  This was achieved by making a number of nanobind-internal classes
+  (``nb_func``, ``nb_method``, ``nb_meta``, etc.) immutable, which allows
+  CPython to specialize generic ``LOAD_ATTR`` opcodes to faster type-specific
+  versions (``LOAD_ATTR_METHOD`` for method calls, ``LOAD_ATTR_CLASS`` for
+  static attribute lookups). (PR `#1257
+  <https://github.com/wjakob/nanobind/pull/1257>`__).
+
+- Added the :cpp:class:`nb::never_destruct <never_destruct>` class binding
+  annotation to inform nanobind that it should not bind the destructor. (PR
+  `#1251 <https://github.com/wjakob/nanobind/pull/1251>`__, commit `4ba51f
+  <https://github.com/wjakob/nanobind/commit/4ba51fcf795971c5d603d875ae4184bc0c9bd8e6>`__).
+
+- Argument annotations for ``std::optional<T>``-typed arguments now implicitly
+  have the :cpp:func:`.none() <arg::none>` annotation applied (i.e., no need to
+  additionally specify ``nb::arg("..").none()``). (PR `#1262
+  <https://github.com/wjakob/nanobind/pull/1262>`__, commit `425ca1
+  <https://github.com/wjakob/nanobind/commit/425ca1d10dfda60de122d681099500f6e9718985>`__).
+
+- Removed a redundant hash table type, reducing the size of libnanobind by
+  2.5KiB. (commit `4d53cd
+  <https://github.com/wjakob/nanobind/commit/4d53cd184a759129122d678466b7055aef3dfac6>`__).
+
+- Added Python 3.12-3.14 symbols to linker scripts. (commit `36d4a6
+  <https://github.com/wjakob/nanobind/commit/36d4a60bd1f9ecb4ac6c42489db29719c5b3d77a>`__).
+
+- Fixed a bug where ``call_guard`` could cause an extra copy of the return
+  value. (PR `#1249 <https://github.com/wjakob/nanobind/pull/1249>`__).
+
+- Don't link ``nb_ft.cpp`` in non-free-threaded builds to avoid linker warnings
+  about empty compilation units. (PR `#1271
+  <https://github.com/wjakob/nanobind/pull/1271>`__).
+
+- ABI version 18.
+
+- **Eigen type caster improvements**:
+
+  - Fixed conversion of size-zero vectors to ``Eigen::Map``/``Eigen::Ref`` on
+    NumPy 2.4. (PR `#1268 <https://github.com/wjakob/nanobind/pull/1268>`__).
+
+  - Fixed move construction of dense Eigen arrays. (commit `cb90753
+    <https://github.com/wjakob/nanobind/commit/cb90753953b767d5c0ab877a3e4d8ae4ae63211f>`__).
+
+- **Stub generation improvements**:
+
+  - Fixed *O(n²)* string concatenation performance issue.
+    (PR `#1275 <https://github.com/wjakob/nanobind/pull/1275>`__).
+
+  - Fixed enumerations with entries named ``name`` or ``value``.
+    (issue `#1246 <https://github.com/wjakob/nanobind/issues/1246>`__).
+
+  - Stubgen now preserves module-level docstrings. (commit `88771b
+    <https://github.com/wjakob/nanobind/commit/8771be7cf3c8420ba5a8c8aaa807a1b81437a6a3>`__).
+
+  - Extended the skip list by two additional enum attributes.
+    (PR `#1255 <https://github.com/wjakob/nanobind/pull/1255>`__).
+
+Version 2.10.2 (Dec 10, 2025)
+-----------------------------
+
+- Fixes a regression that broke compilation on 32-bit architectures.
+  (PR `#1239 <https://github.com/wjakob/nanobind/pull/1239>`__).
+
+Version 2.10.1 (Dec 8, 2025)
+----------------------------
+
+- Nanobind now officially supports the **MinGW-w64** and **Intel ICX**
+  compilers. (PR `#1188 <https://github.com/wjakob/nanobind/pull/1188>`__).
+
+- Version 2.10 drops support for Python 3.8, which reached *End-Of-Life* in
+  October 2025. (PR `#1236 <https://github.com/wjakob/nanobind/pull/1236>`__).
+
+- The new :cpp:class:`nb::array_api <array_api>` framework tag can be used to
+  create an nd-array wrapper object that supports both the Python buffer
+  protocol and the DLPack methods ``__dlpack__`` and ``__dlpack_device__``.
+
+  Furthermore, nanobind now supports importing/exporting tensors via the legacy
+  (unversioned) DLPack interface, as well a new versioned interface. The latter
+  provides a flag indicating whether an nd-array is read-only. (PR `#1175
+  <https://github.com/wjakob/nanobind/pull/1175>`__).
+
+- Added ``bfloat`` to the nd-array import conversion code, fixing imports of
+  bfloat16 tensors. (PR `#1228
+  <https://github.com/wjakob/nanobind/pull/1228>`__).
+
+- nanobind now uses per-module precomputed constants, particularly strings, to
+  avoid costs from creating these repeatedly. This improves the performance of
+  nd-array and enumeration casts. (PR `#1184
+  <https://github.com/wjakob/nanobind/pull/1184>`__).
+
+- Fixed a segfault in garbage collection traversal of Python subclasses of
+  class bindings with :cpp:class:`nb::is_weak_referenceable
+  <is_weak_referenceable>`. (PR `#1206
+  <https://github.com/wjakob/nanobind/pull/1206>`__).
+
+- Fixed a potential reference leak in the ``std::array`` type caster. (commit
+  `bfacaf7
+  <https://github.com/wjakob/nanobind/commit/bfacaf75525c8a5e5f0a80fd69a985c4ae03d3d1>`__).
+
+- STL type casters now directly reject incorrectly sized inputs, which avoids
+  performance pitfalls when passing large arrays. (commit `edf5753
+  <https://github.com/wjakob/nanobind/commit/edf5753a13f98132b8da3d56fe94c31c678b2273>`__,
+  `dc35d69
+  <https://github.com/wjakob/nanobind/commit/dc35d69f65936280b2521941b2ce9d5ad16141d1>`__).
+
+- Fixed ``__new__`` overloads with variadic positional arguments but no
+  variadic keyword arguments, which incorrectly prevented nullary calls. (PR
+  `#1172 <https://github.com/wjakob/nanobind/pull/1172>`__).
+
+- Removed zero-length arrays to improve compiler compatibility. (PR `#1158
+  <https://github.com/wjakob/nanobind/pull/1158>`__).
+
+- Fixed a data race related caused by writes to a bit-field in free-threaded
+  extension builds (PR `#1191
+  <https://github.com/wjakob/nanobind/pull/1191>`__)
+
+- ABI version 17.
+
+- **Stub generation improvements**:
+
+  - Added a new ``--exclude-values`` flag that forces all values to be rendered
+    as ``...`` in stub files. (PR `#1185
+    <https://github.com/wjakob/nanobind/pull/1185>`__).
+
+  - Added support for ``typing.ParamSpec`` in generated stubs.
+    (PR `#1194 <https://github.com/wjakob/nanobind/pull/1194>`__).
+
+  - NumPy boolean arrays now use ``np.bool_`` dtype in generated stubs instead
+    of deprecated alternatives.
+    (commit `20fab93 <https://github.com/wjakob/nanobind/commit/20fab9386cd6c363878f67296d6b39a66af60a0a>`__).
+
+  - Auto-generated enum APIs are now excluded from stub files.
+    (PR `#1182 <https://github.com/wjakob/nanobind/pull/1182>`__).
+
+  - Pattern files now support ``__prefix__`` and ``__suffix__`` patterns
+    within classes for further customization of class stubs.
+    (PR `#1235 <https://github.com/wjakob/nanobind/pull/1235>`__).
+
+  - Various minor improvements to the stub generator.
+    (PR `#1179 <https://github.com/wjakob/nanobind/pull/1179>`__).
+
+- Fixed a regression in 2.10.0 (yanked release) related to handling of the ``NB_USE_SUBMODULE_DEPS``
+  flag that could cause CMake build system failures (commit `06aaa3
+  <https://github.com/wjakob/nanobind/commit/06aaa39dfd1a55ba546a96f0c3eebfced2c152c2>`__).
+
+- Minor/miscellaneous fixes: PRs `#1157
+  <https://github.com/wjakob/nanobind/pull/1157>`__, `#1186
+  <https://github.com/wjakob/nanobind/pull/1186>`__, `#1193
+  <https://github.com/wjakob/nanobind/pull/1193>`__, `#1198
+  <https://github.com/wjakob/nanobind/pull/1198>`__, `#1212
+  <https://github.com/wjakob/nanobind/pull/1212>`__, `#1218
+  <https://github.com/wjakob/nanobind/pull/1218>`__, `#1223
+  <https://github.com/wjakob/nanobind/pull/1223>`__, `#1225
+  <https://github.com/wjakob/nanobind/pull/1225>`__, commit `cf289b
+  <https://github.com/wjakob/nanobind/commit/cf289bbeb301a2d684e66fe6a4690932e2ae9df4>`__.
+
+
+Version 2.10.0 (Dec 8, 2025)
+----------------------------
+
+This release was yanked due to a regression.
+
 Version 2.9.2 (Sep 4, 2025)
 ---------------------------
 
@@ -26,6 +236,8 @@ This is a patch release to fix an issue in the new recursive stub generation fea
   submodules. However, the implemented submodule test was far too conservative
   and interpreted any imported module (e.g. ``import os``) as a submodule. The
   patch release fixes this.
+  (commit `a65e1b
+  <https://github.com/wjakob/nanobind/commit/a65e1b36ec0670e7c8d7a3bacfa5cff425fe92fe>`__).
 
 Version 2.9.1 (Sep 4, 2025)
 ---------------------------
@@ -381,7 +593,7 @@ Version 2.3.0
 
 There is no version 2.3.0 due to a deployment mishap.
 
-- Added casters for `Eigen::Map<Eigen::SparseMatrix<...>` types from the `Eigen library
+- Added casters for ``Eigen::Map<Eigen::SparseMatrix<...>>`` types from the `Eigen library
   <https://eigen.tuxfamily.org/index.php?title=Main_Page>`__. (PR `#782
   <https://github.com/wjakob/nanobind/pull/782>`_).
 

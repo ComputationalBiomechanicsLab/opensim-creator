@@ -1,6 +1,7 @@
+#include <nanobind/nanobind.h>
+
 #include <string.h>
 
-#include <nanobind/nanobind.h>
 #include <nanobind/stl/function.h>
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
@@ -137,6 +138,12 @@ NB_MODULE(test_functions_ext, m) {
     m.def("test_07", [](int, int, nb::args args, nb::kwargs kwargs) {
         return std::make_pair(args.size(), kwargs.size());
     }, "a"_a, "b"_a, "myargs"_a, "mykwargs"_a);
+
+    /// Function with eight arguments
+    m.def("test_simple",
+        [](int i0, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
+            return i0 + i1 + i2 + i3 + i4 + i5 + i6 - i7;
+        });
 
     /// Test successful/unsuccessful tuple conversion, with rich output types
     m.def("test_tuple", []() -> nb::typed<nb::tuple, std::string, int> {
@@ -361,6 +368,8 @@ NB_MODULE(test_functions_ext, m) {
         return s.contains(h);
     });
 
+    m.def("test_memoryview", []() { return nb::memoryview(nb::bytes("123456")); });
+    m.def("test_bad_memview", []() { return nb::memoryview(nb::int_(0)); });
 
     m.def("test_del_list", [](nb::list l) { nb::del(l[2]); });
     m.def("test_del_dict", [](nb::dict l) { nb::del(l["a"]); });

@@ -6,7 +6,7 @@ NAMESPACE_BEGIN(NB_NAMESPACE)
 NAMESPACE_BEGIN(detail)
 
 template <typename Array, typename Entry, size_t Size> struct array_caster {
-    NB_TYPE_CASTER(Array, io_name(NB_TYPING_SEQUENCE, NB_TYPING_LIST) +
+    NB_TYPE_CASTER(Array, io_name("collections.abc.Sequence", "list") +
                               const_name("[") + make_caster<Entry>::Name +
                               const_name("]"))
 
@@ -33,9 +33,9 @@ template <typename Array, typename Entry, size_t Size> struct array_caster {
 
                 value[i] = caster.operator cast_t<Entry>();
             }
-
-            Py_XDECREF(temp);
         }
+
+        Py_XDECREF(temp);
 
         return success;
     }

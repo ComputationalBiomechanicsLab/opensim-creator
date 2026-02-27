@@ -54,8 +54,15 @@
 #define ERROR_NAME "DGEMM "
 #define GEMV BLASFUNC(dgemv)
 #elif defined(BFLOAT16)
+#ifdef BGEMM
+#define ERROR_NAME "BGEMM "
+#define GEMV BLASFUNC(bgemv)
+#else
 #define ERROR_NAME "SBGEMM "
 #define GEMV BLASFUNC(sbgemv)
+#endif
+#elif defined(HFLOAT16)
+#define ERROR_NAME "SHGEMM "
 #else
 #define ERROR_NAME "SGEMM "
 #define GEMV BLASFUNC(sgemv)
@@ -111,7 +118,7 @@ static int (*gemm[])(blas_arg_t *, BLASLONG *, BLASLONG *, IFLOAT *, IFLOAT *, B
 #endif
 };
 
-#if defined(SMALL_MATRIX_OPT) && !defined(GEMM3M) && !defined(XDOUBLE)
+#if defined(SMALL_MATRIX_OPT) && !defined(GEMM3M) && !defined(XDOUBLE) && !defined(HFLOAT16) && !defined(BGEMM)
 #define USE_SMALL_MATRIX_OPT 1
 #else
 #define USE_SMALL_MATRIX_OPT 0
@@ -219,11 +226,11 @@ static inline int get_gemm_optimal_nthreads_neoversev2(double MNK, int ncpu) {
 
 static inline int get_gemm_optimal_nthreads(double MNK) {
   int ncpu = num_cpu_avail(3);
-#if defined(NEOVERSEV1) && !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)
+#if defined(NEOVERSEV1) && !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16) && !defined(HFLOAT16)
   return get_gemm_optimal_nthreads_neoversev1(MNK, ncpu);
-#elif defined(NEOVERSEV2) && !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)
+#elif defined(NEOVERSEV2) && !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16) && !defined(HFLOAT16)
   return get_gemm_optimal_nthreads_neoversev2(MNK, ncpu);
-#elif defined(DYNAMIC_ARCH) && !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)
+#elif defined(DYNAMIC_ARCH) && !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16) && !defined(HFLOAT16)
   if (strcmp(gotoblas_corename(), "neoversev1") == 0) {
     return get_gemm_optimal_nthreads_neoversev1(MNK, ncpu);
   }
@@ -259,6 +266,7 @@ void NAME(char *TRANSA, char *TRANSB,
 
   int transa, transb, nrowa, nrowb;
   blasint info;
+  int order = -1;
 
   char transA, transB;
   IFLOAT *buffer;
@@ -417,27 +425,6 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
 
   PRINT_DEBUG_CNAME;
 
-#if !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16) 
-#if defined(ARCH_x86) && (defined(USE_SGEMM_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
-#if defined(DYNAMIC_ARCH)
-  if (support_avx512() )
-#endif
-  if (beta == 0 && alpha == 1.0 && order == CblasRowMajor && TransA == CblasNoTrans && TransB == CblasNoTrans && SGEMM_DIRECT_PERFORMANT(m,n,k)) {
-	SGEMM_DIRECT(m, n, k, a, lda, b, ldb, c, ldc);
-	return;
-  }
-#endif
-#if defined(ARCH_ARM64) && (defined(USE_SGEMM_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
-#if defined(DYNAMIC_ARCH)
- if (support_sme1())
-#endif
-  if (beta == 0 && alpha == 1.0 && order == CblasRowMajor && TransA == CblasNoTrans && TransB == CblasNoTrans) {
-	SGEMM_DIRECT(m, n, k, a, lda, b, ldb, c, ldc);
-	return;
-  }
-#endif
-#endif
-
 #ifndef COMPLEX
   args.alpha = (void *)&alpha;
   args.beta  = (void *)&beta;
@@ -554,6 +541,40 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
     return;
   }
 
+
+  if ((args.m == 0) || (args.n == 0)) return;
+#if !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)  && !defined(HFLOAT16)
+#if defined(ARCH_x86) && (defined(USE_SGEMM_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
+#if defined(DYNAMIC_ARCH)
+  if (support_avx512() )
+#endif
+  if (order == CblasRowMajor && beta == 0 && alpha == 1.0 && TransA == CblasNoTrans && TransB == CblasNoTrans && SGEMM_DIRECT_PERFORMANT(m,n,k)) {
+        SGEMM_DIRECT(m, n, k, a, lda, b, ldb, c, ldc);
+        return;
+  }
+#endif
+#if defined(ARCH_ARM64) && (defined(USE_SGEMM_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
+#if defined(DYNAMIC_ARCH)
+if (strcmp(gotoblas_corename(), "armv9sme") == 0
+#if defined(__clang__)
+ || strcmp(gotoblas_corename(), "vortexm4") == 0
+#endif
+)
+// if (support_sme1())
+#endif
+  if (order == CblasRowMajor && m==lda && n ==ldb && k==ldc && beta == 0 && alpha == 1.0 && TransA == CblasNoTrans && TransB == CblasNoTrans&& SGEMM_DIRECT_PERFORMANT(m,n,k)) {
+        SGEMM_DIRECT(m, n, k, a, lda, b, ldb, c, ldc);
+        return;
+  }
+else
+ if (order == CblasRowMajor && m==lda && n==ldb && k==ldc && TransA == CblasNoTrans && TransB == CblasNoTrans&& SGEMM_DIRECT_PERFORMANT(m,n,k)) {
+        SGEMM_DIRECT_ALPHA_BETA(m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
+        return;
+  }
+
+#endif
+#endif
+
 #endif
 
 #if defined(__linux__) && defined(__x86_64__) && defined(BFLOAT16)
@@ -577,7 +598,18 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
 	 args.m, args.n, args.k, args.lda, args.ldb, args.ldc);
 #endif
 
-#if defined(GEMM_GEMV_FORWARD) && !defined(GEMM3M) && !defined(COMPLEX) && (!defined(BFLOAT16) || defined(GEMM_GEMV_FORWARD_BF16))
+#if (!defined(BFLOAT16) || (!defined(BGEMM) && defined(SBGEMM_GEMV_FORWARD)) || (defined(BGEMM) && defined(BGEMM_GEMV_FORWARD)))
+#define BFLOAT16_GEMM_GEMV_FORWARD 1
+#else
+#define BFLOAT16_GEMM_GEMV_FORWARD 0
+#endif
+#if (!defined(HFLOAT16) || (!defined(HGEMM) && defined(SHGEMM_GEMV_FORWARD)) || (defined(HGEMM) && defined(HGEMM_GEMV_FORWARD)))
+#define HFLOAT16_GEMM_GEMV_FORWARD 1
+#else
+#define HFLOAT16_GEMM_GEMV_FORWARD 0
+#endif
+
+#if defined(GEMM_GEMV_FORWARD) && !defined(GEMM3M) && !defined(COMPLEX) && HFLOAT16_GEMM_GEMV_FORWARD && BFLOAT16_GEMM_GEMV_FORWARD
 #if defined(ARCH_ARM64)
   // The gemv kernels in arm64/{gemv_n.S,gemv_n_sve.c,gemv_t.S,gemv_t_sve.c}
   // perform poorly in certain circumstances. We use the following boolean

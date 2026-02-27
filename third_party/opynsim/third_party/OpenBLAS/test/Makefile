@@ -1,3 +1,31 @@
+###############################################################################
+# Copyright (c) 2025, The OpenBLAS Project
+# All rights reserved.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+# 3. Neither the name of the OpenBLAS project nor the names of
+#    its contributors may be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE OPENBLAS PROJECT OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+###############################################################################
 TOPDIR	= ..
 include ../Makefile.system
 ifeq ($(F_COMPILER),GFORTRAN)
@@ -6,6 +34,7 @@ ifneq (, $(filter $(CORE),LOONGSON3R3 LOONGSON3R4))
 endif
         override FFLAGS += -fno-tree-vectorize
 endif
+# override CFLAGS += -std=c11 -Wall -Werror
 
 SUPPORT_GEMM3M = 0
 
@@ -90,6 +119,13 @@ endif
 endif
 endif
 
+ifeq ($(BUILD_HFLOAT16), 1)
+SH2 = test_shgemv
+endif
+ifeq ($(BUILD_BFLOAT16), 1)
+BB2 = test_bgemv
+B2 = test_sbgemv
+endif
 ifeq ($(BUILD_SINGLE),1)
 S2=sblat2
 endif
@@ -103,11 +139,21 @@ ifeq ($(BUILD_COMPLEX16),1)
 Z2=zblat2
 endif
 
-level2: $(S2) $(D2) $(C2) $(Z2)
+level2: $(SH2) $(BB2) $(B2) $(S2) $(D2) $(C2) $(Z2)
 
 
 ifneq ($(CROSS), 1)
 	rm -f ?BLAT2.SUMM
+ifeq ($(BUILD_BFLOAT16),1)
+	OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 ./test_bgemv > BBLAT2.SUMM
+	@$(GREP) -q FATAL BBLAT2.SUMM && cat BBLAT2.SUMM || exit 0
+	OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 ./test_sbgemv > SBBLAT2.SUMM
+	@$(GREP) -q FATAL SBBLAT2.SUMM && cat SBBLAT2.SUMM || exit 0
+endif
+ifeq ($(BUILD_HFLOAT16),1)
+	OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 ./test_shgemv > SHBLAT2.SUMM
+	@$(GREP) -q FATAL SHBLAT2.SUMM && cat SHBLAT2.SUMM || exit 0
+endif
 ifeq ($(BUILD_SINGLE),1)
 	OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 ./sblat2 < ./sblat2.dat
 	@$(GREP) -q FATAL SBLAT2.SUMM && cat SBLAT2.SUMM || exit 0
@@ -127,6 +173,16 @@ endif
 ifdef SMP
 	rm -f ?BLAT2.SUMM
 ifeq ($(USE_OPENMP), 1)
+ifeq ($(BUILD_BFLOAT16),1)
+	OMP_NUM_THREADS=2 ./test_bgemv > BBLAT2.SUMM
+	@$(GREP) -q FATAL BBLAT2.SUMM && cat BBLAT2.SUMM || exit 0
+	OMP_NUM_THREADS=2 ./test_sbgemv > SBBLAT2.SUMM
+	@$(GREP) -q FATAL SBBLAT2.SUMM && cat SBBLAT2.SUMM || exit 0
+endif
+ifeq ($(BUILD_HFLOAT16),1)
+	OMP_NUM_THREADS=2 ./test_shgemv > SHBLAT2.SUMM
+	@$(GREP) -q FATAL SHBLAT2.SUMM && cat SHBLAT2.SUMM || exit 0
+endif
 ifeq ($(BUILD_SINGLE),1)
 	OMP_NUM_THREADS=2 ./sblat2 < ./sblat2.dat
 	@$(GREP) -q FATAL SBLAT2.SUMM && cat SBLAT2.SUMM || exit 0
@@ -144,6 +200,16 @@ ifeq ($(BUILD_COMPLEX16),1)
 	@$(GREP) -q FATAL ZBLAT2.SUMM && cat ZBLAT2.SUMM || exit 0
 endif
 else
+ifeq ($(BUILD_BFLOAT16),1)
+	OMP_NUM_THREADS=2 ./test_bgemv > BBLAT2.SUMM
+	@$(GREP) -q FATAL BBLAT2.SUMM && cat BBLAT2.SUMM || exit 0
+	OMP_NUM_THREADS=2 ./test_sbgemv > SBBLAT2.SUMM
+	@$(GREP) -q FATAL SBBLAT2.SUMM && cat SBBLAT2.SUMM || exit 0
+endif
+ifeq ($(BUILD_HFLOAT16),1)
+	OMP_NUM_THREADS=2 ./test_shgemv > SHBLAT2.SUMM
+	@$(GREP) -q FATAL SHBLAT2.SUMM && cat SHBLAT2.SUMM || exit 0
+endif
 ifeq ($(BUILD_SINGLE),1)
 	OPENBLAS_NUM_THREADS=2 ./sblat2 < ./sblat2.dat
 	@$(GREP) -q FATAL SBLAT2.SUMM && cat SBLAT2.SUMM || exit 0
@@ -165,7 +231,11 @@ endif
 endif
 
 ifeq ($(BUILD_BFLOAT16),1)
-B3= test_sbgemm
+BF3= test_bgemm
+B3 = test_sbgemm
+endif
+ifeq ($(BUILD_HFLOAT16),1)
+H3 = test_shgemm
 endif
 ifeq ($(BUILD_SINGLE),1)
 S3=sblat3
@@ -190,9 +260,9 @@ endif
 
 
 ifeq ($(SUPPORT_GEMM3M),1)
-level3: $(B3) $(S3) $(D3) $(C3) $(Z3) level3_3m
+level3: $(BF3) $(B3) $(H3) $(S3) $(D3) $(C3) $(Z3) level3_3m
 else
-level3: $(B3) $(S3) $(D3) $(C3) $(Z3)
+level3: $(BF3) $(B3) $(H3) $(S3) $(D3) $(C3) $(Z3)
 endif
 
 ifneq ($(CROSS), 1)
@@ -200,6 +270,8 @@ ifneq ($(CROSS), 1)
 ifeq ($(BUILD_BFLOAT16),1)
 	OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 ./test_sbgemm > SBBLAT3.SUMM
 	@$(GREP) -q FATAL SBBLAT3.SUMM && cat SBBLAT3.SUMM || exit 0
+	OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 ./test_bgemm > BBLAT3.SUMM
+	@$(GREP) -q FATAL BBLAT3.SUMM && cat BBLAT3.SUMM || exit 0
 endif
 ifeq ($(BUILD_SINGLE),1)
 	OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 ./sblat3 < ./sblat3.dat
@@ -223,6 +295,8 @@ ifeq ($(USE_OPENMP), 1)
 ifeq ($(BUILD_BFLOAT16),1)
 	OMP_NUM_THREADS=2 ./test_sbgemm > SBBLAT3.SUMM
 	@$(GREP) -q FATAL SBBLAT3.SUMM && cat SBBLAT3.SUMM || exit 0
+	OMP_NUM_THREADS=2 ./test_bgemm > BBLAT3.SUMM
+	@$(GREP) -q FATAL BBLAT3.SUMM && cat BBLAT3.SUMM || exit 0
 endif
 ifeq ($(BUILD_SINGLE),1)
 	OMP_NUM_THREADS=2 ./sblat3 < ./sblat3.dat
@@ -244,6 +318,8 @@ else
 ifeq ($(BUILD_BFLOAT16),1)
 	OPENBLAS_NUM_THREADS=2 ./test_sbgemm > SBBLAT3.SUMM
 	@$(GREP) -q FATAL SBBLAT3.SUMM && cat SBBLAT3.SUMM || exit 0
+	OPENBLAS_NUM_THREADS=2 ./test_bgemm > BBLAT3.SUMM
+	@$(GREP) -q FATAL BBLAT3.SUMM && cat BBLAT3.SUMM || exit 0
 endif
 ifeq ($(BUILD_SINGLE),1)
 	OPENBLAS_NUM_THREADS=2 ./sblat3 < ./sblat3.dat
@@ -367,9 +443,27 @@ zblat3 : zblat3.$(SUFFIX) ../$(LIBNAME)
 endif
 
 ifeq ($(BUILD_BFLOAT16),1)
-test_sbgemm : compare_sgemm_sbgemm.c ../$(LIBNAME)
-	$(CC) $(CLDFLAGS) -o test_sbgemm compare_sgemm_sbgemm.c ../$(LIBNAME) $(EXTRALIB) $(CEXTRALIB)
+test_bgemm : compare_sgemm_bgemm.c test_helpers.h ../$(LIBNAME)
+	$(CC) $(CLDFLAGS) -DIBFLOAT16 -DOBFLOAT16 -o test_bgemm compare_sgemm_bgemm.c ../$(LIBNAME) $(EXTRALIB) $(CEXTRALIB)
+
+test_bgemv : compare_sgemv_bgemv.c ../$(LIBNAME)
+	$(CC) $(CLDFLAGS) -DIBFLOAT16 -DOBFLOAT16 -o test_bgemv compare_sgemv_bgemv.c ../$(LIBNAME) $(EXTRALIB) $(CEXTRALIB)
+
+test_sbgemm : compare_sgemm_sbgemm.c test_helpers.h ../$(LIBNAME)
+	$(CC) $(CLDFLAGS) -DIBFLOAT16 -o test_sbgemm compare_sgemm_sbgemm.c ../$(LIBNAME) $(EXTRALIB) $(CEXTRALIB)
+
+test_sbgemv : compare_sgemv_sbgemv.c ../$(LIBNAME)
+	$(CC) $(CLDFLAGS) -DIBFLOAT16 -o test_sbgemv compare_sgemv_sbgemv.c ../$(LIBNAME) $(EXTRALIB) $(CEXTRALIB)
 endif
+
+ifeq ($(BUILD_HFLOAT16),1)
+test_shgemm : compare_sgemm_shgemm.c test_helpers.h ../$(LIBNAME)
+	$(CC) $(CLDFLAGS) -DIHFLOAT16 -o test_shgemm compare_sgemm_shgemm.c ../$(LIBNAME) $(EXTRALIB) $(CEXTRALIB)
+
+test_shgemv : compare_sgemv_shgemv.c ../$(LIBNAME)
+	$(CC) $(CLDFLAGS) -o test_shgemv compare_sgemv_shgemv.c ../$(LIBNAME) $(EXTRALIB) $(CEXTRALIB)
+endif
+
 
 ifeq ($(BUILD_COMPLEX),1)
 cblat3_3m : cblat3_3m.$(SUFFIX) ../$(LIBNAME)
@@ -387,7 +481,7 @@ clean:
 	@rm -f *.$(SUFFIX) *.$(PSUFFIX) gmon.$(SUFFIX)ut *.SUMM *.cxml *.exe *.pdb *.dwf \
 	sblat1 dblat1 cblat1 zblat1 \
 	sblat2 dblat2 cblat2 zblat2 \
-	test_sbgemm sblat3 dblat3 cblat3 zblat3 \
+	test_bgemm test_bgemv test_sbgemm test_sbgemv test_shgemm test_shgemv sblat3 dblat3 cblat3 zblat3 \
 	sblat1p dblat1p cblat1p zblat1p \
 	sblat2p dblat2p cblat2p zblat2p \
 	sblat3p dblat3p cblat3p zblat3p \

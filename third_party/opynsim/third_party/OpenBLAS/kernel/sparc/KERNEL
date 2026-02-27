@@ -59,7 +59,8 @@ SNRM2KERNEL = snrm2.S
 endif
 
 ifndef DNRM2KERNEL
-DNRM2KERNEL = dnrm2.S
+#DNRM2KERNEL = dnrm2.S
+DNRM2KERNEL = ../arm/nrm2.c
 endif
 
 ifndef CNRM2KERNEL

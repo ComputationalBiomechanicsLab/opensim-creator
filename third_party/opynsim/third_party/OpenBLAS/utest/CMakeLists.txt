@@ -101,6 +101,7 @@ if (NOT USE_OPENMP)
 set(OpenBLAS_utest_src
   ${OpenBLAS_utest_src}
   test_fork.c
+  test_post_fork_async.c
   )
 endif()
 set(OpenBLAS_utest_src

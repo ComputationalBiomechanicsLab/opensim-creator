@@ -369,6 +369,12 @@ build system compatible with another tool that is sufficiently
 feature-complete, then please file an issue and I am happy to reference it in
 the documentation.
 
+Is there a way to pass ``JSON`` objects between Python and C++? 
+-------------------------------------------------
+Yes, an unofficial, currently maintained, package supporting that can be found `here
+<https://github.com/Griger5/nanobind_json>`_. It is based on a similar package for 
+``pybind11`` called ``pybind11_json``.
+
 Are there tools to generate nanobind bindings automatically?
 ------------------------------------------------------------
 

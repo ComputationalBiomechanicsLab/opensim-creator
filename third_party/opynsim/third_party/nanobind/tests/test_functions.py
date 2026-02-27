@@ -3,11 +3,6 @@ import pytest
 import sys
 import re
 
-# Some helper declaration to check types across different Python versions
-if sys.version_info < (3, 9):
-    TYPING_TUPLE = "typing.Tuple"
-else:
-    TYPING_TUPLE = "tuple"
 
 # Reference counting behavior changed on 3.14a7+
 py_3_14a7_or_newer = sys.version_info >= (3, 14, 0, 'alpha', 7)
@@ -22,6 +17,7 @@ def test01_capture():
     assert t.test_02(5, 3) == 2
     assert t.test_03(5, 3) == 44
     assert t.test_04() == 60
+    assert t.test_simple(0, 1, 2, 3, 4, 5, 6, 7) == 14
 
 
 def test02_default_args():
@@ -91,8 +87,8 @@ def test05_signature():
     )
 
     assert t.test_07.__doc__ == (
-        f"test_07(arg0: int, arg1: int, /, *args, **kwargs) -> {TYPING_TUPLE}[int, int]\n"
-        f"test_07(a: int, b: int, *myargs, **mykwargs) -> {TYPING_TUPLE}[int, int]"
+        "test_07(arg0: int, arg1: int, /, *args, **kwargs) -> tuple[int, int]\n"
+        "test_07(a: int, b: int, *myargs, **mykwargs) -> tuple[int, int]"
     )
 
 
@@ -283,7 +279,6 @@ def test23_byte_return():
     assert t.test_18("hello world", 5) == b"hello"
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test24_pydoc():
     import pydoc
 
@@ -480,19 +475,18 @@ def test40_nb_signature():
         (r"def test_05(arg: int, /) -> int", "doc_1", None),
         (r"def test_05(arg: float, /) -> int", "doc_2", None),
     )
-    if sys.version_info >= (3, 9):
-        assert t.test_07.__nb_signature__ == (
-            (
-                r"def test_07(arg0: int, arg1: int, /, *args, **kwargs) -> tuple[int, int]",
-                None,
-                None,
-            ),
-            (
-                r"def test_07(a: int, b: int, *myargs, **mykwargs) -> tuple[int, int]",
-                None,
-                None,
-            ),
-        )
+    assert t.test_07.__nb_signature__ == (
+        (
+            r"def test_07(arg0: int, arg1: int, /, *args, **kwargs) -> tuple[int, int]",
+            None,
+            None,
+        ),
+        (
+            r"def test_07(a: int, b: int, *myargs, **mykwargs) -> tuple[int, int]",
+            None,
+            None,
+        ),
+    )
 
 
 def test41_kw_only():
@@ -789,3 +783,10 @@ def test53_fallback():
 def test54_dict_default():
     assert t.test_get_dict_default({'key': 100}) == 100
     assert t.test_get_dict_default({'key2': 100}) == 123
+
+def test_55_memoryview():
+    memview = t.test_memoryview()
+    assert isinstance(memview, memoryview)
+    assert bytes(memview[0:3]) == b'123'
+    with pytest.raises(TypeError):
+        t.test_bad_memview()

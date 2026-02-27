@@ -23,8 +23,8 @@ if (MSVC)
   elseif (NOT NB_TEST_CUDA)
     add_compile_options(/W4)
   endif()
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-  add_compile_options(-Wall -Wextra -Wno-unused-local-typedefs)
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|IntelLLVM")
+  add_compile_options(-Wall -Wextra)
 endif()
 
 if (UNIX AND (CMAKE_SIZEOF_VOID_P EQUAL 4) AND (CMAKE_SYSTEM_PROCESSOR STREQUAL i686))
@@ -84,7 +84,11 @@ set(TEST_NAMES
 )
 
 foreach (NAME ${TEST_NAMES})
-  nanobind_add_module(test_${NAME}_ext test_${NAME}.cpp ${NB_EXTRA_ARGS})
+  if (NAME STREQUAL classes)
+    nanobind_add_module(test_${NAME}_ext test_${NAME}.cpp test_${NAME}_extra.cpp ${NB_EXTRA_ARGS})
+  else()
+    nanobind_add_module(test_${NAME}_ext test_${NAME}.cpp ${NB_EXTRA_ARGS})
+  endif()
 
   if (NB_TEST_CUDA)
     set_property(SOURCE test_${NAME}.cpp PROPERTY LANGUAGE CUDA)
@@ -104,6 +108,7 @@ foreach (NAME functions classes ndarray jax tensorflow stl enum typing make_iter
     set(EXTRA
       MARKER_FILE py.typed
       PATTERN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/pattern_file.nb"
+      EXCLUDE_VALUES
     )
     set(EXTRA_DEPENDS "${OUT_DIR}/py_stub_test.py")
   else()
@@ -172,6 +177,7 @@ set(TEST_FILES
   test_stubs.py
   test_typing.py
   test_thread.py
+  test_specialization.py
 
   # Stub reference files
   test_classes_ext.pyi.ref

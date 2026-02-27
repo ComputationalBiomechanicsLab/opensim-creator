@@ -1,6 +1,6 @@
 name: continuous build
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -11,17 +11,24 @@ permissions:
 
 jobs:
   build:
-    if: "github.repository == 'OpenMathLib/OpenBLAS'"
+    if: "github.repository == 'OpenMathLib/OpenBLAS' || github.event_name == 'workflow_dispatch'"
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, ubuntu-24.04-arm]
+        cc: [gcc, clang, clang-21]
         fortran: [gfortran, flang]
         build: [cmake, make]
         exclude:
           - os: macos-latest
+            cc: gcc
+          - os: macos-latest
+            cc: clang-21
+          - os: macos-latest
+            fortran: flang
+          - os: ubuntu-24.04-arm
             fortran: flang
 
     steps:
@@ -42,14 +49,27 @@ jobs:
       - name: Install Dependencies
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
+            cat << EOF | sudo tee -a /etc/apt/apt.conf.d/01norecommend
+          APT::Install-Recommends "0";
+          APT::Install-Suggests "0";
+          EOF
             sudo apt-get update
-            sudo apt-get install -y gfortran cmake ccache
-            wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb
-            sudo apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb
+            sudo apt-get install -y ccache
+            if [ "${{ matrix.cc }}" == "clang-21" ]; then
+                wget https://apt.llvm.org/llvm.sh
+                chmod +x llvm.sh
+                sudo ./llvm.sh 21
+            fi
+            if [ "${{ matrix.fortran }}" == "flang" ]; then
+              wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb
+              sudo apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb
+            else
+              sudo apt-get install -y ${{ matrix.fortran }}
+            fi
           elif [ "$RUNNER_OS" == "macOS" ]; then
             # It looks like "gfortran" isn't working correctly unless "gcc" is re-installed.
             brew reinstall gcc
-            brew install coreutils cmake ccache
+            brew install coreutils ccache
           else
             echo "::error::$RUNNER_OS not supported"
             exit 1
@@ -64,12 +84,12 @@ jobs:
           # GNU make and cmake call the compilers differently. It looks like
           # that causes the cache to mismatch. Keep the ccache for both build
           # tools separate to avoid polluting each other.
-          key: ccache-${{ runner.os }}-${{ matrix.build }}-${{ matrix.fortran }}-${{ github.ref }}-${{ github.sha }}
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-${{ matrix.build }}-${{ matrix.cc }}-${{ matrix.fortran }}-${{ github.ref }}-${{ github.sha }}
           # Restore a matching ccache cache entry. Prefer same branch and same Fortran compiler.
           restore-keys: |
-            ccache-${{ runner.os }}-${{ matrix.build }}-${{ matrix.fortran }}-${{ github.ref }}
-            ccache-${{ runner.os }}-${{ matrix.build }}-${{ matrix.fortran }}
-            ccache-${{ runner.os }}-${{ matrix.build }}
+            ccache-${{ runner.os }}-${{ runner.arch }}-${{ matrix.build }}-${{ matrix.cc }}-${{ matrix.fortran }}-${{ github.ref }}
+            ccache-${{ runner.os }}-${{ runner.arch }}-${{ matrix.build }}-${{ matrix.cc }}-${{ matrix.fortran }}
+            ccache-${{ runner.os }}-${{ runner.arch }}-${{ matrix.build }}-${{ matrix.cc }}
 
       - name: Configure ccache
         run: |
@@ -90,6 +110,14 @@ jobs:
           echo "compression = true" >> ~/.ccache/ccache.conf
           ccache -s
 
+      - name: Add gfortran runtime to link path
+        if: matrix.build == 'make' && runner.os == 'macOS'
+        run: |
+          GFORTRAN_LIBDIR=$(gfortran -print-file-name=libgfortran.dylib | xargs dirname)
+          echo "Using gfortran runtime in $GFORTRAN_LIBDIR"
+          # Preserve whatever LDFLAGS may already contain
+          echo "LDFLAGS=${LDFLAGS:+$LDFLAGS }-L$GFORTRAN_LIBDIR" >> "$GITHUB_ENV"
+
       - name: Build OpenBLAS
         run: |
           if [ "${{ matrix.fortran }}" = "flang" ]; then
@@ -102,7 +130,7 @@ jobs:
           fi
           case "${{ matrix.build }}" in
             "make")
-              make -j$(nproc) DYNAMIC_ARCH=1 USE_OPENMP=0 FC="ccache ${{ matrix.fortran }}"
+              make -j$(nproc) DYNAMIC_ARCH=1 USE_OPENMP=0 CC="ccache ${{ matrix.cc }}" FC="ccache ${{ matrix.fortran }}"
               ;;
             "cmake")
               mkdir build && cd build
@@ -111,6 +139,7 @@ jobs:
                     -DBUILD_WITHOUT_LAPACK=0 \
                     -DCMAKE_VERBOSE_MAKEFILE=ON \
                     -DCMAKE_BUILD_TYPE=Release \
+                    -DCMAKE_C_COMPILER=${{ matrix.cc }} \
                     -DCMAKE_Fortran_COMPILER=${{ matrix.fortran }} \
                     -DCMAKE_C_COMPILER_LAUNCHER=ccache \
                     -DCMAKE_Fortran_COMPILER_LAUNCHER=ccache \
@@ -134,13 +163,13 @@ jobs:
             "make")
               MAKE_FLAGS='DYNAMIC_ARCH=1 USE_OPENMP=0'
               echo "::group::Tests in 'test' directory"
-              make -C test $MAKE_FLAGS FC="ccache ${{ matrix.fortran }}"
+              make -C test $MAKE_FLAGS CC="ccache ${{ matrix.cc }}" FC="ccache ${{ matrix.fortran }}"
               echo "::endgroup::"
               echo "::group::Tests in 'ctest' directory"
-              make -C ctest $MAKE_FLAGS FC="ccache ${{ matrix.fortran }}"
+              make -C ctest $MAKE_FLAGS CC="ccache ${{ matrix.cc }}" FC="ccache ${{ matrix.fortran }}"
               echo "::endgroup::"
               echo "::group::Tests in 'utest' directory"
-              make -C utest $MAKE_FLAGS FC="ccache ${{ matrix.fortran }}"
+              make -C utest $MAKE_FLAGS CC="ccache ${{ matrix.cc }}" FC="ccache ${{ matrix.fortran }}"
               echo "::endgroup::"
               ;;
             "cmake")
@@ -364,15 +393,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        
+
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc gfortran make
-          
+
       - name: Build OpenBLAS
         run: |
-          make -j${nproc} 
+          make -j${nproc}
           make -j${nproc} lapack-test
-    
-          
+
+

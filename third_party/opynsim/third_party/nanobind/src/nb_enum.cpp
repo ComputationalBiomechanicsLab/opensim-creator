@@ -92,7 +92,7 @@ PyObject *enum_create(enum_init_data *ed) noexcept {
         internals_->type_c2p_slow[ed->type] = t;
 
         #if !defined(NB_FREE_THREADED)
-            internals_->type_c2p_fast[ed->type] = t;
+            internals_->type_c2p_fast[(void *) ed->type] = t;
         #endif
     }
 
@@ -190,7 +190,8 @@ bool enum_from_python(const std::type_info *tp, PyObject *o, int64_t *out, uint8
         return false;
 
     if ((t->flags & (uint32_t) enum_flags::is_flag) != 0 && Py_TYPE(o) == t->type_py) {
-        PyObject *value_o = PyObject_GetAttrString(o, "value");
+        PyObject *value_o =
+                PyObject_GetAttr(o, static_pyobjects[pyobj_name::value_str]);
         if (value_o == nullptr) {
             PyErr_Clear();
             return false;

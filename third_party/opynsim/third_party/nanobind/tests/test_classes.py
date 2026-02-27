@@ -3,11 +3,6 @@ import test_classes_ext as t
 import pytest
 from common import skip_on_pypy, collect
 
-# Some helper declaration to check types across different Python versions
-if sys.version_info < (3, 9):
-    TYPING_TYPE = "typing.Type"
-else:
-    TYPING_TYPE = "type"
 
 
 def optional(arg: str, /) -> str:
@@ -59,6 +54,7 @@ def test02_static_overload():
 def test03_instantiate(clean):
     s1: t.Struct = t.Struct()
     assert s1.value() == 5
+    assert s1.value_plus(1, 2, 3, 4, 5, 6, 7) == 33
     s2 = t.Struct(10)
     assert s2.value() == 10
     del s1
@@ -527,7 +523,7 @@ def test23_handle_t(clean):
 def test24_type_object_t(clean):
     assert (
         t.test_type_object_t.__doc__
-        == f"test_type_object_t(arg: {TYPING_TYPE}[test_classes_ext.Struct], /) -> object"
+        == "test_type_object_t(arg: type[test_classes_ext.Struct], /) -> object"
     )
 
     assert t.test_type_object_t(t.Struct) is t.Struct
@@ -895,6 +891,10 @@ def test46_custom_new():
     t.NewNone()
     assert t.NewDflt().value == 42
     assert t.NewDflt(10).value == 10
+    assert t.NewStarPosOnly().value == 42
+    assert t.NewStarPosOnly("hi").value == 43
+    assert t.NewStarPosOnly(value=10).value == 10
+    assert t.NewStarPosOnly("hi", "lo", value=10).value == 12
     assert t.NewStar().value == 42
     assert t.NewStar("hi").value == 43
     assert t.NewStar(value=10).value == 10
@@ -941,3 +941,54 @@ def test48_monekypatchable():
 def test49_static_property_override():
     assert t.StaticPropertyOverride.x == 42
     assert t.StaticPropertyOverride2.x == 43
+
+def test50_weakref_with_slots_subclass():
+    """
+    Test that Python subclasses work correctly with nb::is_weak_referenceable()
+    base classes. The nb::is_weak_referenceable() flag causes nanobind to
+    install tp_traverse/tp_clear callbacks. When Python subclasses add their
+    own instance dictionaries (e.g., via managed dicts on Python 3.12+),
+    subtype_traverse calls our tp_traverse. We must only traverse dicts/weaklists
+    created by nanobind, not those added by Python.
+
+    Regression test for issue #1201.
+    """
+    import gc
+
+    # Create a Python subclass with __slots__
+    class SubClass(t.StructWithWeakrefsOnly):
+        __slots__ = 'hello',
+
+    # Create a sub-subclass without __slots__ (which should get a __dict__)
+    class SubSubClass(SubClass):
+        pass
+
+    # This should not crash
+    x = SubSubClass(42)
+    x.bye = 'blah'
+    assert x.value() == 42
+    assert x.bye == 'blah'
+
+    # Trigger GC to ensure inst_traverse doesn't crash
+    gc.collect()
+    gc.collect()
+
+    # Clean up
+    del x
+    gc.collect()
+
+def test51_constexpr_trampoline():
+    class PyConstexprClass(t.ConstexprClass):
+        def getInt(self):
+            return 42
+
+    c = PyConstexprClass(4)
+    assert t.constexpr_call_getInt(c) == 42
+
+def test52_noncopyable():
+    assert t.PrivateNonCopyable.get_instance().get_int() == 42
+
+def test53_never_destruct():
+    r = t.NeverDestruct.make_ref()
+    r.set_var(5)
+    assert r.var() == 5

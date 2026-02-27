@@ -141,16 +141,6 @@ void cleanup_list::expand() noexcept {
 
 // ========================================================================
 
-PyObject *module_new(const char *name, PyModuleDef *def) noexcept {
-    memset(def, 0, sizeof(PyModuleDef));
-    def->m_name = name;
-    def->m_size = -1;
-    PyObject *m = PyModule_Create(def);
-
-    check(m, "nanobind::detail::module_new(): allocation failed!");
-    return m;
-}
-
 PyObject *module_import(const char *name) {
     PyObject *res = PyImport_ImportModule(name);
     if (!res)
@@ -287,7 +277,7 @@ PyObject *obj_vectorcall(PyObject *base, PyObject *const *args, size_t nargsf,
     PyObject *res = nullptr;
     bool gil_error = false, cast_error = false;
 
-    size_t nargs_total = (size_t) (NB_VECTORCALL_NARGS(nargsf) +
+    size_t nargs_total = (size_t) (PyVectorcall_NARGS(nargsf) +
                          (kwnames ? NB_TUPLE_GET_SIZE(kwnames) : 0));
 
 #if !defined(Py_LIMITED_API)
@@ -304,20 +294,8 @@ PyObject *obj_vectorcall(PyObject *base, PyObject *const *args, size_t nargsf,
         }
     }
 
-#if PY_VERSION_HEX < 0x03090000
-    if (method_call) {
-        PyObject *self = PyObject_GetAttr(args[0], /* name = */ base);
-        if (self) {
-            res = _PyObject_Vectorcall(self, (PyObject **) args + 1, nargsf - 1, kwnames);
-            Py_DECREF(self);
-        }
-    } else {
-        res = _PyObject_Vectorcall(base, (PyObject **) args, nargsf, kwnames);
-    }
-#else
     res = (method_call ? PyObject_VectorcallMethod
                        : PyObject_Vectorcall)(base, args, nargsf, kwnames);
-#endif
 
 end:
     for (size_t i = 0; i < nargs_total; ++i)
@@ -461,13 +439,23 @@ void setattr(PyObject *obj, PyObject *key, PyObject *value) {
 }
 
 void delattr(PyObject *obj, const char *key) {
+#if defined(Py_LIMITED_API) && PY_LIMITED_API < 0x030D0000
+    int rv = PyObject_SetAttrString(obj, key, nullptr);
+#else
     int rv = PyObject_DelAttrString(obj, key);
+#endif
+
     if (rv)
         raise_python_error();
 }
 
 void delattr(PyObject *obj, PyObject *key) {
+#if defined(Py_LIMITED_API) && PY_LIMITED_API < 0x030D0000
+    int rv = PyObject_SetAttr(obj, key, nullptr);
+#else
     int rv = PyObject_DelAttr(obj, key);
+#endif
+
     if (rv)
         raise_python_error();
 }
@@ -685,6 +673,13 @@ PyObject *frozenset_from_obj(PyObject *o) {
     return result;
 }
 
+PyObject *memoryview_from_obj(PyObject *o) {
+    PyObject *result = PyMemoryView_FromObject(o);
+    if (!result)
+        raise_python_error();
+    return result;
+}
+
 // ========================================================================
 
 PyObject **seq_get(PyObject *seq, size_t *size_out, PyObject **temp_out) noexcept {
@@ -766,7 +761,7 @@ PyObject **seq_get(PyObject *seq, size_t *size_out, PyObject **temp_out) noexcep
 
                 if (temp) {
                     size = (size_t) size_seq;
-                } else if (!temp) {
+                } else {
                     PyErr_Clear();
                     for (Py_ssize_t i = 0; i < size_seq; ++i)
                         Py_DECREF(result[i]);
@@ -817,12 +812,17 @@ PyObject **seq_get_with_size(PyObject *seq, size_t size,
         }
 #  endif
     } else if (PySequence_Check(seq)) {
-        temp = PySequence_Tuple(seq);
-
-        if (temp)
-            result = seq_get_with_size(temp, size, temp_out);
-        else
-            PyErr_Clear();
+        Py_ssize_t size_seq = PySequence_Size(seq);
+        if (size_seq != (Py_ssize_t) size) {
+            if (size_seq == -1)
+                PyErr_Clear();
+        } else {
+            temp = PySequence_Tuple(seq);
+            if (temp)
+                result = seq_get_with_size(temp, size, temp_out);
+            else
+                PyErr_Clear();
+        }
     }
 #else
     /* There isn't a nice way to get a PyObject** in Py_LIMITED_API. This

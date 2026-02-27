@@ -97,33 +97,19 @@ int CNAME(BLASLONG n, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT 
     }
     else if(inc_x == 1 && inc_y == 1) {
 
-        for (size_t vl; n > 0; n -= vl, x += vl*2, y += vl*2) {
+        n *= 2;
+        for (size_t vl; n > 0; n -= vl, x += vl, y += vl) {
             vl = VSETVL(n);
 
-            vxx2 = VLSEG_FLOAT(x, vl);
-            vyx2 = VLSEG_FLOAT(y, vl);
-
-            vx0 = VGET_VX2(vxx2, 0);
-            vx1 = VGET_VX2(vxx2, 1);
-            vy0 = VGET_VX2(vyx2, 0);
-            vy1 = VGET_VX2(vyx2, 1);
-
+            vx0 = VLEV_FLOAT(x, vl);
+            vy0 = VLEV_FLOAT(y, vl);
             vt0 = VFMULVF_FLOAT(vx0, c, vl);
-            vt0 = VFMACCVF_FLOAT(vt0, s, vy0, vl);
-            vt1 = VFMULVF_FLOAT(vx1, c, vl);
-            vt1 = VFMACCVF_FLOAT(vt1, s, vy1, vl);
-            vy0 = VFMULVF_FLOAT(vy0, c, vl);
-            vy0 = VFNMSACVF_FLOAT(vy0, s, vx0, vl);
-            vy1 = VFMULVF_FLOAT(vy1, c, vl);
-            vy1 = VFNMSACVF_FLOAT(vy1, s, vx1, vl);
+            vx1 = VFMACCVF_FLOAT(vt0, s, vy0, vl);
 
-            vtx2 = VSET_VX2(vtx2, 0, vt0);
-            vtx2 = VSET_VX2(vtx2, 1, vt1);
-            vyx2 = VSET_VX2(vyx2, 0, vy0);
-            vyx2 = VSET_VX2(vyx2, 1, vy1);
-
-            VSSEG_FLOAT(x, vtx2, vl);
-            VSSEG_FLOAT(y, vyx2, vl);
+            vt1 = VFMULVF_FLOAT(vy0, c, vl);
+            vy1 = VFNMSACVF_FLOAT(vt1, s, vx0, vl);
+            VSEV_FLOAT(x, vx1, vl);
+            VSEV_FLOAT(y, vy1, vl);
         }
 
     } else if (inc_x == 1){

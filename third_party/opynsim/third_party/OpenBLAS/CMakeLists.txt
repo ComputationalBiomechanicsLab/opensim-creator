@@ -9,7 +9,7 @@ project(OpenBLAS C ASM)
 
 set(OpenBLAS_MAJOR_VERSION 0)
 set(OpenBLAS_MINOR_VERSION 3)
-set(OpenBLAS_PATCH_VERSION 30)
+set(OpenBLAS_PATCH_VERSION 31)
 
 set(OpenBLAS_VERSION "${OpenBLAS_MAJOR_VERSION}.${OpenBLAS_MINOR_VERSION}.${OpenBLAS_PATCH_VERSION}")
 
@@ -151,6 +151,9 @@ endif ()
 
 if (NOT DEFINED BUILD_BFLOAT16)
  set (BUILD_BFLOAT16 false)
+endif ()
+if (NOT DEFINED BUILD_HFLOAT16)
+ set (BUILD_HFLOAT16 false)
 endif ()
 # set which float types we want to build for
 if (NOT DEFINED BUILD_SINGLE AND NOT DEFINED BUILD_DOUBLE AND NOT DEFINED BUILD_COMPLEX AND NOT DEFINED BUILD_COMPLEX16)
@@ -305,8 +308,8 @@ if (USE_OPENMP)
   endif()
 endif()
 
-# Fix "Argument list too long" for macOS with Intel CPUs and DYNAMIC_ARCH turned on
-if(APPLE AND DYNAMIC_ARCH AND (NOT CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64"))
+# Fix "Argument list too long" for macOS - mostly seen with older OS versions on POWERPC or Intel CPUs 
+if(APPLE)
   # Use response files
   set(CMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS 1)
   # Always build static library first
@@ -495,6 +498,11 @@ if (BUILD_SHARED_LIBS OR DELETE_STATIC_LIBS AND NOT ${SYMBOLPREFIX}${SYMBOLSUFFI
   else ()
 	  set (BBF16 0)
   endif()
+  if (${BUILD_HFLOAT16})
+	  set (BHF16 1)
+  else ()
+	  set (BHF16 0)
+  endif()
   if (${BUILD_SINGLE})
 	  set (BS 1)
   else ()
@@ -530,7 +538,7 @@ endif()
  #if (USE_PERL)
 message(STATUS "adding postbuild instruction to rename syms")
   add_custom_command(TARGET ${OpenBLAS_LIBNAME}_static POST_BUILD
-	COMMAND perl ${PROJECT_SOURCE_DIR}/exports/gensymbol.pl "win2k" "${ARCH}" "${BU}" "${EXPRECISION_IN}" "${NO_CBLAS_IN}" "${NO_LAPACK_IN}" "${NO_LAPACKE_IN}" "${NEED2UNDERSCORES_IN}" "${ONLY_CBLAS_IN}" "${SYMBOLPREFIX}" "${SYMBOLSUFFIX}" "${BLD}" "${BBF16}" "${BS}" "${BD}" "${BC}" "${BZ}" > ${PROJECT_BINARY_DIR}/renamesyms.def
+	COMMAND perl ${PROJECT_SOURCE_DIR}/exports/gensymbol.pl "win2k" "${ARCH}" "${BU}" "${EXPRECISION_IN}" "${NO_CBLAS_IN}" "${NO_LAPACK_IN}" "${NO_LAPACKE_IN}" "${NEED2UNDERSCORES_IN}" "${ONLY_CBLAS_IN}" "${SYMBOLPREFIX}" "${SYMBOLSUFFIX}" "${BLD}" "${BBF16}" "${BHF16}" "${BS}" "${BD}" "${BC}" "${BZ}" > ${PROJECT_BINARY_DIR}/renamesyms.def
 	COMMAND ${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS} -I${PROJECT_SOURCE_DIR} -I${PROJECT_BINARY_DIR} -c -o ${PROJECT_BINARY_DIR}/dllinit.o ${PROJECT_SOURCE_DIR}/exports/dllinit.c
 	COMMAND lld-link -nodefaultlib:libcmt -defaultlib:${CRTLIB} ${CMAKE_LINKER_FLAGS} -errorlimit:0 -def:${PROJECT_BINARY_DIR}/renamesyms.def ${PROJECT_BINARY_DIR}/dllinit.o $<TARGET_FILE:${OpenBLAS_LIBNAME}_static> -wholearchive:$<TARGET_FILE:${OpenBLAS_LIBNAME}_static> -dll -out:$<TARGET_FILE_DIR:${OpenBLAS_LIBNAME}_static>/${OpenBLAS_LIBNAME}.dll -implib:$<TARGET_FILE_DIR:${OpenBLAS_LIBNAME}_static>/${OpenBLAS_LIBNAME}.dll.a ${PDBOPT} 
 	#COMMAND lld-link -nodefaultlib:libcmt -defaultlib:msvcrt ${CMAKE_LINKER_FLAGS} -errorlimit:0 -def:${PROJECT_BINARY_DIR}/renamesyms.def ${PROJECT_BINARY_DIR}/dllinit.o $<TARGET_FILE:${OpenBLAS_LIBNAME}_static> -wholearchive:$<TARGET_FILE:${OpenBLAS_LIBNAME}_static> -dll -out:$<TARGET_FILE_DIR:${OpenBLAS_LIBNAME}_static>/${OpenBLAS_LIBNAME}.dll -implib:$<TARGET_FILE_DIR:${OpenBLAS_LIBNAME}_static>/${OpenBLAS_LIBNAME}.dll.a
@@ -540,14 +548,14 @@ message(STATUS "adding postbuild instruction to rename syms")
   else ()
   if (NOT USE_PERL)
   add_custom_command(TARGET ${OpenBLAS_LIBNAME}_shared POST_BUILD
-	  COMMAND sh ${PROJECT_SOURCE_DIR}/exports/gensymbol "objcopy" "${ARCH}" "${BU}" "${EXPRECISION_IN}" "${NO_CBLAS_IN}" "${NO_LAPACK_IN}" "${NO_LAPACKE_IN}" "${NEED2UNDERSCORES_IN}" "${ONLY_CBLAS_IN}" \"${SYMBOLPREFIX}\" \"${SYMBOLSUFFIX}\" "${BLD}" "${BBF16}" "${BS}" "${BD}" "${BC}" "${BZ}" > ${PROJECT_BINARY_DIR}/objcopy.def
-    COMMAND objcopy -v --redefine-syms ${PROJECT_BINARY_DIR}/objcopy.def  ${PROJECT_BINARY_DIR}/lib/${OpenBLAS_LIBNAME}.so
+	  COMMAND sh ${PROJECT_SOURCE_DIR}/exports/gensymbol "objcopy" "${ARCH}" "${BU}" "${EXPRECISION_IN}" "${NO_CBLAS_IN}" "${NO_LAPACK_IN}" "${NO_LAPACKE_IN}" "${NEED2UNDERSCORES_IN}" "${ONLY_CBLAS_IN}" \"${SYMBOLPREFIX}\" \"${SYMBOLSUFFIX}\" "${BLD}" "${BBF16}" "${BHF16}" "${BS}" "${BD}" "${BC}" "${BZ}" > ${PROJECT_BINARY_DIR}/objcopy.def
+    COMMAND objcopy --redefine-syms ${PROJECT_BINARY_DIR}/objcopy.def  ${PROJECT_BINARY_DIR}/lib/${OpenBLAS_LIBNAME}.so
     COMMENT "renaming symbols"
     )
   else()
   add_custom_command(TARGET ${OpenBLAS_LIBNAME}_shared POST_BUILD
-    COMMAND perl ${PROJECT_SOURCE_DIR}/exports/gensymbol.pl "objcopy" "${ARCH}" "${BU}" "${EXPRECISION_IN}" "${NO_CBLAS_IN}" "${NO_LAPACK_IN}" "${NO_LAPACKE_IN}" "${NEED2UNDERSCORES_IN}" "${ONLY_CBLAS_IN}" \"${SYMBOLPREFIX}\" \"${SYMBOLSUFFIX}\" "${BLD}" "${BBF16}" "${BS}" "${BD}" "${BC}" "${BZ}" > ${PROJECT_BINARY_DIR}/objcopy.def
-    COMMAND objcopy -v --redefine-syms ${PROJECT_BINARY_DIR}/objcopy.def  ${PROJECT_BINARY_DIR}/lib/lib${OpenBLAS_LIBNAME}.so
+    COMMAND perl ${PROJECT_SOURCE_DIR}/exports/gensymbol.pl "objcopy" "${ARCH}" "${BU}" "${EXPRECISION_IN}" "${NO_CBLAS_IN}" "${NO_LAPACK_IN}" "${NO_LAPACKE_IN}" "${NEED2UNDERSCORES_IN}" "${ONLY_CBLAS_IN}" \"${SYMBOLPREFIX}\" \"${SYMBOLSUFFIX}\" "${BLD}" "${BBF16}" "${BHF16}" "${BS}" "${BD}" "${BC}" "${BZ}" > ${PROJECT_BINARY_DIR}/objcopy.def
+    COMMAND objcopy --redefine-syms ${PROJECT_BINARY_DIR}/objcopy.def  ${PROJECT_BINARY_DIR}/lib/lib${OpenBLAS_LIBNAME}.so
     COMMENT "renaming symbols"
     )
   endif()
@@ -700,6 +708,39 @@ if(NOT NO_LAPACKE)
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/lapack-netlib/LAPACKE/include/lapacke_mangling_with_flags.h.in "${CMAKE_BINARY_DIR}/lapacke_mangling.h"
   )
   install (FILES ${CMAKE_BINARY_DIR}/lapacke_mangling.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+  if (NOT (x${SYMBOLPREFIX}${SYMBOLSUFFIX} STREQUAL "x"))
+  message (STATUS "Generating lapacke.h in ${CMAKE_INSTALL_INCLUDEDIR}")
+  set(LAPACKE_H ${CMAKE_BINARY_DIR}/generated/lapacke.h)
+  file(READ ${CMAKE_CURRENT_SOURCE_DIR}/lapack-netlib/LAPACKE/include/lapacke.h LAPACKE_H_CONTENTS)
+  if (NOT ${SYMBOLPREFIX} STREQUAL "")
+	  string(REGEX REPLACE "(LAPACKE_*)" " ${SYMBOLPREFIX}\\1" LAPACKE_H_CONTENTS_NEW	"${LAPACKE_H_CONTENTS}")
+	  string(REPLACE "_ ${SYMBOLPREFIX}LAPACKE_H_"  "_LAPACKE_H_" LAPACKE_H_CONTENTS ${LAPACKE_H_CONTENTS_NEW})
+	  string(REPLACE "${SYMBOLPREFIX}LAPACKE_malloc"  "LAPACKE_malloc" LAPACKE_H_CONTENTS_NEW ${LAPACKE_H_CONTENTS})
+	  string(REPLACE "${SYMBOLPREFIX}LAPACKE_free"  "LAPACKE_free" LAPACKE_H_CONTENTS ${LAPACKE_H_CONTENTS_NEW})
+	  set(LAPACKE_H_CONTENTS_NEW ${LAPACKE_H_CONTENTS})
+  endif()
+  if (NOT ${SYMBOLSUFFIX} STREQUAL "")
+	  string(REGEX REPLACE "(${SYMBOLPREFIX}LAPACKE_[a-z1-9]*[^ (]*)" "\\1${SYMBOLSUFFIX}" LAPACKE_H_CONTENTS_NEW	"${LAPACKE_H_CONTENTS}")
+	  string(REPLACE "#define${SYMBOLSUFFIX}"  "#define" LAPACKE_H_CONTENTS ${LAPACKE_H_CONTENTS_NEW})
+	  string(REPLACE "LAPACKE_malloc${SYMBOLSUFFIX}"  "LAPACKE_malloc" LAPACKE_H_CONTENTS_NEW ${LAPACKE_H_CONTENTS})
+	  string(REPLACE "LAPACKE_free${SYMBOLSUFFIX}"  "LAPACKE_free" LAPACKE_H_CONTENTS ${LAPACKE_H_CONTENTS_NEW})
+	  set(LAPACKE_H_CONTENTS_NEW ${LAPACKE_H_CONTENTS})
+  endif()
+  file(WRITE ${LAPACKE_H} "${LAPACKE_H_CONTENTS_NEW}")
+  install (FILES ${LAPACKE_H} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+  message (STATUS "Generating lapack.h in ${CMAKE_INSTALL_INCLUDEDIR}")
+  set(LAPACK_H ${CMAKE_BINARY_DIR}/generated/lapack.h)
+  file(READ ${CMAKE_CURRENT_SOURCE_DIR}/lapack-netlib/LAPACKE/include/lapack.h LAPACK_H_CONTENTS)
+  if (NOT ${SYMBOLPREFIX} STREQUAL "")
+	  string(REGEX REPLACE "(LAPACK_[a-z1-9]*[ \(][.\)]*)" "${SYMBOLPREFIX}\\1" LAPACK_H_CONTENTS_NEW	"${LAPACK_H_CONTENTS}")
+	  set(LAPACK_H_CONTENTS ${LAPACK_H_CONTENTS_NEW})
+  endif()
+  if (NOT ${SYMBOLSUFFIX} STREQUAL "")
+	  string(REGEX REPLACE "(${SYMBOLPREFIX}LAPACK_[a-z1-9]*)([ \(].\)" "\\1${SYMBOLSUFFIX}\\2" LAPACK_H_CONTENTS_NEW	"${LAPACK_H_CONTENTS}")
+  endif()
+  file(WRITE ${LAPACK_H} "${LAPACK_H_CONTENTS_NEW}")
+  install (FILES ${LAPACK_H} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+endif()
 endif()
 
 # Install pkg-config files

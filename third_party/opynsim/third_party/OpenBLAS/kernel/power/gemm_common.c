@@ -28,7 +28,7 @@
 #define USE_VECTOR_PAIRS
 #endif
 
-#ifdef _AIX
+#if defined(_AIX) || defined(__clang__)
 #include<stdbool.h>
 typedef __vector unsigned short vec_bf16;
 #else

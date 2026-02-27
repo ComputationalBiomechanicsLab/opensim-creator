@@ -29,6 +29,9 @@
 * Annop Wongwathanarat <annop.wongwathanarat@arm.com>
   * Optimizations and other improvements targeting AArch64
 
+* Anna Mayne <anna.mayne@arm.com>
+  * Optimizations and other improvements targeting AArch64
+
 ## Previous Developers
 
 * Zaheer Chothia <zaheer.chothia@gmail.com>
@@ -251,6 +254,21 @@ In chronological order:
 * Ye Tao <ye.tao@arm.com>
   * [2025-02-03] Optimize SBGEMM kernel on NEOVERSEV1
   * [2025-02-27] Add sbgemv_n_neon kernel
+  * [2025-05-17] Impl prototype of BGEMM inferface
 
 * Abhishek Kumar <https://github.com/abhishek-iitmadras>
   * [2025-04-22] Optimise dot kernel for NEOVERSE V1
+  * [2025-07-23] ARM64-Enable bfloat16 kernels by default 
+
+* Sharif Inamdar <sharif.inamdar@arm.com>
+  * [2025-06-05] Optimize gemv_n_sve_v1x3 kernel
+
+* Guoyuan Li <https://github.com/guoyuanplct>
+  * [2025-04-11] Optimise gemv kernel for RISCV64_ZVL256B
+  * [2025-05-01] Optimise zgemv kernel for RISCV64_ZVL256B
+  * [2025-05-17] Optimise omatcopy/zomatcopy kernel for RISCV64_ZVL256B
+  * [2025-05-29] Optimise axpby kernel for RISCV64_ZVL256B
+  * [2025-06-05] Optimise hbmv kernel for RISCV64_ZVL256B
+
+* Anna Mayne <anna.mayne@arm.com>
+  * [2025-11-19] Update thread throttling profile for SGEMV on NEOVERSEV1 and NEOVERSEV2

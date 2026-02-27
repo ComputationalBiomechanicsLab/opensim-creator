@@ -1268,6 +1268,15 @@ Wrapper classes
               // Now do something ...
           });
 
+.. cpp:class:: memoryview: public object
+
+    Wrapper class representing Python ``memoryview`` instances.
+
+    .. cpp:function:: memoryview(handle h)
+
+    Attempt to create a ``memoryview`` Python object from an object. Analogous
+    to the expression ``memoryview(h)`` in Python.
+
 .. cpp:class:: ellipsis: public object
 
    Wrapper class representing a Python ellipsis (``...``) object.
@@ -2158,9 +2167,6 @@ declarations in generated :ref:`stubs <stubs>`,
    See the section on :ref:`creating generic types <typing_generics_creating>`
    for an example.
 
-   This feature is only supported on Python 3.9+. Nanobind will ignore
-   the attribute in Python 3.8 builds.
-
 .. cpp:struct:: template <typename T> supplement
 
    Indicate that ``sizeof(T)`` bytes of memory should be set aside to
@@ -2190,6 +2196,9 @@ declarations in generated :ref:`stubs <stubs>`,
       Declares a callback that will be invoked when a C++ instance is first
       cast into a Python object.
 
+.. cpp:struct:: never_destruct
+
+   Disables destroying the instance.
 
 .. _enum_binding_annotations:
 
@@ -2641,8 +2650,8 @@ Class binding
 
       Bind the enumeration of type `T` to the identifier `name` within the
       scope `scope`. The variable length `extra` parameter can be used to pass
-      a docstring and other :ref:`enum binding annotations
-      <enum_binding_annotations>` (currently, only :cpp:class:`is_arithmetic` is supported).
+      a docstring and
+      :ref:`enum binding annotations <enum_binding_annotations>`.
 
    .. cpp:function:: enum_ &value(const char * name, T value, const char * doc = nullptr)
 

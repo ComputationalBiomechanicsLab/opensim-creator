@@ -1,3 +1,30 @@
+###############################################################################
+# Copyright (c) 2025, The OpenBLAS Project
+# All rights reserved.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+# 3. Neither the name of the OpenBLAS project nor the names of
+#    its contributors may be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE OPENBLAS PROJECT OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+###############################################################################
 ##
 ## Author: Hank Anderson <hank@statease.com>
 ## Description: Ported from portion of OpenBLAS/Makefile.system
@@ -59,6 +86,10 @@ if (${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "LS
       set(BINARY_DEFINED 1)
     endif ()
 
+    if (ZARCH)
+      set (BINARY_DEFINED 1)
+	endif ()
+ 
     if (CMAKE_SYSTEM_NAME STREQUAL "AIX")
       set(BINARY_DEFINED 1)
     endif ()
@@ -182,7 +213,7 @@ endif ()
 
 if (${CORE} STREQUAL A64FX)
   if (NOT DYNAMIC_ARCH)
-    if (${CMAKE_C_COMPILER_ID} STREQUAL "NVC" AND NOT NO_SVE)
+    if (${CMAKE_C_COMPILER_ID} STREQUAL "NVHPC" AND NOT NO_SVE)
 	set (CCOMMON_OPT  "${CCOMMON_OPT} -tp=a64fx")
     elseif (${GCC_VERSION} VERSION_GREATER 11.0 OR ${GCC_VERSION} VERSION_EQUAL 11.0)
       set (CCOMMON_OPT  "${CCOMMON_OPT} -march=armv8.2-a+sve -mtune=a64fx")
@@ -192,17 +223,35 @@ if (${CORE} STREQUAL A64FX)
   endif ()
 endif ()
 
+if (${CORE} STREQUAL NEOVERSEV2)
+	if (NOT DYNAMIC_ARCH)
+		if (${CMAKE_C_COMPILER_ID} STREQUAL "PGI" AND NOT NO_SVE)
+			set (CCOMMON_OPT  "${CCOMMON_OPT} -Msve_intrinsics -march=armv8.5-a+sve+sve2+bf16 -mtune=neoverse-v2")
+		elseif (${CMAKE_C_COMPILER_ID} STREQUAL "NVHPC" AND NOT NO_SVE)
+			set (CCOMMON_OPT  "${CCOMMON_OPT} -tp=neoverse-v2")
+		else ()
+			if (${GCC_VERSION} VERSION_GREATER 13.0 OR ${GCC_VERSION} VERSION_EQUAL 13.0)
+				set (CCOMMON_OPT  "${CCOMMON_OPT} -mcpu=neoverse-v2")
+			elseif (${GCC_VERSION} VERSION_GREATER 10.4 OR ${GCC_VERSION} VERSION_EQUAL 10.4)
+				set (CCOMMON_OPT  "${CCOMMON_OPT} -march=armv8.4-a+sve+bf16 -mtune=neoverse-v1")
+			else ()
+				set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv8.2-a+sve+bf16")
+			endif()
+		endif ()
+	endif ()
+endif ()
+
 if (${CORE} STREQUAL NEOVERSEN2)
   if (NOT DYNAMIC_ARCH)
     if (${CMAKE_C_COMPILER_ID} STREQUAL "PGI" AND NOT NO_SVE)
 	set (CCOMMON_OPT  "${CCOMMON_OPT} -Msve_intrinsics -march=armv8.5-a+sve+sve2+bf16 -mtune=neoverse-n2")
-    elseif (${CMAKE_C_COMPILER_ID} STREQUAL "NVC" AND NOT NO_SVE)
+    elseif (${CMAKE_C_COMPILER_ID} STREQUAL "NVHPC" AND NOT NO_SVE)
 	set (CCOMMON_OPT  "${CCOMMON_OPT} -tp=neoverse-v2")
     else ()
-      if (${GCC_VERSION} VERSION_GREATER 10.4 OR ${GCC_VERSION} VERSION_EQUAL 10.4)
+      if (${GCC_VERSION} VERSION_GREATER 11.1 OR ${GCC_VERSION} VERSION_EQUAL 11.1)
 	set (CCOMMON_OPT  "${CCOMMON_OPT} -march=armv8.5-a+sve+sve2+bf16 -mtune=neoverse-n2")
       else ()
-	set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv8.2-a+sve")
+	set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv8.2-a+sve+bf16")
       endif()
     endif ()
   endif ()
@@ -211,14 +260,14 @@ endif ()
 if (${CORE} STREQUAL NEOVERSEV1)
   if (NOT DYNAMIC_ARCH)
     if (${CMAKE_C_COMPILER_ID} STREQUAL "PGI" AND NOT NO_SVE)
-	set (CCOMMON_OPT  "${CCOMMON_OPT} -Msve_intrinsics -march=armv8.4-a+sve -mtune=neoverse-v1")
-    elseif (${CMAKE_C_COMPILER_ID} STREQUAL "NVC" AND NOT NO_SVE)
+	set (CCOMMON_OPT  "${CCOMMON_OPT} -Msve_intrinsics -march=armv8.4-a+sve+bf16 -mtune=neoverse-v1")
+    elseif (${CMAKE_C_COMPILER_ID} STREQUAL "NVHPC" AND NOT NO_SVE)
 	set (CCOMMON_OPT  "${CCOMMON_OPT} -tp=neoverse-v1")
     else ()
       if (${GCC_VERSION} VERSION_GREATER 10.4 OR ${GCC_VERSION} VERSION_EQUAL 10.4)
-        set (CCOMMON_OPT  "${CCOMMON_OPT} -march=armv8.4-a+sve -mtune=neoverse-v1")
+        set (CCOMMON_OPT  "${CCOMMON_OPT} -march=armv8.4-a+sve+bf16 -mtune=neoverse-v1")
       else ()
-        set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv8.2-a+sve")
+        set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv8.2-a+sve+bf16")
       endif()
     endif()
   endif ()
@@ -226,7 +275,7 @@ endif ()
 
 if (${CORE} STREQUAL NEOVERSEN1)
   if (NOT DYNAMIC_ARCH)
-    if (${CMAKE_C_COMPILER_ID} STREQUAL "NVC" AND NOT NO_SVE)
+    if (${CMAKE_C_COMPILER_ID} STREQUAL "NVHPC" AND NOT NO_SVE)
 	set (CCOMMON_OPT  "${CCOMMON_OPT} -tp=neoverse-n1")
     elseif (${GCC_VERSION} VERSION_GREATER 9.4 OR ${GCC_VERSION} VERSION_EQUAL 9.4)
       set (CCOMMON_OPT  "${CCOMMON_OPT} -march=armv8.2-a -mtune=neoverse-n1")
@@ -236,11 +285,23 @@ if (${CORE} STREQUAL NEOVERSEN1)
   endif ()
 endif ()
 
+if (${CORE} STREQUAL AMPEREONE)
+  if (NOT DYNAMIC_ARCH)
+    if (${CMAKE_C_COMPILER_ID} STREQUAL "NVHPC")
+	set (CCOMMON_OPT  "${CCOMMON_OPT} -tp=neoverse-n1")
+    elseif (${GCC_VERSION} VERSION_GREATER 12.1)
+      set (CCOMMON_OPT  "${CCOMMON_OPT} -march=armv8.6-a+crypto+crc+fp16+sha3+rng -mtune=ampereone")
+    else ()
+      set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv8.6-a+fp16")
+    endif()
+  endif ()
+endif ()
+
 if (${CORE} STREQUAL ARMV8SVE)
   if (NOT DYNAMIC_ARCH)
     if (${CMAKE_C_COMPILER_ID} STREQUAL "PGI" AND NOT NO_SVE)
 	set (CCOMMON_OPT  "${CCOMMON_OPT} -Msve_intrinsics -march=armv8-a+sve")
-    elseif (${CMAKE_C_COMPILER_ID} STREQUAL "NVC" AND NOT NO_SVE)
+    elseif (${CMAKE_C_COMPILER_ID} STREQUAL "NVHPC" AND NOT NO_SVE)
 	    set (CCOMMON_OPT  "${CCOMMON_OPT} -tp=host")
     else ()
       set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv8-a+sve")
@@ -250,11 +311,28 @@ endif ()
 
 if (${CORE} STREQUAL ARMV9SME)
   if (NOT DYNAMIC_ARCH)
-    if (${CMAKE_C_COMPILER_ID} STREQUAL "NVC" AND NOT NO_SVE)
+    if (${CMAKE_C_COMPILER_ID} STREQUAL "NVHPC" AND NOT NO_SVE)
 	    set (CCOMMON_OPT  "${CCOMMON_OPT} -tp=host")
     else ()
     set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv9-a+sme")
+	if (${OSNAME} STREQUAL Windows AND ${CMAKE_C_COMPILER_ID} MATCHES "Clang" )
+	set (CCOMMON_OPT "${CCOMMON_OPT} --aarch64-stack-hazard-size=0")
     endif ()
+	endif ()
+  endif ()
+endif ()
+
+if (${CORE} STREQUAL VORTEXM4)
+  if (NOT DYNAMIC_ARCH)
+    if (${CMAKE_C_COMPILER_ID} STREQUAL "NVC" AND NOT NO_SVE)
+	    set (CCOMMON_OPT  "${CCOMMON_OPT} -tp=host")
+    else ()
+	  if (${CMAKE_C_COMPILER_ID} STREQUAL "AppleClang")
+        set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv8.4-a+sme -mcpu=apple-m4")
+	  else ()
+	    set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv8.4-a -mcpu=apple-m4")
+      endif ()
+	endif ()
   endif ()
 endif ()
 
@@ -329,6 +407,30 @@ if (${CORE} STREQUAL PPCG4)
     set (CCOMMON_OPT  "${CCOMMON_OPT} -force_cpusubtype_ALL")
   endif ()
 endif ()
+
+
+if ((${CORE} STREQUAL RISCV64_ZVL128B) OR (${CORE} STREQUAL RISCV64_ZVL256B))
+  set (RISCV64_OPT "rv64imafdcv")
+  if (BUILD_BFLOAT16)
+    set (RISCV64_OPT "${RISCV64_OPT}_zvfbfwma")
+  endif()
+  if (BUILD_HFLOAT16)
+    set (RISCV64_OPT "${RISCV64_OPT}_zvfh_zfh")
+  endif()
+  if (${CORE} STREQUAL RISCV64_ZVL256B)
+    set (CCOMMON_OPT "${CCOMMON_OPT} -march=${RISCV64_OPT}_zvl256b -mabi=lp64d")
+  endif()
+  if (${CORE} STREQUAL RISCV64_ZVL128B)
+    set (CCOMMON_OPT "${CCOMMON_OPT} -march=${RISCV64_OPT}_zvl128b -mabi=lp64d")
+  endif()
+endif()
+if (${CORE} STREQUAL RISCV64_GENERIC)
+  set (CCOMMON_OPT "${CCOMMON_OPT} -march=rv64imafdc -mabi=lp64d")
+endif()
+if (${CORE} STREQUAL x280)
+  set (CCOMMON_OPT "${CCOMMON_OPT} -march=rv64imafdcv_zba_zbb_zfh_zvl512b -mabi=lp64d")
+endif()
+
 
 if (NOT DYNAMIC_ARCH)
 	if (HAVE_AVX2)

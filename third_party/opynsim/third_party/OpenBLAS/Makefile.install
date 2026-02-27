@@ -71,7 +71,7 @@ install : 	lib.grd
 	@cat common_interface.h >> "$(DESTDIR)$(OPENBLAS_INCLUDE_DIR)/f77blas.h"
 	@echo \#endif >> "$(DESTDIR)$(OPENBLAS_INCLUDE_DIR)/f77blas.h"
 
-ifndef NO_CBLAS
+ifneq ($(NO_CBLAS),1)
 	@echo Generating cblas.h in $(DESTDIR)$(OPENBLAS_INCLUDE_DIR)
 	@cp cblas.h cblas.tmp
 ifdef SYMBOLPREFIX
@@ -93,9 +93,27 @@ endif
 
 ifneq ($(OSNAME), AIX)
 ifneq ($(NO_LAPACKE), 1)
+	@cp $(NETLIB_LAPACK_DIR)/LAPACKE/include/lapacke.h lapacke_h.tmp
+ifdef SYMBOLPREFIX
+	@sed 's/LAPACKE_[a-z1-9].[^() ]*/$(SYMBOLPREFIX)&/g' lapacke_h.tmp > lapacke.tmp2
+	@mv lapacke.tmp2 lapacke_h.tmp
+endif
+ifdef SYMBOLSUFFIX
+	@sed 's/LAPACKE_[a-z1-9].[^() ]*/&$(SYMBOLSUFFIX)/g' lapacke_h.tmp > lapacke.tmp2
+	@mv lapacke.tmp2 lapacke_h.tmp
+endif
+	@-install -m644 lapacke_h.tmp "$(DESTDIR)$(OPENBLAS_INCLUDE_DIR)/lapacke.h"
 	@echo Copying LAPACKE header files to $(DESTDIR)$(OPENBLAS_INCLUDE_DIR)
-	@-install -m644 $(NETLIB_LAPACK_DIR)/LAPACKE/include/lapack.h "$(DESTDIR)$(OPENBLAS_INCLUDE_DIR)/lapack.h"
-	@-install -m644 $(NETLIB_LAPACK_DIR)/LAPACKE/include/lapacke.h "$(DESTDIR)$(OPENBLAS_INCLUDE_DIR)/lapacke.h"
+	@cp $(NETLIB_LAPACK_DIR)/LAPACKE/include/lapack.h lapack_h.tmp
+ifdef SYMBOLPREFIX
+	@sed 's/LAPACK_[a-z1-9]*(\.\.\.)/$(SYMBOLPREFIX)&/g' lapack_h.tmp > lapack.tmp2
+	@mv lapack.tmp2 lapack_h.tmp
+endif
+ifdef SYMBOLSUFFIX
+	@sed 's/\(#define $(SYMBOLPREFIX)LAPACK_[a-z1-9].*\)\((...)\)/\1$(SYMBOLSUFFIX)\2/g' lapack_h.tmp > lapack.tmp2
+	@mv lapack.tmp2 lapack_h.tmp
+endif
+	@-install -m644 lapack_h.tmp "$(DESTDIR)$(OPENBLAS_INCLUDE_DIR)/lapack.h"
 	@-install -m644 $(NETLIB_LAPACK_DIR)/LAPACKE/include/lapacke_config.h "$(DESTDIR)$(OPENBLAS_INCLUDE_DIR)/lapacke_config.h"
 	@-install -m644 $(NETLIB_LAPACK_DIR)/LAPACKE/include/lapacke_mangling_with_flags.h.in "$(DESTDIR)$(OPENBLAS_INCLUDE_DIR)/lapacke_mangling.h"
 	@-install -m644 $(NETLIB_LAPACK_DIR)/LAPACKE/include/lapacke_utils.h "$(DESTDIR)$(OPENBLAS_INCLUDE_DIR)/lapacke_utils.h"
@@ -189,6 +207,8 @@ endif
 
 
 #Generating OpenBLASConfig.cmake
+ifneq ($(origin _OpenBLAS_ROOT_DIR),"undefined")
+
 	@echo Generating $(OPENBLAS_CMAKE_CONFIG) in $(DESTDIR)$(OPENBLAS_CMAKE_DIR)
 	@echo "SET(OpenBLAS_VERSION \"${VERSION}\")" > "$(DESTDIR)$(OPENBLAS_CMAKE_DIR)/$(OPENBLAS_CMAKE_CONFIG)"
 	@echo "file(REAL_PATH \"../../..\" _OpenBLAS_ROOT_DIR BASE_DIRECTORY \$${CMAKE_CURRENT_LIST_DIR} )" >> "$(DESTDIR)$(OPENBLAS_CMAKE_DIR)/$(OPENBLAS_CMAKE_CONFIG)"
@@ -215,6 +235,27 @@ else
 #only static
 	@echo "SET(OpenBLAS_LIBRARIES \$${_OpenBLAS_ROOT_DIR}/lib/$(LIBPREFIX).$(LIBSUFFIX))" >> "$(DESTDIR)$(OPENBLAS_CMAKE_DIR)/$(OPENBLAS_CMAKE_CONFIG)"
 endif
+else
+	echo Generating $(OPENBLAS_CMAKE_CONFIG) in $(DESTDIR)$(OPENBLAS_CMAKE_DIR)
+	@echo "SET(OpenBLAS_VERSION \"${VERSION}\")" > "$(DESTDIR)$(OPENBLAS_CMAKE_DIR)/$(OPENBLAS_CMAKE_CONFIG)"
+	@echo "SET(OpenBLAS_INCLUDE_DIRS ${OPENBLAS_INCLUDE_DIR})" >> "$(DESTDIR)$(OPENBLAS_CMAKE_DIR)/$(OPENBLAS_CMAKE_CONFIG)"
+ifneq ($(NO_SHARED),1)
+#ifeq logical or
+ifeq ($(OSNAME), $(filter $(OSNAME),Linux FreeBSD NetBSD OpenBSD DragonFly))
+	@echo "SET(OpenBLAS_LIBRARIES ${OPENBLAS_LIBRARY_DIR}/$(LIBPREFIX)$(SYMBOLSUFFIX).so)" >> "$(DESTDIR)$(OPENBLAS_CMAKE_DIR)/$(OPENBLAS_CMAKE_CONFIG)"
+	endif
+ifeq ($(OSNAME), $(filter $(OSNAME),WINNT CYGWIN_NT))
+	@echo "SET(OpenBLAS_LIBRARIES ${OPENBLAS_BINARY_DIR}/$(LIBDLLNAME))" >> "$(DESTDIR)$(OPENBLAS_CMAKE_DIR)/$(OPENBLAS_CMAKE_CONFIG)"
+	ifeq ($(OSNAME), Darwin)
+	@echo "SET(OpenBLAS_LIBRARIES ${OPENBLAS_LIBRARY_DIR}/$(LIBPREFIX).dylib)" >> "$(DESTDIR)$(OPENBLAS_CMAKE_DIR)/$(OPENBLAS_CMAKE_CONFIG)"
+endif
+else
+#only static
+	@echo "SET(OpenBLAS_LIBRARIES ${OPENBLAS_LIBRARY_DIR}/$(LIBPREFIX).$(LIBSUFFIX))" >> "$(DESTDIR)$(OPENBLAS_CMAKE_DIR)/$(OPENBLAS_CMAKE_CONFIG)"
+endif
+endif
+endif
+
 #Generating OpenBLASConfigVersion.cmake
 	@echo Generating $(OPENBLAS_CMAKE_CONFIG_VERSION) in $(DESTDIR)$(OPENBLAS_CMAKE_DIR)
 	@echo "set (PACKAGE_VERSION \"${VERSION}\")" > "$(DESTDIR)$(OPENBLAS_CMAKE_DIR)/$(OPENBLAS_CMAKE_CONFIG_VERSION)"

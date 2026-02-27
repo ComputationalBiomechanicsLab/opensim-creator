@@ -37,9 +37,9 @@
 #define C6 x15               //Constant6: 3*ncol
 
     .text
-    .global sgemm_direct_sme1_preprocess
+    .global ASMNAME //sgemm_direct_sme1_preprocess
 
-    sgemm_direct_sme1_preprocess:
+    ASMNAME:        //sgemm_direct_sme1_preprocess:
 
     stp     x19, x20, [sp, #-48]!
     stp     x21, x22, [sp, #16]
@@ -114,14 +114,14 @@
 
     addvl   mat_ptr0, mat_ptr0, #1          //mat_ptr0 += SVLb
     whilelt p8.b, mat_ptr0, inner_loop_exit
-    b.first .Loop_process
+    b.mi .Loop_process
 
     add     mat_mod, mat_mod, C3, lsl #2    //mat_mod+=SVLs*nbc FP32 elements
     add     mat, mat, C3, lsl #2            //mat+=SVLs*nbc FP32 elements
     incw    outer_loop_cntr
 
     whilelt p0.s, outer_loop_cntr, nrow
-    b.first .M_Loop
+    b.mi .M_Loop
 
     smstop
 

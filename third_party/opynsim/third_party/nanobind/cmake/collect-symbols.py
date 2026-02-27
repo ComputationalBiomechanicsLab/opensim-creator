@@ -10,13 +10,13 @@ import re
 
 funcs: "set[str]" = set()
 
-for ver in ['3.7', '3.8', '3.9']:
+for ver in ['3.9']:
   url = f'https://raw.githubusercontent.com/python/cpython/{ver}/PC/python3.def'
   output = urlopen(url).read().decode('utf-8')
   for match in re.findall(r"  (.*)=.*", output):
       funcs.add(match)
 
-for ver in ['3.10', '3.11', 'main']:
+for ver in ['3.10', '3.11', '3.12', '3.13', '3.14', 'main']:
     url = f'https://raw.githubusercontent.com/python/cpython/{ver}/PC/python3dll.c'
     output = urlopen(url).read().decode('utf-8')
     for match in re.findall(r"EXPORT_FUNC\((.*)\)", output):

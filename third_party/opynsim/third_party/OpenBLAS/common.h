@@ -1,5 +1,6 @@
 /*********************************************************************/
 /* Copyright 2009, 2010 The University of Texas at Austin.           */
+/* Copyright 2025 The OpenBLAS Project.                              */
 /* All rights reserved.                                              */
 /*                                                                   */
 /* Redistribution and use in source and binary forms, with or        */
@@ -266,6 +267,14 @@ typedef uint16_t bfloat16;
 #define BFLOAT16CONVERSION 1
 #endif
 
+#ifdef BUILD_HFLOAT16
+  #ifndef hfloat16
+  typedef _Float16 hfloat16;
+  #endif
+#else
+  typedef uint16_t hfloat16;
+#endif
+
 #ifdef USE64BITINT
 typedef BLASLONG blasint;
 #if defined(OS_WINDOWS) && defined(__64BIT__)
@@ -309,8 +318,19 @@ typedef int blasint;
 #elif defined(BFLOAT16)
 #define IFLOAT	bfloat16
 #define XFLOAT IFLOAT
-#define FLOAT	float
+#ifdef BGEMM
+#define FLOAT	bfloat16
+#else
+#define FLOAT float
+#endif
 #define SIZE   2
+#define BASE_SHIFT 1
+#define ZBASE_SHIFT 2
+#elif defined(HFLOAT16)
+#define IFLOAT	hfloat16
+#define XFLOAT	IFLOAT
+#define FLOAT	float
+#define SIZE	2
 #define BASE_SHIFT 1
 #define ZBASE_SHIFT 2
 #else
@@ -342,18 +362,6 @@ typedef int blasint;
 #define MAX_CPU_NUMBER 2
 #endif
 
-#if defined(OS_SUNOS)
-#define YIELDING	thr_yield()
-#endif
-
-#if defined(OS_WINDOWS)
-#if defined(_MSC_VER) && !defined(__clang__)
-#define YIELDING    YieldProcessor()
-#else
-#define YIELDING	SwitchToThread()
-#endif
-#endif
-
 #if defined(ARMV7) || defined(ARMV6) || defined(ARMV8) || defined(ARMV5)
 #define YIELDING        __asm__ __volatile__ ("nop;nop;nop;nop;nop;nop;nop;nop; \n");
 #endif
@@ -378,13 +386,25 @@ typedef int blasint;
 #endif
 #endif
 
-
 #ifdef __EMSCRIPTEN__
 #define YIELDING
 #endif
 
+#if defined(_MSC_VER) && !defined(__clang__)
+#undef YIELDING // MSVC doesn't support assembly code
+#define YIELDING    	YieldProcessor()
+#endif
+
 #ifndef YIELDING
+#if defined(OS_SUNOS)
+#define YIELDING	thr_yield()
+
+#elif defined(OS_WINDOWS)
+#define YIELDING	SwitchToThread()
+
+#else // assume POSIX.1-2008
 #define YIELDING	sched_yield()
+#endif
 #endif
 
 /***
@@ -745,7 +765,7 @@ static __inline int readenv_atoi(char *env) {
 	return 0;
 }
 #else
-#ifdef OS_WINDOWS
+#if defined(OS_WINDOWS) && !defined(OS_CYGWIN_NT)
 static __inline int readenv_atoi(char *env) {
   env_var_t p;
   return readenv(p,env) ? 0 : atoi(p);
@@ -761,7 +781,7 @@ static __inline int readenv_atoi(char *env) {
 #endif
 #endif
 
-#if !defined(XDOUBLE) || !defined(QUAD_PRECISION)
+#if !defined(BFLOAT16) && (!defined(XDOUBLE) || !defined(QUAD_PRECISION))
 
 static __inline void compinv(FLOAT *b, FLOAT ar, FLOAT ai){
 

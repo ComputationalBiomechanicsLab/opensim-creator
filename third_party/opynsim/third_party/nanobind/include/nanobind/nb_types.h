@@ -162,6 +162,33 @@ public:
 
 NAMESPACE_END(detail)
 
+// *WARNING*: nanobind regularly receives requests from users who run it
+// through Clang-Tidy, or who compile with increased warnings levels, like
+//
+//     -Wcast-qual, -Wsign-conversion, etc.
+//
+// (i.e., beyond -Wall -Wextra and /W4 that are currently already used)
+//
+// Their next step is to open a big pull request needed to silence all of
+// the resulting messages.  This comment is strategically placed here
+// because the (PyObject *) casts below cast away the const qualifier and
+// will almost certainly be flagged in this process.
+//
+// My policy on this is as follows: I am always happy to fix issues in the
+// codebase.  However, many of the resulting change requests are in the
+// "ritual purification" category: things that cause churn, decrease
+// readability, and which don't fix actual problems.  It's a never-ending
+// cycle because each new revision of such tooling adds further warnings
+// and purification rites.
+//
+// So just to be clear: I do not wish to pepper this codebase with
+// "const_cast" and #pragmas/comments to avoid warnings in external
+// tooling just so those users can have a "silent" build.  I don't think it
+// is reasonable for them to impose their own style on this project.
+//
+// As a workaround it is likely possible to restrict the scope of style
+// checks to particular C++ namespaces or source code locations.
+
 class handle : public detail::api<handle> {
     friend class python_error;
     friend struct detail::str_attr;
@@ -460,13 +487,8 @@ NAMESPACE_END(literals)
 class bytearray : public object {
     NB_OBJECT(bytearray, object, "bytearray", PyByteArray_Check)
 
-#if PY_VERSION_HEX >= 0x03090000
     bytearray()
         : object(PyObject_CallNoArgs((PyObject *)&PyByteArray_Type), detail::steal_t{}) { }
-#else
-    bytearray()
-        : object(PyObject_CallObject((PyObject *)&PyByteArray_Type, NULL), detail::steal_t{}) { }
-#endif
 
     explicit bytearray(handle h)
         : object(detail::bytearray_from_obj(h.ptr()), detail::steal_t{}) { }
@@ -604,11 +626,11 @@ class frozenset : public object {
 };
 
 class sequence : public object {
-    NB_OBJECT_DEFAULT(sequence, object, NB_TYPING_SEQUENCE, PySequence_Check)
+    NB_OBJECT_DEFAULT(sequence, object, "collections.abc.Sequence", PySequence_Check)
 };
 
 class mapping : public object {
-    NB_OBJECT_DEFAULT(mapping, object, NB_TYPING_MAPPING, PyMapping_Check)
+    NB_OBJECT_DEFAULT(mapping, object, "collections.abc.Mapping", PyMapping_Check)
     list keys() const { return steal<list>(detail::obj_op_1(m_ptr, PyMapping_Keys)); }
     list values() const { return steal<list>(detail::obj_op_1(m_ptr, PyMapping_Values)); }
     list items() const { return steal<list>(detail::obj_op_1(m_ptr, PyMapping_Items)); }
@@ -630,7 +652,7 @@ public:
     using reference = const handle;
     using pointer = const handle *;
 
-    NB_OBJECT_DEFAULT(iterator, object, NB_TYPING_ITERATOR, PyIter_Check)
+    NB_OBJECT_DEFAULT(iterator, object, "collections.abc.Iterator", PyIter_Check)
 
     iterator& operator++() {
         m_value = steal(detail::obj_iter_next(m_ptr));
@@ -662,7 +684,7 @@ private:
 
 class iterable : public object {
 public:
-    NB_OBJECT_DEFAULT(iterable, object, NB_TYPING_ITERABLE, detail::iterable_check)
+    NB_OBJECT_DEFAULT(iterable, object, "collections.abc.Iterable", detail::iterable_check)
 };
 
 /// Retrieve the Python type object associated with a C++ class
@@ -731,6 +753,12 @@ public:
     }
 };
 
+class memoryview : public object {
+    NB_OBJECT(memoryview, object, "memoryview", PyMemoryView_Check)
+    explicit memoryview(handle h)
+        : object(detail::memoryview_from_obj(h.ptr()), detail::steal_t{}) { }
+};
+
 class ellipsis : public object {
     static bool is_ellipsis(PyObject *obj) { return obj == Py_Ellipsis; }
 
@@ -749,7 +777,7 @@ public:
 
 class callable : public object {
 public:
-    NB_OBJECT(callable, object, NB_TYPING_CALLABLE, PyCallable_Check)
+    NB_OBJECT(callable, object, "collections.abc.Callable", PyCallable_Check)
     using object::object;
 };
 
@@ -793,7 +821,7 @@ public:
 
 template <typename T> class type_object_t : public type_object {
 public:
-    static constexpr auto Name = detail::const_name(NB_TYPING_TYPE "[") +
+    static constexpr auto Name = detail::const_name("type[") +
                                  detail::make_caster<T>::Name +
                                  detail::const_name("]");
 

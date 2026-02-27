@@ -92,7 +92,18 @@ typedef FLOAT v4sf_t __attribute__ ((vector_size (16)));
 	  rowC = (v4sf_t *) &CO[1* ldc+J]; \
           rowC[0] += result[1] * alpha;
 #endif
-
+#define KERNEL(i) \
+          rowA = (vec_t *)&AO[(i)<< 3];\
+          rowB = *((__vector_pair *)((void *)&BO[(i) << 3]));\
+          rowB1 = *((__vector_pair *)((void *)&BO[((i) << 3) + 4]));\
+          __builtin_mma_xvf64gerpp(&acc0, rowB, rowA[0]);\
+          __builtin_mma_xvf64gerpp(&acc1, rowB1, rowA[0]);\
+          __builtin_mma_xvf64gerpp(&acc2, rowB, rowA[1]);\
+          __builtin_mma_xvf64gerpp(&acc3, rowB1, rowA[1]);\
+          __builtin_mma_xvf64gerpp(&acc4, rowB, rowA[2]);\
+          __builtin_mma_xvf64gerpp(&acc5, rowB1, rowA[2]);\
+          __builtin_mma_xvf64gerpp(&acc6, rowB, rowA[3]);\
+          __builtin_mma_xvf64gerpp(&acc7, rowB1, rowA[3]);
 #define PREFETCH1(x, y) asm volatile ("dcbt %0, %1" : : "r" (x), "b" (y) : "memory");
 
 #if (defined(LEFT) && !defined(TRANSA)) || (!defined(LEFT) && defined(TRANSA))
@@ -188,7 +199,7 @@ CNAME (BLASLONG m, BLASLONG n, BLASLONG k, FLOAT alpha, FLOAT * A, FLOAT * B,
 	  v4sf_t *rowC;
 	  v4sf_t result[4];
 	  __vector_quad acc0, acc1, acc2, acc3, acc4,acc5,acc6,acc7;
-	  BLASLONG l = 0;
+	  BLASLONG l = 1;
 	  vec_t *rowA = (vec_t *) & AO[0];
 	  __vector_pair rowB, rowB1;
 	  rowB = *((__vector_pair *)((void *)&BO[0]));
@@ -201,20 +212,55 @@ CNAME (BLASLONG m, BLASLONG n, BLASLONG k, FLOAT alpha, FLOAT * A, FLOAT * B,
 	  __builtin_mma_xvf64ger (&acc5, rowB1, rowA[2]);
 	  __builtin_mma_xvf64ger (&acc6, rowB, rowA[3]);
 	  __builtin_mma_xvf64ger (&acc7, rowB1, rowA[3]);
-	  for (l = 1; l < temp; l++)
-	    {
-	      rowA = (vec_t *) & AO[l << 3];
-	      rowB = *((__vector_pair *)((void *)&BO[l << 3]));
-	      rowB1 = *((__vector_pair *)((void *)&BO[(l << 3) + 4]));
-	      __builtin_mma_xvf64gerpp (&acc0, rowB, rowA[0]);
-	      __builtin_mma_xvf64gerpp (&acc1, rowB1, rowA[0]);
-	      __builtin_mma_xvf64gerpp (&acc2, rowB, rowA[1]);
-	      __builtin_mma_xvf64gerpp (&acc3, rowB1, rowA[1]);
-	      __builtin_mma_xvf64gerpp (&acc4, rowB, rowA[2]);
-	      __builtin_mma_xvf64gerpp (&acc5, rowB1, rowA[2]);
-	      __builtin_mma_xvf64gerpp (&acc6, rowB, rowA[3]);
-	      __builtin_mma_xvf64gerpp (&acc7, rowB1, rowA[3]);
-	    }
+	  for (l = 1; l + 15 < temp; l += 16)
+	{
+		 KERNEL (l);
+		 KERNEL (l+1);
+		 KERNEL (l+2);
+		 KERNEL (l+3);
+		 KERNEL (l+4);
+		 KERNEL (l+5);
+		 KERNEL (l+6);
+		 KERNEL (l+7);
+		 KERNEL (l+8);
+		 KERNEL (l+9);
+		 KERNEL (l+10);
+		 KERNEL (l+11);
+		 KERNEL (l+12);
+		 KERNEL (l+13);
+		 KERNEL (l+14);
+		 KERNEL (l+15);
+	}
+	if ((temp - l) & 8)
+	{
+		KERNEL(l);
+		KERNEL(l+1);
+		KERNEL(l+2);
+		KERNEL(l+3);
+		KERNEL(l+4);
+		KERNEL(l+5);
+		KERNEL(l+6);
+		KERNEL(l+7);
+                l += 8;
+	}
+	if ((temp - l) & 4)
+	{
+		KERNEL(l);
+		KERNEL(l+1);
+		KERNEL(l+2);
+		KERNEL(l+3);
+        	l += 4;
+	}
+	if ((temp - l) & 2)
+	{
+		KERNEL(l);
+		KERNEL(l+1);
+		l += 2;
+	}
+	if ((temp - l) & 1)
+	{
+		KERNEL(l);
+	}
 	  SAVE_ACC (&acc0, 0);
 	  SAVE_ACC1 (&acc1, 0);
 	  SAVE_ACC (&acc2, 2);

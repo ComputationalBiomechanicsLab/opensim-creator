@@ -345,9 +345,46 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_UPLO Uplo, enum CBLAS_TRANSPOSE Tr
     return;
   }
 
+  if (args.n == 0) return;
+
+#ifdef DYNAMIC_ARCH
+extern char* gotoblas_corename(void);
 #endif
 
-  if (args.n == 0) return;
+#if !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)  && !defined(HFLOAT16)
+#if defined(ARCH_ARM64) && (defined(USE_SSYR2K_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
+#if defined(DYNAMIC_ARCH)
+if (strcmp(gotoblas_corename(), "armv9sme") == 0
+#if defined(__clang__)
+ || strcmp(gotoblas_corename(), "vortexm4") == 0
+#endif
+)
+#endif
+   if (order == CblasRowMajor && n == ldc) {
+     if (Trans == CblasNoTrans && k == lda && k == ldb) {
+      if (Uplo == CblasUpper) {
+        SSYR2K_DIRECT_ALPHA_BETA_UN(n, k, alpha, a, lda, b, ldb, beta, c, ldc);
+        return;
+      }else if (Uplo == CblasLower) {
+        SSYR2K_DIRECT_ALPHA_BETA_LN(n, k, alpha, a, lda, b, ldb, beta, c, ldc);
+        return;
+      }
+     }
+     else if (Trans == CblasTrans && n == lda && n ==ldb) {
+      if (Uplo == CblasUpper) {
+        SSYR2K_DIRECT_ALPHA_BETA_UT(n, k, alpha, a, lda, b, ldb, beta, c, ldc);
+        return;
+      }else if (Uplo == CblasLower) {
+        SSYR2K_DIRECT_ALPHA_BETA_LT(n, k, alpha, a, lda, b, ldb, beta, c, ldc);
+        return;
+      }
+     }
+   }
+#endif
+#endif
+
+#endif
+
 
   IDEBUG_START;
 

@@ -14,3 +14,5 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   which includes new `MeyerFregly2016Force` and `MeyerFregly2016Muscle` components.
 - Updated simbody to from `f9ab12cbad9d0da106473259d34c50577f934f49` to `7f35622b3c5daac919fc39a2865498c03c553e53`,
   which contains some cable path fixes.
+- Nanobind was updated to v2.12.0
+- OpenBLAS was updated to v0.3.31

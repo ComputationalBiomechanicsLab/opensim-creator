@@ -30,9 +30,11 @@ nofortran=0
 shift 2
 compiler="$*"
 compiler_bin="$1"
+shift
+compiler_args="$*"
 
 # f77 is too ambiguous
-[ "$compiler" = "f77" ] && compiler=''
+[ "$compiler_bin" = "f77" ] && compiler=''
 
 path=`split "$PATH" ':'`
 
@@ -50,7 +52,7 @@ if [ -z "$compiler" ]; then
     for list in $lists; do
         for p in $path; do
             if [ -x "$p/$list" ]; then
-                compiler=$list
+                compiler="$list $compiler_args"
                 compiler_bin=$list
                 break 2
             fi
@@ -90,7 +92,7 @@ else
 		vendor=FLANG
 		openmp='-fopenmp'
 		;;	
-            *GNU*|*GCC*)
+            *GCC*)
 
                 v="${data#*GCC: *\) }"
                 v="${v%%\"*}"

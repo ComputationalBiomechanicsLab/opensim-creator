@@ -1,5 +1,5 @@
 /*****************************************************************************
-Copyright (c) 2011-2014, The OpenBLAS Project
+Copyright (c) 2011-2014, 2025 The OpenBLAS Project
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -158,6 +158,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* #define FORCE_CSKY		*/
 /* #define FORCE_CK860FV        */
 /* #define FORCE_GENERIC	*/
+/* #define FORCE_AMPERE1	*/
 
 #ifdef FORCE_P2
 #define FORCE
@@ -835,7 +836,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CORENAME  "POWER9"
 #endif
 
-#if defined(FORCE_POWER10)
+#if defined(FORCE_POWER10) || (FORCE_POWER11)
 #define FORCE
 #define ARCHITECTURE    "POWER"
 #define SUBARCHITECTURE "POWER10"
@@ -1475,7 +1476,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        "-DL2_SIZE=1048576 -DL2_LINESIZE=64 -DL2_ASSOCIATIVE=16 " \
        "-DDTB_DEFAULT_ENTRIES=64 -DDTB_SIZE=4096 " \
        "-DHAVE_VFPV4 -DHAVE_VFPV3 -DHAVE_VFP -DHAVE_NEON -DHAVE_SVE -DARMV8 " \
-       "-march=armv8.4-a+sve -mtune=neoverse-v1"
+       "-march=armv8.4-a+sve+bf16 -mtune=neoverse-v1"
 #define LIBNAME   "neoversev1"
 #define CORENAME  "NEOVERSEV1"
 #endif
@@ -1495,6 +1496,22 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        "-march=armv8.5-a -mtune=neoverse-n2"
 #define LIBNAME   "neoversen2"
 #define CORENAME  "NEOVERSEN2"
+#endif
+
+#ifdef FORCE_NEOVERSEV2
+#define FORCE
+#define ARCHITECTURE    "ARM64"
+#define SUBARCHITECTURE "NEOVERSEV2"
+#define SUBDIRNAME      "arm64"
+#define ARCHCONFIG   "-DNEOVERSEV2 " \
+       "-DL1_CODE_SIZE=65536 -DL1_CODE_LINESIZE=64 -DL1_CODE_ASSOCIATIVE=4 " \
+       "-DL1_DATA_SIZE=65536 -DL1_DATA_LINESIZE=64 -DL1_DATA_ASSOCIATIVE=4 " \
+       "-DL2_SIZE=1048576 -DL2_LINESIZE=64 -DL2_ASSOCIATIVE=16 " \
+       "-DDTB_DEFAULT_ENTRIES=64 -DDTB_SIZE=4096 " \
+       "-DHAVE_VFPV4 -DHAVE_VFPV3 -DHAVE_VFP -DHAVE_NEON -DHAVE_SVE -DARMV8 " \
+       "-mcpu=neoverse-v2"
+#define LIBNAME   "neoversev2"
+#define CORENAME  "NEOVERSEV2"
 #endif
 
 #ifdef FORCE_CORTEXA55
@@ -1590,6 +1607,22 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CORENAME  "EMAG8180"
 #endif
 
+#ifdef FORCE_AMPERE1
+#define FORCE
+#define ARCHITECTURE    "ARM64"
+#define SUBARCHITECTURE "AMPERE1"
+#define SUBDIRNAME      "arm64"
+#define ARCHCONFIG   "-DAMPERE1 " \
+       "-DL1_CODE_SIZE=16384 -DL1_CODE_LINESIZE=64 -DL1_CODE_ASSOCIATIVE=4 " \
+       "-DL1_DATA_SIZE=65536 -DL1_DATA_LINESIZE=64 -DL1_DATA_ASSOCIATIVE=4 " \
+       "-DL2_SIZE=2097152 -DL2_LINESIZE=64 -DL2_ASSOCIATIVE=16 " \
+       "-DDTB_DEFAULT_ENTRIES=64 -DDTB_SIZE=4096 " \
+       "-DHAVE_VFPV4 -DHAVE_VFPV3 -DHAVE_VFP -DHAVE_NEON -DARMV8 " \
+       "-march=armv8.6-a+crypto+crc+fp16+sha3+rng"
+#define LIBNAME   "ampere1"
+#define CORENAME  "AMPERE1"
+#endif
+
 #ifdef FORCE_THUNDERX3T110
 #define ARMV8
 #define FORCE
@@ -1619,6 +1652,28 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        "-DHAVE_VFPV4 -DHAVE_VFPV3 -DHAVE_VFP -DHAVE_NEON -DARMV8"
 #define LIBNAME   "vortex"
 #define CORENAME  "VORTEX"
+#endif
+
+#ifdef FORCE_VORTEXM4
+#define FORCE
+#define ARCHITECTURE    "ARM64"
+#define SUBARCHITECTURE "VORTEXM4"
+#define SUBDIRNAME      "arm64"
+#ifdef __clang__
+#define ARCHCONFIG   "-DVORTEXM4 " \
+       "-DL1_DATA_SIZE=32768 -DL1_DATA_LINESIZE=64 " \
+       "-DL2_SIZE=262144 -DL2_LINESIZE=64 " \
+       "-DDTB_DEFAULT_ENTRIES=64 -DDTB_SIZE=4096 -DL2_ASSOCIATIVE=32 " \
+       "-DHAVE_VFPV4 -DHAVE_VFPV3 -DHAVE_VFP -DHAVE_NEON -DHAVE_SME -DARMV8"
+#else
+#define ARCHCONFIG   "-DVORTEX " \
+       "-DL1_DATA_SIZE=32768 -DL1_DATA_LINESIZE=64 " \
+       "-DL2_SIZE=262144 -DL2_LINESIZE=64 " \
+       "-DDTB_DEFAULT_ENTRIES=64 -DDTB_SIZE=4096 -DL2_ASSOCIATIVE=32 " \
+       "-DHAVE_VFPV4 -DHAVE_VFPV3 -DHAVE_VFP -DHAVE_NEON -DARMV8"
+#endif
+#define LIBNAME   "vortexm4"
+#define CORENAME  "VORTEXM4"
 #endif
 
 #ifdef FORCE_A64FX
@@ -1820,7 +1875,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CORENAME  "CK860FV"
 #endif
 
-
 #ifndef FORCE
 
 #ifdef USER_TARGET
@@ -2014,10 +2068,9 @@ int main(int argc, char *argv[]){
 #endif
 
 
-#ifdef INTEL_AMD
-#ifndef FORCE
+#if defined(INTEL_AMD) && !defined(FORCE)
     get_sse();
-#else
+#elif defined(FORCE_INTEL)
 
     sprintf(buffer, "%s", ARCHCONFIG);
 
@@ -2046,7 +2099,6 @@ int main(int argc, char *argv[]){
 	printf("\n");
       } else p ++;
     }
-#endif
 #endif
 
 #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__

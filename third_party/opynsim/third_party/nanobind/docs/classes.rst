@@ -1141,3 +1141,43 @@ Two limitations of :cpp:struct:`nb::new_ <new_>` are worth noting:
    just helps unpickling work. If your first :cpp:struct:`nb::new_ <new_>`
    method is one that takes no arguments, then nanobind won't add its own,
    and you'll have to deal with unpickling some other way.
+
+Preventing object destruction
+-----------------------------
+
+In rare cases, you may need to bind a class that should never be destructed
+by nanobind:
+
+.. code-block:: cpp
+
+   class Singleton {
+   public:
+       static Singleton &get_instance();
+   };
+
+You may use the :cpp:class:`nb::never_destruct <never_destruct>` annotation to
+make nanobind aware of this. This feature is particularly helpful when attempts
+to bind the destructor would fail with a compilation error (e.g., because this
+would require access to implementation details that are not available in the
+current compilation unit).
+
+.. code-block:: cpp
+
+   nb::class_<Singleton>(m, "Singleton", nb::never_destruct())
+       .def_static("get_instance", &Singleton::get_instance, nb::rv_policy::reference);
+
+.. warning::
+
+   Instance class marked with :cpp:class:`nb::never_destruct <never_destruct>`
+   must be returned using the :cpp:enumerator:`reference
+   <rv_policy::reference>` return value policy. Otherwise, nanobind will assume
+   ownership, which includes the requirement of destructing the object at
+   a later point.
+
+   Similarly, you must not bind constructors or copy constructors, as the
+   eventual garbage collection of constructed instances would require calling
+   the destructor.
+
+   nanobind will abort with a fatal error if it is ever put into a situation
+   where an object with the :cpp:class:`nb::never_destruct <never_destruct>`
+   annotation must be destructed.

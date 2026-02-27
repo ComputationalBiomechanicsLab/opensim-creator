@@ -75,7 +75,7 @@ NB_INLINE PyObject *func_create(Func &&func, Return (*)(Args...),
 
     if constexpr (CheckGuard && !std::is_same_v<typename Info::call_guard, void>) {
         return func_create<ReturnRef, false>(
-            [func = (forward_t<Func>) func](Args... args) NB_INLINE_LAMBDA {
+            [func = (forward_t<Func>) func](Args... args) NB_INLINE_LAMBDA -> Return {
                 typename Info::call_guard::type g;
                 (void) g;
                 return func((forward_t<Args>) args...);
@@ -95,6 +95,8 @@ NB_INLINE PyObject *func_create(Func &&func, Return (*)(Args...),
         kwargs_pos_n = index_n_v<std::is_same_v<intrinsic_t<Args>, kwargs>...>,
         nargs = sizeof...(Args);
 
+    constexpr bool has_arg_defaults = (detail::has_arg_defaults_v<Args> || ... || false);
+
     // Determine the number of nb::arg/nb::arg_v annotations
     constexpr size_t nargs_provided =
         (std::is_base_of_v<arg, Extra> + ... + 0);
@@ -102,7 +104,7 @@ NB_INLINE PyObject *func_create(Func &&func, Return (*)(Args...),
         (std::is_same_v<is_method, Extra> + ... + 0) != 0;
     constexpr bool is_getter_det =
         (std::is_same_v<is_getter, Extra> + ... + 0) != 0;
-    constexpr bool has_arg_annotations = nargs_provided > 0 && !is_getter_det;
+    constexpr bool has_arg_annotations = has_arg_defaults || (nargs_provided > 0 && !is_getter_det);
 
     // Determine the number of potentially-locked function arguments
     constexpr bool lock_self_det =
@@ -128,7 +130,7 @@ NB_INLINE PyObject *func_create(Func &&func, Return (*)(Args...),
     // A few compile-time consistency checks
     static_assert(args_pos_1 == args_pos_n && kwargs_pos_1 == kwargs_pos_n,
         "Repeated use of nb::kwargs or nb::args in the function signature!");
-    static_assert(!has_arg_annotations || nargs_provided + is_method_det == nargs,
+    static_assert(!has_arg_annotations || has_arg_defaults || nargs_provided + is_method_det == nargs,
         "The number of nb::arg annotations must match the argument count!");
     static_assert(kwargs_pos_1 == nargs || kwargs_pos_1 + 1 == nargs,
         "nb::kwargs must be the last element of the function signature!");
@@ -188,7 +190,19 @@ NB_INLINE PyObject *func_create(Func &&func, Return (*)(Args...),
     };
 
     // The following temporary record will describe the function in detail
-    func_data_prelim<nargs_provided> f;
+    func_data_prelim<has_arg_defaults ? (nargs - is_method_det) : nargs_provided> f;
+
+    // Pre-initialize argument flags with 'convert'. The 'accepts_none' flag
+    // for std::optional<> args is applied after func_extra_apply (see below).
+    if constexpr (has_arg_defaults) {
+        ((void)(Is < (size_t)is_method_det ||
+                (f.args[Is - is_method_det] = { nullptr, nullptr, nullptr, nullptr,
+                    (uint8_t) cast_flags::convert }, true)), ...);
+    } else if constexpr (nargs_provided > 0) {
+        for (size_t i = 0; i < nargs_provided; ++i)
+            f.args[i].flag = 0;
+    }
+
     f.flags = (args_pos_1   < nargs ? (uint32_t) func_flags::has_var_args   : 0) |
               (kwargs_pos_1 < nargs ? (uint32_t) func_flags::has_var_kwargs : 0) |
               (ReturnRef            ? (uint32_t) func_flags::return_ref     : 0) |
@@ -311,7 +325,15 @@ NB_INLINE PyObject *func_create(Func &&func, Return (*)(Args...),
 
     (void) arg_index;
 
-    return nb_func_new((const void *) &f);
+    // Apply implicit accepts_none for std::optional<> typed arguments
+    // after func_extra_apply, so that explicit nb::arg().noconvert() works.
+    if constexpr (has_arg_defaults) {
+        ((void)(Is >= (size_t)is_method_det && has_arg_defaults_v<Args> &&
+                (f.args[Is - is_method_det].flag |=
+                     (uint8_t) cast_flags::accepts_none, true)), ...);
+    }
+
+    return nb_func_new(&f);
 }
 
 NAMESPACE_END(detail)

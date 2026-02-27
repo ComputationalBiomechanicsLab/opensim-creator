@@ -40,7 +40,13 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #ifdef USE_SVE
+#ifdef DOT_KERNEL_SVE
+#include DOT_KERNEL_SVE
+#elif defined(A64FX)
+#include "dot_kernel_sve_v8.c"
+#else
 #include "dot_kernel_sve.c"
+#endif
 #endif
 #include "dot_kernel_asimd.c"
 
@@ -78,14 +84,43 @@ static inline int get_dot_optimal_nthreads_neoversev1(BLASLONG N, int ncpu) {
 }
 #endif
 
+#if defined(DYNAMIC_ARCH) || defined(A64FX)
+static inline int get_dot_optimal_nthreads_a64fx(BLASLONG N, int ncpu) {
+  #ifdef DOUBLE
+  return (N <= 11000L) ? 1 
+      : (N <= 20000L)  ? MIN(ncpu, 2) 
+      : (N <= 35000L)  ? MIN(ncpu, 4) 
+      : (N <= 50000L)  ? MIN(ncpu, 6) 
+      : (N <= 440000L)  ? MIN(ncpu, 8) 
+      : (N <= 880000L)  ? MIN(ncpu, 16) 
+      : (N <= 1020000L) ? MIN(ncpu, 24) 
+      : ncpu;
+  #else
+  return (N <= 22000L) ? 1 
+      : (N <= 39000L)  ? MIN(ncpu, 2) 
+      : (N <= 79000L)  ? MIN(ncpu, 4) 
+      : (N <= 120000L)  ? MIN(ncpu, 6) 
+      : (N <= 1020000L)  ? MIN(ncpu, 8) 
+      : ncpu;
+  #endif
+}
+#endif
+
 static inline int get_dot_optimal_nthreads(BLASLONG n) {
   int ncpu = num_cpu_avail(1);
 
-#if defined(NEOVERSEV1) && !defined(COMPLEX) && !defined(BFLOAT16)
+#if defined(A64FX) && !defined(COMPLEX) && !defined(BFLOAT16)
+  return get_dot_optimal_nthreads_a64fx(n, ncpu);
+#elif defined(NEOVERSEV1) && !defined(COMPLEX) && !defined(BFLOAT16)
   return get_dot_optimal_nthreads_neoversev1(n, ncpu);
 #elif defined(DYNAMIC_ARCH) && !defined(COMPLEX) && !defined(BFLOAT16)
-  if (strcmp(gotoblas_corename(), "neoversev1") == 0) {
-    return get_dot_optimal_nthreads_neoversev1(n, ncpu);
+  {
+    const char *core = gotoblas_corename();
+    if (strcmp(core, "a64fx") == 0) {
+      return get_dot_optimal_nthreads_a64fx(n, ncpu);
+    } else if (strcmp(core, "neoversev1") == 0) {
+      return get_dot_optimal_nthreads_neoversev1(n, ncpu);
+    }
   }
 #endif
 
@@ -93,7 +128,7 @@ static inline int get_dot_optimal_nthreads(BLASLONG n) {
   if (n <= 10000L)
     return 1;
   else
-    return num_cpu_avail(1);
+    return ncpu;
 }
 #endif
 

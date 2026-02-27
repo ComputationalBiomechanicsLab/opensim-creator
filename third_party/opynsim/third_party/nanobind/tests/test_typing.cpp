@@ -57,7 +57,9 @@ NB_MODULE(test_typing_ext, m) {
 
     m.def("makeNestedClass", [] { return NestedClass(); });
 
-    // Aliases to local functoins and types
+    m.attr("AnyTuple") = nb::typing().attr("Tuple")[nb::make_tuple(nb::any_type(), nb::ellipsis())];
+
+    // Aliases to local functions and types
     m.attr("FooAlias") = m.attr("Foo");
     m.attr("f_alias") = m.attr("f");
     nb::type<Foo>().attr("lt_alias") = nb::type<Foo>().attr("__lt__");
@@ -65,7 +67,7 @@ NB_MODULE(test_typing_ext, m) {
     // Custom signature generation for classes and methods
     struct CustomSignature { int value; };
     nb::class_<CustomSignature>(
-        m, "CustomSignature", nb::sig("@my_decorator\nclass CustomSignature(" NB_TYPING_ITERABLE "[int])"))
+        m, "CustomSignature", nb::sig("@my_decorator\nclass CustomSignature(collections.abc.Iterable[int])"))
         .def("method", []{}, nb::sig("@my_decorator\ndef method(self: typing.Self)"))
         .def("method_with_default", [](CustomSignature&,bool){}, "value"_a.sig("bool(True)") = true)
         .def_rw("value", &CustomSignature::value,
@@ -100,7 +102,7 @@ NB_MODULE(test_typing_ext, m) {
             nb::sig("def get(self, /) -> T"))
        .def(nb::self == nb::self, nb::sig("def __eq__(self, arg: object, /) -> bool"));
 
-#if PY_VERSION_HEX >= 0x03090000 && !defined(PYPY_VERSION) // https://github.com/pypy/pypy/issues/4914
+#if !defined(PYPY_VERSION) // https://github.com/pypy/pypy/issues/4914
     struct WrapperFoo : Wrapper { };
     nb::class_<WrapperFoo>(m, "WrapperFoo", wrapper[nb::type<Foo>()]);
 #endif
@@ -111,6 +113,10 @@ NB_MODULE(test_typing_ext, m) {
                                  nb::sig("class WrapperTypeParam[T]"));
     m.def("list_front", [](nb::list l) { return l[0]; },
           nb::sig("def list_front[T](arg: list[T], /) -> T"));
+
+    // Type variables with constraints and a bound.
+    m.attr("T2") = nb::type_var("T2", "bound"_a = nb::type<Foo>());
+    m.attr("T3") = nb::type_var("T3", *nb::make_tuple(nb::type<Foo>(), nb::type<Wrapper>()));
 
     // Some statements that will be modified by the pattern file
     m.def("remove_me", []{});

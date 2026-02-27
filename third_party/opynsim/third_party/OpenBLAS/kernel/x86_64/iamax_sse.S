@@ -96,9 +96,9 @@
 #ifdef USE_ABS
 	andps	%xmm15, %xmm0
 #endif
-	movaps	%xmm0, %xmm1
-	movaps	%xmm0, %xmm2
-	movaps	%xmm0, %xmm3		/* Generating "seed value" */
+	movups	%xmm0, %xmm1
+	movups	%xmm0, %xmm2
+	movups	%xmm0, %xmm3		/* Generating "seed value" */
 	cmpq	$SIZE, INCX
 	jne	.L80			/* Incx != 1 goto L80 */
 
@@ -146,25 +146,25 @@
 	PREFETCH (PREFETCHSIZE +  0) - PREOFFSET(X)
 #endif
 
-	movaps	 0 * SIZE(X), %xmm4
+	movups	 0 * SIZE(X), %xmm4
 #ifdef USE_ABS
 	andps	%xmm15, %xmm4
 #endif
 	MAXPS	%xmm4, %xmm0
 
-	movaps	 4 * SIZE(X), %xmm5
+	movups	 4 * SIZE(X), %xmm5
 #ifdef USE_ABS
 	andps	%xmm15, %xmm5
 #endif
 	MAXPS	%xmm5, %xmm1
 
-	movaps	 8 * SIZE(X), %xmm6
+	movups	 8 * SIZE(X), %xmm6
 #ifdef USE_ABS
 	andps	%xmm15, %xmm6
 #endif
 	MAXPS	%xmm6, %xmm2
 
-	movaps	12 * SIZE(X), %xmm7
+	movups	12 * SIZE(X), %xmm7
 #ifdef USE_ABS
 	andps	%xmm15, %xmm7
 #endif
@@ -182,13 +182,13 @@
 	testq	$8, M
 	je	.L16
 
-	movaps	0 * SIZE(X), %xmm4
+	movups	0 * SIZE(X), %xmm4
 #ifdef USE_ABS
 	andps	%xmm15, %xmm4
 #endif
 	MAXPS	%xmm4, %xmm0
 
-	movaps	4 * SIZE(X), %xmm5
+	movups	4 * SIZE(X), %xmm5
 #ifdef USE_ABS
 	andps	%xmm15, %xmm5
 #endif
@@ -200,7 +200,7 @@
 	testq	$4, M
 	je	.L17
 
-	movaps	0 * SIZE(X), %xmm6
+	movups	0 * SIZE(X), %xmm6
 #ifdef USE_ABS
 	andps	%xmm15, %xmm6
 #endif
@@ -238,10 +238,10 @@
 	MAXPS	%xmm1, %xmm0
 	MAXPS	%xmm3, %xmm2
 	MAXPS	%xmm2, %xmm0
-	movaps	%xmm0, %xmm1
+	movups	%xmm0, %xmm1
 	movhlps %xmm0, %xmm0
 	MAXPS	%xmm1, %xmm0
-	movaps	%xmm0, %xmm1
+	movups	%xmm0, %xmm1
 	shufps	$1, %xmm0, %xmm0
 	MAXSS	%xmm1, %xmm0
 	shufps	$0, %xmm0, %xmm0
@@ -295,13 +295,13 @@
 	PREFETCH (PREFETCHSIZE +  0) - PREOFFSET(X)
 #endif
 
-	movaps	0 * SIZE(X), %xmm1
+	movups	0 * SIZE(X), %xmm1
 #ifdef USE_ABS
 	andps	 %xmm15, %xmm1
 #endif
 	cmpeqps	%xmm0, %xmm1
 
-	movaps	4 * SIZE(X), %xmm3
+	movups	4 * SIZE(X), %xmm3
 #ifdef USE_ABS
 	andps	 %xmm15, %xmm3
 #endif
@@ -536,10 +536,10 @@
 	MAXPS	%xmm1, %xmm0
 	MAXPS	%xmm3, %xmm2
 	MAXPS	%xmm2, %xmm0
-	movaps	%xmm0, %xmm1
+	movups	%xmm0, %xmm1
 	movhlps %xmm0, %xmm0
 	MAXPS	%xmm1, %xmm0
-	movaps	%xmm0, %xmm1
+	movups	%xmm0, %xmm1
 	shufps	$1, %xmm0, %xmm0
 	MAXSS	%xmm1, %xmm0
 	shufps	$0, %xmm0, %xmm0

@@ -10,7 +10,6 @@ else()
     set(OPYNDEPS_BUILD_OPENBLAS_DEFAULT ON)
 endif()
 
-option(OPYNDEPS_BUILD_EIGEN      "Build Eigen"                             ON)
 option(OPYNDEPS_BUILD_MDSPAN     "Build mdspan"                            ON)
 option(OPYNDEPS_BUILD_NANOBIND   "Build nanobind"                          ON)
 option(OPYNDEPS_BUILD_OPENBLAS   "Build OpenBLAS"                          ${OPYNDEPS_BUILD_OPENBLAS_DEFAULT})
@@ -68,23 +67,6 @@ if(TRUE)
     unset(OPYNDEPS_FORWARDED_VARS)
 endif()
 
-if(OPYNDEPS_BUILD_EIGEN)
-    ExternalProject_Add(eigen
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/eigen
-        BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OPYNDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DCMAKEPACKAGE_INSTALL_DIR:STRING=${CMAKE_INSTALL_LIBDIR}/cmake/eigen
-            -DEIGEN_BUILD_TESTING:BOOL=OFF
-            -DEIGEN_BUILD_DOC:BOOL=OFF
-            -DEIGEN_BUILD_DEMOS:BOOL=OFF
-            -DEIGEN_BUILD_PKGCONFIG:BOOL=OFF
-            -DEIGEN_TEST_NO_FORTRAN:BOOL=ON
-            -DEIGEN_BUILD_BLAS:BOOL=OFF
-            -DEIGEN_BUILD_LAPACK:BOOL=OFF
-    )
-endif()
-
 if(OPYNDEPS_BUILD_MDSPAN)
     ExternalProject_Add(mdspan
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/mdspan
@@ -125,7 +107,7 @@ if(OPYNDEPS_BUILD_OSCAR_DEPS)
     ExternalProject_Add(oscardeps
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oscar/third_party
         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/oscardeps  # make binary path shorter for Windows path length limit (250 chars)
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
         INSTALL_COMMAND ""
         CMAKE_CACHE_ARGS
             ${OPYNDEPS_DEPENDENCY_CMAKE_ARGS}
@@ -136,7 +118,7 @@ endif()
 if(OPYNDEPS_BUILD_OSCAR)
     ExternalProject_Add(oscar
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oscar
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OPYNDEPS_DEPENDENCY_CMAKE_ARGS}
             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}

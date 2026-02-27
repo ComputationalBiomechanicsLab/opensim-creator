@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 import py_stub_test
-from typing import Generic, Optional, Self, TypeAlias, TypeVar
+from typing import Any, Generic, Optional, Self, TypeAlias, TypeVar
 
 from . import submodule as submodule
 from .submodule import F as F, f as f2
@@ -9,6 +9,8 @@ from .submodule import F as F, f as f2
 # a prefix
 
 class Foo:
+    # a class prefix
+
     def __lt__(self, arg: int, /) -> bool: ...
 
     def __gt__(self, arg: int, /) -> bool: ...
@@ -19,9 +21,13 @@ class Foo:
 
     lt_alias = __lt__
 
+    # a class suffix
+
 def f() -> None: ...
 
 def makeNestedClass() -> py_stub_test.AClass.NestedClass: ...
+
+AnyTuple: TypeAlias = tuple[Any, ...]
 
 FooAlias: TypeAlias = Foo
 
@@ -42,7 +48,7 @@ class CustomSignature(Iterable[int]):
     def value(self, value: Optional[int], /) -> None:
         """docstring for setter"""
 
-pytree: dict = {'a' : ('b', [123])}
+pytree: dict = ...
 
 T = TypeVar("T", contravariant=True)
 
@@ -60,6 +66,10 @@ class WrapperTypeParam[T]:
     pass
 
 def list_front[T](arg: list[T], /) -> T: ...
+
+T2 = TypeVar("T2", bound=Foo)
+
+T3 = TypeVar("T3", Foo, Wrapper)
 
 def tweak_me(arg: int):
     """

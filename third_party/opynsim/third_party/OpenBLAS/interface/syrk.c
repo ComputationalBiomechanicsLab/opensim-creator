@@ -339,9 +339,35 @@ double NNK;
     return;
   }
 
+  if (args.n == 0) return;
+
+#ifdef DYNAMIC_ARCH
+extern char* gotoblas_corename(void);
+#endif
+	
+#if !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)  && !defined(HFLOAT16)
+#if defined(ARCH_ARM64) && (defined(USE_SSYRK_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
+#if defined(DYNAMIC_ARCH)
+if (strcmp(gotoblas_corename(), "armv9sme") == 0
+#if defined(__clang__)
+ || strcmp(gotoblas_corename(), "vortexm4") == 0
+#endif
+)
+#endif
+  if (order == CblasRowMajor && n == ldc) {
+    if (Trans == CblasNoTrans && k == lda) {
+      (Uplo == CblasUpper ? SSYRK_DIRECT_ALPHA_BETA_UN : SSYRK_DIRECT_ALPHA_BETA_LN)(n, k, alpha, a, lda, beta, c, ldc);
+      return;
+    } else if (Trans == CblasTrans && n == lda){
+      (Uplo == CblasUpper ? SSYRK_DIRECT_ALPHA_BETA_UT : SSYRK_DIRECT_ALPHA_BETA_LT)(n, k, alpha, a, lda, beta, c, ldc);
+      return;
+    }
+  }
+#endif
 #endif
 
-  if (args.n == 0) return;
+#endif
+
 
   IDEBUG_START;
 

@@ -28,6 +28,7 @@
 #  define NB_INLINE          __forceinline
 #  define NB_NOINLINE        __declspec(noinline)
 #  define NB_INLINE_LAMBDA
+#  define NB_NOUNROLL
 #else
 #  define NB_EXPORT          __attribute__ ((visibility("default")))
 #  define NB_IMPORT          NB_EXPORT
@@ -35,8 +36,14 @@
 #  define NB_NOINLINE        __attribute__((noinline))
 #  if defined(__clang__)
 #    define NB_INLINE_LAMBDA __attribute__((always_inline))
+#    define NB_NOUNROLL      _Pragma("nounroll")
 #  else
 #    define NB_INLINE_LAMBDA
+#    if defined(__GNUC__)
+#      define NB_NOUNROLL    _Pragma("GCC unroll 0")
+#    else
+#      define NB_NOUNROLL
+#    endif
 #  endif
 #endif
 
@@ -74,56 +81,10 @@
 #  define NB_HAS_U8STRING
 #endif
 
-#if defined(Py_TPFLAGS_HAVE_VECTORCALL)
-#  define NB_VECTORCALL PyObject_Vectorcall
-#  define NB_HAVE_VECTORCALL Py_TPFLAGS_HAVE_VECTORCALL
-#elif defined(_Py_TPFLAGS_HAVE_VECTORCALL)
-#  define NB_VECTORCALL _PyObject_Vectorcall
-#  define NB_HAVE_VECTORCALL _Py_TPFLAGS_HAVE_VECTORCALL
-#else
-#  define NB_HAVE_VECTORCALL (1UL << 11)
-#endif
-
-#if defined(PY_VECTORCALL_ARGUMENTS_OFFSET)
-#  define NB_VECTORCALL_ARGUMENTS_OFFSET PY_VECTORCALL_ARGUMENTS_OFFSET
-#  define NB_VECTORCALL_NARGS PyVectorcall_NARGS
-#else
-#  define NB_VECTORCALL_ARGUMENTS_OFFSET ((size_t) 1 << (8 * sizeof(size_t) - 1))
-#  define NB_VECTORCALL_NARGS(n) ((n) & ~NB_VECTORCALL_ARGUMENTS_OFFSET)
-#endif
-
-#if PY_VERSION_HEX < 0x03090000
-#  define NB_TYPING_ABC   "typing."
-#  define NB_TYPING_TUPLE "typing.Tuple"
-#  define NB_TYPING_LIST  "typing.List"
-#  define NB_TYPING_DICT  "typing.Dict"
-#  define NB_TYPING_SET   "typing.Set"
-#  define NB_TYPING_TYPE  "typing.Type"
-#else
-#  define NB_TYPING_ABC   "collections.abc."
-#  define NB_TYPING_TUPLE "tuple"
-#  define NB_TYPING_LIST  "list"
-#  define NB_TYPING_DICT  "dict"
-#  define NB_TYPING_SET   "set"
-#  define NB_TYPING_TYPE  "type"
-#endif
-
 #if PY_VERSION_HEX < 0x030D0000
 #  define NB_TYPING_CAPSULE "typing_extensions.CapsuleType"
 #else
 #  define NB_TYPING_CAPSULE "types.CapsuleType"
-#endif
-
-#define NB_TYPING_SEQUENCE     NB_TYPING_ABC "Sequence"
-#define NB_TYPING_MAPPING      NB_TYPING_ABC "Mapping"
-#define NB_TYPING_CALLABLE     NB_TYPING_ABC "Callable"
-#define NB_TYPING_ITERATOR     NB_TYPING_ABC "Iterator"
-#define NB_TYPING_ITERABLE     NB_TYPING_ABC "Iterable"
-
-#if PY_VERSION_HEX < 0x03090000
-#  define NB_TYPING_ABSTRACT_SET "typing.AbstractSet"
-#else
-#  define NB_TYPING_ABSTRACT_SET "collections.abc.Set"
 #endif
 
 #if defined(Py_LIMITED_API)
@@ -179,6 +140,12 @@
 #  define NB_TYPE_GET_SLOT_IMPL 1
 #endif
 
+#if defined(Py_LIMITED_API)
+#  define NB_DYNAMIC_VERSION Py_Version
+#else
+#  define NB_DYNAMIC_VERSION PY_VERSION_HEX
+#endif
+
 #define NB_MODULE_SLOTS_0 { 0, nullptr }
 
 #if PY_VERSION_HEX < 0x030C0000
@@ -207,7 +174,7 @@
 #define NB_MODULE_IMPL2(name, variable)                                        \
     static void nanobind_##name##_exec_impl(nanobind::module_);                \
     static int nanobind_##name##_exec(PyObject *m) {                           \
-        nanobind::detail::init(NB_DOMAIN_STR);                                 \
+        nanobind::detail::nb_module_exec(NB_DOMAIN_STR, m);                    \
         try {                                                                  \
             nanobind_##name##_exec_impl(                                       \
                 nanobind::borrow<nanobind::module_>(m));                       \
@@ -228,7 +195,8 @@
     };                                                                         \
     static struct PyModuleDef nanobind_##name##_module = {                     \
         PyModuleDef_HEAD_INIT, #name, nullptr, 0, nullptr,                     \
-        nanobind_##name##_slots, nullptr, nullptr, nullptr                     \
+        nanobind_##name##_slots, nullptr, nullptr,                             \
+        nanobind::detail::nb_module_free                                       \
     };                                                                         \
     extern "C" [[maybe_unused]] NB_EXPORT PyObject *PyInit_##name(void);       \
     extern "C" PyObject *PyInit_##name(void) {                                 \

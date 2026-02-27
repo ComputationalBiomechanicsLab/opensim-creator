@@ -13,6 +13,7 @@
 #include <vector>
 #include <nanobind/stl/detail/traits.h>
 #include "inter_module.h"
+#include "test_classes.h"
 
 namespace nb = nanobind;
 using namespace nb::literals;
@@ -37,6 +38,9 @@ struct Struct {
     ~Struct() { destructed++; if (nb::is_alive()) struct_destructed.push_back(i); }
 
     int value() const { return i; }
+    int value_plus(int j, int k, int l, int m, int n, int o, int p) const {
+        return i + j + k + l + m + n + o + p;
+    }
     int getstate() const { ++pickled; return i; }
     void set_value(int value) { i = value; }
     void setstate(int value) { unpickled++; i = value; }
@@ -54,6 +58,13 @@ struct Struct {
 struct PairStruct {
     Struct s1;
     Struct s2;
+};
+
+// Test case for issue #1280
+struct OptionalNoneTest {
+    int compute(int i, std::optional<int> j, int k) const {
+        return i + j.value_or(0) + k;
+    }
 };
 
 struct Big {
@@ -120,11 +131,8 @@ struct UniqueInt {
 std::map<int, std::weak_ptr<UniqueInt>> UniqueInt::instances;
 
 int wrapper_tp_traverse(PyObject *self, visitproc visit, void *arg) {
-    // On Python 3.9+, we must traverse the implicit dependency
-    // of an object on its associated type object.
-    #if PY_VERSION_HEX >= 0x03090000
-        Py_VISIT(Py_TYPE(self));
-    #endif
+    // We must traverse the implicit dependency of an object on its associated type object.
+    Py_VISIT(Py_TYPE(self));
 
     // The tp_traverse method may be called after __new__ but before or during
     // __init__, before the C++ constructor has been called. We must not inspect
@@ -163,6 +171,7 @@ NB_MODULE(test_classes_ext, m) {
         .def(nb::init<>())
         .def(nb::init<int>())
         .def("value", &Struct::value)
+        .def("value_plus", &Struct::value_plus)
         .def("set_value", &Struct::set_value, "value"_a)
         .def("self", &Struct::self, nb::rv_policy::none)
         .def("none", [](Struct &) -> const Struct * { return nullptr; })
@@ -184,6 +193,12 @@ NB_MODULE(test_classes_ext, m) {
         .def(nb::init<>())
         .def_rw("s1", &PairStruct::s1, "A documented property")
         .def_rw("s2", &PairStruct::s2);
+
+    // Test case for issue #1280
+    nb::class_<OptionalNoneTest>(m, "OptionalNoneTest")
+        .def(nb::init<>())
+        .def("compute", &OptionalNoneTest::compute,
+             "i"_a, "j"_a = nb::none(), "k"_a = 0);
 
     m.def("stats", []{
         nb::dict d;
@@ -555,6 +570,25 @@ NB_MODULE(test_classes_ext, m) {
     using NonCopyableVec = std::vector<NonCopyable>;
     nb::class_<NonCopyableVec>(m, "NonCopyableVec");
 
+    struct PrivateNonCopyable {
+        static PrivateNonCopyable &get_instance() {
+            static PrivateNonCopyable i;
+            return i;
+        }
+
+        int get_int() { return 42; }
+    private:
+        PrivateNonCopyable() {}
+        PrivateNonCopyable(const PrivateNonCopyable&) = delete;
+        PrivateNonCopyable &operator=(const PrivateNonCopyable&) = delete;
+    };
+
+    // #1249 this didn't compile previously
+    struct my_call_guard {};
+    nb::class_<PrivateNonCopyable>(m, "PrivateNonCopyable")
+        .def_static("get_instance", &PrivateNonCopyable::get_instance, nb::call_guard<my_call_guard>(), nb::rv_policy::reference)
+        .def("get_int", &PrivateNonCopyable::get_int);
+
     m.def("is_int_1", [](nb::handle h) { return nb::isinstance<int>(h); });
     m.def("is_int_2", [](nb::handle h) { return nb::isinstance<nb::int_>(h); });
     m.def("is_struct", [](nb::handle h) { return nb::isinstance<Struct>(h); });
@@ -644,6 +678,11 @@ NB_MODULE(test_classes_ext, m) {
                nb::is_weak_referenceable(), nb::dynamic_attr())
         .def(nb::init<int>());
 
+    // test50_weakref_with_slots_subclass
+    struct StructWithWeakrefsOnly : Struct { };
+    nb::class_<StructWithWeakrefsOnly, Struct>(m, "StructWithWeakrefsOnly", nb::is_weak_referenceable())
+        .def(nb::init<int>());
+
     union Union {
         int i;
         float f;
@@ -680,6 +719,7 @@ NB_MODULE(test_classes_ext, m) {
     // issue #786
     struct NewNone {};
     struct NewDflt { int value; };
+    struct NewStarPosOnly { size_t value; };
     struct NewStar { size_t value; };
     nb::class_<NewNone>(m, "NewNone")
         .def(nb::new_([]() { return NewNone(); }));
@@ -687,6 +727,12 @@ NB_MODULE(test_classes_ext, m) {
         .def(nb::new_([](int value) { return NewDflt{value}; }),
              "value"_a = 42)
         .def_ro("value", &NewDflt::value);
+    nb::class_<NewStarPosOnly>(m, "NewStarPosOnly")
+        .def(nb::new_([](nb::args a, int value) {
+            return NewStarPosOnly{nb::len(a) + value};
+        }),
+            "args"_a, "value"_a = 42)
+        .def_ro("value", &NewStarPosOnly::value);
     nb::class_<NewStar>(m, "NewStar")
         .def(nb::new_([](nb::args a, int value, nb::kwargs k) {
             return NewStar{nb::len(a) + value + 10 * nb::len(k)};
@@ -731,4 +777,39 @@ NB_MODULE(test_classes_ext, m) {
         .def_prop_ro_static("x", [](nb::handle /*unused*/) { return 42; });
     nb::class_<StaticPropertyOverride2, StaticPropertyOverride>(m, "StaticPropertyOverride2")
         .def_prop_ro_static("x", [](nb::handle /*unused*/) { return 43; });
+
+
+    // nanobind::detail::trampoline's constructor must be constexpr otherwise
+    // the trampoline will not compile under MSVC
+    struct ConstexprClass {
+        constexpr ConstexprClass(int i) : something(i) {}
+        virtual ~ConstexprClass() = default;
+
+        virtual int getInt() const {
+            return 1;
+        };
+
+        int something;
+    };
+
+    struct PyConstexprClass : ConstexprClass {
+        NB_TRAMPOLINE(ConstexprClass, 1);
+
+        int getInt() const override {
+            NB_OVERRIDE(getInt);
+        }
+    };
+
+    auto constexpr_class = nb::class_<ConstexprClass, PyConstexprClass>(m, "ConstexprClass")
+        .def(nb::init<int>())
+        .def("getInt", &ConstexprClass::getInt);
+
+    m.def("constexpr_call_getInt", [](ConstexprClass *c) {
+        return c->getInt();
+    });
+
+    auto never_destruct_class = nb::class_<NeverDestruct>(m, "NeverDestruct", nb::never_destruct())
+        .def_static("make_ref", &NeverDestruct::make, nb::rv_policy::reference)
+        .def("var", &NeverDestruct::var)
+        .def("set_var", &NeverDestruct::set_var);
 }

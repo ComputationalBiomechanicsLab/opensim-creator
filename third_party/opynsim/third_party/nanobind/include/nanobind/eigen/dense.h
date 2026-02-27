@@ -182,7 +182,7 @@ struct type_caster<T, enable_if_t<is_eigen_plain_v<T> &&
 
         object owner;
         if (policy == rv_policy::move) {
-            T *temp = new T(std::move(v));
+            T *temp = new T((T&&) v);
             owner = capsule(temp, [](void *p) noexcept { delete (T *) p; });
             ptr = temp->data();
             policy = rv_policy::reference;
@@ -323,6 +323,13 @@ struct type_caster<Eigen::Map<T, Options, StrideType>,
         // Eigen may expect a stride of 0 to avoid an assertion failure
         if constexpr (IS == 0)
             inner = 0;
+
+        // Starting from numpy 2.4, dl_tensors' stride field is *always* set (for ndim > 0).
+        // This also includes when shape=(0,0), when numpy reports the stride to be zero.
+        // This creates an incompatibility with Eigen compile-time vectors, which expect
+        // runtime and compile-time strides to be identical (e.g. for Eigen::VectorXi, equal to 1).
+        if (ndim_v<T> == 1 && caster.value.shape(0) == 0)
+            inner = IS;
 
         if constexpr (OS == 0)
             outer = 0;

@@ -35,16 +35,13 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define I		x3
 
 #if !defined(DOUBLE)
-#define SSQ		s0
-#define SCALE		s1
-#define REGZERO		s5
-#define REGONE		s6
-#else
+#define SSQF s0
+#endif
+
 #define SSQ		d0
 #define SCALE		d1
 #define REGZERO		d5
 #define REGONE		d6
-#endif
 
 /*******************************************************************************
 * Macro definitions
@@ -53,22 +50,10 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .macro KERNEL_F1
 #if !defined(DOUBLE)
 	ldr	s4, [X], #4
-	fcmp	s4, REGZERO
-	beq	2f     /* KERNEL_F1_NEXT_\@ */
-	fabs	s4, s4
-	fcmp	SCALE, s4
-	bge	1f     /* KERNEL_F1_SCALE_GE_X_\@ */
-	fdiv	s2, SCALE, s4
-	fmul	s2, s2, s2
-	fmul	s3, SSQ, s2
-	fadd	SSQ, REGONE, s3
-	fmov	SCALE, s4
-	b	2f     /* KERNEL_F1_NEXT_\@ */
-1:               /* KERNEL_F1_SCALE_GE_X_\@: */
-	fdiv	s2, s4, SCALE
-	fmla	SSQ, s2, v2.s[0]
+	fcvt	d4, s4
 #else
 	ldr	d4, [X], #8
+#endif
 	fcmp	d4, REGZERO
 	beq	2f     /* KERNEL_F1_NEXT_\@ */
 	fabs	d4, d4
@@ -83,29 +68,16 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 1:                     /* KERNEL_F1_SCALE_GE_X_\@: */
 	fdiv	d2, d4, SCALE
 	fmla	SSQ, d2, v2.d[0]
-#endif
 2:                     /* KERNEL_F1_NEXT_\@: */
 .endm
 
 .macro KERNEL_S1
 #if !defined(DOUBLE)
 	ldr	s4, [X]
-	fcmp	s4, REGZERO
-	beq	KERNEL_S1_NEXT
-	fabs	s4, s4
-	fcmp	SCALE, s4
-	bge	KERNEL_S1_SCALE_GE_X
-	fdiv	s2, SCALE, s4
-	fmul	s2, s2, s2
-	fmul	s3, SSQ, s2
-	fadd	SSQ, REGONE, s3
-	fmov	SCALE, s4
-	b	KERNEL_S1_NEXT
-KERNEL_S1_SCALE_GE_X:
-	fdiv	s2, s4, SCALE
-	fmla	SSQ, s2, v2.s[0]
+	fcvt	d4, s4
 #else
 	ldr	d4, [X]
+#endif
 	fcmp	d4, REGZERO
 	beq	KERNEL_S1_NEXT
 	fabs	d4, d4
@@ -120,7 +92,6 @@ KERNEL_S1_SCALE_GE_X:
 KERNEL_S1_SCALE_GE_X:
 	fdiv	d2, d4, SCALE
 	fmla	SSQ, d2, v2.d[0]
-#endif
 KERNEL_S1_NEXT:
 	add	X, X, INC_X
 .endm
@@ -218,7 +189,9 @@ KERNEL_S1_NEXT:
 .Lnrm2_kernel_L999:
 	fsqrt	SSQ, SSQ
 	fmul	SSQ, SCALE, SSQ
-
+#if !defined(DOUBLE)
+	fcvt SSQF, SSQ
+#endif
 	ret
 
 	EPILOGUE

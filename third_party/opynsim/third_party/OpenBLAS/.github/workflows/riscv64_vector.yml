@@ -16,8 +16,8 @@ jobs:
     env:
       triple: riscv64-unknown-linux-gnu
       riscv_gnu_toolchain: https://github.com/riscv-collab/riscv-gnu-toolchain
-      riscv_gnu_toolchain_version: 13.2.0
-      riscv_gnu_toolchain_nightly_download_path: /releases/download/2024.02.02/riscv64-glibc-ubuntu-22.04-llvm-nightly-2024.02.02-nightly.tar.gz
+      riscv_gnu_toolchain_version: 15.1.0
+      riscv_gnu_toolchain_nightly_download_path: /releases/download/2025.08.29/riscv64-glibc-ubuntu-22.04-llvm-nightly-2025.08.29-nightly.tar.xz
     strategy:
       fail-fast: false
       matrix:
@@ -26,8 +26,8 @@ jobs:
             opts: TARGET=RISCV64_ZVL128B BINARY=64 ARCH=riscv64
             qemu_cpu: rv64,g=true,c=true,v=true,vext_spec=v1.0,vlen=128,elen=64
           - target: RISCV64_ZVL256B
-            opts: TARGET=RISCV64_ZVL256B BINARY=64 ARCH=riscv64
-            qemu_cpu: rv64,g=true,c=true,v=true,vext_spec=v1.0,vlen=256,elen=64
+            opts: TARGET=RISCV64_ZVL256B BINARY=64 ARCH=riscv64 BUILD_BFLOAT16=1 BUILD_HFLOAT16=1
+            qemu_cpu: rv64,g=true,c=true,v=true,vext_spec=v1.0,vlen=256,elen=64,zfh=true,zvfh=true,zvfbfwma=true
           - target: DYNAMIC_ARCH=1
             opts: TARGET=RISCV64_GENERIC BINARY=64 ARCH=riscv64 DYNAMIC_ARCH=1
             qemu_cpu: rv64,g=true,c=true,v=true,vext_spec=v1.0,vlen=256,elen=64
@@ -40,10 +40,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install autoconf automake autotools-dev ninja-build make \
-          libgomp1-riscv64-cross ccache
+          libgomp1-riscv64-cross ccache qemu-kvm qemu-user libc6-riscv64-cross
           wget ${riscv_gnu_toolchain}/${riscv_gnu_toolchain_nightly_download_path}
           tar -xvf $(basename ${riscv_gnu_toolchain_nightly_download_path}) -C /opt
-
+          wget https://gist.github.com/martin-frbg/bb630e0de34978e578eeb496b1538d4e/raw/7fd8d971f327f7a517b8f5f7989479ff2b36f71f/qemu-riscv64-10.1-ubuntu24 -P /opt/riscv/bin -o riscv64-qemu
+          mv /opt/riscv/bin/qemu-riscv64-10.1-ubuntu24 /opt/riscv/bin/qemu-riscv64
+          chmod +x /opt/riscv/bin/qemu-riscv64
+          
       - name: Compilation cache
         uses: actions/cache@v3
         with:
@@ -74,7 +77,7 @@ jobs:
         run: |
             export PATH="/opt/riscv/bin:$PATH"
             make TARGET=${{ matrix.target }} CFLAGS="-DTARGET=${{ matrix.target }}" \
-            CC='${triple}-gcc' \
+            CC='ccache clang --rtlib=compiler-rt -target ${triple} --sysroot /opt/riscv/sysroot --gcc-toolchain=/opt/riscv/lib/gcc/riscv64-unknown-linux-gnu/${riscv_gnu_toolchain_version}/' \
             AR='ccache ${triple}-ar' AS='ccache ${triple}-gcc' LD='ccache ${triple}-gcc' \
             RANLIB='ccache ${triple}-ranlib' \
             FC='ccache ${triple}-gfortran' ${{ matrix.opts }} \
@@ -98,6 +101,8 @@ jobs:
         shell: bash
         run: |
           export PATH="/opt/riscv/bin:$PATH"
+          export LD_LIBRARY_PATH=/opt/riscv/sysroot/lib
+          sudo ln -s /opt/riscv/sysroot/lib/ld-linux-riscv64-lp64d.so.1 /lib
           export QEMU_CPU=${{ matrix.qemu_cpu }}
           rm -rf ./test_out
           mkdir -p ./test_out
@@ -134,6 +139,14 @@ jobs:
           wait
           while IFS= read -r -d $'\0' LOG; do cat $LOG ; FAILURES=1 ; done < <(grep -lZ FAIL ./test_out/*)
           if [[ ! -z $FAILURES ]]; then echo "==========" ; echo "== FAIL ==" ; echo "==========" ; echo ; exit 1 ; fi
+          if [ "${{matrix.target}}" == "RISCV64_ZVL256B" ]; then
+          qemu-riscv64 test/test_sbgemm &
+          qemu-riscv64 test/test_sbgemv &
+          qemu-riscv64 test/test_shgemm &
+          qemu-riscv64 test/test_shgemv &
+          qemu-riscv64 test/test_bgemm
+          fi
+
 
       - name: netlib tests
         shell: bash
