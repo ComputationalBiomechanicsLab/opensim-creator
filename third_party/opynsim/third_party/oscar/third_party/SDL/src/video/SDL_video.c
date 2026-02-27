@@ -295,20 +295,6 @@ static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
     return 0;
 }
 
-static void SDLCALL SDL_CleanupWindowTextureData(void *userdata, void *value)
-{
-    SDL_WindowTextureData *data = (SDL_WindowTextureData *)value;
-
-    if (data->texture) {
-        SDL_DestroyTexture(data->texture);
-    }
-    if (data->renderer) {
-        SDL_DestroyRenderer(data->renderer);
-    }
-    SDL_free(data->pixels);
-    SDL_free(data);
-}
-
 static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
@@ -399,7 +385,7 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
             SDL_DestroyRenderer(renderer);
             return false;
         }
-        if (!SDL_SetPointerPropertyWithCleanup(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER, data, SDL_CleanupWindowTextureData, NULL)) {
+        if (!SDL_SetPointerProperty(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER, data)) {
             SDL_DestroyRenderer(renderer);
             return false;
         }
@@ -526,7 +512,21 @@ static bool SDL_UpdateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
 
 static void SDL_DestroyWindowTexture(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_ClearProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER);
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    if (SDL_HasProperty(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER)) {
+        SDL_WindowTextureData *data = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
+
+        if (data->texture) {
+            SDL_DestroyTexture(data->texture);
+        }
+        if (data->renderer) {
+            SDL_DestroyRenderer(data->renderer);
+        }
+        SDL_free(data->pixels);
+        SDL_free(data);
+
+        SDL_ClearProperty(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER);
+    }
 }
 
 static SDL_VideoDevice *_this = NULL;
@@ -4291,6 +4291,8 @@ void SDL_DestroyWindow(SDL_Window *window)
     }
 
     SDL_DestroyProperties(window->text_input_props);
+
+    SDL_DestroyWindowTexture(_this, window);
     SDL_DestroyProperties(window->props);
 
     /* Clear the modal status, but don't unset the parent just yet, as it
@@ -4441,6 +4443,16 @@ void SDL_VideoQuit(void)
     while (_this->windows) {
         SDL_DestroyWindow(_this->windows);
     }
+
+    if (_this->gl_config.driver_loaded && _this->GL_UnloadLibrary) {
+        _this->GL_UnloadLibrary(_this);
+        _this->gl_config.driver_loaded = 0;
+    }
+    if (_this->vulkan_config.loader_loaded && _this->Vulkan_UnloadLibrary) {
+        _this->Vulkan_UnloadLibrary(_this);
+        _this->vulkan_config.loader_loaded = 0;
+    }
+
     _this->VideoQuit(_this);
 
     for (i = _this->num_displays; i--; ) {

@@ -570,7 +570,7 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
         setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         if (xioctl(fd, VIDIOC_G_PARM, &setfps) == 0) {
             if ( (setfps.parm.capture.timeperframe.denominator != spec->framerate_numerator) ||
-                 (setfps.parm.capture.timeperframe.numerator = spec->framerate_denominator) ) {
+                 (setfps.parm.capture.timeperframe.numerator != spec->framerate_denominator) ) {
                 setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                 setfps.parm.capture.timeperframe.numerator = spec->framerate_denominator;
                 setfps.parm.capture.timeperframe.denominator = spec->framerate_numerator;
@@ -796,7 +796,7 @@ static void MaybeAddDevice(const char *path)
                 const int stepw = (int) frmsizeenum.stepwise.step_width;
                 const int steph = (int) frmsizeenum.stepwise.step_height;
                 for (int w = minw; w <= maxw; w += stepw) {
-                    for (int h = minh; w <= maxh; w += steph) {
+                    for (int h = minh; h <= maxh; h += steph) {
                         #if DEBUG_CAMERA
                         SDL_Log("CAMERA:     * Has %s size %dx%d", (frmsizeenum.type == V4L2_FRMSIZE_TYPE_STEPWISE) ? "stepwise" : "continuous", w, h);
                         #endif

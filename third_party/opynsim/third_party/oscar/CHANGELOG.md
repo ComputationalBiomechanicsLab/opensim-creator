@@ -16,3 +16,4 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   affects things like KVM-based CI servers which, previously, were silently
   failing with segfaults.
 - Updated ImGui to v1.92.6
+- Updated SDL to 3.2.30, which matches what (probably) Ubuntu 26 will ship with
