@@ -6,7 +6,7 @@
 #include <libopynsim/utilities/open_sim_helpers.h>
 
 #include <liboscar/maths/constants.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/enum_helpers.h>
 #include <liboscar/utilities/hash_helpers.h>
 #include <OpenSim/Common/Component.h>

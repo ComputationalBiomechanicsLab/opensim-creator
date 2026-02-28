@@ -3,7 +3,7 @@
 #include <libopynsim/tests/opynsim_tests_config.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <algorithm>
 #include <cstddef>

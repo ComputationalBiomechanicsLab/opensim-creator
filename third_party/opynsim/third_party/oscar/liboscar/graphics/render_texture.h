@@ -7,7 +7,7 @@
 #include <liboscar/graphics/shared_color_render_buffer.h>
 #include <liboscar/graphics/shared_depth_stencil_render_buffer.h>
 #include <liboscar/graphics/texture_dimensionality.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/copy_on_upd_shared_value.h>
 
 #include <iosfwd>

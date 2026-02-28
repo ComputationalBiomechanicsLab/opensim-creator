@@ -12,7 +12,7 @@
 #include <liboscar/maths/euler_angles.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/cursor.h>
 #include <liboscar/platform/cursor_shape.h>

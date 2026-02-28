@@ -23,7 +23,7 @@
 #include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_metadata.h>
 #include <liboscar/platform/app_settings.h>

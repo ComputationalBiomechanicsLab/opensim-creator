@@ -8,9 +8,7 @@
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/triangle.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/copy_on_upd_shared_value.h>
 #include <liboscar/utilities/object_representation.h>
 

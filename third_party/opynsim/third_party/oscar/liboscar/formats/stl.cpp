@@ -4,7 +4,7 @@
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/triangle.h>
 #include <liboscar/maths/triangle_functions.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/oscar_config.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/utilities/algorithms.h>

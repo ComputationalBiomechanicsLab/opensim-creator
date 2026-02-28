@@ -32,8 +32,7 @@
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/sphere.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/std_variant_helpers.h>
 #include <liboscar/utilities/string_name.h>
 

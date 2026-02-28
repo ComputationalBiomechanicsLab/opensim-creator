@@ -2,7 +2,7 @@
 
 #include <liboscar/graphics/anti_aliasing_level.h>
 #include <liboscar/graphics/texture_dimensionality.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 
 #include <memory>
 

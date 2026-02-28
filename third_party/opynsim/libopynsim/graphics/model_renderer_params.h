@@ -5,7 +5,7 @@
 #include <libopynsim/graphics/overlay_decoration_options.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/polar_perspective_camera.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <string_view>
 

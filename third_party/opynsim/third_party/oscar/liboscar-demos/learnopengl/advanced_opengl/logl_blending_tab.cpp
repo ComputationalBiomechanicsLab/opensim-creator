@@ -5,7 +5,7 @@
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>

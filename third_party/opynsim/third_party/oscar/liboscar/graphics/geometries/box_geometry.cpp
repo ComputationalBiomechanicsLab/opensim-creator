@@ -3,8 +3,7 @@
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/mesh_topology.h>
 #include <liboscar/graphics/sub_mesh_descriptor.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <cstddef>
 #include <cstdint>

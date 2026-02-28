@@ -2,7 +2,7 @@
 
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/material.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 namespace osc
 {

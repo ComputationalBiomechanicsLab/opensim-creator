@@ -6,7 +6,7 @@
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
 #include <liboscar/formats/csv.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/ui/oscimgui.h>

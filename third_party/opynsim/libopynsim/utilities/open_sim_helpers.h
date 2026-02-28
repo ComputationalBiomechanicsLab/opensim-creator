@@ -3,7 +3,7 @@
 #include <liboscar/concepts/dereferences_to.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/ray.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/shims/cpp23/generator.h>
 #include <liboscar/utilities/c_string_view.h>
 #include <liboscar/utilities/string_name.h>

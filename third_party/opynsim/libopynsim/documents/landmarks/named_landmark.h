@@ -2,7 +2,7 @@
 
 #include <libopynsim/documents/landmarks/landmark.h>
 
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <string>
 

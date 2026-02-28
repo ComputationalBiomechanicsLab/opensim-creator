@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/mesh.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/c_string_view.h>
 
 namespace osc

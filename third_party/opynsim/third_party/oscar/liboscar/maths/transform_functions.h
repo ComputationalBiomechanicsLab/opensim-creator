@@ -11,8 +11,7 @@
 #include <liboscar/maths/quaternion.h>
 #include <liboscar/maths/quaternion_functions.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 
 #include <stdexcept>
 

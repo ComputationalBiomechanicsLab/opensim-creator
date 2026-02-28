@@ -41,8 +41,7 @@
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/transform_functions.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/maths/vector_functions.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/events/close_tab_event.h>

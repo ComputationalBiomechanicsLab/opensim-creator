@@ -22,8 +22,7 @@
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/triangle.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/perf_panel.h>

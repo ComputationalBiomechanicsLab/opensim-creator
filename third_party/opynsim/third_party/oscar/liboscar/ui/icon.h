@@ -2,7 +2,7 @@
 
 #include <liboscar/graphics/texture2d.h>
 #include <liboscar/maths/rect.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 
 #include <utility>
 

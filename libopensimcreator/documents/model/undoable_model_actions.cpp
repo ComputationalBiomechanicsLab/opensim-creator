@@ -28,7 +28,7 @@
 #include <liboscar/maths/plane.h>
 #include <liboscar/maths/quaternion.h>
 #include <liboscar/maths/sphere.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>

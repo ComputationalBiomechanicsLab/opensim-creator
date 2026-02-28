@@ -2,7 +2,7 @@
 
 #include <liboscar/maths/coordinate_axis.h>
 #include <liboscar/maths/negative.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <cstdint>
 #include <iosfwd>

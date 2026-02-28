@@ -63,8 +63,7 @@ TEST(Vector, element_by_element_constructor_fills_each_element_of_the_Vector)
     ASSERT_EQ(v[4], 8);
 }
 
-/*
-TEST_CASE("Vector element-by-element constructor can convert args")
+TEST(Vector, element_by_element_constructor_can_convert_args)
 {
     struct B final {};
     struct A final { explicit operator B() const { return B{}; }};
@@ -72,49 +71,49 @@ TEST_CASE("Vector element-by-element constructor can convert args")
     [[maybe_unused]] const Vector<B, 3> v{A{}, A{}, A{}};
 }
 
-TEST_CASE("std::tuple_size works with Vector")
+TEST(Vector, is_compabile_with_std_tuple_size)
 {
     static_assert(std::tuple_size_v<Vector3d> == 3);
     static_assert(std::tuple_size_v<Vector<std::string, 7>> == 7);
     static_assert(std::tuple_size_v<Vector<std::string_view, 2>> == 2);
 }
 
-TEST_CASE("ADL get works with Vector")
+TEST(Vector, works_with_std_get)
 {
     const Vector3d v{1.0, 2.0, 3.0};
-    CHECK(get<0>(v) == v[0]);
-    CHECK(get<1>(v) == v[1]);
-    CHECK(get<2>(v) == v[2]);
+    ASSERT_EQ(get<0>(v), v[0]);
+    ASSERT_EQ(get<1>(v), v[1]);
+    ASSERT_EQ(get<2>(v), v[2]);
 }
 
-TEST_CASE("can be accessed via structured bindings")
+TEST(Vector, can_be_accessed_via_structured_bindings)
 {
     Vector3d v{1.0, 2.0, 3.0};
     auto& [x, y, z] = v;
-    CHECK(x == v[0]);
-    CHECK(y == v[1]);
-    CHECK(z == v[2]);
+    ASSERT_EQ(x, v[0]);
+    ASSERT_EQ(y, v[1]);
+    ASSERT_EQ(z, v[2]);
     x = -1.0;
     y = -2.0;
     z = -3.0;
-    CHECK(v[0] == -1.0);
-    CHECK(v[1] == -2.0);
-    CHECK(v[2] == -3.0);
+    ASSERT_EQ(v[0], -1.0);
+    ASSERT_EQ(v[1], -2.0);
+    ASSERT_EQ(v[2], -3.0);
 }
 
-TEST_CASE("Vector can be constructed from a Vector of a different type, if a conversion exists")
+TEST(Vector, can_be_constructed_from_vector_of_different_type_if_conversion_exists)
 {
     const Vector<std::string, 2> strings;
     [[maybe_unused]] const Vector<std::string_view, 2> views{strings};
 }
 
-TEST_CASE("Vector can be constructed with move-only objects in some other Vector")
+TEST(Vector, can_be_constructed_with_move_only_object_from_some_other_Vector)
 {
     Vector<std::unique_ptr<int>, 2> pointers;
     [[maybe_unused]] const Vector<std::unique_ptr<int>, 2> move_target{std::move(pointers)};
 }
 
-TEST_CASE("Vector can be constructed with move-only convertible pointers")
+TEST(Vector, can_be_constructed_with_move_only_convertible_pointers)
 {
     // "Not because it's easy (or, to be fair, necessary), but because it's hard"
 
@@ -124,34 +123,34 @@ TEST_CASE("Vector can be constructed with move-only convertible pointers")
     [[maybe_unused]] const Vector<std::unique_ptr<B>, 2> converted_move_only_target{std::move(pointers)};
 }
 
-TEST_CASE("Vector can be constructed from a std::array")
+TEST(Vector, can_be_constructed_from_a_std_array)
 {
     Vector<int, 3> from_array{std::array<int, 3>{5, 6, 7}};
-    CHECK(from_array[0] == 5);
-    CHECK(from_array[1] == 6);
-    CHECK(from_array[2] == 7);
+    ASSERT_EQ(from_array[0], 5);
+    ASSERT_EQ(from_array[1], 6);
+    ASSERT_EQ(from_array[2], 7);
 }
 
-TEST_CASE("Vector can be constructed from a fixed-size std::span")
+TEST(Vector, can_be_constructed_from_fixed_size_span)
 {
     std::vector<float> values = {11.0f, 12.0f, 14.0f, 18.0f};
     Vector<float, 4> from_span{std::span<float, 4>{values}};
-    CHECK(from_span[0] == 11.0f);
-    CHECK(from_span[1] == 12.0f);
-    CHECK(from_span[2] == 14.0f);
-    CHECK(from_span[3] == 18.0f);
+    ASSERT_EQ(from_span[0], 11.0f);
+    ASSERT_EQ(from_span[1], 12.0f);
+    ASSERT_EQ(from_span[2], 14.0f);
+    ASSERT_EQ(from_span[3], 18.0f);
 }
 
-TEST_CASE("Vector constructed from bigger range results in truncation")
+TEST(Vector, constructed_from_bigger_range_results_in_truncation)
 {
     // Should be allowed, but should truncate
     Vector<int, 3> from_larger_array{std::array<int, 5>{5, 6, 7, 11, -1000}};
-    CHECK(from_larger_array[0] == 5);
-    CHECK(from_larger_array[1] == 6);
-    CHECK(from_larger_array[2] == 7);
+    ASSERT_EQ(from_larger_array[0], 5);
+    ASSERT_EQ(from_larger_array[1], 6);
+    ASSERT_EQ(from_larger_array[2], 7);
 }
 
-TEST_CASE("Vector assignment correctly handles trunaction, move assignment, and convertability")
+TEST(Vector, assignment_correctly_handles_truncation_move_assignment_and_convertability)
 {
     struct A { A(int v) : v_{v} {} int v_; };
     struct B : A { using A::A; };
@@ -161,62 +160,203 @@ TEST_CASE("Vector assignment correctly handles trunaction, move assignment, and 
         std::make_unique<B>(7),
     };
     const Vector<std::unique_ptr<const B>, 2> as{std::move(bs)};
-    CHECK(as[0]->v_ == 5);
-    CHECK(as[1]->v_ == 6);
+    ASSERT_EQ(as[0]->v_, 5);
+    ASSERT_EQ(as[1]->v_, 6);
 }
 
-TEST_CASE("Equality comparison works as expected")
+TEST(Vector, equality_works_as_expected)
 {
-    CHECK(Vector2f{5.0f, 4.0f} == Vector2f{5.0f, 4.0f});
-    CHECK(Vector2i{5, 6} != Vector2i{-5, 6});
+    ASSERT_EQ(Vector2f(5.0f, 4.0f), Vector2f(5.0f, 4.0f));
+    ASSERT_NE(Vector2i(5, 6), Vector2i(-5, 6));
     constexpr float nan = std::numeric_limits<float>::quiet_NaN();
-    CHECK(Vector2f{nan, 5.0f} != Vector2f{nan, 5.0f});
+    ASSERT_NE(Vector2f(nan, 5.0f), Vector2f(nan, 5.0f));
 }
 
-TEST_CASE("Vector can be implicitly converted into a statically-sized span")
+TEST(Vector, can_be_implicitly_converted_to_a_statically_sized_span)
 {
     Vector4i v{-1, -5, -7, 15};
 
     const std::span<int, 4> mutable_view{v};
-    CHECK(mutable_view[0] == -1);
-    CHECK(mutable_view[1] == -5);
-    CHECK(mutable_view[2] == -7);
-    CHECK(mutable_view[3] == 15);
+    ASSERT_EQ(mutable_view[0], -1);
+    ASSERT_EQ(mutable_view[1], -5);
+    ASSERT_EQ(mutable_view[2], -7);
+    ASSERT_EQ(mutable_view[3], 15);
 
     const std::span<const int, 4> view{v};
-    CHECK(view[0] == -1);
-    CHECK(view[1] == -5);
-    CHECK(view[2] == -7);
-    CHECK(view[3] == 15);
+    ASSERT_EQ(view[0], -1);
+    ASSERT_EQ(view[1], -5);
+    ASSERT_EQ(view[2], -7);
+    ASSERT_EQ(view[3], 15);
 }
 
-TEST_CASE("size can return the size of the Vector at compile-time")
+TEST(Vector, size_can_return_vector_size_at_compile_time)
 {
     static_assert(Vector4f{}.size() == 4);
 }
 
-TEST_CASE("Vector binary operator+ with scalar works as expected")
+TEST(Vector, binary_operator_plus_with_scalar_works_as_expected)
 {
     static_assert(std::same_as<decltype(Vector3f{1.0f, 2.0f, 3.0f} + 2.0 ), Vector3d>);
     static_assert(std::same_as<decltype(Vector3i{1,    2,    3}    + 2.0f), Vector3f>);
     static_assert(std::same_as<decltype(Vector3i{1,    2,    3}    + 2.0 ), Vector3d>);
 
-    CHECK((Vector3i{1, 2, 3} + 2.0f) == Vector3f{1+2.0f, 2+2.0f, 3+2.0f});
+    ASSERT_EQ((Vector3i{1, 2, 3} + 2.0f), Vector3f(1+2.0f, 2+2.0f, 3+2.0f));
 }
 
-TEST_CASE("Vector binary operator+ with Vector works as expected")
+TEST(Vector, binary_operator_plus_works_with_Vector_as_expected)
 {
     static_assert(std::same_as<decltype(Vector3f{1.0f, 2.0f, 3.0f} + Vector3d{2.0} ), Vector3d>);
     static_assert(std::same_as<decltype(Vector3i{1,    2,    3}    + Vector3f{2.0f}), Vector3f>);
     static_assert(std::same_as<decltype(Vector3i{1,    2,    3}    + Vector3d{2.0} ), Vector3d>);
 
-    CHECK((Vector3i{1, 2, 3} + Vector3f{4.0f, 5.0f, 9.0f}) == Vector3f{1+4.0f, 2+5.0f, 3+9.0f});
+    ASSERT_EQ((Vector3i{1, 2, 3} + Vector3f{4.0f, 5.0f, 9.0f}), Vector3f(1+4.0f, 2+5.0f, 3+9.0f));
 }
 
-TEST_CASE("Vector can be formatted to an output stream")
+TEST(Vector, can_be_written_to_a_std_ostream)
 {
     std::stringstream ss;
     ss << Vector3i{-5, 0, 9};
-    CHECK(ss.str() == "Vector3(-5, 0, 9)");
+    ASSERT_EQ(ss.str(), "Vector3(-5, 0, 9)");
 }
-*/
+
+TEST(Vector, x_returns_first_element_as_const_reference)
+{
+    const Vector3d v{1.0, 2.0, 3.0};
+    const double& x = v.x();
+    ASSERT_EQ(x, 1.0);
+}
+
+TEST(Vector, x_is_constexpr)
+{
+    static_assert(Vector3d{1.0, 2.0, 3.0}.x() == 1.0);
+}
+
+TEST(Vector, x_can_return_mutable_reference)
+{
+    Vector3d v{1.0, 2.0, 3.0};
+    v.x() += 3.0;
+    ASSERT_EQ(v.x(), 1.0+3.0);
+}
+
+TEST(Vector, y_returns_second_element_as_const_reference)
+{
+    const Vector3d v{1.0, 2.0, 3.0};
+    const double& y = v.y();
+    ASSERT_EQ(y, 2.0);
+}
+
+TEST(Vector, y_is_constexpr)
+{
+    static_assert(Vector3d{1.0, 2.0, 3.0}.y() == 2.0);
+}
+
+TEST(Vector, y_can_return_mutable_reference)
+{
+    Vector3d v{1.0, 2.0, 3.0};
+    v.y() += 3.0;
+    ASSERT_EQ(v.y(), 2.0+3.0);
+}
+
+TEST(Vector, z_returns_third_element_as_const_reference)
+{
+    const Vector3d v{1.0, 2.0, 3.0};
+    const double& z = v.z();
+    ASSERT_EQ(z, 3.0);
+}
+
+TEST(Vector, z_is_constexpr)
+{
+    static_assert(Vector3d{1.0, 2.0, 3.0}.z() == 3.0);
+}
+
+TEST(Vector, z_can_return_mutable_reference)
+{
+    Vector3d v{1.0, 2.0, 3.0};
+    v.z() += 3.0;
+    ASSERT_EQ(v.z(), 3.0+3.0);
+}
+
+TEST(Vector, w_returns_fourth_element_as_const_reference)
+{
+    const Vector4d v{1.0, 2.0, 3.0, 4.0};
+    const double& w = v.w();
+    ASSERT_EQ(w, 4.0);
+}
+
+TEST(Vector, w_is_constexpr)
+{
+    static_assert(Vector4d{1.0, 2.0, 3.0, 4.0}.w() == 4.0);
+}
+
+TEST(Vector, w_can_return_mutable_reference)
+{
+    Vector4d v{1.0, 2.0, 3.0, 4.0};
+    v.w() += 3.0;
+    ASSERT_EQ(v.w(), 4.0+3.0);
+}
+
+TEST(Vector, xy_returns_expected_elements)
+{
+    Vector3i v{5, 6, 7};
+    ASSERT_EQ(v.xy(), Vector2i(5, 6));
+}
+
+TEST(Vector, xy_is_constexpr)
+{
+    static_assert(Vector3i{5, 6, 7}.xy() == Vector2i{5, 6});
+}
+
+TEST(Vector, xz_returns_expected_elements)
+{
+    Vector3i v{5, 6, 7};
+    ASSERT_EQ(v.xz(), Vector2i(5, 7));
+}
+
+TEST(Vector, xz_is_constexpr)
+{
+    static_assert(Vector3i{5, 6, 7}.xz() == Vector2i{5, 7});
+}
+
+TEST(Vector, yx_returns_expected_elements)
+{
+    Vector3i v{5, 6, 7};
+    ASSERT_EQ(v.yx(), Vector2i(6, 5));
+}
+
+TEST(Vector, yx_is_constexpr)
+{
+    static_assert(Vector3i{5, 6, 7}.yx() == Vector2i{6, 5});
+}
+
+TEST(Vector, yz_returns_expected_elements)
+{
+    Vector3i v{5, 6, 7};
+    ASSERT_EQ(v.yz(), Vector2i(6, 7));
+}
+
+TEST(Vector, yz_is_constexpr)
+{
+    static_assert(Vector3i{5, 6, 7}.yz() == Vector2i{6, 7});
+}
+
+TEST(Vector, zx_returns_expected_elements)
+{
+    Vector3i v{5, 6, 7};
+    ASSERT_EQ(v.zx(), Vector2i(7, 5));
+}
+
+TEST(Vector, zx_is_constexpr)
+{
+    static_assert(Vector3i{5, 6, 7}.zx() == Vector2i{7, 5});
+}
+
+TEST(Vector, zy_returns_expected_elements)
+{
+    Vector3i v{5, 6, 7};
+    ASSERT_EQ(v.zy(), Vector2i(7, 6));
+}
+
+TEST(Vector, zy_is_constexpr)
+{
+    static_assert(Vector3i{5, 6, 7}.zy() == Vector2i{7, 6});
+}

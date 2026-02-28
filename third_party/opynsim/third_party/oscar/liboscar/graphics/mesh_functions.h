@@ -4,9 +4,7 @@
 #include <liboscar/graphics/mesh_indices_view.h>
 #include <liboscar/graphics/mesh_topology.h>
 #include <liboscar/maths/sphere.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 
 #include <span>
 #include <vector>

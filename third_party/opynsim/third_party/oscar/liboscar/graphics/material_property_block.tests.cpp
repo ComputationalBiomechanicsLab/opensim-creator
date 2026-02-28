@@ -4,8 +4,7 @@
 #include <liboscar/graphics/texture2d.h>
 #include <liboscar/maths/matrix3x3.h>
 #include <liboscar/maths/matrix4x4.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/tests/test_helpers.h>
 #include <liboscar/utilities/string_helpers.h>
 

@@ -1,6 +1,6 @@
 #include "snorm8.h"
 
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <gtest/gtest.h>
 

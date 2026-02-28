@@ -3,7 +3,7 @@
 #include <liboscar/graphics/anti_aliasing_level.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/rect.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app_clock.h>
 #include <liboscar/platform/app_main_loop_status.h>
 #include <liboscar/platform/file_dialog_filter.h>

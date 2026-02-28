@@ -1,9 +1,8 @@
 #include "variant.h"
 
 #include <liboscar/graphics/color.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/maths/vector_functions.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
 #include <liboscar/utilities/conversion.h>
 #include <liboscar/utilities/c_string_view.h>
 #include <liboscar/utilities/enum_helpers.h>

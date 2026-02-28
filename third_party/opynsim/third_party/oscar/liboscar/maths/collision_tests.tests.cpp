@@ -1,7 +1,7 @@
 #include "collision_tests.h"
 
 #include <liboscar/maths/rect.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 
 #include <gtest/gtest.h>
 

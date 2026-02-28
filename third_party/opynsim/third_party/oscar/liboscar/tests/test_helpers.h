@@ -6,9 +6,7 @@
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/triangle.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 
 #include <cstddef>
 #include <cstdint>

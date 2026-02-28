@@ -23,7 +23,7 @@
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/maths/closed_interval.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/ui/icon_cache.h>

@@ -6,7 +6,7 @@
 #include <liboscar/maths/common_functions.h>
 #include <liboscar/maths/geometric_functions.h>
 #include <liboscar/maths/plane.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 namespace osc
 {

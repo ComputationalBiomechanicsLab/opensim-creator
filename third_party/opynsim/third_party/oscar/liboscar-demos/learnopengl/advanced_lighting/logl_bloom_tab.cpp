@@ -14,7 +14,7 @@
 #include <liboscar/graphics/geometries/plane_geometry.h>
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/matrix_functions.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>

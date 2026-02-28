@@ -1,7 +1,7 @@
 #include "rgba.h"
 
 #include <liboscar/graphics/unorm8.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 
 #include <gtest/gtest.h>
 

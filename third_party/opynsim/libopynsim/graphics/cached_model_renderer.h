@@ -3,7 +3,7 @@
 #include <liboscar/graphics/anti_aliasing_level.h>
 #include <liboscar/graphics/scene/scene_collision.h>
 #include <liboscar/maths/aabb.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 
 #include <memory>
 #include <optional>

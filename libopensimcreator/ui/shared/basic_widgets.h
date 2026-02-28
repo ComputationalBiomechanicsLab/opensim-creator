@@ -2,8 +2,7 @@
 
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>
 #include <liboscar/maths/aabb.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/c_string_view.h>
 
 #include <filesystem>

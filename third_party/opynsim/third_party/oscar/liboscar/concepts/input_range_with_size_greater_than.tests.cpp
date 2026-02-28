@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <liboscar/maths/triangle.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <array>
 #include <span>

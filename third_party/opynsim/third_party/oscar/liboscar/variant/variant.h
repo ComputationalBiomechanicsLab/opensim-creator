@@ -1,8 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/color.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/c_string_view.h>
 #include <liboscar/utilities/string_name.h>
 #include <liboscar/variant/variant_type.h>

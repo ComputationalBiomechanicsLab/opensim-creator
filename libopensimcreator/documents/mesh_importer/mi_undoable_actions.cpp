@@ -14,7 +14,7 @@
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/uid.h>
 
 #include <cstddef>

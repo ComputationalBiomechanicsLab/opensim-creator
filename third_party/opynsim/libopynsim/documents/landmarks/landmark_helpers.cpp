@@ -3,7 +3,7 @@
 #include <libopynsim/documents/landmarks/maybe_named_landmark_pair.h>
 
 #include <liboscar/formats/csv.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/std_variant_helpers.h>
 #include <liboscar/utilities/string_helpers.h>
 

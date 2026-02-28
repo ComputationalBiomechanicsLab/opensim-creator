@@ -4,7 +4,7 @@
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/bvh.h>
 #include <liboscar/maths/math_helpers.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <gtest/gtest.h>
 

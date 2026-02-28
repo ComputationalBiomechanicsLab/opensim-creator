@@ -12,9 +12,6 @@
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/transform_functions.h>
 #include <liboscar/maths/vector.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
 
 #include <array>
 #include <optional>

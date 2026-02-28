@@ -2,7 +2,7 @@
 
 #include <liboscar/graphics/render_target_color_attachment.h>
 #include <liboscar/graphics/render_target_depth_stencil_attachment.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 
 #include <optional>
 #include <span>

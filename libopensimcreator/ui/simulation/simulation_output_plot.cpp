@@ -18,7 +18,7 @@
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/rect_functions.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/ui/oscimgui.h>

@@ -10,8 +10,6 @@
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/vector.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
 #include <liboscar/platform/key.h>
 #include <liboscar/platform/key_combination.h>
 #include <liboscar/platform/resource_path.h>

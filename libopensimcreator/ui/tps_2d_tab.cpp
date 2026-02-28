@@ -13,8 +13,7 @@
 #include <liboscar/maths/matrix_functions.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/rect_functions.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/log_viewer_panel.h>

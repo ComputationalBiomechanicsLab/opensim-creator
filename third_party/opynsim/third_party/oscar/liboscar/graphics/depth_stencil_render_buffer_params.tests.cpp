@@ -1,6 +1,6 @@
 #include "depth_stencil_render_buffer_params.h"
 
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 
 #include <gtest/gtest.h>
 

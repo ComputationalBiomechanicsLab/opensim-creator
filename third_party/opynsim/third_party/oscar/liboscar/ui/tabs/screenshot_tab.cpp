@@ -12,9 +12,7 @@
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/os.h>
 #include <liboscar/platform/screenshot.h>

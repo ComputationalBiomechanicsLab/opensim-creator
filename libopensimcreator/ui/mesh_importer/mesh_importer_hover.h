@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/documents/mesh_importer/mi_ids.h>
 
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/uid.h>
 
 namespace osc

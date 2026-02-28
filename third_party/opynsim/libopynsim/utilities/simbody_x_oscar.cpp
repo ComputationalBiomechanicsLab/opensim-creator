@@ -5,8 +5,7 @@
 #include <liboscar/maths/matrix3x3.h>
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/conversion.h>
 #include <SimTKcommon/internal/MassProperties.h>
 #include <SimTKcommon/internal/Rotation.h>

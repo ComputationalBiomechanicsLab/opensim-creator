@@ -10,8 +10,7 @@
 #include <liboscar/maths/bvh.h>
 #include <liboscar/maths/frustum_planes.h>
 #include <liboscar/maths/ray_collision.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <functional>
 #include <optional>

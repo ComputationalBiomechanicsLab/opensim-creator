@@ -12,7 +12,7 @@
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/math_helpers.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/file_dialog_filter.h>
 #include <liboscar/platform/log.h>

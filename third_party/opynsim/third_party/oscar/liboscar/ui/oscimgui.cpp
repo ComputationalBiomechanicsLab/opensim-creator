@@ -32,9 +32,7 @@
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/maths/vector_functions.h>
 #include <liboscar/platform/events/event_type.h>
 #include <liboscar/platform/events/key_event.h>

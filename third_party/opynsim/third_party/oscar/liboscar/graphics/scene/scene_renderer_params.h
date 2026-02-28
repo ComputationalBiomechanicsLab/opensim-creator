@@ -3,8 +3,7 @@
 #include <liboscar/graphics/anti_aliasing_level.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/matrix4x4.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <array>
 

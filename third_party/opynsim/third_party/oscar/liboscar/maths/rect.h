@@ -2,7 +2,7 @@
 
 #include <liboscar/maths/common_functions.h>
 #include <liboscar/maths/rect_corners.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 
 #include <iosfwd>
 

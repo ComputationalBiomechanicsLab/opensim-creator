@@ -6,7 +6,7 @@
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/uid.h>
 
 #include <iosfwd>

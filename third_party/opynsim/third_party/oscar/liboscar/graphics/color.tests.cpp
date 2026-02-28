@@ -3,8 +3,7 @@
 #include <liboscar/graphics/color32.h>
 #include <liboscar/graphics/color_hsla.h>
 #include <liboscar/maths/math_helpers.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 
 #include <gtest/gtest.h>
 

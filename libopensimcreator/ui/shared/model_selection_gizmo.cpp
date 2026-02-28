@@ -13,8 +13,6 @@
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/vector.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/utilities/assertions.h>

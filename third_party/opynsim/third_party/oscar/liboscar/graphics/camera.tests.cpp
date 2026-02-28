@@ -6,7 +6,7 @@
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/matrix_functions.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/tests/test_helpers.h>
 
 #include <gtest/gtest.h>

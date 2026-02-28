@@ -4,7 +4,7 @@
 #include <liboscar/graphics/scene/scene_collision.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
 #include <liboscar/maths/rect.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 
 #include <functional>
 #include <optional>

@@ -16,7 +16,7 @@
 #include <liboscar/formats/obj.h>
 #include <liboscar/formats/stl.h>
 #include <liboscar/graphics/mesh.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/file_dialog_filter.h>
 #include <liboscar/platform/log.h>

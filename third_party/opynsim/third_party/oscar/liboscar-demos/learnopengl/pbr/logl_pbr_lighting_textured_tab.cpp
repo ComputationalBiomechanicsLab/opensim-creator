@@ -4,7 +4,7 @@
 #include <liboscar/graphics/geometries/sphere_geometry.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
 #include <liboscar/ui/mouse_capturing_camera.h>

@@ -6,7 +6,7 @@
 
 #include <libopynsim/documents/landmarks/landmark_csv_flags.h>
 #include <liboscar/formats/obj.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/uid.h>
 
 #include <iosfwd>

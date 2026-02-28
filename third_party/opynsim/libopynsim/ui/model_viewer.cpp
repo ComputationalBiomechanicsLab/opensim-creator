@@ -9,7 +9,7 @@
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
 #include <liboscar/maths/polar_perspective_camera.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_metadata.h>
 #include <liboscar/platform/widget.h>

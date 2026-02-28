@@ -152,21 +152,43 @@ namespace osc
         constexpr reference       operator[](size_type pos)       { return begin()[pos]; }
         constexpr const_reference operator[](size_type pos) const { return begin()[pos]; }
 
-        // Returns `(*this)[0]`
-        constexpr reference       x()       requires (N > 0) { return begin()[0]; }
-        constexpr const_reference x() const requires (N > 0) { return begin()[0]; }
+        /// Returns `(*this)[0]`
+        constexpr reference       x()        requires (N > 0) { return (*this)[0]; }
+        /// Returns `(*this)[0]`
+        constexpr const_reference x()  const requires (N > 0) { return (*this)[0]; }
 
-        // Returns `(*this)[1]`
-        constexpr reference       y()       requires (N > 1) { return begin()[1]; }
-        constexpr const_reference y() const requires (N > 1) { return begin()[1]; }
+        /// Returns `(*this)[1]`
+        constexpr reference       y()        requires (N > 1) { return (*this)[1]; }
+        /// Returns `(*this)[0]`
+        constexpr const_reference y()  const requires (N > 1) { return (*this)[1]; }
 
-        // Returns `(*this)[2]`
-        constexpr reference       z()       requires (N > 2) { return begin()[2]; }
-        constexpr const_reference z() const requires (N > 2) { return begin()[2]; }
+        /// Returns `(*this)[2]`
+        constexpr reference       z()        requires (N > 2) { return (*this)[2]; }
+        /// Returns `(*this)[0]`
+        constexpr const_reference z()  const requires (N > 2) { return (*this)[2]; }
 
-        // Returns `(*this)[3]`
-        constexpr reference       w()       requires (N > 3) { return begin()[3]; }
-        constexpr const_reference w() const requires (N > 3) { return begin()[3]; }
+        /// Returns `(*this)[3]`
+        constexpr reference       w()        requires (N > 3) { return (*this)[3]; }
+        /// Returns `(*this)[0]`
+        constexpr const_reference w()  const requires (N > 3) { return (*this)[3]; }
+
+        /// Returns `Vector<T, 2>{x(), y()}`
+        constexpr Vector<T, 2>    xy() const requires (N > 1) { return {x(), y()}; }
+
+        /// Returns `Vector<T, 2>{x(), z()}`
+        constexpr Vector<T, 2>    xz() const requires (N > 2) { return {x(), z()}; }
+
+        /// Returns `Vector<T, 2>{y(), x()}`
+        constexpr Vector<T, 2>    yx() const requires (N > 1) { return {y(), x()}; }
+
+        /// Returns `{y(), z()}`
+        constexpr Vector<T, 2>    yz() const requires (N > 2) { return {y(), z()}; }
+
+        /// Returns `{z(), x()}`
+        constexpr Vector<T, 2>    zx() const requires (N > 2) { return {z(), x()}; }
+
+        /// Returns `{z(), y()}`
+        constexpr Vector<T, 2>    zy() const requires (N > 2) { return {z(), y()}; }
 
         friend constexpr bool operator== (const Vector&, const Vector&) = default;
         friend constexpr auto operator<=>(const Vector&, const Vector&) = default;

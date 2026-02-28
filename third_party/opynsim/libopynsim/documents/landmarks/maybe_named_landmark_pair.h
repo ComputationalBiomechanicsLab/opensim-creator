@@ -2,7 +2,7 @@
 
 #include <libopynsim/utilities/landmark_pair_3d.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/c_string_view.h>
 #include <SimTKcommon/SmallMatrix.h>
 

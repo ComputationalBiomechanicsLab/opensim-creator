@@ -7,8 +7,7 @@
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/sphere.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/shims/cpp23/numeric.h>
 #include <liboscar/utilities/assertions.h>
 #include <simmath/LinearAlgebra.h>

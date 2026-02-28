@@ -8,8 +8,7 @@
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/qua.h>
 #include <liboscar/maths/trigonometric_functions.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <concepts>
 #include <type_traits>

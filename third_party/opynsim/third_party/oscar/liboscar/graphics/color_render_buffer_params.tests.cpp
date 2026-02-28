@@ -2,7 +2,7 @@
 
 #include <liboscar/graphics/anti_aliasing_level.h>
 #include <liboscar/graphics/color_render_buffer_format.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 
 #include <gtest/gtest.h>
 

@@ -4,9 +4,6 @@
 #include <liboscar/graphics/unorm8.h>
 #include <liboscar/graphics/vertex_attribute_format.h>
 #include <liboscar/maths/vector.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
 
 #include <cstddef>
 #include <tuple>

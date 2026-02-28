@@ -6,8 +6,7 @@
 #include <liboscar/graphics/texture_filter_mode.h>
 #include <liboscar/graphics/texture_format.h>
 #include <liboscar/graphics/texture_wrap_mode.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/tests/test_helpers.h>
 #include <liboscar/utilities/object_representation.h>
 

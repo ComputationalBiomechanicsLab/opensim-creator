@@ -4,7 +4,7 @@
 #include <libopensimcreator/documents/mesh_warper/tps_document_element_id.h>
 #include <libopensimcreator/documents/mesh_warper/tps_document_element_type.h>
 
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/string_name.h>
 #include <liboscar/utilities/uid.h>
 

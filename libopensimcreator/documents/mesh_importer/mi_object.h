@@ -9,7 +9,7 @@
 #include <liboscar/maths/euler_angles.h>
 #include <liboscar/maths/quaternion.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/c_string_view.h>
 #include <liboscar/utilities/uid.h>
 

@@ -4,7 +4,7 @@
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/geometric_functions.h>
 #include <liboscar/maths/trigonometric_functions.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <cstddef>
 #include <cstdint>

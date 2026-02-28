@@ -3,7 +3,7 @@
 #include <libopensimcreator/ui/shared/model_viewer_panel_flags.h>
 
 #include <liboscar/maths/rect.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/ui/panels/panel.h>
 
 #include <memory>

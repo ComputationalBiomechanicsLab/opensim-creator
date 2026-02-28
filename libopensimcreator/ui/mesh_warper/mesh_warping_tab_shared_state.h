@@ -16,8 +16,7 @@
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/polar_perspective_camera.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/events/close_tab_event.h>

@@ -2,7 +2,7 @@
 
 #include <liboscar/maths/geometric_functions.h>
 #include <liboscar/maths/triangle.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <concepts>
 #include <type_traits>

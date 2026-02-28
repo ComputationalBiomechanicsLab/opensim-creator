@@ -2,7 +2,7 @@
 
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/matrix4x4.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 namespace osc
 {

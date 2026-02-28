@@ -12,7 +12,7 @@
 #include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/ray.h>
 #include <liboscar/maths/rect_functions.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/perf.h>
 
 #include <algorithm>

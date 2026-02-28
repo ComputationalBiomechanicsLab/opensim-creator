@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/hash_helpers.h>
 
 #include <cstddef>

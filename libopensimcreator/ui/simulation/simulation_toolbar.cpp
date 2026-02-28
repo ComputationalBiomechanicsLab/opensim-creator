@@ -7,8 +7,7 @@
 
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/color.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/ui/oscimgui.h>
 
 #include <memory>

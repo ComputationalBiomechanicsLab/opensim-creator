@@ -14,7 +14,7 @@
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
 #include <liboscar/maths/polar_perspective_camera.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/ui/oscimgui.h>

@@ -42,6 +42,11 @@ performance and stability in wrapping solutions.
 - The experimental classes `AckermannVanDenBogert2010Force` and `EspositoMiller2018Force` have been removed. (#4234)
 - Fixed an issue prevent element-by-element construction of `Mat33` objects in Matlab and Python. (#4241)
 - Added class `MeyerFregly2016Muscle` to support NMSM Pipeline-equivalent muscle models in Moco. (#4233)
+- Breaking: replaced `MocoJointReactionGoal::setWeight()`/`setWeightSet()` with `setReactionWeight()`/`setReactionWeightSet()` to avoid conflict with `MocoGoal::setWeight()`. (#4256)
+- Fixed a double-free issue that libASAN detects when loading/simulating models containing Thelen2003Muscle
+- Fixed a compile-time issue where `OutputReporter` was using the `Model` API without having access to its definition.
+- Added `ScopeExit`, which is a lightweight C++-only class for calling a function/lambda when it destructs (similar to `std::experimental::scope_exit`).
+- Fixed a leak in `Model::extendConnectToModel` that can occur when an exception is thrown midway through model graph creation.
 
 
 v4.5.2

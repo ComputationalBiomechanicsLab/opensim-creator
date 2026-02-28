@@ -2,7 +2,7 @@
 
 #include <libopynsim/documents/landmarks/named_landmark.h>
 #include <liboscar/maths/euler_angles.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <cstddef>
 #include <filesystem>

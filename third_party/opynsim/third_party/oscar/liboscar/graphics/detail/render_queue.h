@@ -11,7 +11,7 @@
 #include <liboscar/maths/matrix_functions.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/transform_functions.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <cstddef>
 #include <iterator>

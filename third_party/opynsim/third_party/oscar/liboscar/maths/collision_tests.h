@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/maths/ray_collision.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 
 #include <optional>
 

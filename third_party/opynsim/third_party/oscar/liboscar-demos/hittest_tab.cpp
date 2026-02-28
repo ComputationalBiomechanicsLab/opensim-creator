@@ -16,7 +16,7 @@
 #include <liboscar/maths/ray_collision.h>
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/sphere.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>

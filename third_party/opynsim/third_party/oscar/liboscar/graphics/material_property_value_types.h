@@ -8,9 +8,7 @@
 #include <liboscar/graphics/texture2d.h>
 #include <liboscar/maths/matrix3x3.h>
 #include <liboscar/maths/matrix4x4.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/typelist.h>
 
 // Higher-order macro for generating code related to material properties

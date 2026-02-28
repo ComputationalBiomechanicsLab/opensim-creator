@@ -1,7 +1,6 @@
 #include "unorm8.h"
 
 #include <liboscar/maths/vector.h>
-#include <liboscar/maths/vector3.h>
 #include <liboscar/utilities/algorithms.h>
 #include <liboscar/utilities/conversion.h>
 

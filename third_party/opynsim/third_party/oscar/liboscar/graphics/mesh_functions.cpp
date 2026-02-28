@@ -8,9 +8,7 @@
 #include <liboscar/maths/sphere.h>
 #include <liboscar/maths/tetrahedron.h>
 #include <liboscar/maths/triangle.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
-#include <liboscar/maths/vector4.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/assertions.h>
 
 #include <algorithm>

@@ -11,8 +11,7 @@
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/scene/scene_decoration_flags.h>
 #include <liboscar/maths/easing_functions.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/ui/oscimgui.h>

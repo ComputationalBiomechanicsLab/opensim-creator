@@ -9,7 +9,7 @@
 #include <liboscar/graphics/scene/scene_helpers.h>
 #include <liboscar/maths/line_segment.h>
 #include <liboscar/maths/math_helpers.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/utilities/hash_helpers.h>
 #include <simbody/internal/common.h>

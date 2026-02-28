@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/ui/icon.h>
 #include <liboscar/utilities/c_string_view.h>
 

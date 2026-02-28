@@ -6,8 +6,7 @@
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/transform_functions.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/maths/vector_functions.h>
 #include <liboscar/oscar_config.h>
 #include <liboscar/platform/os.h>

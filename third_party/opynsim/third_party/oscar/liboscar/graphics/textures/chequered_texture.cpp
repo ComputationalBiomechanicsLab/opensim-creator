@@ -5,7 +5,7 @@
 #include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/texture_format.h>
 #include <liboscar/maths/math_helpers.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/object_representation.h>
 
 #include <vector>

@@ -6,7 +6,7 @@
 #include <liboscar/graphics/scene/scene_decoration_shading.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/string_name.h>
 
 namespace osc

@@ -3,8 +3,7 @@
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/ray.h>
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 namespace osc { struct AABB; }
 namespace osc { class Rect; }

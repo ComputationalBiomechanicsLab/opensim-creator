@@ -2,7 +2,7 @@
 
 #include <liboscar/maths/common_functions.h>
 #include <liboscar/maths/rect.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 
 #include <concepts>
 #include <functional>

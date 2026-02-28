@@ -9,7 +9,7 @@
 #include <libopensimcreator/documents/mesh_importer/mi_station.h>
 
 #include <liboscar/graphics/mesh_functions.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/std_variant_helpers.h>
 
 #include <array>

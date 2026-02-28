@@ -6,7 +6,7 @@
 #include <libopynsim/utilities/simbody_x_oscar.h>
 #include <libopynsim/tps3d.h>
 #include <liboscar/graphics/mesh.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>

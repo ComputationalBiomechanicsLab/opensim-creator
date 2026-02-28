@@ -4,7 +4,7 @@
 #include <liboscar/maths/bvh_collision.h>
 #include <liboscar/maths/bvh_node.h>
 #include <liboscar/maths/bvh_prim.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <cstdint>
 #include <cstddef>

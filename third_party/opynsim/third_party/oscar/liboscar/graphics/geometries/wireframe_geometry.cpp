@@ -6,7 +6,7 @@
 #include <liboscar/maths/common_functions.h>
 #include <liboscar/maths/line_segment.h>
 #include <liboscar/maths/triangle.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/enum_helpers.h>
 
 #include <cstddef>

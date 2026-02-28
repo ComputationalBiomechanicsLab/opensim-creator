@@ -3,7 +3,7 @@
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/mesh_topology.h>
 #include <liboscar/maths/aabb.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 using namespace osc;
 

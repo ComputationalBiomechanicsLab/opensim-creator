@@ -5,7 +5,7 @@
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/triangle_functions.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/file_dialog_filter.h>
 #include <liboscar/utilities/assertions.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>

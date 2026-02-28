@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/documents/mesh_importer/mi_document.h>
 
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <filesystem>
 #include <memory>

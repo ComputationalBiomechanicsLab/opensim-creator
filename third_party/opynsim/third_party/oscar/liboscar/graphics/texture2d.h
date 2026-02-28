@@ -6,7 +6,7 @@
 #include <liboscar/graphics/texture_filter_mode.h>
 #include <liboscar/graphics/texture_format.h>
 #include <liboscar/graphics/texture_wrap_mode.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/copy_on_upd_shared_value.h>
 
 #include <cstdint>

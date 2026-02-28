@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/maths/ellipsoid.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 
 #include <array>
 

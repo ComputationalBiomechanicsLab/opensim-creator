@@ -7,8 +7,7 @@
 #include <libopensimcreator/ui/mesh_importer/mesh_importer_shared_state.h>
 #include <libopensimcreator/ui/mesh_importer/mesh_importer_ui_layer.h>
 
-#include <liboscar/maths/vector2.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/utilities/c_string_view.h>
 

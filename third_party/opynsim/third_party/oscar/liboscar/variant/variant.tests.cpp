@@ -1,7 +1,7 @@
 #include "variant.h"
 
 #include <liboscar/graphics/color.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/utilities/conversion.h>
 #include <liboscar/utilities/c_string_view.h>
 #include <liboscar/utilities/string_name.h>

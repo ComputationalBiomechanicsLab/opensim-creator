@@ -9,7 +9,7 @@
 #include <liboscar/maths/matrix_functions.h>
 #include <liboscar/maths/quaternion_functions.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/maths/vector2.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>

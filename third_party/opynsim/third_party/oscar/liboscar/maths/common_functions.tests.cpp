@@ -2,7 +2,6 @@
 
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/vector.h>
-#include <liboscar/maths/vector3.h>
 
 #include <gtest/gtest.h>
 

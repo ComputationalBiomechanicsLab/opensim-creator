@@ -11,7 +11,7 @@
 #include <liboscar/graphics/scene/scene_decoration_flags.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/transform.h>
-#include <liboscar/maths/vector3.h>
+#include <liboscar/maths/vector.h>
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/utilities/assertions.h>
 #include <liboscar/utilities/c_string_view.h>
