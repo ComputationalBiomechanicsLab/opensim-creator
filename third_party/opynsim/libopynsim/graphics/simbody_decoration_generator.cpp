@@ -287,12 +287,11 @@ namespace
             const float legThickness = c_FrameAxisThickness * m_FixupScaleFactor;
             const auto flags = GetFlags(d) | osc::SceneDecorationFlag::CanBackfaceCull;
             for (int axis = 0; axis < 3; ++axis) {
-                osc::Vector3 direction = {0.0f, 0.0f, 0.0f};
-                direction[axis] = 1.0f;
+                osc::Vector3 direction = osc::Vector3{}.with_element(axis, 1.0f);
 
                 const osc::LineSegment lineSegment = {
                     t.translation,
-                    t.translation + (legLen * axisLengths[axis] * transform_direction(t, direction))
+                    t.translation + (legLen * axisLengths[axis] * normalize(transform_vector(t, direction)))
                 };
                 const osc::Transform legXform = cylinder_to_line_segment_transform(lineSegment, legThickness);
 
@@ -387,7 +386,7 @@ namespace
             auto posDir = osc::to<osc::Vector3>(d.getDirection());
 
             const osc::Vector3 pos = transform_point(t, posBase);
-            const osc::Vector3 direction = transform_direction(t, posDir);
+            const osc::Vector3 direction = normalize(transform_vector(t, posDir));
 
             const auto radius = static_cast<float>(d.getBaseRadius());
             const auto height = static_cast<float>(d.getHeight());

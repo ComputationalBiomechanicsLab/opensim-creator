@@ -1171,7 +1171,7 @@ Ray osc::inverse_transform_ray(const Ray& ray, const Transform& transform)
 {
     return Ray{
         inverse_transform_point(transform, ray.origin),
-        inverse_transform_direction(transform, ray.direction),
+        normalize(inverse_transform_vector(transform, ray.direction)),
     };
 }
 

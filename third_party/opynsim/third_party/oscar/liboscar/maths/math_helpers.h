@@ -142,9 +142,9 @@ namespace osc
         return Vector3{mat * Vector4{point, 1.0f}};
     }
 
-    inline Vector3 transform_direction(const Matrix4x4& mat, const Vector3& direction)
+    inline Vector3 transform_vector(const Matrix4x4& mat, const Vector3& vector)
     {
-        return Vector3{mat * Vector4{direction, 0.0f}};
+        return Vector3{mat * Vector4{vector, 0.0f}};
     }
 
     // returns a `Quaternion` equivalent to the given euler angles

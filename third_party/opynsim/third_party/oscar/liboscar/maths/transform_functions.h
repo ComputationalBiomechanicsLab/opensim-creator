@@ -108,24 +108,24 @@ namespace osc
         return rv;
     }
 
-    // returns a unit-length vector that is the equivalent of the provided direction vector after applying the transform
-    //
-    // effectively, apply the Transform but ignore the `position` (translation) component
-    inline Vector3 transform_direction(const Transform& transform, const Vector3& direction)
+    // Returns a vector that is the equivalent of applying `transform` to it, but ignoring
+    // the `position` (translation) component (i.e. vector transformation, as opposed
+    // to point transformation).
+    inline Vector3 transform_vector(const Transform& transform, const Vector3& vector)
     {
-        return normalize(transform.rotation * (transform.scale * direction));
+        return transform.rotation * (transform.scale * vector);
     }
 
-    // returns a unit-length vector that is the equivalent of the provided direction vector after applying the inverse of the transform
-    //
-    // effectively, apply the inverse transform but ignore the `position` (translation) component
-    inline Vector3 inverse_transform_direction(const Transform& transform, const Vector3& direction)
+    // Returns a vector that is the equivalent of applying the inverse of `transform`
+    // to it, but ignoring the `position` (translation) component (i.e. vector transformation,
+    // as opposed to point transformation).
+    inline Vector3 inverse_transform_vector(const Transform& transform, const Vector3& vector)
     {
-        return normalize((conjugate(transform.rotation) * direction) / transform.scale);
+        return (conjugate(transform.rotation) * vector) / transform.scale;
     }
 
     // returns a vector that is the equivalent of the provided vector after applying the transform
-    constexpr Vector3 transform_point(const Transform& transform, Vector3 point)
+    constexpr Vector3 transform_point(const Transform& transform, const Vector3& point)
     {
         return transform * point;
     }
