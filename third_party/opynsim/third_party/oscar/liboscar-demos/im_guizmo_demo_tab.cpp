@@ -5,6 +5,7 @@
 #include <liboscar/graphics/geometries/plane_geometry.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/materials/mesh_basic_material.h>
+#include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/matrix_functions.h>
 #include <liboscar/maths/polar_perspective_camera.h>
@@ -69,14 +70,63 @@ public:
         }
 
         // Draw UI overlays (incl. gizmo)
+        const auto bounds = AABB{.min = Vector3{-0.5f}, .max = Vector3{0.5f}};
         gizmo_.draw_to_foreground(
             model_matrix_,
             view_matrix,
             projection_matrix,
-            ui::get_main_window_workspace_ui_rect()
+            ui::get_main_window_workspace_ui_rect(),
+            &snap_,
+            bounding_box_ ? &bounds : nullptr
         );
         ui::draw_gizmo_mode_selector(gizmo_);
         ui::draw_gizmo_operation_selector(gizmo_);
+        {
+            ui::start_new_line();
+            bool position_snap = snap_.position.has_value();
+            if (ui::draw_checkbox("snap position", &position_snap)) {
+                if (position_snap) {
+                    snap_.position.emplace();
+                }
+                else {
+                    snap_.position.reset();
+                }
+            }
+            if (snap_.position) {
+                ui::draw_vector3_input("##position", *snap_.position);
+            }
+        }
+        {
+            ui::start_new_line();
+            bool rotation_snap = snap_.rotation.has_value();
+            if (ui::draw_checkbox("snap rotation", &rotation_snap)) {
+                if (rotation_snap) {
+                    snap_.rotation.emplace();
+                }
+                else {
+                    snap_.rotation.reset();
+                }
+            }
+            if (snap_.rotation) {
+                ui::draw_angle_input("##rotation", *snap_.rotation);
+            }
+        }
+        {
+            ui::start_new_line();
+            bool scale_snap = snap_.scale.has_value();
+            if (ui::draw_checkbox("snap scale", &scale_snap)) {
+                if (scale_snap) {
+                    snap_.scale.emplace();
+                }
+                else {
+                    snap_.scale.reset();
+                }
+            }
+            if (snap_.scale) {
+                ui::draw_vector3_input("##scale", *snap_.scale);
+            }
+        }
+        ui::draw_checkbox("bounding box", &bounding_box_);
     }
 
 private:
@@ -95,6 +145,8 @@ private:
     GridGeometry grid_{{.size = 20.0f, .num_divisions = 100}};
     PlaneGeometry plane_;
     MeshBasicMaterial basic_material_;
+    ui::GizmoOperationSnappingSteps snap_;
+    bool bounding_box_ = false;
 };
 
 

@@ -448,6 +448,8 @@ namespace
         Camera                                       camera;
         Mesh                                         mesh;
         OscarUITextureStorage                        textures;
+
+        ui::gizmo::detail::GizmoContext              gizmo_context;
     };
 
     OscarUIBackendData* try_get_ui_backend_data(ImGuiContext* context)
@@ -1801,7 +1803,7 @@ void osc::ui::Context::on_start_new_frame()
     ImGui::NewFrame();
 
     // extra parts
-    gizmo::detail::BeginFrame();
+    get_backend_data().gizmo_context.BeginFrame();
 }
 
 void osc::ui::Context::render()
@@ -1856,12 +1858,10 @@ void osc::ui::Context::init(
 
     // init extra parts (plotting, gizmos, etc.)
     ImPlot::CreateContext();
-    gizmo::detail::CreateContext();
 }
 
 void osc::ui::Context::shutdown(App* app)
 {
-    gizmo::detail::DestroyContext();
     ImPlot::DestroyContext();
 
     auto bd = ImGui_ImplOscar_Shutdown(app);
@@ -3931,14 +3931,18 @@ std::optional<Transform> osc::ui::Gizmo::draw(
     Matrix4x4& model_matrix,
     const Matrix4x4& view_matrix,
     const Matrix4x4& projection_matrix,
-    const Rect& ui_rect)
+    const Rect& ui_rect,
+    const GizmoOperationSnappingSteps* snap,
+    const AABB* local_bounds)
 {
     return draw_to(
         model_matrix,
         view_matrix,
         projection_matrix,
         ui_rect,
-        ImGui::GetWindowDrawList()
+        ImGui::GetWindowDrawList(),
+        snap,
+        local_bounds
     );
 }
 
@@ -3946,14 +3950,18 @@ std::optional<Transform> osc::ui::Gizmo::draw_to_foreground(
     Matrix4x4& model_matrix,
     const Matrix4x4& view_matrix,
     const Matrix4x4& projection_matrix,
-    const Rect& ui_rect)
+    const Rect& ui_rect,
+    const GizmoOperationSnappingSteps* snap,
+    const AABB* local_bounds)
 {
     return draw_to(
         model_matrix,
         view_matrix,
         projection_matrix,
         ui_rect,
-        ImGui::GetForegroundDrawList()
+        ImGui::GetForegroundDrawList(),
+        snap,
+        local_bounds
     );
 }
 
@@ -3962,7 +3970,9 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
     const Matrix4x4& view_matrix,
     const Matrix4x4& projection_matrix,
     const Rect& ui_rect,
-    ImDrawList* draw_list)
+    ImDrawList* draw_list,
+    const GizmoOperationSnappingSteps* snap,
+    const AABB* local_bounds)
 {
     if (operation_ == GizmoOperation::None) {
         return std::nullopt;  // disabled
@@ -3970,36 +3980,47 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
 
     // important: necessary when showing multiple gizmos in one frame
     // also important: don't use ui::get_id(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
-    gizmo::detail::PushID(id_);
-    const ScopeExit g{[]{ gizmo::detail::PopID(); }};
+
+    auto& gizmo_context = get_backend_data().gizmo_context;
+
+    gizmo_context.PushID(id_);
+    const ScopeExit g{[&gizmo_context]{ gizmo_context.PopID(); }};
 
     // update last-frame cache
-    was_using_last_frame_ = gizmo::detail::IsUsing();
+    was_using_last_frame_ = gizmo_context.IsUsing();
 
-    gizmo::detail::SetRect(ui_rect);
-    gizmo::detail::SetDrawlist(draw_list);
-    return gizmo::detail::Manipulate(
+    gizmo_context.SetRect(ui_rect);
+    gizmo_context.SetDrawlist(draw_list);
+    return gizmo_context.Manipulate(
         view_matrix,
         projection_matrix,
         to<gizmo::detail::Operation>(operation_),
         to<gizmo::detail::Mode>(mode_),
-        model_matrix
+        model_matrix,
+        snap,
+        local_bounds
     );
 }
 
 bool osc::ui::Gizmo::is_using() const
 {
-    gizmo::detail::PushID(id_);
-    const bool rv = ui::gizmo::detail::IsUsing();
-    gizmo::detail::PopID();
+    auto& gizmo_context = get_backend_data().gizmo_context;
+
+    gizmo_context.PushID(id_);
+    const bool rv = gizmo_context.IsUsing();
+    gizmo_context.PopID();
+
     return rv;
 }
 
 bool osc::ui::Gizmo::is_over() const
 {
-    gizmo::detail::PushID(id_);
-    const bool rv = ui::gizmo::detail::IsOver();
-    gizmo::detail::PopID();
+    auto& gizmo_context = get_backend_data().gizmo_context;
+
+    gizmo_context.PushID(id_);
+    const bool rv = gizmo_context.IsOver();
+    gizmo_context.PopID();
+
     return rv;
 }
 

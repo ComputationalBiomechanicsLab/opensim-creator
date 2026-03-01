@@ -48,6 +48,9 @@
 
 struct ImDrawList;
 
+namespace osc::ui { struct GizmoOperationSnappingSteps; }
+namespace osc { struct AABB; }
+
 namespace osc::ui::gizmo::detail
 {
     enum class Operation {
@@ -103,72 +106,76 @@ namespace osc::ui::gizmo::detail
     // on it in device-independent pixels.
     constexpr float AnnotationOffset() { return 15.0f; }
 
-    void CreateContext();
-    void DestroyContext();
+    class GizmoContext final {
+    public:
+        GizmoContext();
+        GizmoContext(const GizmoContext&) = delete;
+        GizmoContext(GizmoContext&&) noexcept;
+        ~GizmoContext() noexcept;
 
-    // call inside your own window and before Manipulate() in order to draw gizmo to that window.
-    // Or pass a specific ImDrawList to draw to (e.g. ImGui::GetForegroundDrawList()).
-    void SetDrawlist(ImDrawList* drawlist = nullptr);
+        GizmoContext& operator=(const GizmoContext&) = delete;
+        GizmoContext& operator=(GizmoContext&&) noexcept;
 
-    // call BeginFrame right after ImGui_XXXX_NewFrame();
-    void BeginFrame();
+        // call inside your own window and before Manipulate() in order to draw gizmo to that window.
+        // Or pass a specific ImDrawList to draw to (e.g. ImGui::GetForegroundDrawList()).
+        void SetDrawlist(ImDrawList* drawlist = nullptr);
 
-    // return true if mouse cursor is over any gizmo control (axis, plan or screen component)
-    bool IsOver();
+        // call BeginFrame right after ImGui_XXXX_NewFrame();
+        void BeginFrame();
 
-    // return true if the cursor is over the operation's gizmo
-    bool IsOver(Operation op);
+        // return true if mouse cursor is over any gizmo control (axis, plan or screen component)
+        bool IsOver();
 
-    // return true if mouse IsOver or if the gizmo is in moving state
-    bool IsUsing();
+        // return true if the cursor is over the operation's gizmo
+        bool IsOver(Operation op);
 
-    // return true if any gizmo is in moving state
-    bool IsUsingAny();
+        // return true if mouse IsOver or if the gizmo is in moving state
+        bool IsUsing();
 
-    // enable/disable the gizmo. Stay in the state until next call to Enable.
-    // gizmo is rendered with gray half transparent color when disabled
-    void Enable(bool enable);
+        // return true if any gizmo is in moving state
+        bool IsUsingAny();
 
-    // Set the viewport rectangle in the ui coordinate system (device-independent pixels)
-    // where the gizmo shall be drawn.
-    void SetRect(const Rect& ui_rect);
+        // enable/disable the gizmo. Stay in the state until next call to Enable.
+        // gizmo is rendered with gray half transparent color when disabled
+        void Enable(bool enable);
 
-    // default is false
-    void SetOrthographic(bool isOrthographic);
+        // Set the viewport rectangle in the ui coordinate system (device-independent pixels)
+        // where the gizmo shall be drawn.
+        void SetRect(const Rect& ui_rect);
 
-    // Push/Pop IDs from the current gizmo context's local ID stack
-    void          PushID(UID);
-    void          PopID();                                                        // pop from the ID stack.
+        // default is false
+        void SetOrthographic(bool isOrthographic);
 
-    void SetGizmoSizeClipSpace(float value);
+        // Push/Pop IDs from the current gizmo context's local ID stack
+        void          PushID(UID);
+        void          PopID();                                                        // pop from the ID stack.
 
-    // Configure the limit where axis are hidden
-    void SetAxisLimit(float value);
-    // Set an axis mask to permanently hide a given axis (true -> hidden, false -> shown)
-    void SetAxisMask(bool x, bool y, bool z);
-    // Configure the limit where planes are hidden
-    void SetPlaneLimit(float value);
+        void SetGizmoSizeClipSpace(float value);
 
-    // Represents the step size that the gizmo should stick to when the user is
-    // using a gizmo operation.
-    struct OperationSnappingSteps final {
-        std::optional<Vector3> scale;
-        std::optional<Radians> rotation;
-        std::optional<Vector3> position;
+        // Configure the limit where axis are hidden
+        void SetAxisLimit(float value);
+        // Set an axis mask to permanently hide a given axis (true -> hidden, false -> shown)
+        void SetAxisMask(bool x, bool y, bool z);
+        // Configure the limit where planes are hidden
+        void SetPlaneLimit(float value);
+
+        // call it when you want a gizmo
+        // Needs view and projection matrices.
+        // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function.
+        // translation is applied in world space
+        std::optional<Transform> Manipulate(
+            const Matrix4x4& view,
+            const Matrix4x4& projection,
+            Operation operation,
+            Mode mode,
+            Matrix4x4& matrix,
+            const GizmoOperationSnappingSteps* snap = nullptr,
+            const AABB* local_bounds = nullptr,
+            const float* boundsSnap = nullptr
+        );
+
+        class Impl;
+    private:
+        std::unique_ptr<Impl> impl_;
     };
-
-    // call it when you want a gizmo
-    // Needs view and projection matrices.
-    // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function.
-    // translation is applied in world space
-    std::optional<Transform> Manipulate(
-        const Matrix4x4& view,
-        const Matrix4x4& projection,
-        Operation operation,
-        Mode mode,
-        Matrix4x4& matrix,
-        std::optional<OperationSnappingSteps> snap = std::nullopt,
-        const float* localBounds = nullptr,
-        const float* boundsSnap = nullptr
-    );
 }

@@ -1028,6 +1028,14 @@ namespace osc::ui
         NUM_OPTIONS,
     };
 
+    // Represents the step size that the gizmo should stick to when the user is
+    // using a gizmo operation.
+    struct GizmoOperationSnappingSteps final {
+        std::optional<Vector3> scale;
+        std::optional<Radians> rotation;
+        std::optional<Vector3> position;
+    };
+
     // a UI gizmo that manipulates the given model matrix using user-interactable drag handles, arrows, etc.
     class Gizmo final {
     public:
@@ -1046,7 +1054,9 @@ namespace osc::ui
             Matrix4x4& model_matrix,  // edited in-place
             const Matrix4x4& view_matrix,
             const Matrix4x4& projection_matrix,
-            const Rect& ui_rect
+            const Rect& ui_rect,
+            const GizmoOperationSnappingSteps* snap = nullptr,
+            const AABB* local_bounds = nullptr
         );
 
         // same as `draw`, but draws to the foreground draw list, rather than the
@@ -1055,7 +1065,9 @@ namespace osc::ui
             Matrix4x4& model_matrix,  // edited in-place
             const Matrix4x4& view_matrix,
             const Matrix4x4& projection_matrix,
-            const Rect& ui_rect
+            const Rect& ui_rect,
+            const GizmoOperationSnappingSteps* snap = nullptr,
+            const AABB* local_bounds = nullptr
         );
 
         bool is_using() const;
@@ -1074,7 +1086,9 @@ namespace osc::ui
             const Matrix4x4& view_matrix,
             const Matrix4x4& projection_matrix,
             const Rect& ui_rect,
-            ImDrawList* draw_list
+            ImDrawList* draw_list,
+            const GizmoOperationSnappingSteps*,
+            const AABB* local_bounds
         );
 
         UID id_;
