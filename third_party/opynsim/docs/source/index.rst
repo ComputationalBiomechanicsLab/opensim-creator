@@ -1,8 +1,24 @@
-OPynSim Documentation
-=====================
+.. figure:: _static/opynsim_banner_horizontal.svg
+    :width: 60%
+    :align: center
 
-TODO: work in progress! This is just here to ensure the top-level
-build infrastructure is in place
+    ..
+
+Welcome to the offical OPynSim documentation pages 👋
+
+OPynSim is a python-native API for musculoskeletal modeling that doesn't compromise on nearly
+20 years of research, feature development, and UI development from
+`Simbody <https://github.com/simbody/simbody>`_, `OpenSim <https://simtk.org/projects/opensim>`_,
+and `OpenSim Creator <https://www.opensimcreator.com>`_.
+
+To get started, see the :doc:`getting-started/installation` page. After that, we recommend
+going through the :doc:`getting-started/quickstart` guide in order to get familiar with the
+Python API.
+
+**Do you want to help develop OPynSim?** Then great ❤️! There's a separate development quickstart
+guide that explains the top-level architecture of OPynSim, sets you up with a development
+environment, and explains the contribution process.
+
 
 Table of Contents
 -----------------
@@ -20,9 +36,8 @@ Table of Contents
 
     api/configuration
     api/modelling
-    api/application
-    api/graphics
     api/ui
+    api/graphics
     api/tps3d
 
 .. toctree::

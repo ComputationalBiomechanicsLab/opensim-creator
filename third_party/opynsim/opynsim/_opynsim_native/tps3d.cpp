@@ -7,7 +7,7 @@
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/unique_ptr.h>
 #include <libopynsim/shims/cpp23/mdspan.h>
-#include <libopynsim/ui/hello_ui.h>
+#include <libopynsim/ui/show_hello_ui.h>
 #include <libopynsim/tps3d.h>
 #include <liboscar/utilities/assertions.h>
 
@@ -71,25 +71,37 @@ void opyn::init_tps3d_submodule(nanobind::module_& tps3d_module)
         )
         .def_prop_ro("a1",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a1); },
-            nb::rv_policy::take_ownership
+            nb::rv_policy::take_ownership,
+            R"(
+                The first term of the warping equation. Some systems treat this as the translation component of the warp.
+            )"
         )
         .def_prop_ro("a2",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a2); },
-            nb::rv_policy::take_ownership
+            nb::rv_policy::take_ownership,
+            R"(
+                The second term of the warping equation. Some systems treat this as the first column of a 3x3 scale + rotation matrix.
+            )"
         )
         .def_prop_ro("a3",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a3); },
-            nb::rv_policy::take_ownership
+            nb::rv_policy::take_ownership,
+            R"(
+                The second term of the warping equation. Some systems treat this as the second column of a 3x3 scale + rotation matrix.
+            )"
         )
         .def_prop_ro("a4",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a4); },
-            nb::rv_policy::take_ownership
+            nb::rv_policy::take_ownership,
+            R"(
+                The second term of the warping equation. Some systems treat this as the third column of a 3x3 scale + rotation matrix.
+            )"
         )
         .def("warp_point",
             warp_point,
             nb::arg("point"),
             R"(
-                Warps a single 3D point
+                Warps a single 3D point by putting ``point`` through the warping equation.
 
                 Args:
                     point: a 3-element ndarray.

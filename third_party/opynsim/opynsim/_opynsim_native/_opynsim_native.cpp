@@ -11,6 +11,8 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/filesystem.h>
 
+#include "graphics.h"
+
 using namespace opyn;
 
 namespace nb = nanobind;
@@ -40,6 +42,12 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
     // Globally initialize the opynsim API (Simbody, OpenSim, oscar)
     opyn::init();
 
+    // Initialize `graphics` submodule.
+    {
+        auto graphics_submodule = _opynsim_native_module.def_submodule("graphics");
+        init_graphics_submodule(graphics_submodule);
+    }
+
     // Initialize `tps3d` submodule.
     {
         auto tps3d_submodule = _opynsim_native_module.def_submodule("tps3d");
@@ -54,23 +62,114 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
 
     // Initialize top-level functions/classes
     {
-        nb::class_<ModelSpecification> model_specification_class(_opynsim_native_module, "ModelSpecification");
+        nb::class_<ModelSpecification> model_specification_class(
+            _opynsim_native_module,
+            "ModelSpecification",
+            R"(
+                A high-level specification for an :class:`opynsim.Model`.
+
+                A :class:`ModelSpecification` is what Python code can manipulate, scale, and customize
+                before passing it to :func:`opynsim.compile_specification`, which returns a readonly
+                :class:`opynsim.Model`.
+
+                Notes:
+                    OPynSim's API design separates the specification of a model (:class:`ModelSpecification`)
+                    from its validated, assembled, and optimized simulation representation (:class:`Model`) to ensure
+                    that the compilation process (:func:`compile_specification`) can freeze and optimize internal
+                    datastructures at a single point in the process. This is in contrast to OpenSim, which handles
+                    both concerns with a single ``OpenSim::Model`` class, which results in edge-cases, such as
+                    incorrectly being able to edit a model after a physics system has already been assembled
+                    from it.
+            )"
+        );
         model_specification_class.def(nb::init<>());  // Define default constructor
 
-        nb::class_<Model> model_class(_opynsim_native_module, "Model");
-        model_class.def("initial_state", &Model::initial_state);
-        model_class.def("realize", &Model::realize);
+        nb::class_<Model> model_class(
+            _opynsim_native_module,
+            "Model",
+            R"(
+                A validated, optimized, compiled, and ready-to-simulate model of a physics system.
 
-        nb::class_<ModelState> model_state_class(_opynsim_native_module, "ModelState");
+                A :class:`Model` can only be created from a :class:`ModelSpecification` via the
+                :func:`compile_specification` function. Therefore, editing a :class:`Model` requires editing its
+                associated :class:`ModelSpecification` and recompiling it to create a new :class:`Model`.
+            )"
+        );
+        model_class.def(
+            "initial_state",
+            &Model::initial_state,
+            R"(
+                Returns a :class:`ModelState` that represents the initial (default) state of this :class:`Model`.
+
+                The initial state of a :class:`Model` is dictated by its associated :class:`ModelSpecification`. For
+                example, if a translational coordinate in the specification had a ``default_value`` of ``1.0`` then
+                that would be written into the :class:`ModelState` returned by this function.
+
+                This function does not guarantee the returned :class:`ModelState`'s :class:`ModelStateStage`.
+                Therefore, it's recommended that callers perform any state modifications they need followed by
+                calling :meth:`realize` with a :class:`ModelStateStage` that's suitable for their desired
+                needs (e.g. user interfaces may need :attr:`ModelStateStage.REPORT`).
+            )"
+        );
+        model_class.def(
+            "realize",
+            &Model::realize,
+            nb::arg("state"),
+            nb::arg("stage"),
+            R"(
+                Realizes ``state`` to the desired ``stage``, which modifies ``state`` in-place.
+
+                "Realization" of the state involves taking a new set of values from the :class:`ModelState`
+                and performing computations that those new values enable. Realization is performed
+                in-order one :class:`ModelStateStage` at time. For example, :attr:`ModelStateStage.POSITION`
+                is realized before :attr:`ModelStateStage.VELOCITY`,then :attr:`ModelStateStage.DYNAMICS`,
+                and so on.
+
+                Notes:
+                    State realization is a concept that OPynSim inherited from `Simbody <github.com/simbody/simbody>`_, which
+                    has a much more comprehensive explanation of the realization process in its `Simbody Theory Manual <https://github.com/simbody/simbody/blob/master/Simbody/doc/SimbodyTheoryManual.pdf>`_. You
+                    should read that manual if you want to know more.
+            )"
+        );
+
+        nb::class_<ModelState> model_state_class(
+            _opynsim_native_module,
+            "ModelState",
+            R"(
+                Represents a single state of a :class:`Model`.
+
+                A :class:`ModelState` bundles together the state variables, cache variables, and other information
+                necessary to describe a single state of a :class:`Model`. :class:`Model`'s can read/manipulate
+                :class:`ModelState`\s in order to :meth:`opynsim.Model.realize` the state to a later stage
+                (e.g. as part of forward integration) or read outputs values. However, :class:`ModelState`\s may
+                also be created, read, and manipulated by downstream Python code and other utilities in OPynSim.
+            )"
+        );
 
         static_assert(osc::num_options<ModelStateStage>() == 6);
-        nb::enum_<ModelStateStage>(_opynsim_native_module, "ModelStateStage")
-            .value("TIME",         ModelStateStage::time)
-            .value("POSITION",     ModelStateStage::position)
-            .value("VELOCITY",     ModelStateStage::velocity)
-            .value("DYNAMICS",     ModelStateStage::dynamics)
-            .value("ACCELERATION", ModelStateStage::acceleration)
-            .value("REPORT",       ModelStateStage::report);
+        nb::enum_<ModelStateStage> model_state_stage_class(
+            _opynsim_native_module,
+            "ModelStateStage",
+            R"(
+                Represents a stage of state realization (computation).
+
+                When calling methods like :meth:`Model.realize`, a :class:`ModelState` is
+                realized in-order through each :class:`ModelStateStage`, starting at the lowest
+                stage and ending at the highest stage.
+
+                Each time a :class:`ModelState` advances through a :class:`ModelStateStage`, more
+                information is available in the state. For example, after a :class:`ModelState` is
+                realized to :attr:`ModelStateStage.POSITION`, positional quantities such as the positions
+                of bodies and offset frames are known, and any positional output on the associated
+                :class:`Model` can then extract that information from the :class:`ModelState`.
+            )"
+        );
+        model_state_stage_class.value("TIME",         ModelStateStage::time,         "Time has advanced and state variables have new values, but no derived information has been calculated.");
+        model_state_stage_class.value("POSITION",     ModelStateStage::position,     "The spatial positions of all bodies are known.");
+        model_state_stage_class.value("VELOCITY",     ModelStateStage::velocity,     "The spatial velocities of all bodies are known.");
+        model_state_stage_class.value("DYNAMICS",     ModelStateStage::dynamics,     "The force acting on each body is known, along with total kinetic/potential energy.");
+        model_state_stage_class.value("ACCELERATION", ModelStateStage::acceleration, "The time derivatives of all continuous state variables are known.");
+        model_state_stage_class.value("REPORT",       ModelStateStage::report,       "Additional variables useful for output are known (optional: not required for integration).");
 
         _opynsim_native_module.def(
             "set_logging_level",

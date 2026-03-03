@@ -101,38 +101,59 @@ Once you have a :class:`opynsim.ModelState`, you can the manipulate and inspect 
 according to your modelling requirements.
 
 
-Render the Model in a State
-----------------------------
+Visualize the Model in a State
+------------------------------
 
-.. warning::
+The OPynSim :doc:`../api/ui` API provides various utilities for visualizing and
+interacting with OPynSim's datastructures.
 
-    TODO: not yet implemented
-
-The OPynSim :doc:`graphics <../api/graphics>` API provides various utilities for
-rendering things to a window or image. The API was ported from `OpenSim Creator <https://opensimcreator.com>`_
-so that Python scripts may have similar features and render identically to it.
-
-In order to render anything, OPynSim needs an active graphics context (e.g.
-an OpenGL context) to render with. This is achieved by creating an
-:class:`opynsim.Application` before using any :mod:`opynsim.graphics` API. You
-can then render things to images:
+The API includes high-level functions, such as :func:`opynsim.ui.show_model_in_state`,
+which can be used to visualize a model in a single state. The state should be realized
+to :attr:`opynsim.ModelStateStage.REPORT` to ensure that all the state variables the
+renderer reads are fully realized:
 
 .. code:: python
 
     import opynsim
+    import opynsim.ui
 
     model_specification = opynsim.import_osim_file("arm26.osim")
     model = opynsim.compile_specification(model_specification)
     state = model.initial_state()
+    model.realize(state, opynsim.ModelStateStage.REPORT)  # required for rendering
 
-    with opynsim.Application():
-        camera = opynsim.graphics.Camera()
-        image = opynsim.graphics.render_model_in_state(model, state, camera=camera)
+    opynsim.ui.show_model_in_state(model, state)
 
-See :doc:`../api/graphics` for an explanation of the graphics API.
 
-TODO: Show Model+State in an Interactive UI
--------------------------------------------
+Render Visualization to an Image File
+-------------------------------------
 
-TODO: Create a custom UI
-------------------------
+The OPynSim :doc:`../api/graphics` API provides lower-level utilities for rendering
+OPynSim's datastructures to an image (:class:`opynsim.graphics.Texture2D`). This can be useful for automating tasks like
+creating custom plots or saving images/videos.
+
+The API includes high-level functions, such as :func:`opynsim.graphics.render_model_in_state`,
+which returns a :class:`opynsim.graphics.Texture2D`, which you can then use in your Python
+code. The example below renders a model + state and then uses `Pillow <https://python-pillow.github.io/>`_
+to write it as a PNG file:
+
+.. code:: python
+
+    import opynsim
+    import opynsim.graphics
+    from PIL import Image
+
+    # Create/import a `Model` + `ModelState`.
+    model_specification = opynsim.import_osim_file("arm26.osim")
+    model = opynsim.compile_specification(model_specification)
+    model_state = model.initial_state()
+    model.realize(model_state, opynsim.ModelStateStage.REPORT)  # usually required for rendering
+
+    # Render the `Model` + `ModelState` to an `opynsim.graphics.Texture2D`.
+    texture_2d = opynsim.graphics.render_model_in_state(model, model_state)
+
+    # Read the pixels into a `PIL.Image` object.
+    image = Image.fromarray(texture_2d.pixels_rgba32(), mode="RGBA")
+
+    # Write the `PIL.Image` to disk as a PNG file.
+    image.save("render_output.png")

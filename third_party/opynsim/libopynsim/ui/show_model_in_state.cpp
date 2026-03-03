@@ -1,4 +1,4 @@
-#include "model_viewer.h"
+#include "show_model_in_state.h"
 
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <libopynsim/model.h>
@@ -81,7 +81,7 @@ namespace
 }
 
 
-void opyn::view_model_in_state(const Model& model, const ModelState& state)
+void opyn::show_model_in_state(const Model& model, const ModelState& state)
 {
     osc::App::main<BasicModelViewer>(osc::AppMetadata{}, model, state);
 }
