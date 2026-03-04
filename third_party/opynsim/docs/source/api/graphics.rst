@@ -27,10 +27,10 @@ the pixel data returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into
 
     import opynsim
     import opynsim.graphics
-    from PIL import Image
+    from PIL import Image  # pip install Pillow
 
     # Create/import a `Model` + `ModelState`.
-    model_specification = opynsim.import_osim_file("arm26.osim")
+    model_specification = opynsim.example_specification_double_pendulum()
     model = opynsim.compile_specification(model_specification)
     model_state = model.initial_state()
     model.realize(model_state, opynsim.ModelStateStage.REPORT)  # usually required for rendering
@@ -56,11 +56,11 @@ returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a line plot.
     import opynsim
     import opynsim.graphics
     import numpy as np
-    import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt  # pip install matplotlib
     from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
     # Create/import a `Model` + `ModelState`.
-    model_specification = opynsim.import_osim_file("arm26.osim")
+    model_specification = opynsim.example_specification_double_pendulum()
     model = opynsim.compile_specification(model_specification)
     model_state = model.initial_state()
     model.realize(model_state, opynsim.ModelStateStage.REPORT)  # usually required for rendering

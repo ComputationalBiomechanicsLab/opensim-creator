@@ -8,6 +8,9 @@
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/graphics/graphics.h>
+#include <liboscar/maths/aabb.h>
+#include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
@@ -15,9 +18,9 @@
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/oscimgui.h>
 
+#include <optional>
+#include <utility>
 #include <vector>
-
-#include "liboscar/graphics/graphics.h"
 
 using namespace opyn;
 
@@ -39,8 +42,13 @@ namespace
 
     class BasicModelViewer final : public osc::Widget {
     public:
-        explicit BasicModelViewer(const Model& model, const ModelState& model_state) :
-            decorations_{generate_scene(scene_cache_, model, model_state)}
+        explicit BasicModelViewer(
+            const Model& model,
+            const ModelState& model_state,
+            bool zoom_to_fit) :
+
+            decorations_{generate_scene(scene_cache_, model, model_state)},
+            fit_camera_on_next_frame_{zoom_to_fit}
         {}
     private:
         bool impl_on_event(osc::Event& e) override { return ui_context_.on_event(e); }
@@ -49,6 +57,13 @@ namespace
         {
             osc::App::upd().clear_main_window();
             ui_context_.on_start_new_frame();
+
+            // Handle initial autofocus
+            if (std::exchange(fit_camera_on_next_frame_, false)) {
+                if (const auto aabb = osc::bounding_aabb_of(decorations_, &osc::SceneDecoration::world_space_bounds)) {
+                    osc::auto_focus(camera, *aabb, osc::aspect_ratio_of(osc::App::get().main_window_dimensions()));
+                }
+            }
 
             // Update the scene camera state based on the user's inputs.
             osc::ui::update_polar_camera_from_all_inputs(
@@ -77,11 +92,12 @@ namespace
         osc::SceneRenderer scene_renderer_{scene_cache_};
         std::vector<osc::SceneDecoration> decorations_;
         osc::PolarPerspectiveCamera camera;
+        bool fit_camera_on_next_frame_ = false;
     };
 }
 
 
-void opyn::show_model_in_state(const Model& model, const ModelState& state)
+void opyn::show_model_in_state(const Model& model, const ModelState& state, bool zoom_to_fit)
 {
-    osc::App::main<BasicModelViewer>(osc::AppMetadata{}, model, state);
+    osc::App::main<BasicModelViewer>(osc::AppMetadata{}, model, state, zoom_to_fit);
 }

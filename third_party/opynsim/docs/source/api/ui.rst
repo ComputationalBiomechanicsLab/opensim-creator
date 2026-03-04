@@ -25,7 +25,7 @@ Example
     import opynsim.ui
 
     # Create/import a `Model` + `ModelState`.
-    model_specification = opynsim.import_osim_file("arm26.osim")
+    model_specification = opynsim.example_specification_double_pendulum()
     model = opynsim.compile_specification(model_specification)
     model_state = model.initial_state()
     model.realize(model_state, opynsim.ModelStateStage.REPORT)  # usually required for rendering

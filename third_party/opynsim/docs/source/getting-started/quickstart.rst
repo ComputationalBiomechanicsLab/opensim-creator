@@ -59,6 +59,16 @@ which imports an ``.osim`` file into a :class:`opynsim.ModelSpecification`:
     # `pathlib.Path`s are also supported
     model_specification2 = opynsim.import_osim_file(pathlib.Path("/some/path/to/arm26.osim"))
 
+.. note:: These documentation pages mostly use example specification generators.
+
+    The remainder of this quickstart guide, and many of the documentation pages, use example
+    specifications generated from ``opynsim.example_specification_*`` methods, rather than
+    :func:`opynsim.import_osim_file` because they don't require external data and can therefore
+    be copied+pasted more easily.
+
+    You can always exchange an example for your own :class:`opynsim.ModelSpecification`, or
+    one loaded from an ``.osim`` file.
+
 Compile a Specification into a Model
 ------------------------------------
 
@@ -71,7 +81,7 @@ to build a :class:`opynsim.Model`, which represents a read-only physics model.
 
     import opynsim
 
-    model_specification = opynsim.import_osim_file("arm26.osim")
+    model_specification = opynsim.example_specification_double_pendulum()
 
     # ... if necessary, edit the `ModelSpecification`, and then...
 
@@ -92,7 +102,7 @@ states externally from (e.g.) a motion file.
 
     import opynsim
 
-    model_specification = opynsim.import_osim_file("arm26.osim")
+    model_specification = opynsim.example_specification_double_pendulum()
     model = opynsim.compile_specification(model_specification)
 
     state = model.initial_state()
@@ -117,7 +127,7 @@ renderer reads are fully realized:
     import opynsim
     import opynsim.ui
 
-    model_specification = opynsim.import_osim_file("arm26.osim")
+    model_specification = opynsim.example_specification_double_pendulum()
     model = opynsim.compile_specification(model_specification)
     state = model.initial_state()
     model.realize(state, opynsim.ModelStateStage.REPORT)  # required for rendering
@@ -129,22 +139,23 @@ Render Visualization to an Image File
 -------------------------------------
 
 The OPynSim :doc:`../api/graphics` API provides lower-level utilities for rendering
-OPynSim's datastructures to an image (:class:`opynsim.graphics.Texture2D`). This can be useful for automating tasks like
-creating custom plots or saving images/videos.
+OPynSim's datastructures to an image (:class:`opynsim.graphics.Texture2D`). This can be useful
+for automating tasks like creating custom plots or saving images and videos.
 
 The API includes high-level functions, such as :func:`opynsim.graphics.render_model_in_state`,
 which returns a :class:`opynsim.graphics.Texture2D`, which you can then use in your Python
-code. The example below renders a model + state and then uses `Pillow <https://python-pillow.github.io/>`_
-to write it as a PNG file:
+code. The example below renders an :class:`opynsim.Model` + :class:`opynsim.ModelState` to
+a texture and then uses `Pillow <https://python-pillow.github.io/>`_ to write its raw pixel
+data into a PNG file:
 
 .. code:: python
 
     import opynsim
     import opynsim.graphics
-    from PIL import Image
+    from PIL import Image  # pip install Pillow
 
     # Create/import a `Model` + `ModelState`.
-    model_specification = opynsim.import_osim_file("arm26.osim")
+    model_specification = opynsim.example_specification_double_pendulum()
     model = opynsim.compile_specification(model_specification)
     model_state = model.initial_state()
     model.realize(model_state, opynsim.ModelStateStage.REPORT)  # usually required for rendering

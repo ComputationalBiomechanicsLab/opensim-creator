@@ -18,6 +18,7 @@ namespace opyn
     class ModelSpecification {
     public:
         static ModelSpecification from_osim_file(const std::filesystem::path&);
+        static ModelSpecification example_double_pendulum();
 
         explicit ModelSpecification();
     private:

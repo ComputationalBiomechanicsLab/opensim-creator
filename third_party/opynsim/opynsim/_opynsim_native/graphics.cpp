@@ -65,6 +65,7 @@ void opyn::init_graphics_submodule(nanobind::module_& graphics_module)
         render_model_in_state,
         nb::arg("model"),
         nb::arg("state"),
+        nb::kw_only{},
         nb::arg("dimensions") = std::make_pair(640, 480),
         nb::arg("zoom_to_fit") = true,
         R"(
@@ -73,8 +74,8 @@ void opyn::init_graphics_submodule(nanobind::module_& graphics_module)
 
             Args:
                 model (opynsim.Model): The model to render.
-                state (opynsim.ModelState): The state of the model to render.
-                dimensions (tuple[int, int]): The desired output resolution (width, height) of the rendered image in pixels. Defaults to (640, 480).
+                state (opynsim.ModelState): The state of the model to render. Should be realized to at least :attr:`opynsim.ModelStateStage.REPORT`.
+                dimensions (tuple[int, int]): The desired output resolution (width, height) of the rendered image in pixels.
                 zoom_to_fit (bool): Tells the renderer to automatically set up the camera to focus on the center of the bounds of the scene at a distance that can see the entire scene.
 
             Returns:
@@ -93,7 +94,7 @@ void opyn::init_graphics_submodule(nanobind::module_& graphics_module)
         "pixels_rgba32",
         pixels_rgba32_impl,
         R"(
-            Returns an ndarray with the shape ``(height, width, 4)`` where each element of
+            Returns an ndarray with the shape ``(height, width, 4)``, where each element of
             the 3rd dimension is a raw uint8 (0-255) pixel value for the red (R), green (G),
             blue (B), and alpha (A) components of the texture respectively.
 

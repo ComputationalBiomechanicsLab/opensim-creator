@@ -195,6 +195,20 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
         );
 
         _opynsim_native_module.def(
+            "example_specification_double_pendulum",
+            opyn::example_specification_double_pendulum,
+            R"(
+                Returns a :class:`ModelSpecification` of a double pendulum.
+
+                The specification is built entirely in-memory with no external data files, which makes
+                it useful for quick debugging sessions, example Python scripts, and documentation pages. The
+                returned specification is designed to resemble the ``double_pendulum.osim``, which is available
+                from the `OpenSim models repository <https://github.com/opensim-org/opensim-models>`_ and as
+                an example file in `OpenSim Creator <https://www.opensimcreator.com>`_ .
+            )"
+        );
+
+        _opynsim_native_module.def(
             "import_osim_file",
             [](const std::filesystem::path& osim_path) { return opyn::import_osim_file(osim_path); },
             nb::arg("osim_file_path"),

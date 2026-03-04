@@ -21,6 +21,13 @@ TEST(opynsim, import_osim_file_works_when_given_a_file_that_does_exist)
     ASSERT_NO_THROW({ import_osim_file(opynsim_tests_resources_directory() / "models/Blank/blank.osim"); });
 }
 
+TEST(opynsim, example_specification_double_pendulum_works)
+{
+    opyn::init();
+
+    ASSERT_NO_THROW({ example_specification_double_pendulum(); });
+}
+
 TEST(opynsim, compile_specification_works_on_blank_ModelSpecification)
 {
     opyn::init();

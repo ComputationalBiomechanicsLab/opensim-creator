@@ -42,13 +42,11 @@ osc::Texture2D opyn::render_model_in_state(
     // Setup scene camera
     osc::PolarPerspectiveCamera camera;
     const osc::Vector2 dimensions_vec{dimensions.first, dimensions.second};
-    if (zoom_to_fit) {
-        std::optional<osc::AABB> aabb;
-        for (const osc::SceneDecoration& decoration : decorations) {
-            aabb = osc::bounding_aabb_of(aabb, decoration.world_space_bounds());
-        }
-        if (aabb) {
-            osc::auto_focus(camera, *aabb, osc::aspect_ratio_of(dimensions_vec));
+
+    // Handle initial autofocus
+    if (std::exchange(zoom_to_fit, false)) {
+        if (const auto aabb = osc::bounding_aabb_of(decorations, &osc::SceneDecoration::world_space_bounds)) {
+            osc::auto_focus(camera, *aabb, osc::aspect_ratio_of(osc::App::get().main_window_dimensions()));
         }
     }
 
