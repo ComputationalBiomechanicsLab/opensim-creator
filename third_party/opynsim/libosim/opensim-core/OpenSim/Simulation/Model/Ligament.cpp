@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "Ligament.h"
-#include "PointForceDirection.h"
 
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/SimmSpline.h>
