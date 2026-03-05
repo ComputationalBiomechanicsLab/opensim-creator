@@ -55,7 +55,7 @@ Creator, it's usually copied into a GitHub issue:
       - [ ] Upload all artifacts against it
       - [ ] Write a user-friendly version of CHANGELOG as the release description that explains
             the release's changes to end-users in a readable way
-    - [ ] Update Zenodo with the release
+    - [ ] Update Zenodo with the release (https://zenodo.org/records/18701339):
       - [ ] This usually happens automatically, via a webhook in Zenodo
       - [ ] Otherwise, it requires @adamkewley's GitHub login to publish
             the generated draft from Zenodo
