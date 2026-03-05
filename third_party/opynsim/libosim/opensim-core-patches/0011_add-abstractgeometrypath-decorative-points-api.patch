@@ -1,0 +1,303 @@
+diff --git a/OpenSim/Simulation/Model/AbstractGeometryPath.cpp b/OpenSim/Simulation/Model/AbstractGeometryPath.cpp
+index 9aead5eae..27a0368b5 100644
+--- a/OpenSim/Simulation/Model/AbstractGeometryPath.cpp
++++ b/OpenSim/Simulation/Model/AbstractGeometryPath.cpp
+@@ -91,3 +91,69 @@ void AbstractGeometryPath::setPreScaleLength(const SimTK::State&,
+ {
+     _preScaleLength = preScaleLength;
+ }
++
++void AbstractGeometryPath::forEachDecorativePathPoint(
++    const SimTK::State& state,
++    const std::function<void(const DecorativePathPoint&)>& callback) const
++{
++    implForEachDecorativePathPoint(state, callback);
++}
++
++std::vector<AbstractGeometryPath::DecorativePathPoint> AbstractGeometryPath::getDecorativePathPoints(
++    const SimTK::State& state) const
++{
++    std::vector<AbstractGeometryPath::DecorativePathPoint> rv;
++    forEachDecorativePathPoint(state, [&rv](const DecorativePathPoint& dp) { rv.push_back(dp); });
++    return rv;
++}
++
++
++void AbstractGeometryPath::generateDecorations(
++    bool fixed,
++    const ModelDisplayHints& hints,
++    const SimTK::State& s,
++    SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const
++{
++    if (fixed) {
++        return;
++    }
++    if (not get_Appearance().get_visible()) {
++        return;  // Don't render a path that's hidden (ComputationalBiomechanicsLab/opensim-creator#1166)
++    }
++
++    const bool showPathPoints = hints.get_show_path_points();
++    const SimTK::Vec3 color = getColor(s);
++    const double opacity = get_Appearance().get_opacity();
++    const auto representation = get_Appearance().get_representation();
++
++    int index = 0;
++    std::optional<DecorativePathPoint> previous;
++    forEachDecorativePathPoint(s, [&](const DecorativePathPoint& dpp)
++    {
++        if (previous) {
++            // Emit line between points
++            geoms.push_back(SimTK::DecorativeLine(previous->getLocationInGround(), dpp.getLocationInGround())
++                .setLineThickness(4)
++                .setScaleFactors(SimTK::Vec3{1.0})
++                .setColor(color)
++                .setOpacity(opacity)
++                .setRepresentation(representation)
++                .setBodyId(0)
++                .setIndexOnBody(index++)
++            );
++        }
++        if (showPathPoints) {
++            geoms.push_back(SimTK::DecorativeSphere(0.005)
++                .setTransform(dpp.getLocationInGround())
++                .setScaleFactors(SimTK::Vec3{1.0})
++                .setColor(color)
++                .setOpacity(opacity)
++                .setRepresentation(representation)
++                .setBodyId(0)
++                .setIndexOnBody(index++)
++            );
++        }
++
++        previous = dpp;
++    });
++}
+diff --git a/OpenSim/Simulation/Model/AbstractGeometryPath.h b/OpenSim/Simulation/Model/AbstractGeometryPath.h
+index dc6274fb9..73d2fc9ee 100644
+--- a/OpenSim/Simulation/Model/AbstractGeometryPath.h
++++ b/OpenSim/Simulation/Model/AbstractGeometryPath.h
+@@ -27,6 +27,9 @@
+ #include <OpenSim/Simulation/Model/ModelComponent.h>
+ #include <OpenSim/Simulation/Model/Appearance.h>
+ 
++#include <functional>
++#include <vector>
++
+ #ifdef SWIG
+     #ifdef OSIMSIMULATION_API
+         #undef OSIMSIMULATION_API
+@@ -229,8 +232,71 @@ public:
+      */
+     double getPreScaleLength(const SimTK::State& s) const;
+     void setPreScaleLength(const SimTK::State& s, double preScaleLength);
+-    
++
++    /**
++     * Represents a decorative (i.e. visualization-only) point of an
++     * `AbstractGeometryPath`. Can be used by UI implementations to
++     * display the path.
++     */
++    class DecorativePathPoint final {
++    public:
++        explicit DecorativePathPoint(
++            const SimTK::Vec3& locationInGround,
++            const Component* associatedComponent = nullptr) :
++
++            m_locationInGround{locationInGround},
++            m_maybeAssociatedComponent{associatedComponent}
++        {}
++
++        SimTK::Vec3 getLocationInGround() const { return m_locationInGround; }
++        void setLocationInGround(const SimTK::Vec3& p) { m_locationInGround = p; }
++        const Component* getAssociatedComponent() const { return m_maybeAssociatedComponent; }
++    private:
++        SimTK::Vec3 m_locationInGround;
++        const Component* m_maybeAssociatedComponent;
++    };
++
++    void forEachDecorativePathPoint(
++        const SimTK::State&,
++        const std::function<void(const DecorativePathPoint&)>& callback) const;
++
++    std::vector<DecorativePathPoint> getDecorativePathPoints(const SimTK::State&) const;
++
++protected:
++    /**
++     * Generates default decorations for this `AbstractGeometryPath`, based on
++     * the decorative points emitted by `implForEachDecorativePathPoint`.
++     *
++     * Derived classes may override this to provide different display behavior
++     * for the path.
++     */
++    void generateDecorations(
++        bool fixed,
++        const ModelDisplayHints&,
++        const SimTK::State&,
++        SimTK::Array_<SimTK::DecorativeGeometry>&
++    ) const override;
+ private:
++    /**
++     * Implementors should call `callback` with each point of a decorative
++     * representation of the path.
++     *
++     * The decorative representation does not necessarily need to be the same
++     * as the computational representation: it only needs to be a "suitable"
++     * visual representation of the path (if any).
++     *
++     * @param s        Current simulation state, used to read the state of this path.
++     * @param callback A callback that should be called with each point of the
++     *                 decorative path.
++     */
++    virtual void implForEachDecorativePathPoint(
++        const SimTK::State& s,
++        const std::function<void(const DecorativePathPoint&)>& callback) const
++    {
++        // No-op: implementations are also permitted to provide no decorative point
++        // representation at all.
++    }
++
+     // Used by `(get|set)PreLengthScale`. Used during `extend(Pre|Post)Scale` by
+     // downstream users of AbstractGeometryPath to cache the length of the path
+     // before scaling.
+diff --git a/OpenSim/Simulation/Model/GeometryPath.cpp b/OpenSim/Simulation/Model/GeometryPath.cpp
+index 2172e0951..4480ba2e7 100644
+--- a/OpenSim/Simulation/Model/GeometryPath.cpp
++++ b/OpenSim/Simulation/Model/GeometryPath.cpp
+@@ -177,6 +177,34 @@ void GeometryPath::extendFinalizeFromProperties()
+     }
+ }
+ 
++void GeometryPath::implForEachDecorativePathPoint(
++    const SimTK::State& state,
++    const std::function<void(const DecorativePathPoint&)>& callback) const
++{
++    const Array<AbstractPathPoint*>& pathPoints = getCurrentPath(state);
++
++    for (int i = 0; i < pathPoints.size(); ++i) {
++        const AbstractPathPoint& p = *pathPoints[i];
++
++        if (auto* pwp = dynamic_cast<const PathWrapPoint*>(&p)) {
++            // A `PathWrapPoint`'s surface points are expressed w.r.t. the wrap
++            // surface's body frame. Ensure they're transformed to ground.
++            const SimTK::Transform& X_BG = pwp->getParentFrame().getTransformInGround(state);
++
++            // A `PathWrapPoint`'s surface points should be emitted, but not
++            // associated to a component in the model (they are synthetic).
++            const Array<Vec3>& surfacePoints = pwp->getWrapPath(state);
++
++            for (int j = 0; j < surfacePoints.getSize(); ++j) {
++                callback(DecorativePathPoint{X_BG * surfacePoints[j]});
++            }
++        }
++        else {  // Otherwise, it's a regular `PathPoint`, so just emit it.
++            callback(DecorativePathPoint{p.getLocationInGround(state), &p});
++        }
++    }
++}
++
+ void GeometryPath::extendConnectToModel(Model& aModel)
+ {
+     Super::extendConnectToModel(aModel);
+diff --git a/OpenSim/Simulation/Model/GeometryPath.h b/OpenSim/Simulation/Model/GeometryPath.h
+index 05bbc029e..98bf9ec0f 100644
+--- a/OpenSim/Simulation/Model/GeometryPath.h
++++ b/OpenSim/Simulation/Model/GeometryPath.h
+@@ -204,6 +204,10 @@ protected:
+     void extendFinalizeFromProperties() override;
+ 
+ private:
++    void implForEachDecorativePathPoint(
++        const SimTK::State&,
++        const std::function<void(const DecorativePathPoint&)>&
++    ) const override;
+ 
+     void computePath(const SimTK::State& s ) const;
+     void computeLengtheningSpeed(const SimTK::State& s) const;
+diff --git a/OpenSim/Simulation/Model/Scholz2015GeometryPath.cpp b/OpenSim/Simulation/Model/Scholz2015GeometryPath.cpp
+index d3c7d84a6..6d551a932 100644
+--- a/OpenSim/Simulation/Model/Scholz2015GeometryPath.cpp
++++ b/OpenSim/Simulation/Model/Scholz2015GeometryPath.cpp
+@@ -212,6 +212,15 @@ double Scholz2015GeometryPath::computeMomentArm(const SimTK::State& s,
+     return _maSolver->solve(s, coord,  *this);
+ }
+ 
++void Scholz2015GeometryPath::implForEachDecorativePathPoint(
++    const SimTK::State& state,
++    const std::function<void(const DecorativePathPoint&)>& callback) const
++{
++    getCableSpan().calcDecorativePathPoints(state, [&callback](SimTK::Vec3 p) {
++        callback(DecorativePathPoint{p});
++    });
++}
++
+ void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
+         double tension, ForceConsumer& forceConsumer) const {
+ 
+@@ -329,42 +338,6 @@ void Scholz2015GeometryPath::extendAddToSystem(
+     _index = cable.getIndex();
+ }
+ 
+-void Scholz2015GeometryPath::generateDecorations(
+-        bool fixed,
+-        const ModelDisplayHints& hints,
+-        const SimTK::State& s,
+-        SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const {
+-
+-    if (fixed) { return; }
+-    const bool showPathPoints = hints.get_show_path_points();
+-    const SimTK::Vec3 color = getColor(s);
+-    int index = 0;
+-    std::optional<SimTK::Vec3> previous;
+-    getCableSpan().calcDecorativePathPoints(s, [&](SimTK::Vec3 x_G) {
+-        if (previous) {
+-            // Emit line between points
+-            geoms.push_back(SimTK::DecorativeLine(*previous, x_G)
+-                .setLineThickness(4)
+-                .setScaleFactors(SimTK::Vec3{1.0})
+-                .setColor(color)
+-                .setBodyId(0)
+-                .setIndexOnBody(index++)
+-            );
+-        }
+-        if (showPathPoints) {
+-            geoms.push_back(SimTK::DecorativeSphere(0.005)
+-                .setTransform(x_G)
+-                .setScaleFactors(SimTK::Vec3{1.0})
+-                .setColor(color)
+-                .setBodyId(0)
+-                .setIndexOnBody(index++)
+-            );
+-        }
+-
+-        previous = x_G;
+-    });
+-}
+-
+ //=============================================================================
+ // CONVENIENCE METHODS
+ //=============================================================================
+diff --git a/OpenSim/Simulation/Model/Scholz2015GeometryPath.h b/OpenSim/Simulation/Model/Scholz2015GeometryPath.h
+index 8eda015c9..46efa58af 100644
+--- a/OpenSim/Simulation/Model/Scholz2015GeometryPath.h
++++ b/OpenSim/Simulation/Model/Scholz2015GeometryPath.h
+@@ -430,6 +430,10 @@ public:
+     double computeMomentArm(const SimTK::State& s,
+             const Coordinate& coord) const override;
+     bool isVisualPath() const override { return true; }
++    void implForEachDecorativePathPoint(
++        const SimTK::State&,
++        const std::function<void(const DecorativePathPoint&)>&
++    ) const override;
+     // @}
+ 
+     //** @name `ForceProducer` interface */
+@@ -446,9 +450,6 @@ private:
+     // MODEL COMPONENT INTERFACE
+     void extendConnectToModel(Model& model) override;
+     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+-    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+-            const SimTK::State& s,
+-            SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
+ 
+     // CONVENIENCE METHODS
+     void constructProperties();

@@ -91,3 +91,69 @@ void AbstractGeometryPath::setPreScaleLength(const SimTK::State&,
 {
     _preScaleLength = preScaleLength;
 }
+
+void AbstractGeometryPath::forEachDecorativePathPoint(
+    const SimTK::State& state,
+    const std::function<void(const DecorativePathPoint&)>& callback) const
+{
+    implForEachDecorativePathPoint(state, callback);
+}
+
+std::vector<AbstractGeometryPath::DecorativePathPoint> AbstractGeometryPath::getDecorativePathPoints(
+    const SimTK::State& state) const
+{
+    std::vector<AbstractGeometryPath::DecorativePathPoint> rv;
+    forEachDecorativePathPoint(state, [&rv](const DecorativePathPoint& dp) { rv.push_back(dp); });
+    return rv;
+}
+
+
+void AbstractGeometryPath::generateDecorations(
+    bool fixed,
+    const ModelDisplayHints& hints,
+    const SimTK::State& s,
+    SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const
+{
+    if (fixed) {
+        return;
+    }
+    if (not get_Appearance().get_visible()) {
+        return;  // Don't render a path that's hidden (ComputationalBiomechanicsLab/opensim-creator#1166)
+    }
+
+    const bool showPathPoints = hints.get_show_path_points();
+    const SimTK::Vec3 color = getColor(s);
+    const double opacity = get_Appearance().get_opacity();
+    const auto representation = get_Appearance().get_representation();
+
+    int index = 0;
+    std::optional<DecorativePathPoint> previous;
+    forEachDecorativePathPoint(s, [&](const DecorativePathPoint& dpp)
+    {
+        if (previous) {
+            // Emit line between points
+            geoms.push_back(SimTK::DecorativeLine(previous->getLocationInGround(), dpp.getLocationInGround())
+                .setLineThickness(4)
+                .setScaleFactors(SimTK::Vec3{1.0})
+                .setColor(color)
+                .setOpacity(opacity)
+                .setRepresentation(representation)
+                .setBodyId(0)
+                .setIndexOnBody(index++)
+            );
+        }
+        if (showPathPoints) {
+            geoms.push_back(SimTK::DecorativeSphere(0.005)
+                .setTransform(dpp.getLocationInGround())
+                .setScaleFactors(SimTK::Vec3{1.0})
+                .setColor(color)
+                .setOpacity(opacity)
+                .setRepresentation(representation)
+                .setBodyId(0)
+                .setIndexOnBody(index++)
+            );
+        }
+
+        previous = dpp;
+    });
+}

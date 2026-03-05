@@ -204,6 +204,10 @@ protected:
     void extendFinalizeFromProperties() override;
 
 private:
+    void implForEachDecorativePathPoint(
+        const SimTK::State&,
+        const std::function<void(const DecorativePathPoint&)>&
+    ) const override;
 
     void computePath(const SimTK::State& s ) const;
     void computeLengtheningSpeed(const SimTK::State& s) const;

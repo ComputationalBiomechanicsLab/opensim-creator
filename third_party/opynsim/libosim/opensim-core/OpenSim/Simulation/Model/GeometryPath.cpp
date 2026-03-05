@@ -177,6 +177,34 @@ void GeometryPath::extendFinalizeFromProperties()
     }
 }
 
+void GeometryPath::implForEachDecorativePathPoint(
+    const SimTK::State& state,
+    const std::function<void(const DecorativePathPoint&)>& callback) const
+{
+    const Array<AbstractPathPoint*>& pathPoints = getCurrentPath(state);
+
+    for (int i = 0; i < pathPoints.size(); ++i) {
+        const AbstractPathPoint& p = *pathPoints[i];
+
+        if (auto* pwp = dynamic_cast<const PathWrapPoint*>(&p)) {
+            // A `PathWrapPoint`'s surface points are expressed w.r.t. the wrap
+            // surface's body frame. Ensure they're transformed to ground.
+            const SimTK::Transform& X_BG = pwp->getParentFrame().getTransformInGround(state);
+
+            // A `PathWrapPoint`'s surface points should be emitted, but not
+            // associated to a component in the model (they are synthetic).
+            const Array<Vec3>& surfacePoints = pwp->getWrapPath(state);
+
+            for (int j = 0; j < surfacePoints.getSize(); ++j) {
+                callback(DecorativePathPoint{X_BG * surfacePoints[j]});
+            }
+        }
+        else {  // Otherwise, it's a regular `PathPoint`, so just emit it.
+            callback(DecorativePathPoint{p.getLocationInGround(state), &p});
+        }
+    }
+}
+
 void GeometryPath::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);

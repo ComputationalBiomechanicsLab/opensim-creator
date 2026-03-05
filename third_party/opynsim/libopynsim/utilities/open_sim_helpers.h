@@ -781,28 +781,6 @@ namespace opyn
     // returns a memory-safe equivalent to `OpenSim::GeometryPath::getPointForceDirections`
     std::vector<std::unique_ptr<OpenSim::PointForceDirection>> GetPointForceDirections(const OpenSim::GeometryPath&, const SimTK::State&);
 
-    // path points
-    //
-    // helper functions for pulling path points out of geometry paths (e.g. for rendering)
-    struct GeometryPathPoint final {
-
-        explicit GeometryPathPoint(const osc::Vector3& locationInGround_) :
-            locationInGround{locationInGround_}
-        {}
-
-        GeometryPathPoint(
-            const OpenSim::AbstractPathPoint& underlyingUserPathPoint,
-            const osc::Vector3& locationInGround_) :
-            maybeUnderlyingUserPathPoint{&underlyingUserPathPoint},
-            locationInGround{locationInGround_}
-        {
-        }
-
-        const OpenSim::AbstractPathPoint* maybeUnderlyingUserPathPoint = nullptr;
-        osc::Vector3 locationInGround{};
-    };
-    std::vector<GeometryPathPoint> GetAllPathPoints(const OpenSim::GeometryPath&, const SimTK::State&);
-
     // contact forces
     //
     // helper functions for pulling contact forces out of the model (e.g. for rendering)

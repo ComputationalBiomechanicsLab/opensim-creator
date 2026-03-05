@@ -212,6 +212,15 @@ double Scholz2015GeometryPath::computeMomentArm(const SimTK::State& s,
     return _maSolver->solve(s, coord,  *this);
 }
 
+void Scholz2015GeometryPath::implForEachDecorativePathPoint(
+    const SimTK::State& state,
+    const std::function<void(const DecorativePathPoint&)>& callback) const
+{
+    getCableSpan().calcDecorativePathPoints(state, [&callback](SimTK::Vec3 p) {
+        callback(DecorativePathPoint{p});
+    });
+}
+
 void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
         double tension, ForceConsumer& forceConsumer) const {
 
@@ -327,42 +336,6 @@ void Scholz2015GeometryPath::extendAddToSystem(
     cable.setSolverMaxIterations(50);
     cable.setAlgorithm(SimTK::CableSpanAlgorithm::Scholz2015);
     _index = cable.getIndex();
-}
-
-void Scholz2015GeometryPath::generateDecorations(
-        bool fixed,
-        const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const {
-
-    if (fixed) { return; }
-    const bool showPathPoints = hints.get_show_path_points();
-    const SimTK::Vec3 color = getColor(s);
-    int index = 0;
-    std::optional<SimTK::Vec3> previous;
-    getCableSpan().calcDecorativePathPoints(s, [&](SimTK::Vec3 x_G) {
-        if (previous) {
-            // Emit line between points
-            geoms.push_back(SimTK::DecorativeLine(*previous, x_G)
-                .setLineThickness(4)
-                .setScaleFactors(SimTK::Vec3{1.0})
-                .setColor(color)
-                .setBodyId(0)
-                .setIndexOnBody(index++)
-            );
-        }
-        if (showPathPoints) {
-            geoms.push_back(SimTK::DecorativeSphere(0.005)
-                .setTransform(x_G)
-                .setScaleFactors(SimTK::Vec3{1.0})
-                .setColor(color)
-                .setBodyId(0)
-                .setIndexOnBody(index++)
-            );
-        }
-
-        previous = x_G;
-    });
 }
 
 //=============================================================================

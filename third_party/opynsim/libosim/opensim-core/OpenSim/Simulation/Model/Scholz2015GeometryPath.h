@@ -430,6 +430,10 @@ public:
     double computeMomentArm(const SimTK::State& s,
             const Coordinate& coord) const override;
     bool isVisualPath() const override { return true; }
+    void implForEachDecorativePathPoint(
+        const SimTK::State&,
+        const std::function<void(const DecorativePathPoint&)>&
+    ) const override;
     // @}
 
     //** @name `ForceProducer` interface */
@@ -446,9 +450,6 @@ private:
     // MODEL COMPONENT INTERFACE
     void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
-            const SimTK::State& s,
-            SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
 
     // CONVENIENCE METHODS
     void constructProperties();

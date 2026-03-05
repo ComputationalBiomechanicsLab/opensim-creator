@@ -828,7 +828,8 @@ namespace
         RendererState& rs,
         const OpenSim::Muscle& muscle)
     {
-        const std::vector<GeometryPathPoint> pps = GetAllPathPoints(muscle.getGeometryPath(), rs.getState());
+        const std::vector<OpenSim::AbstractGeometryPath::DecorativePathPoint> pps =
+            muscle.getPath().getDecorativePathPoints(rs.getState());
         if (pps.empty()) {
             return;  // edge-case: there are no points in the muscle path
         }
@@ -870,30 +871,30 @@ namespace
             .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
         };
 
-        const auto emitTendonSphere = [&](const GeometryPathPoint& p)
+        const auto emitTendonSphere = [&](const OpenSim::AbstractGeometryPath::DecorativePathPoint& p)
         {
             const OpenSim::Component* c = &muscle;
-            if (p.maybeUnderlyingUserPathPoint) {
-                c = p.maybeUnderlyingUserPathPoint;
+            if (p.getAssociatedComponent()) {
+                c = p.getAssociatedComponent();
             }
-            rs.consume(*c, tendonSpherePrototype.with_translation(p.locationInGround));
+            rs.consume(*c, tendonSpherePrototype.with_translation(to<Vector3>(p.getLocationInGround())));
         };
-        const auto emitTendonCylinder = [&](const Vector3& p1, const Vector3& p2)
+        const auto emitTendonCylinder = [&](const SimTK::Vec3& p1, const SimTK::Vec3& p2)
         {
-            const Transform xform = cylinder_to_line_segment_transform({p1, p2}, tendonUiRadius);
+            const Transform xform = cylinder_to_line_segment_transform({to<Vector3>(p1), to<Vector3>(p2)}, tendonUiRadius);
             rs.consume(muscle, tendonCylinderPrototype.with_transform(xform));
         };
-        auto emitFiberSphere = [&](const GeometryPathPoint& p)
+        auto emitFiberSphere = [&](const OpenSim::AbstractGeometryPath::DecorativePathPoint& p)
         {
             const OpenSim::Component* c = &muscle;
-            if (p.maybeUnderlyingUserPathPoint) {
-                c = p.maybeUnderlyingUserPathPoint;
+            if (p.getAssociatedComponent()) {
+                c = p.getAssociatedComponent();
             }
-            rs.consume(*c, fiberSpherePrototype.with_translation(p.locationInGround));
+            rs.consume(*c, fiberSpherePrototype.with_translation(to<Vector3>(p.getLocationInGround())));
         };
-        auto emitFiberCylinder = [&](const Vector3& p1, const Vector3& p2)
+        auto emitFiberCylinder = [&](const SimTK::Vec3& p1, const SimTK::Vec3& p2)
         {
-            const Transform xform = cylinder_to_line_segment_transform({p1, p2}, fiberUiRadius);
+            const Transform xform = cylinder_to_line_segment_transform({to<Vector3>(p1), to<Vector3>(p2)}, fiberUiRadius);
             rs.consume(muscle, fiberCylinderPrototype.with_transform(xform));
         };
 
@@ -913,7 +914,7 @@ namespace
         const bool hasTendonSpheres = tendonLen > 0.0f;
 
         size_t i = 1;
-        GeometryPathPoint prevPoint = pps.front();
+        OpenSim::AbstractGeometryPath::DecorativePathPoint prevPoint = pps.front();
         float prevTraversalPosition = 0.0f;
 
         // emit first sphere for first tendon
@@ -924,24 +925,24 @@ namespace
         // emit remaining cylinders + spheres for first tendon
         while (i < pps.size() && prevTraversalPosition < tendonLen) {
 
-            const GeometryPathPoint& point = pps[i];
-            const Vector3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            const float prevToPosLen = length(prevToPos);
+            const OpenSim::AbstractGeometryPath::DecorativePathPoint& point = pps[i];
+            const SimTK::Vec3 prevToPos = point.getLocationInGround() - prevPoint.getLocationInGround();
+            const float prevToPosLen = static_cast<float>(prevToPos.norm());
             const float traversalPos = prevTraversalPosition + prevToPosLen;
             const float excess = traversalPos - tendonLen;
 
             if (excess > 0.0f) {
                 const float scaler = (prevToPosLen - excess)/prevToPosLen;
-                const Vector3 tendonEnd = prevPoint.locationInGround + scaler * prevToPos;
+                const SimTK::Vec3 tendonEnd = prevPoint.getLocationInGround() + scaler * prevToPos;
 
-                emitTendonCylinder(prevPoint.locationInGround, tendonEnd);
-                emitTendonSphere(GeometryPathPoint{tendonEnd});
+                emitTendonCylinder(prevPoint.getLocationInGround(), tendonEnd);
+                emitTendonSphere(OpenSim::AbstractGeometryPath::DecorativePathPoint{tendonEnd});
 
-                prevPoint.locationInGround = tendonEnd;
+                prevPoint.setLocationInGround(tendonEnd);
                 prevTraversalPosition = tendonLen;
             }
             else {
-                emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
+                emitTendonCylinder(prevPoint.getLocationInGround(), point.getLocationInGround());
                 emitTendonSphere(point);
 
                 i++;
@@ -953,31 +954,31 @@ namespace
         // emit first sphere for fiber
         if (i < pps.size() && prevTraversalPosition < fiberEnd) {
             // label the sphere if no tendon spheres were previously emitted
-            emitFiberSphere(hasTendonSpheres ? GeometryPathPoint{prevPoint.locationInGround} : prevPoint);
+            emitFiberSphere(hasTendonSpheres ? OpenSim::AbstractGeometryPath::DecorativePathPoint{prevPoint.getLocationInGround()} : prevPoint);
         }
 
         // emit remaining cylinders + spheres for fiber
         while (i < pps.size() && prevTraversalPosition < fiberEnd) {
 
-            const GeometryPathPoint& point = pps[i];
-            const Vector3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            const float prevToPosLen = length(prevToPos);
+            const OpenSim::AbstractGeometryPath::DecorativePathPoint& point = pps[i];
+            const SimTK::Vec3 prevToPos = point.getLocationInGround() - prevPoint.getLocationInGround();
+            const float prevToPosLen = static_cast<float>(prevToPos.norm());
             const float traversalPos = prevTraversalPosition + prevToPosLen;
             const float excess = traversalPos - fiberEnd;
 
             if (excess > 0.0f) {
                 // emit end point and then exit
                 const float scaler = (prevToPosLen - excess)/prevToPosLen;
-                const Vector3 fiberEndPos = prevPoint.locationInGround + scaler * prevToPos;
+                const SimTK::Vec3 fiberEndPos = prevPoint.getLocationInGround() + scaler * prevToPos;
 
-                emitFiberCylinder(prevPoint.locationInGround, fiberEndPos);
-                emitFiberSphere(GeometryPathPoint{fiberEndPos});
+                emitFiberCylinder(prevPoint.getLocationInGround(), fiberEndPos);
+                emitFiberSphere(OpenSim::AbstractGeometryPath::DecorativePathPoint{fiberEndPos});
 
-                prevPoint.locationInGround = fiberEndPos;
+                prevPoint.setLocationInGround(fiberEndPos);
                 prevTraversalPosition = fiberEnd;
             }
             else {
-                emitFiberCylinder(prevPoint.locationInGround, point.locationInGround);
+                emitFiberCylinder(prevPoint.getLocationInGround(), point.getLocationInGround());
                 emitFiberSphere(point);
 
                 i++;
@@ -988,18 +989,18 @@ namespace
 
         // emit first sphere for second tendon
         if (i < pps.size()) {
-            emitTendonSphere(GeometryPathPoint{prevPoint});
+            emitTendonSphere(OpenSim::AbstractGeometryPath::DecorativePathPoint{prevPoint});
         }
 
         // emit remaining cylinders + spheres for second tendon
         while (i < pps.size()) {
 
-            const GeometryPathPoint& point = pps[i];
-            const Vector3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            const float prevToPosLen = length(prevToPos);
+            const OpenSim::AbstractGeometryPath::DecorativePathPoint& point = pps[i];
+            const SimTK::Vec3 prevToPos = point.getLocationInGround() - prevPoint.getLocationInGround();
+            const float prevToPosLen = static_cast<float>(prevToPos.norm());
             const float traversalPos = prevTraversalPosition + prevToPosLen;
 
-            emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
+            emitTendonCylinder(prevPoint.getLocationInGround(), point.getLocationInGround());
             emitTendonSphere(point);
 
             i++;
@@ -1013,7 +1014,7 @@ namespace
     void EmitPointBasedLine(
         RendererState& rs,
         const OpenSim::Component& hittestTarget,
-        std::span<const GeometryPathPoint> points,
+        std::span<const OpenSim::AbstractGeometryPath::DecorativePathPoint> points,
         float radius,
         const Color& color)
     {
@@ -1023,12 +1024,12 @@ namespace
 
         // helper function: emits a sphere decoration
         const auto emitSphere = [&rs, &hittestTarget, radius, color](
-            const GeometryPathPoint& pp,
+            const OpenSim::AbstractGeometryPath::DecorativePathPoint& pp,
             const Vector3& upDirection)
         {
             // ensure that user-defined path points are independently selectable (#425)
-            const OpenSim::Component& c = pp.maybeUnderlyingUserPathPoint ?
-                *pp.maybeUnderlyingUserPathPoint :
+            const OpenSim::Component& c = pp.getAssociatedComponent() ?
+                *pp.getAssociatedComponent() :
                 hittestTarget;
 
             rs.consume(c, SceneDecoration {
@@ -1038,7 +1039,7 @@ namespace
                     // the "join" between the sphere and cylinders nicer (#593)
                     .scale = Vector3{radius},
                     .rotation = normalize(rotation(Vector3{0.0f, 1.0f, 0.0f}, upDirection)),
-                    .translation = pp.locationInGround
+                    .translation = to<Vector3>(pp.getLocationInGround())
                 },
                 .shading = color,
                 .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
@@ -1060,21 +1061,21 @@ namespace
 
         // if required, draw the first path point
         if (rs.getShowPathPoints()) {
-            const GeometryPathPoint& firstPoint = points.front();
-            const Vector3& ppPos = firstPoint.locationInGround;
+            const OpenSim::AbstractGeometryPath::DecorativePathPoint& firstPoint = points.front();
+            const Vector3 ppPos = to<Vector3>(firstPoint.getLocationInGround());
             const Vector3 direction = points.size() == 1 ?
                 Vector3{0.0f, 1.0f, 0.0f} :
-                normalize(points[1].locationInGround - ppPos);
+                normalize(to<Vector3>(points[1].getLocationInGround()) - ppPos);
 
             emitSphere(firstPoint, direction);
         }
 
         // draw remaining cylinders and (if required) path points
         for (size_t i = 1; i < points.size(); ++i) {
-            const GeometryPathPoint& point = points[i];
+            const OpenSim::AbstractGeometryPath::DecorativePathPoint& point = points[i];
 
-            const Vector3& prevPos = points[i - 1].locationInGround;
-            const Vector3& curPos = point.locationInGround;
+            const Vector3& prevPos = to<Vector3>(points[i - 1].getLocationInGround());
+            const Vector3& curPos = to<Vector3>(point.getLocationInGround());
 
             emitCylinder(prevPos, curPos);
 
@@ -1094,8 +1095,8 @@ namespace
         RendererState& rs,
         const OpenSim::Muscle& musc)
     {
-        const std::vector<GeometryPathPoint> points =
-            GetAllPathPoints(musc.getGeometryPath(), rs.getState());
+        const std::vector<OpenSim::AbstractGeometryPath::DecorativePathPoint> points =
+            musc.getPath().getDecorativePathPoints(rs.getState());
 
         const float radius = GetMuscleSize(
             musc,
@@ -1108,19 +1109,20 @@ namespace
         EmitPointBasedLine(rs, musc, points, radius, color);
     }
 
-    // custom implementation of `OpenSim::GeometryPath::generateDecorations` that also
-    // handles tagging
+    // custom implementation of `OpenSim::AbstractGeometryPath::generateDecorations`
+    // that also handles tagging
     //
-    // this specialized `OpenSim::GeometryPath` handler is used, rather than
+    // this specialized `OpenSim::AbstractGeometryPath` handler is used, rather than
     // `emitGenericDecorations`, because the custom implementation also coerces
     // selection hits to enable users to click on individual path points within
     // a path (#647)
     void HandleGenericGeometryPath(
         RendererState& rs,
-        const OpenSim::GeometryPath& gp,
+        const OpenSim::AbstractGeometryPath& gp,
         const OpenSim::Component& hittestTarget)
     {
-        const std::vector<GeometryPathPoint> points = GetAllPathPoints(gp, rs.getState());
+        const std::vector<OpenSim::AbstractGeometryPath::DecorativePathPoint> points =
+            gp.getDecorativePathPoints(rs.getState());
         const Color color = GetGeometryPathColor(gp, rs.getState());
 
         EmitPointBasedLine(
@@ -1192,14 +1194,14 @@ namespace
         }
     }
 
-    // OSC-specific decoration handler for `OpenSim::GeometryPath`
+    // OSC-specific decoration handler for `OpenSim::AbstractGeometryPath`
     void HandleGeometryPath(
         RendererState& rs,
-        const OpenSim::GeometryPath& gp)
+        const OpenSim::AbstractGeometryPath& gp)
     {
         if (not gp.get_Appearance().get_visible()) {
             // even custom muscle decoration implementations *must* obey the visibility
-            // flag on `GeometryPath` (#414, #1166).
+            // flag on `AbstractGeometryPath` (#414, #1166).
             return;
         }
 
@@ -1209,7 +1211,7 @@ namespace
             return;
         }
 
-        // the `GeometryPath` has a owner, downcast to specialize
+        // the `AbstractGeometryPath` has an owner, downcast to specialize
         if (const auto* const muscle = GetOwner<OpenSim::Muscle>(gp)) {
             // owner is a muscle, coerce selection "hit" to the muscle
 
@@ -1247,20 +1249,6 @@ namespace
             HandleGenericGeometryPath(rs, gp, gp);
             return;
         }
-    }
-
-    // OSC-specific decoration handler for `OpenSim::GeometryPath`
-    void HandleScholzGeometryPath(
-        RendererState& rs,
-        const OpenSim::Scholz2015GeometryPath& gp)
-    {
-        if (not gp.get_Appearance().get_visible()) {
-            // even custom muscle decoration implementations *must* obey the visibility
-            // flag on `GeometryPath` (#414, #1166)
-            return;
-        }
-
-        rs.emitGenericDecorations(gp, gp);
     }
 
     void HandleFrameGeometry(
@@ -1443,11 +1431,8 @@ void opyn::GenerateSubcomponentDecorations(
                 rendererState.consume(c, std::move(dec));
             });
         }
-        else if (const auto* const gp = dynamic_cast<const OpenSim::GeometryPath*>(&c)) {
+        else if (const auto* const gp = dynamic_cast<const OpenSim::AbstractGeometryPath*>(&c)) {
             HandleGeometryPath(rendererState, *gp);
-        }
-        else if (const auto* const sgp = dynamic_cast<const OpenSim::Scholz2015GeometryPath*>(&c)) {
-            HandleScholzGeometryPath(rendererState, *sgp);
         }
         else if (const auto* const b = dynamic_cast<const OpenSim::Body*>(&c)) {
             HandleBody(rendererState, *b);

@@ -1379,39 +1379,6 @@ std::vector<std::unique_ptr<OpenSim::PointForceDirection>> opyn::GetPointForceDi
     return rv;
 }
 
-std::vector<GeometryPathPoint> opyn::GetAllPathPoints(const OpenSim::GeometryPath& gp, const SimTK::State& st)
-{
-    const OpenSim::Array<OpenSim::AbstractPathPoint*>& pps = gp.getCurrentPath(st);
-
-    std::vector<GeometryPathPoint> rv;
-    rv.reserve(size(pps));  // best guess: but path wrapping might add more
-
-    for (size_t i = 0; i < size(pps); ++i) {
-        const OpenSim::AbstractPathPoint* const ap = At(pps, i);
-
-        if (ap == nullptr) {
-            // defensive case: there's `nullptr` in the pointset, ignore it
-            continue;
-        }
-        else if (const auto* pwp = dynamic_cast<const OpenSim::PathWrapPoint*>(ap)) {
-            // special case: it's a wrapping point, so add each part of the wrap
-            const auto body2ground = osc::to<osc::Transform>(pwp->getParentFrame().getTransformInGround(st));
-            const OpenSim::Array<SimTK::Vec3>& wrapPath = pwp->getWrapPath(st);
-
-            rv.reserve(rv.size() + size(wrapPath));
-            for (size_t j = 0; j < size(wrapPath); ++j) {
-                rv.emplace_back(body2ground * osc::to<osc::Vector3>(At(wrapPath, j)));
-            }
-        }
-        else {
-            // typical case: it's a normal/computed point with a single location in ground
-            rv.emplace_back(*ap, osc::to<osc::Vector3>(ap->getLocationInGround(st)));
-        }
-    }
-
-    return rv;
-}
-
 namespace
 {
     struct FirstContactHalfSpaceInHCF final {
