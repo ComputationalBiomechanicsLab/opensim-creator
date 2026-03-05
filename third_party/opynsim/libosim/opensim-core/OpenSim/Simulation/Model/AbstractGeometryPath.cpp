@@ -26,6 +26,10 @@
 #include <OpenSim/Simulation/Model/ForceApplier.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <functional>
+#include <optional>
+#include <vector>
+
 using namespace OpenSim;
 
 //=============================================================================

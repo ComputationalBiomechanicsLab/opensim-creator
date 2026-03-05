@@ -1,0 +1,15 @@
+diff --git a/OpenSim/Simulation/Model/AbstractGeometryPath.cpp b/OpenSim/Simulation/Model/AbstractGeometryPath.cpp
+index 27a0368b5..fd05589ed 100644
+--- a/OpenSim/Simulation/Model/AbstractGeometryPath.cpp
++++ b/OpenSim/Simulation/Model/AbstractGeometryPath.cpp
+@@ -26,6 +26,10 @@
+ #include <OpenSim/Simulation/Model/ForceApplier.h>
+ #include <OpenSim/Simulation/Model/Model.h>
+ 
++#include <functional>
++#include <optional>
++#include <vector>
++
+ using namespace OpenSim;
+ 
+ //=============================================================================
