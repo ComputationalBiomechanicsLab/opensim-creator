@@ -111,12 +111,12 @@ namespace
         return to<Transform>(frame.getTransformInGround(state));
     }
 
-    Color GetGeometryPathDefaultColor(const OpenSim::GeometryPath& gp)
+    Color GetGeometryPathDefaultColor(const OpenSim::AbstractGeometryPath& gp)
     {
         return Color{to<Vector3>(gp.getDefaultColor())};
     }
 
-    Color GetGeometryPathColor(const OpenSim::GeometryPath& gp, const SimTK::State& st)
+    Color GetGeometryPathColor(const OpenSim::AbstractGeometryPath& gp, const SimTK::State& st)
     {
         // returns the same color that OpenSim emits (which is usually just activation-based,
         // but might change in future versions of OpenSim)
@@ -405,7 +405,7 @@ namespace
         {
             if (getOptions().getMuscleColorSource() == MuscleColorSource::AppearanceProperty) {
                 // early-out: the muscle has a constant, Appearance-defined color
-                return GetGeometryPathDefaultColor(muscle.getGeometryPath());
+                return GetGeometryPathDefaultColor(muscle.getPath());
             }
 
             const float t = m_MuscleColorSourceScalingLookup.lookup(muscle, getState());
@@ -1199,7 +1199,7 @@ namespace
     {
         if (not gp.get_Appearance().get_visible()) {
             // even custom muscle decoration implementations *must* obey the visibility
-            // flag on `GeometryPath` (#414)
+            // flag on `GeometryPath` (#414, #1166).
             return;
         }
 
@@ -1247,6 +1247,20 @@ namespace
             HandleGenericGeometryPath(rs, gp, gp);
             return;
         }
+    }
+
+    // OSC-specific decoration handler for `OpenSim::GeometryPath`
+    void HandleScholzGeometryPath(
+        RendererState& rs,
+        const OpenSim::Scholz2015GeometryPath& gp)
+    {
+        if (not gp.get_Appearance().get_visible()) {
+            // even custom muscle decoration implementations *must* obey the visibility
+            // flag on `GeometryPath` (#414, #1166)
+            return;
+        }
+
+        rs.emitGenericDecorations(gp, gp);
     }
 
     void HandleFrameGeometry(
@@ -1313,6 +1327,13 @@ namespace
         RendererState& rs,
         const OpenSim::Scholz2015GeometryPathObstacle& obstacle)
     {
+        if (auto* sgp = dynamic_cast<const OpenSim::Scholz2015GeometryPath*>(&obstacle.getOwner())) {
+            if (not sgp->get_Appearance().get_visible()) {
+                // If the owning `Scholz2015GeometryPath` isn't visible, the
+                // obstacles shouldn't be visible either (ComputationalBiomechanicsLab/opensim-creator#1166).
+                return;
+            }
+        }
         const SimTK::Vec3& contactHint = obstacle.getContactHint();
         const SimTK::Vec3 contactHintInGround = obstacle.getContactGeometry().getFrame().getTransformInGround(rs.getState()) * obstacle.getContactGeometry().getTransform() * contactHint;
         rs.consume(obstacle, SceneDecoration{
@@ -1424,6 +1445,9 @@ void opyn::GenerateSubcomponentDecorations(
         }
         else if (const auto* const gp = dynamic_cast<const OpenSim::GeometryPath*>(&c)) {
             HandleGeometryPath(rendererState, *gp);
+        }
+        else if (const auto* const sgp = dynamic_cast<const OpenSim::Scholz2015GeometryPath*>(&c)) {
+            HandleScholzGeometryPath(rendererState, *sgp);
         }
         else if (const auto* const b = dynamic_cast<const OpenSim::Body*>(&c)) {
             HandleBody(rendererState, *b);
