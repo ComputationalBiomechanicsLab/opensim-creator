@@ -55,7 +55,7 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 
     // this is what makes the test pass
     {
-        musc.getGeometryPath().computeMomentArm(st, coord);
+        musc.getPath().computeMomentArm(st, coord);
     }
 
     // compute two moment arms at one particular coordinate value
@@ -68,7 +68,7 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
         st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
         model.equilibrateMuscles(st);
         model.realizeDynamics(st);
-        values[i] = musc.getGeometryPath().computeMomentArm(st, coord);
+        values[i] = musc.getPath().computeMomentArm(st, coord);
     }
 
     ASSERT_EQ(values[0], values[1]);

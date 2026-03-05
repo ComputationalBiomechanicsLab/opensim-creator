@@ -1231,7 +1231,12 @@ bool osc::ActionAddPathPointToPathActuator(
         return false;
     }
 
-    const size_t n = size(pa->getGeometryPath().getPathPointSet());
+    const auto* const gp = dynamic_cast<const OpenSim::GeometryPath*>(&pa->getPath());
+    if (not gp) {
+        log_warn("Cannot add a path point to an AbstractGeometryPath that isn't a normal GeometryPath");
+    }
+
+    const size_t n = size(gp->getPathPointSet());
     const std::string name = pa->getName() + "-P" + std::to_string(n + 1);
     const SimTK::Vec3 position = {0.0f, 0.0f, 0.0f};
 
@@ -1255,9 +1260,11 @@ bool osc::ActionAddPathPointToPathActuator(
         // try to select the new path point, if possible, so that the user
         // can immediately see the grab handles etc. (#779)
         if (const auto* paAfterFinalization = FindComponent<OpenSim::PathActuator>(mutModel, pathActuatorPath)) {
-            const auto& pps = paAfterFinalization->getGeometryPath().getPathPointSet();
-            if (not empty(pps)) {
-                uim.setSelected(&opyn::At(pps, ssize(pps) -1));
+            if (const auto* gpAfterFinalization = dynamic_cast<const OpenSim::GeometryPath*>(&paAfterFinalization->getPath())) {
+                const auto& pps = gpAfterFinalization->getPathPointSet();
+                if (not empty(pps)) {
+                    uim.setSelected(&opyn::At(pps, ssize(pps) -1));
+                }
             }
         }
 
