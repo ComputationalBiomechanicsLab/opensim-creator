@@ -9,6 +9,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The documentation generator (Sphinx) and theme (sphinx_book_theme) were updated
   and the sidebar was cleaned up a little.
 - The "Building from Source" link in the Installation documentation page now directly links to building-from-source.rst, rather than a bookmark (#1165)
+- Fixed the moment arm of a muscle that uses the newer `Scholz2015GeometryPath` not plotting
+  in the live muscle plotter (#1167).
 
 ## [0.7.2] - 2026/02/19
 

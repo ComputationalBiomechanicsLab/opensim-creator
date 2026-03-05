@@ -30,7 +30,7 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
-#include <OpenSim/Simulation/Model/GeometryPath.h>
+#include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
@@ -111,7 +111,7 @@ namespace
 
     double GetMomentArm(const SimTK::State& st, const OpenSim::Muscle& muscle, const OpenSim::Coordinate& c)
     {
-        return muscle.getGeometryPath().computeMomentArm(st, c);
+        return muscle.getPath().computeMomentArm(st, c);
     }
 
     double GetFiberLength(const SimTK::State& st, const OpenSim::Muscle& muscle, const OpenSim::Coordinate&)
