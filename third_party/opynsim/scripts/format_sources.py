@@ -14,8 +14,8 @@ import os
 import re
 
 _blacklisted_directories = {'resources', 'opensim-core', 'simbody', '__pycache__', '_static'}
-_blacklisted_filenames = {'_opynsim_native.abi3.so', 'METADATA.in'}
-_default_directories = ['libopynsim', 'libosim', 'opynsim']
+_blacklisted_filenames = {'_core.abi3.so', 'METADATA.in'}
+_default_directories = ['libopynsim', 'libosim', 'src']
 
 def num_leading_tabs(s):
     rv = 0

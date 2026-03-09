@@ -10,15 +10,15 @@ if(OPYN_BUILD_PYTHON_BINDINGS)
     find_package(Python REQUIRED COMPONENTS Interpreter)
 
     # Get `OPYN_PYTHON_INTERPRETER_TAG` from the native module
-    get_target_property(_opyn_python_interpreter_tag _opynsim_native OPYN_PYTHON_INTERPRETER_TAG)
+    get_target_property(_opyn_python_interpreter_tag _core OPYN_PYTHON_INTERPRETER_TAG)
     if(_opyn_python_interpreter_tag STREQUAL "_opyn_python_interpreter_tag-NOTFOUND")
-        message(FATAL_ERROR "OPYN_PYTHON_INTERPRETER_TAG property not set on _opynsim_native (${_opyn_python_interpreter_tag})")
+        message(FATAL_ERROR "OPYN_PYTHON_INTERPRETER_TAG property not set on _core (${_opyn_python_interpreter_tag})")
     endif()
 
     # Get `OPYN_PYTHON_ABI_TAG` from the native module
-    get_target_property(_opyn_python_abi_tag _opynsim_native OPYN_PYTHON_ABI_TAG)
+    get_target_property(_opyn_python_abi_tag _core OPYN_PYTHON_ABI_TAG)
     if(_opyn_python_abi_tag STREQUAL "_opyn_python_abi_tag-NOTFOUND")
-        message(FATAL_ERROR "OPYN_PYTHON_ABI_TAG property not set on _opynsim_native (${_opyn_python_abi_tag})")
+        message(FATAL_ERROR "OPYN_PYTHON_ABI_TAG property not set on _core (${_opyn_python_abi_tag})")
     endif()
 
     # Get `_opyn_python_platform_tag` from python itself
@@ -69,7 +69,7 @@ if(OPYN_BUILD_PYTHON_BINDINGS)
     set(CPACK_EXTERNAL_PACKAGE "wheel")
     set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/PackageWheel.cmake")
     set(CPACK_EXTERNAL_ENABLE_STAGING YES)
-    set(CPACK_EXTERNAL_PACKAGE_DEPENDS _opynsim_native)
+    set(CPACK_EXTERNAL_PACKAGE_DEPENDS _core)
     set(CPACK_PACKAGE_FILE_NAME "${OPYN_WHEEL_FILENAME}")
     set(CPACK_COMPONENT_INSTALL ON)
 

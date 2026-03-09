@@ -19,7 +19,7 @@ __pycache__
 *.pyd
 *.pdb
 *.pyi
-opynsim/opynsim.egg-info
+src/opynsim.egg-info
 
 # runtime: opensim log files
 **/opensim.log

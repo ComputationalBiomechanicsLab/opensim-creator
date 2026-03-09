@@ -1,7 +1,7 @@
 #include "tps3d.h"
 
-#include <_opynsim_native/nanobind_x_mdspan.h>
-#include <_opynsim_native/nanobind_x_simbody.h>
+#include <opynsim/_core/nanobind_x_mdspan.h>
+#include <opynsim/_core/nanobind_x_simbody.h>
 
 #include <nanobind/stl/array.h>
 #include <nanobind/stl/string.h>

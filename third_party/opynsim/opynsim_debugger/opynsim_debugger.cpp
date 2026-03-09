@@ -65,7 +65,7 @@ namespace
 int main()  // NOLINT(bugprone-exception-escape)
 {
     // Set PYTHONPATH to the local virtual environment and `opynsim`
-    set_pythonpath({ "@OPYN_VENV@/Lib/site-packages", "@CMAKE_CURRENT_SOURCE_DIR@/.." });
+    set_pythonpath({ "@OPYN_VENV@/Lib/site-packages", "@OPYN_CORE_DIRECTORY@/.." });
 
     // Set the current working directory to the debugger's source directory (it's where
     // developers will probably dump data files etc. during development).

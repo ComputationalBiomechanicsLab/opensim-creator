@@ -1,9 +1,9 @@
-# opynsim
+# `src/`: OPynSim Python Bindings
 
 > Python-native bindings to `libopynsim`
 
 `opynsim` is a python package that contains python code (in `opynsim/`) and
-native code (source code in `_opynsim_native/`, built to `opynsim/_opynsim_native.X`). The
+native code (source code in `opynsim/_core/`, built to `opynsim/_core.X`). The
 native code uses `nanobind` to bind Python to `libopynsim`.
 
 The philosophy of `opynsim` is that it must be easy to install, "feel like python" (i.e.

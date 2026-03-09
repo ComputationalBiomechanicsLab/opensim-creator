@@ -310,7 +310,7 @@ add_library(osim STATIC
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/InducedAccelerations.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/StaticOptimization.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/InducedAccelerationsSolver.cpp
-    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/osimAnalysesDLL.cpp  # unused by libopynsim (uses `opyn::init`)
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/osimAnalysesDLL.cpp  # (use `opyn::init` instead)
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/RegisterTypes_osimAnalyses.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/Actuation.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/Kinematics.cpp
@@ -334,7 +334,7 @@ add_library(osim STATIC
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/IO.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Assertion.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Exception.cpp
-    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/LoadOpenSimLibrary.cpp  # unused libopynsim (no native plugin support)
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/LoadOpenSimLibrary.cpp  # (no native plugin support)
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyBool.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/ExpressionBasedFunction.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/ComponentSocket.cpp
@@ -383,7 +383,7 @@ add_library(osim STATIC
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Property.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/GCVSpline.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/SmoothSegmentedFunction.cpp
-    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/osimCommonDLL.cpp  # unused by libopynsim (uses `opyn::init`)
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/osimCommonDLL.cpp  # (use `opyn::init` instead)
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/MultivariatePolynomialFunction.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/StepFunction.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/FunctionAdapter.cpp
@@ -395,7 +395,7 @@ add_library(osim STATIC
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Reporter.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/RegisterTypes_osimCommon.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimulationUtilities.cpp
-    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/osimSimulationDLL.cpp  # unused by libopynsim (uses `opyn::init`)
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/osimSimulationDLL.cpp  # (use `opyn::init` instead)
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/VisualizerUtilities.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/Control.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/TrackingController.cpp
@@ -537,7 +537,7 @@ add_library(osim STATIC
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/GenericModelMaker.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CorrectionController.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/InverseDynamicsTool.cpp
-    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/osimToolsDLL.cpp  # unused by libopynsim (uses `opyn::init`)
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/osimToolsDLL.cpp  # (use `opyn::init` instead)
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/Measurement.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ActuatorForceTargetFast.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ForwardTool.cpp
@@ -598,7 +598,7 @@ add_library(osim STATIC
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/Schutte1993Muscle_Deprecated.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/SpringGeneralizedForce.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.cpp
-    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/osimActuatorsDLL.cpp  # unused by libopynsim (uses `opyn::init`)
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/osimActuatorsDLL.cpp  # (use `opyn::init` instead)
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/RegisterTypes_osimActuators.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/MeyerFregly2016Muscle.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.cpp

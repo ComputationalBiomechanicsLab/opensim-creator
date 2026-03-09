@@ -1,5 +1,6 @@
-#include <_opynsim_native/tps3d.h>
-#include <_opynsim_native/ui.h>
+#include <opynsim/_core/graphics.h>
+#include <opynsim/_core/tps3d.h>
+#include <opynsim/_core/ui.h>
 
 #include <liboscar/platform/log_level.h>
 #include <liboscar/utilities/enum_helpers.h>
@@ -10,8 +11,6 @@
 #include <libopynsim/opynsim.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/filesystem.h>
-
-#include "graphics.h"
 
 using namespace opyn;
 
@@ -34,7 +33,7 @@ namespace
     }
 }
 
-NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables,misc-use-anonymous-namespace)
+NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables,misc-use-anonymous-namespace)
 {
     // Libraries should be quiet by default - unless there's an error
     opyn::set_log_level(osc::LogLevel::err);
@@ -44,26 +43,26 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
 
     // Initialize `graphics` submodule.
     {
-        auto graphics_submodule = _opynsim_native_module.def_submodule("graphics");
+        auto graphics_submodule = _core_module.def_submodule("graphics");
         init_graphics_submodule(graphics_submodule);
     }
 
     // Initialize `tps3d` submodule.
     {
-        auto tps3d_submodule = _opynsim_native_module.def_submodule("tps3d");
+        auto tps3d_submodule = _core_module.def_submodule("tps3d");
         init_tps3d_submodule(tps3d_submodule);
     }
 
     // Initialize `ui` submodule.
     {
-        auto ui_submodule = _opynsim_native_module.def_submodule("ui");
+        auto ui_submodule = _core_module.def_submodule("ui");
         init_ui_submodule(ui_submodule);
     }
 
     // Initialize top-level functions/classes
     {
         nb::class_<ModelSpecification> model_specification_class(
-            _opynsim_native_module,
+            _core_module,
             "ModelSpecification",
             R"(
                 A high-level specification for an :class:`opynsim.Model`.
@@ -85,7 +84,7 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
         model_specification_class.def(nb::init<>());  // Define default constructor
 
         nb::class_<Model> model_class(
-            _opynsim_native_module,
+            _core_module,
             "Model",
             R"(
                 A validated, optimized, compiled, and ready-to-simulate model of a physics system.
@@ -133,7 +132,7 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
         );
 
         nb::class_<ModelState> model_state_class(
-            _opynsim_native_module,
+            _core_module,
             "ModelState",
             R"(
                 Represents a single state of a :class:`Model`.
@@ -148,7 +147,7 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
 
         static_assert(osc::num_options<ModelStateStage>() == 6);
         nb::enum_<ModelStateStage> model_state_stage_class(
-            _opynsim_native_module,
+            _core_module,
             "ModelStateStage",
             R"(
                 Represents a stage of state realization (computation).
@@ -171,7 +170,7 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
         model_state_stage_class.value("ACCELERATION", ModelStateStage::acceleration, "The time derivatives of all continuous state variables are known.");
         model_state_stage_class.value("REPORT",       ModelStateStage::report,       "Additional variables useful for output are known (optional: not required for integration).");
 
-        _opynsim_native_module.def(
+        _core_module.def(
             "set_logging_level",
             [](int python_logging_level) { opyn::set_log_level(to_oscar_log_level(python_logging_level)); },
             nb::arg("python_logging_level"),
@@ -194,7 +193,7 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
             )"
         );
 
-        _opynsim_native_module.def(
+        _core_module.def(
             "example_specification_double_pendulum",
             opyn::example_specification_double_pendulum,
             R"(
@@ -208,7 +207,7 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
             )"
         );
 
-        _opynsim_native_module.def(
+        _core_module.def(
             "import_osim_file",
             [](const std::filesystem::path& osim_path) { return opyn::import_osim_file(osim_path); },
             nb::arg("osim_file_path"),
@@ -221,7 +220,7 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
             )"
         );
 
-        _opynsim_native_module.def(
+        _core_module.def(
             "add_opensim_geometry_directory",
             [](const std::filesystem::path& geometry_directory) { opyn::add_opensim_geometry_directory(geometry_directory); },
             nb::arg("geometry_directory_path"),
@@ -247,7 +246,7 @@ NB_MODULE(_opynsim_native, _opynsim_native_module)  // NOLINT(cppcoreguidelines-
             )"
         );
 
-        _opynsim_native_module.def(
+        _core_module.def(
             "compile_specification",
             opyn::compile_specification,
             nb::arg("model_specification"),

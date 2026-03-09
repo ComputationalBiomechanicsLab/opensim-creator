@@ -4,27 +4,14 @@ project(opynsim VERSION 0.0.4 LANGUAGES CXX C)
 
 option(BUILD_TESTING                  "Build test suites"                         ON)
 option(OPYN_BUILD_TESTING             "Build test suites (OPynSim-specific)"      ${BUILD_TESTING})
+option(OPYN_BUILD_PYTHON_TESTING      "Build python test suites"                  ${OPYN_BUILD_TESTING})
 option(OPYN_BUILD_PYTHON_BINDINGS     "Build Python bindings for libopynsim"      ON)
+option(OPYN_BUILD_OPYNSIM_DEBUGGER    "Build the opynsim_debugger target"         OFF)
 option(OPYN_BUILD_DOCS                "Build documentation"                       OFF)
 option(OPYN_USE_STRICT_COMPILER_FLAGS "Add stricter compilation flags to targets" OFF)
 option(OPYN_PACKAGE                   "Configure packaging the project's targets" ON)
+option(OPYN_STABLE_ABI                "Perform a python stable ABI build"         ON)
 set   (OPYN_VENV "" CACHE PATH        "Optional absolute path to a Python virtual environment that the build should use")
-
-if(OPYN_VENV)
-    if(WIN32)
-        set(_opyn_python_exe "${OPYN_VENV}/Scripts/python.exe")
-    else()
-        set(_opyn_python_exe "${OPYN_VENV}/bin/python")
-    endif()
-
-    if(EXISTS ${OPYN_VENV})
-        set(Python_EXECUTABLE "${_opyn_python_exe}" CACHE FILEPATH "Path to Python interpreter" FORCE)
-    else()
-        message(FATAL_ERROR "${_opyn_python_exe}: python executable not found, but OPYN_VENV was set to this path?")
-    endif()
-
-    unset(_opyn_python_exe)
-endif()
 
 if(OPYN_BUILD_TESTING)
     # This has to be done at the top-level, so that `ctest --show-only` works for
@@ -37,12 +24,58 @@ endif()
 add_subdirectory(libosim SYSTEM)  # SYSTEM because it's all third-party code
 add_subdirectory(libopynsim)
 
-if(OPYN_BUILD_DOCS)
-    add_subdirectory(docs)
+if(OPYN_BUILD_PYTHON_BINDINGS)
+    # If building Python bindings, try to centrally figure out Python environment,
+    # version, required components here, so that the sub-parts of the build consistently
+    # use the same Python.
+
+    if(OPYN_VENV)
+        if(WIN32)
+            set(_opyn_python_exe "${OPYN_VENV}/Scripts/python.exe")
+        else()
+            set(_opyn_python_exe "${OPYN_VENV}/bin/python")
+        endif()
+
+        if(EXISTS ${OPYN_VENV})
+            set(Python_EXECUTABLE "${_opyn_python_exe}" CACHE FILEPATH "Path to Python interpreter" FORCE)
+        else()
+            message(FATAL_ERROR "${_opyn_python_exe}: python executable not found, but OPYN_VENV was set to this path?")
+        endif()
+
+        unset(_opyn_python_exe)
+    endif()
+
+    # Figure out required python components
+    set(OPYN_REQUIRED_PYTHON_COMPONENTS Interpreter Development.Module)
+    if(OPYN_STABLE_ABI)
+        set(OPYN_MIN_PYTHON_REQUIRED_VERSION 3.12)  # Dictated by nanobind
+        list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development.SABIModule)
+    else()
+        set(OPYN_MIN_PYTHON_REQUIRED_VERSION 3.8)  # Dictated by the package's Python source code
+    endif()
+    if(OPYN_BUILD_OPYNSIM_DEBUGGER)
+        list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development.Embed)
+    endif()
+
+    # Finally, find a Python distribution that matches requirements.
+    find_package(
+        Python ${OPYN_MIN_PYTHON_REQUIRED_VERSION}
+        COMPONENTS ${OPYN_REQUIRED_PYTHON_COMPONENTS}
+        REQUIRED
+    )
+
+    # Include sub-parts of the build
+    add_subdirectory(src)
+    if(OPYN_BUILD_PYTHON_TESTING)
+        add_subdirectory(tests)
+    endif()
+    if(OPYN_BUILD_OPYNSIM_DEBUGGER)
+        add_subdirectory(opynsim_debugger)
+    endif()
 endif()
 
-if(OPYN_BUILD_PYTHON_BINDINGS)
-    add_subdirectory(opynsim)
+if(OPYN_BUILD_DOCS)
+    add_subdirectory(docs)
 endif()
 
 if(OPYN_PACKAGE)

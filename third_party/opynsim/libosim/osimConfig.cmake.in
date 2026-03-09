@@ -10,7 +10,7 @@ else()
     find_dependency(LAPACK  REQUIRED)
 endif()
 
-# this should be built by the "superbuild"ing `opynsim/third_party`
+# this should be built by the "superbuild"ing `third_party`
 # because OpenSim strongly depends on a particular version of
 # spdlog (grrr)
 find_dependency(spdlog REQUIRED)

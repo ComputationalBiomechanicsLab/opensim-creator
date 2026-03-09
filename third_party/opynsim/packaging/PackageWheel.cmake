@@ -70,10 +70,10 @@ message(STATUS "twine check: OK")
 # Run `pip check` on the wheel to validate requirements
 message(STATUS "pip check ${OPYN_WHEEL_OUTPUT_PATH}")
 execute_process(
-        COMMAND "${CPACK_WHEEL_PYTHON}" -m pip check "${OPYN_WHEEL_OUTPUT_PATH}"
-        RESULT_VARIABLE PY_RESULT
-        OUTPUT_VARIABLE PY_OUT
-        ERROR_VARIABLE PY_ERR
+    COMMAND "${CPACK_WHEEL_PYTHON}" -m pip check "${OPYN_WHEEL_OUTPUT_PATH}"
+    RESULT_VARIABLE PY_RESULT
+    OUTPUT_VARIABLE PY_OUT
+    ERROR_VARIABLE PY_ERR
 )
 if(NOT PY_RESULT EQUAL 0)
     message(FATAL_ERROR
@@ -89,10 +89,10 @@ message(STATUS "pip check: OK")
 # contains some of the expected entries (sanity check)
 message(STATUS "check_wheel_contents.py ${OPYN_WHEEL_OUTPUT_PATH}")
 execute_process(
-        COMMAND "${CPACK_WHEEL_PYTHON}" "${CPACK_WHEEL_PACKAGING_SOURCE_DIR}/check_wheel_contents.py" "${OPYN_WHEEL_OUTPUT_PATH}" "opynsim/__init__.py" "opynsim/_opynsim_native.*" "opynsim/__main__.py"
-        RESULT_VARIABLE PY_RESULT
-        OUTPUT_VARIABLE PY_OUT
-        ERROR_VARIABLE PY_ERR
+    COMMAND "${CPACK_WHEEL_PYTHON}" "${CPACK_WHEEL_PACKAGING_SOURCE_DIR}/check_wheel_contents.py" "${OPYN_WHEEL_OUTPUT_PATH}" "opynsim/__init__.py" "opynsim/_core.*" "opynsim/__main__.py"
+    RESULT_VARIABLE PY_RESULT
+    OUTPUT_VARIABLE PY_OUT
+    ERROR_VARIABLE PY_ERR
 )
 if(NOT PY_RESULT EQUAL 0)
     message(FATAL_ERROR

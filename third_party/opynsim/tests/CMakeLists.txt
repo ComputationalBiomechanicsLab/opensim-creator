@@ -1,5 +1,5 @@
-option(OPYN_TEST_DEPENDENCIES "Add tests that check _opynsim_native's dependencies against a whitelist" ON)
-option(OPYN_TEST_SYMBOLS      "Add tests that check _opynsim_native's symbols against a whitelist"      ON)
+option(OPYN_TEST_DEPENDENCIES "Add tests that check opynsim._core's dependencies against a whitelist" ON)
+option(OPYN_TEST_SYMBOLS      "Add tests that check opynsim._core's symbols against a whitelist"      ON)
 
 # Find `pytest` (python unit test library)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -16,14 +16,10 @@ endif()
 # Discover `ptest` tests and add them to the CTest suite
 file(GLOB OPYN_PYTEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_*.py")
 pytest_discover_tests(
-    _opynsim_native
-    PYTHON_PATH_PREPEND
-        ${CMAKE_CURRENT_SOURCE_DIR}/..
-    WORKING_DIRECTORY
-        ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS
-        _opynsim_native
-        ${OPYN_PYTEST_SOURCES}
+    _core
+    PYTHON_PATH_PREPEND $<TARGET_FILE_DIR:_core>/..
+    WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS             _core ${OPYN_PYTEST_SOURCES}
     INCLUDE_FILE_PATH
 )
 unset(OPYN_PYTEST_SOURCES)
@@ -40,28 +36,30 @@ if(OPYN_TEST_DEPENDENCIES)
 
     if(OPYN_DEPENDENCY_WHITELIST_FILENAME)
         add_test(
-            NAME test_opynsim_native_dependencies_pass_whitelist
-            COMMAND "${Python_EXECUTABLE}"
-                    "${CMAKE_CURRENT_SOURCE_DIR}/check_dependencies.py"
-                    "--verbose"
-                    "$<TARGET_FILE:_opynsim_native>"
-                    "${CMAKE_CURRENT_SOURCE_DIR}/dependency-whitelists/${OPYN_DEPENDENCY_WHITELIST_FILENAME}"
+            NAME test_core_dependencies_pass_whitelist
+            COMMAND
+                "${Python_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/check_dependencies.py"
+                "--verbose"
+                "$<TARGET_FILE:_core>"
+                "${CMAKE_CURRENT_SOURCE_DIR}/dependency-whitelists/${OPYN_DEPENDENCY_WHITELIST_FILENAME}"
         )
     endif()
 endif()
 
 if(OPYN_TEST_SYMBOLS AND UNIX)
     if(APPLE)
-        set(OPYN_PERMITTED_SYMBOLS "_PyInit__opynsim_native")
+        set(OPYN_PERMITTED_SYMBOLS "_PyInit__core")
     else()
-        set(OPYN_PERMITTED_SYMBOLS "PyInit__opynsim_native")
+        set(OPYN_PERMITTED_SYMBOLS "PyInit__core")
     endif()
 
     add_test(
-        NAME test_opynsim_native_symbols_pass_whitelist
-        COMMAND "${Python_EXECUTABLE}"
-                "${CMAKE_CURRENT_SOURCE_DIR}/check_symbols.py"
-                "$<TARGET_FILE:_opynsim_native>"
-                ${OPYN_PERMITTED_SYMBOLS}
+        NAME test_core_symbols_pass_whitelist
+        COMMAND
+            "${Python_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/check_symbols.py"
+            "$<TARGET_FILE:_core>"
+            ${OPYN_PERMITTED_SYMBOLS}
     )
 endif()
