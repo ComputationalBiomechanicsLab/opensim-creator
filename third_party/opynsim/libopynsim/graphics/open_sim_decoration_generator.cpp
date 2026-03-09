@@ -927,7 +927,7 @@ namespace
 
             const OpenSim::AbstractGeometryPath::DecorativePathPoint& point = pps[i];
             const SimTK::Vec3 prevToPos = point.getLocationInGround() - prevPoint.getLocationInGround();
-            const float prevToPosLen = static_cast<float>(prevToPos.norm());
+            const auto prevToPosLen = static_cast<float>(prevToPos.norm());
             const float traversalPos = prevTraversalPosition + prevToPosLen;
             const float excess = traversalPos - tendonLen;
 
@@ -962,7 +962,7 @@ namespace
 
             const OpenSim::AbstractGeometryPath::DecorativePathPoint& point = pps[i];
             const SimTK::Vec3 prevToPos = point.getLocationInGround() - prevPoint.getLocationInGround();
-            const float prevToPosLen = static_cast<float>(prevToPos.norm());
+            const auto prevToPosLen = static_cast<float>(prevToPos.norm());
             const float traversalPos = prevTraversalPosition + prevToPosLen;
             const float excess = traversalPos - fiberEnd;
 
@@ -997,7 +997,7 @@ namespace
 
             const OpenSim::AbstractGeometryPath::DecorativePathPoint& point = pps[i];
             const SimTK::Vec3 prevToPos = point.getLocationInGround() - prevPoint.getLocationInGround();
-            const float prevToPosLen = static_cast<float>(prevToPos.norm());
+            const auto prevToPosLen = static_cast<float>(prevToPos.norm());
             const float traversalPos = prevTraversalPosition + prevToPosLen;
 
             emitTendonCylinder(prevPoint.getLocationInGround(), point.getLocationInGround());
@@ -1062,7 +1062,7 @@ namespace
         // if required, draw the first path point
         if (rs.getShowPathPoints()) {
             const OpenSim::AbstractGeometryPath::DecorativePathPoint& firstPoint = points.front();
-            const Vector3 ppPos = to<Vector3>(firstPoint.getLocationInGround());
+            const auto ppPos = to<Vector3>(firstPoint.getLocationInGround());
             const Vector3 direction = points.size() == 1 ?
                 Vector3{0.0f, 1.0f, 0.0f} :
                 normalize(to<Vector3>(points[1].getLocationInGround()) - ppPos);
