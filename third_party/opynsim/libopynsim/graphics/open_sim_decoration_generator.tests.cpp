@@ -15,7 +15,9 @@
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/platform/log.h>
+#include <liboscar/utilities/enum_helpers.h>
 #include <liboscar/utilities/string_helpers.h>
+#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -602,5 +604,109 @@ TEST(GenerateModelDecorations, RadiusOfContactSphereIsCorrectlyUpdated)
         const auto decorations = GenerateModelDecorations(cache, model, state);
         const float volume = osc::volume_of(bounding_aabb_of(decorations, &osc::SceneDecoration::world_space_bounds).value());
         ASSERT_NEAR(volume, 1.0f*1.0f*1.0f, 0.001f);
+    }
+}
+
+// Test that ensures muscles in the model try and follow the model's `Appearance`
+// property to determine opacity (color, rendering, etc. might be dictated by
+// runtime options, though). Semi-related: #1166.
+TEST(GenerateModelDecorations, MusclesObeyAppearanceOpacity)
+{
+    OpenSim::Model model;
+    model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
+
+    auto& musc = AddComponent<OpenSim::Millard2012EquilibriumMuscle>(model);
+
+    auto& gp = musc.updGeometryPath();
+    gp.appendNewPathPoint("p1", model.getGround(), {-1.0, 0.0, 0.0});
+    gp.appendNewPathPoint("p2", model.getGround(), { 1.0, 0.0, 0.0});
+
+    const double opacity = 0.27;
+    gp.upd_Appearance().set_opacity(opacity);
+
+    opyn::FinalizeConnections(model);
+    opyn::InitializeModel(model);
+    const SimTK::State& state = opyn::InitializeState(model);
+
+    osc::SceneCache sceneCache;
+    opyn::OpenSimDecorationOptions options;
+    options.setMuscleColorSource(MuscleColorSource::AppearanceProperty);
+
+    static_assert(osc::num_options<MuscleDecorationStyle>() == 3);
+    for (const auto& style : {MuscleDecorationStyle::LinesOfAction, MuscleDecorationStyle::FibersAndTendons}) {
+        options.setMuscleDecorationStyle(style);
+
+        const auto decorations = opyn::GenerateModelDecorations(sceneCache, model, state, options);
+        for (const auto& decoration : decorations) {
+            ASSERT_EQ(std::get<osc::Color>(decoration.shading).a, static_cast<float>(opacity));
+        }
+    }
+}
+
+// Test that ensures `GeometryPath`s in the model try and follow the model's `Appearance`
+// property to determine opacity (color, rendering, etc. might be dictated by
+// runtime options, though). Semi-related: #1166.
+TEST(GenerateModelDecorations, GeometryPathsObeyAppearanceOpacity)
+{
+    OpenSim::Model model;
+    model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
+
+    auto& gp = opyn::AddComponent<OpenSim::GeometryPath>(model);
+    gp.appendNewPathPoint("p1", model.getGround(), {-1.0, 0.0, 0.0});
+    gp.appendNewPathPoint("p2", model.getGround(), { 1.0, 0.0, 0.0});
+
+    const double opacity = 0.27;
+    gp.upd_Appearance().set_opacity(opacity);
+
+    opyn::FinalizeConnections(model);
+    opyn::InitializeModel(model);
+    const SimTK::State& state = opyn::InitializeState(model);
+
+    osc::SceneCache sceneCache;
+    opyn::OpenSimDecorationOptions options;
+    options.setMuscleColorSource(MuscleColorSource::AppearanceProperty);
+
+    static_assert(osc::num_options<MuscleDecorationStyle>() == 3);
+    for (const auto& style : {MuscleDecorationStyle::LinesOfAction, MuscleDecorationStyle::FibersAndTendons}) {
+        options.setMuscleDecorationStyle(style);
+
+        const auto decorations = opyn::GenerateModelDecorations(sceneCache, model, state, options);
+        for (const auto& decoration : decorations) {
+            ASSERT_EQ(std::get<osc::Color>(decoration.shading).a, static_cast<float>(opacity));
+        }
+    }
+}
+
+// Test that ensures muscles in the model try and follow the model's `Appearance`
+// property to determine representation (i.e. wireframe-mode). Semi-related: #1166.
+TEST(GenerateModelDecorations, MusclesObeyWireframeRepresentation)
+{
+    OpenSim::Model model;
+    model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
+
+    auto& musc = AddComponent<OpenSim::Millard2012EquilibriumMuscle>(model);
+
+    auto& gp = musc.updGeometryPath();
+    gp.appendNewPathPoint("p1", model.getGround(), {-1.0, 0.0, 0.0});
+    gp.appendNewPathPoint("p2", model.getGround(), { 1.0, 0.0, 0.0});
+
+    gp.upd_Appearance().set_representation(OpenSim::VisualRepresentation::DrawWireframe);
+
+    opyn::FinalizeConnections(model);
+    opyn::InitializeModel(model);
+    const SimTK::State& state = opyn::InitializeState(model);
+
+    osc::SceneCache sceneCache;
+    opyn::OpenSimDecorationOptions options;
+    options.setMuscleColorSource(MuscleColorSource::AppearanceProperty);
+
+    static_assert(osc::num_options<MuscleDecorationStyle>() == 3);
+    for (const auto& style : {MuscleDecorationStyle::LinesOfAction, MuscleDecorationStyle::FibersAndTendons}) {
+        options.setMuscleDecorationStyle(style);
+
+        const auto decorations = opyn::GenerateModelDecorations(sceneCache, model, state, options);
+        for (const auto& decoration : decorations) {
+            ASSERT_TRUE(decoration.flags & osc::SceneDecorationFlag::DrawWireframeOverlay);
+        }
     }
 }

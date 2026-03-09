@@ -12,6 +12,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed the moment arm of a muscle that uses the newer `Scholz2015GeometryPath` not plotting
   in the live muscle plotter (#1167).
 - Fixed toggling the visibility of a `Scholz2015GeometryPath` did not show/hide it in the visualizer (#1166).
+- Fixed modifying the representation (Surface/Wireframe/Hidden) part of the `Apperance` of a `GeometryPath`
+  being ignored. It is now taken into account for all rendering types (i.e. Lines of Action and Fibers
+  & Tendons, #1166).
+- Fixed the opacity part of the `Appearance` of a `GeometryPath` being ignored. It is now taken into account
+  for all rendering types (i.e. Lines of Action and Fibers & Tendons, #1166).
 - Custom muscle coloring and rendering styles (e.g. tendons etc.) now also work for `Scholz2015GeometryPath` (#1166).
 - Fixed an issue where toggling a coordinate lock off immediately followed by editing the coordinate's value
   would not update the coordinate value until the second time it is edited if the model contains

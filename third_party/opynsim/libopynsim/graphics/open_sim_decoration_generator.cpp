@@ -111,16 +111,22 @@ namespace
         return to<Transform>(frame.getTransformInGround(state));
     }
 
-    Color GetGeometryPathDefaultColor(const OpenSim::AbstractGeometryPath& gp)
+    Color ExtractColor(const OpenSim::Appearance& appearance)
     {
-        return Color{to<Vector3>(gp.getDefaultColor())};
+        const SimTK::Vec3& rgb = appearance.get_color();
+        return {
+            static_cast<float>(rgb[0]),
+            static_cast<float>(rgb[1]),
+            static_cast<float>(rgb[2]),
+            static_cast<float>(appearance.get_opacity()),
+        };
     }
 
     Color GetGeometryPathColor(const OpenSim::AbstractGeometryPath& gp, const SimTK::State& st)
     {
         // returns the same color that OpenSim emits (which is usually just activation-based,
         // but might change in future versions of OpenSim)
-        return Color{to<Vector3>(gp.getColor(st))};
+        return Color{to<Vector3>(gp.getColor(st)), static_cast<float>(gp.get_Appearance().get_opacity())};
     }
 
     // helper: calculates the radius of a muscle based on isometric force
@@ -405,13 +411,37 @@ namespace
         {
             if (getOptions().getMuscleColorSource() == MuscleColorSource::AppearanceProperty) {
                 // early-out: the muscle has a constant, Appearance-defined color
-                return GetGeometryPathDefaultColor(muscle.getPath());
+                return ExtractColor(muscle.getPath().get_Appearance());
             }
 
             const float t = m_MuscleColorSourceScalingLookup.lookup(muscle, getState());
-            const Color zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f};
-            const Color fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f};
+
+            // Note: always take the path `Appearance` opacity into account, even if the color
+            // is being computed from the state (semi-related: #1166).
+            const auto alpha = static_cast<float>(muscle.getPath().get_Appearance().get_opacity());
+            const Color zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f, alpha};
+            const Color fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f, alpha};
             return lerp(zeroColor, fullColor, t);
+        }
+
+        SceneDecorationFlags calcGeometryPathFlags(const OpenSim::AbstractGeometryPath& gp)
+        {
+            // Note: this assumes `OpenSim::Appearance::is_visible` is handled at a higher
+            // level (it should remove the decoration from the scene graph entirely).
+
+            SceneDecorationFlags rv = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull};
+
+            switch (gp.get_Appearance().get_representation()) {
+                case OpenSim::VisualRepresentation::DrawWireframe: { rv |= SceneDecorationFlag::OnlyWireframe; break; }
+                case OpenSim::VisualRepresentation::Hide:          { rv |= SceneDecorationFlag::Hidden;        break; }
+                default:                                           { break; }
+            }
+            return rv;
+        }
+
+        SceneDecorationFlags calcMuscleFlags(const OpenSim::Muscle& muscle)
+        {
+            return calcGeometryPathFlags(muscle.getPath());
         }
     private:
         SceneCache& m_MeshCache;
@@ -846,29 +876,35 @@ namespace
         const float tendonUiRadius = 0.618f * fiberUiRadius;  // or fixupScaleFactor * 0.005f;
 
         const Color fiberColor = rs.calcMuscleColor(muscle);
-        const Color tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f};
+        const Color tendonColor = {
+            204.0f/255.0f,
+            203.0f/255.0f,
+            200.0f/255.0f,
+            static_cast<float>(muscle.getPath().get_Appearance().get_opacity()),  // Always take user-enacted opacity into account (#1166).
+        };
+        const SceneDecorationFlags flags = rs.calcMuscleFlags(muscle);
 
         const SceneDecoration tendonSpherePrototype = {
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vector3{tendonUiRadius}},
             .shading = tendonColor,
-            .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
+            .flags = flags,
         };
         const SceneDecoration tendonCylinderPrototype = {
             .mesh = rs.uncapped_cylinder_mesh(),
             .shading = tendonColor,
-            .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
+            .flags = flags,
         };
         const SceneDecoration fiberSpherePrototype = {
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vector3{fiberUiRadius}},
             .shading = fiberColor,
-            .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
+            .flags = flags,
         };
         const SceneDecoration fiberCylinderPrototype = {
             .mesh = rs.uncapped_cylinder_mesh(),
             .shading = fiberColor,
-            .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
+            .flags = flags,
         };
 
         const auto emitTendonSphere = [&](const OpenSim::AbstractGeometryPath::DecorativePathPoint& p)
@@ -1016,14 +1052,15 @@ namespace
         const OpenSim::Component& hittestTarget,
         std::span<const OpenSim::AbstractGeometryPath::DecorativePathPoint> points,
         float radius,
-        const Color& color)
+        const Color& color,
+        SceneDecorationFlags flags)
     {
         if (points.empty()) {
             return;  // edge-case: there's no points to emit
         }
 
         // helper function: emits a sphere decoration
-        const auto emitSphere = [&rs, &hittestTarget, radius, color](
+        const auto emitSphere = [&rs, &hittestTarget, radius, color, flags](
             const OpenSim::AbstractGeometryPath::DecorativePathPoint& pp,
             const Vector3& upDirection)
         {
@@ -1042,12 +1079,12 @@ namespace
                     .translation = to<Vector3>(pp.getLocationInGround())
                 },
                 .shading = color,
-                .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
+                .flags = flags,
             });
         };
 
         // helper function: emits a cylinder decoration between two points
-        const auto emitCylinder = [&rs, &hittestTarget, radius, color](
+        const auto emitCylinder = [&rs, &hittestTarget, radius, color, flags](
             const Vector3& p1,
             const Vector3& p2)
         {
@@ -1055,7 +1092,7 @@ namespace
                 .mesh = rs.uncapped_cylinder_mesh(),
                 .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
                 .shading  = color,
-                .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
+                .flags = flags,
             });
         };
 
@@ -1104,9 +1141,14 @@ namespace
             rs.getOptions().getMuscleSizingStyle()
         );
 
-        const Color color = rs.calcMuscleColor(musc);
-
-        EmitPointBasedLine(rs, musc, points, radius, color);
+        EmitPointBasedLine(
+            rs,
+            musc,
+            points,
+            radius,
+            rs.calcMuscleColor(musc),
+            rs.calcMuscleFlags(musc)
+        );
     }
 
     // custom implementation of `OpenSim::AbstractGeometryPath::generateDecorations`
@@ -1130,7 +1172,8 @@ namespace
             hittestTarget,
             points,
             rs.getFixupScaleFactor() * c_GeometryPathBaseRadius,
-            color
+            color,
+            rs.calcGeometryPathFlags(gp)
         );
     }
 
