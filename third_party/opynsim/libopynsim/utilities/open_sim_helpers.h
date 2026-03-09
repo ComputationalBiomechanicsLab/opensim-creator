@@ -38,6 +38,7 @@ namespace OpenSim { template<typename> class ArrayPtrs; }
 namespace OpenSim { class Body; }
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
+namespace OpenSim { class Constraint; }
 namespace OpenSim { class Coordinate; }
 namespace OpenSim { class ExternalForce; }
 namespace OpenSim { class Frame; }
@@ -878,6 +879,16 @@ namespace opyn
     {
         auto p = std::make_unique<T>(std::forward<Args>(args)...);
         return static_cast<T&>(AddJoint(model, std::move(p)));
+    }
+
+    OpenSim::Constraint& AddConstraint(OpenSim::Model&, std::unique_ptr<OpenSim::Constraint>);
+
+    template<std::derived_from<OpenSim::Constraint> T, typename... Args>
+    requires std::constructible_from<T, Args&&...>
+    T& AddConstraint(OpenSim::Model& model, Args&&... args)
+    {
+        auto p = std::make_unique<T>(std::forward<Args>(args)...);
+        return static_cast<T&>(AddConstraint(model, std::move(p)));
     }
 
     OpenSim::Marker& AddMarker(OpenSim::Model&, std::unique_ptr<OpenSim::Marker>);

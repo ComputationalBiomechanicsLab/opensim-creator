@@ -1663,7 +1663,8 @@ bool osc::ActionSetCoordinateSpeedAndSave(
 
 bool osc::ActionSetCoordinateLockedAndSave(
     ModelStatePair& model,
-    const OpenSim::Coordinate& coord, bool v)
+    const OpenSim::Coordinate& coord,
+    bool v)
 {
     if (model.isReadonly()) {
         return false;
@@ -1732,8 +1733,8 @@ bool osc::ActionSetCoordinateValue(
         //       when the caller wants to save the coordinate change
         mutCoord->setDefaultValue(newValue);
         mutCoord->setValue(mutModel.updWorkingState(), newValue);
-        TryEquilibrateMusclesOrLogWarning(mutModel, mutModel.updWorkingState());
-        mutModel.realizeDynamics(mutModel.updWorkingState());
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
 
         return true;
     }

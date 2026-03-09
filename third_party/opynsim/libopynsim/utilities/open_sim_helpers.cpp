@@ -1659,6 +1659,13 @@ OpenSim::Joint& opyn::AddJoint(OpenSim::Model& model, std::unique_ptr<OpenSim::J
     return rv;
 }
 
+OpenSim::Constraint& opyn::AddConstraint(OpenSim::Model& model, std::unique_ptr<OpenSim::Constraint> constraint)
+{
+    OpenSim::Constraint& rv = *constraint;
+    model.addConstraint(constraint.release());
+    return rv;
+}
+
 OpenSim::Marker& opyn::AddMarker(OpenSim::Model& model, std::unique_ptr<OpenSim::Marker> marker)
 {
     OpenSim::Marker& rv = *marker;

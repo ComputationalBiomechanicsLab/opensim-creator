@@ -9,13 +9,17 @@
 #include <libopynsim/component_registry/component_registry.h>
 #include <libopynsim/component_registry/component_registry_entry.h>
 #include <libopynsim/component_registry/static_component_registries.h>
+#include <libopynsim/opynsim.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/maths/math_helpers.h>
 #include <OpenSim/Common/AbstractProperty.h>
+#include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/StationDefinedFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/Wrap/WrapCylinder.h>
@@ -703,4 +707,59 @@ TEST(OpenSimActions, ActionMoveMarkerToModelMarkerSet_MovesMarker)
     ASSERT_EQ(marker.getLocationInGround(state), pofOffset + markerOffset);
     ASSERT_EQ(&marker.getParentFrame(), &pof);
     ASSERT_EQ(&marker.getOwner(), &model.getModel().getMarkerSet());
+}
+
+TEST(OpenSimActions, ActionSetCoordinateLockedAndSave_EnsuresValueCanBeEditedAfterwards)
+{
+    // Regression test for issue #1164
+    //
+    // The issue was that unlocking a coordinate in the UI would put the model
+    // in a state where the user couldn't subsequently edit the value of the
+    // `OpenSim::Coordinate`. The reason it happened was because the coordinate
+    // value setter was trying to satisfy constraints, but the underlying assembly
+    // solver in the model wasn't updated with the lock change.
+
+    opyn::init();
+
+    UndoableModelStatePair model;
+    auto& body = opyn::AddBody(model.updModel(), "head", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    auto& pin = opyn::AddJoint<OpenSim::BallJoint>(
+        model.updModel(),
+        "ball",
+        model.updModel().getGround(),
+        SimTK::Vec3{0.0, 1.0, 0.0},
+        SimTK::Vec3{0.0},
+        body,
+        SimTK::Vec3{0.0, -1.0, 0.0},
+        SimTK::Vec3{0.0}
+    );
+    auto& coordinate = pin.updCoordinate(OpenSim::BallJoint::Coord::Rotation1X);
+    coordinate.setDefaultLocked(true);  // ensure X is initially locked
+
+    // Extra concern: the model must contain a constraint
+    //
+    // The #1164 bug only manifests when the model contains a constraint. The way
+    // the bug manifests is that, when setting a coordinate value, the constraint
+    // is detected and then the model assembler is used to track the coordinates
+    // after the change to re-enforce the constraint - it's the assembler that's
+    // in an invalid state (it thinks the coordinate is still locked).
+    auto& constraint = opyn::AddConstraint<OpenSim::CoordinateCouplerConstraint>(model.updModel());
+    constraint.setFunction(OpenSim::Constant(0.0));
+    constraint.setDependentCoordinateName(pin.getCoordinate(OpenSim::BallJoint::Coord::Rotation2Y).getName());
+
+    opyn::FinalizeConnections(model.updModel());
+    opyn::InitializeModel(model.updModel());
+    SimTK::State& state = opyn::InitializeState(model.updModel());
+
+    ASSERT_TRUE(coordinate.getLocked(state));
+    ActionSetCoordinateLockedAndSave(model, coordinate, false);  // Unlock coordinate using UI action
+    ASSERT_FALSE(coordinate.getLocked(state));
+
+    const double originalValue = coordinate.getValue(state);
+    const double newValue = originalValue + 1.1;
+
+    // This is what moving the slider, but not letting go, does.
+    ActionSetCoordinateValue(model, coordinate, newValue);
+
+    ASSERT_EQ(coordinate.getValue(state), newValue) << "This should be updated, if it isn't the unlocking might be causing issues?";
 }

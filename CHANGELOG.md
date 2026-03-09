@@ -13,6 +13,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   in the live muscle plotter (#1167).
 - Fixed toggling the visibility of a `Scholz2015GeometryPath` did not show/hide it in the visualizer (#1166).
 - Custom muscle coloring and rendering styles (e.g. tendons etc.) now also work for `Scholz2015GeometryPath` (#1166).
+- Fixed an issue where toggling a coordinate lock off immediately followed by editing the coordinate's value
+  would not update the coordinate value until the second time it is edited if the model contains
+  constraints (#1164).
 
 ## [0.7.2] - 2026/02/19
 
