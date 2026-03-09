@@ -14,7 +14,7 @@ import os
 import re
 
 _blacklisted_directories = {'resources', '__pycache__', '_static'}
-_blasklisted_extensions = {'.ico', '.icns'}
+_blasklisted_extensions = {'.ico', '.icns', '.png'}
 _default_directories = ['.github', 'docs/source', 'libopensimcreator', 'osc', 'packaging', 'requirements', 'scripts']
 
 def num_leading_tabs(s):
