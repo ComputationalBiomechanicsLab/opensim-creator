@@ -20,14 +20,14 @@ Examples
 Render to a PNG
 ~~~~~~~~~~~~~~~
 
-This example uses `Pillow <https://python-pillow.github.io/>`_ (``pip install Pillow``) to encode
+This example uses `Pillow <https://python-pillow.github.io/>`_ to encode
 the pixel data returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a PNG file.
 
 .. code:: python
 
     import opynsim
     import opynsim.graphics
-    from PIL import Image  # pip install Pillow
+    from PIL import Image  # from `Pillow` package
 
     # Create/import a `Model` + `ModelState`.
     model_specification = opynsim.example_specification_double_pendulum()
@@ -56,7 +56,7 @@ returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a line plot.
     import opynsim
     import opynsim.graphics
     import numpy as np
-    import matplotlib.pyplot as plt  # pip install matplotlib
+    import matplotlib.pyplot as plt  # from `matplotlib` package
     from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
     # Create/import a `Model` + `ModelState`.

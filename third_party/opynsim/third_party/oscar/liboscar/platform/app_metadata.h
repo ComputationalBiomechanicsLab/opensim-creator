@@ -46,6 +46,11 @@ namespace osc
 
         std::string application_name_with_version_and_buildid() const;
 
+        std::optional<bool> headless_mode() const { return headless_mode_; }
+        void set_headless_mode(std::optional<bool> new_headless_mode) { headless_mode_ = new_headless_mode; }
+
+        std::optional<bool> maximize_main_window() const { return maximize_main_window_; }
+        void set_maximize_main_window(std::optional<bool> new_maximize_main_window) { maximize_main_window_ = new_maximize_main_window; }
     private:
         std::string organization_name_ = "oscarorg";
         std::string application_name_ = "osc";
@@ -56,5 +61,7 @@ namespace osc
         std::optional<std::string> repository_url_;
         std::optional<std::string> documentation_url_;
         std::optional<std::string> help_url_;
+        std::optional<bool> headless_mode_;
+        std::optional<bool> maximize_main_window_;
     };
 }

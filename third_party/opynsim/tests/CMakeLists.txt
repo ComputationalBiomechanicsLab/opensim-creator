@@ -8,8 +8,7 @@ if(NOT Pytest_FOUND)
     message(FATAL_ERROR
         "pytest is not installed in your current environment. You can solve this by either:\n"
         "  - Disabling python tests by setting the cmake cache variable `OPYN_BUILD_PYTHON_TESTING` to `OFF`\n"
-        "  - Installing opynsim's test dependencies into the python environment with:\n"
-        "        ${Python_EXECUTABLE} -m pip install -r ${CMAKE_CURRENT_SOURCE_DIR}/../requirements/test_requirements.txt\n"
+        "  - Installing pytest into your current environment (see ${CMAKE_CURRENT_SOURCE_DIR}/../requirements/test_requirements.txt)\n"
     )
 endif()
 

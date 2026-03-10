@@ -1,9 +1,12 @@
+#include "core.h"
+
 #include <opynsim/_core/graphics.h>
 #include <opynsim/_core/tps3d.h>
 #include <opynsim/_core/ui.h>
 
 #include <liboscar/platform/log_level.h>
 #include <liboscar/utilities/enum_helpers.h>
+#include <libopynsim/platform/opynsim_app.h>
 #include <libopynsim/model.h>
 #include <libopynsim/model_specification.h>
 #include <libopynsim/model_state.h>
@@ -31,12 +34,31 @@ namespace
         default: return osc::LogLevel::DEFAULT;
         }
     }
+
+    std::unique_ptr<OPynSimApp> g_lazy_loaded_app;
+}
+
+opyn::OPynSimApp& opyn::get_lazy_loaded_opynsim_app()
+{
+    if (not g_lazy_loaded_app) {
+        g_lazy_loaded_app = std::make_unique<OPynSimApp>();
+    }
+    return *g_lazy_loaded_app;
+}
+
+void opyn::destroy_lazy_loaded_opynsim_app()
+{
+    g_lazy_loaded_app.reset();
 }
 
 NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables,misc-use-anonymous-namespace)
 {
     // Libraries should be quiet by default - unless there's an error
     opyn::set_log_level(osc::LogLevel::err);
+
+    // Install an exit handler that cleans up any lazy-loaded application state
+    // when the Python interpreter shuts down
+    nb::module_::import_("atexit").attr("register")(nb::cpp_function(&destroy_lazy_loaded_opynsim_app));
 
     // Globally initialize the opynsim API (Simbody, OpenSim, oscar)
     opyn::init();

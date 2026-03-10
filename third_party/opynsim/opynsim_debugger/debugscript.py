@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import opynsim        # This works with the local virtual environment because `scripts/setup_venv.py` uses `pip install -e ./opynsim/`
+import opynsim
 import opynsim._core  # This is the _private_ native module, but can be handy to access when debugging
 
 # Put code here that you'd like to run via your IDE's native debugger and

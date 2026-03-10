@@ -527,7 +527,7 @@ struct osc::ui::gizmo::detail::GizmoContext::Impl {
 
     void PopID()
     {
-        IM_ASSERT(context.mIDStack.Size > 1); // Too many PopID(), or could be popping in a wrong/different window?
+        IM_ASSERT(mIDStack.Size > 1); // Too many PopID(), or could be popping in a wrong/different window?
         mIDStack.pop_back();
     }
 

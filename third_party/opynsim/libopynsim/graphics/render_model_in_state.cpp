@@ -2,6 +2,7 @@
 
 #include <libopynsim/graphics/open_sim_decoration_options.h>
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
+#include <libopynsim/platform/opynsim_app.h>
 #include <libopynsim/model.h>
 #include <libopynsim/model_state.h>
 
@@ -11,7 +12,6 @@
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/polar_perspective_camera.h>
-#include <liboscar/platform/app.h>
 #include <liboscar/utilities/assertions.h>
 
 #include <optional>
@@ -19,15 +19,13 @@
 #include <vector>
 
 osc::Texture2D opyn::render_model_in_state(
+    OPynSimApp&,
     const Model& model,
     const ModelState& model_state,
     std::pair<int, int> dimensions,
     bool zoom_to_fit)
 {
     OSC_ASSERT_ALWAYS(dimensions.first > 0 and dimensions.second > 0 && "The dimensions of a render must be positive integers");
-
-    // Initialize application state
-    osc::App app;
 
     // Generate 3D scene
     osc::SceneCache scene_cache;
@@ -43,10 +41,10 @@ osc::Texture2D opyn::render_model_in_state(
     osc::PolarPerspectiveCamera camera;
     const osc::Vector2 dimensions_vec{dimensions.first, dimensions.second};
 
-    // Handle initial autofocus
-    if (std::exchange(zoom_to_fit, false)) {
+    // Handle autofocus
+    if (zoom_to_fit) {
         if (const auto aabb = osc::bounding_aabb_of(decorations, &osc::SceneDecoration::world_space_bounds)) {
-            osc::auto_focus(camera, *aabb, osc::aspect_ratio_of(osc::App::get().main_window_dimensions()));
+            osc::auto_focus(camera, *aabb, osc::aspect_ratio_of(dimensions_vec));
         }
     }
 

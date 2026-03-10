@@ -1,5 +1,7 @@
 #include "graphics.h"
 
+#include <opynsim/_core/core.h>
+
 #include <libopynsim/graphics/render_model_in_state.h>
 #include <libopynsim/model.h>
 #include <libopynsim/model_state.h>
@@ -62,7 +64,19 @@ void opyn::init_graphics_submodule(nanobind::module_& graphics_module)
 {
     graphics_module.def(
         "render_model_in_state",
-        render_model_in_state,
+        []( const Model& model,
+            const ModelState& model_state,
+            std::pair<int, int> dimensions,
+            bool zoom_to_fit)
+        {
+            return render_model_in_state(
+                get_lazy_loaded_opynsim_app(),
+                model,
+                model_state,
+                dimensions,
+                zoom_to_fit
+            );
+        },
         nb::arg("model"),
         nb::arg("state"),
         nb::kw_only{},

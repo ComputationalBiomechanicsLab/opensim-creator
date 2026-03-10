@@ -18,6 +18,23 @@
             }
         },
         {
+            "name": "Development-Inlined",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Development-Inlined",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development-Inlined/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development-Inlined/install",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+
+                "OPYN_VENV": "${sourceDir}/.venv",
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OPYN_FORCE_ASSERTS_ENABLED": "ON",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
+                "OPYN_BUILD_OSCAR_INLINE": "ON"
+            }
+        },
+        {
             "name": "ErrorCheck",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/ErrorCheck",
@@ -94,10 +111,11 @@
         }
     ],
     "buildPresets": [
-        { "name": "Development",         "configurePreset": "Development" },
-        { "name": "ErrorCheck",          "configurePreset": "ErrorCheck" },
-        { "name": "RelWithDebInfo",      "configurePreset": "RelWithDebInfo" },
-        { "name": "Release",             "configurePreset": "Release" },
+        { "name": "Development",         "configurePreset": "Development"         },
+        { "name": "Development-Inlined", "configurePreset": "Development-Inlined" },
+        { "name": "ErrorCheck",          "configurePreset": "ErrorCheck"          },
+        { "name": "RelWithDebInfo",      "configurePreset": "RelWithDebInfo"      },
+        { "name": "Release",             "configurePreset": "Release"             },
         { "name": "Release-MacOS-amd64", "configurePreset": "Release-MacOS-amd64" },
         { "name": "Release-MacOS-arm64", "configurePreset": "Release-MacOS-arm64" }
     ],
@@ -105,6 +123,12 @@
         {
             "name": "Development",
             "configurePreset": "Development",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "Development-Inlined",
+            "configurePreset": "Development-Inlined",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         },
@@ -160,6 +184,14 @@
                 { "type": "configure", "name": "Development" },
                 { "type": "build", "name": "Development" },
                 { "type": "test", "name": "Development" }
+            ]
+        },
+        {
+            "name": "Development-Inlined",
+            "steps": [
+                { "type": "configure", "name": "Development-Inlined" },
+                { "type": "build", "name": "Development-Inlined" },
+                { "type": "test", "name": "Development-Inlined" }
             ]
         },
         {

@@ -1,8 +1,16 @@
-.. figure:: _static/opynsim_banner_horizontal.svg
-    :width: 60%
-    :align: center
+.. image:: _static/opynsim_banner_horizontal.svg
+   :align: center
+   :width: 60%
+   :class: only-dark
 
-    ..
+.. image:: _static/opynsim_banner_horizontal.svg
+   :align: center
+   :width: 60%
+   :class: only-light
+
+.. raw:: html
+
+   <div style="margin-top: 2em;"></div>
 
 Welcome to the offical OPynSim documentation pages 👋
 

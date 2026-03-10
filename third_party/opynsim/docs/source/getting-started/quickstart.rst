@@ -152,7 +152,7 @@ data into a PNG file:
 
     import opynsim
     import opynsim.graphics
-    from PIL import Image  # pip install Pillow
+    from PIL import Image  # from `Pillow` package
 
     # Create/import a `Model` + `ModelState`.
     model_specification = opynsim.example_specification_double_pendulum()

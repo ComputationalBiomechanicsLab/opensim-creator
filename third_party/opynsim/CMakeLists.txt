@@ -21,6 +21,10 @@ if(OPYN_BUILD_TESTING)
     enable_testing()
 endif()
 
+if(OPYN_BUILD_OSCAR_INLINE)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/oscar)
+endif()
+
 add_subdirectory(libosim SYSTEM)  # SYSTEM because it's all third-party code
 add_subdirectory(libopynsim)
 

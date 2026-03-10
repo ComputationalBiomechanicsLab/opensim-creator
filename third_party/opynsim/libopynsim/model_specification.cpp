@@ -14,7 +14,7 @@ namespace
     {
         auto rv = osc::make_cow<OpenSim::Model>();
         auto& model = *rv.upd();
-        auto& rod1 = AddBody(model, "rod1", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{});
+        auto& rod1 = AddBody(model, "rod1", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
         auto& rod1_sphere = AttachGeometry<OpenSim::Sphere>(rod1, 0.05);
         rod1_sphere.setName("rod1_geom_2");
         auto& rod1_rod_frame = AddComponent<OpenSim::PhysicalOffsetFrame>(
@@ -35,7 +35,7 @@ namespace
             SimTK::Vec3{0.0}
         );
         pin1.updCoordinate().set_default_value(0.25*std::numbers::pi_v<double>);
-        auto& rod2 = AddBody(model, "rod2", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{});
+        auto& rod2 = AddBody(model, "rod2", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
         auto& rod2_sphere = AttachGeometry<OpenSim::Sphere>(rod2, 0.05);
         rod2_sphere.setName("rod2_geom_2");
         auto& rod2_rod_frame = AddComponent<OpenSim::PhysicalOffsetFrame>(

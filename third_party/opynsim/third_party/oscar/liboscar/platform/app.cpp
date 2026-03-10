@@ -334,7 +334,7 @@ namespace
     //     https://wiki.libsdl.org/SDL_DestroyWindow
     class SDLWindow final {
     public:
-        explicit SDLWindow(SDL_Window * _ptr) :
+        explicit SDLWindow(SDL_Window* _ptr) :
             window_handle_{_ptr}
         {}
         SDLWindow(const SDLWindow&) = delete;
@@ -347,6 +347,12 @@ namespace
         {
             if (window_handle_) {
                 SDL_DestroyWindow(window_handle_);
+
+                // On macOS, the windowing system requires that the event queue is
+                // pumped after the destruction of the window so that the application
+                // can receive the window manager's destruction event. Otherwise,
+                // the window will keep open.
+                SDL_PumpEvents();
             }
         }
 
@@ -394,7 +400,9 @@ namespace
     }
 
     // initialize the main application window
-    SDLWindow create_main_app_window(const AppSettings& settings, CStringView application_name)
+    SDLWindow create_main_app_window(
+        const AppMetadata& metadata,
+        const AppSettings& settings)
     {
         log_info("initializing main application window");
 
@@ -436,13 +444,14 @@ namespace
         SDL_PropertiesID properties = SDL_CreateProperties();
         const ScopeExit g{[&]{ SDL_DestroyProperties(properties); }};
 
-        const bool should_hide_window = settings.get_value<bool>("headless_mode");
+        const bool should_maximize_main_window = metadata.maximize_main_window().value_or(true);
+        const bool should_hide_window = metadata.headless_mode().value_or(settings.get_value<bool>("headless_mode"));
 
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
-        SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, true);
+        SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, should_maximize_main_window);
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, true);
-        SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, application_name.c_str());
+        SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, metadata.human_readable_application_name().c_str());
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 800);
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 600);
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, should_hide_window);
@@ -1388,6 +1397,21 @@ public:
         return p;
     }
 
+    void show_main_window()
+    {
+        SDL_ShowWindow(main_window_.get());
+    }
+
+    void hide_main_window()
+    {
+        SDL_HideWindow(main_window_.get());
+    }
+
+    void focus_main_window()
+    {
+        SDL_RaiseWindow(main_window_.get());
+    }
+
     bool has_input_focus(WindowID window_id) const
     {
         return (SDL_GetWindowFlags(std::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS) != 0;
@@ -1761,7 +1785,7 @@ private:
     SDLContext sdl_context_{SDL_INIT_VIDEO};
 
     // SDL main application window
-    SDLWindow main_window_ = create_main_app_window(config_, metadata_.human_readable_application_name());
+    SDLWindow main_window_ = create_main_app_window(metadata_, config_);
 
     // cache for the current (caller-set) window subtitle
     SynchronizedValue<std::string> main_window_subtitle_;
@@ -2075,6 +2099,21 @@ void osc::App::disable_main_window_grab()
 std::optional<Vector2> osc::App::mouse_position_in_main_window() const
 {
     return impl_->mouse_position_in_main_window();
+}
+
+void osc::App::show_main_window()
+{
+    impl_->show_main_window();
+}
+
+void osc::App::hide_main_window()
+{
+    impl_->hide_main_window();
+}
+
+void osc::App::focus_main_window()
+{
+    impl_->focus_main_window();
 }
 
 bool osc::App::has_input_focus(WindowID id) const

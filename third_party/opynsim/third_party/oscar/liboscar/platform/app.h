@@ -402,6 +402,16 @@ namespace osc
         // otherwise, returns `std::nullopt`.
         std::optional<Vector2> mouse_position_in_main_window() const;
 
+        // Show the main application window.
+        void show_main_window();
+
+        // Hide the main application window.
+        void hide_main_window();
+
+        // Focus the main application window, which usually brings it to
+        // the foreground and gives it keyboard focus.
+        void focus_main_window();
+
         // returns `true` if the given window has input focus
         bool has_input_focus(WindowID) const;
 
