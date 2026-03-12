@@ -22,10 +22,11 @@ osc::Texture2D opyn::render_model_in_state(
     OPynSimApp&,
     const Model& model,
     const ModelState& model_state,
-    std::pair<int, int> dimensions,
-    bool zoom_to_fit)
+    osc::Vector2 dimensions,
+    bool zoom_to_fit,
+    bool draw_floor)
 {
-    OSC_ASSERT_ALWAYS(dimensions.first > 0 and dimensions.second > 0 && "The dimensions of a render must be positive integers");
+    OSC_ASSERT_ALWAYS(dimensions.x() > 0 and dimensions.y() > 0 && "The dimensions of a render must be positive integers");
 
     // Generate 3D scene
     osc::SceneCache scene_cache;
@@ -39,28 +40,29 @@ osc::Texture2D opyn::render_model_in_state(
 
     // Setup scene camera
     osc::PolarPerspectiveCamera camera;
-    const osc::Vector2 dimensions_vec{dimensions.first, dimensions.second};
 
     // Handle autofocus
     if (zoom_to_fit) {
         if (const auto aabb = osc::bounding_aabb_of(decorations, &osc::SceneDecoration::world_space_bounds)) {
-            osc::auto_focus(camera, *aabb, osc::aspect_ratio_of(dimensions_vec));
+            osc::auto_focus(camera, *aabb, osc::aspect_ratio_of(dimensions));
         }
     }
 
     // Use camera to render scene to `RenderTexture` (GPU)
     osc::SceneRenderer scene_renderer{scene_cache};
     osc::SceneRendererParams scene_renderer_params = {
-        .dimensions = dimensions_vec,
+        .dimensions = dimensions,
         .anti_aliasing_level = osc::AntiAliasingLevel{4},
+        .draw_floor = draw_floor,
         .view_matrix = camera.view_matrix(),
-        .projection_matrix = camera.projection_matrix(osc::aspect_ratio_of(dimensions_vec)),
+        .projection_matrix = camera.projection_matrix(osc::aspect_ratio_of(dimensions)),
+        .background_color = osc::Color::clear(),
     };
     scene_renderer.render(decorations, scene_renderer_params);
     const osc::RenderTexture& rendered_scene = scene_renderer.upd_render_texture();
 
     // Blit `RenderTexture` to `Texture2D` (CPU accessible, for Python)
-    osc::Texture2D rv{dimensions_vec};
+    osc::Texture2D rv{dimensions};
     osc::graphics::copy_texture(rendered_scene, rv);
     return rv;
 }

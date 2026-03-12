@@ -69,17 +69,18 @@ returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a line plot.
     texture_2d = opynsim.graphics.render_model_in_state(model, model_state)
 
     # Create a Matplotlib `OffsetImage` using the rendered pixel data
-    offset_image = OffsetImage(texture_2d.pixels_rgba32(), zoom=0.2)
+    offset_image = OffsetImage(texture_2d.pixels_rgba32(), zoom=0.2, alpha=1.0)
 
     # Wrap the `OffsetImage` into an `AnnotationBox` to anchor the image somewhere
     # in the plot data (here, on the first peak of sin(x)).
     ab = AnnotationBbox(
-        offset_image,               # The rendered scene, wrapped in `OffsetImage`
-        (np.pi/2, 1),               # First peak of sin(x)
-        xybox=(50, 50),             # Offset the image 50 points away from the peak
-        xycoords='data',            # Use plot coordinates for the anchor
+        offset_image,              # The rendered scene, wrapped in `OffsetImage`
+        (np.pi/2, 1),              # First peak of sin(x)
+        xybox=(-25, 50),           # Offset the image from the peak
+        xycoords='data',           # Use plot coordinates for the anchor
         boxcoords="offset points",
-        pad=0.5,                    # Padding around the image
+        frameon=False,
+        pad=0.0,
         arrowprops=dict(arrowstyle="->", connectionstyle="angle,angleA=0,angleB=90,rad=3")
     )
 
@@ -92,8 +93,13 @@ returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a line plot.
     ax.add_artist(ab)  # Add image
     plt.legend()
 
-    # Save plot to PNG file
-    plt.savefig("plot.png", dpi=300)
+    # Show the figure in a window.
+    #
+    # This might require installing `python3-tk` on Linux.
+    plt.show()
+
+    # Alternatively, Save plot to PNG file
+    # plt.savefig("plot.png", dpi=300)
 
 
 API Reference

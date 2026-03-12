@@ -1,5 +1,7 @@
 #pragma once
 
+#include <libopynsim/model_state_stage.h>
+
 #include <liboscar/utilities/copy_on_upd_ptr.h>
 
 namespace opyn { class Model; }
@@ -13,7 +15,10 @@ namespace opyn
     // Related: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089017/SimTK+Simulation+Concepts
     class ModelState final {
     public:
+        ModelStateStage stage() const;
+
         const SimTK::State& simbody_state() const;
+        SimTK::State& simbody_state();
     private:
         friend class Model;
         explicit ModelState(SimTK::State&&);

@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
+#
+# Performs an end-to-end build of opynsim on Unix-like
+# operating systems (i.e. macOS or Linux).
 
-# performs an end-to-end build of opynsim on Unixes (e.g. MacOS, Linux)
-
+# If any part of this script fails, exit early.
 set -xeuo pipefail
 
 # If no arguments, default to "Release"
@@ -11,18 +13,16 @@ else
     CONFIGS=("$@")
 fi
 
-# setup project-level python virtual environment
+# Setup project-level python virtual environment
 ./scripts/setup_venv.py
 
-# source the project-level virtual environment
-source ./scripts/env_venv.sh
-
+# Build each specified configuration
 for CONFIG in "${CONFIGS[@]}"; do
     echo "=== Building configuration: $CONFIG ==="
 
-    # build bundled dependencies
+    # Build bundled dependencies
     cd third_party && cmake --workflow --preset "$CONFIG" && cd -
 
-    # build the main project
+    # Build the main project
     cmake --workflow --preset "$CONFIG"
 done

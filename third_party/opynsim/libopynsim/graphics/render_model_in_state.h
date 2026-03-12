@@ -1,8 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/texture2d.h>
-
-#include <utility>
+#include <liboscar/maths/vector.h>
 
 namespace opyn { class OPynSimApp; }
 namespace opyn { class Model; }
@@ -14,7 +13,8 @@ namespace opyn
         OPynSimApp&,
         const Model&,
         const ModelState&,
-        std::pair<int, int> dimensions,
-        bool zoom_to_fit
+        osc::Vector2 dimensions,
+        bool zoom_to_fit,
+        bool draw_floor
     );
 }

@@ -26,6 +26,7 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development-Inlined/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development-Inlined/install",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
 
                 "OPYN_VENV": "${sourceDir}/.venv",
                 "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",

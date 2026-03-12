@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+#
+# Deploys the provided wheel files to PyPi/PyPi-test.
+#
+# Credential environment variables `TWINE_USERNAME` and `TWINE_PASSWORD`
+# must be set before calling this script. They should be stored in encrypted
+# storage (e.g. a keychain).
 
 import argparse
 import subprocess

@@ -6,11 +6,13 @@
 
 set -xeuo pipefail
 
+build_config=RelWithDebInfo
+
 # Configure + build dependencies
-cd third_party && cmake --workflow --preset RelWithDebInfo && cd -
+cd third_party && cmake --workflow --preset ${build_config} && cd -
 
 # Build OpenSim Creator
-cmake --workflow --preset RelWithDebInfo
+cmake --workflow --preset ${build_config}
 
 # Run test suite under valgrind
 LIBGL_ALWAYS_SOFTWARE=1 valgrind \
@@ -18,4 +20,4 @@ LIBGL_ALWAYS_SOFTWARE=1 valgrind \
     --trace-children=yes \
     --suppressions=${PWD}/scripts/suppressions_valgrind.supp \
     -- \
-    ctest --test-dir build/RelWithDebInfo --output-on-failure -j32
+    ctest --test-dir build/${build_config} --output-on-failure -j32

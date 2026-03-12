@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-
-# Applies basic text formatting to any files found in the given
-# (command-line argument) directories.
+#
+# Applies basic text formatting to any files found in provided directories.
 #
 # Formatting steps:
 #

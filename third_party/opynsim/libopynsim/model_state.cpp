@@ -1,15 +1,56 @@
 #include "model_state.h"
 
 #include <liboscar/utilities/copy_on_upd_ptr.h>
+#include <liboscar/utilities/enum_helpers.h>
 #include <SimTKcommon/internal/State.h>
 
+#include <stdexcept>
 #include <utility>
+
+using namespace opyn;
+
+namespace
+{
+    ModelStateStage to_opynsim_stage(SimTK::Stage simbody_stage)
+    {
+        static_assert(SimTK::Stage::HighestValid == SimTK::Stage::Infinity);
+        static_assert(osc::num_options<ModelStateStage>() == 6);
+
+        switch (simbody_stage) {
+        case SimTK::Stage::Time:         return ModelStateStage::time;
+        case SimTK::Stage::Position:     return ModelStateStage::position;
+        case SimTK::Stage::Velocity:     return ModelStateStage::velocity;
+        case SimTK::Stage::Dynamics:     return ModelStateStage::dynamics;
+        case SimTK::Stage::Acceleration: return ModelStateStage::acceleration;
+        case SimTK::Stage::Report:       return ModelStateStage::report;
+
+        // These earlier Simbody stages should be handled/passed by
+        // model compilation. Once a model is compiled, it shouldn't
+        // be possible to revert to a stage that's lower than
+        // `SimTK::Stage::Time`.
+        case SimTK::Stage::Empty:        [[fallthrough]];
+        case SimTK::Stage::Topology:     [[fallthrough]];
+        case SimTK::Stage::Model:        [[fallthrough]];
+        case SimTK::Stage::Instance:     [[fallthrough]];
+
+        // Throw a user-facing runtime error if an invalid/unsupported
+        // stage somehow slipped through cracks in the OPynSim API.
+        default: {
+            throw std::runtime_error{"Internal Simbody state stage is incompatible with the OPynSim API: this is a developer error that needs to be reported (preferably, with a reproduction, please!)"};
+        }
+        }
+    }
+}
+
 
 class opyn::ModelState::Impl final {
 public:
     explicit Impl(SimTK::State&& state) : state_{std::move(state)} {}
 
+    ModelStateStage stage() const { return to_opynsim_stage(state_.getSystemStage()); }
+
     const SimTK::State& simbody_state() const { return state_; }
+    SimTK::State& simbody_state() { return state_; }
 private:
     SimTK::State state_;
 };
@@ -17,4 +58,6 @@ private:
 opyn::ModelState::ModelState(SimTK::State&& state) :
     impl_{osc::make_cow<Impl>(std::move(state))}
 {}
+opyn::ModelStateStage opyn::ModelState::stage() const { return impl_->stage(); }
 const SimTK::State& opyn::ModelState::simbody_state() const { return impl_->simbody_state(); }
+SimTK::State& opyn::ModelState::simbody_state() { return impl_.upd()->simbody_state(); }

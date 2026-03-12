@@ -1,32 +1,33 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM performs an end-to-end build of opynsim on Windows
+REM Performs an end-to-end build of opynsim on Windows
 
-REM set default configuration if none provided
+REM If no arguments, default to "Release"
 IF "%~1"=="" (
     set CONFIGS=Release
 ) ELSE (
     set CONFIGS=%*
 )
 
-REM Environment setup: Create a project-level python virtual environment
+REM Setup project-level python virtual environment
 python scripts/setup_venv.py
 IF %ERRORLEVEL% NEQ 0 (
     echo Failed to setup virtual environment
     exit /b %ERRORLEVEL%
 )
 
-REM Environment activation: ensure this script uses the Visual Studio (C++) and python virtual environment
+REM Activate Visual Studio (C++) environment for this script, so that `cmake` etc. work
 call "scripts/env_vs-x64.bat"
 IF %ERRORLEVEL% NEQ 0 (
     echo Failed to source the Visual Studio environment
     exit /b %ERRORLEVEL%
 )
 
-REM Perform specified end-to-end builds
+REM Build each specified configuration
 FOR %%C IN (%CONFIGS%) DO (
-    REM build dependencies
+
+    REM Build bundled dependencies
     echo Entering third_party directory for %%C
     cd third_party
     cmake --workflow --preset %%C
@@ -36,7 +37,7 @@ FOR %%C IN (%CONFIGS%) DO (
     )
     cd ..
 
-    REM build the project
+    REM # Build the main project
     echo Building main project for %%C
     cmake --workflow --preset %%C
     IF !ERRORLEVEL! NEQ 0 (

@@ -67,30 +67,34 @@ void opyn::init_graphics_submodule(nanobind::module_& graphics_module)
         []( const Model& model,
             const ModelState& model_state,
             std::pair<int, int> dimensions,
-            bool zoom_to_fit)
+            bool zoom_to_fit,
+            bool draw_floor)
         {
             return render_model_in_state(
                 get_lazy_loaded_opynsim_app(),
                 model,
                 model_state,
-                dimensions,
-                zoom_to_fit
+                osc::Vector2{dimensions.first, dimensions.second},
+                zoom_to_fit,
+                draw_floor
             );
         },
         nb::arg("model"),
-        nb::arg("state"),
+        nb::arg("model_state"),
         nb::kw_only{},
         nb::arg("dimensions") = std::make_pair(640, 480),
         nb::arg("zoom_to_fit") = true,
+        nb::arg("draw_floor") = false,
         R"(
             Renders the given :class:`opynsim.Model` + :class:`opynsim.ModelState` to
             a :class:`opynsim.graphics.Texture2D`.
 
             Args:
                 model (opynsim.Model): The model to render.
-                state (opynsim.ModelState): The state of the model to render. Should be realized to at least :attr:`opynsim.ModelStateStage.REPORT`.
+                model_state (opynsim.ModelState): The state of the model to render. Should be realized to at least :attr:`opynsim.ModelStateStage.REPORT`.
                 dimensions (tuple[int, int]): The desired output resolution (width, height) of the rendered image in pixels.
                 zoom_to_fit (bool): Tells the renderer to automatically set up the camera to focus on the center of the bounds of the scene at a distance that can see the entire scene.
+                draw_floor (bool): Draws a floor, matching the default behavior of Simbody and OpenSim GUI.
 
             Returns:
                 opynsim.graphics.Texture2D: The rendered image, which will have the specified ``dimensions``.

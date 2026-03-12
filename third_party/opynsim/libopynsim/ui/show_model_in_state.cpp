@@ -46,12 +46,16 @@ namespace
         explicit BasicModelViewer(
             const Model& model,
             const ModelState& model_state,
+            osc::Color background_color,
             bool zoom_to_fit,
+            bool draw_floor,
             UiCallbacks callbacks) :
 
             callbacks_{std::move(callbacks)},
             decorations_{generate_scene(scene_cache_, model, model_state)},
-            fit_camera_on_next_frame_{zoom_to_fit}
+            background_color_{background_color},
+            fit_camera_on_next_frame_{zoom_to_fit},
+            draw_floor_{draw_floor}
         {}
     private:
         bool impl_on_event(osc::Event& e) override
@@ -89,8 +93,10 @@ namespace
                 .dimensions = dimensions,
                 .device_pixel_ratio = osc::App::get().main_window_device_pixel_ratio(),
                 .anti_aliasing_level = osc::App::get().anti_aliasing_level(),
+                .draw_floor = draw_floor_,
                 .view_matrix = camera.view_matrix(),
-                .projection_matrix = camera.projection_matrix(osc::aspect_ratio_of(dimensions))
+                .projection_matrix = camera.projection_matrix(osc::aspect_ratio_of(dimensions)),
+                .background_color = background_color_,
             };
             scene_renderer_.render(decorations_, scene_renderer_params);
             ui_context_.render();
@@ -104,7 +110,9 @@ namespace
         osc::SceneRenderer scene_renderer_{scene_cache_};
         std::vector<osc::SceneDecoration> decorations_;
         osc::PolarPerspectiveCamera camera;
+        osc::Color background_color_ = osc::Color::white();
         bool fit_camera_on_next_frame_ = false;
+        bool draw_floor_ = true;
     };
 }
 
@@ -113,16 +121,22 @@ void opyn::show_model_in_state(
     OPynSimApp& app,
     const Model& model,
     const ModelState& state,
+    osc::Vector2 dimensions,
+    osc::Color background_color,
     bool zoom_to_fit,
+    bool draw_floor,
     UiCallbacks callbacks)
 {
     app.show_main_window();
+    app.try_async_set_main_window_dimensions(dimensions);
     osc::ScopeExit hide_window_on_exit{[&app]{ app.hide_main_window(); }};
     app.focus_main_window();
     app.show<BasicModelViewer>(
         model,
         state,
+        background_color,
         zoom_to_fit,
+        draw_floor,
         std::move(callbacks)
     );
 }

@@ -12,8 +12,13 @@
 #include <libopynsim/model_state.h>
 #include <libopynsim/model_state_stage.h>
 #include <libopynsim/opynsim.h>
+#include <libopynsim/symbol.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/filesystem.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/stl/string_view.h>
+#include <nanobind/stl/variant.h>
+#include <nanobind/stl/vector.h>
 
 using namespace opyn;
 
@@ -83,6 +88,40 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
 
     // Initialize top-level functions/classes
     {
+        nb::class_<Symbol> symbol_class(
+            _core_module,
+            "Symbol",
+            R"(
+                Represents an immutable, cheap-to-use, readable symbol.
+
+                Symbols are extensively used by the OPynSim API to accelerate associative lookups. They are the
+                middle-ground between fast, but hard to read/introspect, integer handles and slow, simpler string
+                handles.
+
+                From Python code's point of view, symbols should be seen as string-like handles that OPynSim
+                accepts/emits. You can safely store symbols independently of any larger data structure, and
+                interchange them across your entire Python codebase, without having to worry about object
+                lifetimes. OPynSim's native code uses runtime-checked associative lookups, rather than pointers, to
+                ensure that the Python API is memory-safe and can provide suitable feedback whenever a lookup fails.
+            )"
+        );
+        symbol_class.def(
+            nb::init<std::string_view>(),
+            nb::arg("id"),
+            R"(
+                Constructs a symbol from a Python string.
+            )"
+        );
+        symbol_class.def(
+            "__str__",
+            [](const Symbol& symbol) { return static_cast<std::string>(symbol); },
+            "Converts this symbol into a Python :class:`str`"
+        );
+        symbol_class.def("__repr__", [](const Symbol& self) { return std::string("Symbol(\"") + std::string(self) + "\")"; });
+        symbol_class.def("__hash__", [](const Symbol& self) { return std::hash<Symbol>{}(self); });
+        symbol_class.def("__eq__",   [](const Symbol& self, const Symbol& other)  { return self == other; });
+        symbol_class.def("__eq__",   [](const Symbol& self, std::string_view rhs) { return self == rhs; });
+
         nb::class_<ModelSpecification> model_specification_class(
             _core_module,
             "ModelSpecification",
@@ -116,6 +155,23 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 associated :class:`ModelSpecification` and recompiling it to create a new :class:`Model`.
             )"
         );
+        model_class.def_prop_ro(
+            "num_coordinates",
+            &Model::num_coordinates,
+            R"(
+                Returns the number of coordinates in the model.
+
+                A coordinate represents a single degree of freedom (DoF) in the model, such as a joint angle,
+                translation, or rotational parameter that contributes to the configuration/pose of a model.
+            )"
+        );
+        model_class.def_prop_ro(
+            "coordinates",
+            &Model::coordinates,
+            R"(
+                Returns a list of all the coordinates in the model.
+            )"
+        );
         model_class.def(
             "initial_state",
             &Model::initial_state,
@@ -135,10 +191,11 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         model_class.def(
             "realize",
             &Model::realize,
-            nb::arg("state"),
-            nb::arg("stage"),
+            nb::arg("model_state"),
+            nb::arg("model_state_stage"),
             R"(
-                Realizes ``state`` to the desired ``stage``, which modifies ``state`` in-place.
+                Realizes ``model_state`` to the desired ``model_state_stage``, which modifies
+                ``model_state`` in-place.
 
                 "Realization" of the state involves taking a new set of values from the :class:`ModelState`
                 and performing computations that those new values enable. Realization is performed
@@ -150,6 +207,55 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                     State realization is a concept that OPynSim inherited from `Simbody <github.com/simbody/simbody>`_, which
                     has a much more comprehensive explanation of the realization process in its `Simbody Theory Manual <https://github.com/simbody/simbody/blob/master/Simbody/doc/SimbodyTheoryManual.pdf>`_. You
                     should read that manual if you want to know more.
+            )"
+        );
+        model_class.def(
+            "get_coordinate_value",
+            &Model::get_coordinate_value,
+            nb::arg("model_state"),
+            nb::arg("coordinate"),
+            R"(
+                Returns the value of the corresponding state variable in ``model_state`` for the
+                coordinate identified by ``coordinate``.
+            )"
+        );
+        model_class.def(
+            "set_coordinate_value",
+            &Model::set_coordinate_value,
+            nb::arg("model_state"),
+            nb::arg("coordinate"),
+            nb::arg("value"),
+            R"(
+                Sets corresponding state variable in ``model_state`` for the coordinate identified by
+                ``coordinate`` to ``value``.
+
+                Changing the value of a coordinate changes ``model_state``'s :class:`ModelStateStage` to
+                :attr:`ModelStateStage.POSITION`. Therefore, you may need to use :meth:`Model.realize` to
+                re-realize the state to a later stage if you intend on using the state with a method that
+                requires a later stage (e.g. rendering).
+            )"
+        );
+        model_class.def_prop_ro(
+            "num_outputs",
+            &Model::num_outputs,
+            R"(
+                Returns the number of outputs the model has.
+            )"
+        );
+        model_class.def_prop_ro(
+            "outputs",
+            &Model::outputs,
+            R"(
+                Returns a list of all outputs the model has.
+            )"
+        );
+        model_class.def(
+            "get_output_value",
+            &Model::get_output_value,
+            nb::arg("model_state"),
+            nb::arg("output"),
+            R"(
+                Returns the value of ``output`` for the given ``model_state``.
             )"
         );
 
@@ -164,6 +270,16 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 :class:`ModelState`\s in order to :meth:`opynsim.Model.realize` the state to a later stage
                 (e.g. as part of forward integration) or read outputs values. However, :class:`ModelState`\s may
                 also be created, read, and manipulated by downstream Python code and other utilities in OPynSim.
+            )"
+        );
+        model_state_class.def(
+            "stage",
+            &ModelState::stage,
+            R"(
+                Returns the current :class:`ModelStateStage` of the state.
+
+                Notes:
+                    A state may be realized to a later stage with :meth:`Model.realize`.
             )"
         );
 

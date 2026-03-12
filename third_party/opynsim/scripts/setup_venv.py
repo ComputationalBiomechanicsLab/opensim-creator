@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+#
+# Sets up a project-level virtual environment a `.venv` using `pip`.
+#
+# Alternatively, this can be done manually if you prefer other package
+# managers. For example, with `uv`:
+#
+#     uv venv && uv pip install -r requirements/all_requirements.txt
 
 import subprocess
 import sys

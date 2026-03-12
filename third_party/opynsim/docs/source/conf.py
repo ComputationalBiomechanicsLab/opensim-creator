@@ -11,6 +11,7 @@ github_repository = 'https://github.com/opynsim/opynsim'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    "sphinx_copybutton",
 ]
 
 # Napoleon settings
