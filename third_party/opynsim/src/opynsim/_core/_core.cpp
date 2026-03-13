@@ -121,6 +121,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         symbol_class.def("__hash__", [](const Symbol& self) { return std::hash<Symbol>{}(self); });
         symbol_class.def("__eq__",   [](const Symbol& self, const Symbol& other)  { return self == other; });
         symbol_class.def("__eq__",   [](const Symbol& self, std::string_view rhs) { return self == rhs; });
+        nb::implicitly_convertible<std::string_view, Symbol>();
 
         nb::class_<ModelSpecification> model_specification_class(
             _core_module,
