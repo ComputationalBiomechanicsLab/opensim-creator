@@ -1294,10 +1294,11 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                 // vector rejection (the opposite of vector projection) to compute an orthogonal vector
                 // that we can un-spin by `surface_projection_theta` in order to figure out exactly where
                 // the X axis should point.
-                const SimTK::UnitVec3 newSurfacePointDirectionInParent{newSurfacePointInParent - newOriginPointInParent};
+                const SimTK::Vec3 newSurfacePointVectorInParent{newSurfacePointInParent - newOriginPointInParent};
+                const SimTK::UnitVec3 newSurfacePointDirectionInParent{newSurfacePointVectorInParent};
                 OSC_ASSERT((SimTK::dot(newZAxisDirectionInParent, newSurfacePointDirectionInParent) < 1.0 - SimTK::Eps) && "cylinder surface point somehow points along Z axis - warping is too strong?");
                 const SimTK::Vec3 newSurfacePointProjectionAlongZVector = newZAxisDirectionInParent * SimTK::dot(newZAxisDirectionInParent, newSurfacePointDirectionInParent);
-                const SimTK::Vec3 newSurfacePointRejectionVector = newSurfacePointDirectionInParent - newSurfacePointProjectionAlongZVector;
+                const SimTK::Vec3 newSurfacePointRejectionVector = newSurfacePointVectorInParent - newSurfacePointProjectionAlongZVector;
                 const SimTK::UnitVec3 newSurfacePointRejectionDirection{newSurfacePointRejectionVector};
 
                 // The new surface point direction is assumed to be `surface_projection_theta` rotated along
@@ -1308,8 +1309,11 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                 // With two vectors pointing along known axes, we can compute a new cylinder rotation
                 const SimTK::Rotation newCylinderRotation{newZAxisDirectionInParent, SimTK::ZAxis, newXAxisDirectionInParent, SimTK::XAxis};
 
-                // The new radius is the projection of the surface point onto the X axis
-                const double newRadius = SimTK::dot(SimTK::Vec3{newSurfacePointInParent - newOriginPointInParent}, newXAxisDirectionInParent);
+                // The new radius is the length of the rejection vector: i.e. the length of a vector
+                // orthogonal to Z (rejection) that points toward the surface point. Another way of
+                // thinking about this is that it's the shortest distance between the midline and
+                // the point
+                const double newRadius = newSurfacePointVectorInParent.norm();
 
                 // (finally) Update the cylinder
                 resultWrapCylinder->set_translation(newOriginPointInParent);

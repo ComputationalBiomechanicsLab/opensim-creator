@@ -21,6 +21,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed an issue where toggling a coordinate lock off immediately followed by editing the coordinate's value
   would not update the coordinate value until the second time it is edited if the model contains
   constraints (#1164).
+- Fixed an issue where `ThinPlateSplineWrapCylinderScalingStep` could produce negative `WrapCylinder` radii, which
+  would cause the model warping pipeline to fail (#1168).
 
 ## [0.7.2] - 2026/02/19
 
