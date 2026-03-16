@@ -267,9 +267,9 @@ std::vector<opyn::Symbol> opyn::Model::outputs() const
     return impl_->outputs();
 }
 
-opyn::OutputValue opyn::Model::get_output_value(const ModelState& model_state, const Symbol& symbol) const
+opyn::OutputValue opyn::Model::get_output_value(const ModelState& model_state, const Symbol& output) const
 {
-    return impl_->get_output_value(model_state, symbol);
+    return impl_->get_output_value(model_state, output);
 }
 
 const OpenSim::Model& opyn::Model::opensim_model() const

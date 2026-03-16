@@ -18,7 +18,7 @@ namespace opyn
         osc::Vector2 dimensions,
         osc::Color background_color,
         bool zoom_to_fit,
-        bool show_floor,
+        bool draw_floor,
         UiCallbacks = {}
     );
 }

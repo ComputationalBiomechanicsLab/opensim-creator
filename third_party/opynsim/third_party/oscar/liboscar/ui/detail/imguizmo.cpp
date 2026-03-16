@@ -34,13 +34,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// NOLINTBEGIN
-
-#ifndef IMGUI_DEFINE_MATH_OPERATORS
-    #define IMGUI_DEFINE_MATH_OPERATORS
-#endif
-#include "imgui.h"
-#include "imgui_internal.h"
 #include "imguizmo.h"
 
 #include <liboscar/maths/constants.h>
@@ -54,6 +47,12 @@
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/utilities/scope_exit.h>
 
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+    #define IMGUI_DEFINE_MATH_OPERATORS
+#endif
+#include <imgui.h>
+#include <imgui_internal.h>
+
 #include <array>
 #include <functional>
 #include <limits>
@@ -62,6 +61,8 @@
 
 using namespace osc;
 using namespace osc::ui::gizmo::detail;
+
+// NOLINTBEGIN
 
 namespace
 {

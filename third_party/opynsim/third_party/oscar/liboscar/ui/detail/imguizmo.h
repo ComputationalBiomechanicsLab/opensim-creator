@@ -154,8 +154,10 @@ namespace osc::ui::gizmo::detail
 
         // Configure the limit where axis are hidden
         void SetAxisLimit(float value);
+
         // Set an axis mask to permanently hide a given axis (true -> hidden, false -> shown)
         void SetAxisMask(bool x, bool y, bool z);
+
         // Configure the limit where planes are hidden
         void SetPlaneLimit(float value);
 
