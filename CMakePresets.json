@@ -11,7 +11,9 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development/install",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
 
-                "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
+                "OSC_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
         {
@@ -34,7 +36,8 @@
                 "OPYN_BUILD_PYTHON_BINDINGS": "ON",
                 "OPYN_BUILD_TESTING": "ON",
                 "OPYN_VENV": "${sourceDir}/.venv",
-                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
+                "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
         {
@@ -83,7 +86,8 @@
                 "OPYN_BUILD_PYTHON_TESTING": "OFF",
                 "OPYN_VENV": "${sourceDir}/.venv",
                 "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
-                "OPYN_GENERATE_STUBS": "OFF"
+                "OPYN_GENERATE_STUBS": "OFF",
+                "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
         {
