@@ -152,7 +152,7 @@ TEST(Vector, constructed_from_bigger_range_results_in_truncation)
 
 TEST(Vector, assignment_correctly_handles_truncation_move_assignment_and_convertability)
 {
-    struct A { A(int v) : v_{v} {} int v_; };
+    struct A { explicit A(int v) : v_{v} {} int v_; };
     struct B : A { using A::A; };
     Vector<std::unique_ptr<B>, 3> bs = {
         std::make_unique<B>(5),

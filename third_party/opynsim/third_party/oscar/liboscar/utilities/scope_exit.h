@@ -38,7 +38,7 @@ namespace osc
         /// \copydoc ScopeExit::ScopeExit(ScopeExit&&)
         ScopeExit(ScopeExit&& tmp) noexcept(std::is_nothrow_copy_constructible_v<EF>)
         requires (not std::is_nothrow_move_constructible_v<EF> and std::is_copy_constructible_v<EF>) :
-            exit_function_{tmp.exit_function_},
+            exit_function_{tmp.exit_function_},  // NOLINT(performance-move-constructor-init)
             is_active_{std::exchange(tmp.is_active_, false)}
         {}
 

@@ -423,7 +423,8 @@ namespace
     }
 }
 
-struct osc::ui::gizmo::detail::GizmoContext::Impl {
+class osc::ui::gizmo::detail::GizmoContext::Impl {
+public:
     Impl()
     {
         mIDStack.push_back(blank_id());

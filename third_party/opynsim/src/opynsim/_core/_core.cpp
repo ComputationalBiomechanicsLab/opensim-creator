@@ -40,7 +40,7 @@ namespace
         }
     }
 
-    std::unique_ptr<OPynSimApp> g_lazy_loaded_app;
+    std::unique_ptr<OPynSimApp> g_lazy_loaded_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 }
 
 opyn::OPynSimApp& opyn::get_lazy_loaded_opynsim_app()

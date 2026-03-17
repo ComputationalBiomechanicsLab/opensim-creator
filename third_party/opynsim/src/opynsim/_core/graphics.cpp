@@ -52,7 +52,7 @@ namespace
         // Stuff the pixel data into a Python-compatible capsule so that its lifetime is controlled by Python
         nb::capsule buffer_capsule{
             decoded_pixels.release(),
-            [](void* p) noexcept { delete static_cast<std::vector<osc::Color32>*>(p); }
+            [](void* p) noexcept { delete static_cast<std::vector<osc::Color32>*>(p); }  // NOLINT(cppcoreguidelines-owning-memory)
         };
 
         const auto shape = std::to_array<size_t>({ pixel_dimensions.y(), pixel_dimensions.x(), 4 });

@@ -1825,16 +1825,16 @@ void osc::ui::Context::init(
 {
     OSC_ASSERT(ImGui::GetCurrentContext() == nullptr && "a global UI context has already been initialized");
     {
-        // ensure oscar data is initialized first, so that it definitely outlives the
-        // ImGui context.
-        auto context_data = std::make_unique<OscarUIBackendData>(config, app.main_window_id());
-
         // ensure ImGui uses the same allocator as the rest of
         // our (C++ stdlib) application
         ImGui::SetAllocatorFunctions(
             [](size_t count, [[maybe_unused]] void* user_data) { return ::operator new(count); },
             [](void* ptr, [[maybe_unused]] void* user_data) { ::operator delete(ptr); }
         );
+
+        // ensure oscar data is initialized first, so that it definitely outlives the
+        // ImGui context.
+        auto context_data = std::make_unique<OscarUIBackendData>(config, app.main_window_id());
 
         // init ImGui top-level context
         ImGui::CreateContext();
