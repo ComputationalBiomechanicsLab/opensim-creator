@@ -11,9 +11,7 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development/install",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
 
-                "OSC_USE_STRICT_COMPILER_FLAGS": "ON",
-                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
-                "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON"
+                "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
         {
@@ -103,6 +101,7 @@
 
                 "OSC_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OSC_BUILD_OSCAR_INLINE": "ON",
                 "OSC_BUILD_OPYNSIM_INLINE": "ON",
                 "OPYN_PACKAGE": "OFF",
