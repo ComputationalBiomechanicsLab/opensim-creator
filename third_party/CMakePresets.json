@@ -81,7 +81,8 @@
             "binaryDir": "${sourceDir}/../build/third_party/Release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release/install"
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release/install",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded"
             }
         },
         {
@@ -115,7 +116,8 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release-Windows-amd64/install",
-                "CMAKE_SYSTEM_VERSION": "10.0.26100.0"
+                "CMAKE_SYSTEM_VERSION": "10.0.26100.0",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded"
             }
         }
     ],

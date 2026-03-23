@@ -131,7 +131,8 @@
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release/install",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded"
             }
         },
         {
@@ -171,7 +172,8 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-Windows-amd64/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Windows-amd64/install",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_SYSTEM_VERSION": "10.0.26100.0"
+                "CMAKE_SYSTEM_VERSION": "10.0.26100.0",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded"
             }
         }
     ],

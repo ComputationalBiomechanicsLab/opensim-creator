@@ -119,8 +119,13 @@ if(WIN32)
         COMMAND_EXPAND_LISTS
     )
 
-    # On Windows (installation), install any required system libraries (C/C++ runtimes)
-    include(InstallRequiredSystemLibraries)
+    # On Windows (installation). If `osc` was built with a dynamically-linked runtime, ensure
+    # it's installed alongside the executable.
+    get_property(_osc_msvc_runtime_library TARGET osc PROPERTY MSVC_RUNTIME_LIBRARY)
+    if(NOT DEFINED _osc_msvc_runtime_library OR _osc_msvc_runtime_library STREQUAL "" OR _osc_msvc_runtime_library MATCHES ".*DLL.*")
+        include(InstallRequiredSystemLibraries)
+    endif()
+    unset(_osc_msvc_runtime_library)
 
     # On Windows (installation), install `osc` and all of its RUNTIME_DEPENDENCIES
     #
