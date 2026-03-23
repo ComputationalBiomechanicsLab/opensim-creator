@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.10)
-project(imgui VERSION 1.91.9)
+cmake_minimum_required(VERSION 3.25)
+project(imgui LANGUAGES CXX)
 
 include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR
-include(CMakePackageConfigHelpers)  # write_basic_package_version_file, configure_package_config_file
+include(CMakePackageConfigHelpers)  # configure_package_config_file
 
 set(OSCARDEPS_IMGUI_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../imgui")
 
@@ -61,11 +61,6 @@ install(
     EXPORT imguiTargets
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/imgui
 )
-write_basic_package_version_file(
-    "imguiConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/imguiConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/imguiConfig.cmake"
@@ -73,7 +68,6 @@ configure_package_config_file(
 )
 install(
     FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/imguiConfigVersion.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/imguiConfig.cmake"
     DESTINATION
         ${CMAKE_INSTALL_LIBDIR}/cmake/imgui

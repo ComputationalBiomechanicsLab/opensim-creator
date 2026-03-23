@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.10)
-project(implot)
+cmake_minimum_required(VERSION 3.25)
+project(implot LANGUAGES CXX)
 
 include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR
 include(CMakePackageConfigHelpers)  # configure_package_config_file
