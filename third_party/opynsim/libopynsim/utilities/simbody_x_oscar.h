@@ -71,6 +71,11 @@ struct osc::Converter<SimTK::Vec3, osc::Vector3> final {
 };
 
 template<>
+struct osc::Converter<SimTK::Vec3, osc::Vector3d> final {
+    osc::Vector3d operator()(const SimTK::Vec3&) const;
+};
+
+template<>
 struct osc::Converter<SimTK::fVec3, osc::Vector3> final {
     osc::Vector3 operator()(const SimTK::fVec3&) const;
 };

@@ -1,11 +1,16 @@
 #include "model.h"
 
+#include <libopynsim/graphics/open_sim_decoration_generator.h>
+#include <libopynsim/utilities/simbody_x_oscar.h>
 #include <libopynsim/model_state.h>
 #include <libopynsim/output_value.h>
 
 #include <ankerl/unordered_dense.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/shims/cpp23/ranges.h>
+#include <liboscar/utilities/conversion.h>
 #include <liboscar/utilities/copy_on_upd_ptr.h>
 #include <liboscar/utilities/typelist.h>
 
@@ -23,55 +28,72 @@ namespace rgs = std::ranges;
 
 namespace
 {
+    template<typename OPynSimType>
+    struct OutputTypeMapping;
+
+    template<>
+    struct OutputTypeMapping<double> {
+        using OpenSimType = double;
+
+        static OutputValue extract_output_value(const SimTK::State& state, const OpenSim::AbstractOutput& output)
+        {
+            const auto& opensim_output = dynamic_cast<const OpenSim::Output<OpenSimType>&>(output);
+            return opensim_output.getValue(state);
+        }
+    };
+
+    template<>
+    struct OutputTypeMapping<osc::Vector3d> {
+        using OpenSimType = SimTK::Vec3;
+
+        static OutputValue extract_output_value(const SimTK::State& state, const OpenSim::AbstractOutput& output)
+        {
+            const auto& opensim_output = static_cast<const OpenSim::Output<OpenSimType>&>(output);
+            return osc::to<osc::Vector3d>(opensim_output.getValue(state));
+        }
+    };
+
     // Represents all supported output extractors.
     class OutputExtractionSystem final {
     public:
         // Represents a type-erased runtime output extraction function.
-        using OutputValueExtractor = OutputValue (*)(const ModelState&, const OpenSim::AbstractOutput&);
+        using OutputValueExtractor = OutputValue (*)(const SimTK::State&, const OpenSim::AbstractOutput&);
 
         // Returns `true` if `output` is compatible with the OPynSim output extraction system.
         bool is_compatible_with(const OpenSim::AbstractOutput& output) const
         {
-            return osc::cpp23::contains(type_indices_, std::type_index{typeid(output)});
+            return osc::cpp23::contains(opensim_type_indices_, std::type_index{typeid(output)});
         }
 
         // Reads an `OutputValue` from `model_state` for the given `output`.
-        OutputValue read_value(const ModelState& model_state, const OpenSim::AbstractOutput& output) const
+        OutputValue read_value(const SimTK::State& state, const OpenSim::AbstractOutput& output) const
         {
-            const auto it = rgs::find(type_indices_, std::type_index{typeid(output)});
-            if (it == type_indices_.end()) {
+            const auto it = rgs::find(opensim_type_indices_, std::type_index{typeid(output)});
+            if (it == opensim_type_indices_.end()) {
                 std::stringstream ss;
                 ss << "Could not find a suitable output extractor for " << output.getName() << ": this is an engine error (it shouldn't have shown you it!)";
                 throw std::runtime_error{std::move(ss).str()};
             }
-            static_assert(std::tuple_size_v<decltype(type_indices_)> == std::tuple_size_v<decltype(value_extractors_)>);
-            const auto& value_extractor = value_extractors_[std::distance(type_indices_.begin(), it)];
-            return value_extractor(model_state, output);
+            static_assert(std::tuple_size_v<decltype(opensim_type_indices_)> == std::tuple_size_v<decltype(value_extractors_)>);
+            const auto& value_extractor = value_extractors_[std::distance(opensim_type_indices_.begin(), it)];
+            return value_extractor(state, output);
         }
     private:
-        // Templated `OutputValueExtractor` that extracts a value of type `T` from an `OpenSim::AbstractOutput`
-        //
-        // This is unsafe because it assumes the caller has already validated that `OpenSim::AbstractOutput`
-        // can be casted to an `OpenSim::Output<T>`.
-        template<typename T>
-        static OutputValue extract_output_value(const ModelState& model_state, const OpenSim::AbstractOutput& output)
-        {
-            return static_cast<const OpenSim::Output<T>&>(output).getValue(model_state.simbody_state());
-        }
-
         template<typename... Ts>
         static std::array<std::type_index, osc::TypelistSizeV<SupportedOutputValueTypes>> output_type_indexes(osc::Typelist<Ts...>)
         {
-            return std::to_array({ std::type_index(typeid(OpenSim::Output<Ts>))... });
+            return std::to_array({ std::type_index(typeid(OpenSim::Output<typename OutputTypeMapping<Ts>::OpenSimType>))... });
         }
 
+        // Helper function that generates a dense LUT that maps the index of an output
+        // type to an output extraction function.
         template<typename... Ts>
         static std::array<OutputValueExtractor, osc::TypelistSizeV<SupportedOutputValueTypes>> output_value_extractors(osc::Typelist<Ts...>)
         {
-            return std::to_array<OutputValueExtractor>({ extract_output_value<Ts>... });
+            return std::to_array<OutputValueExtractor>({ OutputTypeMapping<Ts>::extract_output_value... });
         }
 
-        std::array<std::type_index,      osc::TypelistSizeV<SupportedOutputValueTypes>> type_indices_ = output_type_indexes(SupportedOutputValueTypes{});
+        std::array<std::type_index,      osc::TypelistSizeV<SupportedOutputValueTypes>> opensim_type_indices_ = output_type_indexes(SupportedOutputValueTypes{});
         std::array<OutputValueExtractor, osc::TypelistSizeV<SupportedOutputValueTypes>> value_extractors_ = output_value_extractors(SupportedOutputValueTypes{});
     };
 
@@ -213,10 +235,21 @@ public:
             ss << static_cast<std::string>(output) << "Cannot find this output in the model";
             throw std::runtime_error{std::move(ss).str()};
         }
-        return output_extraction_system().read_value(model_state, *it->second);
+        return output_extraction_system().read_value(model_state.simbody_state(), *it->second);
     }
 
-    const OpenSim::Model& opensim_model() const { return model_; }
+    std::vector<osc::SceneDecoration> decorations(
+        osc::SceneCache& scene_cache,
+        const ModelState& model_state,
+        const OpenSimDecorationOptions& open_sim_decoration_options) const
+    {
+        return GenerateModelDecorations(
+            scene_cache,
+            model_,
+            model_state.simbody_state(),
+            open_sim_decoration_options
+        );
+    }
 
 private:
     OpenSim::Model model_;
@@ -272,7 +305,10 @@ opyn::OutputValue opyn::Model::get_output_value(const ModelState& model_state, c
     return impl_->get_output_value(model_state, output);
 }
 
-const OpenSim::Model& opyn::Model::opensim_model() const
+std::vector<osc::SceneDecoration> opyn::Model::decorations(
+    osc::SceneCache& scene_cache,
+    const ModelState& model_state,
+    const OpenSimDecorationOptions& open_sim_decoration_options) const
 {
-    return impl_->opensim_model();
+    return impl_->decorations(scene_cache, model_state, open_sim_decoration_options);
 }

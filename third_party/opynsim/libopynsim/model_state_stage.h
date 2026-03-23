@@ -10,8 +10,17 @@ namespace opyn
     // Related: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089017/SimTK+Simulation+Concepts
     enum class ModelStateStage {
 
+        // The topology of the physics system has been realized.
+        topology =  0,
+
+        // Modelling choices have been made.
+        model,
+
+        // Physical parameters have been set.
+        instance,
+
         // Time has advanced and state variables have new values, but no derived information has been calculated.
-        time = 0,
+        time,
 
         // The spatial positions of all bodies are known.
         position,

@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.10)
-project(oscar-dependencies)
+cmake_minimum_required(VERSION 3.25)
+project(oscar-dependencies LANGUAGES CXX C)
 
 include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)   # CMAKE_INSTALL_LIBDIR
@@ -53,6 +53,7 @@ if(TRUE)
         CMAKE_OSX_DEPLOYMENT_TARGET
         CMAKE_OSX_ARCHITECTURES
         CMAKE_POSITION_INDEPENDENT_CODE
+        CMAKE_MSVC_RUNTIME_LIBRARY
     )
     foreach(_forwarded_var IN LISTS _oscardeps_forwarded_vars)
         if (DEFINED ${_forwarded_var})

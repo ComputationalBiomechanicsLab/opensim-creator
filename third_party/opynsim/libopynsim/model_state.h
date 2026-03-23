@@ -16,12 +16,12 @@ namespace opyn
     class ModelState final {
     public:
         ModelStateStage stage() const;
-
-        const SimTK::State& simbody_state() const;
-        SimTK::State& simbody_state();
     private:
         friend class Model;
         explicit ModelState(SimTK::State&&);
+
+        const SimTK::State& simbody_state() const;
+        SimTK::State& simbody_state();
 
         class Impl;
         osc::CopyOnUpdPtr<Impl> impl_;

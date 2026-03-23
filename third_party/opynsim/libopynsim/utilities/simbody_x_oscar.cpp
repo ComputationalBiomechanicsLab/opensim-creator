@@ -82,6 +82,11 @@ osc::Vector3 osc::Converter<SimTK::Vec3, osc::Vector3>::operator()(const SimTK::
     };
 }
 
+osc::Vector3d osc::Converter<SimTK::Vec3, osc::Vector3d>::operator()(const SimTK::Vec3& v) const
+{
+    return osc::Vector3d{v[0], v[1], v[2]};
+}
+
 osc::Vector3 osc::Converter<SimTK::fVec3, osc::Vector3>::operator()(const SimTK::fVec3& v) const
 {
     return {v[0], v[1], v[2]};

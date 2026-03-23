@@ -29,6 +29,9 @@ namespace opyn
     /// import error.
     ModelSpecification import_osim_file(const std::filesystem::path& osim_file_path);
 
+    /// Returns a `ModelSpecification` for a simple pendulum.
+    ModelSpecification example_specification_pendulum();
+
     /// Returns a `ModelSpecification` for an example double pendulum.
     ModelSpecification example_specification_double_pendulum();
 

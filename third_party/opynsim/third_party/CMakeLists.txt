@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.10)
-project(opynsim-dependencies)
+cmake_minimum_required(VERSION 3.25)
+project(opynsim-dependencies LANGUAGES CXX C)
 
 include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR
@@ -57,6 +57,7 @@ if(TRUE)
         CMAKE_OSX_DEPLOYMENT_TARGET
         CMAKE_OSX_ARCHITECTURES
         CMAKE_POSITION_INDEPENDENT_CODE
+        CMAKE_MSVC_RUNTIME_LIBRARY
     )
     foreach(OPYNDEPS_FORWARDED_VAR IN LISTS OPYNDEPS_FORWARDED_VARS)
         if (DEFINED ${OPYNDEPS_FORWARDED_VAR})

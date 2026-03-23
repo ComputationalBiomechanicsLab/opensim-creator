@@ -6,8 +6,6 @@
 
 #include <filesystem>
 
-namespace OpenSim { class Model; }
-
 namespace opyn
 {
     // Represents a high-level model specification that can be validated
@@ -18,6 +16,7 @@ namespace opyn
     class ModelSpecification {
     public:
         static ModelSpecification from_osim_file(const std::filesystem::path&);
+        static ModelSpecification example_pendulum();
         static ModelSpecification example_double_pendulum();
 
         explicit ModelSpecification();

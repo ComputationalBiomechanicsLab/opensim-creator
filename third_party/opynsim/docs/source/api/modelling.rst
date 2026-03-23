@@ -18,6 +18,8 @@ API Reference
 
 .. autofunction:: opynsim.import_osim_file
 .. autofunction:: opynsim.compile_specification
+.. autofunction:: opynsim.example_specification_pendulum
+.. autofunction:: opynsim.example_specification_double_pendulum
 
 .. automodule:: opynsim
    :members:

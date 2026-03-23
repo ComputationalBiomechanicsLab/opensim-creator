@@ -15,10 +15,20 @@
 #include <libopynsim/symbol.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/filesystem.h>
+#include <nanobind/ndarray.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/string_view.h>
 #include <nanobind/stl/variant.h>
 #include <nanobind/stl/vector.h>
+
+#include <array>
+#include <filesystem>
+#include <functional>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <variant>
 
 using namespace opyn;
 
@@ -26,6 +36,8 @@ namespace nb = nanobind;
 
 namespace
 {
+    std::unique_ptr<OPynSimApp> g_lazy_loaded_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+
     osc::LogLevel to_oscar_log_level(int python_logging_level)
     {
         // These are dictated by the python documentation: https://docs.python.org/3/library/logging.html#logging-levels
@@ -40,7 +52,47 @@ namespace
         }
     }
 
-    std::unique_ptr<OPynSimApp> g_lazy_loaded_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    template<typename CppType>
+    struct PythonTypeMapper {
+        using cpp_type = CppType;
+        using python_type = CppType;
+
+        static python_type to_python(cpp_type&& v) { return python_type{std::move(v)}; }
+    };
+
+    template<>
+    struct PythonTypeMapper<osc::Vector3d> {
+        using cpp_type = osc::Vector3d;
+        using python_type = nb::ndarray<nb::numpy, double, nb::shape<3>>;
+
+        static python_type to_python(cpp_type&& v)
+        {
+            double* data = new double[3]{v[0], v[1], v[2]};
+            const std::array<size_t, 1> shape = {3};
+            return {
+                data,
+                1,
+                shape.data(),
+                nb::capsule(data, [](void* p) noexcept { delete[] static_cast<double*>(p); })
+            };
+        }
+    };
+
+    template<typename... Ts>
+    auto to_python_mapper_typelist(osc::Typelist<Ts...>)
+    {
+        return osc::Typelist<typename PythonTypeMapper<Ts>::python_type...>{};
+    }
+
+    using SupportedPythonOutputValues = decltype(to_python_mapper_typelist(std::declval<SupportedOutputValueTypes>()));
+    using PythonOutputValue = osc::VariantOfTypelistElements<SupportedPythonOutputValues>;
+
+    PythonOutputValue to_python_output(OutputValue&& output_value)
+    {
+        return std::visit(osc::Overload{
+            []<typename T>(T&& v) -> PythonOutputValue { return PythonTypeMapper<T>::to_python(std::forward<T>(v)); }
+        }, std::move(output_value));
+    }
 }
 
 opyn::OPynSimApp& opyn::get_lazy_loaded_opynsim_app()
@@ -252,7 +304,10 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         );
         model_class.def(
             "get_output_value",
-            &Model::get_output_value,
+            [](const Model& model, const ModelState& model_state, const Symbol& output)
+            {
+                return to_python_output(model.get_output_value(model_state, output));
+            },
             nb::arg("model_state"),
             nb::arg("output"),
             R"(
@@ -284,7 +339,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
 
-        static_assert(osc::num_options<ModelStateStage>() == 6);
+        static_assert(osc::num_options<ModelStateStage>() == 9);
         nb::enum_<ModelStateStage> model_state_stage_class(
             _core_module,
             "ModelStateStage",
@@ -302,6 +357,9 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 :class:`Model` can then extract that information from the :class:`ModelState`.
             )"
         );
+        model_state_stage_class.value("TOPOLOGY",     ModelStateStage::topology,     "System topology known.");
+        model_state_stage_class.value("MODEL",        ModelStateStage::model,        "Modelling choices have been made.");
+        model_state_stage_class.value("INSTANCE",     ModelStateStage::instance,     "Physical parameters have been set.");
         model_state_stage_class.value("TIME",         ModelStateStage::time,         "Time has advanced and state variables have new values, but no derived information has been calculated.");
         model_state_stage_class.value("POSITION",     ModelStateStage::position,     "The spatial positions of all bodies are known.");
         model_state_stage_class.value("VELOCITY",     ModelStateStage::velocity,     "The spatial velocities of all bodies are known.");
@@ -333,14 +391,28 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         );
 
         _core_module.def(
+            "example_specification_pendulum",
+            opyn::example_specification_pendulum,
+            R"(
+                Returns a :class:`ModelSpecification` of a pendulum.
+
+                The specification is built entirely in memory with no external data files, which
+                makes it useful for debugging, example Python scripts, and documentation pages. The
+                returned specification should be for a one kilogram mass suspended one meter away
+                from a pin joint that is one meter above the ground. For visualization, the head is
+                represented as a sphere with a radius of five centimeters and the suspension rod has
+                a radius of five millimeters.
+            )"
+        );
+        _core_module.def(
             "example_specification_double_pendulum",
             opyn::example_specification_double_pendulum,
             R"(
                 Returns a :class:`ModelSpecification` of a double pendulum.
 
                 The specification is built entirely in-memory with no external data files, which makes
-                it useful for quick debugging sessions, example Python scripts, and documentation pages. The
-                returned specification is designed to resemble the ``double_pendulum.osim``, which is available
+                it useful for debugging, example Python scripts, and documentation pages. The returned
+                specification is designed to resemble the ``double_pendulum.osim``, which is available
                 from the `OpenSim models repository <https://github.com/opensim-org/opensim-models>`_ and as
                 an example file in `OpenSim Creator <https://www.opensimcreator.com>`_ .
             )"

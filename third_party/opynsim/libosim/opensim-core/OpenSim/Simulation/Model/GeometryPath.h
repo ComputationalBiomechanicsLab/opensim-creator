@@ -192,15 +192,6 @@ protected:
     void extendConnectToModel(Model& aModel) override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-
-    // Visual support GeometryPath drawing in SimTK visualizer.
-    void generateDecorations(
-            bool                                        fixed,
-            const ModelDisplayHints&                    hints,
-            const SimTK::State&                         state,
-            SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
-            override;
-
     void extendFinalizeFromProperties() override;
 
 private:

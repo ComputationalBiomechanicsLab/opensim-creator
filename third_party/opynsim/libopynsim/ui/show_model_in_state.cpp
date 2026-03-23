@@ -27,20 +27,6 @@ using namespace opyn;
 
 namespace
 {
-    std::vector<osc::SceneDecoration> generate_scene(
-        osc::SceneCache& scene_cache,
-        const Model& model,
-        const ModelState& model_state)
-    {
-        OpenSimDecorationOptions options;
-        return GenerateModelDecorations(
-            scene_cache,
-            model.opensim_model(),
-            model_state.simbody_state(),
-            options
-        );
-    }
-
     class BasicModelViewer final : public osc::Widget {
     public:
         explicit BasicModelViewer(
@@ -52,11 +38,15 @@ namespace
             UiCallbacks callbacks) :
 
             callbacks_{std::move(callbacks)},
-            decorations_{generate_scene(scene_cache_, model, model_state)},
+            decorations_{model.decorations(scene_cache_, model_state)},
             background_color_{background_color},
             fit_camera_on_next_frame_{zoom_to_fit},
             draw_floor_{draw_floor}
-        {}
+        {
+            // TODO: try and default the camera to look down the Z axis
+            camera.theta = {};
+            camera.phi = {};
+        }
     private:
         bool impl_on_event(osc::Event& e) override
         {

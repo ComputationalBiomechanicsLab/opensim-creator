@@ -238,6 +238,11 @@ ModelSpecification opyn::import_osim_file(const std::filesystem::path& osim_file
     return ModelSpecification::from_osim_file(osim_file_path);
 }
 
+ModelSpecification opyn::example_specification_pendulum()
+{
+    return ModelSpecification::example_pendulum();
+}
+
 ModelSpecification opyn::example_specification_double_pendulum()
 {
     return ModelSpecification::example_double_pendulum();

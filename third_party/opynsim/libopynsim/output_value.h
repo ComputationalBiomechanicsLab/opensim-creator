@@ -1,13 +1,15 @@
 #pragma once
 
 #include <liboscar/utilities/typelist.h>
+#include <liboscar/maths/vector.h>
 
 #include <variant>
 
 namespace opyn
 {
     using SupportedOutputValueTypes = osc::Typelist<
-        double
+        double,
+        osc::Vector3d
         // TODO:
         //  osc::Vector2d,
         //  osc::Vector3d,
@@ -18,7 +20,5 @@ namespace opyn
         //  std::vector<float>
     >;
 
-    using OutputValue = std::variant<
-        double
-    >;
+    using OutputValue = osc::VariantOfTypelistElements<SupportedOutputValueTypes>;
 }

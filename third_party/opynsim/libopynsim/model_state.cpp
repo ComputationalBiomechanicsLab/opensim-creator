@@ -14,9 +14,12 @@ namespace
     ModelStateStage to_opynsim_stage(SimTK::Stage simbody_stage)
     {
         static_assert(SimTK::Stage::HighestValid == SimTK::Stage::Infinity);
-        static_assert(osc::num_options<ModelStateStage>() == 6);
+        static_assert(osc::num_options<ModelStateStage>() == 9);
 
         switch (simbody_stage) {
+        case SimTK::Stage::Topology:     return ModelStateStage::topology;
+        case SimTK::Stage::Model:        return ModelStateStage::model;
+        case SimTK::Stage::Instance:     return ModelStateStage::instance;
         case SimTK::Stage::Time:         return ModelStateStage::time;
         case SimTK::Stage::Position:     return ModelStateStage::position;
         case SimTK::Stage::Velocity:     return ModelStateStage::velocity;
@@ -24,19 +27,13 @@ namespace
         case SimTK::Stage::Acceleration: return ModelStateStage::acceleration;
         case SimTK::Stage::Report:       return ModelStateStage::report;
 
-        // These earlier Simbody stages should be handled/passed by
-        // model compilation. Once a model is compiled, it shouldn't
-        // be possible to revert to a stage that's lower than
-        // `SimTK::Stage::Time`.
+        // These are unhandled stages
         case SimTK::Stage::Empty:        [[fallthrough]];
-        case SimTK::Stage::Topology:     [[fallthrough]];
-        case SimTK::Stage::Model:        [[fallthrough]];
-        case SimTK::Stage::Instance:     [[fallthrough]];
 
         // Throw a user-facing runtime error if an invalid/unsupported
         // stage somehow slipped through cracks in the OPynSim API.
         default: {
-            throw std::runtime_error{"Internal Simbody state stage is incompatible with the OPynSim API: this is a developer error that needs to be reported (preferably, with a reproduction, please!)"};
+            throw std::runtime_error{"Internal Simbody state stage is incompatible with the OPynSim API: this is a developer error that needs to be reported (preferably, with a bug reproduction, please!)"};
         }
         }
     }

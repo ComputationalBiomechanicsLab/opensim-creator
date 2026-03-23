@@ -10,6 +10,39 @@ using namespace opyn;
 
 namespace
 {
+    osc::CopyOnUpdPtr<OpenSim::Model> generate_pendulum()
+    {
+        auto rv = osc::make_cow<OpenSim::Model>();
+        auto& model = *rv.upd();
+
+        // Setup head body with decorations
+        auto& head = AddBody(model, "head", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+        auto& head_sphere_geom = AttachGeometry<OpenSim::Sphere>(head, 0.05);
+        head_sphere_geom.setName("head_geom");
+        auto& head_rod_pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+            head,
+            "head_rod_offset",
+            head,
+            SimTK::Transform{SimTK::Vec3{0.0, 0.25, 0.0}}
+        );
+        AttachGeometry<OpenSim::Cylinder>(head_rod_pof, 0.005, 0.25);
+
+        // Attach body to ground with a pin joint
+        auto& pin = AddJoint<OpenSim::PinJoint>(
+            model,
+            "pin",
+            model.getGround(),
+            SimTK::Vec3{0.0, 0.0, 0.0},
+            SimTK::Vec3{0.0},
+            head,
+            SimTK::Vec3{0.0, -1.0, 0.0},
+            SimTK::Vec3{0.0}
+        );
+        pin.updCoordinate().set_default_value(0.25*std::numbers::pi_v<double>);
+        model.finalizeConnections();
+        return rv;
+    }
+
     osc::CopyOnUpdPtr<OpenSim::Model> generate_example_pendulum()
     {
         auto rv = osc::make_cow<OpenSim::Model>();
@@ -85,6 +118,11 @@ private:
 opyn::ModelSpecification opyn::ModelSpecification::from_osim_file(const std::filesystem::path& osim_path)
 {
     return ModelSpecification{osc::make_cow<Impl>(osim_path)};
+}
+
+opyn::ModelSpecification opyn::ModelSpecification::example_pendulum()
+{
+    return ModelSpecification{osc::make_cow<Impl>(generate_pendulum())};
 }
 
 opyn::ModelSpecification opyn::ModelSpecification::example_double_pendulum()

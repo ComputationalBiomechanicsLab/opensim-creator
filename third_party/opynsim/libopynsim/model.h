@@ -1,13 +1,17 @@
 #pragma once
 
+#include <libopynsim/graphics/open_sim_decoration_options.h>
 #include <libopynsim/model_state.h>
 #include <libopynsim/model_state_stage.h>
 #include <libopynsim/output_value.h>
 #include <libopynsim/symbol.h>
 
+#include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/utilities/copy_on_upd_ptr.h>
 
 #include <vector>
+
+namespace osc { class SceneCache; }
 
 namespace OpenSim { class Model; }
 
@@ -38,7 +42,12 @@ namespace opyn
         std::vector<Symbol> outputs() const;
         OutputValue get_output_value(const ModelState& model_state, const Symbol& output) const;
 
-        const OpenSim::Model& opensim_model() const;
+        std::vector<osc::SceneDecoration> decorations(
+            osc::SceneCache&,
+            const ModelState&,
+            const OpenSimDecorationOptions& = {}
+        ) const;
+
     private:
         class Impl;
         osc::CopyOnUpdPtr<Impl> impl_;

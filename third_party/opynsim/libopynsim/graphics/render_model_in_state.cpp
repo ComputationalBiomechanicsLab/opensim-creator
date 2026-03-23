@@ -30,16 +30,13 @@ osc::Texture2D opyn::render_model_in_state(
 
     // Generate 3D scene
     osc::SceneCache scene_cache;
-    const OpenSimDecorationOptions decoration_options;
-    const std::vector<osc::SceneDecoration> decorations = GenerateModelDecorations(
-        scene_cache,
-        model.opensim_model(),
-        model_state.simbody_state(),
-        decoration_options
-    );
+    const std::vector<osc::SceneDecoration> decorations = model.decorations(scene_cache, model_state);
 
     // Setup scene camera
     osc::PolarPerspectiveCamera camera;
+    // TODO: try and default the camera to look down the Z axis
+    camera.phi = {};
+    camera.theta = {};
 
     // Handle autofocus
     if (zoom_to_fit) {

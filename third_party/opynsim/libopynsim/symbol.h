@@ -32,7 +32,10 @@ namespace opyn
 
 template<>
 struct std::hash<opyn::Symbol> final {
-    size_t operator()(const opyn::Symbol& symbol) const noexcept { return hasher_(symbol.data_); }
+    size_t operator()(const opyn::Symbol& symbol) const noexcept
+    {
+        return hasher_(symbol.data_);
+    }
 private:
     std::hash<osc::StringName> hasher_;
 };
