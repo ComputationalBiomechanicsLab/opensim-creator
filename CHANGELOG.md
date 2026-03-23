@@ -23,6 +23,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   constraints (#1164).
 - Fixed an issue where `ThinPlateSplineWrapCylinderScalingStep` could produce negative `WrapCylinder` radii, which
   would cause the model warping pipeline to fail (#1168).
+- Fixed Windows installers >= 0.7.0 not including the necessary C++ runtime. Instead, the
+  Windows build now statically links the C++ runtime, resulting in a standalone exe file (#1171).
 
 ## [0.7.2] - 2026/02/19
 
