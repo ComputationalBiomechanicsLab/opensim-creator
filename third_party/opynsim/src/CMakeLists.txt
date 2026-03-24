@@ -73,26 +73,24 @@ if(TRUE)
     # Set `OPYN_PYTHON_INTERPRETER_TAG` and `OPYN_PYTHON_ABI_TAG` on the `_core` module.
     #
     # This can help downstream build/packaging steps determine which python interpreter
-    # can use the resulting native module. When compiling with a stable ABI, it's
-    # dictated by nanobind. Otherwise, it's dictated by the python version that was used
-    # to compile the module.
-    if(OPYN_STABLE_ABI)
-        string(REGEX MATCH "^[0-9]+\\.[0-9]+" OPYN_MIN_PY_VER_MAJOR_MINOR "${OPYN_MIN_PYTHON_REQUIRED_VERSION}")
-        string(REPLACE "." "" _opyn_interpreter_tag "${OPYN_MIN_PY_VER_MAJOR_MINOR}")
-        set_target_properties(_core PROPERTIES
-            OPYN_PYTHON_INTERPRETER_TAG "cp${_opyn_interpreter_tag}"
-            OPYN_PYTHON_ABI_TAG         "abi3"
-        )
-        unset(_opyn_interpreter_tag)
-        unset(OPYN_MIN_PY_VER_MAJOR_MINOR)
-    else()
+    # can use the resulting native module. When compiling with a stable ABI, the ABI
+    # tag is always "abi3". Otherwise, the ABI tag is tied to the python version that
+    # was used to compile the module.
+    if(TRUE)
         # Remove dot between MAJOR.MINOR → "3.11" → "311"
         string(REGEX MATCH "^[0-9]+\\.[0-9]+" _py_mm "${Python_VERSION}")
         string(REPLACE "." "" _py_tag "${_py_mm}")
-        set_target_properties(_core PROPERTIES
-            OPYN_PYTHON_INTERPRETER_TAG "cp${_py_tag}"
-            OPYN_PYTHON_ABI_TAG         "cp${_py_tag}"
-        )
+        if(OPYN_STABLE_ABI)
+            set_target_properties(_core PROPERTIES
+                OPYN_PYTHON_INTERPRETER_TAG "cp${_py_tag}"
+                OPYN_PYTHON_ABI_TAG         "abi3"
+            )
+        else()
+            set_target_properties(_core PROPERTIES
+                OPYN_PYTHON_INTERPRETER_TAG "cp${_py_tag}"
+                OPYN_PYTHON_ABI_TAG         "cp${_py_tag}"
+            )
+        endif()
         unset(_py_tag)
         unset(_py_mm)
     endif()
@@ -109,7 +107,7 @@ if(TRUE)
     # environment that might also contain (e.g.) OpenSim
     if (APPLE)
         target_link_options(_core PRIVATE "-Wl,-exported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/exports.txt")
-    elseif(UNIX AND NOT APPLE)
+    elseif(UNIX AND NOT APPLE)  # i.e. Linux
         target_link_options(_core PRIVATE "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/exports.map")
     endif()
 

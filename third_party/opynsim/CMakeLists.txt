@@ -11,6 +11,7 @@ option(OPYN_BUILD_DOCS                "Build documentation"                     
 option(OPYN_USE_STRICT_COMPILER_FLAGS "Add stricter compilation flags to targets" OFF)
 option(OPYN_PACKAGE                   "Configure packaging the project's targets" ON)
 option(OPYN_STABLE_ABI                "Perform a python stable ABI build"         ON)
+option(OPYN_STRICT_ABI_CHECKS         "Check OPynSim has specified ABI"           ${OPYN_STABLE_ABI})
 set   (OPYN_VENV "" CACHE PATH        "Optional absolute path to a Python virtual environment that the build should use")
 
 if(OPYN_BUILD_TESTING)
@@ -67,6 +68,12 @@ if(OPYN_BUILD_PYTHON_BINDINGS)
         COMPONENTS ${OPYN_REQUIRED_PYTHON_COMPONENTS}
         REQUIRED
     )
+
+    if(OPYN_STRICT_ABI_CHECKS)
+        if((NOT Python_VERSION_MAJOR EQUAL 3) OR (NOT Python_VERSION_MINOR EQUAL 12))
+            message(FATAL_ERROR "When OPYN_STRICT_ABI_CHECKS is ON, the Python version MUST be 3.12.x (yours is ${Python_VERSION}), so that the resulting ABI is valid for >= 3.12 clients.\nOne way to fix this is to create a 3.12 venv and pass it via OPYN_VENV, or use cmake Python hints like Python_ROOT_DIR")
+        endif()
+    endif()
 
     # Include sub-parts of the build
     add_subdirectory(src)

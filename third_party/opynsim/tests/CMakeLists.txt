@@ -1,6 +1,3 @@
-option(OPYN_TEST_DEPENDENCIES "Add tests that check opynsim._core's dependencies against a whitelist" ON)
-option(OPYN_TEST_SYMBOLS      "Add tests that check opynsim._core's symbols against a whitelist"      ON)
-
 # Find `pytest` (python unit test library)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(Pytest)
@@ -24,7 +21,7 @@ pytest_discover_tests(
 unset(OPYN_PYTEST_SOURCES)
 
 # If requested, add additional dependency tests
-if(OPYN_TEST_DEPENDENCIES)
+if(OPYN_STRICT_ABI_CHECKS)
     if(WIN32)
         set(OPYN_DEPENDENCY_WHITELIST_FILENAME "windows.txt")
     elseif(UNIX AND NOT APPLE)
@@ -46,7 +43,7 @@ if(OPYN_TEST_DEPENDENCIES)
     endif()
 endif()
 
-if(OPYN_TEST_SYMBOLS AND UNIX)
+if(OPYN_STRICT_ABI_CHECKS AND UNIX)
     if(APPLE)
         set(OPYN_PERMITTED_SYMBOLS "_PyInit__core")
     else()

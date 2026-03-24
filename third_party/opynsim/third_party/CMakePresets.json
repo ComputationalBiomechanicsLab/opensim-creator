@@ -8,8 +8,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development/install",
-                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
-                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebug"
+                "CMAKE_POSITION_INDEPENDENT_CODE": "ON"
             }
         },
         {
@@ -20,7 +19,7 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development-Inlined/install",
                 "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
-                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebug",
+
                 "OPYNDEPS_BUILD_OSCAR": "OFF"
             }
         },
@@ -33,8 +32,7 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck/install",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
-                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebug"
+                "CMAKE_POSITION_INDEPENDENT_CODE": "ON"
             }
         },
         {
@@ -44,8 +42,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/RelWithDebInfo/install",
-                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
-                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebug"
+                "CMAKE_POSITION_INDEPENDENT_CODE": "ON"
             }
         },
         {
