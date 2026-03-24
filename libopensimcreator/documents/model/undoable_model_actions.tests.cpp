@@ -1,6 +1,6 @@
 #include "undoable_model_actions.h"
 
-#include <libopensimcreator/documents/model/object_property_edit.h>
+#include <libopynsim/documents/model/object_property_edit.h>
 #include <libopensimcreator/documents/model/undoable_model_state_pair.h>
 #include <libopensimcreator/platform/open_sim_creator_app.h>
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>

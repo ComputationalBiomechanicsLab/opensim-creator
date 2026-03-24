@@ -8,7 +8,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - The documentation generator (Sphinx) and theme (sphinx_book_theme) were updated
   and the sidebar was cleaned up a little.
-- The "Building from Source" link in the Installation documentation page now directly links to building-from-source.rst, rather than a bookmark (#1165)
+- The "Building from Source" link in the Installation documentation page now directly links
+  to building-from-source.rst, rather than a bookmark (#1165)
 - Fixed the moment arm of a muscle that uses the newer `Scholz2015GeometryPath` not plotting
   in the live muscle plotter (#1167).
 - Fixed toggling the visibility of a `Scholz2015GeometryPath` did not show/hide it in the visualizer (#1166).
@@ -25,6 +26,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   would cause the model warping pipeline to fail (#1168).
 - Fixed Windows installers >= 0.7.0 not including the necessary C++ runtime. Instead, the
   Windows build now statically links the C++ runtime, resulting in a standalone exe file (#1171).
+- The implementation (i.e not-UI) of the model warper was ported to OPynSim.
 
 ## [0.7.2] - 2026/02/19
 

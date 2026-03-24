@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/documents/model/object_property_edit.h>
+#include <libopynsim/documents/model/object_property_edit.h>
 
 #include <liboscar/platform/widget.h>
 
