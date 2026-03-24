@@ -16,3 +16,6 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   which contains some cable path fixes.
 - Nanobind was updated to v2.12.0
 - OpenBLAS was updated to v0.3.31
+- Switched Windows build to statically compile the C++ runtime, because the
+  binary is standalone and doesn't leak exceptions via the Python API.
+

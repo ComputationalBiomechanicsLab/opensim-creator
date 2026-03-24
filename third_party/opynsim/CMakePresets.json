@@ -10,6 +10,7 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development/install",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebug",
 
                 "OPYN_VENV": "${sourceDir}/.venv",
                 "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
@@ -27,6 +28,7 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development-Inlined/install",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebug",
 
                 "OPYN_VENV": "${sourceDir}/.venv",
                 "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
@@ -47,6 +49,7 @@
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebug",
 
                 "OPYN_VENV": "${sourceDir}/.venv",
                 "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
@@ -63,6 +66,7 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/RelWithDebInfo/install",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreadedDebug",
 
                 "OPYN_VENV": "${sourceDir}/.venv"
             }
@@ -76,6 +80,7 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release/install",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded",
 
                 "OPYN_VENV": "${sourceDir}/.venv"
             }
