@@ -12,3 +12,4 @@ user32\.dll
 winmm\.dll
 gdi32\.dll
 setupapi\.dll
+vcruntime140.*\.dll

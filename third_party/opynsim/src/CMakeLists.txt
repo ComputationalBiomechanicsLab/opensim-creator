@@ -101,6 +101,25 @@ if(TRUE)
     # Link to the underlying `libopynsim` C++ code
     target_link_libraries(_core PRIVATE opynsim)
 
+    # When building for Windows with `OPYN_STRICT_ABI_CHECKS`, the
+    # libraries etc. should already be built with `/MT`, but good
+    # manners also dictate that, even when compiling with `/MT`,
+    # ucrt (included in Windows base install) and vcruntime
+    # (packaged with Python Windows installs) should be dynamically
+    # linked so that  memory allocations etc. share the same
+    # heap as other native code in Python.
+    #
+    # Compiling with `/MT` is related to dropping `msvcp140.dll`, and
+    # this special linking concern is something that has been mentioned
+    # in larger Python projects:
+    #
+    # - https://github.com/matplotlib/matplotlib/pull/28687
+    # - https://discuss.python.org/t/planning-for-an-msvc-abi-break/65102
+    if(OPYN_STRICT_ABI_CHECKS AND MSVC)
+        target_link_libraries(_core PRIVATE ucrt.lib vcruntime.lib)
+        target_link_options(_core PRIVATE "/NODEFAULTLIB:libucrt.lib" "/NODEFAULTLIB:libvcruntime.lib")
+    endif()
+
     # Scrap all public symbols apart from `PyInit_*` / `_PyInit_*`
     #
     # This is to reduce symbol collisions when loading the library in a python
