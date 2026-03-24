@@ -35,6 +35,7 @@
                 "OPYN_BUILD_TESTING": "ON",
                 "OPYN_VENV": "${sourceDir}/.venv",
                 "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
+                "OPYN_STRICT_ABI_CHECKS": "OFF",
                 "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
@@ -83,6 +84,7 @@
                 "OPYN_BUILD_TESTING": "ON",
                 "OPYN_BUILD_PYTHON_TESTING": "OFF",
                 "OPYN_VENV": "${sourceDir}/.venv",
+                "OPYN_STRICT_ABI_CHECKS": "OFF",
                 "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
                 "OPYN_GENERATE_STUBS": "OFF",
                 "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON"
@@ -109,6 +111,7 @@
                 "OPYN_BUILD_PYTHON_BINDINGS": "ON",
                 "OPYN_BUILD_TESTING": "ON",
                 "OPYN_VENV": "${sourceDir}/.venv",
+                "OPYN_STRICT_ABI_CHECKS": "OFF",
                 "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
             }
         },
