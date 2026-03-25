@@ -7,7 +7,6 @@ from pathlib import Path
 def main():
     venv_path = Path(".venv")
     requirements_file_path = Path("requirements") / "all_requirements.txt"
-    opynsim_requirements_file_path = Path("third_party") / "opynsim" / "requirements" / "all_requirements.txt"
 
     # Create virtual environment if it doesn't exist yet
     if not venv_path.exists():
@@ -26,11 +25,6 @@ def main():
     print(f"Installing OPynSim dependencies from {opynsim_requirements_file_path}")
     subprocess.run([str(pip_path), "install", "-r", str(opynsim_requirements_file_path)], check=True)
     print("OPynSim Python dependencies installed successfully")
-
-    # Install OpenSim Creator dependencies into the environment
-    print(f"Installing dependencies from {requirements_file_path}")
-    subprocess.run([str(pip_path), "install", "-r", str(requirements_file_path)], check=True)
-    print("Python dependencies installed successfully")
 
 if __name__ == "__main__":
     main()
