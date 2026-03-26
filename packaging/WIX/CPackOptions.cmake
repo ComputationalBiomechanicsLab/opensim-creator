@@ -12,6 +12,8 @@ unset(_arch_lowercase)
 # Set the install directory for the package (used by NSIS/WiX?)
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}")
 set(CPACK_WIX_PRODUCT_ICON "${CPACK_OSC_PROJECT_SOURCE_DIR}/osc/osc.ico")
+set(CPACK_WIX_UI_BANNER "${CMAKE_CURRENT_LIST_DIR}/ui_banner.bmp")
+set(CPACK_WIX_UI_DIALOG "${CMAKE_CURRENT_LIST_DIR}/ui_dialog.bmp")
 
 # set `CPACK_WIX_UPGRADE_CODE` as a GUID derived from the project properties
 if(TRUE)
