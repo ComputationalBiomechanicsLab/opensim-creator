@@ -24,9 +24,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   constraints (#1164).
 - Fixed an issue where `ThinPlateSplineWrapCylinderScalingStep` could produce negative `WrapCylinder` radii, which
   would cause the model warping pipeline to fail (#1168).
-- Fixed Windows installers >= 0.7.0 not including the necessary C++ runtime. Instead, the
-  Windows build now statically links the C++ runtime, resulting in a standalone exe file (#1171).
-- The implementation (i.e not-UI) of the model warper was ported to OPynSim.
+- Fixed Windows installers >= 0.7.0 not including the necessary C++ runtime (`msvcp140.dll`). Instead, the
+  Windows build now statically links the C++ runtime, resulting in a standalone `osc.exe` file (#1171).
+- The implementation (i.e not-UI) of the model warper was ported to OPynSim, in preparation for shipping
+  a Python API that can run the model warper without requiring user interaction.
+- The Windows `.msi` installer now has fancy OSC-specific banner/dialog images, so that it's clearer
+  what's being installed.
 
 ## [0.7.2] - 2026/02/19
 
