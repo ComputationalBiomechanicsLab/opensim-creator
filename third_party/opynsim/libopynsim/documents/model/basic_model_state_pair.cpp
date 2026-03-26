@@ -1,4 +1,4 @@
-#include "simple_model_state_pair.h"
+#include "basic_model_state_pair.h"
 
 #include <libopynsim/utilities/open_sim_helpers.h>
 
@@ -9,7 +9,7 @@
 
 using namespace opyn;
 
-class opyn::SimpleModelStatePair::Impl final {
+class opyn::BasicModelStatePair::Impl final {
 public:
 
     Impl() :
@@ -100,46 +100,46 @@ private:
     float m_FixupScaleFactor = 1.0f;
 };
 
-opyn::SimpleModelStatePair::SimpleModelStatePair() :
+opyn::BasicModelStatePair::BasicModelStatePair() :
     m_Impl{std::make_unique<Impl>()}
 {}
 
-opyn::SimpleModelStatePair::SimpleModelStatePair(const ModelStatePair& p) :
+opyn::BasicModelStatePair::BasicModelStatePair(const ModelStatePair& p) :
     m_Impl{std::make_unique<Impl>(p)}
 {}
 
-opyn::SimpleModelStatePair::SimpleModelStatePair(const std::filesystem::path& p) :
+opyn::BasicModelStatePair::BasicModelStatePair(const std::filesystem::path& p) :
     m_Impl{std::make_unique<Impl>(p)}
 {}
-opyn::SimpleModelStatePair::SimpleModelStatePair(OpenSim::Model&& model) :
+opyn::BasicModelStatePair::BasicModelStatePair(OpenSim::Model&& model) :
     m_Impl{std::make_unique<Impl>(std::move(model))}
 {}
 
-opyn::SimpleModelStatePair::SimpleModelStatePair(const OpenSim::Model& model, const SimTK::State& state) :
+opyn::BasicModelStatePair::BasicModelStatePair(const OpenSim::Model& model, const SimTK::State& state) :
     m_Impl{std::make_unique<Impl>(model, state)}
 {}
-opyn::SimpleModelStatePair::SimpleModelStatePair(const SimpleModelStatePair&) = default;
-opyn::SimpleModelStatePair::SimpleModelStatePair(SimpleModelStatePair&&) noexcept = default;
-opyn::SimpleModelStatePair& opyn::SimpleModelStatePair::operator=(const SimpleModelStatePair&) = default;
-opyn::SimpleModelStatePair& opyn::SimpleModelStatePair::operator=(SimpleModelStatePair&&) noexcept = default;
-opyn::SimpleModelStatePair::~SimpleModelStatePair() noexcept = default;
+opyn::BasicModelStatePair::BasicModelStatePair(const BasicModelStatePair&) = default;
+opyn::BasicModelStatePair::BasicModelStatePair(BasicModelStatePair&&) noexcept = default;
+opyn::BasicModelStatePair& opyn::BasicModelStatePair::operator=(const BasicModelStatePair&) = default;
+opyn::BasicModelStatePair& opyn::BasicModelStatePair::operator=(BasicModelStatePair&&) noexcept = default;
+opyn::BasicModelStatePair::~BasicModelStatePair() noexcept = default;
 
-const OpenSim::Model& opyn::SimpleModelStatePair::implGetModel() const
+const OpenSim::Model& opyn::BasicModelStatePair::implGetModel() const
 {
     return m_Impl->getModel();
 }
 
-const SimTK::State& opyn::SimpleModelStatePair::implGetState() const
+const SimTK::State& opyn::BasicModelStatePair::implGetState() const
 {
     return m_Impl->getState();
 }
 
-float opyn::SimpleModelStatePair::implGetFixupScaleFactor() const
+float opyn::BasicModelStatePair::implGetFixupScaleFactor() const
 {
     return m_Impl->getFixupScaleFactor();
 }
 
-void opyn::SimpleModelStatePair::implSetFixupScaleFactor(float v)
+void opyn::BasicModelStatePair::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(v);
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/documents/model/basic_model_state_pair.h>
+#include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/simulation/abstract_simulation.h>
 #include <libopensimcreator/documents/simulation/simulation_clocks.h>
 #include <libopensimcreator/documents/simulation/simulation_report.h>
@@ -20,7 +20,7 @@ namespace osc
 {
     class SingleStateSimulation final : public AbstractSimulation {
     public:
-        explicit SingleStateSimulation(BasicModelStatePair);
+        explicit SingleStateSimulation(BasicModelStatePairWithSharedEnvironment);
         SingleStateSimulation(const SingleStateSimulation&) = delete;
         SingleStateSimulation(SingleStateSimulation&&) noexcept;
         SingleStateSimulation& operator=(const SingleStateSimulation&) = delete;

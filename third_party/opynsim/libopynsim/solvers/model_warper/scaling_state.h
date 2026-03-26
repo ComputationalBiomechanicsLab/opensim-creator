@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopynsim/documents/model/object_property_edit.h>
-#include <libopynsim/documents/model/simple_model_state_pair.h>
+#include <libopynsim/documents/model/basic_model_state_pair.h>
 #include <libopynsim/solvers/model_warper/model_warper_v3_document.h>
 #include <libopynsim/solvers/model_warper/scaling_document_validation_message.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
@@ -24,7 +24,7 @@ namespace opyn
         }
 
         ScalingState(const ScalingState& other) :
-            sourceModel{std::make_shared<SimpleModelStatePair>(*other.sourceModel)},
+            sourceModel{std::make_shared<BasicModelStatePair>(*other.sourceModel)},
             scalingDocument{std::make_shared<ModelWarperV3Document>(*other.scalingDocument)}
         {
             // care: separate `ScalingState`s should act like separate instances with no
@@ -61,11 +61,11 @@ namespace opyn
         std::shared_ptr<ModelStatePair> getSourceModelPtr() { return sourceModel; }
         void loadSourceModelFromOsim(const std::filesystem::path& path)
         {
-            sourceModel = std::make_shared<SimpleModelStatePair>(path);
+            sourceModel = std::make_shared<BasicModelStatePair>(path);
         }
         void resetSourceModel()
         {
-            sourceModel = std::make_shared<SimpleModelStatePair>();
+            sourceModel = std::make_shared<BasicModelStatePair>();
         }
 
     // Scaling Document Methods
@@ -189,7 +189,7 @@ namespace opyn
 
         // Tries to generate a scaled version of the source model using the current
         // scaling steps and scaling parameters.
-        std::unique_ptr<SimpleModelStatePair> tryGenerateScaledModel(ScalingCache& scalingCache) const
+        std::unique_ptr<BasicModelStatePair> tryGenerateScaledModel(ScalingCache& scalingCache) const
         {
             if (hasScalingStepValidationIssues(scalingCache)) {
                 return nullptr;  // there are validation errors, so scaling isn't possible
@@ -203,7 +203,7 @@ namespace opyn
 
             if (not hasScalingSteps()) {
                 // There are no scaling steps, so a copy of the source model is a scaled model (trivially).
-                return std::make_unique<SimpleModelStatePair>(std::move(resultModel));
+                return std::make_unique<BasicModelStatePair>(std::move(resultModel));
             }
 
             // Calculate the effective scaling parameters (defaults + user-enacted overrides)
@@ -215,14 +215,14 @@ namespace opyn
             }
 
             // Return the warped model
-            return std::make_unique<SimpleModelStatePair>(std::move(resultModel));
+            return std::make_unique<BasicModelStatePair>(std::move(resultModel));
         }
 
     private:
         template<typename T = OpenSim::Component>
         T* findScalingComponentMut(const OpenSim::ComponentPath& p) { return FindComponentMut<T>(*scalingDocument, p); }
 
-        std::shared_ptr<SimpleModelStatePair> sourceModel = std::make_shared<SimpleModelStatePair>();
+        std::shared_ptr<BasicModelStatePair> sourceModel = std::make_shared<BasicModelStatePair>();
         std::shared_ptr<ModelWarperV3Document> scalingDocument = std::make_shared<ModelWarperV3Document>();
     };
 }

@@ -15,7 +15,7 @@
 #include <libopynsim/documents/custom_components/in_memory_mesh.h>
 #include <libopynsim/documents/landmarks/landmark_helpers.h>
 #include <libopynsim/documents/landmarks/maybe_named_landmark_pair.h>
-#include <libopynsim/documents/model/simple_model_state_pair.h>
+#include <libopynsim/documents/model/basic_model_state_pair.h>
 #include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <libopynsim/solvers/model_warper/all_scaling_step_types.h>
@@ -460,7 +460,7 @@ namespace
         std::shared_ptr<UndoRedo<ScalingState>> m_ScalingState = std::make_shared<UndoRedo<ScalingState>>();
 
         ScalingCache m_ScalingCache;
-        std::shared_ptr<SimpleModelStatePair> m_ScaledModel = std::make_shared<SimpleModelStatePair>();
+        std::shared_ptr<BasicModelStatePair> m_ScaledModel = std::make_shared<BasicModelStatePair>();
         std::optional<std::string> m_ScalingErrorMessage;
 
         std::vector<std::function<void(ModelWarperV3UIState&)>> m_DeferredActions;

@@ -1,6 +1,6 @@
 #include "simulation_model_state_pair.h"
 
-#include <libopensimcreator/documents/model/basic_model_state_pair.h>
+#include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/simulation/simulation.h>
 #include <libopensimcreator/documents/simulation/simulation_report.h>
 #include <libopensimcreator/documents/simulation/single_state_simulation.h>
@@ -19,7 +19,7 @@ using namespace osc;
 class osc::SimulationModelStatePair::Impl final {
 public:
     Impl() :
-        m_Simulation{std::make_shared<Simulation>(SingleStateSimulation{BasicModelStatePair{}})}
+        m_Simulation{std::make_shared<Simulation>(SingleStateSimulation{BasicModelStatePairWithSharedEnvironment{}})}
     {}
 
     Impl(std::shared_ptr<Simulation> simulation, SimulationReport simulationReport) :

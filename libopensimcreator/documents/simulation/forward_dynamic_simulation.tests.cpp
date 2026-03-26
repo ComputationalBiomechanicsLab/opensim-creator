@@ -1,6 +1,6 @@
 #include "forward_dynamic_simulation.h"
 
-#include <libopensimcreator/documents/model/basic_model_state_pair.h>
+#include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/simulation/forward_dynamic_simulator_params.h>
 
 #include <gtest/gtest.h>
@@ -12,7 +12,7 @@ using namespace osc;
 
 TEST(ForwardDynamicSimulation, CanInitFromBasicModel)
 {
-    BasicModelStatePair modelState;
+    BasicModelStatePairWithSharedEnvironment modelState;
 
     ForwardDynamicSimulatorParams params;
     params.finalTime = SimulationClock::start();  // don't run a full sim
@@ -44,7 +44,7 @@ TEST(ForwardDynamicSimulation, CanInitFromBasicModel)
 
 TEST(ForwardDynamicSimulation, CanChangeEndTime)
 {
-    BasicModelStatePair modelState;
+    BasicModelStatePairWithSharedEnvironment modelState;
     ForwardDynamicSimulatorParams params;
     params.finalTime = SimulationClock::start();
 
@@ -56,7 +56,7 @@ TEST(ForwardDynamicSimulation, IncreasingTheEndTimeWorksAsExpected)
 {
     using namespace std::literals;
 
-    BasicModelStatePair modelState;
+    BasicModelStatePairWithSharedEnvironment modelState;
 
     // set up the simulation to produce two reports (start, end)
     ForwardDynamicSimulatorParams params;
@@ -96,7 +96,7 @@ TEST(ForwardDynamicSimulation, DecreasingEndTimeWorksAsExpected)
 {
     using namespace std::literals;
 
-    BasicModelStatePair modelState;
+    BasicModelStatePairWithSharedEnvironment modelState;
 
     // set up the simulation to produce two reports (start, end)
     ForwardDynamicSimulatorParams params;

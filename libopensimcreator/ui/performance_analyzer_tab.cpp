@@ -1,6 +1,6 @@
 #include "performance_analyzer_tab.h"
 
-#include <libopensimcreator/documents/model/basic_model_state_pair.h>
+#include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/simulation/forward_dynamic_simulation.h>
 #include <libopensimcreator/documents/simulation/forward_dynamic_simulator.h>
 #include <libopensimcreator/documents/simulation/forward_dynamic_simulator_params.h>
@@ -50,7 +50,7 @@ public:
     explicit Impl(
         PerformanceAnalyzerTab& owner,
         Widget* parent,
-        BasicModelStatePair baseModel,
+        BasicModelStatePairWithSharedEnvironment baseModel,
         ParamBlock params) :
 
         TabPrivate{owner, parent, MSMICONS_FAST_FORWARD " PerformanceAnalyzerTab"},
@@ -200,7 +200,7 @@ private:
     }
 
     int m_Parallelism = 1;
-    BasicModelStatePair m_BaseModel;
+    BasicModelStatePairWithSharedEnvironment m_BaseModel;
     ParamBlock m_BaseParams;
     std::vector<ForwardDynamicSimulatorParams> m_Params;
     std::vector<ForwardDynamicSimulation> m_Simulations;
@@ -213,7 +213,7 @@ private:
 
 osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
     Widget* parent,
-    BasicModelStatePair modelState,
+    BasicModelStatePairWithSharedEnvironment modelState,
     const ParamBlock& params) :
 
     Tab{std::make_unique<Impl>(*this, parent, std::move(modelState), params)}

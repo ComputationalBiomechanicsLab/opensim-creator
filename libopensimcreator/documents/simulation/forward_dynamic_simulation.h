@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/documents/model/basic_model_state_pair.h>
+#include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/simulation/abstract_simulation.h>
 #include <libopensimcreator/documents/simulation/simulation_clock.h>
 #include <libopensimcreator/documents/simulation/simulation_report.h>
@@ -24,7 +24,7 @@ namespace osc
     // that `osc` is running
     class ForwardDynamicSimulation final : public AbstractSimulation {
     public:
-        ForwardDynamicSimulation(BasicModelStatePair, const ForwardDynamicSimulatorParams&);
+        ForwardDynamicSimulation(BasicModelStatePairWithSharedEnvironment, const ForwardDynamicSimulatorParams&);
         ForwardDynamicSimulation(const ForwardDynamicSimulation&) = delete;
         ForwardDynamicSimulation(ForwardDynamicSimulation&&) noexcept;
         ForwardDynamicSimulation& operator=(const ForwardDynamicSimulation&) = delete;

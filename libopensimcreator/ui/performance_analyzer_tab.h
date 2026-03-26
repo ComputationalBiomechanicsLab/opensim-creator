@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/documents/model/basic_model_state_pair.h>
+#include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 
 #include <liboscar/ui/tabs/tab.h>
 
@@ -13,7 +13,7 @@ namespace osc
     public:
         explicit PerformanceAnalyzerTab(
             Widget* parent,
-            BasicModelStatePair,
+            BasicModelStatePairWithSharedEnvironment,
             const ParamBlock&
         );
 

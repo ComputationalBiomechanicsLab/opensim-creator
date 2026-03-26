@@ -1,6 +1,6 @@
 #include "forward_dynamic_simulation.h"
 
-#include <libopensimcreator/documents/model/basic_model_state_pair.h>
+#include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/simulation/forward_dynamic_simulator.h>
 #include <libopensimcreator/documents/simulation/forward_dynamic_simulator_params.h>
 #include <libopensimcreator/documents/simulation/simulation_clock.h>
@@ -31,7 +31,7 @@ namespace
 {
     // creates a simulator that's hooked up to the reports vector
     ForwardDynamicSimulator MakeSimulation(
-        BasicModelStatePair p,
+        BasicModelStatePairWithSharedEnvironment p,
         const ForwardDynamicSimulatorParams& params,
         SynchronizedValue<std::vector<SimulationReport>>& reportQueue)
     {
@@ -58,7 +58,7 @@ namespace
 class osc::ForwardDynamicSimulation::Impl final {
 public:
 
-    Impl(BasicModelStatePair p, const ForwardDynamicSimulatorParams& params) :
+    Impl(BasicModelStatePairWithSharedEnvironment p, const ForwardDynamicSimulatorParams& params) :
         m_ModelState{std::move(p)},
         m_Simulation{MakeSimulation(*m_ModelState.lock(), params, m_ReportQueue)},
         m_Params{params},
@@ -73,7 +73,7 @@ public:
 
     SynchronizedValueGuard<const OpenSim::Model> getModel() const
     {
-        return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePair& p) -> decltype(auto) { return p.getModel(); });
+        return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePairWithSharedEnvironment& p) -> decltype(auto) { return p.getModel(); });
     }
 
     ptrdiff_t getNumReports() const
@@ -179,7 +179,7 @@ public:
                 m_Reports.back().getState();
 
             m_Simulation = MakeSimulation(
-                BasicModelStatePair{guard->getModel(), latestState},
+                BasicModelStatePairWithSharedEnvironment{guard->getModel(), latestState},
                 m_Params,
                 m_ReportQueue
             );
@@ -260,7 +260,7 @@ private:
         }
     }
 
-    SynchronizedValue<BasicModelStatePair> m_ModelState;
+    SynchronizedValue<BasicModelStatePairWithSharedEnvironment> m_ModelState;
     SynchronizedValue<std::vector<SimulationReport>> m_ReportQueue;
     std::vector<SimulationReport> m_Reports;
     ForwardDynamicSimulator m_Simulation;
@@ -270,7 +270,7 @@ private:
 };
 
 
-osc::ForwardDynamicSimulation::ForwardDynamicSimulation(BasicModelStatePair ms, const ForwardDynamicSimulatorParams& params) :
+osc::ForwardDynamicSimulation::ForwardDynamicSimulation(BasicModelStatePairWithSharedEnvironment ms, const ForwardDynamicSimulatorParams& params) :
     m_Impl{std::make_unique<Impl>(std::move(ms), params)}
 {}
 osc::ForwardDynamicSimulation::ForwardDynamicSimulation(ForwardDynamicSimulation&&) noexcept = default;

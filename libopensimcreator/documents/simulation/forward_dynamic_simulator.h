@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/documents/model/basic_model_state_pair.h>
+#include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/simulation/simulation_status.h>
 
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>
@@ -26,7 +26,7 @@ namespace osc
         // care: the callback is called *on the bg thread* - you should know how
         //       to handle it (e.g. mutexes) appropriately
         ForwardDynamicSimulator(
-            BasicModelStatePair,
+            BasicModelStatePairWithSharedEnvironment,
             const ForwardDynamicSimulatorParams&,
             std::function<void(SimulationReport)> onReportFromBgThread
         );

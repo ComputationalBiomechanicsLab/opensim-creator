@@ -26,6 +26,7 @@ namespace osc
         bool overwriteOrAddNewUserOutputExtractor(const opyn::SharedOutputExtractor& old, const opyn::SharedOutputExtractor& newer);
 
         std::vector<opyn::SharedOutputExtractor> getAllUserOutputExtractors() const;
+
     private:
         // simulation params: dictates how the next simulation shall be ran
         ParamBlock m_ParamBlock;

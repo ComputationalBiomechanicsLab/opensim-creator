@@ -1,7 +1,7 @@
 #include "undoable_model_actions.h"
 
 #include <libopensimcreator/documents/file_filters.h>
-#include <libopensimcreator/documents/model/basic_model_state_pair.h>
+#include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/model/environment.h>
 #include <libopensimcreator/documents/model/undoable_model_state_pair.h>
 #include <libopensimcreator/documents/simulation/forward_dynamic_simulation.h>
@@ -441,7 +441,7 @@ bool osc::ActionStartSimulatingModel(
     Widget& parent,
     const ModelStatePairWithSharedEnvironment& uim)
 {
-    BasicModelStatePair modelState{uim};
+    BasicModelStatePairWithSharedEnvironment modelState{uim};
     ForwardDynamicSimulatorParams params = FromParamBlock(uim.tryUpdEnvironment()->getSimulationParams());
 
     auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), params});

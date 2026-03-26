@@ -34,7 +34,7 @@ namespace
     {
         auto tab = std::make_unique<PerformanceAnalyzerTab>(
             &parent,
-            BasicModelStatePair{model},
+            BasicModelStatePairWithSharedEnvironment{model},
             model.tryUpdEnvironment()->getSimulationParams()
         );
         App::post_event<OpenTabEvent>(parent, std::move(tab));

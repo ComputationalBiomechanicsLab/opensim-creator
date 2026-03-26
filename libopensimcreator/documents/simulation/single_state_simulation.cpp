@@ -1,6 +1,6 @@
 #include "single_state_simulation.h"
 
-#include <libopensimcreator/documents/model/basic_model_state_pair.h>
+#include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/param_block.h>
 
 #include <libopynsim/utilities/open_sim_helpers.h>
@@ -11,13 +11,13 @@ using namespace osc;
 
 class osc::SingleStateSimulation::Impl final {
 public:
-    explicit Impl(BasicModelStatePair modelState) :
+    explicit Impl(BasicModelStatePairWithSharedEnvironment modelState) :
         m_ModelState{std::move(modelState)}
     {}
 
     SynchronizedValueGuard<const OpenSim::Model> getModel() const
     {
-        return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePair& ms) -> const OpenSim::Model& { return ms.getModel(); });
+        return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePairWithSharedEnvironment& ms) -> const OpenSim::Model& { return ms.getModel(); });
     }
 
     ptrdiff_t getNumReports() const
@@ -71,12 +71,12 @@ public:
     }
 
 private:
-    SynchronizedValue<BasicModelStatePair> m_ModelState;
+    SynchronizedValue<BasicModelStatePairWithSharedEnvironment> m_ModelState;
     ParamBlock m_Params;
 };
 
 
-osc::SingleStateSimulation::SingleStateSimulation(BasicModelStatePair modelState) :
+osc::SingleStateSimulation::SingleStateSimulation(BasicModelStatePairWithSharedEnvironment modelState) :
     m_Impl{std::make_unique<Impl>(std::move(modelState))}
 {}
 osc::SingleStateSimulation::SingleStateSimulation(SingleStateSimulation&&) noexcept = default;

@@ -1,6 +1,6 @@
 #include "forward_dynamic_simulator.h"
 
-#include <libopensimcreator/documents/model/basic_model_state_pair.h>
+#include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/simulation/forward_dynamic_simulator_params.h>
 #include <libopensimcreator/documents/simulation/integrator_method.h>
 #include <libopensimcreator/documents/simulation/simulation_clock.h>
@@ -55,7 +55,7 @@ namespace
     // exclusively owned input data
     class SimulatorThreadInput final {
     public:
-        SimulatorThreadInput(BasicModelStatePair modelState,
+        SimulatorThreadInput(BasicModelStatePairWithSharedEnvironment modelState,
                              const ForwardDynamicSimulatorParams& params,
                              std::function<void(SimulationReport)> onReportFromBgThread) :
             m_ModelState{std::move(modelState)},
@@ -70,7 +70,7 @@ namespace
         void emitReport(SimulationReport report) { m_ReportCallback(std::move(report)); }
 
     private:
-        BasicModelStatePair m_ModelState;
+        BasicModelStatePairWithSharedEnvironment m_ModelState;
         ForwardDynamicSimulatorParams m_Params;
         std::function<void(SimulationReport)> m_ReportCallback;
     };
@@ -380,7 +380,7 @@ namespace
 
 class osc::ForwardDynamicSimulator::Impl final {
 public:
-    Impl(BasicModelStatePair modelState,
+    Impl(BasicModelStatePairWithSharedEnvironment modelState,
         const ForwardDynamicSimulatorParams& params,
         std::function<void(SimulationReport)> onReportFromBgThread) :
 
@@ -447,7 +447,7 @@ opyn::SharedOutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
 }
 
 osc::ForwardDynamicSimulator::ForwardDynamicSimulator(
-    BasicModelStatePair msp,
+    BasicModelStatePairWithSharedEnvironment msp,
     const ForwardDynamicSimulatorParams& params,
     std::function<void(SimulationReport)> onReportFromBgThread) :
 

@@ -1,4 +1,4 @@
-#include "basic_model_state_pair.h"
+#include "basic_model_state_pair_with_shared_environment.h"
 
 #include <libopensimcreator/platform/open_sim_creator_app.h>
 #include <libopensimcreator/tests/testopensimcreatorconfig.h>
@@ -12,32 +12,32 @@
 
 using namespace osc;
 
-TEST(BasicModelStatePair, WhenConstructedFromFilepathLoadsTheOsimFileAndInitializesIt)
+TEST(BasicModelStatePairWithSharedEnvironment, WhenConstructedFromFilepathLoadsTheOsimFileAndInitializesIt)
 {
     const std::filesystem::path modelPath = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models/Arm26/arm26.osim";
 
-    BasicModelStatePair p{modelPath};
+    BasicModelStatePairWithSharedEnvironment p{modelPath};
     ASSERT_GE(p.getState().getSystemStage(), SimTK::Stage::Dynamics);
 }
 
-TEST(BasicModelStatePair, HasAFullyRealizedStateWhenCopied)
+TEST(BasicModelStatePairWithSharedEnvironment, HasAFullyRealizedStateWhenCopied)
 {
-    BasicModelStatePair p;
+    BasicModelStatePairWithSharedEnvironment p;
     ASSERT_EQ(p.getState().getSystemStage(), SimTK::Stage::Dynamics);
-    const BasicModelStatePair copy{p};  // NOLINT(performance-unnecessary-copy-initialization)
+    const BasicModelStatePairWithSharedEnvironment copy{p};  // NOLINT(performance-unnecessary-copy-initialization)
     ASSERT_EQ(copy.getState(). getSystemStage(), SimTK::Stage::Dynamics);
 }
 
-TEST(BasicModelStatePair, CanGenerateDecorationsFromCopy)
+TEST(BasicModelStatePairWithSharedEnvironment, CanGenerateDecorationsFromCopy)
 {
     GloballyInitOpenSim();
     GloballyAddDirectoryToOpenSimGeometrySearchPath(std::filesystem::path{OSC_RESOURCES_DIR} / "geometry");
 
     const std::filesystem::path modelPath = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models/Arm26/arm26.osim";
 
-    BasicModelStatePair p{modelPath};
+    BasicModelStatePairWithSharedEnvironment p{modelPath};
     SceneCache cache;
     ASSERT_NO_THROW({ opyn::GenerateModelDecorations(cache, p); });
-    const BasicModelStatePair copy{p};  // NOLINT(performance-unnecessary-copy-initialization)
+    const BasicModelStatePairWithSharedEnvironment copy{p};  // NOLINT(performance-unnecessary-copy-initialization)
     ASSERT_NO_THROW({ opyn::GenerateModelDecorations(cache, copy); });
 }

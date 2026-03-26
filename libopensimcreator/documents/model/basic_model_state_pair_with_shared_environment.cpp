@@ -1,4 +1,4 @@
-#include "basic_model_state_pair.h"
+#include "basic_model_state_pair_with_shared_environment.h"
 
 #include <libopensimcreator/documents/model/environment.h>
 
@@ -10,7 +10,7 @@
 
 using namespace osc;
 
-class osc::BasicModelStatePair::Impl final {
+class osc::BasicModelStatePairWithSharedEnvironment::Impl final {
 public:
 
     Impl() :
@@ -111,51 +111,51 @@ private:
 };
 
 
-osc::BasicModelStatePair::BasicModelStatePair() :
+osc::BasicModelStatePairWithSharedEnvironment::BasicModelStatePairWithSharedEnvironment() :
     m_Impl{std::make_unique<Impl>()}
 {}
 
-osc::BasicModelStatePair::BasicModelStatePair(const ModelStatePairWithSharedEnvironment& p) :
+osc::BasicModelStatePairWithSharedEnvironment::BasicModelStatePairWithSharedEnvironment(const ModelStatePairWithSharedEnvironment& p) :
     m_Impl{std::make_unique<Impl>(p)}
 {}
 
-osc::BasicModelStatePair::BasicModelStatePair(const std::filesystem::path& p) :
+osc::BasicModelStatePairWithSharedEnvironment::BasicModelStatePairWithSharedEnvironment(const std::filesystem::path& p) :
     m_Impl{std::make_unique<Impl>(p)}
 {}
-osc::BasicModelStatePair::BasicModelStatePair(OpenSim::Model&& model) :
+osc::BasicModelStatePairWithSharedEnvironment::BasicModelStatePairWithSharedEnvironment(OpenSim::Model&& model) :
     m_Impl{std::make_unique<Impl>(std::move(model))}
 {}
 
-osc::BasicModelStatePair::BasicModelStatePair(const OpenSim::Model& model, const SimTK::State& state) :
+osc::BasicModelStatePairWithSharedEnvironment::BasicModelStatePairWithSharedEnvironment(const OpenSim::Model& model, const SimTK::State& state) :
     m_Impl{std::make_unique<Impl>(model, state)}
 {}
-osc::BasicModelStatePair::BasicModelStatePair(const BasicModelStatePair&) = default;
-osc::BasicModelStatePair::BasicModelStatePair(BasicModelStatePair&&) noexcept = default;
-osc::BasicModelStatePair& osc::BasicModelStatePair::operator=(const BasicModelStatePair&) = default;
-osc::BasicModelStatePair& osc::BasicModelStatePair::operator=(BasicModelStatePair&&) noexcept = default;
-osc::BasicModelStatePair::~BasicModelStatePair() noexcept = default;
+osc::BasicModelStatePairWithSharedEnvironment::BasicModelStatePairWithSharedEnvironment(const BasicModelStatePairWithSharedEnvironment&) = default;
+osc::BasicModelStatePairWithSharedEnvironment::BasicModelStatePairWithSharedEnvironment(BasicModelStatePairWithSharedEnvironment&&) noexcept = default;
+osc::BasicModelStatePairWithSharedEnvironment& osc::BasicModelStatePairWithSharedEnvironment::operator=(const BasicModelStatePairWithSharedEnvironment&) = default;
+osc::BasicModelStatePairWithSharedEnvironment& osc::BasicModelStatePairWithSharedEnvironment::operator=(BasicModelStatePairWithSharedEnvironment&&) noexcept = default;
+osc::BasicModelStatePairWithSharedEnvironment::~BasicModelStatePairWithSharedEnvironment() noexcept = default;
 
-const OpenSim::Model& osc::BasicModelStatePair::implGetModel() const
+const OpenSim::Model& osc::BasicModelStatePairWithSharedEnvironment::implGetModel() const
 {
     return m_Impl->getModel();
 }
 
-const SimTK::State& osc::BasicModelStatePair::implGetState() const
+const SimTK::State& osc::BasicModelStatePairWithSharedEnvironment::implGetState() const
 {
     return m_Impl->getState();
 }
 
-float osc::BasicModelStatePair::implGetFixupScaleFactor() const
+float osc::BasicModelStatePairWithSharedEnvironment::implGetFixupScaleFactor() const
 {
     return m_Impl->getFixupScaleFactor();
 }
 
-void osc::BasicModelStatePair::implSetFixupScaleFactor(float v)
+void osc::BasicModelStatePairWithSharedEnvironment::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(v);
 }
 
-std::shared_ptr<Environment> osc::BasicModelStatePair::implUpdAssociatedEnvironment() const
+std::shared_ptr<Environment> osc::BasicModelStatePairWithSharedEnvironment::implUpdAssociatedEnvironment() const
 {
     return m_Impl->implUpdAssociatedEnvironment();
 }

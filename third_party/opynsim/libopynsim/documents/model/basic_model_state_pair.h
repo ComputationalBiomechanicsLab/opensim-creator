@@ -1,29 +1,28 @@
 #pragma once
 
-#include <libopensimcreator/documents/model/model_state_pair_with_shared_environment.h>
+#include <libopynsim/documents/model/model_state_pair.h>
+
 #include <liboscar/utilities/clone_ptr.h>
 
 #include <filesystem>
-#include <memory>
 
 namespace OpenSim { class Model; }
-namespace osc { class Environment; }
 namespace SimTK { class State; }
 
-namespace osc
+namespace opyn
 {
     // an `OpenSim::Model` + `SimTK::State` that is a value type, constructed with:
     //
-    // - `osc::Initialize`
+    // - `opyn::Initialize`
     // - (if creating a new state) `TryEquilibrateMusclesOrLogWarning(model, state)`
     // - (if creating a new state) `model.realizeDynamics(State&)` / `model.realizeReport(State&)`
     //
     // this is a *basic* class that only guarantees the model is *initialized* this way. It
     // does not guarantee that everything is up-to-date after a caller mutates the model.
-    class BasicModelStatePair final : public ModelStatePairWithSharedEnvironment {
+    class BasicModelStatePair : public ModelStatePair {
     public:
         BasicModelStatePair();
-        explicit BasicModelStatePair(const ModelStatePairWithSharedEnvironment&);
+        explicit BasicModelStatePair(const ModelStatePair&);
         explicit BasicModelStatePair(const std::filesystem::path&);
         explicit BasicModelStatePair(OpenSim::Model&&);
         BasicModelStatePair(const OpenSim::Model&, const SimTK::State&);
@@ -40,9 +39,7 @@ namespace osc
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;
 
-        std::shared_ptr<Environment> implUpdAssociatedEnvironment() const final;
-
         class Impl;
-        ClonePtr<Impl> m_Impl;
+        osc::ClonePtr<Impl> m_Impl;
     };
 }
