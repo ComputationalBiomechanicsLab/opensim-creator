@@ -1,6 +1,6 @@
 #include "mesh_warping_tab_toolbar.h"
 
-#include <libopensimcreator/documents/mesh_warper/undoable_tps_document_actions.h>
+#include <libopensimcreator/documents/mesh_warper/mw_undoable_actions.h>
 #include <libopensimcreator/platform/msmicons.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_shared_state.h>
 #include <libopensimcreator/ui/shared/basic_widgets.h>
@@ -91,10 +91,10 @@ private:
         ui::draw_button(MSMICONS_FOLDER_OPEN);
         if (ui::begin_popup_context_menu("##OpenFolder", ui::PopupFlag::MouseButtonLeft)) {
             if (ui::draw_menu_item("Load Source Mesh")) {
-                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
+                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), MiDocumentInputIdentifier::Source);
             }
             if (ui::draw_menu_item("Load Destination Mesh")) {
-                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Destination);
+                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), MiDocumentInputIdentifier::Destination);
             }
             ui::end_popup();
         }

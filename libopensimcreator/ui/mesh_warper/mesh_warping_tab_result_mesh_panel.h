@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/documents/mesh_warper/undoable_tps_document_actions.h>
+#include <libopensimcreator/documents/mesh_warper/mw_undoable_actions.h>
 #include <libopensimcreator/platform/msmicons.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_decoration_generators.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_panel.h>

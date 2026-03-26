@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libopensimcreator/documents/mesh_warper/tps_document_input_identifier.h>
-#include <libopensimcreator/documents/mesh_warper/undoable_tps_document_actions.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_input_identifier.h>
+#include <libopensimcreator/documents/mesh_warper/mw_undoable_actions.h>
 #include <libopensimcreator/platform/msmicons.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_shared_state.h>
 
@@ -65,19 +65,19 @@ namespace osc
         {
             if (ui::draw_menu_item("Source Mesh"))
             {
-                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
+                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), MiDocumentInputIdentifier::Source);
             }
             if (ui::draw_menu_item("Destination Mesh"))
             {
-                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Destination);
+                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), MiDocumentInputIdentifier::Destination);
             }
             if (ui::draw_menu_item("Source Landmarks from CSV"))
             {
-                ActionPromptUserToLoadLandmarksFromCSV(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
+                ActionPromptUserToLoadLandmarksFromCSV(m_State->getUndoableSharedPtr(), MiDocumentInputIdentifier::Source);
             }
             if (ui::draw_menu_item("Destination Landmarks from CSV"))
             {
-                ActionPromptUserToLoadLandmarksFromCSV(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Destination);
+                ActionPromptUserToLoadLandmarksFromCSV(m_State->getUndoableSharedPtr(), MiDocumentInputIdentifier::Destination);
             }
             if (ui::draw_menu_item("Non-Participating Landmarks from CSV"))
             {
@@ -89,11 +89,11 @@ namespace osc
         {
             if (ui::draw_menu_item("Source Landmarks to CSV"))
             {
-                ActionPromptUserToSaveLandmarksToCSV(m_State->getScratch(), TPSDocumentInputIdentifier::Source);
+                ActionPromptUserToSaveLandmarksToCSV(m_State->getScratch(), MiDocumentInputIdentifier::Source);
             }
             if (ui::draw_menu_item("Destination Landmarks to CSV"))
             {
-                ActionPromptUserToSaveLandmarksToCSV(m_State->getScratch(), TPSDocumentInputIdentifier::Destination);
+                ActionPromptUserToSaveLandmarksToCSV(m_State->getScratch(), MiDocumentInputIdentifier::Destination);
             }
             if (ui::draw_menu_item("Landmark Pairs to CSV"))
             {

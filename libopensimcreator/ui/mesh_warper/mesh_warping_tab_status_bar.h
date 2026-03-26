@@ -53,13 +53,13 @@ namespace osc
             {
                 ui::draw_text_disabled("(Click: select %s)", FindElementNameOr(m_State->getScratch(), *hover.getSceneElementID()).c_str());
             }
-            else if (hover.getInput() == TPSDocumentInputIdentifier::Source)
+            else if (hover.getInput() == MiDocumentInputIdentifier::Source)
             {
                 ui::draw_text_disabled("(Click: add a landmark, Ctrl+Click: add non-participating landmark)");
             }
             else
             {
-                static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
+                static_assert(num_options<MiDocumentInputIdentifier>() == 2);
                 ui::draw_text_disabled("(Click: add a landmark)");
             }
         }

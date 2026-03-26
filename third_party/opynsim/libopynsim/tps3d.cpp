@@ -94,7 +94,7 @@ namespace
     {
         o << "TPSCoefficientSolverInputs3D{landmarks = [";
         std::string_view delimiter;
-        for (const landmark_pair_3d<T>& landmark : inputs.landmarks) {
+        for (const LandmarkPair3D<T>& landmark : inputs.landmarks) {
             o << delimiter << landmark;
             delimiter = ", ";
         }
@@ -280,8 +280,8 @@ namespace
             return TPSCoefficients3D<T>{};
         }
 
-        static_assert(sizeof(landmark_pair_3d<T>) == 6*sizeof(T));
-        static_assert(alignof(landmark_pair_3d<T>) == alignof(T));
+        static_assert(sizeof(LandmarkPair3D<T>) == 6*sizeof(T));
+        static_assert(alignof(LandmarkPair3D<T>) == alignof(T));
         const cpp23::extents<size_t, cpp23::dynamic_extent, 3> shape{inputs.landmarks.size()};
         const std::array<size_t, 2> strides = {6, 1};
         const cpp23::layout_stride::mapping mapping{shape, strides};

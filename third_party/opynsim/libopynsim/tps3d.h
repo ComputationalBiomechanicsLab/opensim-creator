@@ -33,7 +33,7 @@ namespace opyn
 
         TPSCoefficientSolverInputs3D() = default;
 
-        explicit TPSCoefficientSolverInputs3D(std::vector<landmark_pair_3d<T>> landmarks_) :
+        explicit TPSCoefficientSolverInputs3D(std::vector<LandmarkPair3D<T>> landmarks_) :
             landmarks{std::move(landmarks_)}
         {}
 
@@ -41,7 +41,7 @@ namespace opyn
 
         // A sequence of source-to-destination point pairs in 3D that the TPS
         // warping algorithm is trying to fit a warping equation to.
-        std::vector<landmark_pair_3d<T>> landmarks;
+        std::vector<LandmarkPair3D<T>> landmarks;
 
         // Set this to `true` if the resulting warping equation should translate
         // points in the source coordinate system to the destination coordinate

@@ -35,10 +35,10 @@ namespace opyn
         bool hasSource() const { return m_MaybeSourcePosition.has_value(); }
         bool hasDestination() const { return m_MaybeDestinationPosition.has_value(); }
         bool isFullyPaired() const { return hasSource() && hasDestination(); }
-        std::optional<opyn::landmark_pair_3d<float>> tryGetPairedLocations() const
+        std::optional<opyn::LandmarkPair3D<float>> tryGetPairedLocations() const
         {
             if (m_MaybeSourcePosition && m_MaybeDestinationPosition) {
-                return opyn::landmark_pair_3d<float>{osc::to<SimTK::fVec3>(*m_MaybeSourcePosition), osc::to<SimTK::fVec3>(*m_MaybeDestinationPosition)};
+                return opyn::LandmarkPair3D<float>{osc::to<SimTK::fVec3>(*m_MaybeSourcePosition), osc::to<SimTK::fVec3>(*m_MaybeDestinationPosition)};
             }
             else {
                 return std::nullopt;

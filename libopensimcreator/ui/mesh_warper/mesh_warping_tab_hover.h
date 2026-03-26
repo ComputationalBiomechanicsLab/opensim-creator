@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libopensimcreator/documents/mesh_warper/tps_document_element_id.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_input_identifier.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_element_id.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_input_identifier.h>
 
 #include <liboscar/maths/vector.h>
 
@@ -13,14 +13,14 @@ namespace osc
     class MeshWarpingTabHover final {
     public:
         explicit MeshWarpingTabHover(
-            TPSDocumentInputIdentifier input_,
+            MiDocumentInputIdentifier input_,
             const Vector3& worldSpaceLocation_) :
             m_Input{input_},
             m_WorldSpaceLocation{worldSpaceLocation_}
         {}
 
         explicit MeshWarpingTabHover(
-            TPSDocumentElementID sceneElementID_,
+            MwDocumentElementID sceneElementID_,
             const Vector3& worldSpaceLocation_) :
 
             m_MaybeSceneElementID{std::move(sceneElementID_)},
@@ -29,12 +29,12 @@ namespace osc
         {
         }
 
-        TPSDocumentInputIdentifier getInput() const
+        MiDocumentInputIdentifier getInput() const
         {
             return m_Input;
         }
 
-        std::optional<TPSDocumentElementID> getSceneElementID() const
+        std::optional<MwDocumentElementID> getSceneElementID() const
         {
             return m_MaybeSceneElementID;
         }
@@ -44,7 +44,7 @@ namespace osc
             return m_MaybeSceneElementID.has_value();
         }
 
-        bool isHovering(const TPSDocumentElementID& el) const
+        bool isHovering(const MwDocumentElementID& el) const
         {
             return m_MaybeSceneElementID == el;
         }
@@ -55,8 +55,8 @@ namespace osc
         }
 
     private:
-        std::optional<TPSDocumentElementID> m_MaybeSceneElementID;
-        TPSDocumentInputIdentifier m_Input;
+        std::optional<MwDocumentElementID> m_MaybeSceneElementID;
+        MiDocumentInputIdentifier m_Input;
         Vector3 m_WorldSpaceLocation;
     };
 }

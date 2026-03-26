@@ -1,9 +1,9 @@
-#include "tps_document.h"
+#include "mw_document.h"
 
 #include <liboscar/graphics/geometries/cylinder_geometry.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>
 
-osc::TPSDocument::TPSDocument() :
+osc::MwDocument::MwDocument() :
     sourceMesh{SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}}.mesh()},
     destinationMesh{CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16}}.mesh()},
     blendingFactor{1.0f},

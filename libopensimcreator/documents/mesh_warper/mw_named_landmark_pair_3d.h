@@ -5,7 +5,8 @@
 
 namespace osc
 {
-    struct NamedLandmarkPair3D final : public opyn::landmark_pair_3d<float> {
+    /// Represents a named landmark pair in 3D space.
+    struct MwNamedLandmarkPair3D final : public opyn::LandmarkPair3D<float> {
         StringName name;
     };
 }

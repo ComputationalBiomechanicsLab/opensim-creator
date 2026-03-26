@@ -1,9 +1,9 @@
 #pragma once
 
-#include <libopensimcreator/documents/mesh_warper/tps_document.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_helpers.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_landmark_pair.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_non_participating_landmark.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_helpers.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_landmark_pair.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_non_participating_landmark.h>
 #include <libopensimcreator/platform/open_sim_creator_colors.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_shared_state.h>
 
@@ -77,7 +77,7 @@ namespace osc
             ui::end_table();
         }
 
-        void drawLandmarksTableRow(const TPSDocumentLandmarkPair& p)
+        void drawLandmarksTableRow(const MwDocumentLandmarkPair& p)
         {
             // name column
             ui::table_next_row();
@@ -182,7 +182,7 @@ namespace osc
             ui::end_table();
         }
 
-        void drawNonParticipatingLandmarksTableRow(const TPSDocumentNonParticipatingLandmark& npl)
+        void drawNonParticipatingLandmarksTableRow(const MwDocumentNonParticipatingLandmark& npl)
         {
             // name column
             ui::table_next_row();

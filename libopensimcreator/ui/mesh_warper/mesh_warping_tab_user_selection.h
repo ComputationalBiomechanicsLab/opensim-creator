@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/documents/mesh_warper/tps_document_element_id.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_element_id.h>
 
 #include <unordered_set>
 #include <utility>
@@ -15,9 +15,9 @@ namespace osc
         auto end() const { return m_SelectedSceneElements.end(); }
 
         void clear() { m_SelectedSceneElements.clear(); }
-        void select(TPSDocumentElementID el) { m_SelectedSceneElements.insert(std::move(el)); }
-        bool contains(const TPSDocumentElementID& el) const { return m_SelectedSceneElements.contains(el); }
+        void select(MwDocumentElementID el) { m_SelectedSceneElements.insert(std::move(el)); }
+        bool contains(const MwDocumentElementID& el) const { return m_SelectedSceneElements.contains(el); }
     private:
-        std::unordered_set<TPSDocumentElementID> m_SelectedSceneElements;
+        std::unordered_set<MwDocumentElementID> m_SelectedSceneElements;
     };
 }

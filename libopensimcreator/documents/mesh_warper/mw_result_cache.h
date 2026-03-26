@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libopensimcreator/documents/mesh_warper/tps_document.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_helpers.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_helpers.h>
 
 #include <libopynsim/utilities/simbody_x_oscar.h>
 #include <libopynsim/tps3d.h>
@@ -18,19 +18,18 @@ namespace rgs = std::ranges;
 
 namespace osc
 {
-    // TPS result cache
-    //
-    // caches the result of an (expensive) TPS warp of the mesh by checking
-    // whether the warping parameters have changed
-    class TPSResultCache final {
+    /// A class that caches mesh warping computation (e.g. TPS coefficient
+    /// derivation and mesh warping) so that the mesh warping UI can operate
+    /// more quickly between user edits.
+    class MwResultCache final {
     public:
-        const Mesh& getWarpedMesh(const TPSDocument& doc)
+        const Mesh& getWarpedMesh(const MwDocument& doc)
         {
             updateAll(doc);
             return m_CachedResultMesh;
         }
 
-        std::span<const Vector3> getWarpedNonParticipatingLandmarkLocations(const TPSDocument& doc)
+        std::span<const Vector3> getWarpedNonParticipatingLandmarkLocations(const MwDocument& doc)
         {
             updateAll(doc);
             static_assert(alignof(decltype(m_CachedResultNonParticipatingLandmarks.front())) == alignof(SimTK::fVec3));
@@ -40,7 +39,7 @@ namespace osc
         }
 
     private:
-        void updateAll(const TPSDocument& doc)
+        void updateAll(const MwDocument& doc)
         {
             const bool updatedCoefficients = updateCoefficients(doc);
             const bool updatedNonParticipatingLandmarks = updateSourceNonParticipatingLandmarks(doc);
@@ -59,7 +58,7 @@ namespace osc
         }
 
         // returns `true` if cached inputs were updated; otherwise, returns the cached inputs
-        bool updateInputs(const TPSDocument& doc)
+        bool updateInputs(const MwDocument& doc)
         {
             opyn::TPSCoefficientSolverInputs3D newInputs{GetLandmarkPairs(doc)};
             for (auto& [source, destination] : newInputs.landmarks) {
@@ -81,7 +80,7 @@ namespace osc
         }
 
         // returns `true` if cached coefficients were updated
-        bool updateCoefficients(const TPSDocument& doc)
+        bool updateCoefficients(const MwDocument& doc)
         {
             if (!updateInputs(doc))
             {
@@ -103,14 +102,14 @@ namespace osc
         }
 
 
-        bool updateSourceNonParticipatingLandmarks(const TPSDocument& doc)
+        bool updateSourceNonParticipatingLandmarks(const MwDocument& doc)
         {
             const auto& docLandmarks = doc.nonParticipatingLandmarks;
 
             const bool samePositions = rgs::equal(
                 docLandmarks,
                 m_CachedSourceNonParticipatingLandmarks,
-                [](const TPSDocumentNonParticipatingLandmark& lm, const SimTK::fVec3& position)
+                [](const MwDocumentNonParticipatingLandmark& lm, const SimTK::fVec3& position)
                 {
                     return lm.location.x() == position[0] and lm.location.y() == position[1] and lm.location.z() == position[2];
                 }
@@ -133,7 +132,7 @@ namespace osc
         }
 
         // returns `true` if `m_CachedSourceMesh` is updated
-        bool updateInputMesh(const TPSDocument& doc)
+        bool updateInputMesh(const MwDocument& doc)
         {
             if (m_CachedSourceMesh != doc.sourceMesh)
             {
@@ -146,7 +145,7 @@ namespace osc
             }
         }
 
-        bool updateBlendingFactor(const TPSDocument& doc)
+        bool updateBlendingFactor(const MwDocument& doc)
         {
             if (m_CachedBlendingFactor != doc.blendingFactor) {
                 m_CachedBlendingFactor = doc.blendingFactor;
@@ -157,7 +156,7 @@ namespace osc
             }
         }
 
-        bool updateRecalculateNormalsState(const TPSDocument& doc)
+        bool updateRecalculateNormalsState(const MwDocument& doc)
         {
             if (m_CachedRecalculateNormalsState != doc.recalculateNormals) {
                 m_CachedRecalculateNormalsState = doc.recalculateNormals;

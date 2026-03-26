@@ -1,11 +1,11 @@
 #pragma once
 
-#include <libopensimcreator/documents/mesh_warper/tps_document_element.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_element_id.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_helpers.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_landmark_pair.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_non_participating_landmark.h>
-#include <libopensimcreator/documents/mesh_warper/undoable_tps_document_actions.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_element.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_element_id.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_helpers.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_landmark_pair.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_non_participating_landmark.h>
+#include <libopensimcreator/documents/mesh_warper/mw_undoable_actions.h>
 #include <libopensimcreator/platform/msmicons.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_shared_state.h>
 #include <libopensimcreator/ui/shared/basic_widgets.h>
@@ -28,7 +28,7 @@ namespace osc
             Widget* parent,
             std::string_view label_,
             std::shared_ptr<MeshWarpingTabSharedState> shared_,
-            TPSDocumentElementID rightClickedID_) :
+            MwDocumentElementID rightClickedID_) :
 
             Popup{parent, label_},
             m_State{std::move(shared_)},
@@ -39,16 +39,16 @@ namespace osc
     private:
         void impl_draw_content() final
         {
-            const TPSDocumentElement* el = FindElement(m_State->getScratch(), m_ElementID);
+            const MwDocumentElement* el = FindElement(m_State->getScratch(), m_ElementID);
             if (!el)
             {
                 request_close();  // element cannot be found in document (deleted? renamed?)
             }
-            else if (const auto* landmarkPair = dynamic_cast<const TPSDocumentLandmarkPair*>(el))
+            else if (const auto* landmarkPair = dynamic_cast<const MwDocumentLandmarkPair*>(el))
             {
                 drawContextMenu(*landmarkPair);
             }
-            else if (const auto* npl = dynamic_cast<const TPSDocumentNonParticipatingLandmark*>(el))
+            else if (const auto* npl = dynamic_cast<const MwDocumentNonParticipatingLandmark*>(el))
             {
                 drawContextMenu(*npl);
             }
@@ -58,7 +58,7 @@ namespace osc
             }
         }
 
-        void drawContextMenu(const TPSDocumentLandmarkPair& lm)
+        void drawContextMenu(const MwDocumentLandmarkPair& lm)
         {
             // header
             DrawContextMenuHeader(truncate_with_ellipsis(lm.name, 15), "Landmark");
@@ -85,7 +85,7 @@ namespace osc
                 ui::draw_float3_meters_input("source           ", *m_ActivePositionEdit);  // (padded to align with `destination`)
                 if (ui::should_save_last_drawn_item_value())
                 {
-                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Source, *m_ActivePositionEdit);
+                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, MiDocumentInputIdentifier::Source, *m_ActivePositionEdit);
                     m_ActivePositionEdit.reset();
                 }
             }
@@ -93,7 +93,7 @@ namespace osc
             {
                 if (ui::draw_button("add source"))
                 {
-                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Source, Vector3{});
+                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, MiDocumentInputIdentifier::Source, Vector3{});
                 }
             }
 
@@ -106,7 +106,7 @@ namespace osc
                 ui::draw_float3_meters_input("destination", *m_ActiveDestinationPositionEdit);
                 if (ui::should_save_last_drawn_item_value())
                 {
-                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Destination, *m_ActiveDestinationPositionEdit);
+                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, MiDocumentInputIdentifier::Destination, *m_ActiveDestinationPositionEdit);
                     m_ActivePositionEdit.reset();
                 }
             }
@@ -114,7 +114,7 @@ namespace osc
             {
                 if (ui::draw_button_centered("add destination"))
                 {
-                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Destination, Vector3{});
+                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, MiDocumentInputIdentifier::Destination, Vector3{});
                 }
             }
 
@@ -127,7 +127,7 @@ namespace osc
             }
         }
 
-        void drawContextMenu(const TPSDocumentNonParticipatingLandmark& npl)
+        void drawContextMenu(const MwDocumentNonParticipatingLandmark& npl)
         {
             // header
             DrawContextMenuHeader(truncate_with_ellipsis(npl.name, 15), "Non-Participating Landmark");
@@ -166,7 +166,7 @@ namespace osc
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
-        TPSDocumentElementID m_ElementID;
+        MwDocumentElementID m_ElementID;
         std::optional<std::string> m_ActiveNameEdit;
         std::optional<Vector3> m_ActivePositionEdit;
         std::optional<Vector3> m_ActiveDestinationPositionEdit;

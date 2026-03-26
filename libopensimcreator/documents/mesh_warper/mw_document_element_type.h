@@ -2,8 +2,8 @@
 
 namespace osc
 {
-    // identifies a specific part of the input of the TPS document
-    enum class TPSDocumentElementType {
+    /// Identifies the type of a `MwDocumentElement`.
+    enum class MwDocumentElementType {
         Landmark,
         NonParticipatingLandmark,
         NUM_OPTIONS,

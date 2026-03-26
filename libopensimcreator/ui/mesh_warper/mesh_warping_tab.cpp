@@ -1,6 +1,6 @@
 #include "mesh_warping_tab.h"
 
-#include <libopensimcreator/documents/mesh_warper/tps_document_input_identifier.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_input_identifier.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_input_mesh_panel.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_main_menu.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_navigator_panel.h>
@@ -36,7 +36,7 @@ public:
             "Source Mesh",
             [state = m_Shared](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<MeshWarpingTabInputMeshPanel>(parent, panelName, state, TPSDocumentInputIdentifier::Source);
+                return std::make_shared<MeshWarpingTabInputMeshPanel>(parent, panelName, state, MiDocumentInputIdentifier::Source);
             }
         );
 
@@ -44,7 +44,7 @@ public:
             "Destination Mesh",
             [state = m_Shared](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<MeshWarpingTabInputMeshPanel>(parent, panelName, state, TPSDocumentInputIdentifier::Destination);
+                return std::make_shared<MeshWarpingTabInputMeshPanel>(parent, panelName, state, MiDocumentInputIdentifier::Destination);
             }
         );
 

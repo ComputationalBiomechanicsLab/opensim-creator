@@ -1,10 +1,10 @@
 #pragma once
 
-#include <libopensimcreator/documents/mesh_warper/tps_document.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_helpers.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_input_identifier.h>
-#include <libopensimcreator/documents/mesh_warper/tps_warp_result_cache.h>
-#include <libopensimcreator/documents/mesh_warper/undoable_tps_document.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_helpers.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_input_identifier.h>
+#include <libopensimcreator/documents/mesh_warper/mw_result_cache.h>
+#include <libopensimcreator/documents/mesh_warper/mw_undoable_document.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_hover.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_user_selection.h>
 
@@ -65,38 +65,38 @@ namespace osc
             m_PopupManager.on_draw();
         }
 
-        const TPSDocument& getScratch() const
+        const MwDocument& getScratch() const
         {
             return m_UndoableTPSDocument->scratch();
         }
 
-        const UndoableTPSDocument& getUndoable() const
+        const MwUndoableDocument& getUndoable() const
         {
             return *m_UndoableTPSDocument;
         }
 
-        UndoableTPSDocument& updUndoable()
+        MwUndoableDocument& updUndoable()
         {
             return *m_UndoableTPSDocument;
         }
 
-        std::shared_ptr<UndoableTPSDocument> getUndoableSharedPtr()
+        std::shared_ptr<MwUndoableDocument> getUndoableSharedPtr()
         {
             return m_UndoableTPSDocument;
         }
 
-        const Mesh& getScratchMesh(TPSDocumentInputIdentifier which) const
+        const Mesh& getScratchMesh(MiDocumentInputIdentifier which) const
         {
             return GetMesh(getScratch(), which);
         }
 
-        const BVH& getScratchMeshBVH(TPSDocumentInputIdentifier which)
+        const BVH& getScratchMeshBVH(MiDocumentInputIdentifier which)
         {
             const Mesh& mesh = getScratchMesh(which);
             return updSceneCache().get_bvh(mesh);
         }
 
-        TPSResultCache& updResultCache()
+        MwResultCache& updResultCache()
         {
             return m_WarpingCache;
         }
@@ -122,7 +122,7 @@ namespace osc
             return *m_CurrentHover;
         }
 
-        bool isHovered(const TPSDocumentElementID& id) const
+        bool isHovered(const MwDocumentElementID& id) const
         {
             return m_CurrentHover && m_CurrentHover->isHovering(id);
         }
@@ -132,7 +132,7 @@ namespace osc
             m_CurrentHover = newHover;
         }
 
-        void setHover(TPSDocumentInputIdentifier id, const Vector3& position)
+        void setHover(MiDocumentInputIdentifier id, const Vector3& position)
         {
             m_CurrentHover.emplace(id, position);
         }
@@ -145,13 +145,13 @@ namespace osc
         bool hasSelection() const
         {
             // TODO: should probably gc the selection
-            return std::ranges::any_of(m_UserSelection, [this](const TPSDocumentElementID& el)
+            return std::ranges::any_of(m_UserSelection, [this](const MwDocumentElementID& el)
             {
                 return FindElement(getScratch(), el);
             });
         }
 
-        std::vector<Vector3> getSelectionLandmarkLocations(TPSDocumentInputIdentifier input) const
+        std::vector<Vector3> getSelectionLandmarkLocations(MiDocumentInputIdentifier input) const
         {
             std::vector<Vector3> rv;
             for (const auto& el : m_UserSelection) {
@@ -164,9 +164,9 @@ namespace osc
             return rv;
         }
 
-        std::unordered_set<TPSDocumentElementID> getSelected(TPSDocumentInputIdentifier input) const
+        std::unordered_set<MwDocumentElementID> getSelected(MiDocumentInputIdentifier input) const
         {
-            std::unordered_set<TPSDocumentElementID> rv;
+            std::unordered_set<MwDocumentElementID> rv;
             for (const auto& el : m_UserSelection) {
                 if (el.input == input) {
                     rv.insert(el);
@@ -175,12 +175,12 @@ namespace osc
             return rv;
         }
 
-        bool isSelected(const TPSDocumentElementID& id) const
+        bool isSelected(const MwDocumentElementID& id) const
         {
             return m_UserSelection.contains(id);
         }
 
-        void select(const TPSDocumentElementID& id)
+        void select(const MwDocumentElementID& id)
         {
             m_UserSelection.select(id);
         }
@@ -197,7 +197,7 @@ namespace osc
             }
         }
 
-        std::unordered_set<TPSDocumentElementID> getUnderlyingSelectionSet() const
+        std::unordered_set<MwDocumentElementID> getUnderlyingSelectionSet() const
         {
             return {m_UserSelection.begin(), m_UserSelection.end()};
         }
@@ -285,10 +285,10 @@ namespace osc
         Widget* m_Parent;
 
         // cached TPS3D algorithm result (to prevent recomputing it over and over)
-        TPSResultCache m_WarpingCache;
+        MwResultCache m_WarpingCache;
 
         // the document that the user is editing
-        std::shared_ptr<UndoableTPSDocument> m_UndoableTPSDocument = std::make_shared<UndoableTPSDocument>();
+        std::shared_ptr<MwUndoableDocument> m_UndoableTPSDocument = std::make_shared<MwUndoableDocument>();
 
         // `true` if the user wants the cameras to be linked
         bool m_LinkCameras = true;

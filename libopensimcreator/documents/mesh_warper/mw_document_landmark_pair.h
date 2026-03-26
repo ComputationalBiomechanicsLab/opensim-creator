@@ -1,9 +1,9 @@
 #pragma once
 
-#include <libopensimcreator/documents/mesh_warper/tps_document_element.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_element_id.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_element_type.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_input_identifier.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_element.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_element_id.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_element_type.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_input_identifier.h>
 
 #include <liboscar/maths/vector.h>
 #include <liboscar/utilities/string_name.h>
@@ -15,16 +15,16 @@
 
 namespace osc
 {
-    // a landmark pair in the TPS document (might be midway through definition)
-    struct TPSDocumentLandmarkPair final : public TPSDocumentElement {
+    /// A landmark pair in the TPS document, which might be midway through definition.
+    struct MwDocumentLandmarkPair final : public MwDocumentElement {
 
-        explicit TPSDocumentLandmarkPair(StringName name_) :
+        explicit MwDocumentLandmarkPair(StringName name_) :
             name{std::move(name_)}
         {}
 
         template<typename StringLike>
         requires std::constructible_from<StringName, StringLike&&>
-        explicit TPSDocumentLandmarkPair(
+        explicit MwDocumentLandmarkPair(
             StringLike&& name_,
             std::optional<Vector3> maybeSourceLocation_,
             std::optional<Vector3> maybeDestinationLocation_) :
@@ -34,14 +34,14 @@ namespace osc
             maybeDestinationLocation{std::move(maybeDestinationLocation_)}
         {}
 
-        TPSDocumentElementID sourceID() const
+        MwDocumentElementID sourceID() const
         {
-            return TPSDocumentElementID{uid, TPSDocumentElementType::Landmark, TPSDocumentInputIdentifier::Source};
+            return MwDocumentElementID{uid, MwDocumentElementType::Landmark, MiDocumentInputIdentifier::Source};
         }
 
-        TPSDocumentElementID destinationID() const
+        MwDocumentElementID destinationID() const
         {
-            return TPSDocumentElementID{uid, TPSDocumentElementType::Landmark, TPSDocumentInputIdentifier::Destination};
+            return MwDocumentElementID{uid, MwDocumentElementType::Landmark, MiDocumentInputIdentifier::Destination};
         }
 
         UID uid;

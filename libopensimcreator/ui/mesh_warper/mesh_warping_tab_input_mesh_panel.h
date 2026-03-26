@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libopensimcreator/documents/mesh_warper/tps_document_input_identifier.h>
-#include <libopensimcreator/documents/mesh_warper/tps_document_landmark_pair.h>
-#include <libopensimcreator/documents/mesh_warper/undoable_tps_document_actions.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_input_identifier.h>
+#include <libopensimcreator/documents/mesh_warper/mw_document_landmark_pair.h>
+#include <libopensimcreator/documents/mesh_warper/mw_undoable_actions.h>
 #include <libopensimcreator/platform/msmicons.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_context_menu.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_decoration_generators.h>
@@ -50,7 +50,7 @@ namespace osc
             Widget* parent,
             std::string_view panelName_,
             std::shared_ptr<MeshWarpingTabSharedState> state_,
-            TPSDocumentInputIdentifier documentIdentifier_) :
+            MiDocumentInputIdentifier documentIdentifier_) :
 
             MeshWarpingTabPanel{parent, panelName_},
             m_State{std::move(state_)},
@@ -139,7 +139,7 @@ namespace osc
             const Ray& cameraRay,
             std::optional<MeshWarpingTabHover>& closest) const
         {
-            for (const TPSDocumentLandmarkPair& landmark : m_State->getScratch().landmarkPairs)
+            for (const MwDocumentLandmarkPair& landmark : m_State->getScratch().landmarkPairs)
             {
                 hittestLandmark(cameraRay, closest, landmark);
             }
@@ -149,7 +149,7 @@ namespace osc
         void hittestLandmark(
             const Ray& cameraRay,
             std::optional<MeshWarpingTabHover>& closest,
-            const TPSDocumentLandmarkPair& landmark) const
+            const MwDocumentLandmarkPair& landmark) const
         {
             const std::optional<Vector3> maybePos = GetLocation(landmark, m_DocumentIdentifier);
             if (!maybePos) {
@@ -162,7 +162,7 @@ namespace osc
             {
                 if (!closest || length(closest->getWorldSpaceLocation() - cameraRay.origin) > collision->distance)
                 {
-                    TPSDocumentElementID fullID{landmark.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
+                    MwDocumentElementID fullID{landmark.uid, MwDocumentElementType::Landmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), *maybePos);
                 }
             }
@@ -183,7 +183,7 @@ namespace osc
         void hittestNonParticipatingLandmark(
             const Ray& cameraRay,
             std::optional<MeshWarpingTabHover>& closest,
-            const TPSDocumentNonParticipatingLandmark& nonPariticpatingLandmark) const
+            const MwDocumentNonParticipatingLandmark& nonPariticpatingLandmark) const
         {
             // hittest non-participating landmark as an analytic sphere
 
@@ -196,7 +196,7 @@ namespace osc
             {
                 if (!closest || length(closest->getWorldSpaceLocation() - cameraRay.origin) > collision->distance)
                 {
-                    TPSDocumentElementID fullID{nonPariticpatingLandmark.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
+                    MwDocumentElementID fullID{nonPariticpatingLandmark.uid, MwDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), nonPariticpatingLandmark.location);
                 }
             }
@@ -260,14 +260,14 @@ namespace osc
         void generateDecorationsForLandmarks(
             const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
-            for (const TPSDocumentLandmarkPair& landmarkPair : m_State->getScratch().landmarkPairs)
+            for (const MwDocumentLandmarkPair& landmarkPair : m_State->getScratch().landmarkPairs)
             {
                 generateDecorationsForLandmark(landmarkPair, decorationConsumer);
             }
         }
 
         void generateDecorationsForLandmark(
-            const TPSDocumentLandmarkPair& landmarkPair,
+            const MwDocumentLandmarkPair& landmarkPair,
             const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
             const std::optional<Vector3> location = GetLocation(landmarkPair, m_DocumentIdentifier);
@@ -282,7 +282,7 @@ namespace osc
                 .shading = color,
             };
 
-            const TPSDocumentElementID landmarkID{landmarkPair.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
+            const MwDocumentElementID landmarkID{landmarkPair.uid, MwDocumentElementType::Landmark, m_DocumentIdentifier};
             if (m_State->isSelected(landmarkID)) {
                 decoration.flags |= SceneDecorationFlag::RimHighlight0;
             }
@@ -297,7 +297,7 @@ namespace osc
         void generateDecorationsForNonParticipatingLandmarks(
             const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
-            if (m_DocumentIdentifier != TPSDocumentInputIdentifier::Source) {
+            if (m_DocumentIdentifier != MiDocumentInputIdentifier::Source) {
                 return;  // only show them on the source (to-be-warped) mesh
             }
 
@@ -307,7 +307,7 @@ namespace osc
         }
 
         void generateDecorationsForNonParticipatingLandmark(
-            const TPSDocumentNonParticipatingLandmark& npl,
+            const MwDocumentNonParticipatingLandmark& npl,
             const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
             const Color color = m_State->getNonParticipatingLandmarkColor();
@@ -319,7 +319,7 @@ namespace osc
                 },
                 .shading = color,
             };
-            const TPSDocumentElementID id{npl.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
+            const MwDocumentElementID id{npl.uid, MwDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
             if (m_State->isSelected(id)) {
                 decoration.flags |= SceneDecorationFlag::RimHighlight0;
             }
@@ -537,7 +537,7 @@ namespace osc
                 {
                     ActionPromptUserToLoadLandmarksFromCSV(m_State->getUndoableSharedPtr(), m_DocumentIdentifier);
                 }
-                if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source &&
+                if (m_DocumentIdentifier == MiDocumentInputIdentifier::Source &&
                     ui::draw_menu_item("Non-Participating Landmarks from CSV"))
                 {
                     ActionPromptUserToLoadNonParticipatingLandmarksFromCSV(m_State->getUndoableSharedPtr());
@@ -586,7 +586,7 @@ namespace osc
                 {
                     ActionPromptUserToSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier, opyn::LandmarkCSVFlags::NoHeader | opyn::LandmarkCSVFlags::NoNames);
                 }
-                if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source)
+                if (m_DocumentIdentifier == MiDocumentInputIdentifier::Source)
                 {
                     if (ui::draw_menu_item("Non-Participating Landmarks to CSV"))
                     {
@@ -628,14 +628,14 @@ namespace osc
 
         bool isUserPlacingNonParticipatingLandmark() const
         {
-            static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
-            const bool isSourceMesh = m_DocumentIdentifier == TPSDocumentInputIdentifier::Source;
+            static_assert(num_options<MiDocumentInputIdentifier>() == 2);
+            const bool isSourceMesh = m_DocumentIdentifier == MiDocumentInputIdentifier::Source;
             const bool isCtrlPressed = ui::any_of_keys_down({Key::LeftCtrl, Key::RightCtrl});
             return isSourceMesh && isCtrlPressed;
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
-        TPSDocumentInputIdentifier m_DocumentIdentifier;
+        MiDocumentInputIdentifier m_DocumentIdentifier;
         PolarPerspectiveCamera m_Camera = create_camera_focused_on(m_State->getScratchMesh(m_DocumentIdentifier).bounds().value_or(AABB{}));
         CachedSceneRenderer m_CachedRenderer{
             *App::singleton<SceneCache>(App::resource_loader()),
