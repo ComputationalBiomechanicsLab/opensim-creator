@@ -148,8 +148,7 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-MacOS-amd64/install",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_OSX_ARCHITECTURES": "x86_64",
-                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
-                "CMAKE_OSX_SYSROOT": "macosx14.5"
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5"
             }
         },
         {
@@ -162,8 +161,7 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-MacOS-arm64/install",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
-                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
-                "CMAKE_OSX_SYSROOT": "macosx14.5"
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5"
             }
         },
         {
@@ -175,7 +173,6 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-Windows-amd64/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Windows-amd64/install",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_SYSTEM_VERSION": "10.0.26100.0",
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded"
             }
         }
