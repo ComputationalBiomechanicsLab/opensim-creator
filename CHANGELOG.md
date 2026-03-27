@@ -8,14 +8,20 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [0.7.3] - 2026/03/27
 
+0.7.3 is a minor release that improves the rendering and interaction behavior
+of `Scholz2015GeometryPath`, gives the Windows `.msi` installer a fancier
+banner, fixes a few bugs, and ensures that `osc.exe` can be run on a blank
+Windows installation (versions 0.7.0 to 0.7.2 assumed a Visual C++ runtime
+was installed on the machine).
+
 - The documentation generator (Sphinx) and theme (sphinx_book_theme) were updated
   and the sidebar was cleaned up a little.
 - The "Building from Source" link in the Installation documentation page now directly links
   to building-from-source.rst, rather than a bookmark (#1165)
-- Fixed the moment arm of a muscle that uses the newer `Scholz2015GeometryPath` not plotting
-  in the live muscle plotter (#1167).
+- Fixed an issue where the moment arm of a muscle that uses the newer `Scholz2015GeometryPath`
+  was not plotting in the live muscle plotter (#1167).
 - Fixed toggling the visibility of a `Scholz2015GeometryPath` did not show/hide it in the visualizer (#1166).
-- Fixed modifying the representation (Surface/Wireframe/Hidden) part of the `Apperance` of a `GeometryPath`
+- Fixed modifying the representation (Surface/Wireframe/Hidden) part of the `Appearance` of a `GeometryPath`
   being ignored. It is now taken into account for all rendering types (i.e. Lines of Action and Fibers
   & Tendons, #1166).
 - Fixed the opacity part of the `Appearance` of a `GeometryPath` being ignored. It is now taken into account
