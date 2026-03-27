@@ -31,7 +31,8 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Clean-install the passing binaries on development machines, ensure they install on all OSes
           if there's any issues, fix them, commit, ensure CI passes, etc.
     - [ ] Update `CHANGELOG.md` sections such that the current `Unreleased` section becomes
-          `XX.xx.pp` and add a new `Unreleased` section above that.
+          `XX.xx.pp` and add a new `Unreleased` section above that. Add a release summary
+          paragraph to the top of the new version's section.
     - [ ] Tag+push the `CHANGELOG.md` update commit as a release (so that the commit message
           roughly matches something release-ey).
     - [ ] Rebase any currently-active feature branches onto the release commit (discourage stale branches)
@@ -53,8 +54,8 @@ Creator, it's usually copied into a GitHub issue:
         - [ ] Windows amd64 portable zip
     - [ ] Create new release on github from the tagged commit
       - [ ] Upload all artifacts against it
-      - [ ] Write a user-friendly version of CHANGELOG as the release description that explains
-            the release's changes to end-users in a readable way
+      - [ ] Copy + paste the release summary paragraph from `CHANGELOG.md`, maybe modify the
+            note a little for GitHub-specific stuff (e.g. links to things).
     - [ ] Update Zenodo with the release (https://zenodo.org/records/18701339):
       - [ ] This usually happens automatically, via a webhook in Zenodo
       - [ ] Otherwise, it requires @adamkewley's GitHub login to publish
