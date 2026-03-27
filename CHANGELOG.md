@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+## [0.7.3] - 2026/03/27
+
 - The documentation generator (Sphinx) and theme (sphinx_book_theme) were updated
   and the sidebar was cleaned up a little.
 - The "Building from Source" link in the Installation documentation page now directly links
