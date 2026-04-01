@@ -23,6 +23,9 @@ namespace opyn
 
         /// Converts `*this` into a `std::string`.
         explicit operator std::string () const { return std::string{data_}; }
+
+        /// Returns a `std::string_view` of the contents of this `Symbol`
+        explicit operator std::string_view () const { return std::string_view{data_}; }
     private:
         friend struct std::hash<Symbol>;
 

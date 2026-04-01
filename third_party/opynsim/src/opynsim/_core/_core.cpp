@@ -173,6 +173,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         symbol_class.def("__hash__", [](const Symbol& self) { return std::hash<Symbol>{}(self); });
         symbol_class.def("__eq__",   [](const Symbol& self, const Symbol& other)  { return self == other; });
         symbol_class.def("__eq__",   [](const Symbol& self, std::string_view rhs) { return self == rhs; });
+        symbol_class.def("__contains__", [](const Symbol& self, std::string_view rhs) { return static_cast<std::string_view>(self).find(rhs) != std::string_view::npos; });
         nb::implicitly_convertible<std::string_view, Symbol>();
 
         nb::class_<ModelSpecification> model_specification_class(
