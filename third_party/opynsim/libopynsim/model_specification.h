@@ -20,12 +20,13 @@ namespace opyn
         static ModelSpecification example_double_pendulum();
 
         explicit ModelSpecification();
+
+        /// Returns a `Model` compiled from this `ModelSpecification`, throws an exception
+        /// if there's a compilation error.
+        Model compile() const;
     private:
         class Impl;
         explicit ModelSpecification(osc::CopyOnUpdPtr<Impl>);
-
-        friend Model compile_specification(const ModelSpecification&);
-        Model compile() const;
 
         osc::CopyOnUpdPtr<Impl> impl_;
     };

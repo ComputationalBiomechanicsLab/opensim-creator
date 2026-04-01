@@ -75,7 +75,7 @@ Compile a Specification into a Model
 Once a :class:`opynsim.ModelSpecification` has been prepared, it can be used
 to build a :class:`opynsim.Model`, which represents a read-only physics model.
 
-:func:`opynsim.compile_specification` is how you do this:
+:meth:`opynsim.ModelSpecification.compile` (or :func:`opynsim.compile_specification`) is how you do this:
 
 .. code:: python
 
@@ -85,7 +85,7 @@ to build a :class:`opynsim.Model`, which represents a read-only physics model.
 
     # ... if necessary, edit the `ModelSpecification`, and then...
 
-    model = opynsim.compile_specification(model_specification)
+    model = model_specification.compile()
 
 
 Create and Realize an Initial State of the Model
@@ -103,7 +103,7 @@ states externally from (e.g.) a motion file.
     import opynsim
 
     model_specification = opynsim.example_specification_double_pendulum()
-    model = opynsim.compile_specification(model_specification)
+    model = model_specification.compile()
 
     state = model.initial_state()
 
@@ -119,7 +119,7 @@ interacting with OPynSim's datastructures.
 
 The API includes high-level functions, such as :func:`opynsim.ui.show_model_in_state`,
 which can be used to visualize a model in a single state. The state should be realized
-to :attr:`opynsim.ModelStateStage.REPORT` to ensure that all the state variables the
+to :attr:`opynsim.STAGE_REPORT` to ensure that all the state variables the
 renderer reads are fully realized:
 
 .. code:: python
@@ -128,9 +128,9 @@ renderer reads are fully realized:
     import opynsim.ui
 
     model_specification = opynsim.example_specification_double_pendulum()
-    model = opynsim.compile_specification(model_specification)
+    model = model_specification.compile()
     state = model.initial_state()
-    model.realize(state, opynsim.ModelStateStage.REPORT)  # required for rendering
+    model.realize(state, opynsim.STAGE_REPORT)  # required for rendering
 
     opynsim.ui.show_model_in_state(model, state)
 
@@ -156,9 +156,9 @@ data into a PNG file:
 
     # Create/import a `Model` + `ModelState`.
     model_specification = opynsim.example_specification_double_pendulum()
-    model = opynsim.compile_specification(model_specification)
+    model = model_specification.compile()
     model_state = model.initial_state()
-    model.realize(model_state, opynsim.ModelStateStage.REPORT)  # usually required for rendering
+    model.realize(model_state, opynsim.STAGE_REPORT)  # usually required for rendering
 
     # Render the `Model` + `ModelState` to an `opynsim.graphics.Texture2D`.
     texture_2d = opynsim.graphics.render_model_in_state(model, model_state)

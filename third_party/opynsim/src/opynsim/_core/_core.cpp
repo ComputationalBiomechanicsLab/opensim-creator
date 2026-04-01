@@ -182,13 +182,13 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 A high-level specification for an :class:`opynsim.Model`.
 
                 A :class:`ModelSpecification` is what Python code can manipulate, scale, and customize
-                before passing it to :func:`opynsim.compile_specification`, which returns a readonly
+                before passing it to :meth:`opynsim.ModelSpecification.compile`, which returns a readonly
                 :class:`opynsim.Model`.
 
                 Notes:
                     OPynSim's API design separates the specification of a model (:class:`ModelSpecification`)
                     from its validated, assembled, and optimized simulation representation (:class:`Model`) to ensure
-                    that the compilation process (:func:`compile_specification`) can freeze and optimize internal
+                    that the compilation process (:meth:`compile`) can freeze and optimize internal
                     datastructures at a single point in the process. This is in contrast to OpenSim, which handles
                     both concerns with a single ``OpenSim::Model`` class, which results in edge-cases, such as
                     incorrectly being able to edit a model after a physics system has already been assembled
@@ -196,6 +196,25 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
         model_specification_class.def(nb::init<>());  // Define default constructor
+        model_specification_class.def(
+            "compile",
+            &ModelSpecification::compile,
+            R"(
+                Compiles this :class:`ModelSpecification` into a :class:`Model`.
+
+                The compilation process:
+
+                - Validates this :class:`ModelSpecification`'s components (properties, subcomponents,
+                  and sockets), throwing an exception if the specification is invalid in some way.
+                - Assembles a physics system from the validated specification, throwing an exception
+                  if the physics system cannot be assembled (e.g. if the contains impossible-to-satisfy
+                  joints, or invalid muscle definitions).
+
+                Raises:
+                    RuntimeError: If the compilation process failed in some way. It is assumed that
+                        the provided :class:`ModelSpecification` is valid.
+            )"
+        );
 
         nb::class_<Model> model_class(
             _core_module,
@@ -204,8 +223,9 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 A validated, optimized, compiled, and ready-to-simulate model of a physics system.
 
                 A :class:`Model` can only be created from a :class:`ModelSpecification` via the
-                :func:`compile_specification` function. Therefore, editing a :class:`Model` requires editing its
-                associated :class:`ModelSpecification` and recompiling it to create a new :class:`Model`.
+                :meth:`ModelSpecification.compile` function. Therefore, editing a :class:`Model` requires
+                editing its associated :class:`ModelSpecification` and recompiling it to create a
+                new :class:`Model`.
             )"
         );
         model_class.def_prop_ro(
@@ -328,7 +348,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 also be created, read, and manipulated by downstream Python code and other utilities in OPynSim.
             )"
         );
-        model_state_class.def(
+        model_state_class.def_prop_ro(
             "stage",
             &ModelState::stage,
             R"(
@@ -355,6 +375,18 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 realized to :attr:`ModelStateStage.POSITION`, positional quantities such as the positions
                 of bodies and offset frames are known, and any positional output on the associated
                 :class:`Model` can then extract that information from the :class:`ModelState`.
+
+                For convenience, the :mod:`opynsim` module defines aliases for each :class:`ModelStateStage`:
+
+                - :attr:`opynsim.STAGE_TOPOLOGY` -> :attr:`opynsim.ModelStateStage.TOPOLOGY`
+                - :attr:`opynsim.STAGE_MODEL` -> :attr:`opynsim.ModelStateStage.MODEL`
+                - :attr:`opynsim.STAGE_INSTANCE` -> :attr:`opynsim.ModelStateStage.INSTANCE`
+                - :attr:`opynsim.STAGE_TIME` -> :attr:`opynsim.ModelStateStage.TIME`
+                - :attr:`opynsim.STAGE_POSITION` -> :attr:`opynsim.ModelStateStage.POSITION`
+                - :attr:`opynsim.STAGE_VELOCITY` -> :attr:`opynsim.ModelStateStage.VELOCITY`
+                - :attr:`opynsim.STAGE_DYNAMICS` -> :attr:`opynsim.ModelStateStage.DYNAMICS`
+                - :attr:`opynsim.STAGE_ACCELERATION` -> :attr:`opynsim.ModelStateStage.ACCELERATION`
+                - :attr:`opynsim.STAGE_REPORT` -> :attr:`opynsim.ModelStateStage.REPORT`
             )"
         );
         model_state_stage_class.value("TOPOLOGY",     ModelStateStage::topology,     "System topology known.");
@@ -366,6 +398,17 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         model_state_stage_class.value("DYNAMICS",     ModelStateStage::dynamics,     "The force acting on each body is known, along with total kinetic/potential energy.");
         model_state_stage_class.value("ACCELERATION", ModelStateStage::acceleration, "The time derivatives of all continuous state variables are known.");
         model_state_stage_class.value("REPORT",       ModelStateStage::report,       "Additional variables useful for output are known (optional: not required for integration).");
+
+        // Define convenience aliases for the enum
+        _core_module.attr("STAGE_TOPOLOGY")     = model_state_stage_class.attr("TOPOLOGY");
+        _core_module.attr("STAGE_MODEL")        = model_state_stage_class.attr("MODEL");
+        _core_module.attr("STAGE_INSTANCE")     = model_state_stage_class.attr("INSTANCE");
+        _core_module.attr("STAGE_TIME")         = model_state_stage_class.attr("TIME");
+        _core_module.attr("STAGE_POSITION")     = model_state_stage_class.attr("POSITION");
+        _core_module.attr("STAGE_VELOCITY")     = model_state_stage_class.attr("VELOCITY");
+        _core_module.attr("STAGE_DYNAMICS")     = model_state_stage_class.attr("DYNAMICS");
+        _core_module.attr("STAGE_ACCELERATION") = model_state_stage_class.attr("ACCELERATION");
+        _core_module.attr("STAGE_REPORT")       = model_state_stage_class.attr("REPORT");
 
         _core_module.def(
             "set_logging_level",
@@ -462,20 +505,8 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             opyn::compile_specification,
             nb::arg("model_specification"),
             R"(
-                Compiles a :class:`ModelSpecification` into a :class:`Model`.
-
-                The compilation process:
-
-                - Validates the :class:`ModelSpecification`'s components (properties, subcomponents,
-                  and sockets), throwing an exception if the specification is invalid in some way.
-                - Assembles a physics system from the validated specification, throwing an exception
-                  if the physics system cannot be assembled (e.g. if the contains impossible-to-satisfy
-                  joints, or invalid muscle definitions).
-
-                Raises:
-                    RuntimeError: If the compilation process failed in some way. It is assumed that
-                        the provided :class:`ModelSpecification` is valid.
-
+                An alias for :meth:`ModelSpecification.compile`, which compiles a :class:`ModelSpecification`
+                into a :class:`Model`.
             )"
         );
     }

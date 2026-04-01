@@ -12,7 +12,6 @@ namespace opyn
         osc::Vector3d
         // TODO:
         //  osc::Vector2d,
-        //  osc::Vector3d,
         //  SpatialVector,
         //  bool,
         //  RigidTransform,

@@ -26,9 +26,9 @@ Example
 
     # Create/import a `Model` + `ModelState`.
     model_specification = opynsim.example_specification_double_pendulum()
-    model = opynsim.compile_specification(model_specification)
+    model = model_specification.compile()
     model_state = model.initial_state()
-    model.realize(model_state, opynsim.ModelStateStage.REPORT)  # usually required for rendering
+    model.realize(model_state, opynsim.STAGE_REPORT)  # usually required for rendering
 
     # Show them in an interactive window.
     opynsim.ui.show_model_in_state(model, model_state)

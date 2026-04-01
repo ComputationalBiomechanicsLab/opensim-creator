@@ -31,9 +31,9 @@ the pixel data returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into
 
     # Create/import a `Model` + `ModelState`.
     model_specification = opynsim.example_specification_double_pendulum()
-    model = opynsim.compile_specification(model_specification)
+    model = model_specification.compile()
     model_state = model.initial_state()
-    model.realize(model_state, opynsim.ModelStateStage.REPORT)  # usually required for rendering
+    model.realize(model_state, opynsim.STAGE_REPORT)  # usually required for rendering
 
     # Render the `Model` + `ModelState` to an `opynsim.graphics.Texture2D`.
     texture_2d = opynsim.graphics.render_model_in_state(model, model_state)
@@ -61,9 +61,9 @@ returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a line plot.
 
     # Create/import a `Model` + `ModelState`.
     model_specification = opynsim.example_specification_pendulum()
-    model = opynsim.compile_specification(model_specification)
+    model = model_specification.compile()
     model_state = model.initial_state()
-    model.realize(model_state, opynsim.ModelStateStage.REPORT)  # usually required for rendering
+    model.realize(model_state, opynsim.STAGE_REPORT)  # usually required for rendering
 
     # Define data/image sample points
     x_min = -0.5*np.pi
@@ -75,7 +75,7 @@ returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a line plot.
     simulated_y_accelerations = []
     for x in data_xs:
         model.set_coordinate_value(model_state, "/jointset/pin/pin_coord_0", x)
-        model.realize(model_state, opynsim.ModelStateStage.REPORT)
+        model.realize(model_state, opynsim.STAGE_REPORT)
         simulated_y_positions.append(model.get_output_value(model_state, "/bodyset/head[position]")[1])
         simulated_y_accelerations.append(model.get_output_value(model_state, "/bodyset/head[linear_acceleration]")[1])
 
@@ -85,7 +85,7 @@ returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a line plot.
     images = []
     for x in image_xs:
         model.set_coordinate_value(model_state, "/jointset/pin/pin_coord_0", x)
-        model.realize(model_state, opynsim.ModelStateStage.REPORT)
+        model.realize(model_state, opynsim.STAGE_REPORT)
         images.append(opynsim.graphics.render_model_in_state(model, model_state))
 
     # Create plot

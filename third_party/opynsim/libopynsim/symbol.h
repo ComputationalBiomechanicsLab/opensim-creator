@@ -24,7 +24,7 @@ namespace opyn
         /// Converts `*this` into a `std::string`.
         explicit operator std::string () const { return std::string{data_}; }
     private:
-        friend struct std::hash<opyn::Symbol>;
+        friend struct std::hash<Symbol>;
 
         osc::StringName data_;
     };

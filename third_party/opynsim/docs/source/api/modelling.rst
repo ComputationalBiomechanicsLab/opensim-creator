@@ -16,8 +16,8 @@ distinct roles:
 API Reference
 -------------
 
-.. autofunction:: opynsim.import_osim_file
 .. autofunction:: opynsim.compile_specification
+.. autofunction:: opynsim.import_osim_file
 .. autofunction:: opynsim.example_specification_pendulum
 .. autofunction:: opynsim.example_specification_double_pendulum
 
@@ -26,3 +26,13 @@ API Reference
    :imported-members:
    :undoc-members:
    :show-inheritance:
+
+.. autodata:: opynsim.STAGE_TOPOLOGY
+.. autodata:: opynsim.STAGE_MODEL
+.. autodata:: opynsim.STAGE_INSTANCE
+.. autodata:: opynsim.STAGE_TIME
+.. autodata:: opynsim.STAGE_POSITION
+.. autodata:: opynsim.STAGE_VELOCITY
+.. autodata:: opynsim.STAGE_DYNAMICS
+.. autodata:: opynsim.STAGE_ACCELERATION
+.. autodata:: opynsim.STAGE_REPORT

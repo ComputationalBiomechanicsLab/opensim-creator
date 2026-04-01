@@ -35,7 +35,6 @@ namespace opyn
     /// Returns a `ModelSpecification` for an example double pendulum.
     ModelSpecification example_specification_double_pendulum();
 
-    /// Returns a `Model` compiled from the given `ModelSpecification`, throws an exception
-    /// if there's a compilation error.
-    Model compile_specification(const ModelSpecification&);
+    /// Returns `model_specification.compile()`.
+    Model compile_specification(const ModelSpecification& model_specification);
 }
