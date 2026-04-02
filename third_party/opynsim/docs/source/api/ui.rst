@@ -36,6 +36,6 @@ Example
 
 API Reference
 -------------
-
+.. automodule:: opynsim.ui
 .. autofunction:: opynsim.ui.show_hello_ui
 .. autofunction:: opynsim.ui.show_model_in_state

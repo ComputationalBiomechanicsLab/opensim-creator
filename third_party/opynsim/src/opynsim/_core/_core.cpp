@@ -180,11 +180,10 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             _core_module,
             "ModelSpecification",
             R"(
-                A high-level specification for an :class:`opynsim.Model`.
+                A high-level specification for a :class:`Model`.
 
                 A :class:`ModelSpecification` is what Python code can manipulate, scale, and customize
-                before passing it to :meth:`opynsim.ModelSpecification.compile`, which returns a readonly
-                :class:`opynsim.Model`.
+                before passing it to :meth:`compile`, which returns a readonly :class:`Model`.
 
                 Notes:
                     OPynSim's API design separates the specification of a model (:class:`ModelSpecification`)
@@ -304,7 +303,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 ``coordinate`` to ``value``.
 
                 Changing the value of a coordinate changes ``model_state``'s :class:`ModelStateStage` to
-                :attr:`ModelStateStage.POSITION`. Therefore, you may need to use :meth:`Model.realize` to
+                :attr:`ModelStateStage.POSITION`. Therefore, you may need to use :meth:`realize` to
                 re-realize the state to a later stage if you intend on using the state with a method that
                 requires a later stage (e.g. rendering).
             )"
@@ -343,8 +342,8 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 Represents a single state of a :class:`Model`.
 
                 A :class:`ModelState` bundles together the state variables, cache variables, and other information
-                necessary to describe a single state of a :class:`Model`. :class:`Model`'s can read/manipulate
-                :class:`ModelState`\s in order to :meth:`opynsim.Model.realize` the state to a later stage
+                necessary to describe a single state of a :class:`Model`. :class:`Model`\s can read/manipulate
+                :class:`ModelState`\s in order to :meth:`Model.realize` the state to a later stage
                 (e.g. as part of forward integration) or read outputs values. However, :class:`ModelState`\s may
                 also be created, read, and manipulated by downstream Python code and other utilities in OPynSim.
             )"

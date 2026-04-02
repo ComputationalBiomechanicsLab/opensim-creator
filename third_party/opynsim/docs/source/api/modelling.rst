@@ -5,7 +5,7 @@ At a high-level, OPynSim's modelling API is designed around three classes with
 distinct roles:
 
 - :class:`opynsim.ModelSpecification`: A high-level specification of the
-  model. This is what Python code manipulates before calling :func:`opynsim.compile`
+  model. This is what Python code manipulates before calling :meth:`opynsim.ModelSpecification.compile`
   to yield...
 - :class:`opynsim.Model`: A compiled read-only physics model, which can
   create/read/manipulate...

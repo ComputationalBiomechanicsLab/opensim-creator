@@ -80,7 +80,7 @@ You can even install the ``opensim`` Python package alongside OPynSim:
     pip install opynsim
     pip check  # Should be fine
 
-**Note**: OPynSim's datastructures (e.g. ``opynsim.Model``) aren't compatible
+**Note**: OPynSim's datastructures (e.g. :class:`opynsim.Model`) aren't compatible
 with OpenSim's (e.g. ``opensim.Model``). You must serialize data whenever it's
 passed between the two libraries.
 
