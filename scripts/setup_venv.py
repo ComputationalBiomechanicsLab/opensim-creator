@@ -22,8 +22,8 @@ def main():
     pip_path = windows_pip_path if windows_pip_path.exists() else unix_pip_path
 
     # Install OPynSim dependencies into the environment
-    print(f"Installing OPynSim dependencies from {opynsim_requirements_file_path}")
-    subprocess.run([str(pip_path), "install", "-r", str(opynsim_requirements_file_path)], check=True)
+    print(f"Installing OPynSim dependencies from {requirements_file_path}")
+    subprocess.run([str(pip_path), "install", "-r", str(requirements_file_path)], check=True)
     print("OPynSim Python dependencies installed successfully")
 
 if __name__ == "__main__":
