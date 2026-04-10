@@ -894,12 +894,12 @@ bool opyn::ShouldShowInUI(const OpenSim::Component& c)
     if (dynamic_cast<const OpenSim::PathWrapPoint*>(&c)) {
         return false;
     }
-    else if (dynamic_cast<const OpenSim::Station*>(&c) && OwnerIs<OpenSim::PathPoint>(c)) {
+
+    if (dynamic_cast<const OpenSim::Station*>(&c) && OwnerIs<OpenSim::PathPoint>(c)) {
         return false;
     }
-    else {
-        return true;
-    }
+
+    return true;
 }
 
 bool opyn::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
@@ -1556,7 +1556,7 @@ std::optional<PointInfo> opyn::TryExtractPointInfo(
         // HACK: path wrap points don't update the cache correctly?
         return std::nullopt;
     }
-    else if (const auto* station = dynamic_cast<const OpenSim::Station*>(&c)) {
+    if (const auto* station = dynamic_cast<const OpenSim::Station*>(&c)) {
         // HACK: OpenSim redundantly stores path point information in a child called 'station'.
         // These must be filtered because, otherwise, the user will just see a bunch of
         // 'station' entries below each path point
@@ -1569,27 +1569,26 @@ std::optional<PointInfo> opyn::TryExtractPointInfo(
             GetAbsolutePath(station->getParentFrame()),
         };
     }
-    else if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&c)) {
+    if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&c)) {
         return PointInfo{
             osc::to<osc::Vector3>(pp->getLocation(st)),
             GetAbsolutePath(pp->getParentFrame()),
         };
     }
-    else if (const auto* point = dynamic_cast<const OpenSim::Point*>(&c)) {
+    if (const auto* point = dynamic_cast<const OpenSim::Point*>(&c)) {
         return PointInfo{
             osc::to<osc::Vector3>(point->getLocationInGround(st)),
             OpenSim::ComponentPath{"/ground"},
         };
     }
-    else if (const auto* frame = dynamic_cast<const OpenSim::Frame*>(&c)) {
+    if (const auto* frame = dynamic_cast<const OpenSim::Frame*>(&c)) {
         return PointInfo{
             osc::to<osc::Vector3>(frame->getPositionInGround(st)),
             OpenSim::ComponentPath{"/ground"},
         };
     }
-    else {
-        return std::nullopt;
-    }
+
+    return std::nullopt;
 }
 
 OpenSim::Component& opyn::AddComponentToAppropriateSet(OpenSim::Model& m, std::unique_ptr<OpenSim::Component> c)

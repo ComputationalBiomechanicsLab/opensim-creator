@@ -5,6 +5,10 @@ jobs:
   windows_amd64:
     name: Windows (amd64)
     runs-on: windows-2022
+    env:
+      # Filter out tests that require OpenGL 3.3 support (GitHub Windows
+      # runner doesn't support it).
+      OPYN_TEST_EXCLUDE_FILTER: "RenderQueueFixture|Graphics|MaterialTest|MeshDepthWritingMaterialFixture|MeshNormalVectorsMaterialFixture|ShaderTest|RegisteredDemoTabsTest"
     steps:
       - uses: actions/checkout@v4
 
@@ -95,6 +99,10 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: quay.io/pypa/manylinux_2_34_x86_64
+    env:
+      # Filter out tests that require OpenGL 3.3 support (manylinux
+      # runner doesn't support it).
+      OPYN_TEST_EXCLUDE_FILTER: "RenderQueueFixture|Graphics|MaterialTest|MeshDepthWritingMaterialFixture|MeshNormalVectorsMaterialFixture|ShaderTest|RegisteredDemoTabsTest"
     steps:
       - uses: actions/checkout@v4
 

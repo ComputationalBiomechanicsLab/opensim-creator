@@ -118,8 +118,8 @@ void opyn::generateDecorations(
     case DataPointType::BodyForce:   ::generateDecorations<DataPointType::BodyForce>(   std::span<const double, numElementsIn(DataPointType::BodyForce)>{data},   out); break;
     case DataPointType::Orientation: ::generateDecorations<DataPointType::Orientation>( std::span<const double, numElementsIn(DataPointType::Orientation)>{data}, out); break;
 
-    case DataPointType::Unknown: break;  // do nothing
-    default:                     break;  // do nothing
+    // case DataPointType::Unknown: break;  // do nothing
+    default:                     break;     // do nothing
     }
 }
 

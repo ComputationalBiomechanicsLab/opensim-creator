@@ -32,7 +32,7 @@ PUBLIC
 )
 target_compile_features(opynsim PUBLIC cxx_std_20)  # CARE: MSVC C++23 isn't ABI-stable yet
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/opynsim_strict_compiler_options.cmake)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     target_compile_options(opynsim PRIVATE ${OPYN_STRICT_COMPILER_OPTIONS})
 endif()
 set_target_properties(opynsim PROPERTIES CXX_EXTENSIONS OFF)
@@ -60,7 +60,7 @@ if(TRUE)
     install(
         DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/libopynsim"
-        COMPONENT opynsim-cpp
+        COMPONENT   opynsim-cpp
         FILES_MATCHING PATTERN "*.h"
         PATTERN "tests" EXCLUDE
         PATTERN "cmake" EXCLUDE

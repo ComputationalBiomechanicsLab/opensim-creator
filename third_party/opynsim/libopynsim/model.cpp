@@ -48,7 +48,7 @@ namespace
 
         static OutputValue extract_output_value(const SimTK::State& state, const OpenSim::AbstractOutput& output)
         {
-            const auto& opensim_output = static_cast<const OpenSim::Output<OpenSimType>&>(output);
+            const auto& opensim_output = dynamic_cast<const OpenSim::Output<OpenSimType>&>(output);
             return osc::to<osc::Vector3d>(opensim_output.getValue(state));
         }
     };
@@ -176,7 +176,7 @@ public:
         case ModelStateStage::velocity:     model_.realizeVelocity(state.simbody_state());     break;
         case ModelStateStage::dynamics:     model_.realizeDynamics(state.simbody_state());     break;
         case ModelStateStage::acceleration: model_.realizeAcceleration(state.simbody_state()); break;
-        case ModelStateStage::report:       model_.realizeReport(state.simbody_state());       break;
+        case ModelStateStage::report:       model_.realizeReport(state.simbody_state());       break;  // NOLINT(bugprone-branch-clone)
         default:                            model_.realizeReport(state.simbody_state());       break;
         }
     }

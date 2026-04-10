@@ -16,11 +16,6 @@ if(BUILD_TESTING)
     enable_testing()
 endif()
 
-if(OSC_BUILD_OSCAR_INLINE)
-    # Note: cache variables should be set by the caller (e.g. in CMakePresets.json)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/opynsim/third_party/oscar)
-endif()
-
 if(OSC_BUILD_OPYNSIM_INLINE)
     # Note: cache variables should be set by the caller (e.g. in CMakePresets.json)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/opynsim)

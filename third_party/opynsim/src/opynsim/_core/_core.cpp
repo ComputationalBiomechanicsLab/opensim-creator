@@ -65,15 +65,15 @@ namespace
         using cpp_type = osc::Vector3d;
         using python_type = nb::ndarray<nb::numpy, double, nb::shape<3>>;
 
-        static python_type to_python(cpp_type&& v)
+        static python_type to_python(cpp_type&& v) // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved)
         {
-            double* data = new double[3]{v[0], v[1], v[2]};
+            auto* data = new double[3]{v[0], v[1], v[2]};  // NOLINT(cppcoreguidelines-owning-memory)
             const std::array<size_t, 1> shape = {3};
             return {
                 data,
                 1,
                 shape.data(),
-                nb::capsule(data, [](void* p) noexcept { delete[] static_cast<double*>(p); })
+                nb::capsule(data, [](void* p) noexcept { delete[] static_cast<double*>(p); })  // NOLINT(cppcoreguidelines-owning-memory)
             };
         }
     };
@@ -91,7 +91,7 @@ namespace
     {
         return std::visit(osc::Overload{
             []<typename T>(T&& v) -> PythonOutputValue { return PythonTypeMapper<T>::to_python(std::forward<T>(v)); }
-        }, std::move(output_value));
+        }, std::move(output_value));  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
     }
 }
 

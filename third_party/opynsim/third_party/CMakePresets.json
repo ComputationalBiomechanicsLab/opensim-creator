@@ -12,18 +12,6 @@
             }
         },
         {
-            "name": "Development-Inlined",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/../build/third_party/Development-Inlined",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development-Inlined/install",
-                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
-
-                "OPYNDEPS_BUILD_OSCAR": "OFF"
-            }
-        },
-        {
             "name": "ErrorCheck",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/ErrorCheck",
@@ -89,10 +77,6 @@
             "configurePreset": "Development"
         },
         {
-            "name": "Development-Inlined",
-            "configurePreset": "Development-Inlined"
-        },
-        {
             "name": "ErrorCheck",
             "configurePreset": "ErrorCheck"
         },
@@ -119,13 +103,6 @@
             "steps": [
                 { "type": "configure", "name": "Development" },
                 { "type": "build",     "name": "Development" }
-            ]
-        },
-        {
-            "name": "Development-Inlined",
-            "steps": [
-                { "type": "configure", "name": "Development-Inlined" },
-                { "type": "build",     "name": "Development-Inlined" }
             ]
         },
         {

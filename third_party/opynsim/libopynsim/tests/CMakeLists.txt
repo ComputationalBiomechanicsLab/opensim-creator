@@ -26,7 +26,7 @@ unset(_opyn_extra_sources)
 set_target_properties(opynsim_tests PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(opynsim_tests PUBLIC cxx_std_20)
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
-    include(../cmake/opynsim_strict_compiler_options.cmake)
+    include(../../cmake/opynsim_strict_compiler_options.cmake)
     target_compile_options(opynsim_tests PRIVATE ${OPYN_STRICT_COMPILER_OPTIONS})
 endif()
 target_include_directories(opynsim_tests

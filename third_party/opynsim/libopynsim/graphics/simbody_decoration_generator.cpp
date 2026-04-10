@@ -402,11 +402,11 @@ namespace
             });
         }
 
-        osc::SceneCache& m_MeshCache;
-        const SimTK::SimbodyMatterSubsystem& m_Matter;
-        const SimTK::State& m_State;
+        osc::SceneCache& m_MeshCache;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+        const SimTK::SimbodyMatterSubsystem& m_Matter;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+        const SimTK::State& m_State;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
         float m_FixupScaleFactor;
-        const std::function<void(osc::SceneDecoration&&)>& m_Consumer;
+        const std::function<void(osc::SceneDecoration&&)>& m_Consumer;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
     };
 }
 

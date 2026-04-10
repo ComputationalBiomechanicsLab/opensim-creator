@@ -444,18 +444,18 @@ namespace
             return calcGeometryPathFlags(muscle.getPath());
         }
     private:
-        SceneCache& m_MeshCache;
+        SceneCache& m_MeshCache;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
         Mesh m_SphereMesh = m_MeshCache.sphere_mesh();
         Mesh m_SphereOctantMesh = m_MeshCache.sphere_octant_mesh();
         Mesh m_UncappedCylinderMesh = m_MeshCache.uncapped_cylinder_mesh();
-        const OpenSim::Model& m_Model;
-        const OpenSim::ModelDisplayHints& m_ModelDisplayHints = m_Model.getDisplayHints();
+        const OpenSim::Model& m_Model;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+        const OpenSim::ModelDisplayHints& m_ModelDisplayHints = m_Model.getDisplayHints();  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
         bool m_ShowPathPoints = m_ModelDisplayHints.get_show_path_points();
-        const SimTK::SimbodyMatterSubsystem& m_MatterSubsystem = m_Model.getSystem().getMatterSubsystem();
-        const SimTK::State& m_State;
-        const OpenSimDecorationOptions& m_Opts;
+        const SimTK::SimbodyMatterSubsystem& m_MatterSubsystem = m_Model.getSystem().getMatterSubsystem();  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+        const SimTK::State& m_State;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
+        const OpenSimDecorationOptions& m_Opts;  // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
         float m_FixupScaleFactor;
-        const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& m_Out;
+        const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& m_Out; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
         SimTK::Array_<SimTK::DecorativeGeometry> m_GeomList;
         MuscleColorFactorLookup m_MuscleColorSourceScalingLookup{m_Model, m_State, m_Opts.getMuscleColorSource(), m_Opts.getMuscleColorSourceScaling()};
     };
