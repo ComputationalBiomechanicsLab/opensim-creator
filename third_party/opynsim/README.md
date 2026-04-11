@@ -11,7 +11,7 @@ OPynSim is a python-native API for musculoskeletal modeling that doesn't comprom
 [OpenSim](https://simtk.org/projects/opensim), and [OpenSim Creator](https://www.opensimcreator.com/).
 
 - **Documentation**: [https://docs.opynsim.eu](https://docs.opynsim.eu)
-- **Source code**: [https://github.com/opynsim/opynsim](https://docs.opynsim.eu)
+- **Source code**: [https://github.com/opynsim/opynsim](https://github.com/opynsim/opynsim)
 
 OPynSim provides:
 
@@ -25,7 +25,36 @@ OPynSim provides:
 - **Stable Python ABI implementation**. Each release of OPynSim works on any
   Python version ≥ 3.12 on Windows, macOS, and major Linux distributions.
 - **Excellent compatibility with OpenSim**. The OPynSim codebase uses
-  a [lightly-patched forks](libosim) of [opensim-core](https://github.com/opensim-orgopensim-core)
+  a [lightly-patched forks](libosim) of [opensim-core](https://github.com/opensim-org/opensim-core)
   and [simbody](https://github.com/simbody/simbody). The native part is already
   used in production releases of [OpenSim Creator](https://www.opensimcreator.com), which
   ships to thousands of OpenSim ~~testers~~ users.
+
+
+## 📖 Citing/Acknowledging
+
+If you want to cite the OPynSim project, cite its proposal (we will publish something later on):
+
+> Kewley, A., & Seth, A. (2026). OPynSim: A python-native library for interoperable biomechanical simulations. Zenodo. https://doi.org/10.5281/zenodo.19493285
+
+If you want to cite a specific version of OPynSim (e.g. for reproducibility), then additionally
+cite the unique Zenodo DOI corresponding to that version, for example:
+
+> TODO (pre-alpha, no stable releases yet, sorry!)
+
+If you want to cite the underlying simulation/modelling system (OpenSim), cite:
+
+> Seth A, Hicks JL, Uchida TK, Habib A, Dembia CL, et al. (2018) **OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement.** _PLOS Computational Biology_ 14(7): e1006223. https://doi.org/10.1371/journal.pcbi.1006223
+
+
+## ❤️ Acknowledgements
+
+OPynSim is currently in pre-alpha (concept) development in the [Department of Biomechanical Engineering at TU Delft](https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering),
+which is providing critical institutional support before the project officially begins.
+
+The OPynSim project is expected to begin around mid-June 2026, with two years of funding
+from [Open Science NL](https://www.openscience.nl/) ([announcement](https://www.openscience.nl/en/news/45-projects-strengthen-dutch-open-science-infrastructure)). You
+can read the project proposal [here](https://doi.org/10.5281/zenodo.19493285). This (pre-alpha)
+version of OPynSim is focused on ensuring that the source files, build system, documentation, etc. are in the right place
+before the project starts, so that related projects (e.g. [OpenSim Creator](https://www.opensimcreator.com/)) can already be integrated
+with it before the project begins.
