@@ -1,5 +1,5 @@
 Graphics
---------
+========
 
 The :mod:`opynsim.graphics` module provides utilities for rasterizing
 OPynSim's datastructures, images, lines, and shapes into a grid of pixels
@@ -25,18 +25,18 @@ the pixel data returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into
 
 .. code:: python
 
-    import opynsim
+    import opynsim as opyn
     import opynsim.graphics
     from PIL import Image  # from `Pillow` package
 
     # Create/import a `Model` + `ModelState`.
-    model_specification = opynsim.example_specification_double_pendulum()
+    model_specification = opyn.example_specification_double_pendulum()
     model = model_specification.compile()
     model_state = model.initial_state()
-    model.realize(model_state, opynsim.STAGE_REPORT)  # usually required for rendering
+    model.realize(model_state, opyn.STAGE_REPORT)  # usually required for rendering
 
     # Render the `Model` + `ModelState` to an `opynsim.graphics.Texture2D`.
-    texture_2d = opynsim.graphics.render_model_in_state(model, model_state)
+    texture_2d = opyn.graphics.render_model_in_state(model, model_state)
 
     # Read the pixels into a `PIL.Image` object.
     image = Image.fromarray(texture_2d.pixels_rgba32(), mode="RGBA")
@@ -53,17 +53,17 @@ returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a line plot.
 
 .. code:: python
 
-    import opynsim
+    import opynsim as opyn
     import opynsim.graphics
     import numpy as np
     import matplotlib.pyplot as plt  # from `matplotlib` package
     from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
     # Create/import a `Model` + `ModelState`.
-    model_specification = opynsim.example_specification_pendulum()
+    model_specification = opyn.example_specification_pendulum()
     model = model_specification.compile()
     model_state = model.initial_state()
-    model.realize(model_state, opynsim.STAGE_REPORT)  # usually required for rendering
+    model.realize(model_state, opyn.STAGE_REPORT)  # usually required for rendering
 
     # Define data/image sample points
     x_min = -0.5*np.pi
@@ -75,18 +75,18 @@ returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a line plot.
     simulated_y_accelerations = []
     for x in data_xs:
         model.set_coordinate_value(model_state, "/jointset/pin/pin_coord_0", x)
-        model.realize(model_state, opynsim.STAGE_REPORT)
+        model.realize(model_state, opyn.STAGE_REPORT)
         simulated_y_positions.append(model.get_output_value(model_state, "/bodyset/head[position]")[1])
         simulated_y_accelerations.append(model.get_output_value(model_state, "/bodyset/head[linear_acceleration]")[1])
 
-    # Use OPynSim to render the model + state at some positions in the plot
+    # Use OPynSim to render the model + state at some (sparser) positions in the plot
     num_images = 8
     image_xs = np.linspace(x_min, x_max, num_images)
     images = []
     for x in image_xs:
         model.set_coordinate_value(model_state, "/jointset/pin/pin_coord_0", x)
-        model.realize(model_state, opynsim.STAGE_REPORT)
-        images.append(opynsim.graphics.render_model_in_state(model, model_state))
+        model.realize(model_state, opyn.STAGE_REPORT)
+        images.append(opyn.graphics.render_model_in_state(model, model_state))
 
     # Create plot
     fig, ax = plt.subplots(figsize=(10, 6))

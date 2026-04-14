@@ -9,33 +9,44 @@ code like this:
 
 .. code:: python
 
-    import opynsim
+    import opynsim as opyn
+
+This convention allows access to OPynSim features with a short, recognizable, prefix (``opyn.``),
+which we will use in examples.
 
 
 Configuring OPynSim (Optional)
 ------------------------------
 
-The ``opynsim`` :doc:`configuration <../api/configuration>` API contains utilities that globally
-affect OPynSim's behavior. These are mostly for debugging and/or legacy support.
+The ``opynsim`` :doc:`configuration <../api/configuration>` API contains utilities that
+globally affect OPynSim's behavior.
 
-If you are working with OpenSim model files, and want a similar development
-experience (in terms of logging and loading things) to the ``opensim`` API,
-then you can do something like this after importing ``opynsim``:
+The most important thing to consider is  ``opynsim``\'s logging behavior. ``opynsim``
+is integrated with `Python's logging API <https://docs.python.org/3/library/logging.html>`_ but, for performance reasons, its
+C++ engine stores an internal log level separately. :func:`opynsim.set_log_level` sets
+both the internal and Python-level logging APIs to the specified level:
 
 .. code:: python
 
-    import opynsim
-    import pathlib
+    import opynsim as opyn
     import logging
 
-    # Make OPynSim's logging noisier
-    opynsim.set_logging_level(logging.DEBUG)
+    # Make OPynSim's logging more verbose (default is `logging.WARN`).
+    #
+    # This sets both OPynSim's internal C++ logging level *and* the level of the
+    # Python `logging.getLogger("opynsim")` to the given level.
+    opyn.set_log_level(logging.DEBUG)
 
-    # Add `/path/to/geometry` as an OpenSim geometry directory.
-    opynsim.add_opensim_geometry_directory(pathlib.Path("/path/to/geometry/"))
-
-See :func:`opynsim.set_logging_level` and :func:`opynsim.add_opensim_geometry_directory` for
-more information.
+    # You can then use the standard Python logging API to set up the logs to your
+    # preference; for example:
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(levelname)s: %(message)s',
+        handlers=[
+            logging.FileHandler("opynsim.log"), # Write logs to a log file...
+            logging.StreamHandler()             # ... and also write them to the console.
+        ]
+    )
 
 Import an ``osim`` File
 -----------------------
@@ -50,24 +61,23 @@ which imports an ``.osim`` file into a :class:`opynsim.ModelSpecification`:
 
 .. code:: python
 
-    import opynsim
+    import opynsim as opyn
     import pathlib
 
     # Import an `.osim` file as an `opynsim.ModelSpecification`
-    model_specification = opynsim.import_osim_file("arm26.osim")
+    model_specification = opyn.import_osim_file("arm26.osim")
 
     # `pathlib.Path`s are also supported
-    model_specification2 = opynsim.import_osim_file(pathlib.Path("/some/path/to/arm26.osim"))
+    model_specification2 = opyn.import_osim_file(pathlib.Path("/some/path/to/arm26.osim"))
 
-.. note:: These documentation pages mostly use example specification generators.
+.. note::
 
-    The remainder of this quickstart guide, and many of the documentation pages, use example
-    specifications generated from ``opynsim.example_specification_*`` methods, rather than
-    :func:`opynsim.import_osim_file` because they don't require external data and can therefore
-    be copied+pasted more easily.
+    The remainder of the documentation uses example generators (e.g. :func:`opynsim.example_specification_pendulum`) to
+    generate :class:`opynsim.ModelSpecification`\s.
 
-    You can always exchange an example for your own :class:`opynsim.ModelSpecification`, or
-    one loaded from an ``.osim`` file.
+    This is because it's easier to copy + paste generated examples. However, you can always exchange an
+    example :class:`opynsim.ModelSpecification` for one loaded via :func:`opynsim.import_osim_file`.
+
 
 Compile a Specification into a Model
 ------------------------------------
@@ -79,9 +89,9 @@ to build a :class:`opynsim.Model`, which represents a read-only physics model.
 
 .. code:: python
 
-    import opynsim
+    import opynsim as opyn
 
-    model_specification = opynsim.example_specification_double_pendulum()
+    model_specification = opyn.example_specification_double_pendulum()
 
     # ... if necessary, edit the `ModelSpecification`, and then...
 
@@ -100,9 +110,9 @@ states externally from (e.g.) a motion file.
 
 .. code:: python
 
-    import opynsim
+    import opynsim as opyn
 
-    model_specification = opynsim.example_specification_double_pendulum()
+    model_specification = opyn.example_specification_double_pendulum()
     model = model_specification.compile()
 
     state = model.initial_state()
@@ -124,15 +134,15 @@ renderer reads are fully realized:
 
 .. code:: python
 
-    import opynsim
+    import opynsim as opyn
     import opynsim.ui
 
-    model_specification = opynsim.example_specification_double_pendulum()
+    model_specification = opyn.example_specification_double_pendulum()
     model = model_specification.compile()
     state = model.initial_state()
-    model.realize(state, opynsim.STAGE_REPORT)  # required for rendering
+    model.realize(state, opyn.STAGE_REPORT)  # required for rendering
 
-    opynsim.ui.show_model_in_state(model, state)
+    opyn.ui.show_model_in_state(model, state)
 
 
 Render Visualization to an Image File
@@ -150,18 +160,18 @@ data into a PNG file:
 
 .. code:: python
 
-    import opynsim
+    import opynsim as opyn
     import opynsim.graphics
     from PIL import Image  # from `Pillow` package
 
     # Create/import a `Model` + `ModelState`.
-    model_specification = opynsim.example_specification_double_pendulum()
+    model_specification = opyn.example_specification_double_pendulum()
     model = model_specification.compile()
     model_state = model.initial_state()
-    model.realize(model_state, opynsim.STAGE_REPORT)  # usually required for rendering
+    model.realize(model_state, opyn.STAGE_REPORT)  # usually required for rendering
 
     # Render the `Model` + `ModelState` to an `opynsim.graphics.Texture2D`.
-    texture_2d = opynsim.graphics.render_model_in_state(model, model_state)
+    texture_2d = opyn.graphics.render_model_in_state(model, model_state)
 
     # Read the pixels into a `PIL.Image` object.
     image = Image.fromarray(texture_2d.pixels_rgba32(), mode="RGBA")

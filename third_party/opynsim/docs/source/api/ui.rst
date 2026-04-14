@@ -21,17 +21,17 @@ Example
 
 .. code:: python
 
-    import opynsim
+    import opynsim as opyn
     import opynsim.ui
 
     # Create/import a `Model` + `ModelState`.
-    model_specification = opynsim.example_specification_double_pendulum()
+    model_specification = opyn.example_specification_double_pendulum()
     model = model_specification.compile()
     model_state = model.initial_state()
-    model.realize(model_state, opynsim.STAGE_REPORT)  # usually required for rendering
+    model.realize(model_state, opyn.STAGE_REPORT)  # usually required for rendering
 
     # Show them in an interactive window.
-    opynsim.ui.show_model_in_state(model, model_state)
+    opyn.ui.show_model_in_state(model, model_state)
 
 
 API Reference

@@ -23,21 +23,20 @@ configure_file(
 
 # generate `oscar.h`
 if(TRUE)
-    # Write header of `oscar.h`
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscar.h" "#pragma once\n\n// Auto-generated include file\n\n")
-
-    # Iterate through each header file in the project and append it to the generated file
-    file(GLOB_RECURSE _oscar_header_files "*.h")
+    # `oscar.h` is dependent on all other header files in oscar
+    file(GLOB_RECURSE _oscar_header_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "*.h")
     list(FILTER _oscar_header_files EXCLUDE REGEX "(tests|opengl|detail)")
-    foreach(_header ${_oscar_header_files})
-        file(RELATIVE_PATH _rel_path "${CMAKE_CURRENT_SOURCE_DIR}" "${_header}")
-        file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscar.h" "#include <liboscar/${_rel_path}>\n")
-        unset(_rel_path)
-        unset(_header)
-    endforeach()
-    unset(_oscar_header_files)
-endif()
 
+    set(OSCAR_INCLUDE_LIST "")
+    foreach(_rel_path ${_oscar_header_files})
+        string(APPEND OSCAR_INCLUDE_LIST "#include <liboscar/${_rel_path}>\n")
+    endforeach()
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/oscar.h.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscar.h"
+        @ONLY
+    )
+endif()
 
 # gather source code, exclude tests
 file(GLOB_RECURSE _oscar_source_files "*.cpp")

@@ -4,7 +4,10 @@
 #include <opynsim/_core/tps3d.h>
 #include <opynsim/_core/ui.h>
 
+#include <liboscar/platform/log.h>
 #include <liboscar/platform/log_level.h>
+#include <liboscar/platform/log_message_view.h>
+#include <liboscar/platform/log_sink.h>
 #include <liboscar/utilities/enum_helpers.h>
 #include <libopynsim/platform/opynsim_app.h>
 #include <libopynsim/model.h>
@@ -25,6 +28,7 @@
 #include <filesystem>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -40,6 +44,8 @@ namespace
 
     osc::LogLevel to_oscar_log_level(int python_logging_level)
     {
+        static_assert(osc::num_options<osc::LogLevel>() == 7, "review this code if oscar levels change");
+
         // These are dictated by the python documentation: https://docs.python.org/3/library/logging.html#logging-levels
         switch (python_logging_level) {
         case 10: return osc::LogLevel::debug;     // logging.DEBUG
@@ -49,6 +55,22 @@ namespace
         case 50: return osc::LogLevel::critical;  // logging.CRITICAL
         case 0 : [[fallthrough]];                 // logging.NOTSET
         default: return osc::LogLevel::DEFAULT;
+        }
+    }
+
+    int to_python_log_level(osc::LogLevel oscar_logging_level)
+    {
+        static_assert(osc::num_options<osc::LogLevel>() == 7, "review this code if oscar levels change");
+
+        // These are dictated by the python documentation: https://docs.python.org/3/library/logging.html#logging-levels
+        switch (oscar_logging_level) {
+            case osc::LogLevel::trace:    return 10;  // logging.DEBUG
+            case osc::LogLevel::debug:    return 10;  // logging.DEBUG
+            case osc::LogLevel::info:     return 20;  // logging.INFO
+            case osc::LogLevel::warn:     return 30;  // logging.WARNING
+            case osc::LogLevel::err:      return 40;  // logging.ERROR
+            case osc::LogLevel::critical: return 50;  // logging.CRITICAL
+            default:                      return 20;  // logging.INFO
         }
     }
 
@@ -93,6 +115,79 @@ namespace
             []<typename T>(T&& v) -> PythonOutputValue { return PythonTypeMapper<T>::to_python(std::forward<T>(v)); }
         }, std::move(output_value));  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
     }
+
+    class PythonLoggingSink : public osc::LogSink {
+    public:
+        explicit PythonLoggingSink()
+        {
+            set_level(osc::LogLevel::warn);  // Python's default
+
+            // Pre-cache the lookup for OPynSim's logger object
+            nb::gil_scoped_acquire gil_lock;
+            python_logger_ = nb::module_::import_("logging").attr("getLogger")("opynsim");
+            is_enabled_for_method_ = python_logger_.attr("isEnabledFor");
+            log_method_ = python_logger_.attr("log");
+        }
+        PythonLoggingSink(const PythonLoggingSink&) = delete;
+        PythonLoggingSink(PythonLoggingSink&&) noexcept = delete;
+        ~PythonLoggingSink() noexcept override
+        {
+            nb::gil_scoped_acquire gil_lock;
+            log_method_.release();
+            is_enabled_for_method_.release();
+            python_logger_.release();
+        }
+
+        PythonLoggingSink& operator=(const PythonLoggingSink&) = delete;
+        PythonLoggingSink& operator=(PythonLoggingSink&&) noexcept = delete;
+
+        void impl_sink_message(const osc::LogMessageView& log_message) override
+        {
+            // This sink is only called if the C++ logger is set to the appropriate
+            // level by a user calling `opynsim.set_log_level`...
+
+            const int py_message_level = to_python_log_level(log_message.level());
+
+            nb::gil_scoped_acquire gil_lock;
+            std::lock_guard log_lock{log_mutex_};
+
+            // ... but the implementation should also check the current state of the Python
+            //     logging system, which may hierarchically filter messages with a root logger.
+            if (nb::cast<bool>(is_enabled_for_method_(py_message_level))) {
+                log_method_(py_message_level, std::string{log_message.payload()});
+            }
+        }
+    private:
+        std::mutex log_mutex_;      // Protects `nb::object` accesses when Python is free-threaded (GIL-less)
+        nb::object python_logger_;  // Keeps the logger alive as long as the methods (below)
+        nb::object is_enabled_for_method_;
+        nb::object log_method_;
+    };
+
+    void setup_python_based_logging()
+    {
+        // Initialize the `opynsim` C++ log with the same default logging level
+        // as Python (warning) and ensure OpenSim is wired into `oscar`'s C++
+        // logging system.
+        opyn::set_log_level(osc::LogLevel::warn);
+
+        // Create an `oscar` (C++) log sink that sink its messages via the Python
+        // `logging` API, so that Python developers can handle the messages after
+        // they come through the pipe (e.g. so that Python code can separately
+        // filter via a root logger, or designate a logging file.
+        auto sink = std::make_shared<PythonLoggingSink>();
+
+        // Make the Python log sink the only (and default)sink of the top-level
+        // default logger.
+        auto global_logger = osc::global_default_logger();
+        global_logger->sinks().clear();
+        global_logger->sinks().push_back(std::move(sink));
+
+        // Ensure the log sink is destroyed when Python exits, rather than when
+        // oscar's static destructor runs, because the static destruction might
+        // happen after Python is already dead.
+        nb::module_::import_("atexit").attr("register")(nb::cpp_function([]() { osc::global_default_logger()->sinks().clear(); }));
+    }
 }
 
 opyn::OPynSimApp& opyn::get_lazy_loaded_opynsim_app()
@@ -110,8 +205,10 @@ void opyn::destroy_lazy_loaded_opynsim_app()
 
 NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables,misc-use-anonymous-namespace)
 {
-    // Libraries should be quiet by default - unless there's an error
-    opyn::set_log_level(osc::LogLevel::err);
+    // Before doing anything, ensure the C++ log is directly integrated
+    // with the Python logging system, so that Python scripts with custom
+    // log levels etc. can immediately see any initialization errors.
+    setup_python_based_logging();
 
     // Install an exit handler that cleans up any lazy-loaded application state
     // when the Python interpreter shuts down
@@ -211,7 +308,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                   joints, or invalid muscle definitions).
 
                 Raises:
-                    RuntimeError: If the compilation process failed in some way. It is assumed that
+                    Exception: If the compilation process failed in some way. It is assumed that
                         the provided :class:`ModelSpecification` is valid.
             )"
         );
@@ -397,7 +494,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         model_state_stage_class.value("VELOCITY",     ModelStateStage::velocity,     "The spatial velocities of all bodies are known.");
         model_state_stage_class.value("DYNAMICS",     ModelStateStage::dynamics,     "The force acting on each body is known, along with total kinetic/potential energy.");
         model_state_stage_class.value("ACCELERATION", ModelStateStage::acceleration, "The time derivatives of all continuous state variables are known.");
-        model_state_stage_class.value("REPORT",       ModelStateStage::report,       "Additional variables useful for output are known (optional: not required for integration).");
+        model_state_stage_class.value("REPORT",       ModelStateStage::report,       "Additional variables useful for output are known");
 
         // Define convenience aliases for the enum
         _core_module.attr("STAGE_TOPOLOGY")     = model_state_stage_class.attr("TOPOLOGY");
@@ -411,8 +508,15 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         _core_module.attr("STAGE_REPORT")       = model_state_stage_class.attr("REPORT");
 
         _core_module.def(
-            "set_logging_level",
-            [](int python_logging_level) { opyn::set_log_level(to_oscar_log_level(python_logging_level)); },
+            "set_log_level",
+            [](int python_logging_level)
+            {
+                // Set the C++ logging level.
+                opyn::set_log_level(to_oscar_log_level(python_logging_level));
+
+                // Additionally, set the Python logging level (the user might forget to sync them).
+                nb::module_::import_("logging").attr("getLogger")("opynsim").attr("setLevel")(python_logging_level);
+            },
             nb::arg("python_logging_level"),
             R"(
                 Set the global logging level for OPynSim.
@@ -497,6 +601,8 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
 
                 Args:
                     geometry_directory_path: An absolute path to the fallback directory.
+                Raises:
+                    Exception: if `geometry_directory_path` does not exist on the caller's filesystem.
             )"
         );
 
@@ -505,8 +611,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             opyn::compile_specification,
             nb::arg("model_specification"),
             R"(
-                An alias for :meth:`ModelSpecification.compile`, which compiles a :class:`ModelSpecification`
-                into a :class:`Model`.
+                An alias for :meth:`ModelSpecification.compile`.
             )"
         );
     }

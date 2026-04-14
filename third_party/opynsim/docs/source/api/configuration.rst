@@ -8,5 +8,5 @@ or legacy compatibility with OpenSim conventions.
 API Reference
 -------------
 
-.. autofunction:: opynsim.set_logging_level
+.. autofunction:: opynsim.set_log_level
 .. autofunction:: opynsim.add_opensim_geometry_directory

@@ -151,6 +151,7 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
     std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
+    m.finalizeFromProperties();
     std::string outparam;
     for (const OpenSim::Component& c : m.getComponentList()) {
         // test both the "pure" and "assigning" versions at the same time
@@ -167,23 +168,25 @@ TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexM
     std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
+    m.finalizeFromProperties();
     for (const OpenSim::Component& c : m.getComponentList()) {
         ASSERT_EQ(c.getAbsolutePath(), GetAbsolutePath(c));
     }
 }
 
-TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsEmptyIfPassedANullptr)
+TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReturnsEmptyIfPassedANullptr)
 {
     ASSERT_EQ(OpenSim::ComponentPath{}, GetAbsolutePathOrEmpty(nullptr));
 }
 
-TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionForComplexModel)
+TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReturnsSameResultAsOpenSimVersionForComplexModel)
 {
     opyn::init();  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
+    m.finalizeFromProperties();
     for (const OpenSim::Component& c : m.getComponentList()) {
         ASSERT_EQ(c.getAbsolutePath(), GetAbsolutePathOrEmpty(&c));
     }
@@ -197,7 +200,8 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
 
     std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
-    const OpenSim::Model originalModel{modelPath.string()};
+    OpenSim::Model originalModel{modelPath.string()};
+    InitializeModel(originalModel);
     OpenSim::Model modifiedModel{originalModel};
     InitializeModel(modifiedModel);
 

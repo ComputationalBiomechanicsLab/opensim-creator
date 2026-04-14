@@ -192,7 +192,6 @@ Model::Model() : ModelComponent(),
 {
     constructProperties();
     setNull();
-    finalizeFromProperties();
 }
 //_____________________________________________________________________________
 /*
@@ -219,34 +218,12 @@ Model::Model(const string &aFileName) :
 
     _fileName = aFileName;
     log_info("Loaded model {} from file {}", getName(), getInputFileName());
-
-    try {
-        finalizeFromProperties();
-    }
-    catch(const InvalidPropertyValue& err) {
-        log_error("Model was unable to finalizeFromProperties."
-                  "Update the model file and reload OR update the property and "
-                  "call finalizeFromProperties() on the model."
-                  "(details: {}).",
-                err.what());
-    }
 }
 
 Model* Model::clone() const
 {
     // Invoke default copy constructor.
     Model* clone = new Model(*this);
-
-    try {
-        clone->finalizeFromProperties();
-    }
-    catch (const InvalidPropertyValue& err) {
-        log_error(
-                "clone() was unable to finalizeFromProperties."
-                "Update the model and call clone() again OR update the clone's "
-                " property and call finalizeFromProperties() on it. (details: {}).",
-                err.what());
-    }
 
     return clone;
 }

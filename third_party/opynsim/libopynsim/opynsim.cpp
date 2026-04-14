@@ -21,9 +21,11 @@
 
 #include <clocale>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 #include <locale>
 #include <sstream>
+#include <stdexcept>
 #include <utility>
 
 using namespace opyn;
@@ -203,6 +205,18 @@ void opyn::set_log_level(osc::LogLevel log_level)
 
 void opyn::add_opensim_geometry_directory(const std::filesystem::path& directory)
 {
+    if (not std::filesystem::exists(directory)) {
+        std::stringstream msg;
+        msg << directory << ": does not exist, cannot add it as a geometry directory";
+        throw std::runtime_error{std::move(msg).str()};
+    }
+
+    if (not std::filesystem::is_directory(directory)) {
+        std::stringstream msg;
+        msg << directory << ": is not a directory, cannot add it as a geometry directory";
+        throw std::runtime_error{directory};
+    }
+
     OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(directory.string());
     osc::log_info("added geometry search path entry: %s", directory.string().c_str());
 }
