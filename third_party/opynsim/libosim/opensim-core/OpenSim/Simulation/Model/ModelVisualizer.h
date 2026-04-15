@@ -32,6 +32,8 @@ that uses the OpenSim API. **/
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <simbody/internal/Visualizer.h>
 
+#include <filesystem>
+
 namespace OpenSim {
 class Model;
 }
@@ -212,6 +214,11 @@ public:
     findGeometryFile. The added paths are searched in the 
     reverse-chronological order -- the latest path added is searched first. */
     static void addDirToGeometrySearchPaths(const std::string& dir);
+    static std::vector<std::filesystem::path> getSearchPaths();
+    static void prependSearchPath(std::filesystem::path search_path);
+    static void appendSearchPath(std::filesystem::path search_path);
+    static bool removeSearchPath(const std::filesystem::path& search_path);
+
     /**@}**/
 
 
@@ -245,9 +252,6 @@ private:
     // This is just a reference -- it is owned by the Simbody Visualizer so 
     // don't delete it!
     SimTK::Visualizer::InputSilo*   _silo;
-
-    // List of directories to search.
-    static SimTK::Array_<std::string> dirsToSearch;
 };
 
 

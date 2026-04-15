@@ -14,40 +14,6 @@ code like this:
 This convention allows access to OPynSim features with a short, recognizable, prefix (``opyn.``),
 which we will use in examples.
 
-
-Configuring OPynSim (Optional)
-------------------------------
-
-The ``opynsim`` :doc:`configuration <../api/configuration>` API contains utilities that
-globally affect OPynSim's behavior.
-
-The most important thing to consider is  ``opynsim``\'s logging behavior. ``opynsim``
-is integrated with `Python's logging API <https://docs.python.org/3/library/logging.html>`_ but, for performance reasons, its
-C++ engine stores an internal log level separately. :func:`opynsim.set_log_level` sets
-both the internal and Python-level logging APIs to the specified level:
-
-.. code:: python
-
-    import opynsim as opyn
-    import logging
-
-    # Make OPynSim's logging more verbose (default is `logging.WARN`).
-    #
-    # This sets both OPynSim's internal C++ logging level *and* the level of the
-    # Python `logging.getLogger("opynsim")` to the given level.
-    opyn.set_log_level(logging.DEBUG)
-
-    # You can then use the standard Python logging API to set up the logs to your
-    # preference; for example:
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(levelname)s: %(message)s',
-        handlers=[
-            logging.FileHandler("opynsim.log"), # Write logs to a log file...
-            logging.StreamHandler()             # ... and also write them to the console.
-        ]
-    )
-
 Import an ``osim`` File
 -----------------------
 
@@ -56,13 +22,19 @@ API. It's a high-level model specification object that Python code can
 manipulate in order to build and customize the resulting :class:`opynsim.Model`\'s
 behavior.
 
-The OPynSim :doc:`modelling <../api/modelling>` API provides :func:`opynsim.import_osim_file` function,
-which imports an ``.osim`` file into a :class:`opynsim.ModelSpecification`:
+One way to create a :class:`opynsim.ModelSpecification` is to import it from an
+``.osim`` file, which enables importing complex specifications built using visual
+tools like `OpenSim Creator <https://opensimcreator.com>`_.  :func:`opynsim.import_osim_file`
+is one way to do this:
 
 .. code:: python
 
     import opynsim as opyn
     import pathlib
+
+    # (optional): Add a geometry directory to the search path, so that
+    # OPynSim can find shared mesh files.
+    opynsim.append_search_path("/some/geometry/directory")
 
     # Import an `.osim` file as an `opynsim.ModelSpecification`
     model_specification = opyn.import_osim_file("arm26.osim")
@@ -72,30 +44,32 @@ which imports an ``.osim`` file into a :class:`opynsim.ModelSpecification`:
 
 .. note::
 
-    The remainder of the documentation uses example generators (e.g. :func:`opynsim.example_specification_pendulum`) to
-    generate :class:`opynsim.ModelSpecification`\s.
+    The remainder of the documentation uses generators (e.g. :func:`opynsim.example_specification_pendulum`) to
+    create :class:`opynsim.ModelSpecification`\s.
 
-    This is because it's easier to copy + paste generated examples. However, you can always exchange an
-    example :class:`opynsim.ModelSpecification` for one loaded via :func:`opynsim.import_osim_file`.
+    This is only because it's easier to copy + paste Python code that uses generated
+    examples. However, you can always exchange an example :class:`opynsim.ModelSpecification` for
+    one loaded via :func:`opynsim.import_osim_file`.
 
 
 Compile a Specification into a Model
 ------------------------------------
 
 Once a :class:`opynsim.ModelSpecification` has been prepared, it can be used
-to build a :class:`opynsim.Model`, which represents a read-only physics model.
+to build (compile) a :class:`opynsim.Model`, which represents a read-only physics model.
 
-:meth:`opynsim.ModelSpecification.compile` (or :func:`opynsim.compile_specification`) is how you do this:
+:meth:`opynsim.ModelSpecification.compile` is one way to do this:
 
 .. code:: python
 
     import opynsim as opyn
 
+    # alternatively: model_specification = opyn.import_osim_file("your.osim")
     model_specification = opyn.example_specification_double_pendulum()
 
     # ... if necessary, edit the `ModelSpecification`, and then...
 
-    model = model_specification.compile()
+    model = model_specification.compile()  # builds the model from the specification
 
 
 Create and Realize an Initial State of the Model
@@ -104,7 +78,7 @@ Create and Realize an Initial State of the Model
 :class:`opynsim.Model`\s are capable of producing an initial
 :class:`opynsim.ModelState`. This is the state of the model that you
 would see if loading the model in a visualizer without loading
-states externally from (e.g.) a motion file.
+states externally (e.g. from a motion file).
 
 :meth:`opynsim.Model.initial_state` creates a new initial :class:`opynsim.ModelState`:
 
@@ -115,7 +89,7 @@ states externally from (e.g.) a motion file.
     model_specification = opyn.example_specification_double_pendulum()
     model = model_specification.compile()
 
-    state = model.initial_state()
+    state = model.initial_state()  # produces an initial state of the model
 
 Once you have a :class:`opynsim.ModelState`, you can the manipulate and inspect it
 according to your modelling requirements.
@@ -140,9 +114,9 @@ renderer reads are fully realized:
     model_specification = opyn.example_specification_double_pendulum()
     model = model_specification.compile()
     state = model.initial_state()
-    model.realize(state, opyn.STAGE_REPORT)  # required for rendering
 
-    opyn.ui.show_model_in_state(model, state)
+    model.realize(state, opyn.STAGE_REPORT)    # required for rendering
+    opyn.ui.show_model_in_state(model, state)  # shows `model` in `state`
 
 
 Render Visualization to an Image File
@@ -150,7 +124,7 @@ Render Visualization to an Image File
 
 The OPynSim :doc:`../api/graphics` API provides lower-level utilities for rendering
 OPynSim's datastructures to an image (:class:`opynsim.graphics.Texture2D`). This can be useful
-for automating tasks like creating custom plots or saving images and videos.
+for automating tasks like creating custom plots or creating images and videos of models.
 
 The API includes high-level functions, such as :func:`opynsim.graphics.render_model_in_state`,
 which returns a :class:`opynsim.graphics.Texture2D`, which you can then use in your Python
@@ -168,13 +142,13 @@ data into a PNG file:
     model_specification = opyn.example_specification_double_pendulum()
     model = model_specification.compile()
     model_state = model.initial_state()
-    model.realize(model_state, opyn.STAGE_REPORT)  # usually required for rendering
+    model.realize(model_state, opyn.STAGE_REPORT)  # required for rendering
 
-    # Render the `Model` + `ModelState` to an `opynsim.graphics.Texture2D`.
+    # Render the `Model` + `ModelState` to a `Texture2D` (image).
     texture_2d = opyn.graphics.render_model_in_state(model, model_state)
 
-    # Read the pixels into a `PIL.Image` object.
+    # Copy the texture's pixels into a `PIL.Image` object.
     image = Image.fromarray(texture_2d.pixels_rgba32(), mode="RGBA")
 
-    # Write the `PIL.Image` to disk as a PNG file.
+    # Save the `PIL.Image` as a PNG file.
     image.save("render_output.png")

@@ -27,6 +27,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 using namespace opyn;
 
@@ -203,22 +204,24 @@ void opyn::set_log_level(osc::LogLevel log_level)
     osc::global_default_logger()->set_level(log_level);
 }
 
-void opyn::add_opensim_geometry_directory(const std::filesystem::path& directory)
+std::vector<std::filesystem::path> opyn::get_search_paths()
 {
-    if (not std::filesystem::exists(directory)) {
-        std::stringstream msg;
-        msg << directory << ": does not exist, cannot add it as a geometry directory";
-        throw std::runtime_error{std::move(msg).str()};
-    }
+    return OpenSim::ModelVisualizer::getSearchPaths();
+}
 
-    if (not std::filesystem::is_directory(directory)) {
-        std::stringstream msg;
-        msg << directory << ": is not a directory, cannot add it as a geometry directory";
-        throw std::runtime_error{directory};
-    }
+void opyn::prepend_search_path(std::filesystem::path search_path)
+{
+    OpenSim::ModelVisualizer::prependSearchPath(std::move(search_path));
+}
 
-    OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(directory.string());
-    osc::log_info("added geometry search path entry: %s", directory.string().c_str());
+void opyn::append_search_path(std::filesystem::path search_path)
+{
+    OpenSim::ModelVisualizer::appendSearchPath(std::move(search_path));
+}
+
+bool opyn::remove_search_path(const std::filesystem::path& search_path)
+{
+    return OpenSim::ModelVisualizer::removeSearchPath(search_path);
 }
 
 bool opyn::init()

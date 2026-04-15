@@ -510,14 +510,13 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             },
             nb::arg("python_logging_level"),
             R"(
-                Set the global logging level for OPynSim.
+                Set the global logging level for OPynSim. The default log level is ``logging.WARN``.
 
-                By default, OPynSim minimizes log output so that downstream Python
-                applications can control their own logging configuration. However,
-                some modelling components emit useful diagnostic information to the log.
-
-                This function configures OPynSim's internal logging verbosity using
-                standard Python logging levels.
+                ``opynsim`` is integrated with `Python's logging API <https://docs.python.org/3/library/logging.html>`_
+                but, for performance reasons, its C++ engine stores an internal log level separately. This function
+                synchronizes the log level of both OPynSim's Python logger (i.e. ``logger.getLogger("opynsim")``) and
+                the internal C++ log level. Only changing the Python logger can result in a situation where the C++
+                engine emits (or doesn't!) log messages that Python subsequently drops.
 
                 Args:
                     python_logging_level (int): A logging level from the Python (:mod:`logging`) module
@@ -568,30 +567,71 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         );
 
         _core_module.def(
-            "add_opensim_geometry_directory",
-            [](const std::filesystem::path& geometry_directory) { opyn::add_opensim_geometry_directory(geometry_directory); },
-            nb::arg("geometry_directory_path"),
+            "get_search_paths",
+            &opyn::get_search_paths,
             R"(
-                Globally adds the provided path to OpenSim's geometry search path, which
-                OpenSim uses whenever it cannot find a mesh file that an OpenSim model
-                file references.
+                Returns a copy of the current global search paths that OPynSim uses to resolve
+                filesystem resources in high-to-low priority order.
 
-                By default, relative paths in OpenSim models are resolved as ``Geometry/${mesh_path}``
-                in the directory of the model file (if it's on disk). For example, if you
-                have an OpenSim model file ``directory/model.osim`` that contains a ``<Mesh>``
-                component with a ``mesh_file`` called ``r_pelvis.vtp``, then OpenSim will search:
+                When OPynSim needs to load ``path`` as a resource on the filesystem, OPynSim
+                establishes a ``base_path`` and then probes the filesystem until it either
+                finds a file or runs out of options:
 
-                - ``directory/Geometry/r_pelvis.vtp``
-                - ``${geometry_directory_path[0]}/r_pelivs.vtp``
-                - ``${geometry_directory_path[1]}/r_pelivs.vtp``
+                - If ``path`` is absolute, only probes ``path`` - no searching behavior.
+                - Otherwise, iterates through each ``entry`` in ``get_search_path()``, and probes
+                  ``(base_path / entry / path)`` until a a file is found.
 
-                Where ``${geometry_directory_path[i]}`` is the ``i``\th ``geometry_directory_path``
-                provided to this function.
+                ``base_path``'s value depends on the situation in which OPynSim is resolving a
+                path. For example, when resolving a ``opynsim.ModelSpecification`` with a known
+                filesystem path, ``base_path`` is the parent of that path. However, if the
+                ``opynsim.ModelSpecification`` has **no** filesystem location, ``base_path`` is the
+                working directory of the Python process. **Notably**, when a ``entry`` is absolute,
+                ``(base_path / entry / path) == (entry / path)``, which ignores ``base_path``. So, when
+                providing directories that are in a context-independent location (e.g. a global geometry
+                directory) use absolute paths.
+
+                When a resource cannot be found, the consequences are context-dependent. For example, a
+                mesh implementation that fails to find a mesh file may choose to ignore the failure, generate
+                a debug/error mesh, or throw an exception.
+            )"
+        );
+
+        _core_module.def(
+            "prepend_search_path",
+            &opyn::prepend_search_path,
+            nb::arg("search_path"),
+            R"(
+                Prepends ``search_path`` to the start (highest-priority) of the global
+                search path list (see :func:`get_search_paths`).
+
+                If ``search_path`` already exists in the search path list, it is moved to the
+                start of the list. ``search_path`` does not need to exist on the filesystem.
+            )"
+        );
+
+        _core_module.def(
+            "append_search_path",
+            &opyn::append_search_path,
+            nb::arg("search_path"),
+            R"(
+                Appends ``search_path`` to the end (lowest-priority) of the global
+                search path list (see :func:`get_search_paths`).
+
+                If ``search_path`` already exists in the search path list, it is moved to the
+                end of the list. ``search_path`` does not need to exist on the filesystem.
+            )"
+        );
+
+        _core_module.def(
+            "remove_search_path",
+            &opyn::remove_search_path,
+            nb::arg("search_path"),
+            R"(
+                Returns ``True`` if ``search_path`` was found and removed from the global
+                search path list (see :func:`get_search_paths`).
 
                 Args:
-                    geometry_directory_path: An absolute path to the fallback directory.
-                Raises:
-                    Exception: if `geometry_directory_path` does not exist on the caller's filesystem.
+                    search_path: The path to remove. Must exactly match an entry from :func:`get_search_paths`.
             )"
         );
 

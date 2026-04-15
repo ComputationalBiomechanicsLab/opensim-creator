@@ -28,12 +28,37 @@
 #include <simbody/internal/Visualizer_InputListener.h>
 #include <simbody/internal/Visualizer_Reporter.h>
 
-#include <string>
-using std::string;
+#include <filesystem>
 #include <iostream>
+#include <mutex>
+#include <string>
+
+using std::string;
 using std::cerr; using std::clog; using std::endl;
 
 using namespace OpenSim;
+
+namespace
+{
+    struct SearchPaths final {
+        mutable std::mutex mutex;
+
+        // Priority is low --> high, relative entries are resolved with
+        // respect to a base directory (usually the model file, but can
+        // also be the current working directory).
+        std::vector<std::filesystem::path> entries = {
+            "Geometry",  // Search in `${base_directory}/Geometry/` (OpenSim legacy default - most models use this)
+            "geometry",  // Search in `${base_directory}/geometry/` (compatibility with case-sensitive filesystems)
+            ".",         // Search in the base directory
+        };
+    };
+
+    SearchPaths& getGlobalSearchPaths()
+    {
+        static SearchPaths s_SearchPaths;
+        return s_SearchPaths;
+    }
+}
 
 //==============================================================================
 //                       OPENSIM INPUT LISTENER
@@ -137,70 +162,82 @@ void ModelVisualizer::show(const SimTK::State& state) const {
 //  - search the user added paths in dirToSearch in reverse chronological order
 //    i.e. latest path added is searched first.
 //  - look for the geometry file in installDir/Geometry
-bool ModelVisualizer::
-findGeometryFile(const Model& aModel, 
-                 const std::string&          geoFile,
-                 bool&                       geoFileIsAbsolute,
-                 SimTK::Array_<std::string>& attempts)
+bool ModelVisualizer::findGeometryFile(
+    const Model& aModel,
+    const std::string&          geoFile,
+    bool&                       geoFileIsAbsolute,
+    SimTK::Array_<std::string>& attempts)
 {
+    const std::filesystem::path path{geoFile};
+    geoFileIsAbsolute = path.is_absolute();  // satisfy outparam
+
     attempts.clear();
-    std::string geoDirectory, geoFileName, geoExtension; 
-    SimTK::Pathname::deconstructPathname(geoFile, 
-        geoFileIsAbsolute, geoDirectory, geoFileName, geoExtension);
 
-    bool foundIt = false;
     if (geoFileIsAbsolute) {
+        // The path is absolute: don't bother searching around and accept
+        // the path as-is.
         attempts.push_back(geoFile);
-        foundIt = SimTK::Pathname::fileExists(attempts.back());
-    } else {
-        const string geoDir = "Geometry" + SimTK::Pathname::getPathSeparator();
-        string modelDir;
-        if (aModel.getInputFileName() == "Unassigned")
-            modelDir = SimTK::Pathname::getCurrentWorkingDirectory();
-        else {
-            bool isAbsolutePath; string directory, fileName, extension; 
-            SimTK::Pathname::deconstructPathname(
-                aModel.getInputFileName(),
-                isAbsolutePath, directory, fileName, extension);
-            modelDir = isAbsolutePath
-                               ? directory
-                               : SimTK::Pathname::getCurrentWorkingDirectory() +
-                                         directory;
-        }
-
-        attempts.push_back(modelDir + geoFile);
-        foundIt = SimTK::Pathname::fileExists(attempts.back());
-
-        if (!foundIt) {
-            attempts.push_back(modelDir + geoDir + geoFile);
-            foundIt = SimTK::Pathname::fileExists(attempts.back());
-        }
-
-        if (!foundIt) {
-            for(auto dir = dirsToSearch.crbegin();
-                dir != dirsToSearch.crend();
-                ++dir) {
-                attempts.push_back(*dir + geoFile);
-                if (SimTK::Pathname::fileExists(attempts.back())) {
-                    foundIt = true;
-                    break;
-                }
-            }
-        }
+        return std::filesystem::exists(path);
     }
 
-    return foundIt;
+    // Else: the path is relative, so resolve it with-respect-to either:
+    //
+    // - The model file, if it has a known on-disk location
+    // - Otherwise, search with respect to the current working directory (legacy?)
+
+    const std::filesystem::path baseDirectory = aModel.getInputFileName() != "Unassigned" ?
+        std::filesystem::weakly_canonical(aModel.getInputFileName()) :
+        std::filesystem::current_path();
+
+    // Go through the search paths back-to-front (later entries are higher priority)
+    // looking for the entry.
+
+    const auto& searchPaths = getGlobalSearchPaths();
+    const std::lock_guard<std::mutex> guard{searchPaths.mutex};
+    for (const auto& searchPath : searchPaths.entries) {
+        const std::filesystem::path attempt = baseDirectory / searchPath / path;
+        attempts.push_back(attempt.string());
+        if (std::filesystem::exists(attempt)) {
+            return true;
+        }
+    }
+    return false;
 }
 
-// Initialize the static variable.
-SimTK::Array_<std::string> ModelVisualizer::dirsToSearch{};
-
 void ModelVisualizer::addDirToGeometrySearchPaths(const std::string& dir) {
-    // Make sure to add trailing path-separator if one is not present.
-    if (dir.back() == SimTK::Pathname::getPathSeparator().back())
-        dirsToSearch.push_back(dir);
-    else
-        dirsToSearch.push_back(dir + SimTK::Pathname::getPathSeparator());
+    auto& searchPaths = getGlobalSearchPaths();
+    std::lock_guard guard{searchPaths.mutex};
+    searchPaths.entries.emplace(searchPaths.entries.begin(), dir);
+}
+
+std::vector<std::filesystem::path> ModelVisualizer::getSearchPaths()
+{
+    auto& searchPaths = getGlobalSearchPaths();
+    std::lock_guard guard{searchPaths.mutex};
+    return searchPaths.entries;
+}
+
+void ModelVisualizer::prependSearchPath(std::filesystem::path search_path)
+{
+    auto& searchPaths = getGlobalSearchPaths();
+    std::lock_guard guard{searchPaths.mutex};
+    std::erase(searchPaths.entries, search_path);
+    searchPaths.entries.insert(searchPaths.entries.begin(), std::move(search_path));
+}
+
+void ModelVisualizer::appendSearchPath(std::filesystem::path search_path)
+{
+    auto& searchPaths = getGlobalSearchPaths();
+    std::lock_guard guard{searchPaths.mutex};
+    std::erase(searchPaths.entries, search_path);
+    searchPaths.entries.push_back(std::move(search_path));
+}
+
+bool ModelVisualizer::removeSearchPath(const std::filesystem::path& search_path)
+{
+    auto& searchPaths = getGlobalSearchPaths();
+    std::lock_guard guard{searchPaths.mutex};
+    return std::erase(searchPaths.entries, search_path) > 0;
 }
 
 // Call this on a newly-constructed ModelVisualizer (typically from the Model's

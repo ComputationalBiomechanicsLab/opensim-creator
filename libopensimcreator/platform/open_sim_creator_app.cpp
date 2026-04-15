@@ -75,7 +75,8 @@ bool osc::GloballyInitOpenSim()
 void osc::GloballyAddDirectoryToOpenSimGeometrySearchPath(const std::filesystem::path& p)
 {
     if (std::filesystem::exists(p) and std::filesystem::is_directory(p)) {
-        opyn::add_opensim_geometry_directory(p);
+        opyn::prepend_search_path(p);
+        log_info("added geometry search path entry: %s", p.string().c_str());
     }
     else {
         log_warn("%s: does not exist, it will not be added to the geometry search path", p.string().c_str());
