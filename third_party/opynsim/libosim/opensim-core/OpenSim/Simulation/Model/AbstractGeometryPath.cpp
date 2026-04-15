@@ -122,7 +122,7 @@ void AbstractGeometryPath::generateDecorations(
         return;
     }
     if (not get_Appearance().get_visible()) {
-        return;  // Don't render a path that's hidden (ComputationalBiomechanicsLab/opensim-creator#1166)
+        return;  // Don't render a path that's hidden (opensim-creator#1166)
     }
 
     const bool showPathPoints = hints.get_show_path_points();

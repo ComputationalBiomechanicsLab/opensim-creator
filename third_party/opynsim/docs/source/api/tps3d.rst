@@ -110,7 +110,6 @@ Relevant Literature
 
 .. _TPS General Info: https://en.wikipedia.org/wiki/Thin_plate_spline
 .. _TPS Primary Literature Source: https://ieeexplore.ieee.org/document/24792
-.. _OSC TPS Github Issue: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/467
 .. _TPS Basic Explanation: https://profs.etsmtl.ca/hlombaert/thinplates/
 .. _TPS Warping Blog Post: https://khanhha.github.io/posts/Thin-Plate-Splines-Warping/
 .. _Image Warping and Morphing: http://groups.csail.mit.edu/graphics/classes/CompPhoto06/html/lecturenotes/14_WarpMorph.pdf

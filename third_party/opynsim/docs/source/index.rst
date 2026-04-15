@@ -15,9 +15,7 @@
 Welcome to the offical OPynSim documentation pages 👋
 
 OPynSim is a python-native API for musculoskeletal modeling that doesn't compromise on nearly
-20 years of research, feature development, and UI development from
-`Simbody <https://github.com/simbody/simbody>`_, `OpenSim <https://simtk.org/projects/opensim>`_,
-and `OpenSim Creator <https://www.opensimcreator.com>`_.
+20 years of research and feature development in musculoskeletal modelling.
 
 To get started, see the :doc:`getting-started/installation` page. After that, we recommend
 going through the :doc:`getting-started/quickstart` guide in order to get familiar with the
@@ -55,7 +53,6 @@ Table of Contents
    development/architecture-overview
    development/clion-setup
    development/visual-studio-setup
-   development/contributing-to-opensim
    development/updating-documentation
    development/opynsim-as-a-cpp-library
 

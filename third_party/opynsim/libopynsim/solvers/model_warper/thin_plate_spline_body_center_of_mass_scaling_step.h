@@ -20,7 +20,7 @@ namespace OpenSim { class Model; }
 namespace opyn
 {
     // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp the centers
-    // of mass of the given bodies (ComputationalBiomechanicsLab/opensim-creator#1147).
+    // of mass of the given bodies (opensim-creator#1147).
     class ThinPlateSplineBodyCenterOfMassScalingStep final : public ToggleableThinPlateSplineScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineBodyCenterOfMassScalingStep, ToggleableThinPlateSplineScalingStep)
 

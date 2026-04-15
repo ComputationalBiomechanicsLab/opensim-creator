@@ -7,8 +7,7 @@
 </h1>
 
 OPynSim is a python-native API for musculoskeletal modeling that doesn't compromise on nearly
-20 years of research, feature development, and UI development from [Simbody](https://github.com/simbody/simbody),
-[OpenSim](https://simtk.org/projects/opensim), and [OpenSim Creator](https://www.opensimcreator.com/).
+20 years of research and feature development in musculoskeletal modelling.
 
 - **Documentation**: [https://docs.opynsim.eu](https://docs.opynsim.eu)
 - **Source code**: [https://github.com/opynsim/opynsim](https://github.com/opynsim/opynsim)
@@ -24,11 +23,10 @@ OPynSim provides:
   system libraries. The Python stack only depends on `numpy>=1.26.0`.
 - **Stable Python ABI implementation**. Each release of OPynSim works on any
   Python version ≥ 3.12 on Windows, macOS, and major Linux distributions.
-- **Excellent compatibility with OpenSim**. The OPynSim codebase uses
-  a [lightly-patched forks](libosim) of [opensim-core](https://github.com/opensim-org/opensim-core)
-  and [simbody](https://github.com/simbody/simbody). The native part is already
-  used in production releases of [OpenSim Creator](https://www.opensimcreator.com), which
-  ships to thousands of OpenSim ~~testers~~ users.
+- **Excellent compatibility with OpenSim**. OPynSim can import/export `.osim` files
+  directly, and can be used alongside the existing `opensim` Python API. OPynSim is
+  already used in production releases of [OpenSim Creator](https://www.opensimcreator.com), which ships to
+  thousands of OpenSim ~~testers~~ users.
 
 
 ## 📖 Citing/Acknowledging
@@ -41,10 +39,6 @@ If you want to cite a specific version of OPynSim (e.g. for reproducibility), th
 cite the unique Zenodo DOI corresponding to that version, for example:
 
 > TODO (pre-alpha, no stable releases yet, sorry!)
-
-If you want to cite the underlying simulation/modelling system (OpenSim), cite:
-
-> Seth A, Hicks JL, Uchida TK, Habib A, Dembia CL, et al. (2018) **OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement.** _PLOS Computational Biology_ 14(7): e1006223. https://doi.org/10.1371/journal.pcbi.1006223
 
 
 ## ❤️ Acknowledgements

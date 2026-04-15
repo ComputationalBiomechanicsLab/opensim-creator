@@ -167,8 +167,7 @@ namespace
     void setup_python_based_logging()
     {
         // Initialize the `opynsim` C++ log with the same default logging level
-        // as Python (warning) and ensure OpenSim is wired into `oscar`'s C++
-        // logging system.
+        // as Python (warning).
         opyn::set_log_level(osc::LogLevel::warn);
 
         // Create an `oscar` (C++) log sink that sink its messages via the Python
@@ -214,7 +213,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
     // when the Python interpreter shuts down
     nb::module_::import_("atexit").attr("register")(nb::cpp_function(&destroy_lazy_loaded_opynsim_app));
 
-    // Globally initialize the opynsim API (Simbody, OpenSim, oscar)
+    // Globally initialize the opynsim API (load all components, etc.)
     opyn::init();
 
     // Initialize `graphics` submodule.
@@ -286,10 +285,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                     OPynSim's API design separates the specification of a model (:class:`ModelSpecification`)
                     from its validated, assembled, and optimized simulation representation (:class:`Model`) to ensure
                     that the compilation process (:meth:`compile`) can freeze and optimize internal
-                    datastructures at a single point in the process. This is in contrast to OpenSim, which handles
-                    both concerns with a single ``OpenSim::Model`` class, which results in edge-cases, such as
-                    incorrectly being able to edit a model after a physics system has already been assembled
-                    from it.
+                    datastructures at a single point in the process.
             )"
         );
         model_specification_class.def(nb::init<>());  // Define default constructor
@@ -372,11 +368,6 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 in-order one :class:`ModelStateStage` at time. For example, :attr:`ModelStateStage.POSITION`
                 is realized before :attr:`ModelStateStage.VELOCITY`,then :attr:`ModelStateStage.DYNAMICS`,
                 and so on.
-
-                Notes:
-                    State realization is a concept that OPynSim inherited from `Simbody <github.com/simbody/simbody>`_, which
-                    has a much more comprehensive explanation of the realization process in its `Simbody Theory Manual <https://github.com/simbody/simbody/blob/master/Simbody/doc/SimbodyTheoryManual.pdf>`_. You
-                    should read that manual if you want to know more.
             )"
         );
         model_class.def(
@@ -523,8 +514,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
 
                 By default, OPynSim minimizes log output so that downstream Python
                 applications can control their own logging configuration. However,
-                some modelling components (particularly those originating from OpenSim)
-                emit useful diagnostic information to the log.
+                some modelling components emit useful diagnostic information to the log.
 
                 This function configures OPynSim's internal logging verbosity using
                 standard Python logging levels.
@@ -560,8 +550,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 The specification is built entirely in-memory with no external data files, which makes
                 it useful for debugging, example Python scripts, and documentation pages. The returned
                 specification is designed to resemble the ``double_pendulum.osim``, which is available
-                from the `OpenSim models repository <https://github.com/opensim-org/opensim-models>`_ and as
-                an example file in `OpenSim Creator <https://www.opensimcreator.com>`_ .
+                as an example file in `OpenSim Creator <https://www.opensimcreator.com>`_ .
             )"
         );
 
@@ -570,7 +559,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             [](const std::filesystem::path& osim_path) { return opyn::import_osim_file(osim_path); },
             nb::arg("osim_file_path"),
             R"(
-                Returns a :class:`ModelSpecification` imported from an OpenSim (.osim) file on the
+                Returns a :class:`ModelSpecification` imported from an `.osim` file on the
                 caller's filesystem.
 
                 Raises:

@@ -14,9 +14,7 @@
 
 // Thin Plate Spline (TPS), 3D implementation.
 //
-// Most of the background behind this is discussed in:
-//
-// - https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/467
+// Most of the background behind this is discussed in OpenSim Creator's TPS documentation.
 //
 // Here are links to some of the reference material used to write this implementation:
 //

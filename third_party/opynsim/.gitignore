@@ -21,9 +21,6 @@ __pycache__
 *.pyi
 src/opynsim.egg-info
 
-# runtime: opensim log files
-**/opensim.log
-
 # os: MacOS filesystem
 .DS_Store
 
@@ -46,4 +43,3 @@ out/
 
 # editor: CLion
 .idea/
-

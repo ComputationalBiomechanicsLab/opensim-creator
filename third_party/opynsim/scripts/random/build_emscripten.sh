@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # `build_emscripten.sh`: performs an end-to-end build of the `hellotriangle` demo
-# of OpenSim Creator using the Emscripten SDK (`emmake`, `emcc`, etc.) toolchain
+# using the Emscripten SDK (`emmake`, `emcc`, etc.) toolchain
 # to build a wasm version of the binary
 #
 #     usage (must be ran in repository root): `bash scripts/build_emscripten.sh`
@@ -26,7 +26,6 @@ OSC_BUILD_TYPE=${OSC_BUILD_TYPE-`echo ${OSC_BASE_BUILD_TYPE}`}
 
 CXXFLAGS="-fexceptions" emcmake cmake -S third_party/ -B third_party-build-Debug \
     -DOSCDEPS_BUILD_SDL=OFF \
-    -DOSCDEPS_BUILD_OPENSIM=OFF \
     -DCMAKE_INSTALL_PREFIX="${PWD}/third_party-install-Debug" \
     -DCMAKE_INSTALL_LIBDIR="${PWD}/third_party-install-Debug/lib"
 emmake cmake --build third_party-build-Debug -j$(nproc) -v

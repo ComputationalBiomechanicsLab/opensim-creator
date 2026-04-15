@@ -28,7 +28,7 @@ target_compile_definitions(imgui
     # Aggressively avoid obsolete functions
     PUBLIC IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
-    # for opensim-creator
+    # For legacy support
     #
     # this is necessary until we move away from our legacy `imgui.ini` and
     # `imgui_base_config.ini` files because existing users have already encoded

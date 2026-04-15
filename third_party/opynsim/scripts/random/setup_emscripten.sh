@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Sets up a Linux machine with the necessary dependencies to build OpenSim
-# Creator for Emscripten (wasm) architectures.
+# Sets up a Linux machine with the necessary dependencies to build the
+# project for Emscripten (wasm) architectures.
 
 # propagate any failures to this script
 set -xeuo pipefail

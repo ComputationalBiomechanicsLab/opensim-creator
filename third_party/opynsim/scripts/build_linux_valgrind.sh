@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# Performs an end-to-end build of OpenSim Creator with build flags
-# that make it valgrind-compatible. This is handy for debugging things
-# like memory accesses, segfaults, etc.
+# Performs an end-to-end build with build flags that make it
+# valgrind-compatible. This is handy for debugging things like
+# memory accesses, segfaults, etc.
 
 set -xeuo pipefail
 
@@ -11,7 +11,7 @@ build_config=RelWithDebInfo
 # Configure + build dependencies
 cd third_party && cmake --workflow --preset ${build_config} && cd -
 
-# Build OpenSim Creator
+# Build the project
 cmake --workflow --preset ${build_config}
 
 # Run test suite under valgrind

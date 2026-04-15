@@ -1361,7 +1361,7 @@ namespace
         if (auto* sgp = dynamic_cast<const OpenSim::Scholz2015GeometryPath*>(&obstacle.getOwner())) {
             if (not sgp->get_Appearance().get_visible()) {
                 // If the owning `Scholz2015GeometryPath` isn't visible, the
-                // obstacles shouldn't be visible either (ComputationalBiomechanicsLab/opensim-creator#1166).
+                // obstacles shouldn't be visible either (opensim-creator#1166).
                 return;
             }
         }

@@ -9,7 +9,7 @@ namespace osc
     /// A general-purpose scope guard intended to call its exit function when
     /// a scope is exited - either normally, or via an exception.
     ///
-    /// This utility class is effectively an OpenSim rewrite of `std::experimental::scope_exit`,
+    /// This utility class is effectively a rewrite of `std::experimental::scope_exit`,
     /// which is documented here: https://en.cppreference.com/w/cpp/experimental/scope_exit.html
     template<std::invocable EF>
     class [[nodiscard]] ScopeExit final {

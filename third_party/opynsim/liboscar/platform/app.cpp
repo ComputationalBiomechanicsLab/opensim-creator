@@ -528,7 +528,7 @@ namespace
         }
 
         if (resources_dir_setting_value->type() != VariantType::String) {
-            log_error("application setting for '%s' is not a string: falling back", resources_key.c_str());
+            log_info("application setting for '%s' is not a string: falling back", resources_key.c_str());
             return get_resources_dir_fallback_path(settings);
         }
 
@@ -544,7 +544,7 @@ namespace
 
         auto resolved_resource_dir = std::filesystem::weakly_canonical(config_file_dir / configured_resources_dir);
         if (not std::filesystem::exists(resolved_resource_dir)) {
-            log_error("'resources', in the application configuration, points to a location that does not exist (%s), so the application may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attemtping to fallback to a default resources location (which may or may not work).", resolved_resource_dir.string().c_str());
+            log_info("'resources', in the application configuration, points to a location that does not exist (%s), so the application may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attemtping to fallback to a default resources location (which may or may not work).", resolved_resource_dir.string().c_str());
             return get_resources_dir_fallback_path(settings);
         }
 

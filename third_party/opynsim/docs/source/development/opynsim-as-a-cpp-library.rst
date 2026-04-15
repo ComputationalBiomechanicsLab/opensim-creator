@@ -7,12 +7,6 @@ OPynSim As a C++ Library
     **The OPynSim C++ API is unstable.** This guide is aimed at C++ developers that
     accept the risks.
 
-    Apart from a few patches, the OpenSim and Simbody API are pulled as-is from their
-    central repositories, so those C++ APIs should be as stable as those upstreams. This
-    means that, in principle, you can write new C++ codes for OpenSim/Simbody using
-    OPynSim's (easier) installation and then upstream the code to OpenSim's and
-    Simbody's repositories.
-
     The OPynSim C++ API (i.e. anything in ``libopynsim/`` or namespaced with ``opyn::``)
     and the oscar C++ API (``liboscar/``, ``osc::``) are **internal** APIs. They
     exist to service the OPynSim python API (public) and OpenSim Creator's implementation
@@ -23,7 +17,7 @@ OPynSim As a C++ Library
     project, but you should probably freeze the OPynSim version you use. Otherwise,
     upgrades to OPynSim might break your C++ code. Any issues/emails/requests with
     content like 'your change broke my C++ code' will receive a response along the
-    lines of 'LOL RTFM'.
+    lines of 'read the friendly manual'.
 
 Doxygen Documentation
 ---------------------
@@ -65,8 +59,8 @@ Here's an example bash script for building and installing everything from source
     cmake --build ${build_dir} --target install
 
 Once you've done that, ``${install_dir}`` will then contain a native install of
-OPynSim and all of its dependencies (e.g. Simbody, OpenSim, Oscar). Downstream
-cmake projects can use any of these dependencies, or OPynSim, with ``find_package``:
+OPynSim and all of its dependencies. Downstream cmake projects can use any of
+these dependencies, or OPynSim, with ``find_package``:
 
 .. code-block:: cmake
 

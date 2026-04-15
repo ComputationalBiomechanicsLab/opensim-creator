@@ -122,8 +122,8 @@ if(TRUE)
 
     # Scrap all public symbols apart from `PyInit_*` / `_PyInit_*`
     #
-    # This is to reduce symbol collisions when loading the library in a python
-    # environment that might also contain (e.g.) OpenSim
+    # This is to reduce symbol collisions when loading the library in a Python
+    # environment that might also be loading other native extension modules.
     if (APPLE)
         target_link_options(_core PRIVATE "-Wl,-exported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/exports.txt")
     elseif(UNIX AND NOT APPLE)  # i.e. Linux

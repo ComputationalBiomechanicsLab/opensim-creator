@@ -61,7 +61,7 @@ namespace
     };
 }
 
-// repro for #263 (https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/263)
+// Repro for opensim-creator/#263.
 //
 // Effectively, this is what the joint switcher in the UI is doing. It is permitted for the
 // code to throw an exception (e.g. because other parts of the model depend on something in

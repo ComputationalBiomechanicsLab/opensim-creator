@@ -94,7 +94,7 @@ void opyn::init_graphics_submodule(nanobind::module_& graphics_module)
                 model_state (opynsim.ModelState): The state of the model to render. Should be realized to at least :attr:`opynsim.ModelStateStage.REPORT`.
                 dimensions (tuple[int, int]): The desired output resolution (width, height) of the rendered image in pixels.
                 zoom_to_fit (bool): Tells the renderer to automatically set up the camera to focus on the center of the bounds of the scene at a distance that can see the entire scene.
-                draw_floor (bool): Draws a floor, matching the default behavior of Simbody and OpenSim GUI.
+                draw_floor (bool): Draws a chequered floor.
 
             Returns:
                 opynsim.graphics.Texture2D: The rendered image, which will have the specified ``dimensions``.

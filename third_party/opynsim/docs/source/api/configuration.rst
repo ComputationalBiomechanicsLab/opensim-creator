@@ -2,8 +2,8 @@ Configuration
 =============
 
 The ``opynsim`` API contains a few high-level functions for configuring
-the global state of the system. These are usually necessary for debugging
-or legacy compatibility with OpenSim conventions.
+the global state of the system. These are sometimes necessary for debugging
+or implementing legacy compatibility.
 
 API Reference
 -------------

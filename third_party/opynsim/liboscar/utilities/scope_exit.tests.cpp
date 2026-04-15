@@ -8,7 +8,7 @@ namespace
 {
     // Helper class for exercising the move-constructor behavior that's
     // documented for `std::experimental::scope_exit<EF>`, to ensure that
-    // OpenSim's rewrite of it is mostly forward-compatible.
+    // our rewrite of it is mostly forward-compatible.
     template<bool IsNoexceptMoveConstructible, bool IsNoexceptCopyConstructible>
     class Callable final {
     public:

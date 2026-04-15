@@ -87,7 +87,7 @@ void opyn::init_ui_submodule(nanobind::module_& ui_module)
                 dimensions (tuple[int, int]): The desired output resolution (width, height) of the window in device-independent pixels.
                 background_color: The desired background color of the rendered scene, specified as normalized floats representing RGBA.
                 zoom_to_fit (bool): Tells the ui to automatically set up the camera to focus on the center of the bounds of the scene at a distance that can see the entire scene.
-                draw_floor (bool): Draws a floor, matching the default behavior of Simbody and OpenSim GUI.
+                draw_floor (bool): Draws a chequered floor.
         )"
     );
 }

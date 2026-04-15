@@ -8,9 +8,9 @@ means you can easily install it with package managers such as `pip <https://pip.
 for your project's chosen Python distribution.
 
 ``opynsim`` is a fundamental package that's designed to have almost no dependencies. This means
-which you should be able to install it alongside a wide variety of other python packages
-(e.g. ``opensim``) and alternative Python distributions (e.g. `Anaconda <https://anaconda.org/>`_
-and `Miniforge <https://github.com/conda-forge/miniforge>`_).
+which you should be able to install it alongside a wide variety of other python packages and
+alternative Python distributions (e.g. `Anaconda <https://anaconda.org/>`_ and
+`Miniforge <https://github.com/conda-forge/miniforge>`_).
 
 pip
 ---
@@ -69,20 +69,6 @@ environment . For example, like this:
     conda activate just-opynsim
     pip install opynsim
 
-You can even install the ``opensim`` Python package alongside OPynSim:
-
-.. code:: bash
-
-    # Example that includes also installing `opensim` alongside OPynSim
-    conda create -n opynsim-and-opensim "python==3.12"
-    conda activate opynsim-and-opensim
-    conda install -c opensim-org opensim
-    pip install opynsim
-    pip check  # Should be fine
-
-**Note**: OPynSim's datastructures (e.g. :class:`opynsim.Model`) aren't compatible
-with OpenSim's (e.g. ``opensim.Model``). You must serialize data whenever it's
-passed between the two libraries.
 
 .. _supported-platforms:
 
