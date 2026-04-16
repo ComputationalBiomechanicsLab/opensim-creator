@@ -53,7 +53,6 @@ Table of Contents
    development/architecture-overview
    development/clion-setup
    development/visual-studio-setup
-   development/updating-documentation
    development/opynsim-as-a-cpp-library
 
 .. toctree::
