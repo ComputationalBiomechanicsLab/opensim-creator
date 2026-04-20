@@ -505,7 +505,7 @@ Joint                Original Coordinate Name New Coordinate Name New Range
 ``hip_r``            ``rx``                   ``hip_adduction_r`` -0.9 to 0.5
 ``hip_r``            ``ry``                   ``hip_rotation_r``  -0.7 to 0.7
 ``hip_r``            ``rz``                   ``hip_flexion_r``   -0.6 to 2.1
-``knee_r``           ``rz``                   ``knee_angle_r``     0   to 2.1
+``knee_r``           ``rz``                   ``knee_angle_r``    -2.1 to 0.0
 ==================== ======================== =================== ===========
 
 

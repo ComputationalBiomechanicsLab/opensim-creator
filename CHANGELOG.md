@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed joint range being the wrong way around in the "Make a leg" tutorial (#1178).
+
 ## [0.7.3] - 2026/03/27
 
 0.7.3 is a minor release that improves the rendering and interaction behavior
