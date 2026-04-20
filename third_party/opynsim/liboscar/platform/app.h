@@ -386,15 +386,52 @@ namespace osc
         // returns `true` if the main application window is minimized
         bool is_main_window_minimized() const;
 
-        // pushes the given cursor onto the application-wide cursor stack, making it
+        // Pushes the given cursor onto the application-wide cursor stack, making it
         // the currently-active cursor until it is either popped, via `pop_cursor_override`,
         // or another cursor is pushed.
         void push_cursor_override(const Cursor&);
         void pop_cursor_override();
 
-        // enables/disables "grabbing" the mouse cursor in the main window
+        // Enables/disables "grabbing" the mouse cursor in the main window, which constrains
+        // the location of the cursor to the edges of the main window.
         void enable_main_window_grab();
         void disable_main_window_grab();
+
+        // Enables/disables relative mouse mode for the main window.
+        //
+        // While the window has focus and relative mouse mode is enabled:
+        //
+        // - The cursor is hidden
+        // - The mouse's position is constrained to the window
+        // - The event system will still emit `MouseEvent`s with a relative `delta`, even
+        //   if the mouse cursor is at the edge of the window.
+        void enable_main_window_relative_mouse_mode();
+        void disable_main_window_relative_mouse_mode();
+
+        // Returns the confinement rectangle of the main window in screen space
+        // in device-independent pixels, or `std::nullopt` if there is no
+        // confinement.
+        std::optional<Rect> main_window_mouse_confinement() const;
+
+        // Sets the confinement rectangle of the main window to `confinement_rect`.
+        //
+        // - If provided, `confinement_rect` should be defined in screen space in device-independent
+        //   pixels. For best behavior (OS-dependent), it should be completely inside the OS window
+        //   by at least one device-independent pixel.
+        // - If `std::nullopt`, disables the current confinement rectangle (if active).
+        void set_main_window_mouse_confinement(std::optional<Rect> confinement_rect);
+
+        // Sets the confinement rectangle to a 1x1 device-independent pixel rectangle
+        // at `confinement_point`.
+        //
+        // - If provided, `confinement_point` should be defined in screen space in device-independent
+        //   pixels. For best behavior (OS-dependent), it should be completely inside the OS window
+        //   by at least one device-independent pixel.
+        // - If `std::nullopt`, disables the current confinement rectangle (if active).
+        void set_main_window_mouse_confinement(std::optional<Vector2> confinement_point);
+
+        // Disables the current confinement rectangle (if active).
+        void set_main_window_mouse_confinement(std::nullopt_t);
 
         // if the main window is focused with the mouse, returns the current position
         // of the mouse in screen space in device-independent pixels.

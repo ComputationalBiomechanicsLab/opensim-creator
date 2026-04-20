@@ -33,6 +33,7 @@ bool osc::MouseCapturingCamera::on_event(Event& e)
 void osc::MouseCapturingCamera::on_draw()
 {
     if (mouse_captured_) {
+        App::upd().set_main_window_mouse_confinement(0.5f*App::get().main_window_dimensions());
         ui::update_camera_from_all_inputs(*this, camera_eulers_);
     }
 }
@@ -41,14 +42,14 @@ void osc::MouseCapturingCamera::grab_mouse(bool v)
 {
     if (v) {
         if (not std::exchange(mouse_captured_, true)) {
-            App::upd().push_cursor_override(Cursor{CursorShape::Hidden});
-            App::upd().enable_main_window_grab();
+            App::upd().enable_main_window_relative_mouse_mode();
+            App::upd().set_main_window_mouse_confinement(0.5f*App::get().main_window_dimensions());
         }
     }
     else {
         if (std::exchange(mouse_captured_, false)) {
-            App::upd().disable_main_window_grab();
-            App::upd().pop_cursor_override();
+            App::upd().set_main_window_mouse_confinement(std::nullopt);
+            App::upd().disable_main_window_relative_mouse_mode();
         }
     }
 }

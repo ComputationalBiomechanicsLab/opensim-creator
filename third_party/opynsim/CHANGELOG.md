@@ -18,4 +18,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - OpenBLAS was updated to v0.3.31
 - Switched Windows build to statically compile the C++ runtime, because the
   binary is standalone and doesn't leak exceptions via the Python API.
+- Added support for FPS-style UX via:
+  - `App::enable_main_window_relative_mouse_mode`
+  - `App::disable_main_window_relative_mouse_mode`
+  - `App::main_window_mouse_confinement`
+  - `App::set_main_window_mouse_confinement`
 

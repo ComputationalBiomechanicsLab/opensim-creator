@@ -435,6 +435,8 @@ namespace
         std::optional<CursorShape>                   current_custom_cursor;
         int                                          mouse_buttons_down = 0;
         int                                          mouse_last_leave_frame = 0;
+        Vector2                                      mouse_delta_this_frame;   // Delta vector of the mouse in ui space this frame.
+        Vector2                                      mouse_delta_from_events;  // Delta vector of the mouse in ui space, accumulated from events.
 
         // Font handling (CARE: this is here because ImGui requires it outlives the ImGui context)
         std::array<ImWchar, 3>                       icon_font_glyph_ranges{};
@@ -920,7 +922,7 @@ namespace
                 ImGui::LoadIniSettingsFromMemory(base_ini_data.data(), base_ini_data.size());
             }
 
-            // CARE: the reason this filepath is is being assigned to the backend data context
+            // CARE: the reason this filepath is being assigned to the backend data context
             //       is because ImGui requires that the string outlives the ImGui context
             bd.imgui_ini_file_path = (user_data_directory / "imgui.ini").string();
             ImGui::LoadIniSettingsFromDisk(bd.imgui_ini_file_path.c_str());
@@ -1015,6 +1017,7 @@ namespace
             const auto& move_event = dynamic_cast<const MouseEvent&>(e);
             io.AddMouseSourceEvent(move_event.input_source() == MouseInputSource::TouchScreen ? ImGuiMouseSource_TouchScreen : ImGuiMouseSource_Mouse);
             io.AddMousePosEvent(move_event.position().x(), io.DisplaySize.y - move_event.position().y());
+            bd->mouse_delta_from_events += Vector2{1.0f, -1.0f} * move_event.delta();  // Transform screen space to ui space.
             return true;
         }
         case EventType::MouseWheel: {
@@ -1263,6 +1266,21 @@ namespace
         if (const auto p = App::upd().mouse_position_in_main_window()) {
             ImGui::GetIO().AddMousePosEvent(p->x(), io.DisplaySize.y - p->y());
         }
+
+        // Update OS mouse delta accumulator.
+        //
+        // ImGui's `MouseDelta` is calculated from the difference between the mouse's
+        // position this frame vs. the previous frame. This means that if the mouse is
+        // confined/constrained in some way (e.g. hits the edge of the window/screen), then
+        // `MouseDelta` is calculated as zero.
+        //
+        // The OS's mouse delta is usually the same as `MouseDelta` __apart from__ if it's
+        // in relative mode. In relative mode, the mouse deltas are still emitted even if
+        // the mouse is hitting a constraint. Put another way, in relative mode, the
+        // mouse deltas are how much the user actually physically moves their mouse - regardless
+        // of any software constraints.
+        bd.mouse_delta_this_frame = std::exchange(bd.mouse_delta_from_events, Vector2{});
+
         ImGui_ImplOscar_UpdateMouseCursor(app);
     }
 
@@ -2848,7 +2866,7 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
 
     const bool left_dragging = ui::is_mouse_dragging(MouseButton::Left);
     const bool middle_dragging = ui::is_mouse_dragging(MouseButton::Middle);
-    const Vector2 delta = ImGui::GetIO().MouseDelta;
+    const Vector2 delta = get_backend_data().mouse_delta_this_frame; // Track actual physical movement of the mouse (relevant in relative mode).
 
     if (delta != Vector2{} and (left_dragging or middle_dragging)) {
         if (is_ctrl_down()) {
@@ -3024,7 +3042,7 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
     const Vector3 front = camera.direction();
     const Vector3 up = camera.upwards_direction();
     const Vector3 right = cross(front, up);
-    const Vector2 mouseDelta = ImGui::GetIO().MouseDelta;
+    const Vector2 mouseDelta = get_backend_data().mouse_delta_this_frame;  // Track actual physical movement of the mouse (relevant in relative mode).
 
     const float speed = 10.0f;
     const float displacement = speed * ImGui::GetIO().DeltaTime;

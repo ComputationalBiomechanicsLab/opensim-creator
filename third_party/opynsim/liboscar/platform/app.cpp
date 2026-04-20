@@ -441,6 +441,23 @@ namespace
 #ifdef SDL_HINT_MOUSE_AUTO_CAPTURE
         SDL_SetHint(SDL_HINT_MOUSE_AUTO_CAPTURE, "0");
 #endif
+
+        // Do not emit a mouse motion event when warping the mouse in relative mode.
+        //
+        // This is because the mouse is usually hidden in relative mode and a common trick
+        // is to warp the mouse to the center of the window every frame to prevent it
+        // hitting the edges (e.g. in an FPS game).
+        SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "0");
+
+        // DISABLED
+        //
+        // `SDL_HINT_MOUSE_RELATIVE_MODE_CENTER` support only really seems to
+        // be implemented for Windows in SDL 3.16 so, for now, callers should use
+        // `SDL_SetWindowMouseRect` to constrain the mouse to the center (this is
+        // what SDL3's documentation recommends with `SDL_SetWindowRelativeMouseMode`.
+        //
+        // SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, "1");
+
         SDL_PropertiesID properties = SDL_CreateProperties();
         const ScopeExit g{[&]{ SDL_DestroyProperties(properties); }};
 
@@ -613,12 +630,12 @@ namespace
             const float os_to_main_window_device_independent_ratio = os_to_main_window_device_independent_ratio_getter();
 
             Vector2 relative_delta = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
-            relative_delta *= os_to_main_window_device_independent_ratio;            // convert SDL3 units (pixels) to device-independent pixels
-            relative_delta.y() = main_window_dimensions.y() - relative_delta.y();          // convert from SDL3 space (top-left origin, left-handed) to screen space
+            relative_delta *= os_to_main_window_device_independent_ratio;                  // Convert SDL3 units (pixels) to device-independent pixels.
+            relative_delta.y() = -relative_delta.y();                                      // Convert vector (no origin) from SDL3 space (y points down) to screen space (y points up).
 
             Vector2 position_in_window = {static_cast<float>(e.motion.x), static_cast<float>(e.motion.y)};
-            position_in_window *= os_to_main_window_device_independent_ratio;        // convert SDL3 units (pixels) to device-independent pixels
-            position_in_window.y() = main_window_dimensions.y() - position_in_window.y();  // convert from SDL3 space (top-left origin, left-handed) to screen space
+            position_in_window *= os_to_main_window_device_independent_ratio;              // Convert SDL3 units (pixels) to device-independent pixels.
+            position_in_window.y() = main_window_dimensions.y() - position_in_window.y();  // Convert point from SDL3 space (top-left origin, left-handed) to screen space.
 
             return std::make_unique<MouseEvent>(MouseEvent::motion(source, relative_delta, position_in_window));
         }
@@ -1366,14 +1383,58 @@ public:
         SDL_SetWindowMouseGrab(main_window_.get(), true);
     }
 
-    WindowID get_keyboard_focus() const
-    {
-        return WindowID{SDL_GetKeyboardFocus()};
-    }
-
     void disable_main_window_grab()
     {
         SDL_SetWindowMouseGrab(main_window_.get(), false);
+    }
+
+    void enable_main_window_relative_mouse_mode()
+    {
+        SDL_SetWindowRelativeMouseMode(main_window_.get(), true);
+    }
+
+    void disable_main_window_relative_mouse_mode()
+    {
+        SDL_SetWindowRelativeMouseMode(main_window_.get(), false);
+    }
+
+    std::optional<Rect> main_window_mouse_confinement() const
+    {
+        const SDL_Rect* r = SDL_GetWindowMouseRect(main_window_.get());
+        if (not r) {
+            return std::nullopt;
+        }
+
+        return to<Rect>(*r)
+            .with_origin_and_dimensions_scaled_by(os_to_main_window_device_independent_ratio())
+            .with_flipped_y(main_window_dimensions().y());
+    }
+
+    void set_main_window_mouse_confinement(std::optional<Rect> confinement_rect)
+    {
+        if (not confinement_rect) {
+            SDL_SetWindowMouseRect(main_window_.get(), nullptr);
+            return;
+        }
+
+        const auto r = to<SDL_Rect>(confinement_rect
+            ->with_flipped_y(main_window_dimensions().y())
+            .with_origin_and_dimensions_scaled_by(1.0f/os_to_main_window_device_independent_ratio()));
+
+        SDL_SetWindowMouseRect(main_window_.get(), &r);
+    }
+
+    void set_main_window_mouse_confinement(std::optional<Vector2> confinement_point)
+    {
+        set_main_window_mouse_confinement(confinement_point.transform([](const auto& point)
+        {
+            return Rect::from_point(point).with_dimensions({1.0f, 1.0f});
+        }));
+    }
+
+    void set_main_window_mouse_confinement(std::nullopt_t)
+    {
+        set_main_window_mouse_confinement(std::optional<Rect>{});
     }
 
     std::optional<Vector2> mouse_position_in_main_window() const
@@ -1415,6 +1476,11 @@ public:
     bool has_input_focus(WindowID window_id) const
     {
         return (SDL_GetWindowFlags(std::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS) != 0;
+    }
+
+    WindowID get_keyboard_focus() const
+    {
+        return WindowID{SDL_GetKeyboardFocus()};
     }
 
     void set_main_window_unicode_input_rect(const Rect& screen_rect)
@@ -2094,6 +2160,36 @@ WindowID osc::App::get_keyboard_focus() const
 void osc::App::disable_main_window_grab()
 {
     impl_->disable_main_window_grab();
+}
+
+void osc::App::enable_main_window_relative_mouse_mode()
+{
+    impl_->enable_main_window_relative_mouse_mode();
+}
+
+void osc::App::disable_main_window_relative_mouse_mode()
+{
+    impl_->disable_main_window_relative_mouse_mode();
+}
+
+std::optional<Rect> osc::App::main_window_mouse_confinement() const
+{
+    return impl_->main_window_mouse_confinement();
+}
+
+void osc::App::set_main_window_mouse_confinement(std::optional<Rect> confinement_rect)
+{
+    impl_->set_main_window_mouse_confinement(confinement_rect);
+}
+
+void osc::App::set_main_window_mouse_confinement(std::optional<Vector2> confinement_point)
+{
+    impl_->set_main_window_mouse_confinement(confinement_point);
+}
+
+void osc::App::set_main_window_mouse_confinement(std::nullopt_t nullopt)
+{
+    impl_->set_main_window_mouse_confinement(nullopt);
 }
 
 std::optional<Vector2> osc::App::mouse_position_in_main_window() const

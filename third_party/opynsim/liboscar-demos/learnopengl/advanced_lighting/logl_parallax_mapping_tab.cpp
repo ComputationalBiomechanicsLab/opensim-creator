@@ -75,11 +75,13 @@ public:
 
     void on_mount()
     {
+        App::upd().make_main_loop_polling();
         camera_.on_mount();
     }
 
     void on_unmount()
     {
+        App::upd().make_main_loop_waiting();
         camera_.on_unmount();
     }
 
