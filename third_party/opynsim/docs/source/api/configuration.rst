@@ -1,22 +1,24 @@
 Configuration
 =============
 
-The ``opynsim`` API contains utilities that configure the global state of OPynSim. These
-are sometimes necessary for debugging or implementing legacy compatibility.
+The :mod:`opynsim.config` module centralizes functions that configure the global
+state of OPynSim. These are sometimes necessary for debugging, implementing
+legacy compatibility, and customizing where shared assets should be loaded from.
 
 Logging
 -------
 
-The most common thing to globally configure is  ``opynsim``\'s log level, which
-can be achieved with :func:`opynsim.set_log_level`:
+It's useful to globally configure ``opynsim``\'s log level, so that downstream
+scripts can contain more/less feedback. It can be configured with :func:`opynsim.config.set_log_level`:
 
 .. code:: python
 
     import opynsim as opyn
+    import opynsim.config
     import logging
 
     # Make OPynSim's logging more verbose (default is `logging.WARN`).
-    opyn.set_log_level(logging.DEBUG)
+    opyn.config.set_log_level(logging.DEBUG)
 
     # OPynSim's logger is compatible with Python's logging API. For example:
     logging.basicConfig(
@@ -32,38 +34,42 @@ All log output from OPynSim goes via the ``logger.Logger`` returned by ``logger.
 one of its children.
 
 
-The Search Path
----------------
+Resource Search Path
+--------------------
 
 Whenever OPynSim encounters a relative resource path in a file (e.g. ``pelvis.vtp`` in ``some_model.osim``), it
-performs a search for that resource on the caller's filesystem. :func:`opynsim.get_search_paths`'s docstring
+performs a search for that resource on the caller's filesystem. The documentation for :func:`opynsim.config.get_search_paths`
 explains the process.
 
-This mechanism can be useful for specifying central, shared, resource directories - particularly when sharing
-mesh data across multiple models located in different directories (e.g. you might have a one-model-per-study
-layout for models, but want a shared mesh geometry directory). :func:`opynsim.prepend_search_path` is how you could
-specify that shared directory:
+Editing the search path can be useful for specifying central, shared, resource directories - particularly when
+sharing mesh data across multiple models located in different directories (e.g. you might have a one-model-per-study
+layout for models, but want a shared mesh geometry directory). :func:`opynsim.config.prepend_search_path` is one
+way to specify an additional shared directory:
 
 .. code:: python
 
     import opynsim as opyn
+    import opynsim.config
     from pathlib import Path
 
     # Passing a relative path causes it to resolve in a context-dependent way
     # (e.g. relative to each model file, or relative to the working directory)
-    opyn.prepend_search_path("shared_geometry")
+    opyn.config.prepend_search_path("shared_geometry")
 
     # Passing an absolute path says "I don't care about context, always resolve it
-    # relative to my working directory" (in this case).
-    opyn.prepend_search_path(Path("shared_geometry").absolute())
+    # to this exact location."
+    opyn.config.prepend_search_path(Path("shared_geometry").absolute())
 
-See :func:`opynsim.get_search_paths` for a detailed explanation.
+See :func:`opynsim.config.get_search_paths` for a detailed explanation of the
+path resolution process. Alternatively, :func:`opynsim.config.append_search_path`
+can be used to specify a low-priority fallback directory.
 
 API Reference
 -------------
 
-.. autofunction:: opynsim.set_log_level
-.. autofunction:: opynsim.get_search_paths
-.. autofunction:: opynsim.prepend_search_path
-.. autofunction:: opynsim.append_search_path
-.. autofunction:: opynsim.remove_search_path
+.. autofunction:: opynsim.config.get_log_level
+.. autofunction:: opynsim.config.set_log_level
+.. autofunction:: opynsim.config.get_search_paths
+.. autofunction:: opynsim.config.prepend_search_path
+.. autofunction:: opynsim.config.append_search_path
+.. autofunction:: opynsim.config.remove_search_path

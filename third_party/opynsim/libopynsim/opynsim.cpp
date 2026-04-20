@@ -198,6 +198,12 @@ namespace
     }
 }
 
+osc::LogLevel opyn::get_log_level()
+{
+    globally_ensure_log_is_default_initialized();
+    return osc::global_default_logger()->level();
+}
+
 void opyn::set_log_level(osc::LogLevel log_level)
 {
     globally_ensure_log_is_default_initialized();

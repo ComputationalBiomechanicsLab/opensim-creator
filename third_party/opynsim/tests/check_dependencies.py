@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 
-# Checks the provided binary against a whitelist to ensure that extra
-# runtime libraries haven't slipped through the build.
+# A standalone application that returns 0 (i.e. EXIT_SUCCESS) if
+# a binary (e.g. a native Python extension module) only has dynamically
+# linked runtime dependencies on libraries in a whitelist. Otherwise,
+# it returns a failure code.
+#
+# The utility of checking this is to ensure that runtime dependencies
+# don't slip into the build due to a misconfiguration or bad development
+# environment setup. Especially with Python native extension modules
+# shipped to general package manages like PyPi, it's very important to
+# ensure the only external dependencies are those that come with the
+# operating system (usually).
 
 import argparse
 import lief

@@ -9,6 +9,9 @@
 
 namespace opyn
 {
+    /// Returns the logging level of the default global log sink that's used by all subsystems.
+    osc::LogLevel get_log_level();
+
     /// Set the logging level of the default global log sink that's used by all subsystems
     ///
     /// This is the only `opyn` function that may be called before `init`.

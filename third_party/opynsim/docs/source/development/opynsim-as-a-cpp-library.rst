@@ -40,6 +40,8 @@ Here's an example bash script for building and installing everything from source
 
     #!/usr/bin/env bash
 
+    set -xeuo pipefail
+
     build_type=Release          # alternatively: RelWithDebInfo/Debug/MinSizeRel
     build_dir=${PWD}/build      # build   it in OPynSim's source directory
     install_dir=${PWD}/install  # install it in OpynSim's source directory
@@ -109,10 +111,11 @@ pull it into your project.
 
 If you are building across multiple architectures and operating systems, then you
 either have to handle system setup (installing libraries, etc.) on a system-by-system
-basis, or build from source for each target. OPynSim opts for a source build. CMake
-standardizes the configure-build-install pattern. E.g. if I you wanted to add glm
-to my project then you'd build it and then install it into the same directory as
-OPynSim was installed:
+basis, or build your dependencies from source for each target. OPynSim is an example of
+a source build - it builds everything it needs from source and installs it where
+specified (above). Other CMake projects typically also follow a standard
+configure-build-install pattern. For example, you wanted to add glm to a project
+then you'd build it and then install it into the same directory as OPynSim was installed:
 
 .. code-block:: bash
 

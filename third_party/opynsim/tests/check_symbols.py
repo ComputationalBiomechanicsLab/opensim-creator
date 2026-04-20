@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+# A standalone test application that returns 0 (i.e. EXIT_SUCCESS)
+# if a binary (e.g. a native Python extension module) only exports
+# symbols that are in a whitelist. Otherwise, returns a failure code.
+#
+# It's useful to check this, because native Python extension
+# modules must be installed into other user's environments, where
+# symbol collisions might cause problems.
+
 import argparse
 import lief
 from pathlib import Path

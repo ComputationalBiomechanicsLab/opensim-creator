@@ -38,7 +38,13 @@ Table of Contents
 
 .. toctree::
     :maxdepth: 1
-    :caption: API
+    :caption: Tutorials and Examples
+
+    tutorials-and-examples/examples
+
+.. toctree::
+    :maxdepth: 1
+    :caption: API Reference
 
     api/configuration
     api/modelling
@@ -59,5 +65,6 @@ Table of Contents
     :caption: Other Links
 
     OPynSim GitHub <https://github.com/opynsim/opynsim>
+    OpenSim Creator <https://opensimcreator.com>
 
 - `C++ API documentation <doxygen/html/index.html>`_
