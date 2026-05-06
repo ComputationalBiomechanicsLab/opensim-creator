@@ -34,37 +34,37 @@ namespace osc
     template<typename... Args>
     inline void log_trace(CStringView fmt, const Args&... args)
     {
-        global_default_logger_raw()->log_trace(fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::trace, fmt, args...);
     }
 
     template<typename... Args>
     inline void log_debug(CStringView fmt, const Args&... args)
     {
-        global_default_logger_raw()->log_debug(fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::debug, fmt, args...);
     }
 
     template<typename... Args>
     void log_info(CStringView fmt, const Args&... args)
     {
-        global_default_logger_raw()->log_info(fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::info, fmt, args...);
     }
 
     template<typename... Args>
     void log_warn(CStringView fmt, const Args&... args)
     {
-        global_default_logger_raw()->log_warn(fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::warn, fmt, args...);
     }
 
     template<typename... Args>
     void log_error(CStringView fmt, const Args&... args)
     {
-        global_default_logger_raw()->log_error(fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::err, fmt, args...);
     }
 
     template<typename... Args>
     void log_critical(CStringView fmt, const Args&... args)
     {
-        global_default_logger_raw()->log_critical(fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::critical, fmt, args...);
     }
 
     namespace detail

@@ -256,22 +256,7 @@ bool opyn::init()
     return s_osc_initialized;
 }
 
-ModelSpecification opyn::import_osim_file(const std::filesystem::path& osim_file_path)
+ModelSpecification opyn::read_osim(const std::filesystem::path& source)
 {
-    return ModelSpecification::from_osim_file(osim_file_path);
-}
-
-ModelSpecification opyn::example_specification_pendulum()
-{
-    return ModelSpecification::example_pendulum();
-}
-
-ModelSpecification opyn::example_specification_double_pendulum()
-{
-    return ModelSpecification::example_double_pendulum();
-}
-
-Model opyn::compile_specification(const ModelSpecification& model_specification)
-{
-    return model_specification.compile();
+    return ModelSpecification::from_osim_file(source);
 }

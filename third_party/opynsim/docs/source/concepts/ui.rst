@@ -15,27 +15,3 @@ In effect, :mod:`opynsim.ui` combines the rendering capabilities of the
 interaction. The implementation was ported from the
 `OpenSim Creator <https://www.opensimcreator.com>`_, which is compatible
 with OPynSim's data files, but doesn't support scripting.
-
-Example
--------
-
-.. code:: python
-
-    import opynsim as opyn
-    import opynsim.ui
-
-    # Create/import a `Model` + `ModelState`.
-    model_specification = opyn.example_specification_double_pendulum()
-    model = model_specification.compile()
-    model_state = model.initial_state()
-    model.realize(model_state, opyn.STAGE_REPORT)  # usually required for rendering
-
-    # Show them in an interactive window.
-    opyn.ui.show_model_in_state(model, model_state)
-
-
-API Reference
--------------
-.. automodule:: opynsim.ui
-.. autofunction:: opynsim.ui.show_hello_ui
-.. autofunction:: opynsim.ui.show_model_in_state

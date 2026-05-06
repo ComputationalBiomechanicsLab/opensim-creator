@@ -1,6 +1,7 @@
 #include "core.h"
 
 #include <opynsim/_core/config.h>
+#include <opynsim/_core/examples.h>
 #include <opynsim/_core/graphics.h>
 #include <opynsim/_core/tps3d.h>
 #include <opynsim/_core/ui.h>
@@ -105,6 +106,12 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
     {
         auto config_submodule = _core_module.def_submodule("config");
         init_config_submodule(config_submodule);
+    }
+
+    // Initialize `examples` submodule.
+    {
+        auto examples_submodule = _core_module.def_submodule("examples");
+        init_examples_submodule(examples_submodule);
     }
 
     // Initialize `graphics` submodule.
@@ -390,51 +397,15 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         _core_module.attr("STAGE_REPORT")       = model_state_stage_class.attr("REPORT");
 
         _core_module.def(
-            "example_specification_pendulum",
-            opyn::example_specification_pendulum,
+            "read_osim",
+            [](const std::filesystem::path& osim_path) { return opyn::read_osim(osim_path); },
+            nb::arg("source"),
             R"(
-                Returns a :class:`ModelSpecification` of a pendulum.
-
-                The specification is built entirely in memory with no external data files, which
-                makes it useful for debugging, example Python scripts, and documentation pages. The
-                returned specification should be for a one kilogram mass suspended one meter away
-                from a pin joint that is one meter above the ground. For visualization, the head is
-                represented as a sphere with a radius of five centimeters and the suspension rod has
-                a radius of five millimeters.
-            )"
-        );
-        _core_module.def(
-            "example_specification_double_pendulum",
-            opyn::example_specification_double_pendulum,
-            R"(
-                Returns a :class:`ModelSpecification` of a double pendulum.
-
-                The specification is built entirely in-memory with no external data files, which makes
-                it useful for debugging, example Python scripts, and documentation pages. The returned
-                specification is designed to resemble the ``double_pendulum.osim``, which is available
-                as an example file in `OpenSim Creator <https://www.opensimcreator.com>`_ .
-            )"
-        );
-
-        _core_module.def(
-            "import_osim_file",
-            [](const std::filesystem::path& osim_path) { return opyn::import_osim_file(osim_path); },
-            nb::arg("osim_file_path"),
-            R"(
-                Returns a :class:`ModelSpecification` imported from an `.osim` file on the
+                Returns a :class:`ModelSpecification` parsed from an `.osim` file on the
                 caller's filesystem.
 
                 Raises:
                     RuntimeError: If the file cannot be found, read, or is invalid.
-            )"
-        );
-
-        _core_module.def(
-            "compile_specification",
-            opyn::compile_specification,
-            nb::arg("model_specification"),
-            R"(
-                An alias for :meth:`ModelSpecification.compile`.
             )"
         );
     }

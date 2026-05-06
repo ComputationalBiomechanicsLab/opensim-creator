@@ -20,6 +20,7 @@ __pycache__
 *.pdb
 *.pyi
 src/opynsim.egg-info
+docs/source/api
 
 # os: MacOS filesystem
 .DS_Store

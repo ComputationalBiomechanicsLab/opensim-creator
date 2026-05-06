@@ -3,16 +3,14 @@
 #include <opynsim/_core/nanobind_x_mdspan.h>
 #include <opynsim/_core/nanobind_x_simbody.h>
 
+#include <SimTKcommon/SmallMatrix.h>
+#include <libopynsim/shims/cpp23/mdspan.h>
+#include <libopynsim/tps3d.h>
+#include <liboscar/utilities/assertions.h>
+#include <nanobind/ndarray.h>
 #include <nanobind/stl/array.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/unique_ptr.h>
-#include <libopynsim/shims/cpp23/mdspan.h>
-#include <libopynsim/ui/show_hello_ui.h>
-#include <libopynsim/tps3d.h>
-#include <liboscar/utilities/assertions.h>
-
-#include <nanobind/ndarray.h>
-#include <SimTKcommon/SmallMatrix.h>
 
 #include <concepts>
 #include <cstddef>

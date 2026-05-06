@@ -63,13 +63,3 @@ way to specify an additional shared directory:
 See :func:`opynsim.config.get_search_paths` for a detailed explanation of the
 path resolution process. Alternatively, :func:`opynsim.config.append_search_path`
 can be used to specify a low-priority fallback directory.
-
-API Reference
--------------
-
-.. autofunction:: opynsim.config.get_log_level
-.. autofunction:: opynsim.config.set_log_level
-.. autofunction:: opynsim.config.get_search_paths
-.. autofunction:: opynsim.config.prepend_search_path
-.. autofunction:: opynsim.config.append_search_path
-.. autofunction:: opynsim.config.remove_search_path

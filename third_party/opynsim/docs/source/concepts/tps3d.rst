@@ -59,19 +59,6 @@ landmark pairs (e.g. from scanner data, CSV files), provide them to :func:`opyns
 and then use methods like :meth:`opynsim.tps3d.TPSCoefficients3D.warp_point` to warp other things
 from the "source" coordinate system to the warped/result coordinate system (e.g. muscle via points).
 
-
-API Reference
--------------
-
-.. autofunction:: opynsim.tps3d.solve_coefficients
-
-.. automodule:: opynsim.tps3d
-   :members:
-   :imported-members:
-   :undoc-members:
-   :show-inheritance:
-
-
 .. _Relevant Literature:
 
 Relevant Literature

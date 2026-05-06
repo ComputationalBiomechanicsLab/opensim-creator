@@ -1,44 +1,56 @@
-# -- Project information -----------------------------------------------------
+from sphinx.ext.autodoc import FunctionDocumenter
 
-project = 'OPynSim'
-copyright = '2026, Adam Kewley'
-author = 'Adam Kewley'
-github_username = 'adamkewley'
-github_repository = 'https://github.com/opynsim/opynsim'
+project = "OPynSim"
+copyright = "2026, Adam Kewley"
+author = "Adam Kewley"
+github_username = "adamkewley"
+github_repository = "https://github.com/opynsim/opynsim"
 
-# -- General configuration ---------------------------------------------------
+numfig = True  # enable numbering each figure (e.g. "figure 1", "figure 2" in captions)
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    "sphinx_copybutton",
+    "sphinx.ext.autodoc",       # For `autofunction::`, `automodule::`
+    "sphinx.ext.autosummary",   # For `autosummary::`
+    "sphinx.ext.napoleon",      # For parsing docstrings in the `opynsim` module
+    "sphinx_copybutton",        # Adds a copy button to each codeblock (handy)
 ]
 
-# Napoleon settings
+# `sphinx.ext.autodoc` settings:
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'imported-members': True,
+    'inherited-members': True,  # IMPORTANT: this is how the parser finds `opynsim._core` nanobind functions
+    'show-inheritance': True,
+}
+autodoc_use_legacy_class_based = True  # IMPORTANT: this is required to enable `Documenter` API, used to find nanobind functions
+class NanobindFunctionDocumenter(FunctionDocumenter):
+    """
+    Specialized `Documenter` for `nanobind.nb_func` objects emitted
+    from the `opynsim._core` module.
+    """
+    objtype = 'nanobindfunction'
+    directivetype = 'function'                   # override emitting `autonanobindfunction::` with `autofunction::`
+    priority = 10 + FunctionDocumenter.priority  # Check this documenter before the base function one
+
+    @classmethod
+    def can_document_member(cls, member, membername, isattr, parent):
+        return "nanobind.nb_func" in str(type(member))
+
+# `sphinx.ext.autosummary` settings:
+autosummary_generate = True
+autosummary_imported_members = True
+
+# `sphinx.ext.napoleon` settings:
 napoleon_google_docstring = True
 napoleon_numpy_docstring = False  # `opynsim` uses Google-style docstrings
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
-
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
-# This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
-
-# enable numbering each figure (e.g. "figure 1", "figure 2" in caption)
-numfig = True
-
-
-# -- Options for HTML output -------------------------------------------------
-
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
+# html output options:
 html_theme = 'sphinx_book_theme'
 html_logo = '_static/opynsim_banner_vertical.svg'
 html_favicon = '_static/opynsim_logo.svg'
+html_static_path = ['_static']  # note: static files listed here are copied after builtin static files (overwrite)
 
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+def setup(app):  # Ran when Sphinx is setting itself up
+    app.setup_extension("sphinx.ext.autodoc")
+    app.add_autodocumenter(NanobindFunctionDocumenter, override=True)  # IMPORTANT: this is required to find nanobind functions

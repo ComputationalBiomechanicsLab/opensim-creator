@@ -19,6 +19,6 @@ TEST(ModelSpecification, compile_works_on_more_complicated_example_OpenSim_model
 {
     opyn::init();
 
-    const ModelSpecification model_specification = import_osim_file(opynsim_tests_resources_directory() / "models/RajagopalModel/Rajagopal2015.osim");
+    const ModelSpecification model_specification = read_osim(opynsim_tests_resources_directory() / "models/RajagopalModel/Rajagopal2015.osim");
     ASSERT_NO_THROW({ model_specification.compile(); });
 }

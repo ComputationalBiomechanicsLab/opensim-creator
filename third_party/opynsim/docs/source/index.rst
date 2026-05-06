@@ -38,19 +38,33 @@ Table of Contents
 
 .. toctree::
     :maxdepth: 1
-    :caption: Tutorials and Examples
+    :caption: Concepts
 
-    tutorials-and-examples/examples
+    concepts/configuration
+    concepts/graphics
+    concepts/modelling
+    concepts/tps3d
+    concepts/ui
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Examples
+
+    examples/overlay-model-over-plot
+    examples/plot-model-output-vs-property
+    examples/render-model-to-png
+    examples/show-model-in-state
+
+.. autosummary::
+    :recursive:
+    :toctree: api
+    :caption: API Reference
+
+    opynsim
 
 .. toctree::
     :maxdepth: 1
     :caption: API Reference
-
-    api/configuration
-    api/modelling
-    api/ui
-    api/graphics
-    api/tps3d
 
 .. toctree::
    :maxdepth: 2
@@ -60,6 +74,7 @@ Table of Contents
    development/clion-setup
    development/visual-studio-setup
    development/opynsim-as-a-cpp-library
+   development/unofficial-doxygen-reference
 
 .. toctree::
     :caption: Other Links

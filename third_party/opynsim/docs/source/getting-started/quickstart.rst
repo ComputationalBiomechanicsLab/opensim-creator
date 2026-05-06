@@ -14,17 +14,17 @@ code like this:
 This convention allows access to OPynSim features with a short, recognizable, prefix (``opyn.``),
 which we will use in examples.
 
-Import an ``osim`` File
------------------------
+Read an ``osim`` File
+---------------------
 
 :class:`opynsim.ModelSpecification` is a central part of the ``opynsim``
 API. It's a high-level model specification object that Python code can
 manipulate in order to build and customize the resulting :class:`opynsim.Model`\'s
 behavior.
 
-One way to create a :class:`opynsim.ModelSpecification` is to import it from an
-``.osim`` file, which enables importing complex specifications built using visual
-tools like `OpenSim Creator <https://opensimcreator.com>`_.  :func:`opynsim.import_osim_file`
+One way to create a :class:`opynsim.ModelSpecification` is to read it from an
+``.osim`` file, which enables reading complex specifications built using visual
+tools like `OpenSim Creator <https://opensimcreator.com>`_.  :func:`opynsim.read_osim`
 is one way to do this:
 
 .. code:: python
@@ -37,20 +37,20 @@ is one way to do this:
     # OPynSim can find shared mesh files.
     opyn.config.append_search_path("/some/geometry/directory")
 
-    # Import an `.osim` file as an `opynsim.ModelSpecification`
-    model_specification = opyn.import_osim_file("arm26.osim")
+    # Read an `.osim` file into a `opynsim.ModelSpecification`.
+    model_specification = opyn.read_osim("arm26.osim")
 
     # `pathlib.Path`s are also supported
-    model_specification2 = opyn.import_osim_file(pathlib.Path("/some/path/to/arm26.osim"))
+    model_specification2 = opyn.read_osim(pathlib.Path("/some/path/to/arm26.osim"))
 
 .. note::
 
-    The remainder of the documentation uses generators (e.g. :func:`opynsim.example_specification_pendulum`) to
+    The remainder of the documentation uses generators (e.g. :func:`opynsim.examples.pendulum_specification`) to
     create :class:`opynsim.ModelSpecification`\s.
 
     This is only because it's easier to copy + paste Python code that uses generated
     examples. However, you can always exchange an example :class:`opynsim.ModelSpecification` for
-    one loaded via :func:`opynsim.import_osim_file`.
+    one loaded via :func:`opynsim.read_osim`.
 
 
 Compile a Specification into a Model
@@ -64,9 +64,10 @@ to build (compile) a :class:`opynsim.Model`, which represents a read-only physic
 .. code:: python
 
     import opynsim as opyn
+    import opynsim.examples
 
-    # alternatively: model_specification = opyn.import_osim_file("your.osim")
-    model_specification = opyn.example_specification_double_pendulum()
+    # alternatively: model_specification = opyn.read_osim("your.osim")
+    model_specification = opyn.examples.double_pendulum_specification()
 
     # ... if necessary, edit the `ModelSpecification`, and then...
 
@@ -86,8 +87,9 @@ states externally (e.g. from a motion file).
 .. code:: python
 
     import opynsim as opyn
+    import opynsim.examples
 
-    model_specification = opyn.example_specification_double_pendulum()
+    model_specification = opyn.examples.double_pendulum_specification()
     model = model_specification.compile()
 
     state = model.initial_state()  # produces an initial state of the model
@@ -99,7 +101,7 @@ according to your modelling requirements.
 Visualize the Model in a State
 ------------------------------
 
-The OPynSim :doc:`../api/ui` API provides various utilities for visualizing and
+The OPynSim :doc:`../concepts/ui` API provides various utilities for visualizing and
 interacting with OPynSim's datastructures.
 
 The API includes high-level functions, such as :func:`opynsim.ui.show_model_in_state`,
@@ -110,10 +112,10 @@ renderer reads are available:
 .. code:: python
 
     import opynsim as opyn
+    import opynsim.examples
     import opynsim.ui
 
-    model_specification = opyn.example_specification_double_pendulum()
-    model = model_specification.compile()
+    model = opyn.examples.double_pendulum_model()
     state = model.initial_state()
 
     model.realize(state, opyn.STAGE_REPORT)    # required for rendering
@@ -123,7 +125,7 @@ renderer reads are available:
 Render Visualization to an Image File
 -------------------------------------
 
-The OPynSim :doc:`../api/graphics` API provides lower-level utilities for rendering
+The OPynSim :doc:`../concepts/graphics` API provides lower-level utilities for rendering
 OPynSim's datastructures to an image (:class:`opynsim.graphics.Texture2D`). This can be useful
 for automating tasks like creating custom plots or creating images and videos of models.
 
@@ -136,12 +138,12 @@ data into a PNG file:
 .. code:: python
 
     import opynsim as opyn
+    import opynsim.examples
     import opynsim.graphics
     from PIL import Image  # from `Pillow` package
 
     # Create/import a `Model` + `ModelState`.
-    model_specification = opyn.example_specification_double_pendulum()
-    model = model_specification.compile()
+    model = opyn.examples.double_pendulum_model()
     model_state = model.initial_state()
     model.realize(model_state, opyn.STAGE_REPORT)  # required for rendering
 

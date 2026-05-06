@@ -1,67 +1,21 @@
-Graphics
-========
-
-The :mod:`opynsim.graphics` module provides utilities for rasterizing
-OPynSim's datastructures, images, lines, and shapes into a grid of pixels
-(a bitmap/raster image). The utilities are available at different abstraction
-levels, depending on how much control the caller needs over the rendering
-process:
-
-- **High-Level Rendering Functions**: Functions such as :func:`opynsim.graphics.render_model_in_state`
-  are high-level functions that internally handle graphics context initialization, scene
-  graph generation, rendering, packing the raster image into a Python-readable
-  datastructure, and cleanup.
-- **Low-Level Rendering Utilities**: TODO.
-
-
-Examples
---------
-
-Render to a PNG
-~~~~~~~~~~~~~~~
-
-This example uses `Pillow <https://python-pillow.github.io/>`_ to encode
-the pixel data returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a PNG file.
-
-.. code:: python
-
-    import opynsim as opyn
-    import opynsim.graphics
-    from PIL import Image  # from `Pillow` package
-
-    # Create/import a `Model` + `ModelState`.
-    model_specification = opyn.example_specification_double_pendulum()
-    model = model_specification.compile()
-    model_state = model.initial_state()
-    model.realize(model_state, opyn.STAGE_REPORT)  # usually required for rendering
-
-    # Render the `Model` + `ModelState` to an `opynsim.graphics.Texture2D`.
-    texture_2d = opyn.graphics.render_model_in_state(model, model_state)
-
-    # Read the pixels into a `PIL.Image` object.
-    image = Image.fromarray(texture_2d.pixels_rgba32(), mode="RGBA")
-
-    # Write the `PIL.Image` to disk as a PNG file.
-    image.save("render_output.png")
-
-
-Render to a Plot
-~~~~~~~~~~~~~~~~
+Overlay Model Over Plot
+=======================
 
 This example uses `Matplotlib <https://matplotlib.org/>`_ to composite the pixel data
-returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a line plot.
+returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` over a line plot, so that
+raw data plots an be annotated with helpful visualizations.
 
 .. code:: python
 
     import opynsim as opyn
+    import opynsim.examples
     import opynsim.graphics
     import numpy as np
     import matplotlib.pyplot as plt  # from `matplotlib` package
     from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
     # Create/import a `Model` + `ModelState`.
-    model_specification = opyn.example_specification_pendulum()
-    model = model_specification.compile()
+    model = opyn.examples.pendulum_model()
     model_state = model.initial_state()
     model.realize(model_state, opyn.STAGE_REPORT)  # usually required for rendering
 
@@ -122,15 +76,3 @@ returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` into a line plot.
 
     # Alternatively, Save plot to PNG file
     # plt.savefig("plot.png", dpi=300)
-
-
-API Reference
--------------
-
-.. autofunction:: opynsim.graphics.render_model_in_state
-
-.. automodule:: opynsim.graphics
-   :members:
-   :imported-members:
-   :undoc-members:
-   :show-inheritance:
