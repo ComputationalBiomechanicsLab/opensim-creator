@@ -40,13 +40,13 @@ namespace
 
         // These are dictated by the python documentation: https://docs.python.org/3/library/logging.html#logging-levels
         switch (oscar_logging_level) {
-            case osc::LogLevel::trace:    return 10;  // logging.DEBUG
-            case osc::LogLevel::debug:    return 10;  // logging.DEBUG
-            case osc::LogLevel::info:     return 20;  // logging.INFO
-            case osc::LogLevel::warn:     return 30;  // logging.WARNING
-            case osc::LogLevel::err:      return 40;  // logging.ERROR
-            case osc::LogLevel::critical: return 50;  // logging.CRITICAL
-            default:                      return 20;  // logging.INFO
+            case osc::LogLevel::trace:    [[fallthrough]];
+            case osc::LogLevel::debug:    return 10;        // logging.DEBUG
+            case osc::LogLevel::info:     return 20;        // logging.INFO
+            case osc::LogLevel::warn:     return 30;        // logging.WARNING
+            case osc::LogLevel::err:      return 40;        // logging.ERROR
+            case osc::LogLevel::critical: return 50;        // logging.CRITICAL
+            default:                      return 20;        // logging.INFO
         }
     }
 

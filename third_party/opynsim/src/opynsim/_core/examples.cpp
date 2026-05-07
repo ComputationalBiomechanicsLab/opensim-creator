@@ -3,8 +3,6 @@
 #include <libopynsim/examples.h>
 #include <nanobind/nanobind.h>
 
-namespace nb = nanobind;
-
 void opyn::init_examples_submodule(nanobind::module_& examples_module)
 {
     examples_module.def(
