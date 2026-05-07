@@ -1,0 +1,29 @@
+diff --git a/SimTKmath/Optimizers/src/Optimizer.cpp b/SimTKmath/Optimizers/src/Optimizer.cpp
+index 2b29332f5..c0288b1de 100644
+--- a/SimTKmath/Optimizers/src/Optimizer.cpp
++++ b/SimTKmath/Optimizers/src/Optimizer.cpp
+@@ -42,7 +42,7 @@ bool Optimizer::isAlgorithmAvailable(OptimizerAlgorithm algorithm) {
+         case LBFGS:         return LBFGSOptimizer::isAvailable();
+         case LBFGSB:        return LBFGSBOptimizer::isAvailable();
+ #if SimTK_DEFAULT_PRECISION==2 // double only
+-        case CFSQP:         return CFSQPOptimizer::isAvailable();
++        case CFSQP:         return false;  // Disabled in OPynSim (almost noone has the external library).
+ #endif
+         case CMAES:         return CMAESOptimizer::isAvailable();
+         default:            return false;
+@@ -106,14 +106,7 @@ Optimizer::constructOptimizerRep( const OptimizerSystem& sys, OptimizerAlgorithm
+     } 
+ #if SimTK_DEFAULT_PRECISION==2 // double only   
+     else if( algorithm == CFSQP ) {
+-        try {
+-            newRep = (OptimizerRep *) new CFSQPOptimizer( sys  );
+-        } catch (const SimTK::Exception::Base &ex) {
+-            std::cout << ex.getMessage() << std::endl;
+-            std::cout << "Failed to load CFSQP library. "
+-                "Will fall back to default optimizer choice." << std::endl;
+-            newRep = 0;
+-        }
++        throw std::runtime_error{"The CFSQP solver is not supported in OPynSim (requires an external library that almost noone has)"};
+     }
+ #endif
+     else if( algorithm == CMAES ) {

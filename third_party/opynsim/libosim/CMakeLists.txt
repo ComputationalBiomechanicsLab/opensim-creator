@@ -178,7 +178,7 @@ add_library(osim STATIC
     ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpVector.cpp
     ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpExpansionMatrix.cpp
     ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLapack.cpp
-    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/CFSQPOptimizer.cpp
+    # ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/CFSQPOptimizer.cpp  # Disabled (requires external lib)
     ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/OptimizerRep.cpp
     ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/lbfgs.cpp
     ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/Optimizer.cpp
@@ -201,7 +201,7 @@ add_library(osim STATIC
     ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/ParallelWorkQueue.cpp
     ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/ParallelExecutor.cpp
     ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/String.cpp
-    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/Plugin.cpp
+    # ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/Plugin.cpp  # Disabled (libosim is standalone)
     ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/SmallMatrix/src/SmallMatrix.cpp
     ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Random/src/SFMT.cpp
     ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Random/src/Random.cpp
@@ -684,10 +684,8 @@ PUBLIC
 )
 target_compile_features(osim PUBLIC cxx_std_20)
 
-target_link_libraries(osim PUBLIC
-    ${CMAKE_DL_LIBS} # used by simbody (plugin loaders)
-    spdlog::spdlog   # used by OpenSim (logging)
-)
+target_link_libraries(osim PUBLIC spdlog::spdlog)  # used by OpenSim (logging)
+
 # BLAS/LAPACK/OpenBLAS is used by simbody for linear algebra.
 if(OPYN_USE_OPENBLAS)
     target_link_libraries(osim PUBLIC OpenBLAS::OpenBLAS)
