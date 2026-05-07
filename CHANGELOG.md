@@ -7,6 +7,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Upcoming Release]
 
 - Fixed joint range being the wrong way around in the "Make a leg" tutorial (#1178).
+- Removed unused/internal `MeshHittestTab`, `PerformanceAnalyzerTab`, and `TPS2DTab` (#467)
 
 ## [0.7.3] - 2026/03/27
 

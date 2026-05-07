@@ -7,7 +7,6 @@
 #include <libopensimcreator/platform/msmicons.h>
 #include <libopensimcreator/ui/model_editor/export_points_popup.h>
 #include <libopensimcreator/ui/model_editor/model_muscle_plot_panel.h>
-#include <libopensimcreator/ui/performance_analyzer_tab.h>
 #include <libopensimcreator/ui/shared/import_stations_from_csv_popup.h>
 #include <libopensimcreator/ui/shared/main_menu.h>
 #include <libopensimcreator/ui/shared/model_add_menu_items.h>
@@ -25,22 +24,6 @@
 #include <utility>
 
 using namespace osc;
-
-namespace
-{
-    bool ActionSimulateAgainstAllIntegrators(
-        Widget& parent,
-        const ModelStatePairWithSharedEnvironment& model)
-    {
-        auto tab = std::make_unique<PerformanceAnalyzerTab>(
-            &parent,
-            BasicModelStatePairWithSharedEnvironment{model},
-            model.tryUpdEnvironment()->getSimulationParams()
-        );
-        App::post_event<OpenTabEvent>(parent, std::move(tab));
-        return true;
-    }
-}
 
 class osc::ModelEditorMainMenu::Impl final : public WidgetPrivate {
 public:
@@ -148,13 +131,6 @@ private:
             }
 
             if (ui::begin_menu("         Experimental Tools")) {
-                if (ui::draw_menu_item("Simulate Against All Integrators (advanced)")) {
-                    if (parent()) {
-                        ActionSimulateAgainstAllIntegrators(*parent(), *m_Model);
-                    }
-                }
-                ui::draw_tooltip_if_item_hovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
-
                 if (ui::draw_menu_item("Export Model Graph as Dotviz")) {
                     ActionExportModelGraphToDotviz(m_Model);
                 }
