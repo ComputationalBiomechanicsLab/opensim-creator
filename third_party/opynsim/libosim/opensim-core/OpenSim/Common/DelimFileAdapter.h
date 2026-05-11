@@ -391,7 +391,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     // Read the line containing column labels and fill up the column labels
     // container.
     std::vector<std::string> column_labels{};
-    while (column_labels.size() == 0) { // keep going down rows to find labels
+    while (column_labels.size() == 0 and not in_stream.eof()) { // keep going down rows to find labels
         column_labels = nextLine();
         // for labels we never expect empty elements, so remove them
         IO::eraseEmptyElements(column_labels);

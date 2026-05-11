@@ -1,5 +1,6 @@
 #pragma once
 
+#include <libopynsim/data_frame.h>
 #include <libopynsim/model_specification.h>
 
 #include <liboscar/platform/log_level.h>
@@ -54,6 +55,10 @@ namespace opyn
     bool remove_search_path(const std::filesystem::path& search_path);
 
     /// Returns a `ModelSpecification` parsed from `source`, throws if there's an
-    /// import error.
+    /// IO or data validation error.
     ModelSpecification read_osim(const std::filesystem::path& source);
+
+    /// Returns a `DataFrame` parsed from `source`, throws if there's an IO or
+    /// data validation error.
+    DataFrame read_sto(const std::filesystem::path& source);
 }

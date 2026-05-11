@@ -1,0 +1,6 @@
+meta1=a
+meta2=b
+endheader
+time	column1	column2
+0	2	3
+1	4	6

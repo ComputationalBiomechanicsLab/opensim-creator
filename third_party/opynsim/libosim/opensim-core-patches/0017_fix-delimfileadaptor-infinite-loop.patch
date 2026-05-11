@@ -1,0 +1,18 @@
+Fixes a bug in OpenSim::DelimFileAdapter where it will infinitely
+loop if given a file with no column headers.
+
+---
+
+diff --git a/OpenSim/Common/DelimFileAdapter.h b/OpenSim/Common/DelimFileAdapter.h
+index 6ad9c3b65..003d840b2 100644
+--- a/OpenSim/Common/DelimFileAdapter.h
++++ b/OpenSim/Common/DelimFileAdapter.h
+@@ -391,7 +391,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
+     // Read the line containing column labels and fill up the column labels
+     // container.
+     std::vector<std::string> column_labels{};
+-    while (column_labels.size() == 0) { // keep going down rows to find labels
++    while (column_labels.size() == 0 and not in_stream.eof()) { // keep going down rows to find labels
+         column_labels = nextLine();
+         // for labels we never expect empty elements, so remove them
+         IO::eraseEmptyElements(column_labels);

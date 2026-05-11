@@ -1,0 +1,6 @@
+Non key-value headers can continue...
+attr1=x
+attr2=y
+... around key values.
+endheader
+time
