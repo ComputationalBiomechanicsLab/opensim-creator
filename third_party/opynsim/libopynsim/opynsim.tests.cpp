@@ -4,10 +4,11 @@
 #include <libopynsim/model_specification.h>
 
 #include <gtest/gtest.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #include <string>
+#include <tuple>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 using namespace opyn;
@@ -55,7 +56,7 @@ TEST(opynsim, read_sto_shape_returns_0_1_for_minimal_example)
     opyn::init();
 
     const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/minimal.sto");
-    const std::pair<size_t, size_t> expected = {0, 1};
+    const std::tuple<size_t, size_t> expected = {0, 1};
 
     ASSERT_EQ(df.shape(), expected);
 }
@@ -87,7 +88,7 @@ TEST(opynsim, read_sto_shape_returns_1_2_for_one_column_example)
     opyn::init();
 
     const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/one_data_column.sto");
-    const std::pair<size_t, size_t> expected = {1, 2};
+    const std::tuple<size_t, size_t> expected = {1, 2};
 
     ASSERT_EQ(df.shape(), expected);
 }
@@ -120,7 +121,7 @@ TEST(opynsim, read_sto_shape_returns_3_2_for_two_column_example)
     opyn::init();
 
     const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/two_data_columns.sto");
-    const std::pair<size_t, size_t> expected = {2, 3};
+    const std::tuple<size_t, size_t> expected = {2, 3};
 
     ASSERT_EQ(df.shape(), expected);
 }
@@ -141,4 +142,19 @@ TEST(opynsim, read_sto_attrs_contains_header_if_non_kv_headers_are_in_file)
     };
 
     ASSERT_EQ(df.attrs(), expected);
+}
+
+TEST(opynsim, read_sto_prints_expected_pretty_string_in_two_column_case)
+{
+    opyn::init();
+
+    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/two_data_columns.sto");
+    const std::string got = osc::stream_to_string(df);
+    const std::string_view expected = R"(shape: (2, 3)
+| time | column1 | column2 |
+|:-----|:--------|:--------|
+| 0.0  | 2.0     | 3.0     |
+| 1.0  | 4.0     | 6.0     |
+)";
+    ASSERT_EQ(got, expected);
 }

@@ -290,7 +290,7 @@ DataFrame opyn::read_sto(const std::filesystem::path& source)
     column_data.reserve(table.getNumColumns());
 
     // Read `time` column (always present in `OpenSim::TimeSeriesTable`).
-    column_names.push_back("time");
+    column_names.emplace_back("time");
     column_data.push_back(table.getIndependentColumn());
 
     // Read data columns (dependent columns)
