@@ -427,7 +427,20 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             [](const std::filesystem::path& source) { return opyn::read_sto(source); },
             nb::arg("source"),
             R"(
-                Returns a :class:`DataFrame` parsed from an `.sto` file on the caller's
+                Returns a :class:`DataFrame` parsed from an ``.sto`` file on the caller's
+                filesystem.
+
+                Raises:
+                    RuntimeError: If the file cannot be found, read, or is invalid.
+            )"
+        );
+
+        _core_module.def(
+            "read_mot",
+            [](const std::filesystem::path& source) { return opyn::read_mot(source); },
+            nb::arg("source"),
+            R"(
+                Returns a :class:`DataFrame` parsed from an ``.mot`` file on the caller's
                 filesystem.
 
                 Raises:

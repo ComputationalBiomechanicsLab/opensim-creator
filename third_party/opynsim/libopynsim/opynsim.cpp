@@ -213,6 +213,55 @@ namespace
             return true;
         }();
     }
+
+    DataFrame read_opensim_datatable_into_data_frame(const OpenSim::DataTable& table)
+    {
+        // Transform source file into `opyn::DataFrame` inputs.
+        std::vector<std::string> column_names;
+        column_names.reserve(table.getNumColumns());
+        std::vector<std::vector<double>> column_data;
+        column_data.reserve(table.getNumColumns());
+
+        // Read `time` column (always present in `OpenSim::TimeSeriesTable`).
+        column_names.emplace_back("time");
+        column_data.push_back(table.getIndependentColumn());
+
+        // Read data columns (dependent columns)
+        for (size_t i = 0; i < table.getNumColumns(); ++i) {
+            column_names.push_back(table.getColumnLabel(i));
+            const SimTK::VectorView view = table.getDependentColumnAtIndex(i);
+            const auto data = osc::to<std::vector<double>>(view);
+            column_data.push_back(data);
+        }
+
+        // Read metadata (attributes)
+        std::unordered_map<std::string, std::string> attrs;
+        {
+            const auto& metadata = table.getTableMetaData();
+            auto keys = metadata.getKeys();
+            attrs.reserve(keys.size());
+            for (auto& key : keys) {
+                auto value = metadata.getValueAsString(key);
+
+                attrs.insert_or_assign(std::move(key), std::move(value));
+            }
+        }
+
+        // Clean out blank "header" metadata (OpenSim adds it but a file isn't strictly
+        // required to have anything in it).
+        {
+            const auto it = attrs.find("header");
+            if (it->second.empty()) {
+                attrs.erase(it);
+            }
+        }
+
+        return DataFrame{
+            std::move(column_names),
+            std::move(column_data),
+            std::move(attrs),
+        };
+    }
 }
 
 osc::LogLevel opyn::get_log_level()
@@ -280,52 +329,12 @@ ModelSpecification opyn::read_osim(const std::filesystem::path& source)
 
 DataFrame opyn::read_sto(const std::filesystem::path& source)
 {
-    // Load source file
     OpenSim::TimeSeriesTable table{source.string()};
+    return read_opensim_datatable_into_data_frame(table);
+}
 
-    // Transform source file into `opyn::DataFrame` inputs.
-    std::vector<std::string> column_names;
-    column_names.reserve(table.getNumColumns());
-    std::vector<std::vector<double>> column_data;
-    column_data.reserve(table.getNumColumns());
-
-    // Read `time` column (always present in `OpenSim::TimeSeriesTable`).
-    column_names.emplace_back("time");
-    column_data.push_back(table.getIndependentColumn());
-
-    // Read data columns (dependent columns)
-    for (size_t i = 0; i < table.getNumColumns(); ++i) {
-        column_names.push_back(table.getColumnLabel(i));
-        const SimTK::VectorView view = table.getDependentColumnAtIndex(i);
-        const auto data = osc::to<std::vector<double>>(view);
-        column_data.push_back(data);
-    }
-
-    // Read metadata (attributes)
-    std::unordered_map<std::string, std::string> attrs;
-    {
-        const auto& metadata = table.getTableMetaData();
-        auto keys = metadata.getKeys();
-        attrs.reserve(keys.size());
-        for (auto& key : keys) {
-            auto value = metadata.getValueAsString(key);
-
-            attrs.insert_or_assign(std::move(key), std::move(value));
-        }
-    }
-
-    // Clean out blank "header" metadata (OpenSim adds it but a file isn't strictly
-    // required to have anything in it).
-    {
-        const auto it = attrs.find("header");
-        if (it->second.empty()) {
-            attrs.erase(it);
-        }
-    }
-
-    return DataFrame{
-        std::move(column_names),
-        std::move(column_data),
-        std::move(attrs),
-    };
+DataFrame opyn::read_mot(const std::filesystem::path &source)
+{
+    OpenSim::TimeSeriesTable table{source.string()};
+    return read_opensim_datatable_into_data_frame(table);
 }

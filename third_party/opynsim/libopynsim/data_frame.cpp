@@ -3,6 +3,7 @@
 #include <liboscar/utilities/assertions.h>
 
 #include <algorithm>
+#include <functional>
 #include <cstddef>
 #include <cmath>
 #include <iomanip>
@@ -103,10 +104,17 @@ std::vector<std::string> opyn::DataFrame::columns() const
 
 std::tuple<size_t, size_t> opyn::DataFrame::shape() const
 {
-    const size_t num_columns = series_.size();
-    return num_columns > 0 ?
-        std::pair{series_.front().size(), num_columns} :
-        std::pair{0uz,                    num_columns};
+    return {height(), width()};
+}
+
+size_t opyn::DataFrame::height() const
+{
+    return series_.empty() ? 0uz : series_.front().size();
+}
+
+size_t opyn::DataFrame::width() const
+{
+    return series_.size();
 }
 
 std::unordered_map<std::string, std::string> opyn::DataFrame::attrs() const

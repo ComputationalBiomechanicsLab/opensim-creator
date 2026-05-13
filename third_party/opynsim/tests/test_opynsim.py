@@ -27,3 +27,16 @@ def test_read_sto_can_read_and_print_a_basic_sto_file():
 | 0.0  | 2.0     | 3.0     |
 | 1.0  | 4.0     | 6.0     |
 """
+
+def test_read_mot_can_read_and_print_a_basic_mot_file():
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/mot/one_data_column.mot")
+
+    repr_printed = repr(df)
+    stringified = str(df)
+
+    assert repr_printed == stringified
+    assert repr_printed == """shape: (1, 2)
+| time | column1 |
+|:-----|:--------|
+| 0.0  | 2.0     |
+"""
