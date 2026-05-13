@@ -7,7 +7,9 @@
 #include <opynsim/_core/ui.h>
 
 #include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/string_helpers.h>
 #include <libopynsim/platform/opynsim_app.h>
+#include <libopynsim/data_frame.h>
 #include <libopynsim/model.h>
 #include <libopynsim/model_specification.h>
 #include <libopynsim/model_state.h>
@@ -80,6 +82,15 @@ namespace
         return std::visit(osc::Overload{
             []<typename T>(T&& v) -> PythonOutputValue { return PythonTypeMapper<T>::to_python(std::forward<T>(v)); }
         }, std::move(output_value));  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
+    }
+
+    void register_dataframe_class(nb::module_& m)
+    {
+        nb::class_<DataFrame> cls(m, "DataFrame", R"(
+            Represents data as a table with rows and columns (:class:`opynsim.Series`).
+        )");
+        cls.def("__repr__", osc::stream_to_string<DataFrame>);
+        cls.def("__str__", osc::stream_to_string<DataFrame>);
     }
 }
 
@@ -396,13 +407,28 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         _core_module.attr("STAGE_ACCELERATION") = model_state_stage_class.attr("ACCELERATION");
         _core_module.attr("STAGE_REPORT")       = model_state_stage_class.attr("REPORT");
 
+        register_dataframe_class(_core_module);
+
         _core_module.def(
             "read_osim",
-            [](const std::filesystem::path& osim_path) { return opyn::read_osim(osim_path); },
+            [](const std::filesystem::path& source) { return opyn::read_osim(source); },
             nb::arg("source"),
             R"(
                 Returns a :class:`ModelSpecification` parsed from an `.osim` file on the
                 caller's filesystem.
+
+                Raises:
+                    RuntimeError: If the file cannot be found, read, or is invalid.
+            )"
+        );
+
+        _core_module.def(
+            "read_sto",
+            [](const std::filesystem::path& source) { return opyn::read_sto(source); },
+            nb::arg("source"),
+            R"(
+                Returns a :class:`DataFrame` parsed from an `.sto` file on the caller's
+                filesystem.
 
                 Raises:
                     RuntimeError: If the file cannot be found, read, or is invalid.

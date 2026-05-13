@@ -45,6 +45,9 @@ namespace opyn
         /// Throws a `std::exception` if `name` cannot be found.
         const_reference operator[](std::string_view name) const;
 
+        /// Returns a reference to the nth series at `pos` in `*this` (by-column).
+        const_reference operator[](size_type pos) const { return series_[pos]; }
+
         /// Returns the number of `Series` in `*this`.
         size_type size() const { return series_.size(); }
 

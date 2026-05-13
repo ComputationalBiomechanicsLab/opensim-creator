@@ -34,6 +34,10 @@ namespace
         std::vector<std::vector<double>> column_data)
     {
         OSC_ASSERT_ALWAYS(column_names.size() == column_data.size() && "The number of column names (headers) must match the number of column data vectors");
+        if (not column_data.empty()) {
+            const size_t num_rows_in_first_column = column_data.front().size();
+            OSC_ASSERT_ALWAYS(rgs::all_of(column_data, [num_rows_in_first_column](const auto& column) { return column.size() == num_rows_in_first_column; }));
+        }
 
         std::vector<Series> rv;
         rv.reserve(column_names.size());
@@ -117,114 +121,169 @@ opyn::DataFrame::const_reference opyn::DataFrame::operator[](std::string_view na
 
 std::ostream& opyn::operator<<(std::ostream& out, const DataFrame& data_frame)
 {
-    // Generate table cell formatted content.
-    std::vector<std::vector<std::string>> formatted_columns;
+    static constexpr size_t num_head_data_rows = 5;
+    static constexpr size_t num_tail_data_rows = 5;
+    static constexpr size_t max_data_rows = num_head_data_rows + num_tail_data_rows + 1;  // +1 because it's silly to put ellipsis when there's one more element.
+    static constexpr size_t num_head_columns = 4;
+    static constexpr size_t num_tail_columns = 2;
+    static constexpr size_t max_columns = num_head_columns + num_tail_columns + 1;  // +1 because it's silly to put ellipsis when there's one more element.
+
+    // Represents a single string-formatted column in the table.
+    struct FormattedColumn final {
+        static FormattedColumn ellipsis(size_t num_rows)
+        {
+            FormattedColumn rv;
+            rv.header = "...";
+            rv.content_width = rv.header.size();
+            const size_t n = rgs::min(num_rows, max_data_rows);
+            rv.rows.reserve(n);
+            for (size_t i = 0; i < n; ++i) {
+                rv.rows.emplace_back("...");
+            }
+            return rv;
+        }
+
+        FormattedColumn() = default;
+        explicit FormattedColumn(const Series& series) :
+            header{series.name()},
+            content_width{header.size()}
+        {
+            if (series.size() > max_data_rows) {
+                static_assert(max_data_rows >= num_tail_data_rows, "check for underflows here");
+
+                // Print head
+                for (size_t i = 0; i < num_head_data_rows; ++i) {
+                    append_row(format_double_like_pandas(series[i]));
+                }
+
+                // Print ellipsis
+                append_row("...");
+
+                // Print tail
+                for (size_t i = series.size() - num_tail_data_rows; i < series.size(); ++i) {
+                    append_row(format_double_like_pandas(series[i]));
+                }
+            }
+            else {
+                // Print all values with no ellipsis.
+                for (const auto& value : series) {
+                    append_row(format_double_like_pandas(value));
+                }
+            }
+        }
+
+        void append_row(std::string content)
+        {
+            const auto& v = rows.emplace_back(std::move(content));
+            content_width = rgs::max(content_width, v.size());
+        }
+
+        size_t num_rows() const { return rows.size(); }
+
+        std::string header;
+        size_t content_width = 0;
+        std::vector<std::string> rows;
+    };
+
+    // Generate table columns' data cells.
+    std::vector<FormattedColumn> formatted_columns;
     formatted_columns.reserve(data_frame.size());
-    for (const auto& series : data_frame) {
-        auto& formatted_column = formatted_columns.emplace_back();
-        formatted_column.reserve(series.size() + 1);  // +1 for header
+    if (data_frame.size() > max_columns) {
+        // Generate head columns normally
+        for (size_t i = 0; i < num_head_columns; ++i) {
+            formatted_columns.emplace_back(data_frame[i]);
+        }
 
-        // Append header
-        formatted_column.emplace_back(series.name());
+        // Generate stubbed ellipsis column
+        formatted_columns.emplace_back(FormattedColumn::ellipsis(data_frame[0].size()));
 
-        // Append formatted data rows (+ perhaps ellipsis).
-        constexpr size_t num_head_data_rows = 5;
-        constexpr size_t num_tail_data_rows = 5;
-        constexpr size_t max_data_rows = num_head_data_rows + num_tail_data_rows + 1;  // +1 because it's silly to put ellipsis when there's one more element.
-        if (series.size() > max_data_rows) {
-            static_assert(max_data_rows >= num_tail_data_rows, "check for underflows here");
+        // Generate tail columns normally
+        for (size_t i = data_frame.size() - num_tail_columns; i < data_frame.size(); ++i) {
+            formatted_columns.emplace_back(data_frame[i]);
+        }
+    } else {
+        for (const auto& series : data_frame) {
+            formatted_columns.emplace_back(series);
+        }
+    }
 
-            // Print head
-            for (size_t i = 0; i < num_head_data_rows; ++i) {
-                formatted_column.push_back(format_double_like_pandas(series[i]));
+    // Emit above-table header.
+    {
+        const auto [num_rows, num_columns] = data_frame.shape();
+        out << "shape: (" << num_rows << ", " << num_columns << ")\n";
+    }
+
+    // Emit table header row.
+    {
+        out << '|';  // Left line
+        if (formatted_columns.empty()) {
+            // Edge-case: If there's no headers, emit a blank header column (markdown requirement).
+            out << "   |";
+        }
+        for (const auto& c : formatted_columns) {
+            const std::string_view header = c.header.empty() ? std::string_view{" "} : c.header;
+            out << ' ';  // Left padding
+            out << header;
+            const auto remaining = static_cast<ptrdiff_t>(c.content_width) - static_cast<ptrdiff_t>(header.size());
+            for (ptrdiff_t i = 0; i < remaining; ++i) {
+                out << ' ';
             }
+            out << " |";  // Right padding + line
+        }
+        out << '\n';
+    }
 
-            formatted_column.emplace_back("...");  // Ellipsis to show we have truncated stuff
-
-            // Print tail
-            for (size_t i = series.size() - num_tail_data_rows; i < series.size(); ++i) {
-                formatted_column.push_back(format_double_like_pandas(series[i]));
+    // Emit table alignment row.
+    {
+        // Emit alignment rows
+        out << '|';  // Left line
+        if (formatted_columns.empty()) {
+            // Edge-case: If there's no columns, emit a minimum alignment column (markdown requirement).
+            out << "---|";
+        }
+        for (const auto& c : formatted_columns) {
+            out << ':';  // Left-align
+            const size_t num_dashes = rgs::max(2uz, c.content_width + 1);  // +1 to account for right padding
+            for (size_t i = 0; i < num_dashes; ++i) {
+                out << '-';
             }
+            out << '|';  // Right line
         }
-        else {
-            // Print all values with no ellipsis.
-            for (const auto& value : series) {
-                formatted_column.push_back(format_double_like_pandas(value));
-            }
-        }
+        out << '\n';
     }
 
-    // Emit a formatted table with aligned columns.
-    std::vector<size_t> column_content_widths;
-    column_content_widths.reserve(formatted_columns.size());
-    for (const auto& formatted_column : formatted_columns) {
-        const size_t max_width = rgs::max_element(formatted_column, {}, &std::string::size)->size();
-        column_content_widths.push_back(max_width);
-    }
+    OSC_ASSERT_ALWAYS(rgs::adjacent_find(formatted_columns, rgs::not_equal_to{}, &FormattedColumn::num_rows) == formatted_columns.end());
+    const size_t num_displayed_rows = formatted_columns.empty() ? 0zu : formatted_columns.front().num_rows();
 
-    // Emit above-table header
-    const auto [num_rows, num_columns] = data_frame.shape();
-    out << "shape: (" << num_rows << ", " << num_columns << ")\n";
+    // Emit table data rows.
+    if (formatted_columns.empty()) {
+        // Edge-case: If there are no columns, emit a minimum empty column (markdown requirement).
 
-    // Emit formatted header row
-    out << '|';  // Left line
-    if (column_content_widths.empty()) {
-        // Edge-case: If there's no headers, emit a blank header column.
-        out << "   |";
-    }
-    OSC_ASSERT(formatted_columns.size() == column_content_widths.size());
-    for (size_t i = 0; i < column_content_widths.size(); ++i) {
-        const auto& series_name = formatted_columns[i].front();
-
-        out << ' ';  // Left padding
-        out << series_name;
-        if (series_name.empty()) {
-            out << ' ';  // Ensure column is at least 3 units across (markdown minimum).
-        }
-        out << " |";  // Right padding and line
-    }
-    out << '\n';
-
-    // Emit alignment rows
-    out << '|';  // Left line
-    if (column_content_widths.empty()) {
-        // Edge-case: If there's no columns, emit a minimum alignment column
-        out << "---|";
-    }
-    for (const auto& column_content_width : column_content_widths) {
-        const size_t actual_width = rgs::max(3uz, column_content_width + 2);  // +2 to account for content padding
-        out << ':';  // Left-align
-        for (size_t i = 1; i < actual_width; ++i) {
-            out << '-';
-        }
-        out << '|';  // Right line
-    }
-    out << '\n';
-
-    // Emit data rows
-    if (num_columns == 0) {
-        // Edge-case: If there are no columns, emit a minimum empty column.
         out << "|   |\n";
     }
-    else if (num_rows == 0) {
+    else if (num_displayed_rows == 0) {
+        // Edge-case: If there are no rows, emit empty columns for each row (markdown requirement).
+
         out << '|';  // Left line
-        for (const auto& column_width : column_content_widths) {
+        for (const auto& c : formatted_columns) {
             out << ' ';  // Left padding
-            const size_t remaining_width = rgs::max(1uz, column_width);
-            for (size_t i = 0; i < remaining_width; ++i) {
+            const size_t width = rgs::max(1uz, c.content_width);
+            for (size_t i = 0; i < width; ++i) {
                 out << ' ';  // Filler
             }
             out << " |";  // Right padding and line
         }
         out << '\n';
     }
-    for (size_t row = 1; row < num_rows + 1; ++row) {  // start from 1 (first data row)
+    for (size_t row = 0; row < num_displayed_rows; ++row) {
         out << '|';  // Left line
-        for (size_t column = 0; column < num_columns; ++column) {
+        for (size_t column = 0; column < formatted_columns.size(); ++column) {
+            const auto& c = formatted_columns[column];
+
             out << ' ';  // Left padding
-            out << formatted_columns[column][row];
-            const size_t remaining_width = rgs::max(1uz, column_content_widths[column] - formatted_columns[column][row].size());
-            for (size_t i = 0; i < remaining_width; ++i) {
+            out << c.rows[row];
+            const auto remaining = static_cast<ptrdiff_t>(c.content_width) - static_cast<ptrdiff_t>(c.rows[row].size());
+            for (ptrdiff_t i = 0; i < remaining; ++i) {
                 out << ' ';
             }
             out << " |";  // Right padding and line

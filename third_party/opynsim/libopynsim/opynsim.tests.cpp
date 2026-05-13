@@ -158,3 +158,13 @@ TEST(opynsim, read_sto_prints_expected_pretty_string_in_two_column_case)
 )";
     ASSERT_EQ(got, expected);
 }
+
+TEST(opynsim, read_sto_can_read_and_print_a_bigger_pendulum_example)
+{
+    opyn::init();
+
+    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/double_pendulum_run.sto");
+    const std::string got = osc::stream_to_string(df);
+
+    ASSERT_FALSE(got.empty());
+}
