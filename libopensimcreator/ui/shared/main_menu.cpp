@@ -347,7 +347,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::draw_help_marker("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
         ui::next_column();
 
-        bool enabled = App::get().is_vsync_enabled();
+        bool enabled = App::get().vsync_enabled();
         if (ui::draw_checkbox("##vsynccheckbox", &enabled)) {
             App::upd().set_vsync_enabled(enabled);
         }
@@ -440,7 +440,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::draw_help_marker("Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
         ui::next_column();
         {
-            bool appIsInDebugMode = App::get().is_in_debug_mode();
+            bool appIsInDebugMode = App::get().debug_mode();
             if (ui::draw_checkbox("##debugmodecheckbox", &appIsInDebugMode)) {
                 App::upd().set_debug_mode(appIsInDebugMode);
             }

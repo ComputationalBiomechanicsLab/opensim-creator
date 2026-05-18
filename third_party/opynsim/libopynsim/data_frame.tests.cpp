@@ -25,7 +25,7 @@ TEST(DataFrame, operator_bracket_by_name_returns_expected_series)
         {2.0, 4.0, 6.0},  // Ys
     };
     const DataFrame data_frame{column_names, column_data};
-    const Series series = data_frame["x"];
+    const Series& series = data_frame["x"];
 
     ASSERT_EQ(series.name(), "x");
     ASSERT_EQ(series.shape(), std::make_tuple(column_data.front().size()));

@@ -62,7 +62,7 @@ public:
 
     void on_mount()
     {
-        m_WasVSyncEnabled = App::get().is_vsync_enabled();
+        m_WasVSyncEnabled = App::get().vsync_enabled();
         App::upd().set_vsync_enabled(false);
     }
 

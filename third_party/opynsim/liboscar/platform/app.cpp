@@ -1147,14 +1147,9 @@ public:
         return initial_directory_to_show_fallback_;
     }
 
-    void set_prompt_initial_directory_to_show_fallback(const std::filesystem::path& p)
+    void set_prompt_initial_directory_to_show_fallback(std::optional<std::filesystem::path> p)
     {
-        initial_directory_to_show_fallback_ = p;
-    }
-
-    void set_prompt_initial_directory_to_show_fallback(std::nullopt_t)
-    {
-        initial_directory_to_show_fallback_.reset();
+        initial_directory_to_show_fallback_ = std::move(p);
     }
 
     void prompt_user_to_select_file_async(
@@ -1298,6 +1293,16 @@ public:
         );
     }
 
+    void push_cursor_override(const Cursor& cursor)
+    {
+        cursor_handler_.push_cursor_override(cursor);
+    }
+
+    void pop_cursor_override()
+    {
+        cursor_handler_.pop_cursor_override();
+    }
+
     WindowID main_window_id() const
     {
         return WindowID{main_window_.get()};
@@ -1308,7 +1313,7 @@ public:
         return Vector2{main_window_pixel_dimensions()} / main_window_device_pixel_ratio();
     }
 
-    void try_async_set_main_window_dimensions(Vector2 new_dims)
+    void set_main_window_dimensions(Vector2 new_dims)
     {
         // mirror `SDL_GetWindowSize` by figuring out the scale factor
         // difference between what the caller provides (virtual coords,
@@ -1335,67 +1340,29 @@ public:
         return SDL_GetWindowDisplayScale(main_window_.get());
     }
 
-    float highest_device_pixel_ratio() const
-    {
-        int displays = 0;
-        SDL_DisplayID* display_list_head = SDL_GetDisplays(&displays);
-        ScopeExit list_destructor{[display_list_head] { SDL_free(display_list_head); }};
-
-        // note: On some OSes, like MacOS, SDL_GetDisplayContentScale() might return
-        //       a different (lower) value from SDL_GetWindowDisplayScale().
-        //
-        //       In the current design, there's guranteed to be at least one window
-        //       open (the main one), so it should contribute to this calculation.
-        float rv = main_window_device_pixel_ratio();
-        for (SDL_DisplayID* it = display_list_head; displays > 0; ++it, --displays) {
-            if (const float scale = SDL_GetDisplayContentScale(*it); scale != 0.0f) {
-                rv = std::max(rv, scale);
-            }
-        }
-        return rv;
-    }
-
-    float os_to_main_window_device_independent_ratio() const
-    {
-        // i.e. scale the event by multiplying it by the pixel density (yielding a
-        // pixel-based event value) and then dividing it by the suggested window
-        // display scale (yielding a device-independent pixel value).
-        return SDL_GetWindowPixelDensity(main_window_.get()) / SDL_GetWindowDisplayScale(main_window_.get());
-    }
-
     bool is_main_window_minimized() const
     {
         return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_MINIMIZED) != 0u;
     }
 
-    void push_cursor_override(const Cursor& cursor)
+    bool main_window_grabbing() const
     {
-        cursor_handler_.push_cursor_override(cursor);
+        return SDL_GetWindowMouseGrab(main_window_.get());
     }
 
-    void pop_cursor_override()
+    void set_main_window_grabbing(bool v)
     {
-        cursor_handler_.pop_cursor_override();
+        SDL_SetWindowMouseGrab(main_window_.get(), v);
     }
 
-    void enable_main_window_grab()
+    bool main_window_relative_mouse_mode() const
     {
-        SDL_SetWindowMouseGrab(main_window_.get(), true);
+        return SDL_GetWindowRelativeMouseMode(main_window_.get());
     }
 
-    void disable_main_window_grab()
+    void set_main_window_relative_mouse_mode(bool v)
     {
-        SDL_SetWindowMouseGrab(main_window_.get(), false);
-    }
-
-    void enable_main_window_relative_mouse_mode()
-    {
-        SDL_SetWindowRelativeMouseMode(main_window_.get(), true);
-    }
-
-    void disable_main_window_relative_mouse_mode()
-    {
-        SDL_SetWindowRelativeMouseMode(main_window_.get(), false);
+        SDL_SetWindowRelativeMouseMode(main_window_.get(), v);
     }
 
     std::optional<Rect> main_window_mouse_confinement() const
@@ -1437,7 +1404,7 @@ public:
         set_main_window_mouse_confinement(std::optional<Rect>{});
     }
 
-    std::optional<Vector2> mouse_position_in_main_window() const
+    std::optional<Vector2> main_window_mouse_position() const
     {
         if (SDL_GetMouseFocus() != main_window_.get()) {
             return std::nullopt;  // main window is unfocused
@@ -1458,29 +1425,23 @@ public:
         return p;
     }
 
-    void show_main_window()
+    bool main_window_showing() const
     {
-        SDL_ShowWindow(main_window_.get());
+        return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_HIDDEN) == 0u;
     }
 
-    void hide_main_window()
+    void set_main_window_showing(bool v)
     {
-        SDL_HideWindow(main_window_.get());
+        if (v) {
+            SDL_ShowWindow(main_window_.get());
+        } else {
+            SDL_HideWindow(main_window_.get());
+        }
     }
 
     void focus_main_window()
     {
         SDL_RaiseWindow(main_window_.get());
-    }
-
-    bool has_input_focus(WindowID window_id) const
-    {
-        return (SDL_GetWindowFlags(std::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS) != 0;
-    }
-
-    WindowID get_keyboard_focus() const
-    {
-        return WindowID{SDL_GetKeyboardFocus()};
     }
 
     void set_main_window_unicode_input_rect(const Rect& screen_rect)
@@ -1496,6 +1457,62 @@ public:
         SDL_SetTextInputArea(main_window_.get(), &r, 0);
     }
 
+    void make_main_window_fullscreen()
+    {
+        SDL_SetWindowFullscreenMode(main_window_.get(), nullptr);
+        SDL_SetWindowFullscreen(main_window_.get(), true);
+        SDL_SyncWindow(main_window_.get());
+    }
+
+    void make_main_window_windowed()
+    {
+        SDL_SetWindowFullscreen(main_window_.get(), false);
+        SDL_SyncWindow(main_window_.get());
+    }
+
+    void set_main_window_subtitle(std::optional<std::string_view> subtitle)
+    {
+        auto title_lock = main_window_subtitle_.lock();
+
+        if (subtitle == *title_lock) {
+            return;
+        }
+
+        *title_lock = subtitle;
+
+        const std::string new_title = (subtitle and not subtitle->empty()) ?
+            (std::string{*subtitle} + " - " + metadata_.human_readable_application_name()) :
+            std::string{metadata_.human_readable_application_name()};
+
+        SDL_SetWindowTitle(main_window_.get(), new_title.c_str());
+    }
+
+    void main_window_add_frame_annotation(std::string_view label, const Rect& screen_rect)
+    {
+        main_window_annotations_this_frame_.emplace_back(std::string{label}, screen_rect);
+    }
+
+    std::future<Screenshot> main_window_request_screenshot()
+    {
+        AnnotatedScreenshotRequest& req = main_window_screenshot_requests_.emplace_back(frame_counter_, request_screenshot_texture());
+        return req.result_promise.get_future();
+    }
+
+    void main_window_clear(const Color& color)
+    {
+        graphics_context_.main_window_clear(color);
+    }
+
+    bool has_input_focus(WindowID window_id) const
+    {
+        return (SDL_GetWindowFlags(std::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS) != 0;
+    }
+
+    WindowID get_keyboard_focus() const
+    {
+        return WindowID{SDL_GetKeyboardFocus()};
+    }
+
     void start_text_input(WindowID window_id)
     {
         SDL_StartTextInput(std::bit_cast<SDL_Window*>(to<void*>(window_id)));
@@ -1506,26 +1523,24 @@ public:
         SDL_StopTextInput(std::bit_cast<SDL_Window*>(to<void*>(window_id)));
     }
 
-    void set_show_cursor(bool v)
+    float highest_device_pixel_ratio() const
     {
-        if (v) {
-            SDL_ShowCursor();
-        }
-        else {
-            SDL_HideCursor();
-        }
-        SDL_SetWindowMouseGrab(main_window_.get(), not v);
-    }
+        int displays = 0;
+        SDL_DisplayID* display_list_head = SDL_GetDisplays(&displays);
+        ScopeExit list_destructor{[display_list_head] { SDL_free(display_list_head); }};
 
-    void make_main_window_fullscreen()
-    {
-        SDL_SetWindowFullscreenMode(main_window_.get(), nullptr);
-        SDL_SetWindowFullscreen(main_window_.get(), true);
-    }
-
-    void make_main_window_windowed()
-    {
-        SDL_SetWindowFullscreen(main_window_.get(), false);
+        // note: On some OSes, like MacOS, SDL_GetDisplayContentScale() might return
+        //       a different (lower) value from SDL_GetWindowDisplayScale().
+        //
+        //       In the current design, there's guranteed to be at least one window
+        //       open (the main one), so it should contribute to this calculation.
+        float rv = main_window_device_pixel_ratio();
+        for (SDL_DisplayID* it = display_list_head; displays > 0; ++it, --displays) {
+            if (const float scale = SDL_GetDisplayContentScale(*it); scale != 0.0f) {
+                rv = std::max(rv, scale);
+            }
+        }
+        return rv;
     }
 
     AntiAliasingLevel anti_aliasing_level() const
@@ -1543,9 +1558,9 @@ public:
         return graphics_context_.max_antialiasing_level();
     }
 
-    bool is_in_debug_mode() const
+    bool debug_mode() const
     {
-        return graphics_context_.is_in_debug_mode();
+        return graphics_context_.debug_mode();
     }
 
     void set_debug_mode(bool v)
@@ -1553,25 +1568,14 @@ public:
         graphics_context_.set_debug_mode(v);
     }
 
-    bool is_vsync_enabled() const
+    bool vsync_enabled() const
     {
-        return graphics_context_.is_vsync_enabled();
+        return graphics_context_.vsync_enabled();
     }
 
     void set_vsync_enabled(bool v)
     {
         graphics_context_.set_vsync_enabled(v);
-    }
-
-    void add_main_window_frame_annotation(std::string_view label, const Rect& screen_rect)
-    {
-        main_window_annotations_this_frame_.emplace_back(std::string{label}, screen_rect);
-    }
-
-    std::future<Screenshot> request_screenshot_of_main_window()
-    {
-        AnnotatedScreenshotRequest& req = main_window_screenshot_requests_.emplace_back(frame_counter_, request_screenshot_texture());
-        return req.result_promise.get_future();
     }
 
     std::string graphics_backend_vendor_string() const
@@ -1648,47 +1652,13 @@ public:
         SDL_PushEvent(&e);
     }
 
-    void clear_main_window(const Color& color)
-    {
-        graphics_context_.clear_main_window(color);
-    }
-
-    void set_main_window_subtitle(std::string_view subtitle)
-    {
-        auto title_lock = main_window_subtitle_.lock();
-
-        if (subtitle == *title_lock) {
-            return;
-        }
-
-        *title_lock = subtitle;
-
-        const std::string new_title = subtitle.empty() ?
-            std::string{metadata_.human_readable_application_name()} :
-            (std::string{subtitle} + " - " + metadata_.human_readable_application_name());
-
-        SDL_SetWindowTitle(main_window_.get(), new_title.c_str());
-    }
-
-    void unset_main_window_subtitle()
-    {
-        set_main_window_subtitle({});
-    }
-
-    const AppSettings& get_config() const { return config_; }
-
-    AppSettings& upd_settings() { return config_; }
-
     ResourceLoader& upd_resource_loader() { return resource_loader_; }
-
+    std::string slurp_resource(const ResourcePath& rp) { return resource_loader_.slurp(rp); }
+    ResourceStream go_open_resource(const ResourcePath& rp) { return resource_loader_.open(rp); }
     std::optional<std::filesystem::path> get_resource_filepath(const ResourcePath& rp) const
     {
         return native_filesystem_->resource_filepath(rp);
     }
-
-    std::string slurp_resource(const ResourcePath& rp) { return resource_loader_.slurp(rp); }
-
-    ResourceStream go_open_resource(const ResourcePath& rp) { return resource_loader_.open(rp); }
 
     std::shared_ptr<void> upd_singleton(
         const std::type_info& type_info,
@@ -1702,12 +1672,16 @@ public:
         return it->second;
     }
 
-    GraphicsContext& upd_graphics_context() { return graphics_context_; }
+    const AppSettings& settings_internal() const { return config_; }
+    AppSettings& upd_settings_internal() { return config_; }
 
 private:
-    bool is_window_focused() const
+    float os_to_main_window_device_independent_ratio() const
     {
-        return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_INPUT_FOCUS) != 0u;
+        // i.e. scale the event by multiplying it by the pixel density (yielding a
+        // pixel-based event value) and then dividing it by the suggested window
+        // display scale (yielding a device-independent pixel value).
+        return SDL_GetWindowPixelDensity(main_window_.get()) / SDL_GetWindowDisplayScale(main_window_.get());
     }
 
     std::future<Texture2D> request_screenshot_texture()
@@ -1854,7 +1828,7 @@ private:
     SDLWindow main_window_ = create_main_app_window(metadata_, config_);
 
     // cache for the current (caller-set) window subtitle
-    SynchronizedValue<std::string> main_window_subtitle_;
+    SynchronizedValue<std::optional<std::string>> main_window_subtitle_;
 
     // 3D graphics context for the oscar graphics API
     GraphicsContext graphics_context_{*main_window_};
@@ -1927,7 +1901,12 @@ const App* osc::App::try_get() { return g_app_global; }
 
 const AppSettings& osc::App::settings()
 {
-    return get().get_config();
+    return get().settings_internal();
+}
+
+AppSettings& osc::App::upd_settings()
+{
+    return upd().upd_settings_internal();
 }
 
 std::optional<std::filesystem::path> osc::App::resource_filepath(const ResourcePath& rp)
@@ -2042,14 +2021,9 @@ std::optional<std::filesystem::path> osc::App::prompt_initial_directory_to_show_
     return impl_->prompt_initial_directory_to_show_fallback();
 }
 
-void osc::App::set_prompt_initial_directory_to_show_fallback(const std::filesystem::path& p)
+void osc::App::set_prompt_initial_directory_to_show_fallback(std::optional<std::filesystem::path> p)
 {
-    impl_->set_prompt_initial_directory_to_show_fallback(p);
-}
-
-void osc::App::set_prompt_initial_directory_to_show_fallback(std::nullopt_t)
-{
-    impl_->set_prompt_initial_directory_to_show_fallback(std::nullopt);
+    impl_->set_prompt_initial_directory_to_show_fallback(std::move(p));
 }
 
 void osc::App::prompt_user_to_select_file_async(
@@ -2102,6 +2076,16 @@ void osc::App::prompt_user_to_save_file_with_extension_async(
     );
 }
 
+void osc::App::push_cursor_override(const Cursor& cursor)
+{
+    impl_->push_cursor_override(cursor);
+}
+
+void osc::App::pop_cursor_override()
+{
+    impl_->pop_cursor_override();
+}
+
 WindowID osc::App::main_window_id() const
 {
     return impl_->main_window_id();
@@ -2112,9 +2096,9 @@ Vector2 osc::App::main_window_dimensions() const
     return impl_->main_window_dimensions();
 }
 
-void osc::App::try_async_set_main_window_dimensions(Vector2 new_dims)
+void osc::App::set_main_window_dimensions(Vector2 new_dims)
 {
-    impl_->try_async_set_main_window_dimensions(new_dims);
+    impl_->set_main_window_dimensions(new_dims);
 }
 
 Vector2i osc::App::main_window_pixel_dimensions() const
@@ -2127,49 +2111,29 @@ float osc::App::main_window_device_pixel_ratio() const
     return impl_->main_window_device_pixel_ratio();
 }
 
-float osc::App::highest_device_pixel_ratio() const
-{
-    return impl_->highest_device_pixel_ratio();
-}
-
 bool osc::App::is_main_window_minimized() const
 {
     return impl_->is_main_window_minimized();
 }
 
-void osc::App::push_cursor_override(const Cursor& cursor)
+bool osc::App::main_window_grabbing() const
 {
-    impl_->push_cursor_override(cursor);
+    return impl_->main_window_grabbing();
 }
 
-void osc::App::pop_cursor_override()
+void osc::App::set_main_window_grabbing(bool v)
 {
-    impl_->pop_cursor_override();
+    impl_->set_main_window_grabbing(v);
 }
 
-void osc::App::enable_main_window_grab()
+bool osc::App::main_window_relative_mouse_mode() const
 {
-    impl_->enable_main_window_grab();
+    return impl_->main_window_relative_mouse_mode();
 }
 
-WindowID osc::App::get_keyboard_focus() const
+void osc::App::set_main_window_relative_mouse_mode(bool v)
 {
-    return impl_->get_keyboard_focus();
-}
-
-void osc::App::disable_main_window_grab()
-{
-    impl_->disable_main_window_grab();
-}
-
-void osc::App::enable_main_window_relative_mouse_mode()
-{
-    impl_->enable_main_window_relative_mouse_mode();
-}
-
-void osc::App::disable_main_window_relative_mouse_mode()
-{
-    impl_->disable_main_window_relative_mouse_mode();
+    impl_->set_main_window_relative_mouse_mode(v);
 }
 
 std::optional<Rect> osc::App::main_window_mouse_confinement() const
@@ -2192,19 +2156,19 @@ void osc::App::set_main_window_mouse_confinement(std::nullopt_t nullopt)
     impl_->set_main_window_mouse_confinement(nullopt);
 }
 
-std::optional<Vector2> osc::App::mouse_position_in_main_window() const
+std::optional<Vector2> osc::App::main_window_mouse_position() const
 {
-    return impl_->mouse_position_in_main_window();
+    return impl_->main_window_mouse_position();
 }
 
-void osc::App::show_main_window()
+bool osc::App::main_window_showing() const
 {
-    impl_->show_main_window();
+    return impl_->main_window_showing();
 }
 
-void osc::App::hide_main_window()
+void osc::App::set_main_window_showing(bool v)
 {
-    impl_->hide_main_window();
+    impl_->set_main_window_showing(v);
 }
 
 void osc::App::focus_main_window()
@@ -2212,14 +2176,49 @@ void osc::App::focus_main_window()
     impl_->focus_main_window();
 }
 
+void osc::App::set_main_window_unicode_input_rect(const Rect& screen_rect)
+{
+    impl_->set_main_window_unicode_input_rect(screen_rect);
+}
+
+void osc::App::make_main_window_fullscreen()
+{
+    impl_->make_main_window_fullscreen();
+}
+
+void osc::App::make_main_window_windowed()
+{
+    impl_->make_main_window_windowed();
+}
+
+void osc::App::set_main_window_subtitle(std::optional<std::string_view> subtitle)
+{
+    impl_->set_main_window_subtitle(subtitle);
+}
+
+void osc::App::main_window_add_frame_annotation(std::string_view label, const Rect& screen_rect)
+{
+    impl_->main_window_add_frame_annotation(label, screen_rect);
+}
+
+std::future<Screenshot> osc::App::main_window_request_screenshot()
+{
+    return impl_->main_window_request_screenshot();
+}
+
+void osc::App::main_window_clear(const Color& color)
+{
+    impl_->main_window_clear(color);
+}
+
 bool osc::App::has_input_focus(WindowID id) const
 {
     return impl_->has_input_focus(id);
 }
 
-void osc::App::set_main_window_unicode_input_rect(const Rect& screen_rect)
+WindowID osc::App::get_keyboard_focus() const
 {
-    impl_->set_main_window_unicode_input_rect(screen_rect);
+    return impl_->get_keyboard_focus();
 }
 
 void osc::App::start_text_input(WindowID window_id)
@@ -2232,14 +2231,9 @@ void osc::App::stop_text_input(WindowID window_id)
     impl_->stop_text_input(window_id);
 }
 
-void osc::App::make_main_window_fullscreen()
+float osc::App::highest_device_pixel_ratio() const
 {
-    impl_->make_main_window_fullscreen();
-}
-
-void osc::App::make_main_window_windowed()
-{
-    impl_->make_main_window_windowed();
+    return impl_->highest_device_pixel_ratio();
 }
 
 AntiAliasingLevel osc::App::anti_aliasing_level() const
@@ -2257,9 +2251,9 @@ AntiAliasingLevel osc::App::max_anti_aliasing_level() const
     return impl_->max_anti_aliasing_level();
 }
 
-bool osc::App::is_in_debug_mode() const
+bool osc::App::debug_mode() const
 {
-    return impl_->is_in_debug_mode();
+    return impl_->debug_mode();
 }
 
 void osc::App::set_debug_mode(bool v)
@@ -2267,24 +2261,14 @@ void osc::App::set_debug_mode(bool v)
     impl_->set_debug_mode(v);
 }
 
-bool osc::App::is_vsync_enabled() const
+bool osc::App::vsync_enabled() const
 {
-    return impl_->is_vsync_enabled();
+    return impl_->vsync_enabled();
 }
 
 void osc::App::set_vsync_enabled(bool v)
 {
     impl_->set_vsync_enabled(v);
-}
-
-void osc::App::add_main_window_frame_annotation(std::string_view label, const Rect& screen_rect)
-{
-    impl_->add_main_window_frame_annotation(label, screen_rect);
-}
-
-std::future<Screenshot> osc::App::request_screenshot_of_main_window()
-{
-    return impl_->request_screenshot_of_main_window();
 }
 
 std::string osc::App::graphics_backend_vendor_string() const
@@ -2357,39 +2341,9 @@ void osc::App::request_redraw()
     impl_->request_redraw();
 }
 
-void osc::App::clear_main_window(const Color& color)
-{
-    impl_->clear_main_window(color);
-}
-
-void osc::App::set_main_window_subtitle(std::string_view subtitle)
-{
-    impl_->set_main_window_subtitle(subtitle);
-}
-
-void osc::App::unset_main_window_subtitle()
-{
-    impl_->unset_main_window_subtitle();
-}
-
-const AppSettings& osc::App::get_config() const
-{
-    return impl_->get_config();
-}
-
-AppSettings& osc::App::upd_settings()
-{
-    return impl_->upd_settings();
-}
-
 ResourceLoader& osc::App::upd_resource_loader()
 {
     return impl_->upd_resource_loader();
-}
-
-std::optional<std::filesystem::path> osc::App::get_resource_filepath(const ResourcePath& rp) const
-{
-    return impl_->get_resource_filepath(rp);
 }
 
 std::string osc::App::slurp_resource(const ResourcePath& rp)
@@ -2400,6 +2354,11 @@ std::string osc::App::slurp_resource(const ResourcePath& rp)
 ResourceStream osc::App::go_open_resource(const ResourcePath& rp)
 {
     return impl_->go_open_resource(rp);
+}
+
+std::optional<std::filesystem::path> osc::App::get_resource_filepath(const ResourcePath& rp) const
+{
+    return impl_->get_resource_filepath(rp);
 }
 
 int osc::App::main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Widget>()>& widget_ctor)
@@ -2428,4 +2387,14 @@ std::shared_ptr<void> osc::App::upd_singleton(
     const std::function<std::shared_ptr<void>()>& singleton_constructor)
 {
     return impl_->upd_singleton(type_info, singleton_constructor);
+}
+
+const AppSettings& osc::App::settings_internal() const
+{
+    return impl_->settings_internal();
+}
+
+AppSettings& osc::App::upd_settings_internal()
+{
+    return impl_->upd_settings_internal();
 }

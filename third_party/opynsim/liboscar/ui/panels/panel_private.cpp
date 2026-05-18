@@ -44,5 +44,5 @@ bool osc::PanelPrivate::is_open() const
 
 void osc::PanelPrivate::set_open(bool v)
 {
-    App::upd().upd_settings().set_value(panel_enabled_config_key_, v);
+    App::upd_settings().set_value(panel_enabled_config_key_, v);
 }

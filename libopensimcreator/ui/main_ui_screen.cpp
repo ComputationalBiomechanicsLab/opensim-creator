@@ -222,7 +222,7 @@ public:
 
         if (e.type() == EventType::KeyUp and dynamic_cast<const KeyEvent&>(e).combination() == (KeyModifier::Ctrl | Key::P)) {
             // `Ctrl+P`: "take a screenshot"
-            m_MaybeScreenshotRequest = App::upd().request_screenshot_of_main_window();
+            m_MaybeScreenshotRequest = App::upd().main_window_request_screenshot();
             handled = true;
         }
         else if (m_UiContext.on_event(e)) {
@@ -372,7 +372,7 @@ public:
 
         {
             OSC_PERF("MainUIScreen/clear_screen");
-            App::upd().clear_main_window();
+            App::upd().main_window_clear();
         }
 
         m_UiContext.on_start_new_frame();

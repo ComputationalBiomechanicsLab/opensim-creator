@@ -6060,7 +6060,7 @@ public:
         return max_aa_level_;
     }
 
-    bool is_vsync_enabled() const
+    bool vsync_enabled() const
     {
         return vsync_enabled_;
     }
@@ -6085,7 +6085,7 @@ public:
         }
     }
 
-    bool is_in_debug_mode() const
+    bool debug_mode() const
     {
         return debug_mode_enabled_;
     }
@@ -6440,9 +6440,9 @@ AntiAliasingLevel osc::GraphicsContext::max_antialiasing_level() const
     return g_graphics_context_impl->max_antialiasing_level();
 }
 
-bool osc::GraphicsContext::is_vsync_enabled() const
+bool osc::GraphicsContext::vsync_enabled() const
 {
-    return g_graphics_context_impl->is_vsync_enabled();
+    return g_graphics_context_impl->vsync_enabled();
 }
 
 void osc::GraphicsContext::set_vsync_enabled(bool v)
@@ -6450,9 +6450,9 @@ void osc::GraphicsContext::set_vsync_enabled(bool v)
     g_graphics_context_impl->set_vsync_enabled(v);
 }
 
-bool osc::GraphicsContext::is_in_debug_mode() const
+bool osc::GraphicsContext::debug_mode() const
 {
-    return g_graphics_context_impl->is_in_debug_mode();
+    return g_graphics_context_impl->debug_mode();
 }
 
 void osc::GraphicsContext::set_debug_mode(bool v)
@@ -6460,7 +6460,7 @@ void osc::GraphicsContext::set_debug_mode(bool v)
     g_graphics_context_impl->set_debug_mode(v);
 }
 
-void osc::GraphicsContext::clear_main_window(const Color& color)
+void osc::GraphicsContext::main_window_clear(const Color& color)
 {
     g_graphics_context_impl->clear_screen(color);
 }

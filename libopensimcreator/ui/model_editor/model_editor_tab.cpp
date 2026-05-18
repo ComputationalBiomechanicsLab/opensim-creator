@@ -49,6 +49,7 @@
 #include <chrono>
 #include <exception>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -201,7 +202,7 @@ public:
     void on_unmount()
     {
         m_PanelManager->on_unmount();
-        App::upd().unset_main_window_subtitle();
+        App::upd().set_main_window_subtitle(std::nullopt);
         App::upd().make_main_loop_polling();
     }
 

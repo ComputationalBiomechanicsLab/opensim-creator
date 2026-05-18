@@ -30,7 +30,7 @@ namespace
 
         void impl_on_draw() override
         {
-            App::upd().clear_main_window();
+            App::upd().main_window_clear();
 
             ui_context_.on_start_new_frame();
 

@@ -44,7 +44,7 @@ namespace
 
         void impl_on_draw() override
         {
-            osc::App::upd().clear_main_window();
+            osc::App::upd().main_window_clear();
 
             ui_context_.on_start_new_frame();
 
@@ -101,8 +101,8 @@ namespace
 
 void opyn::show_hello_ui(OPynSimApp& app, UiCallbacks callbacks)
 {
-    app.show_main_window();
-    osc::ScopeExit hide_window_on_exit{[&app]{ app.hide_main_window(); }};
+    app.set_main_window_showing(true);
+    osc::ScopeExit hide_window_on_exit{[&app]{ app.set_main_window_showing(false); }};
     app.focus_main_window();
     app.show<HelloTriangleScreen>(std::move(callbacks));
 }

@@ -275,7 +275,7 @@ private:
             ui::pop_id();
 
             if (selected) {
-                App::upd().add_main_window_frame_annotation(c.toString(), selectableScreenRect);
+                App::upd().main_window_add_frame_annotation(c.toString(), selectableScreenRect);
             }
         }
 

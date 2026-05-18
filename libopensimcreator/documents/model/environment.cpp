@@ -24,7 +24,7 @@ const opyn::SharedOutputExtractor& osc::Environment::getUserOutputExtractor(int 
 void osc::Environment::addUserOutputExtractor(const opyn::SharedOutputExtractor& extractor)
 {
     m_OutputExtractors.push_back(extractor);
-    App::upd().upd_settings().set_value("panels/Output Watches/enabled", true);  // TODO: this should be an event... ;)
+    App::upd_settings().set_value("panels/Output Watches/enabled", true);  // TODO: this should be an event... ;)
 }
 void osc::Environment::removeUserOutputExtractor(int index)
 {

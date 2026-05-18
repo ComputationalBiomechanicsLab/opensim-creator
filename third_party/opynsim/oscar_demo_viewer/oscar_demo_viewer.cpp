@@ -97,7 +97,7 @@ namespace
         void impl_on_tick() final { active_demo_->on_tick(); }
         void impl_on_draw() final
         {
-            App::upd().clear_main_window();
+            App::upd().main_window_clear();
             ui_context_.on_start_new_frame();
 
             draw_ui_demo_selector();

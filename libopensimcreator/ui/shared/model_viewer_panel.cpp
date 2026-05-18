@@ -154,7 +154,7 @@ namespace
                     renderParamsBefore,
                     renderParamsAfter,
                     GetSettingsKeyPrefixForPanel(panel_name_),
-                    App::upd().upd_settings()
+                    App::upd_settings()
                 );
             }
 

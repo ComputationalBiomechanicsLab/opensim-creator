@@ -95,7 +95,7 @@ public:
         camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        App::upd().clear_main_window(Color::dark_grey());
+        App::upd().main_window_clear(Color::dark_grey());
 
         // draw normal-mapped quad
         {

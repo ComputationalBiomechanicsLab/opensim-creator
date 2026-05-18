@@ -138,7 +138,7 @@ public:
                 const Vector2 s = App::get().main_window_dimensions();
                 ui::draw_text("%f %f", s.x(), s.y());
                 if (ui::draw_button("change")) {
-                    App::upd().try_async_set_main_window_dimensions({1920.0f, 1080.0f});
+                    App::upd().set_main_window_dimensions({1920.0f, 1080.0f});
                 }
             }
 

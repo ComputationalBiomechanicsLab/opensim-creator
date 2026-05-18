@@ -65,6 +65,7 @@ namespace osc
         static const App* try_get();
 
         static const AppSettings& settings();
+        static AppSettings& upd_settings();
 
         // returns a full filesystem path to a (runtime- and configuration-dependent) application resource,
         // or `std::nullopt` if the `ResourcePath` cannot be resolved to a filesystem location.
@@ -172,7 +173,7 @@ namespace osc
             return notify(receiver, event);
         }
 
-        // sets the currently active widget, creates an application loop, then starts showing
+        // Sets the currently active widget, creates an application loop, then starts showing
         // the supplied widget
         //
         // this function only returns once the active widget calls `app.request_quit()`, or an exception
@@ -246,8 +247,7 @@ namespace osc
         // user cancelling out of the dialog (i.e. if the user cancels then this fallback
         // will remain in-place).
         std::optional<std::filesystem::path> prompt_initial_directory_to_show_fallback();
-        void set_prompt_initial_directory_to_show_fallback(const std::filesystem::path&);
-        void set_prompt_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
+        void set_prompt_initial_directory_to_show_fallback(std::optional<std::filesystem::path>);
 
         // Prompts the user to select file(s) that they would like to open.
         //
@@ -351,14 +351,24 @@ namespace osc
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
         );
 
+        // Pushes the given cursor onto the application-wide cursor stack, making it
+        // the currently-active cursor until it is either popped, via `pop_cursor_override`,
+        // or another cursor is pushed.
+        void push_cursor_override(const Cursor&);
+        void pop_cursor_override();
+
         // returns the ID of the main window
         WindowID main_window_id() const;
 
         // Returns the dimensions of the main application window in device-independent pixels.
         Vector2 main_window_dimensions() const;
 
-        // Requests that the main window dimensions are set to the given dimensions in device-independent pixels.
-        void try_async_set_main_window_dimensions(Vector2);
+        // Requests that the main window dimensions are set to the given dimensions in
+        // device-independent pixels.
+        //
+        // This is only a request. Therefore, it is not guaranteed that `main_window_dimensions`
+        // returns the dimensions passed to this function.
+        void set_main_window_dimensions(Vector2);
 
         // Returns the dimensions of the main application window in physical pixels.
         Vector2i main_window_pixel_dimensions() const;
@@ -377,25 +387,13 @@ namespace osc
         // - https://github.com/libsdl-org/SDL/blob/main/docs/README-highdpi.md
         float main_window_device_pixel_ratio() const;
 
-        // Returns the highest ratio of physical pixels to device-independent pixels
-        // supported by all currently-accessible video displays.
-        //
-        // Returns `1.0f` as a fallback if no video displays can be queried.
-        float highest_device_pixel_ratio() const;
-
         // returns `true` if the main application window is minimized
         bool is_main_window_minimized() const;
 
-        // Pushes the given cursor onto the application-wide cursor stack, making it
-        // the currently-active cursor until it is either popped, via `pop_cursor_override`,
-        // or another cursor is pushed.
-        void push_cursor_override(const Cursor&);
-        void pop_cursor_override();
-
         // Enables/disables "grabbing" the mouse cursor in the main window, which constrains
         // the location of the cursor to the edges of the main window.
-        void enable_main_window_grab();
-        void disable_main_window_grab();
+        bool main_window_grabbing() const;
+        void set_main_window_grabbing(bool);
 
         // Enables/disables relative mouse mode for the main window.
         //
@@ -405,8 +403,8 @@ namespace osc
         // - The mouse's position is constrained to the window
         // - The event system will still emit `MouseEvent`s with a relative `delta`, even
         //   if the mouse cursor is at the edge of the window.
-        void enable_main_window_relative_mouse_mode();
-        void disable_main_window_relative_mouse_mode();
+        bool main_window_relative_mouse_mode() const;
+        void set_main_window_relative_mouse_mode(bool);
 
         // Returns the confinement rectangle of the main window in screen space
         // in device-independent pixels, or `std::nullopt` if there is no
@@ -437,25 +435,17 @@ namespace osc
         // of the mouse in screen space in device-independent pixels.
         //
         // otherwise, returns `std::nullopt`.
-        std::optional<Vector2> mouse_position_in_main_window() const;
+        std::optional<Vector2> main_window_mouse_position() const;
 
-        // Show the main application window.
-        void show_main_window();
+        // Returns `true` if the main window is showing (i.e. not hidden).
+        bool main_window_showing() const;
 
-        // Hide the main application window.
-        void hide_main_window();
+        // Sets if the main window is showing (`true`) or hidden (`false`).
+        void set_main_window_showing(bool);
 
         // Focus the main application window, which usually brings it to
         // the foreground and gives it keyboard focus.
         void focus_main_window();
-
-        // returns `true` if the given window has input focus
-        bool has_input_focus(WindowID) const;
-
-        // returns the ID of the window, if any, that currently has the user's keyboard focus.
-        //
-        // a default-constructed `WindowID` is returned if no window has keyboard focus.
-        WindowID get_keyboard_focus() const;
 
         // sets the rectangle, defined in screen space and device-independent pixels that's,
         // used to type unicode text inputs.
@@ -466,6 +456,39 @@ namespace osc
         // can place and operating-system-defined overlay in the correct position.
         void set_main_window_unicode_input_rect(const Rect& screen_rect);
 
+        // makes the main window fullscreen, but still composited with the desktop (so-called
+        // 'windowed maximized' in games)
+        void make_main_window_fullscreen();
+
+        // makes the main window windowed (as opposed to fullscreen)
+        void make_main_window_windowed();
+
+        // sets the main window's subtitle (e.g. document name)
+        void set_main_window_subtitle(std::optional<std::string_view>);
+
+        // add an annotation to the current frame with the given `label`
+        // and position in screen space and device-independent pixels.
+        //
+        // the annotation is added to the data returned by `App::request_screenshot_of_main_window`
+        void main_window_add_frame_annotation(std::string_view label, const Rect& screen_rect);
+
+        // returns a future that asynchronously yields an annotated screenshot of the
+        // next frame of the main application window
+        //
+        // client code can submit annotations with `App::add_frame_annotation`
+        std::future<Screenshot> main_window_request_screenshot();
+
+        // fill all pixels in the main window with the given color
+        void main_window_clear(const Color& = Color::clear());
+
+        // returns `true` if the given window has input focus
+        bool has_input_focus(WindowID) const;
+
+        // returns the ID of the window, if any, that currently has the user's keyboard focus.
+        //
+        // a default-constructed `WindowID` is returned if no window has keyboard focus.
+        WindowID get_keyboard_focus() const;
+
         // start accepting unicode text input events for the given window
         //
         // it's usually necessary to call `set_unicode_input_rect` before calling this, so that
@@ -475,12 +498,11 @@ namespace osc
         // stop accepting unicode text input events for the given window
         void stop_text_input(WindowID);
 
-        // makes the main window fullscreen, but still composited with the desktop (so-called
-        // 'windowed maximized' in games)
-        void make_main_window_fullscreen();
-
-        // makes the main window windowed (as opposed to fullscreen)
-        void make_main_window_windowed();
+        // Returns the highest ratio of physical pixels to device-independent pixels
+        // supported by all currently-accessible video displays.
+        //
+        // Returns `1.0f` as a fallback if no video displays can be queried.
+        float highest_device_pixel_ratio() const;
 
         // returns the recommended number of antialiasing samples that 3D rendering
         // code should use when rendering directly to the main application window (based
@@ -500,24 +522,12 @@ namespace osc
         //
         // other parts of the application can use this to decide whether to render
         // extra debug elements, etc.
-        bool is_in_debug_mode() const;
+        bool debug_mode() const;
         void set_debug_mode(bool);
 
         // returns true if VSYNC has been enabled in the graphics backend
-        bool is_vsync_enabled() const;
+        bool vsync_enabled() const;
         void set_vsync_enabled(bool);
-
-        // add an annotation to the current frame with the given `label`
-        // and position in screen space and device-independent pixels.
-        //
-        // the annotation is added to the data returned by `App::request_screenshot_of_main_window`
-        void add_main_window_frame_annotation(std::string_view label, const Rect& screen_rect);
-
-        // returns a future that asynchronously yields an annotated screenshot of the
-        // next frame of the main application window
-        //
-        // client code can submit annotations with `App::add_frame_annotation`
-        std::future<Screenshot> request_screenshot_of_main_window();
 
         // returns human-readable strings representing (parts of) the currently-active graphics backend (e.g. OpenGL)
         std::string graphics_backend_vendor_string() const;
@@ -555,29 +565,16 @@ namespace osc
         void set_main_loop_waiting(bool);
         void make_main_loop_waiting();
         void make_main_loop_polling();
-        void request_redraw();  // threadsafe: used to make a waiting loop redraw
+        void request_redraw();  // threadsafe: used to encourage a waiting main loop to redraw.
 
-        // fill all pixels in the main window with the given color
-        void clear_main_window(const Color& = Color::clear());
-
-        // sets the main window's subtitle (e.g. document name)
-        void set_main_window_subtitle(std::string_view);
-
-        // unsets the main window's subtitle
-        void unset_main_window_subtitle();
-
-        // returns the current application configuration
-        const AppSettings& get_config() const;
-        AppSettings& upd_settings();
+    private:
+        static int main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Widget>()>& widget_ctor);
 
         // returns the top- (application-)level resource loader
         ResourceLoader& upd_resource_loader();
 
         // returns the contents of a runtime resource in the `resources/` dir as a string
         std::string slurp_resource(const ResourcePath&);
-
-    private:
-        static int main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Widget>()>& widget_ctor);
 
         // returns an opened stream to the given resource
         ResourceStream go_open_resource(const ResourcePath&);
@@ -587,6 +584,10 @@ namespace osc
 
         // try and retrieve a singleton that has the same lifetime as the app
         std::shared_ptr<void> upd_singleton(const std::type_info&, const std::function<std::shared_ptr<void>()>&);
+
+        // returns the current application configuration
+        const AppSettings& settings_internal() const;
+        AppSettings& upd_settings_internal();
 
         class Impl;
         std::unique_ptr<Impl> impl_;

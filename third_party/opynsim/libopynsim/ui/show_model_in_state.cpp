@@ -60,7 +60,7 @@ namespace
 
         void impl_on_draw() final
         {
-            osc::App::upd().clear_main_window();
+            osc::App::upd().main_window_clear();
             ui_context_.on_start_new_frame();
 
             // Handle initial autofocus
@@ -117,9 +117,9 @@ void opyn::show_model_in_state(
     bool draw_floor,
     UiCallbacks callbacks)
 {
-    app.show_main_window();
-    app.try_async_set_main_window_dimensions(dimensions);
-    osc::ScopeExit hide_window_on_exit{[&app]{ app.hide_main_window(); }};
+    app.set_main_window_showing(true);
+    app.set_main_window_dimensions(dimensions);
+    osc::ScopeExit hide_window_on_exit{[&app]{ app.set_main_window_showing(false); }};
     app.focus_main_window();
     app.show<BasicModelViewer>(
         model,

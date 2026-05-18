@@ -1263,7 +1263,7 @@ namespace
         }
 
         // update mouse position
-        if (const auto p = App::upd().mouse_position_in_main_window()) {
+        if (const auto p = App::upd().main_window_mouse_position()) {
             ImGui::GetIO().AddMousePosEvent(p->x(), io.DisplaySize.y - p->y());
         }
 
@@ -1858,7 +1858,7 @@ void osc::ui::Context::init(
         ImGui::CreateContext();
 
         // load `imgui.ini`
-        load_imgui_config(app.user_data_directory(), app.upd_resource_loader(), *config, *context_data);
+        load_imgui_config(app.user_data_directory(), App::resource_loader(), *config, *context_data);
 
         // setup (custom) fonts
         configure_fonts(App::resource_loader(), *config, *context_data);
@@ -3162,7 +3162,7 @@ Rect osc::ui::get_last_drawn_item_screen_rect()
 
 void osc::ui::add_screenshot_annotation_to_last_drawn_item(std::string_view label)
 {
-    App::upd().add_main_window_frame_annotation(label, get_last_drawn_item_screen_rect());
+    App::upd().main_window_add_frame_annotation(label, get_last_drawn_item_screen_rect());
 }
 
 ui::HittestResult osc::ui::hittest_last_drawn_item()
