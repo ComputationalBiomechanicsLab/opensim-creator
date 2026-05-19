@@ -1,0 +1,6 @@
+PathFileType	4	(X/Y/Z)	minimal.trc
+DataRate	CameraRate	NumFrames	NumMarkers	Units	OrigDataRate	OrigDataStartFrame	OrigNumFrames
+60.00	60.00	       1	1	mm	60.00	1	       1
+Frame#	Time	Marker1
+		X1	Y1	Z1
+1	1.00	1.0	2.0	3.0

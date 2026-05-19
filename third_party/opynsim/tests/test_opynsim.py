@@ -40,3 +40,28 @@ def test_read_mot_can_read_and_print_a_basic_mot_file():
 |:-----|:--------|
 | 0.0  | 2.0     |
 """
+
+def test_read_trc_can_read_and_print_a_minimal_trc_file():
+    df = opynsim.read_trc(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/trc/minimal.trc")
+    repr_printed = repr(df)
+    stringified = str(df)
+
+    assert repr_printed == stringified
+    assert repr_printed == """shape: (1, 4)
+| time | Marker1_x | Marker1_y | Marker1_z |
+|:-----|:----------|:----------|:----------|
+| 1.0  | 1.0       | 2.0       | 3.0       |
+"""
+
+def test_read_csv_can_read_and_print_a_basic_csv_file():
+    df = opynsim.read_csv(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/csv/two_rows.csv")
+    repr_printed = repr(df)
+    stringified = str(df)
+
+    assert repr_printed == stringified
+    assert repr_printed == """shape: (2, 4)
+| time | x   | y   | z   |
+|:-----|:----|:----|:----|
+| 1.0  | 1.0 | 2.0 | 3.0 |
+| 2.0  | 2.0 | 4.0 | 6.0 |
+"""

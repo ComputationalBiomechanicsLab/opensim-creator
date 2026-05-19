@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <liboscar/utilities/string_helpers.h>
 
+#include <array>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -218,4 +219,125 @@ TEST(opynsim, read_mot_parses_one_data_column_correctly)
     ASSERT_EQ(df.columns(), expected_columns);
     ASSERT_EQ(df.attrs(), expected_attrs);
     ASSERT_EQ(df.shape(), expected_shape);
+}
+
+TEST(opynsim, read_trc_works_on_minimal_example)
+{
+    opyn::init();
+
+    ASSERT_NO_THROW({ read_trc(opynsim_tests_resources_directory() / "Documents/trc/minimal.trc"); });
+}
+
+TEST(opynsim, read_trc_prints_expected_pretty_printed_string_for_minimal_example)
+{
+    opyn::init();
+
+    const DataFrame df = read_trc(opynsim_tests_resources_directory() / "Documents/trc/minimal.trc");
+    const std::string got = osc::stream_to_string(df);
+    const std::string_view expected = R"(shape: (1, 4)
+| time | Marker1_x | Marker1_y | Marker1_z |
+|:-----|:----------|:----------|:----------|
+| 1.0  | 1.0       | 2.0       | 3.0       |
+)";
+    ASSERT_EQ(got, expected);
+}
+
+TEST(opynsim, read_trc_parses_leg39_swing_short_trc_correctly)
+{
+    opyn::init();
+
+    const DataFrame df = read_trc(opynsim_tests_resources_directory() / "Documents/trc/leg39_swing_short.trc");
+    const auto raw_column_names = std::to_array<std::string_view>({
+        "R.ASIS",
+        "L.ASIS",
+        "V.Sacral",
+        "R.Thigh.Upper",
+        "R.Thigh.Front",
+        "R.Thigh.Rear",
+        "L.Thigh.Upper",
+        "L.Thigh.Front",
+        "L.Thigh.Rear",
+        "R.Shank.Upper",
+        "R.Shank.Front",
+        "R.Shank.Rear",
+        "L.Shank.Upper",
+        "L.Shank.Front",
+        "L.Shank.Rear",
+        "R.Heel",
+        "R.Midfoot.Sup",
+        "R.Midfoot.Lat",
+        "R.Toe.Tip",
+        "L.Heel",
+        "L.Midfoot.Sup",
+        "L.Midfoot.Lat",
+        "L.Toe.Tip",
+        "Sternum",
+        "R.Acromium",
+        "L.Acromium",
+        "R.Bicep",
+        "L.Bicep",
+        "R.Elbow",
+        "L.Elbow",
+        "R.Wrist.Med",
+        "R.Wrist.Lat",
+        "L.Wrist.Med",
+        "L.Wrist.Lat",
+        "R.Toe.Lat",
+        "R.Toe.Med",
+        "L.Toe.Lat",
+        "L.Toe.Med",
+        "R.Temple",
+        "L.Temple",
+        "Top.Head",
+    });
+    std::vector<std::string> expected_column_names;
+    expected_column_names.reserve(1 + 3*raw_column_names.size());
+    expected_column_names.emplace_back("time");
+    for (const auto& raw_column_name : raw_column_names) {
+        expected_column_names.push_back(std::string{raw_column_name} + "_x");
+        expected_column_names.push_back(std::string{raw_column_name} + "_y");
+        expected_column_names.push_back(std::string{raw_column_name} + "_z");
+    }
+
+    ASSERT_EQ(df.size(), expected_column_names.size());
+    ASSERT_EQ(df.columns(), expected_column_names);
+    ASSERT_EQ(df.height(), 14);
+    ASSERT_EQ(df.width(), expected_column_names.size());
+}
+
+TEST(opynsim, read_csv_works_on_minimal_example)
+{
+    opyn::init();
+
+    ASSERT_NO_THROW({ read_csv(opynsim_tests_resources_directory() / "Documents/csv/minimal.csv"); });
+}
+
+TEST(opynsim, read_csv_prints_expected_pretty_printed_string_for_minimal_example)
+{
+    opyn::init();
+
+    const DataFrame df = read_csv(opynsim_tests_resources_directory() / "Documents/csv/minimal.csv");
+    const std::string got = osc::stream_to_string(df);
+    const std::string_view expected = R"(shape: (1, 2)
+| time | header1 |
+|:-----|:--------|
+| 0.0  | 1.0     |
+)";
+
+    ASSERT_EQ(got, expected);
+}
+
+TEST(opynsim, read_csv_works_for_two_row_example)
+{
+    opyn::init();
+
+    const DataFrame df = read_csv(opynsim_tests_resources_directory() / "Documents/csv/two_rows.csv");
+    const std::vector<std::string> expected_columns = {"time", "x", "y", "z"};
+    const std::vector<double> expected_times = {1.0, 2.0};
+
+    ASSERT_EQ(df.columns(), expected_columns);
+    ASSERT_EQ(df.width(), 4);
+    ASSERT_EQ(df.height(), 2);
+    ASSERT_EQ(df.shape(), std::tuple(2uz, 4uz));
+    ASSERT_EQ(df["time"].to_list(), expected_times);
 }

@@ -415,7 +415,7 @@ namespace
             WindowID window_id) :
 
             caller_config{std::move(config)},
-            window{window_id}
+            window_id{window_id}
         {
             ui_material.set_transparent(true);
             ui_material.set_cull_mode(CullMode::Off);
@@ -425,8 +425,8 @@ namespace
 
         CopyOnUpdPtr<ui::ContextConfiguration::Impl> caller_config;
 
-        WindowID                                     window;
-        WindowID                                     ime_window;      // important: used for UI's textual inputs (e.g. `ImGui::InputText`)
+        WindowID                                     window_id;
+        WindowID                                     ime_window_id;      // important: used for UI's textual inputs (e.g. `ImGui::InputText`)
         std::string                                  clipboard_text;  // necessary because ImGui dishes out C-strings that need lifetime management
         std::optional<AppClock::time_point>          last_frame_time;
 
@@ -984,8 +984,8 @@ namespace
         OscarUIBackendData* bd = try_get_ui_backend_data();
         WindowID viewport_window{viewport->PlatformHandle};
 
-        if (bd->ime_window and (not ime_data->WantVisible or bd->ime_window != viewport_window)) {
-            app.stop_text_input(std::exchange(bd->ime_window, WindowID{}));
+        if (bd->ime_window_id and (not ime_data->WantVisible or bd->ime_window_id != viewport_window)) {
+            app.stop_text_input(std::exchange(bd->ime_window_id, WindowID{}));
         }
 
         if (ime_data->WantVisible) {
@@ -998,8 +998,8 @@ namespace
                 input_bottom_left_screen,
                 input_bottom_left_screen + input_dimensions
             ));
-            app.start_text_input(bd->window);
-            bd->ime_window = viewport_window;
+            app.start_text_input(bd->window_id);
+            bd->ime_window_id = viewport_window;
         }
     }
 
@@ -1085,7 +1085,7 @@ namespace
 
             switch (window_event.type()) {
             case WindowEventType::GainedMouseFocus: {
-                bd->mouse_window_id = window_event.window();
+                bd->mouse_window_id = window_event.window_id();
                 bd->mouse_last_leave_frame = 0;
                 return true;
             }
@@ -1103,21 +1103,21 @@ namespace
             }
             case WindowEventType::WindowClosed: {
                 ImGuiViewport* vp = ImGui::GetMainViewport();
-                if (window_event.window() == WindowID{vp->PlatformHandle}) {
+                if (window_event.window_id() == WindowID{vp->PlatformHandle}) {
                     vp->PlatformRequestClose = true;
                 }
                 return true;
             }
             case WindowEventType::WindowMoved: {
                 ImGuiViewport* vp = ImGui::GetMainViewport();
-                if (window_event.window() == WindowID{vp->PlatformHandle}) {
+                if (window_event.window_id() == WindowID{vp->PlatformHandle}) {
                     vp->PlatformRequestMove = true;
                 }
                 return true;
             }
             case WindowEventType::WindowResized: {
                 ImGuiViewport* vp = ImGui::GetMainViewport();
-                if (window_event.window() == WindowID{vp->PlatformHandle}) {
+                if (window_event.window_id() == WindowID{vp->PlatformHandle}) {
                     vp->PlatformRequestResize = true;
                 }
                 return true;

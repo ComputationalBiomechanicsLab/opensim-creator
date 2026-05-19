@@ -116,8 +116,6 @@ std::optional<float> osc::from_chars_strip_whitespace(std::string_view sv)
         return std::nullopt;
     }
 
-    // else: it m
-
     return i == sv.size() ? std::optional<float>{fpv} : std::optional<float>{};
 }
 

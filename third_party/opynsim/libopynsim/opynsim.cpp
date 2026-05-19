@@ -14,6 +14,7 @@
 #include <OpenSim/Tools/RegisterTypes_osimTools.h>
 #include <jam-plugin/Smith2018ArticularContactForce.h>
 #include <jam-plugin/Smith2018ContactMesh.h>
+#include <liboscar/formats/csv.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/utilities/conversion.h>
 
@@ -333,8 +334,20 @@ DataFrame opyn::read_sto(const std::filesystem::path& source)
     return read_opensim_datatable_into_data_frame(table);
 }
 
-DataFrame opyn::read_mot(const std::filesystem::path &source)
+DataFrame opyn::read_mot(const std::filesystem::path& source)
 {
     OpenSim::TimeSeriesTable table{source.string()};
+    return read_opensim_datatable_into_data_frame(table);
+}
+
+DataFrame opyn::read_trc(const std::filesystem::path& source)
+{
+    OpenSim::TimeSeriesTableVec3 table{source.string()};
+    return read_opensim_datatable_into_data_frame(table.flatten({"_x", "_y", "_z"}));
+}
+
+DataFrame opyn::read_csv(const std::filesystem::path& source)
+{
+    OpenSim::DataTable table{source.string(), ""};
     return read_opensim_datatable_into_data_frame(table);
 }

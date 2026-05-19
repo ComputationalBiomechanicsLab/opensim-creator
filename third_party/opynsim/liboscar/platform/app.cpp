@@ -401,8 +401,9 @@ namespace
 
     // initialize the main application window
     SDLWindow create_main_app_window(
-        const AppMetadata& metadata,
-        const AppSettings& settings)
+        bool should_maximize_main_window,
+        bool should_hide_window,
+        CStringView window_title)
     {
         log_info("initializing main application window");
 
@@ -461,14 +462,11 @@ namespace
         SDL_PropertiesID properties = SDL_CreateProperties();
         const ScopeExit g{[&]{ SDL_DestroyProperties(properties); }};
 
-        const bool should_maximize_main_window = metadata.maximize_main_window().value_or(true);
-        const bool should_hide_window = metadata.headless_mode().value_or(settings.get_value<bool>("headless_mode"));
-
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, should_maximize_main_window);
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, true);
-        SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, metadata.human_readable_application_name().c_str());
+        SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, window_title.c_str());
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 800);
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 600);
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, should_hide_window);
@@ -668,19 +666,15 @@ namespace
             static_assert(num_options<WindowEventType>() == 9);
             OSC_ASSERT(SDL_EVENT_WINDOW_FIRST <= e.type and e.type <= SDL_EVENT_WINDOW_LAST);
 
-            const WindowEventType type = parse_as_window_event_type(e.type);
-            const WindowID id{SDL_GetWindowFromID(e.window.windowID)};
-            const uint32_t window_id = e.window.windowID;
-            return std::make_unique<WindowEvent>(type, id, window_id);
+            const WindowEventType window_event_type = parse_as_window_event_type(e.type);
+            const WindowID window_id{SDL_GetWindowFromID(e.window.windowID)};
+            return std::make_unique<WindowEvent>(window_event_type, window_id);
         }
         else {
             return nullptr;
         }
     }
-}
 
-namespace
-{
     // an "active" request for an annotated screenshot
     //
     // has a data dependency on the backend first providing a "raw" image, which
@@ -888,14 +882,557 @@ namespace
         std::vector<FileDialogFilter> caller_filters;
         std::vector<SDL_DialogFileFilter> sdl3_filters;
     };
+
+    class OscarWindow final {
+    public:
+        explicit OscarWindow(
+            bool should_maximize_main_window,
+            bool should_hide_window,
+            CStringView window_title,
+            std::unique_ptr<Widget> widget = nullptr) :
+
+            base_title_{window_title},
+            main_window_{create_main_app_window(should_maximize_main_window, should_hide_window, base_title_)},
+            widget_{std::move(widget)}
+        {
+            if (widget_) {
+                try {
+                    widget_->on_mount();
+                } catch (const std::exception& ex) {
+                    std::stringstream ss;
+                    ss << "Error mounting '" << widget_->name() << '\'';
+                    std::throw_with_nested(std::runtime_error{std::move(ss).str()});
+                }
+            }
+        }
+        OscarWindow(OscarWindow&&) noexcept = delete;
+        OscarWindow(const OscarWindow&) = delete;
+        ~OscarWindow() noexcept
+        {
+            if (widget_) {
+                try {
+                    widget_->on_unmount();
+                } catch (const std::exception& ex) {
+                    log_error("error unmounting '%s': %s", widget_->name().c_str(), ex.what());
+                }
+            }
+        }
+
+        OscarWindow& operator=(OscarWindow&&) noexcept = delete;
+        OscarWindow& operator=(const OscarWindow&) = delete;
+
+        WindowID id() const { return WindowID{main_window_.get()}; }
+
+        Vector2 dimensions() const
+        {
+            return Vector2{pixel_dimensions()} / device_pixel_ratio();
+        }
+
+        void set_dimensions(Vector2 new_dims)
+        {
+            // mirror `SDL_GetWindowSize` by figuring out the scale factor
+            // difference between what the caller provides (virtual coords,
+            // as scaled by us) and what `SDL_GetWindowSize` provides (unknown
+            // coordinate system).
+
+            Vector2i sdl_size;
+            SDL_GetWindowSize(main_window_.get(), &sdl_size.x(), &sdl_size.y());
+            const Vector2 ratio = new_dims/dimensions();
+            const Vector2i scaled_dims(ratio * Vector2{sdl_size});
+            SDL_SetWindowSize(main_window_.get(), scaled_dims.x(), scaled_dims.y());
+        }
+
+        Vector2i pixel_dimensions() const
+        {
+            int w = 0;
+            int h = 0;
+            SDL_GetWindowSizeInPixels(main_window_.get(), &w, &h);
+            return Vector2i{w, h};
+        }
+
+        float device_pixel_ratio() const
+        {
+            return SDL_GetWindowDisplayScale(main_window_.get());
+        }
+
+        bool is_minimized() const
+        {
+            return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_MINIMIZED) != 0u;
+        }
+
+        bool grabbing() const
+        {
+            return SDL_GetWindowMouseGrab(main_window_.get());
+        }
+
+        void set_grabbing(bool v)
+        {
+            SDL_SetWindowMouseGrab(main_window_.get(), v);
+        }
+
+        bool relative_mouse_mode() const
+        {
+            return SDL_GetWindowRelativeMouseMode(main_window_.get());
+        }
+
+        void set_relative_mouse_mode(bool v)
+        {
+            SDL_SetWindowRelativeMouseMode(main_window_.get(), v);
+        }
+
+        std::optional<Rect> mouse_confinement() const
+        {
+            const SDL_Rect* r = SDL_GetWindowMouseRect(main_window_.get());
+            if (not r) {
+                return std::nullopt;
+            }
+
+            return to<Rect>(*r)
+                .with_origin_and_dimensions_scaled_by(os_to_main_window_device_independent_ratio())
+                .with_flipped_y(dimensions().y());
+        }
+
+        void set_mouse_confinement(std::optional<Rect> confinement_rect)
+        {
+            if (not confinement_rect) {
+                SDL_SetWindowMouseRect(main_window_.get(), nullptr);
+                return;
+            }
+
+            const auto r = to<SDL_Rect>(confinement_rect
+                ->with_flipped_y(dimensions().y())
+                .with_origin_and_dimensions_scaled_by(1.0f/os_to_main_window_device_independent_ratio()));
+
+            SDL_SetWindowMouseRect(main_window_.get(), &r);
+        }
+
+        void set_mouse_confinement(std::optional<Vector2> confinement_point)
+        {
+            set_mouse_confinement(confinement_point.transform([](const auto& point)
+            {
+                return Rect::from_point(point).with_dimensions({1.0f, 1.0f});
+            }));
+        }
+
+        void set_mouse_confinement(std::nullopt_t)
+        {
+            set_mouse_confinement(std::optional<Rect>{});
+        }
+
+        std::optional<Vector2> mouse_position() const
+        {
+            if (SDL_GetMouseFocus() != main_window_.get()) {
+                return std::nullopt;  // main window is unfocused
+            }
+
+            // SDL returns position of the mouse relative to the top-left corner
+            // of the window in OS units
+            Vector2 p;
+            SDL_GetMouseState(&p.x(), &p.y());
+
+            // scale OS units to device-independent pixels
+            p *= os_to_main_window_device_independent_ratio();
+
+            // transform from left-handed origin-in-top-left coordinate system
+            // to screen space
+            p.y() = dimensions().y() - p.y();
+
+            return p;
+        }
+
+        bool showing() const
+        {
+            return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_HIDDEN) == 0u;
+        }
+
+        void set_showing(bool v)
+        {
+            if (v) {
+                SDL_ShowWindow(main_window_.get());
+            } else {
+                SDL_HideWindow(main_window_.get());
+            }
+        }
+
+        void focus()
+        {
+            SDL_RaiseWindow(main_window_.get());
+        }
+
+        void set_unicode_input_rect(const Rect& screen_rect)
+        {
+            // Convert to SDL3 units and ensure it's in the left-handed origin-is-top-left
+            // coordinate system that SDL3 wants, then convert it into an `SDL_Rect`
+            const auto r = to<SDL_Rect>(
+                screen_rect
+                .with_flipped_y(dimensions().y())
+                .with_origin_and_dimensions_scaled_by(1.0f/os_to_main_window_device_independent_ratio())
+            );
+
+            SDL_SetTextInputArea(main_window_.get(), &r, 0);
+        }
+
+        void make_fullscreen()
+        {
+            SDL_SetWindowFullscreenMode(main_window_.get(), nullptr);
+            SDL_SetWindowFullscreen(main_window_.get(), true);
+            SDL_SyncWindow(main_window_.get());
+        }
+
+        void make_windowed()
+        {
+            SDL_SetWindowFullscreen(main_window_.get(), false);
+            SDL_SyncWindow(main_window_.get());
+        }
+
+        void set_subtitle(std::optional<std::string_view> subtitle)
+        {
+            auto title_lock = main_window_subtitle_.lock();
+            if (subtitle == *title_lock) {
+                return;
+            }
+
+            *title_lock = subtitle;  // Update cached subtitle
+
+            if (subtitle) {
+                SDL_SetWindowTitle(main_window_.get(), (base_title_ + " - " + std::string{*subtitle}).c_str());
+            } else {
+                SDL_SetWindowTitle(main_window_.get(), base_title_.c_str());
+            }
+        }
+
+        void add_frame_annotation(std::string_view label, const Rect& screen_rect)
+        {
+            main_window_annotations_this_frame_.emplace_back(std::string{label}, screen_rect);
+        }
+
+        std::future<Screenshot> request_screenshot()
+        {
+            AnnotatedScreenshotRequest& req = main_window_screenshot_requests_.emplace_back(frame_counter_, request_screenshot_texture());
+            return req.result_promise.get_future();
+        }
+
+        void clear(const Color& color)
+        {
+            graphics_context_.main_window_clear(color);
+        }
+
+        AntiAliasingLevel anti_aliasing_level() const
+        {
+            return antialiasing_level_;
+        }
+
+        void set_anti_aliasing_level(AntiAliasingLevel s)
+        {
+            antialiasing_level_ = clamp(s, AntiAliasingLevel{1}, max_anti_aliasing_level());
+        }
+
+        AntiAliasingLevel max_anti_aliasing_level() const
+        {
+            return graphics_context_.max_antialiasing_level();
+        }
+
+        bool debug_mode() const
+        {
+            return graphics_context_.debug_mode();
+        }
+
+        void set_debug_mode(bool v)
+        {
+            graphics_context_.set_debug_mode(v);
+        }
+
+        bool vsync_enabled() const
+        {
+            return graphics_context_.vsync_enabled();
+        }
+
+        void set_vsync_enabled(bool v)
+        {
+            graphics_context_.set_vsync_enabled(v);
+        }
+
+        std::string graphics_backend_vendor_string() const
+        {
+            return graphics_context_.backend_vendor_string();
+        }
+
+        std::string graphics_backend_renderer_string() const
+        {
+            return graphics_context_.backend_renderer_string();
+        }
+
+        std::string graphics_backend_version_string() const
+        {
+            return graphics_context_.backend_version_string();
+        }
+
+        std::string graphics_backend_shading_language_version_string() const
+        {
+            return graphics_context_.backend_shading_language_version_string();
+        }
+
+        size_t num_frames_drawn() const { return frame_counter_; }
+
+        bool on_event(SDL_Event& sdl_event)
+        {
+            if (next_widget_) {
+                transition_to_next_top_level_widget();
+            }
+
+            if (not widget_) {
+                return false;
+            }
+
+            auto e = try_parse_into_event(sdl_event, dimensions(), [this]{ return os_to_main_window_device_independent_ratio(); });
+
+            bool handled = widget_->on_event(*e);
+            if (next_widget_) {
+                // `on_event` requested a new top-level widget, so perform the transition
+                transition_to_next_top_level_widget();
+            }
+
+            if (not handled
+                and (SDL_EVENT_WINDOW_FIRST <= sdl_event.type and sdl_event.type <= SDL_EVENT_WINDOW_LAST)) {
+
+                // The window may have been resized. Force a redraw to ensure any content
+                // has a chance to reflow, recalculate bounds, etc.
+                App::upd().request_redraw();
+                handled = true;
+            }
+
+            return handled;
+        }
+
+        void on_tick()
+        {
+            if (not widget_) {
+                return;
+            }
+
+            widget_->on_tick();
+            if (next_widget_) {
+                // `on_tick` requested a new top-level widget, so perform the transition
+                transition_to_next_top_level_widget();
+                if (widget_) {
+                    // Ensure at least one `on_tick` happens on the new `Widget` before `on_draw` is potentially called.
+                    widget_->on_tick();
+                }
+            }
+        }
+
+        void draw()
+        {
+            if (not widget_) {
+                return;
+            }
+
+            // "draw" the top-level widget into the main window framebuffer
+            {
+                OSC_PERF("App/on_draw");
+                widget_->on_draw();
+            }
+
+            // "present" the framebuffer to the user (can block on VSYNC)
+            {
+                OSC_PERF("App/swap_buffers");
+                graphics_context_.swap_buffers(*main_window_);
+            }
+
+            // handle annotated screenshot requests (if any)
+            handle_screenshot_requests_for_this_frame();
+        }
+
+        void after_draw()
+        {
+            if (next_widget_) {
+                // something requested a new top-level widget, so perform the transition
+                transition_to_next_top_level_widget();
+            }
+
+            // care: only update the frame counter after everything else because the
+            // runtime might depend on it being consistent throughout a single crank
+            // of the application loop.
+            ++frame_counter_;
+        }
+
+        bool has_widget() const
+        {
+            return widget_ != nullptr;
+        }
+
+        void reset_widget()
+        {
+            if (widget_) {
+                try {
+                    widget_->on_unmount();
+                } catch (const std::exception& ex) {
+                    log_error("error unmounting '%s': %s", widget_->name().c_str(), ex.what());
+                    widget_.reset();  // don't let a borked widget keep living
+                    throw;
+                }
+                widget_.reset();
+            }
+            next_widget_.reset();
+            main_window_annotations_this_frame_.clear();
+            main_window_screenshot_requests_.clear();
+        }
+
+        void request_transition(std::unique_ptr<Widget> widget)
+        {
+            next_widget_ = std::move(widget);
+        }
+
+        SDL_Window& sdl3_window() { return *main_window_; }
+
+    private:
+        float os_to_main_window_device_independent_ratio() const
+        {
+            // i.e. scale the event by multiplying it by the pixel density (yielding a
+            // pixel-based event value) and then dividing it by the suggested window
+            // display scale (yielding a device-independent pixel value).
+            return SDL_GetWindowPixelDensity(main_window_.get()) / SDL_GetWindowDisplayScale(main_window_.get());
+        }
+
+        std::future<Texture2D> request_screenshot_texture()
+        {
+            return graphics_context_.request_screenshot();
+        }
+
+        // transitions from the current top-level widget to the next top-level
+        // widget (if available)
+        void transition_to_next_top_level_widget()
+        {
+            if (not next_widget_) {
+                return;
+            }
+
+            std::unique_ptr<Widget> previous_widget;
+            if (widget_) {
+                log_info("unmounting widget '%s'", widget_->name().c_str());
+
+                try {
+                    widget_->on_unmount();
+                }
+                catch (const std::exception& ex) {
+                    log_error("error unmounting widget '%s': %s", widget_->name().c_str(), ex.what());
+                    widget_.reset();
+                    throw;
+                }
+
+                // retain the previous `Widget` as a fallback in case mounting
+                // the new one fails (it's better than nothing?)
+                previous_widget = std::move(widget_);
+            }
+
+            // the next top-level widget might need to draw a couple of frames
+            // to "warm up" (e.g. because it's using an immediate ui)
+            App::upd().request_redraw();
+
+            // this might be indirectly visible from `on_mount`
+            widget_ = std::move(next_widget_);
+
+            log_info("mounting widget '%s'", widget_->name().c_str());
+            try {
+                widget_->on_mount();
+            } catch (const std::exception& ex) {
+                // if mounting the new `Widget` fails, destruct it here so that
+                // this `App` doesn't retain a potentially-screwed `Widget` longer
+                // than it should
+                log_error("error mounting widget '%s': %s", widget_->name().c_str(), ex.what());
+                widget_.reset();
+                throw;
+            }
+
+            // as a fallback, if there was a previously-mounted `Widget`, go
+            // re-mount it before throwing, because the caller might be able
+            // to recover the UI if it catches this (re-thrown) exception.
+            if (not widget_ and previous_widget) {
+                log_error("re-mounting '%s' to recover from the error", previous_widget->name().c_str());
+                widget_ = std::move(previous_widget);
+                try {
+                    widget_->on_mount();
+                } catch (const std::exception& ex) {
+                    log_error("re-mounting '%s' failed, cannot show UI: %s", widget_->name().c_str(), ex.what());
+                    widget_.reset();  // the backup plan is screwed as well :(
+                    throw;
+                }
+            }
+        }
+
+        // tries to handle any active (asynchronous) screenshot requests
+        void handle_screenshot_requests_for_this_frame()
+        {
+            // save this frame's annotations into the requests, if necessary
+            for (AnnotatedScreenshotRequest& req : main_window_screenshot_requests_) {
+                if (req.frame_requested == frame_counter_) {
+                    req.annotations = main_window_annotations_this_frame_;
+                }
+            }
+            main_window_annotations_this_frame_.clear();  // this frame's annotations are now saved (if necessary)
+
+            // complete any requests for which screenshot data has arrived
+            for (AnnotatedScreenshotRequest& req : main_window_screenshot_requests_) {
+
+                if (req.underlying_future.valid() and
+                    req.underlying_future.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
+
+                    // screenshot is ready: create an annotated screenshot and send it to
+                    // the caller
+                    req.result_promise.set_value(Screenshot{req.underlying_future.get(), std::move(req.annotations)});
+                }
+            }
+
+            // gc any invalid (i.e. handled) requests
+            std::erase_if(
+                main_window_screenshot_requests_,
+                [](const AnnotatedScreenshotRequest& request)
+                {
+                    return not request.underlying_future.valid();
+                }
+            );
+        }
+
+        friend class osc::AppPrivate;
+
+        // Application window base title (i.e. no subtitle).
+        std::string base_title_;
+
+        // SDL main application window
+        SDLWindow main_window_;
+
+        // cache for the current (caller-set) window subtitle
+        SynchronizedValue<std::optional<std::string>> main_window_subtitle_;
+
+        // 3D graphics context for the oscar graphics API
+        GraphicsContext graphics_context_{*main_window_};
+
+        // what `AntiAliasingLevel` the implementation should actually use
+        AntiAliasingLevel antialiasing_level_ = min(graphics_context_.max_antialiasing_level(), AntiAliasingLevel{4});
+
+        // frame annotations made during this frame
+        std::vector<ScreenshotAnnotation> main_window_annotations_this_frame_;
+
+        // any active promises for an annotated frame
+        std::vector<AnnotatedScreenshotRequest> main_window_screenshot_requests_;
+
+        // current top-level widget
+        std::unique_ptr<Widget> widget_;
+
+        // the *next* top-level widget (if any - usually via a request to transition to it)
+        std::unique_ptr<Widget> next_widget_;
+
+        // number of frames this window has drawn (swapped)
+        size_t frame_counter_ = 0;
+    };
 }
 
-// main application state
+// Main application state.
 //
-// this is what "booting the application" actually initializes
-class osc::App::Impl final {
+// This is what "booting the application" actually initializes.
+class osc::AppPrivate final {
 public:
-    explicit Impl(const AppMetadata& metadata) :  // NOLINT(modernize-pass-by-value)
+    explicit AppPrivate(const AppMetadata& metadata) :  // NOLINT(modernize-pass-by-value)
         metadata_{metadata}
     {}
 
@@ -907,40 +1444,28 @@ public:
 
     void setup_main_loop(std::unique_ptr<Widget> widget)
     {
-        if (current_widget_) {
-            throw std::runtime_error{"tried to call `App::setup_main_loop` when a widget is already being shown (and, therefore, `App::teardown_main_loop` wasn't called). If you want to change the application's top-level widget from *within* some other widget, call `request_transition` instead"};
+        if (main_window_.has_widget()) {
+            throw std::runtime_error{"tried to call `App::setup_main_loop` when a main window with a `Widget` is already being shown (and, therefore, `App::teardown_main_loop` wasn't called). If you want to change the main window's top-level widget from *within* some other widget, call `request_transition` instead"};
         }
 
         log_info("initializing application main loop with widget '%s'", widget->name().c_str());
 
-        // reset loop-dependent state variables
+        // Reset main loop variables
         perf_counter_ = SDL_GetPerformanceCounter();
-        frame_counter_ = 0;
         frame_start_time_ = convert_perf_counter_to_appclock(perf_counter_, perf_counter_frequency_);
         time_since_last_frame_ = AppClock::duration{1.0f/60.0f};  // (dummy value for the first frame)
         quit_requested_ = false;
         is_in_wait_mode_ = false;
-        num_frames_to_poll_ = 2;
 
-        // perform initial top-level widget mount
-        current_widget_ = std::move(widget);
-        try {
-            current_widget_->on_mount();
-        } catch (const std::exception& ex) {
-            // if there's an error initially mounting a new widget, ensure
-            // it's destructed here, so that `App` doesn't end up retaining
-            // a borked widget via `current_widget_`
-            log_error("error mounting '%s': %s", current_widget_->name().c_str(), ex.what());
-            current_widget_.reset();
-            throw;
-        }
+        // Create main window that hosts the `Widget`.
+        main_window_.request_transition(std::move(widget));
     }
 
     AppMainLoopStatus do_main_loop_step()
     {
-        // pump events
+        // 1. Pump events.
         {
-            OSC_PERF("App/pump_events");
+            OSC_PERF("App/do_main_loop_step/pump_events");
 
             bool should_wait = is_in_wait_mode_ and num_frames_to_poll_ <= 0;
             num_frames_to_poll_ = max(0, num_frames_to_poll_ - 1);
@@ -948,7 +1473,7 @@ public:
             for (SDL_Event e; should_wait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
                 should_wait = false;
 
-                // edge-case: it's an `SDL_EVENT_USER`:
+                // Edge-case: it's an `SDL_EVENT_USER`:
                 //
                 // - `SDL_EVENT_USER`'s are only launched from this compilation unit (search for it)
                 // - They're either:
@@ -979,38 +1504,26 @@ public:
                     }
                 }
 
-                // let top-level widget handle the event
-                bool widget_handled_event = false;
-                if (auto parsed = try_parse_into_event(e, main_window_dimensions(), [this]{ return os_to_main_window_device_independent_ratio(); })) {
-                    widget_handled_event = current_widget_->on_event(*parsed);
+                // Normal case: pass the event to the main window.
+                const bool window_handled_event = main_window_.on_event(e);
+
+                // If the main window didn't handle the event, it has "bubbled up" to the application
+                // level, so try to handle it here.
+                if (not window_handled_event and e.type == SDL_EVENT_QUIT) {
+                    // The OS requested the application to quit, and the main window didn't
+                    // have any special way of handling it, so the application should shut down.
+                    quit_requested_ = true;
                 }
 
-                // if the current widget didn't handle the event, try to handle it here by following
-                // reasonable heuristics
-                if (not widget_handled_event) {
-                    if (SDL_EVENT_WINDOW_FIRST <= e.type and e.type <= SDL_EVENT_WINDOW_LAST) {
-                        // window was resized and should be drawn a couple of times quickly
-                        // to ensure the current top-level widget has a chance to reflow etc.
-                        num_frames_to_poll_ = 2;
-                    }
-                    else if (e.type == SDL_EVENT_QUIT) {
-                        request_quit();  // i.e. "as if the top-level widget tried to quit"
-                    }
-                }
-
+                // If something somewhere requested a quit (the OS, a subsystem, etc.) then exit
+                // the main loop right now and let a higher-level system handle the rest.
                 if (std::exchange(quit_requested_, false)) {
-                    // something requested that the application quits, so propagate this upwards
                     return AppMainLoopStatus::quit_requested();
-                }
-
-                if (next_widget_) {
-                    // something requested a new top-level widget, so perform the transition
-                    transition_to_next_top_level_widget();
                 }
             }
         }
 
-        // update clocks
+        // 2. Update timers/counters.
         {
             const auto counter = SDL_GetPerformanceCounter();
             const Uint64 delta_ticks = counter - perf_counter_;
@@ -1020,51 +1533,30 @@ public:
             time_since_last_frame_ = convert_perf_ticks_to_appclock_duration(delta_ticks, perf_counter_frequency_);
         }
 
-        // "tick" the widget
+        // 3. Tick main window.
         {
-            OSC_PERF("App/on_tick");
-            current_widget_->on_tick();
+            OSC_PERF("App/do_main_loop_step/on_tick");
+
+            main_window_.on_tick();
+
+            if (std::exchange(quit_requested_, false)) {
+                // `on_tick` requested a quit, propagate it to caller.
+                return AppMainLoopStatus::quit_requested();
+            }
         }
 
-        if (std::exchange(quit_requested_, false)) {
-            // something requested that the application quits, so propagate this upwards
-            return AppMainLoopStatus::quit_requested();
-        }
-
-        if (next_widget_) {
-            // something requested a new top-level widget, so perform the transition
-            transition_to_next_top_level_widget();
-            return AppMainLoopStatus::ok();
-        }
-
-        // "draw" the top-level widget into the main window framebuffer
+        // 4. Draw the main window.
         {
-            OSC_PERF("App/on_draw");
-            current_widget_->on_draw();
-        }
+            OSC_PERF("App/do_main_loop_step/draw");
 
-        // "present" the framebuffer to the user (can block on VSYNC)
-        {
-            OSC_PERF("App/swap_buffers");
-            graphics_context_.swap_buffers(*main_window_);
-        }
+            main_window_.draw();
 
-        // handle annotated screenshot requests (if any)
-        handle_screenshot_requests_for_this_frame();
+            if (std::exchange(quit_requested_, false)) {
+                // `on_draw` requested a quit, propagate it to caller.
+                return AppMainLoopStatus::quit_requested();
+            }
 
-        // care: only update the frame counter here because the above methods
-        // and checks depend on it being consistent throughout a single crank
-        // of the application loop
-        ++frame_counter_;
-
-        if (std::exchange(quit_requested_, false)) {
-            // something requested that the application quits, so propagate this upwards
-            return AppMainLoopStatus::quit_requested();
-        }
-
-        if (next_widget_) {
-            // something requested a new top-level widget, so perform the transition
-            transition_to_next_top_level_widget();
+            main_window_.after_draw();
         }
 
         return AppMainLoopStatus::ok();
@@ -1072,20 +1564,7 @@ public:
 
     void teardown_main_loop()
     {
-        if (current_widget_) {
-            try {
-                current_widget_->on_unmount();
-            } catch (const std::exception& ex) {
-                log_error("error unmounting '%s': %s", current_widget_->name().c_str(), ex.what());
-                current_widget_.reset();  // don't let a borked widget keep living in `App`
-                throw;
-            }
-            current_widget_.reset();
-        }
-        next_widget_.reset();
-
-        main_window_annotations_this_frame_.clear();
-        main_window_screenshot_requests_.clear();
+        main_window_.reset_widget();
     }
 
     void post_event(Widget& receiver, std::unique_ptr<Event> event)
@@ -1125,7 +1604,7 @@ public:
 
     void request_transition(std::unique_ptr<Widget> widget)
     {
-        next_widget_ = std::move(widget);
+        main_window_or_throw().request_transition(std::move(widget));
     }
 
     void request_quit()
@@ -1174,7 +1653,7 @@ public:
         SDL_ShowOpenFileDialog(
             SDL3DialogCallbackState::sdl3_compatible_callback,
             dialog_callback_state.release(),
-            main_window_.get(),  // make it modal in the main window
+            &main_window_.sdl3_window(),
             sdl3_filters_ptr,
             sdl3_num_filters,
             default_location.empty() ? nullptr : default_location.c_str(),
@@ -1205,7 +1684,7 @@ public:
         SDL_ShowOpenFolderDialog(
             SDL3DialogCallbackState::sdl3_compatible_callback,
             dialog_callback_state.release(),
-            main_window_.get(),
+            &main_window_.sdl3_window(),
             default_location.empty() ? nullptr : default_location.c_str(),
             allow_many
         );
@@ -1232,7 +1711,7 @@ public:
         SDL_ShowSaveFileDialog(
             SDL3DialogCallbackState::sdl3_compatible_callback,
             sdl3_callback_state.release(),
-            main_window_.get(),  // make it modal in the main window
+            &main_window_.sdl3_window(),
             sdl3_filters_ptr,
             sdl3_num_filters,
             default_location.empty() ? nullptr : default_location.c_str()
@@ -1305,202 +1784,127 @@ public:
 
     WindowID main_window_id() const
     {
-        return WindowID{main_window_.get()};
+        return main_window_or_throw().id();
     }
 
     Vector2 main_window_dimensions() const
     {
-        return Vector2{main_window_pixel_dimensions()} / main_window_device_pixel_ratio();
+        return main_window_or_throw().dimensions();
     }
 
     void set_main_window_dimensions(Vector2 new_dims)
     {
-        // mirror `SDL_GetWindowSize` by figuring out the scale factor
-        // difference between what the caller provides (virtual coords,
-        // as scaled by us) and what `SDL_GetWindowSize` provides (unknown
-        // coordinate system).
-
-        Vector2i sdl_size;
-        SDL_GetWindowSize(main_window_.get(), &sdl_size.x(), &sdl_size.y());
-        const Vector2 ratio = new_dims/main_window_dimensions();
-        const Vector2i scaled_dims(ratio * Vector2{sdl_size});
-        SDL_SetWindowSize(main_window_.get(), scaled_dims.x(), scaled_dims.y());
+        main_window_or_throw().set_dimensions(new_dims);
     }
 
     Vector2i main_window_pixel_dimensions() const
     {
-        int w = 0;
-        int h = 0;
-        SDL_GetWindowSizeInPixels(main_window_.get(), &w, &h);
-        return Vector2i{w, h};
+        return main_window_or_throw().pixel_dimensions();
     }
 
     float main_window_device_pixel_ratio() const
     {
-        return SDL_GetWindowDisplayScale(main_window_.get());
+        return main_window_or_throw().device_pixel_ratio();
     }
 
     bool is_main_window_minimized() const
     {
-        return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_MINIMIZED) != 0u;
+        return main_window_or_throw().is_minimized();
     }
 
     bool main_window_grabbing() const
     {
-        return SDL_GetWindowMouseGrab(main_window_.get());
+        return main_window_or_throw().grabbing();
     }
 
     void set_main_window_grabbing(bool v)
     {
-        SDL_SetWindowMouseGrab(main_window_.get(), v);
+        main_window_or_throw().set_grabbing(v);
     }
 
     bool main_window_relative_mouse_mode() const
     {
-        return SDL_GetWindowRelativeMouseMode(main_window_.get());
+        return main_window_or_throw().relative_mouse_mode();
     }
 
     void set_main_window_relative_mouse_mode(bool v)
     {
-        SDL_SetWindowRelativeMouseMode(main_window_.get(), v);
+        main_window_or_throw().set_relative_mouse_mode(v);
     }
 
     std::optional<Rect> main_window_mouse_confinement() const
     {
-        const SDL_Rect* r = SDL_GetWindowMouseRect(main_window_.get());
-        if (not r) {
-            return std::nullopt;
-        }
-
-        return to<Rect>(*r)
-            .with_origin_and_dimensions_scaled_by(os_to_main_window_device_independent_ratio())
-            .with_flipped_y(main_window_dimensions().y());
+        return main_window_or_throw().mouse_confinement();
     }
 
     void set_main_window_mouse_confinement(std::optional<Rect> confinement_rect)
     {
-        if (not confinement_rect) {
-            SDL_SetWindowMouseRect(main_window_.get(), nullptr);
-            return;
-        }
-
-        const auto r = to<SDL_Rect>(confinement_rect
-            ->with_flipped_y(main_window_dimensions().y())
-            .with_origin_and_dimensions_scaled_by(1.0f/os_to_main_window_device_independent_ratio()));
-
-        SDL_SetWindowMouseRect(main_window_.get(), &r);
+        main_window_or_throw().set_mouse_confinement(confinement_rect);
     }
 
     void set_main_window_mouse_confinement(std::optional<Vector2> confinement_point)
     {
-        set_main_window_mouse_confinement(confinement_point.transform([](const auto& point)
-        {
-            return Rect::from_point(point).with_dimensions({1.0f, 1.0f});
-        }));
+        main_window_or_throw().set_mouse_confinement(confinement_point);
     }
 
     void set_main_window_mouse_confinement(std::nullopt_t)
     {
-        set_main_window_mouse_confinement(std::optional<Rect>{});
+        main_window_or_throw().set_mouse_confinement(std::nullopt);
     }
 
     std::optional<Vector2> main_window_mouse_position() const
     {
-        if (SDL_GetMouseFocus() != main_window_.get()) {
-            return std::nullopt;  // main window is unfocused
-        }
-
-        // SDL returns position of the mouse relative to the top-left corner
-        // of the window in OS units
-        Vector2 p;
-        SDL_GetMouseState(&p.x(), &p.y());
-
-        // scale OS units to device-independent pixels
-        p *= os_to_main_window_device_independent_ratio();
-
-        // transform from left-handed origin-in-top-left coordinate system
-        // to screen space
-        p.y() = main_window_dimensions().y() - p.y();
-
-        return p;
+        return main_window_or_throw().mouse_position();
     }
 
     bool main_window_showing() const
     {
-        return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_HIDDEN) == 0u;
+        return main_window_or_throw().showing();
     }
 
     void set_main_window_showing(bool v)
     {
-        if (v) {
-            SDL_ShowWindow(main_window_.get());
-        } else {
-            SDL_HideWindow(main_window_.get());
-        }
+        main_window_or_throw().set_showing(v);
     }
 
     void focus_main_window()
     {
-        SDL_RaiseWindow(main_window_.get());
+        main_window_or_throw().focus();
     }
 
     void set_main_window_unicode_input_rect(const Rect& screen_rect)
     {
-        // Convert to SDL3 units and ensure it's in the left-handed origin-is-top-left
-        // coordinate system that SDL3 wants, then convert it into an `SDL_Rect`
-        const auto r = to<SDL_Rect>(
-            screen_rect
-            .with_flipped_y(main_window_dimensions().y())
-            .with_origin_and_dimensions_scaled_by(1.0f/os_to_main_window_device_independent_ratio())
-        );
-
-        SDL_SetTextInputArea(main_window_.get(), &r, 0);
+        main_window_or_throw().set_unicode_input_rect(screen_rect);
     }
 
     void make_main_window_fullscreen()
     {
-        SDL_SetWindowFullscreenMode(main_window_.get(), nullptr);
-        SDL_SetWindowFullscreen(main_window_.get(), true);
-        SDL_SyncWindow(main_window_.get());
+        main_window_or_throw().make_fullscreen();
     }
 
     void make_main_window_windowed()
     {
-        SDL_SetWindowFullscreen(main_window_.get(), false);
-        SDL_SyncWindow(main_window_.get());
+        main_window_or_throw().make_windowed();
     }
 
     void set_main_window_subtitle(std::optional<std::string_view> subtitle)
     {
-        auto title_lock = main_window_subtitle_.lock();
-
-        if (subtitle == *title_lock) {
-            return;
-        }
-
-        *title_lock = subtitle;
-
-        const std::string new_title = (subtitle and not subtitle->empty()) ?
-            (std::string{*subtitle} + " - " + metadata_.human_readable_application_name()) :
-            std::string{metadata_.human_readable_application_name()};
-
-        SDL_SetWindowTitle(main_window_.get(), new_title.c_str());
+        main_window_or_throw().set_subtitle(subtitle);
     }
 
     void main_window_add_frame_annotation(std::string_view label, const Rect& screen_rect)
     {
-        main_window_annotations_this_frame_.emplace_back(std::string{label}, screen_rect);
+        main_window_or_throw().add_frame_annotation(label, screen_rect);
     }
 
     std::future<Screenshot> main_window_request_screenshot()
     {
-        AnnotatedScreenshotRequest& req = main_window_screenshot_requests_.emplace_back(frame_counter_, request_screenshot_texture());
-        return req.result_promise.get_future();
+        return main_window_or_throw().request_screenshot();
     }
 
     void main_window_clear(const Color& color)
     {
-        graphics_context_.main_window_clear(color);
+        main_window_or_throw().clear(color);
     }
 
     bool has_input_focus(WindowID window_id) const
@@ -1545,62 +1949,62 @@ public:
 
     AntiAliasingLevel anti_aliasing_level() const
     {
-        return antialiasing_level_;
+        return main_window_or_throw().anti_aliasing_level();
     }
 
     void set_anti_aliasing_level(AntiAliasingLevel s)
     {
-        antialiasing_level_ = clamp(s, AntiAliasingLevel{1}, max_anti_aliasing_level());
+        main_window_or_throw().set_anti_aliasing_level(s);
     }
 
     AntiAliasingLevel max_anti_aliasing_level() const
     {
-        return graphics_context_.max_antialiasing_level();
+        return main_window_or_throw().max_anti_aliasing_level();
     }
 
     bool debug_mode() const
     {
-        return graphics_context_.debug_mode();
+        return main_window_or_throw().debug_mode();
     }
 
     void set_debug_mode(bool v)
     {
-        graphics_context_.set_debug_mode(v);
+        main_window_or_throw().set_debug_mode(v);
     }
 
     bool vsync_enabled() const
     {
-        return graphics_context_.vsync_enabled();
+        return main_window_or_throw().vsync_enabled();
     }
 
     void set_vsync_enabled(bool v)
     {
-        graphics_context_.set_vsync_enabled(v);
+        main_window_or_throw().set_vsync_enabled(v);
     }
 
     std::string graphics_backend_vendor_string() const
     {
-        return graphics_context_.backend_vendor_string();
+        return main_window_or_throw().graphics_backend_vendor_string();
     }
 
     std::string graphics_backend_renderer_string() const
     {
-        return graphics_context_.backend_renderer_string();
+        return main_window_or_throw().graphics_backend_renderer_string();
     }
 
     std::string graphics_backend_version_string() const
     {
-        return graphics_context_.backend_version_string();
+        return main_window_or_throw().graphics_backend_version_string();
     }
 
     std::string graphics_backend_shading_language_version_string() const
     {
-        return graphics_context_.backend_shading_language_version_string();
+        return main_window_or_throw().graphics_backend_shading_language_version_string();
     }
 
     size_t num_frames_drawn() const
     {
-        return frame_counter_;
+        return main_window_or_throw().num_frames_drawn();
     }
 
     AppClock::time_point startup_time() const
@@ -1676,111 +2080,14 @@ public:
     AppSettings& upd_settings_internal() { return config_; }
 
 private:
-    float os_to_main_window_device_independent_ratio() const
+    OscarWindow& main_window_or_throw()
     {
-        // i.e. scale the event by multiplying it by the pixel density (yielding a
-        // pixel-based event value) and then dividing it by the suggested window
-        // display scale (yielding a device-independent pixel value).
-        return SDL_GetWindowPixelDensity(main_window_.get()) / SDL_GetWindowDisplayScale(main_window_.get());
+        return main_window_;
     }
 
-    std::future<Texture2D> request_screenshot_texture()
+    const OscarWindow& main_window_or_throw() const
     {
-        return graphics_context_.request_screenshot();
-    }
-
-    // transitions from the current top-level widget to the next top-level
-    // widget (if available)
-    void transition_to_next_top_level_widget()
-    {
-        if (not next_widget_) {
-            return;
-        }
-
-        std::unique_ptr<Widget> previous_widget;
-        if (current_widget_) {
-            log_info("unmounting widget '%s'", current_widget_->name().c_str());
-
-            try {
-                current_widget_->on_unmount();
-            }
-            catch (const std::exception& ex) {
-                log_error("error unmounting widget '%s': %s", current_widget_->name().c_str(), ex.what());
-                current_widget_.reset();
-                throw;
-            }
-
-            // retain the previous `Widget` as a fallback in case mounting
-            // the new one fails (it's better than nothing?)
-            previous_widget = std::move(current_widget_);
-        }
-
-        // the next top-level widget might need to draw a couple of frames
-        // to "warm up" (e.g. because it's using an immediate ui)
-        num_frames_to_poll_ = 2;
-
-        // this might be indirectly visible from `on_mount`
-        current_widget_ = std::move(next_widget_);
-
-        log_info("mounting widget '%s'", current_widget_->name().c_str());
-        try {
-            current_widget_->on_mount();
-        } catch (const std::exception& ex) {
-            // if mounting the new `Widget` fails, destruct it here so that
-            // this `App` doesn't retain a potentially-screwed `Widget` longer
-            // than it should
-            log_error("error mounting widget '%s': %s", current_widget_->name().c_str(), ex.what());
-            current_widget_.reset();
-            throw;
-        }
-
-        // as a fallback, if there was a previously-mounted `Widget`, go
-        // re-mount it before throwing, because the caller might be able
-        // to recover the UI if it catches this (re-thrown) exception.
-        if (not current_widget_ and previous_widget) {
-            log_error("re-mounting '%s' to recover from the error", previous_widget->name().c_str());
-            current_widget_ = std::move(previous_widget);
-            try {
-                current_widget_->on_mount();
-            } catch (const std::exception& ex) {
-                log_error("re-mounting '%s' failed, cannot show UI: %s", current_widget_->name().c_str(), ex.what());
-                current_widget_.reset();  // the backup plan is screwed as well :(
-                throw;
-            }
-        }
-    }
-
-    // tries to handle any active (asynchronous) screenshot requests
-    void handle_screenshot_requests_for_this_frame()
-    {
-        // save this frame's annotations into the requests, if necessary
-        for (AnnotatedScreenshotRequest& req : main_window_screenshot_requests_) {
-            if (req.frame_requested == frame_counter_) {
-                req.annotations = main_window_annotations_this_frame_;
-            }
-        }
-        main_window_annotations_this_frame_.clear();  // this frame's annotations are now saved (if necessary)
-
-        // complete any requests for which screenshot data has arrived
-        for (AnnotatedScreenshotRequest& req : main_window_screenshot_requests_) {
-
-            if (req.underlying_future.valid() and
-                req.underlying_future.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
-
-                // screenshot is ready: create an annotated screenshot and send it to
-                // the caller
-                req.result_promise.set_value(Screenshot{req.underlying_future.get(), std::move(req.annotations)});
-            }
-        }
-
-        // gc any invalid (i.e. handled) requests
-        std::erase_if(
-            main_window_screenshot_requests_,
-            [](const AnnotatedScreenshotRequest& request)
-            {
-                return not request.underlying_future.valid();
-            }
-        );
+        return main_window_;
     }
 
     // immutable application metadata (can be provided at runtime via ctor)
@@ -1802,11 +2109,6 @@ private:
         metadata_.application_name()
     );
 
-    // this is set by `set_initial_directory_to_show_fallback`, which is used to provide the
-    // file dialog system with a hint of where the user probably expects the next dialog to
-    // open
-    std::optional<std::filesystem::path> initial_directory_to_show_fallback_;
-
     // ensures that the global application log is configured according to the
     // application's configuration file
     bool log_is_configured_ = configure_application_log(config_);
@@ -1821,29 +2123,28 @@ private:
     // the type-erased `ResourceLoader` that's dished out to callers
     ResourceLoader resource_loader_{native_filesystem_};
 
-    // SDL context (windowing, video driver, etc.)
+    // top-level SDL context (windowing, video driver, etc.)
     SDLContext sdl_context_{SDL_INIT_VIDEO};
 
-    // SDL main application window
-    SDLWindow main_window_ = create_main_app_window(metadata_, config_);
-
-    // cache for the current (caller-set) window subtitle
-    SynchronizedValue<std::optional<std::string>> main_window_subtitle_;
-
-    // 3D graphics context for the oscar graphics API
-    GraphicsContext graphics_context_{*main_window_};
-
-    // application-wide handler for the mouse cursor
+    // handler for the application's mouse cursor
     CursorHandler cursor_handler_;
+
+    // provides the SDL3 file dialog system with a hint of which directory it should
+    // try to show when displaying the next dialog.
+    std::optional<std::filesystem::path> initial_directory_to_show_fallback_;
+
+    // main application window (initialized when the user first `show`s a `Widget`).
+    OscarWindow main_window_{
+        metadata_.maximize_main_window().value_or(true),
+        metadata_.headless_mode().value_or(config_.get_value<bool>("headless_mode")),
+        metadata_.human_readable_application_name().c_str()
+    };
 
     // get performance counter frequency (for the delta clocks)
     Uint64 perf_counter_frequency_ = SDL_GetPerformanceFrequency();
 
     // current performance counter value (recorded once per frame)
     Uint64 perf_counter_ = 0;
-
-    // number of frames the application has drawn
-    size_t frame_counter_ = 0;
 
     // when the application started up (set now)
     AppClock::time_point startup_time_ = convert_perf_counter_to_appclock(SDL_GetPerformanceCounter(), perf_counter_frequency_);
@@ -1854,34 +2155,17 @@ private:
     // time since the frame before the current frame (set each frame)
     AppClock::duration time_since_last_frame_ = {};
 
-    // application-wide cache of initialized singletons
-    SynchronizedValue<ankerl::unordered_dense::map<TypeInfoReference, std::shared_ptr<void>>> singletons_;
-
-    // how many antiAliasingLevel the implementation should actually use
-    AntiAliasingLevel antialiasing_level_ = min(graphics_context_.max_antialiasing_level(), AntiAliasingLevel{4});
-
-    // set to true if the application should quit
+    // `true` if the main loop should try to quit
     bool quit_requested_ = false;
 
-    // set to true if the main loop should pause on events
-    //
-    // CAREFUL: this makes the app event-driven
+    // `true` if the main loop should pause on events. This makes the main loop event-driven (rather than polling).
     bool is_in_wait_mode_ = false;
 
-    // set >0 to force that `n` frames are polling-driven: even in waiting mode
+    // the number of frames that the main loop should poll - even when in waiting mode
     int32_t num_frames_to_poll_ = 0;
 
-    // current top-level widget (if any)
-    std::unique_ptr<Widget> current_widget_;
-
-    // the *next* top-level widget (if any - usually via a request to transition to it)
-    std::unique_ptr<Widget> next_widget_;
-
-    // frame annotations made during this frame
-    std::vector<ScreenshotAnnotation> main_window_annotations_this_frame_;
-
-    // any active promises for an annotated frame
-    std::vector<AnnotatedScreenshotRequest> main_window_screenshot_requests_;
+    // runtime cache of initialized singletons
+    SynchronizedValue<ankerl::unordered_dense::map<TypeInfoReference, std::shared_ptr<void>>> singletons_;
 };
 
 App& osc::App::upd()
@@ -1937,7 +2221,7 @@ osc::App::App(const AppMetadata& metadata)
 {
     OSC_ASSERT(g_app_global == nullptr && "cannot instantiate multiple `App` instances at the same time");
 
-    impl_ = std::make_unique<Impl>(metadata);
+    impl_ = std::make_unique<AppPrivate>(metadata);
     g_app_global = this;
 }
 

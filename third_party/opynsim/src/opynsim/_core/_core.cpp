@@ -447,5 +447,35 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                     RuntimeError: If the file cannot be found, read, or is invalid.
             )"
         );
+
+        _core_module.def(
+            "read_trc",
+            [](const std::filesystem::path& source) { return opyn::read_trc(source); },
+            nb::arg("source"),
+            R"(
+                Returns a :class:`DataFrame` parsed from an ``.trc`` file on the caller's
+                filesystem.
+
+                Raises:
+                    RuntimeError: If the file cannot be found, read, or is invalid.
+            )"
+        );
+
+        _core_module.def(
+            "read_csv",
+            [](const std::filesystem::path& source) { return opyn::read_csv(source); },
+            nb::arg("source"),
+            R"(
+                Returns a :class:`DataFrame` parsed from an ``.csv`` file on the caller's
+                filesystem.
+
+                The CSV file must have a header section, delimited by 'endheader`. This usually
+                necessitates adding an `endheader` entry just above the header row (TODO: this
+                limitation was inherited from OpenSim and shouldn't be a thing long-term).
+
+                Raises:
+                    RuntimeError: If the file cannot be found, read, or is invalid.
+            )"
+        );
     }
 }

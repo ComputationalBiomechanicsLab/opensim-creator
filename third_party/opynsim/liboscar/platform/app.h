@@ -35,6 +35,8 @@ namespace osc { class Widget; }
 
 namespace osc
 {
+    class AppPrivate;
+
     // top-level application class
     //
     // the top-level osc process holds one copy of this class, which maintains all
@@ -589,7 +591,6 @@ namespace osc
         const AppSettings& settings_internal() const;
         AppSettings& upd_settings_internal();
 
-        class Impl;
-        std::unique_ptr<Impl> impl_;
+        std::unique_ptr<AppPrivate> impl_;
     };
 }

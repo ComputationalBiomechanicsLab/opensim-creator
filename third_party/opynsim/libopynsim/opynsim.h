@@ -65,4 +65,12 @@ namespace opyn
     /// Returns a `DataFrame` parsed from `source`, throws if there's an IO or
     /// data validation error.
     DataFrame read_mot(const std::filesystem::path& source);
+
+    /// Returns a `DataFrame` parsed from `source`, throws if there's an IO or
+    /// data validation error.
+    DataFrame read_trc(const std::filesystem::path& source);
+
+    /// Returns a `DataFrame` parsed from `source`, throws if there's an IO
+    /// or data validation error.
+    DataFrame read_csv(const std::filesystem::path& source);
 }
