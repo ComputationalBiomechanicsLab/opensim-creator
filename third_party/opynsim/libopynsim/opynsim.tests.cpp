@@ -4,6 +4,8 @@
 #include <libopynsim/model_specification.h>
 
 #include <gtest/gtest.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/mesh_topology.h>
 #include <liboscar/utilities/string_helpers.h>
 
 #include <array>
@@ -340,4 +342,32 @@ TEST(opynsim, read_csv_works_for_two_row_example)
     ASSERT_EQ(df.height(), 2);
     ASSERT_EQ(df.shape(), std::tuple(2uz, 4uz));
     ASSERT_EQ(df["time"].to_list(), expected_times);
+}
+
+TEST(opynsim, read_vtp_works_for_minimal_example)
+{
+    opyn::init();
+
+    const osc::Mesh mesh = read_vtp(opynsim_tests_resources_directory() / "Documents/vtp/minimal.vtp");
+
+    ASSERT_EQ(mesh.num_vertices(), 1);
+    ASSERT_EQ(mesh.num_indices(), 0);
+    ASSERT_EQ(mesh.topology(), osc::MeshTopology::Triangles);
+}
+
+TEST(opynsim, read_vtp_works_for_triangle)
+{
+    opyn::init();
+
+    const osc::Mesh mesh = read_vtp(opynsim_tests_resources_directory() / "Documents/vtp/triangle.vtp");
+    const std::vector<osc::Vector3f> expected_vertices = {
+        {-1.0f, -1.0f, 0   },
+        { 1.0f, -1.0f, 0.0f},
+        { 0.0f,  1.0f, 0.0f},
+    };
+
+    ASSERT_EQ(mesh.num_vertices(), 3);
+    ASSERT_EQ(mesh.num_indices(), 3);
+    ASSERT_EQ(mesh.topology(), osc::MeshTopology::Triangles);
+    ASSERT_EQ(mesh.vertices(), expected_vertices);
 }

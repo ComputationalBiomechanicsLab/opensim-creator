@@ -1,5 +1,6 @@
 #include "opynsim.h"
 
+#include <libopynsim/graphics/simbody_mesh_loader.h>
 #include <libopynsim/data_frame.h>
 #include <libopynsim/model_specification.h>
 
@@ -350,4 +351,9 @@ DataFrame opyn::read_csv(const std::filesystem::path& source)
 {
     OpenSim::DataTable table{source.string(), ""};
     return read_opensim_datatable_into_data_frame(table);
+}
+
+osc::Mesh opyn::read_vtp(const std::filesystem::path& source)
+{
+    return LoadMeshViaSimbody(source);
 }

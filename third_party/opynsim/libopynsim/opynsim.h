@@ -3,6 +3,7 @@
 #include <libopynsim/data_frame.h>
 #include <libopynsim/model_specification.h>
 
+#include <liboscar/graphics/mesh.h>
 #include <liboscar/platform/log_level.h>
 
 #include <filesystem>
@@ -73,4 +74,8 @@ namespace opyn
     /// Returns a `DataFrame` parsed from `source`, throws if there's an IO
     /// or data validation error.
     DataFrame read_csv(const std::filesystem::path& source);
+
+    /// Returns a `Mesh` parsed from `source`, throws if there's an IO or
+    /// data validation error.
+    osc::Mesh read_vtp(const std::filesystem::path& source);
 }

@@ -5,6 +5,7 @@
 #include <libopynsim/graphics/render_model_in_state.h>
 #include <libopynsim/model.h>
 #include <libopynsim/model_state.h>
+#include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/texture2d.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/ndarray.h>
@@ -15,6 +16,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <new>
 #include <utility>
 
@@ -22,6 +24,15 @@ namespace nb = nanobind;
 
 namespace
 {
+    template<typename T>
+    nb::capsule to_capsule(std::unique_ptr<T> p)
+    {
+        return nb::capsule{
+            p.release(),
+            [](void* ptr) noexcept { delete static_cast<T*>(ptr); }  // NOLINT(cppcoreguidelines-owning-memory)
+        };
+    }
+
     nb::ndarray<nb::numpy, const uint8_t, nb::shape<-1, -1, 4>> pixels_rgba32_impl(
         const osc::Texture2D& texture_2d)
     {
@@ -49,14 +60,121 @@ namespace
         // shape of the ndarray matches how Python APIs typically expect it (`(h, w, 4)`).
         const uint8_t* pixel_pointer = std::launder(reinterpret_cast<const uint8_t*>(decoded_pixels->data()));
 
-        // Stuff the pixel data into a Python-compatible capsule so that its lifetime is controlled by Python
-        nb::capsule buffer_capsule{
-            decoded_pixels.release(),
-            [](void* p) noexcept { delete static_cast<std::vector<osc::Color32>*>(p); }  // NOLINT(cppcoreguidelines-owning-memory)
-        };
-
         const auto shape = std::to_array<size_t>({ pixel_dimensions.y(), pixel_dimensions.x(), 4 });
-        return {pixel_pointer, 3, shape.data(), buffer_capsule};
+        return {pixel_pointer, 3, shape.data(), to_capsule(std::move(decoded_pixels))};
+    }
+
+    nb::ndarray<nb::numpy, const float, nb::shape<-1, 3>> mesh_vertices_impl(
+        const osc::Mesh& mesh)
+    {
+        static_assert(sizeof(osc::Vector3f) == 3*sizeof(float), "required to cast the pointer to float with no gaps between vertices");
+        static_assert(alignof(osc::Vector3f) == alignof(float));
+
+        // Copy the vertices out of the `Mesh` and into a capsule-friendly pointer
+        auto vertices = std::make_unique<std::vector<osc::Vector3f>>(mesh.vertices());
+
+        // Cast the front vertex pointer from `const Vector3f*` to `const float*`, so that
+        // it matches what the ndarray API needs.
+        const auto* data_ptr = std::launder(reinterpret_cast<const float*>(vertices->data()));
+        constexpr size_t ndim = 2;
+        const auto shape = std::to_array<size_t>({ vertices->size(), 3 });
+
+        return {data_ptr, ndim, shape.data(), to_capsule(std::move(vertices))};
+    }
+
+    void mesh_set_vertices_impl(
+        osc::Mesh& mesh,
+        nb::ndarray<nb::ro, nb::shape<-1, 3>, nb::c_contig, nb::device::cpu> input)
+    {
+        const size_t num_vertices = input.shape(0);
+
+        if (input.dtype() == nb::dtype<float>()) {
+            // Fast path: the vertex data from the caller matches the float32 format
+            // that's always presented via the getters, so just copy their data into
+            // the mesh.
+
+            static_assert(sizeof(osc::Vector3f) == 3*sizeof(float));
+            static_assert(alignof(osc::Vector3f) <= alignof(float));
+            mesh.set_vertices({static_cast<const osc::Vector3f*>(input.data()), num_vertices});
+
+        } else if (input.dtype() == nb::dtype<double>()) {
+            // Slow path: the vertex data from the caller is 64-bit, but the `Mesh` class
+            // always returns 32-bit encoded vertices so, to keep things simple, the data
+            // should be converted to 32-bit.
+
+            static_assert(sizeof(osc::Vector3d) == 3*sizeof(double));
+            static_assert(alignof(osc::Vector3d) <= alignof(double));
+            const std::span<const osc::Vector3d> source_vertices{
+                static_cast<const osc::Vector3d*>(input.data()),
+                num_vertices
+            };
+
+            std::vector<osc::Vector3f> converted_vertices;
+            converted_vertices.reserve(num_vertices);
+            for (const auto& source_vertex : source_vertices) {
+                converted_vertices.emplace_back(source_vertex);
+            }
+            mesh.set_vertices(converted_vertices);
+        } else {
+            throw nb::type_error("Unsupported array type! Property accepts float32 or float64.");
+        }
+    }
+
+    void def_texture2d(nanobind::module_& graphics_module)
+    {
+        nb::class_<osc::Texture2D> texture2d_class(
+            graphics_module,
+            "Texture2D",
+            R"(
+                Represents a two-dimensional image.
+            )"
+        );
+        texture2d_class.def(
+            "pixels_rgba32",
+            pixels_rgba32_impl,
+            nb::rv_policy::move,
+            R"(
+                Returns an ndarray with the shape ``(height, width, 4)``, where each element of
+                the 3rd dimension is a raw uint8 (0-255) pixel value for the red (R), green (G),
+                blue (B), and alpha (A) components of the texture respectively.
+
+                The grid layout and component encoding of the returned array tries to match the
+                conventions used by other Python libraries (e.g. matplotlib, pyvista) and
+                image tools so that the render is easy to compose into other systems.
+
+                The layout of the pixels is such that the first pixel in the first row (``rv[0, 0]``)
+                starts in the top-left of the image. Subsequent pixels within that row are then
+                encoded left-to-right. The following row (``rv[1]``) is then below that row, and so on,
+                until the final pixel, which is in the bottom-right of the image.
+
+                The encoding the the components of a pixel is such that the lowest value for each
+                component is zero, representing zero intensity of that component. The highest value
+                for each component is 255, representing the maximum intensity of that
+                component. The color components (R, G, and B) are in an sRGB color space, while the
+                alpha component (A) is linear.
+            )"
+        );
+    }
+
+    void def_mesh(nanobind::module_& graphics_module)
+    {
+        nb::class_<osc::Mesh> mesh_class(
+            graphics_module,
+            "Mesh",
+            R"(
+                Represents a renderable mesh.
+            )"
+        );
+        mesh_class.def(nb::init<>());
+        mesh_class.def_prop_rw(
+            "vertices",
+            mesh_vertices_impl,
+            mesh_set_vertices_impl,
+            nb::rv_policy::move,
+            R"(
+                Gets the vertices of the mesh as an Nx3 ndarray.
+            )"
+        );
     }
 }
 
@@ -101,35 +219,6 @@ void opyn::init_graphics_submodule(nanobind::module_& graphics_module)
         )"
     );
 
-    nb::class_<osc::Texture2D> texture2d_class(
-        graphics_module,
-        "Texture2D",
-        R"(
-            Represents a two-dimensional image.
-        )"
-    );
-    texture2d_class.def(
-        "pixels_rgba32",
-        pixels_rgba32_impl,
-        R"(
-            Returns an ndarray with the shape ``(height, width, 4)``, where each element of
-            the 3rd dimension is a raw uint8 (0-255) pixel value for the red (R), green (G),
-            blue (B), and alpha (A) components of the texture respectively.
-
-            The grid layout and component encoding of the returned array tries to match the
-            conventions used by other Python libraries (e.g. matplotlib, pyvista) and
-            image tools so that the render is easy to compose into other systems.
-
-            The layout of the pixels is such that the first pixel in the first row (``rv[0, 0]``)
-            starts in the top-left of the image. Subsequent pixels within that row are then
-            encoded left-to-right. The following row (``rv[1]``) is then below that row, and so on,
-            until the final pixel, which is in the bottom-right of the image.
-
-            The encoding the the components of a pixel is such that the lowest value for each
-            component is zero, representing zero intensity of that component. The highest value
-            for each component is 255, representing the maximum intensity of that
-            component. The color components (R, G, and B) are in an sRGB color space, while the
-            alpha component (A) is linear.
-        )"
-    );
+    def_texture2d(graphics_module);
+    def_mesh(graphics_module);
 }
