@@ -477,5 +477,18 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                     RuntimeError: If the file cannot be found, read, or is invalid.
             )"
         );
+
+        _core_module.def(
+            "read_vtp",
+            [](const std::filesystem::path& source) { return opyn::read_vtp(source); },
+            nb::arg("source"),
+            R"(
+                Returns a :class:`graphics.Mesh` parsed from a ``.vtp`` file on the caller's
+                filesystem.
+
+                Raises:
+                    RuntimeError: If the file cannot be found, read, or is invalid.
+            )"
+        );
     }
 }

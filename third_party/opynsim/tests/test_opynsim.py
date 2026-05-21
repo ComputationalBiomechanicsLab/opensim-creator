@@ -1,5 +1,6 @@
 import opynsim
 
+import numpy as np
 from pathlib import Path
 import pytest
 
@@ -65,3 +66,14 @@ def test_read_csv_can_read_and_print_a_basic_csv_file():
 | 1.0  | 1.0 | 2.0 | 3.0 |
 | 2.0  | 2.0 | 4.0 | 6.0 |
 """
+
+def test_read_vtp_can_read_a_basic_vtp_file():
+    mesh = opynsim.read_vtp(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/vtp/triangle.vtp")
+    vertices = mesh.vertices
+    faces = mesh.faces
+
+    assert vertices.dtype == np.float32
+    assert faces.dtype == np.int32
+    assert vertices.shape == (3, 3)
+    assert np.array_equal(vertices, np.array([[-1.0, -1.0, 0.0], [1.0, -1.0, 0.0], [0.0, 1.0, 0.0]]))
+    assert np.array_equal(faces, np.array([0, 1, 2]))

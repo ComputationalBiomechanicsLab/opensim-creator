@@ -4155,7 +4155,7 @@ namespace
                     return std::forward<AttrValueRange>(range)[pos];
                 }
                 else {
-                    throw std::out_of_range{"an attribute value was out-of-range: this is usually because of out-of-range mesh indices"};
+                    throw std::out_of_range{"An attribute value was out-of-range: this is usually because of out-of-range mesh indices were used. So that the implementation can validate indices, you should always assign mesh vertices/attributes before indices."};
                 }
             }
 
