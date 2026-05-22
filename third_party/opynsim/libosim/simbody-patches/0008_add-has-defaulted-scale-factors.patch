@@ -1,0 +1,78 @@
+Adds a runtime check for whether a `SimTK::DecorativeGeometry` has defaulted
+scale factors or not.
+
+This is necessary because OPynSim/OpenSim Creator support using negative
+scale factors as a way of flipping a geometry along an axis (can be handy
+in a pinch), but simbody uses `-1` as a sentinel for "default this axis".
+
+---
+
+diff --git a/SimTKcommon/Geometry/include/SimTKcommon/internal/DecorativeGeometry.h b/SimTKcommon/Geometry/include/SimTKcommon/internal/DecorativeGeometry.h
+index 56550b481..1c4a243c5 100644
+--- a/SimTKcommon/Geometry/include/SimTKcommon/internal/DecorativeGeometry.h
++++ b/SimTKcommon/Geometry/include/SimTKcommon/internal/DecorativeGeometry.h
+@@ -168,6 +168,19 @@ scaling is 1,1,1 and any value less than or equal to zero here is interpreted
+ as a request to "use the default" in that direction. **/
+ DecorativeGeometry& setScaleFactors(const Vec3& scale);
+ 
++/**
++ * Returns `true` if `setScaleFactors` has not been called on this.
++ *
++ * This is an OPynSim workaround which lets callers discriminate between
++ * default-initialized scale factors and explicitly-set ones. It's necessary
++ * because OPynSim/OpenSim Creator allow using negative scale factors as a
++ * cheap-and-nasty way of mirroring a geometry.
++ *
++ * - https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/974
++ * - https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/1179
++ */
++bool hasDefaultedScaleFactors() const;
++
+ /** Convenience method to set all three scale factors to the same value. **/
+ DecorativeGeometry& setScale(Real scale) {return setScaleFactors(Vec3(scale));}
+ 
+diff --git a/SimTKcommon/Geometry/src/DecorativeGeometry.cpp b/SimTKcommon/Geometry/src/DecorativeGeometry.cpp
+index f8f63124d..99f1ebffa 100644
+--- a/SimTKcommon/Geometry/src/DecorativeGeometry.cpp
++++ b/SimTKcommon/Geometry/src/DecorativeGeometry.cpp
+@@ -85,6 +85,8 @@ Real DecorativeGeometry::getResolution() const {return getRep().getResolution();
+ 
+ DecorativeGeometry& DecorativeGeometry::setScaleFactors(const Vec3& s) 
+ {   updRep().setScaleFactors(s); return *this; }
++bool DecorativeGeometry::hasDefaultedScaleFactors() const
++{ return getRep().hasDefaultedScaleFactors(); }
+ const Vec3& DecorativeGeometry::getScaleFactors() const 
+ {   return getRep().getScaleFactors(); }
+ 
+diff --git a/SimTKcommon/Geometry/src/DecorativeGeometryRep.h b/SimTKcommon/Geometry/src/DecorativeGeometryRep.h
+index f22322f78..982e840c4 100644
+--- a/SimTKcommon/Geometry/src/DecorativeGeometryRep.h
++++ b/SimTKcommon/Geometry/src/DecorativeGeometryRep.h
+@@ -71,9 +71,11 @@ public:
+     void setScaleFactors(const Vec3& s) {
+         for (int i=0; i<3; ++i)
+             scaleFactors[i] = s[i] > 0 ? s[i] : Real(-1);
++        scaleFactorsAreDefault = false;
+     }
+     const Vec3& getScaleFactors() const {return scaleFactors;}
+ 
++    bool hasDefaultedScaleFactors() const { return scaleFactorsAreDefault; }
+ 
+     void setColor(const Vec3& rgb) {
+         assert(0<=rgb[0]&&rgb[0]<=1); // TODO
+@@ -133,6 +135,7 @@ public:
+         // take the valid one, or set to -1 if neither is valid.
+         for (int i=0; i<3; ++i)
+             scaleFactors[i] = compose(scaleFactors[i], srep.scaleFactors[i]);
++        scaleFactorsAreDefault = scaleFactorsAreDefault or srep.scaleFactorsAreDefault;
+         resolution    = compose(resolution,    srep.resolution);
+         opacity       = compose(opacity,       srep.opacity);
+         lineThickness = compose(lineThickness, srep.lineThickness);
+@@ -164,6 +167,7 @@ protected:
+ 
+     Transform   placement;          // default is identity
+     Vec3        scaleFactors;       // -1 means use default in that direction
++    bool        scaleFactorsAreDefault = true;
+ 
+     Real        resolution;         // -1 means use default
+     Vec3        colorRGB;           // set R to -1 for "use default"

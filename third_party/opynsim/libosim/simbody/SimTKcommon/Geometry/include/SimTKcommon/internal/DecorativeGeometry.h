@@ -168,6 +168,19 @@ scaling is 1,1,1 and any value less than or equal to zero here is interpreted
 as a request to "use the default" in that direction. **/
 DecorativeGeometry& setScaleFactors(const Vec3& scale);
 
+/**
+ * Returns `true` if `setScaleFactors` has not been called on this.
+ *
+ * This is an OPynSim workaround which lets callers discriminate between
+ * default-initialized scale factors and explicitly-set ones. It's necessary
+ * because OPynSim/OpenSim Creator allow using negative scale factors as a
+ * cheap-and-nasty way of mirroring a geometry.
+ *
+ * - https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/974
+ * - https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/1179
+ */
+bool hasDefaultedScaleFactors() const;
+
 /** Convenience method to set all three scale factors to the same value. **/
 DecorativeGeometry& setScale(Real scale) {return setScaleFactors(Vec3(scale));}
 

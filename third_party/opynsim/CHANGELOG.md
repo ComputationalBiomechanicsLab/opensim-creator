@@ -23,4 +23,5 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - `App::disable_main_window_relative_mouse_mode`
   - `App::main_window_mouse_confinement`
   - `App::set_main_window_mouse_confinement`
-
+- Fixed an issue where `OpenSim::IMU` decorations were being emitted with
+  negative scale factors (ComputationalBiomechanicsLab/opensim-creator/#1179).

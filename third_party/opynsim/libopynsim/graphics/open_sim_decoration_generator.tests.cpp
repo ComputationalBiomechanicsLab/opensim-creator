@@ -21,6 +21,7 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/OpenSense/IMU.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -709,4 +710,28 @@ TEST(GenerateModelDecorations, MusclesObeyWireframeRepresentation)
             ASSERT_TRUE(decoration.flags & osc::SceneDecorationFlag::DrawWireframeOverlay);
         }
     }
+}
+
+// Test for regression in default scale factor behavior, which was causing IMUs
+// to move around w.r.t. the camera (ComputationalBiomechanicsLab/opensim-creator#1179). If
+// this starts failing, then it would also be wise to manually check how other
+// components are behaving.
+TEST(GenerateModelDecorations, IMUsAreEmittedWithCorrectScaleFactors)
+{
+    // Create a model with an IMU.
+    OpenSim::Model model;
+    model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
+    auto& imu = AddComponent<OpenSim::IMU>(model);
+    imu.connectSocket_frame(model.getGround());
+
+    opyn::FinalizeConnections(model);
+    opyn::InitializeModel(model);
+    const SimTK::State& state = opyn::InitializeState(model);
+
+    osc::SceneCache sceneCache;
+
+    const auto decorations = opyn::GenerateModelDecorations(sceneCache, model, state);
+
+    ASSERT_EQ(decorations.size(), 1);
+    ASSERT_TRUE(rgs::all_of(decorations.front().transform.scale, [](const float axis) { return axis > 0.0f; }));
 }

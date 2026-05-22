@@ -103,3 +103,42 @@ TEST(SimTKDecorationGenerator, UsesColorOverrideWhenEmittingFrames)
         ASSERT_EQ(std::get<osc::Color>(dec.shading), overrideColor);
     });
 }
+
+// The `SimTK::DecorativeGeometry` API will use a scale factor of `-1` to indicate
+// a defaulted axis. This scale factor shouldn't be propagated (i.e. it should
+// be defaulted) to OPynSim; otherwise, visual glitches will occur
+// (ComputationalBiomechanicsLab/opensim-creator#1179).
+//
+// However, if a caller explicitly sets `{-1, -1, -1}` (or any negative axis) on geometry
+// then it should be handled as "Flip that axis" (i.e. a cheap-and-nasty way to mirror a mesh,
+// ComputationalBiomechanicsLab/opensim-creator#974).
+TEST(SimTKDecorationGenerator, Emits111WhenGivenGeometryWithDefaultedScaleFactors)
+{
+    osc::SceneCache cache;
+
+    SimTK::MultibodySystem sys;
+    SimTK::SimbodyMatterSubsystem matter{sys};
+    SimTK::State state = sys.realizeTopology();
+    sys.realize(state);
+
+    // Defaulting it should just propagate the brick edge-lengths (ComputationalBiomechanicsLab/opensim-creator#1179).
+    {
+        SimTK::DecorativeBrick brick{SimTK::Vec3{0.02, 0.01, 0.005}};
+        brick.setColor(SimTK::Orange);
+        GenerateDecorations(cache, matter, state, brick, 1.0f, [&](const osc::SceneDecoration& dec)
+        {
+            ASSERT_EQ(dec.transform.scale, osc::Vector3f(0.02f, 0.01f, 0.005f));
+        });
+    }
+
+    // Explicitly setting an axis to -1 should propagate it, though (ComputationalBiomechanicsLab/opensim-creator#974).
+    {
+        SimTK::DecorativeBrick scaledBrick{SimTK::Vec3{0.02, 0.01, 0.005}};
+        scaledBrick.setColor(SimTK::Orange);
+        scaledBrick.setScaleFactors({-1.0, 1.0, 1.0});
+        GenerateDecorations(cache, matter, state, scaledBrick, 1.0f, [&](const osc::SceneDecoration& dec)
+        {
+            ASSERT_EQ(dec.transform.scale, osc::Vector3f(-0.02f, 0.01f, 0.005f));
+        });
+    }
+}

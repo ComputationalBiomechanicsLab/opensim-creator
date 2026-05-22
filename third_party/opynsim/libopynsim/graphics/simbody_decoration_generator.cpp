@@ -36,11 +36,20 @@ namespace
     // extracts scale factors from geometry
     osc::Vector3 GetScaleFactors(const SimTK::DecorativeGeometry& geom)
     {
+        // Use patched-in defaulting check for the edge-case where OpenSim
+        // emits geometry with `-1.0` scale factors, which are used to mean
+        // "default it", rather than to mean "flip it"
+        // (ComputationalBiomechanicsLab/opensim-creator#1179).
+        if (geom.hasDefaultedScaleFactors()) {
+            return osc::Vector3{1.0f};
+        }
+
         SimTK::Vec3 sf = geom.getScaleFactors();
 
         for (int i = 0; i < 3; ++i) {
             // filter out NaNs, but keep negative values, because some
-            // users use negative scales to mimic mirror imaging (#974)
+            // users use negative scales to mimic mirror imaging
+            // (ComputationalBiomechanicsLab/opensim-creator#974).
             sf[i] = not std::isnan(sf[i]) ? sf[i] : 0.0;
         }
 

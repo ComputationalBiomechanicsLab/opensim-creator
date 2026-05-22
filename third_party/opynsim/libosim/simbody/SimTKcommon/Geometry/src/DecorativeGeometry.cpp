@@ -85,6 +85,8 @@ Real DecorativeGeometry::getResolution() const {return getRep().getResolution();
 
 DecorativeGeometry& DecorativeGeometry::setScaleFactors(const Vec3& s) 
 {   updRep().setScaleFactors(s); return *this; }
+bool DecorativeGeometry::hasDefaultedScaleFactors() const
+{ return getRep().hasDefaultedScaleFactors(); }
 const Vec3& DecorativeGeometry::getScaleFactors() const 
 {   return getRep().getScaleFactors(); }
 

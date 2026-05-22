@@ -10,6 +10,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Removed unused/internal `MeshHittestTab`, `PerformanceAnalyzerTab`, and `TPS2DTab` (#467)
 - Removed `SoccerKickingModel` (quite large assets to package in an installation, you can still
   get it from: https://simtk.org/projects/soccerkickmodel).
+- Fixed an issue where `OpenSim::IMU` components were rendering with negative scale factors
+  and moving around with the camera (#1179).
 
 ## [0.7.3] - 2026/03/27
 

@@ -71,9 +71,11 @@ public:
     void setScaleFactors(const Vec3& s) {
         for (int i=0; i<3; ++i)
             scaleFactors[i] = s[i] > 0 ? s[i] : Real(-1);
+        scaleFactorsAreDefault = false;
     }
     const Vec3& getScaleFactors() const {return scaleFactors;}
 
+    bool hasDefaultedScaleFactors() const { return scaleFactorsAreDefault; }
 
     void setColor(const Vec3& rgb) {
         assert(0<=rgb[0]&&rgb[0]<=1); // TODO
@@ -133,6 +135,7 @@ public:
         // take the valid one, or set to -1 if neither is valid.
         for (int i=0; i<3; ++i)
             scaleFactors[i] = compose(scaleFactors[i], srep.scaleFactors[i]);
+        scaleFactorsAreDefault = scaleFactorsAreDefault or srep.scaleFactorsAreDefault;
         resolution    = compose(resolution,    srep.resolution);
         opacity       = compose(opacity,       srep.opacity);
         lineThickness = compose(lineThickness, srep.lineThickness);
@@ -164,6 +167,7 @@ protected:
 
     Transform   placement;          // default is identity
     Vec3        scaleFactors;       // -1 means use default in that direction
+    bool        scaleFactorsAreDefault = true;
 
     Real        resolution;         // -1 means use default
     Vec3        colorRGB;           // set R to -1 for "use default"
