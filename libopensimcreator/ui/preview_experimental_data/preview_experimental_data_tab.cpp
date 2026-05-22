@@ -90,6 +90,7 @@ namespace
         {
             m_Model->loadModel(p);
             reinitializeModelFromBackingData("loaded model", ReinitializationFlag::RecalculateTimeRange);
+            m_TabNameOverride = p.filename();
         }
 
         void reloadAll(
@@ -118,6 +119,7 @@ namespace
         {
             m_AssociatedTrajectory = opyn::FileBackedStorage{m_Model->getModel(), path};
             reloadAll("loaded trajactory", ReinitializationFlag::RecalculateTimeRange);
+            m_TabNameOverride = path.filename();
         }
 
         void loadMotionFiles(std::span<const std::filesystem::path> paths)
@@ -128,6 +130,7 @@ namespace
 
             m_AssociatedMotionFiles.insert(m_AssociatedMotionFiles.end(), paths.begin(), paths.end());
             reloadAll(paths.size() == 1 ? "loaded motion" : "loaded motions", ReinitializationFlag::RecalculateTimeRange);
+            m_TabNameOverride = paths.back().filename();
         }
 
         void loadXMLAsOpenSimDocument(std::span<const std::filesystem::path> paths)
@@ -138,6 +141,7 @@ namespace
 
             m_AssociatedXMLDocuments.insert(m_AssociatedXMLDocuments.end(), paths.begin(), paths.end());
             reloadAll(paths.size() == 1 ? "loaded XML document" : "loaded XML documents", ReinitializationFlag::RecalculateTimeRange);
+            m_TabNameOverride = paths.back().filename();
         }
 
         ClosedInterval<float> getTimeRange() const
@@ -183,6 +187,11 @@ namespace
         void rollbackModel()
         {
             m_Model->rollback();
+        }
+
+        std::optional<std::string_view> getTabNameOverride() const
+        {
+            return m_TabNameOverride;
         }
     private:
         void reinitializeModelFromBackingData(std::string_view label, ReinitializationFlags flags)
@@ -237,6 +246,7 @@ namespace
         std::vector<std::filesystem::path> m_AssociatedXMLDocuments;
         ClosedInterval<float> m_TimeRange = {0.0f, 10.0f};
         float m_ScrubTime = 0.0f;
+        std::optional<std::string> m_TabNameOverride;
     };
 
     class PreviewExperimentalDataTabToolbar final {
@@ -414,7 +424,7 @@ public:
     explicit Impl(
         PreviewExperimentalDataTab& owner,
         Widget* parent) :
-        TabPrivate{owner, parent, MSMICONS_BEZIER_CURVE " Experimental Data"}
+        TabPrivate{owner, parent, c_DefaultTabName}
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",
@@ -534,6 +544,14 @@ public:
     {
         m_UiState->on_tick();
         m_PanelManager->on_tick();
+
+        if (const auto override = m_UiState->getTabNameOverride()) {
+            std::stringstream ss;
+            ss << MSMICONS_BEZIER_CURVE << ' ' << *override;
+            set_name(std::move(ss).str());
+        } else {
+            set_name(c_DefaultTabName);
+        }
     }
 
     void on_draw_main_menu()
@@ -564,6 +582,8 @@ public:
     }
 
 private:
+    static constexpr std::string_view c_DefaultTabName = MSMICONS_BEZIER_CURVE " Experimental Data";
+
     std::shared_ptr<PreviewExperimentalDataUiState> m_UiState = std::make_shared<PreviewExperimentalDataUiState>();
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>(&owner());
     PreviewExperimentalDataTabToolbar m_Toolbar{m_UiState};

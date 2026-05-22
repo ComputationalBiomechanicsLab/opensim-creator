@@ -12,6 +12,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   get it from: https://simtk.org/projects/soccerkickmodel).
 - Fixed an issue where `OpenSim::IMU` components were rendering with negative scale factors
   and moving around with the camera (#1179).
+- The preview experimental data tab will now change its name to match the last file that was
+  previewed in the tab, so that it's easier to work with multiple tabs open (#1181).
 
 ## [0.7.3] - 2026/03/27
 
