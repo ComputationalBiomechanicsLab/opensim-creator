@@ -90,7 +90,7 @@ namespace
         {
             m_Model->loadModel(p);
             reinitializeModelFromBackingData("loaded model", ReinitializationFlag::RecalculateTimeRange);
-            m_TabNameOverride = p.filename();
+            m_TabNameOverride = p.filename().string();
         }
 
         void reloadAll(
@@ -119,7 +119,7 @@ namespace
         {
             m_AssociatedTrajectory = opyn::FileBackedStorage{m_Model->getModel(), path};
             reloadAll("loaded trajactory", ReinitializationFlag::RecalculateTimeRange);
-            m_TabNameOverride = path.filename();
+            m_TabNameOverride = path.filename().string();
         }
 
         void loadMotionFiles(std::span<const std::filesystem::path> paths)
@@ -130,7 +130,7 @@ namespace
 
             m_AssociatedMotionFiles.insert(m_AssociatedMotionFiles.end(), paths.begin(), paths.end());
             reloadAll(paths.size() == 1 ? "loaded motion" : "loaded motions", ReinitializationFlag::RecalculateTimeRange);
-            m_TabNameOverride = paths.back().filename();
+            m_TabNameOverride = paths.back().filename().string();
         }
 
         void loadXMLAsOpenSimDocument(std::span<const std::filesystem::path> paths)
@@ -141,7 +141,7 @@ namespace
 
             m_AssociatedXMLDocuments.insert(m_AssociatedXMLDocuments.end(), paths.begin(), paths.end());
             reloadAll(paths.size() == 1 ? "loaded XML document" : "loaded XML documents", ReinitializationFlag::RecalculateTimeRange);
-            m_TabNameOverride = paths.back().filename();
+            m_TabNameOverride = paths.back().filename().string();
         }
 
         ClosedInterval<float> getTimeRange() const
