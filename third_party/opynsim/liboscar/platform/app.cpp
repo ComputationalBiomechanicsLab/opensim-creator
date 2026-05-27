@@ -518,7 +518,7 @@ namespace
             return resources_relative_to_exe;
         }
         else {
-            log_warn("resources path fallback: using %s as a filler entry, but it doesn't actually exist: the application's configuration file has an incorrect/missing 'resources' key", resources_relative_to_exe.string().c_str());
+            log_info("resources path fallback: using %s as a filler entry, but it doesn't actually exist: the application's configuration file has an incorrect/missing 'resources' key", resources_relative_to_exe.string().c_str());
         }
 
         return resources_relative_to_exe;
