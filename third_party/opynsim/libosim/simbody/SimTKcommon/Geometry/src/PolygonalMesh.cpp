@@ -245,6 +245,9 @@ void PolygonalMesh::loadObjFile(std::istream& file) {
         "The supplied std::istream object was not in good condition"
         " on entrance -- did you check whether it opened successfully?");
 
+    // Ensure the handle is initialized - even if the obj is empty
+    initializeHandleIfEmpty();
+
     std::string line;
     Array_<int> indices;
     Array_<int> normalIndices;
@@ -716,6 +719,10 @@ private:
 }
 
 void PolygonalMesh::loadStlFile(const String& pathname) {
+    // Ensure the handle is initialized before this parser attempts to
+    // manipulate it.
+    initializeHandleIfEmpty();
+
     bool isAbsolutePath;
     std::string directory, fileName, extension;
     Pathname::deconstructPathname(pathname, isAbsolutePath,

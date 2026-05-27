@@ -7,8 +7,9 @@
 #include <liboscar/platform/log_sink.h>
 #include <liboscar/utilities/enum_helpers.h>
 #include <nanobind/nanobind.h>
-#include <nanobind/stl/filesystem.h>
-#include <nanobind/stl/vector.h>
+#include <nanobind/stl/filesystem.h>  // care: used by casters (might be incorrectly flagged as unused)
+#include <nanobind/stl/string.h>      // care: used by casters (might be incorrectly flagged as unused)
+#include <nanobind/stl/vector.h>      // care: used by casters (might be incorrectly flagged as unused)
 
 #include <memory>
 #include <mutex>

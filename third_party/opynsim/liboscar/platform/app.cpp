@@ -2100,18 +2100,18 @@ private:
         metadata_.config_filename(),
     };
 
+    // ensures that the global application log is configured according to the
+    // application's configuration file
+    bool log_is_configured_ = configure_application_log(config_);
+
     // path to the directory that the application's executable is contained within
     std::filesystem::path executable_dir_ = get_current_exe_dir_and_log_it();
 
-    // path to the write-able user data directory
+    // path to the writable user data directory
     std::filesystem::path user_data_dir_ = get_current_user_dir_and_log_it(
         metadata_.organization_name(),
         metadata_.application_name()
     );
-
-    // ensures that the global application log is configured according to the
-    // application's configuration file
-    bool log_is_configured_ = configure_application_log(config_);
 
     // internal native filesystem (we know its implementation at compile-time)
     std::shared_ptr<NativeFilesystem> native_filesystem_ = std::make_shared<NativeFilesystem>(
@@ -2132,13 +2132,6 @@ private:
     // provides the SDL3 file dialog system with a hint of which directory it should
     // try to show when displaying the next dialog.
     std::optional<std::filesystem::path> initial_directory_to_show_fallback_;
-
-    // main application window (initialized when the user first `show`s a `Widget`).
-    OscarWindow main_window_{
-        metadata_.maximize_main_window().value_or(true),
-        metadata_.headless_mode().value_or(config_.get_value<bool>("headless_mode")),
-        metadata_.human_readable_application_name().c_str()
-    };
 
     // get performance counter frequency (for the delta clocks)
     Uint64 perf_counter_frequency_ = SDL_GetPerformanceFrequency();
@@ -2166,6 +2159,13 @@ private:
 
     // runtime cache of initialized singletons
     SynchronizedValue<ankerl::unordered_dense::map<TypeInfoReference, std::shared_ptr<void>>> singletons_;
+
+    // main application window (initialized when the user first `show`s a `Widget`).
+    OscarWindow main_window_{
+        metadata_.maximize_main_window().value_or(true),
+        metadata_.headless_mode().value_or(config_.get_value<bool>("headless_mode")),
+        metadata_.human_readable_application_name().c_str()
+    };
 };
 
 App& osc::App::upd()
@@ -2220,7 +2220,6 @@ osc::App::App() :
 osc::App::App(const AppMetadata& metadata)
 {
     OSC_ASSERT(g_app_global == nullptr && "cannot instantiate multiple `App` instances at the same time");
-
     impl_ = std::make_unique<AppPrivate>(metadata);
     g_app_global = this;
 }

@@ -72,9 +72,9 @@ Table of Contents
 
    development/architecture-overview
    development/clion-setup
-   development/visual-studio-setup
    development/opynsim-as-a-cpp-library
    development/unofficial-doxygen-reference
+   development/opensim-interoperability
 
 .. toctree::
     :caption: Other Links

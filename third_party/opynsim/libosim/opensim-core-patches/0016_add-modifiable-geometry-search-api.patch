@@ -106,7 +106,7 @@ index cff35429..4a75eb93 100644
 -            foundIt = SimTK::Pathname::fileExists(attempts.back());
 -        }
 +    const std::filesystem::path baseDirectory = aModel.getInputFileName() != "Unassigned" ?
-+        std::filesystem::weakly_canonical(aModel.getInputFileName()) :
++        std::filesystem::weakly_canonical(aModel.getInputFileName()).parent_path() :
 +        std::filesystem::current_path();
  
 -        if (!foundIt) {

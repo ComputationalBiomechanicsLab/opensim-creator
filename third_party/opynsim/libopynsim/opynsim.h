@@ -78,4 +78,20 @@ namespace opyn
     /// Returns a `Mesh` parsed from `source`, throws if there's an IO or
     /// data validation error.
     osc::Mesh read_vtp(const std::filesystem::path& source);
+
+    /// Returns a `Mesh` parsed from `source`, throws if there's an IO or
+    /// data validation error.
+    osc::Mesh read_obj(const std::filesystem::path& source);
+
+    /// Returns a `Mesh` parsed from `source`, throws if there's an IO or
+    /// data validation error.
+    osc::Mesh read_stl(const std::filesystem::path& source);
+
+    /// Returns a `Texture2D` parsed from `source`, throws if there's an IO
+    /// or data validation error.
+    osc::Texture2D read_png(const std::filesystem::path& source);
+
+    /// Returns a `Texture2D` parsed from `source`, throws if there's an IO
+    /// or data validation error.
+    osc::Texture2D read_jpeg(const std::filesystem::path& source);
 }

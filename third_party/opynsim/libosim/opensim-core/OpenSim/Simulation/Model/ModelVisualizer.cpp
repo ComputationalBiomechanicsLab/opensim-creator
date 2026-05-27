@@ -186,7 +186,7 @@ bool ModelVisualizer::findGeometryFile(
     // - Otherwise, search with respect to the current working directory (legacy?)
 
     const std::filesystem::path baseDirectory = aModel.getInputFileName() != "Unassigned" ?
-        std::filesystem::weakly_canonical(aModel.getInputFileName()) :
+        std::filesystem::weakly_canonical(aModel.getInputFileName()).parent_path() :
         std::filesystem::current_path();
 
     // Go through the search paths back-to-front (later entries are higher priority)

@@ -53,9 +53,11 @@ namespace
         .skip = [](void* user, int n) -> void
         {
             // stbi: skip the next 'n' bytes, or 'unget' the last -n bytes if negative
-
-            std::istream& in = *static_cast<std::istream*>(user);
-            in.seekg(n, std::ios::cur);
+            if (n != 0) {
+                std::istream& in = *static_cast<std::istream*>(user);
+                in.clear();
+                in.seekg(n, std::ios::cur);
+            }
         },
 
         .eof = [](void* user) -> int
@@ -63,7 +65,7 @@ namespace
             // stbi: returns nonzero if we are at end of file/data
 
             const std::istream& in = *static_cast<const std::istream*>(user);
-            return in.eof() ? -1 : 0;
+            return in.eof() ? 1 : 0;
         }
     };
 
@@ -176,7 +178,8 @@ Texture2D osc::Image::read_into_texture(
     // test whether file content is HDR or not
     const auto original_cursor_pos = in.tellg();
     const bool is_hdr = stbi_is_hdr_from_callbacks(&c_stbi_stream_callbacks, &in) != 0;
-    in.seekg(original_cursor_pos);  // rewind, before reading content
+    in.clear();                     // Ensure any flags from probing for HDR are cleared.
+    in.seekg(original_cursor_pos);  // Rewind, before reading content
 
     OSC_ASSERT_ALWAYS(in.tellg() == original_cursor_pos && "could not rewind the stream (required for loading images)");
 

@@ -1,0 +1,20 @@
+Fixes a bug in Simbody's STL parser where it'll segfault if
+given an empty, but valid, STL file
+
+---
+
+diff --git a/SimTKcommon/Geometry/src/PolygonalMesh.cpp b/SimTKcommon/Geometry/src/PolygonalMesh.cpp
+index 29f81f51b..489693453 100644
+--- a/SimTKcommon/Geometry/src/PolygonalMesh.cpp
++++ b/SimTKcommon/Geometry/src/PolygonalMesh.cpp
+@@ -719,6 +719,10 @@ private:
+ }
+ 
+ void PolygonalMesh::loadStlFile(const String& pathname) {
++    // Ensure the handle is initialized before this parser attempts to
++    // manipulate it.
++    initializeHandleIfEmpty();
++
+     bool isAbsolutePath;
+     std::string directory, fileName, extension;
+     Pathname::deconstructPathname(pathname, isAbsolutePath,

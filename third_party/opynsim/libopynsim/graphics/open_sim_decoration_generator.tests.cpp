@@ -41,7 +41,7 @@ namespace rgs = std::ranges;
 // are based on something like excitation - #663)
 TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGeneratesRedMuscles)
 {
-    opyn::init();  // ensure component registry is populated
+    opyn::init();
 
     // TODO: this should be more synthetic and should just create a body with one muscle with a
     // known color that is then pumped through the pipeline etc.
@@ -92,6 +92,8 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
 // than exercising the bug (seperate test)
 TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorScalesFrames)
 {
+    opyn::init();
+
     OpenSim::Model model;
     model.updDisplayHints().set_show_frames(true);  // it should scale frame geometry
     model.buildSystem();
@@ -145,6 +147,8 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorScalesFrames)
 // the geometry in this particular case
 TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleExplicitlyAddedSphereGeometry)
 {
+    opyn::init();
+
     // create appropriate model
     std::pair<OpenSim::Model, OpenSim::ComponentPath> p = []()
     {
@@ -204,6 +208,8 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
 
 TEST(OpenSimDecorationGenerator, ToOscMeshWorksAsIntended)
 {
+    opyn::init();
+
     const std::filesystem::path arrowPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "arrow.vtp";
 
     OpenSim::Model model;
@@ -277,6 +283,8 @@ TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
 // non-point parts of the path (#919)
 TEST(OpenSimDecorationGenerator, GenerateDecorationsForLigamentGeneratesLigamentTaggedGeometry)
 {
+    opyn::init();
+
     OpenSim::Model model;
     auto ligamentptr = std::make_unique<OpenSim::Ligament>();
     ligamentptr->setRestingLength(1.0);  // required in debug mode :(
@@ -408,6 +416,8 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpecte
 // This test ensures the reverse (i.e. when it is visible) operates within expectations.
 TEST(GenerateModelDecorations, GeneratesContactGeometrySphereWhenVisibilityFlagIsEnabled)
 {
+    opyn::init();
+
     OpenSim::Model model;
     auto* sphere = new OpenSim::ContactSphere(1.0, SimTK::Vec3{0.0}, model.getGround());
     model.addContactGeometry(sphere);
@@ -428,6 +438,8 @@ TEST(GenerateModelDecorations, GeneratesContactGeometrySphereWhenVisibilityFlagI
 // generating a decoration for it.
 TEST(GenerateModelDecorations, DoesNotGenerateContactGeometrySphereWhenVisibilityFlagIsDisabled)
 {
+    opyn::init();
+
     OpenSim::Model model;
     auto* sphere = new OpenSim::ContactSphere(1.0, SimTK::Vec3{0.0}, model.getGround());
     sphere->upd_Appearance().set_visible(false);  // should prevent it from emitting
@@ -469,6 +481,8 @@ namespace
 // propagating through to the renderer and causing hittest issues (#976).
 TEST(GenerateModelDecorations, FiltersOutCylinderWithNANRadius)
 {
+    opyn::init();
+
     OpenSim::Model model;
     model.updDisplayHints().set_show_frames(false);
     model.addModelComponent(std::make_unique<ComponentThatGeneratesNaNCylinder>().release());
@@ -514,6 +528,8 @@ namespace
 // mayhem related to hittesting and finding scene bounds (#976).
 TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNRotations)
 {
+    opyn::init();
+
     OpenSim::Model model;
     model.updDisplayHints().set_show_frames(false);
     model.addModelComponent(std::make_unique<ComponentThatGeneratesNaNRotationSphere>().release());
@@ -559,6 +575,8 @@ namespace
 // mayhem related to hittesting and finding scene bounds (#976).
 TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNTranslation)
 {
+    opyn::init();
+
     OpenSim::Model model;
     model.updDisplayHints().set_show_frames(false);
     model.addModelComponent(std::make_unique<ComponentThatGeneratesNaNTranslationSphere>().release());
@@ -580,6 +598,8 @@ TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNTranslation)
 // wasn't being invalidated.
 TEST(GenerateModelDecorations, RadiusOfContactSphereIsCorrectlyUpdated)
 {
+    opyn::init();
+
     OpenSim::Model model;
     auto& sphere = AddComponent<OpenSim::ContactSphere>(model);
     sphere.setRadius(0.1);
@@ -613,6 +633,8 @@ TEST(GenerateModelDecorations, RadiusOfContactSphereIsCorrectlyUpdated)
 // runtime options, though). Semi-related: #1166.
 TEST(GenerateModelDecorations, MusclesObeyAppearanceOpacity)
 {
+    opyn::init();
+
     OpenSim::Model model;
     model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
 
@@ -649,6 +671,8 @@ TEST(GenerateModelDecorations, MusclesObeyAppearanceOpacity)
 // runtime options, though). Semi-related: #1166.
 TEST(GenerateModelDecorations, GeometryPathsObeyAppearanceOpacity)
 {
+    opyn::init();
+
     OpenSim::Model model;
     model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
 
@@ -682,6 +706,8 @@ TEST(GenerateModelDecorations, GeometryPathsObeyAppearanceOpacity)
 // property to determine representation (i.e. wireframe-mode). Semi-related: #1166.
 TEST(GenerateModelDecorations, MusclesObeyWireframeRepresentation)
 {
+    opyn::init();
+
     OpenSim::Model model;
     model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
 
@@ -718,6 +744,8 @@ TEST(GenerateModelDecorations, MusclesObeyWireframeRepresentation)
 // components are behaving.
 TEST(GenerateModelDecorations, IMUsAreEmittedWithCorrectScaleFactors)
 {
+    opyn::init();
+
     // Create a model with an IMU.
     OpenSim::Model model;
     model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
@@ -734,4 +762,31 @@ TEST(GenerateModelDecorations, IMUsAreEmittedWithCorrectScaleFactors)
 
     ASSERT_EQ(decorations.size(), 1);
     ASSERT_TRUE(rgs::all_of(decorations.front().transform.scale, [](const float axis) { return axis > 0.0f; }));
+}
+
+// Test for regression during OPynSim's development. The way in which
+// assets are searched in OPynSim was patched to support both `geometry/`
+// and `Geometry/`. However, the change was actually wrong, but nothing
+// found it until a month or two later when I was diagnosing a file with
+// a Geometry directory (the examples/tests mostly use shared directories
+// or don't fail if a mesh file is missing etc.)
+TEST(GenerateModelDecorations, LoadsMeshesFromRelativeDirectories)
+{
+    opyn::init();
+
+    for (const auto& dir : {"ModelWithBaseDir", "ModelWithGeometryDir", "ModelWithLowercaseGeometryDir"}) {
+        const std::filesystem::path p = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / dir / "model.osim";
+        OpenSim::Model model{p.string()};
+        model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
+        opyn::InitializeModel(model);
+        const SimTK::State& state = opyn::InitializeState(model);
+
+        const auto* mesh = opyn::FindComponent<OpenSim::Mesh>(model, "/triangle");
+        ASSERT_NE(mesh, nullptr);
+
+        osc::SceneCache sceneCache;
+        const auto decorations = opyn::GenerateModelDecorations(sceneCache, model, state);
+        ASSERT_EQ(decorations.size(), 1);
+        ASSERT_EQ(decorations.front().mesh.num_vertices(), 3);
+    }
 }

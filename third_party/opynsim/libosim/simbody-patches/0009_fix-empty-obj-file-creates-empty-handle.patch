@@ -1,0 +1,19 @@
+Fixes a bug in simbody's `PolygonalMesh` class where it'll try and write
+to an empty geometry handle and segfault when given an empty `.obj` file.
+
+---
+
+diff --git a/SimTKcommon/Geometry/src/PolygonalMesh.cpp b/SimTKcommon/Geometry/src/PolygonalMesh.cpp
+index b7646dc5a..29f81f51b 100644
+--- a/SimTKcommon/Geometry/src/PolygonalMesh.cpp
++++ b/SimTKcommon/Geometry/src/PolygonalMesh.cpp
+@@ -245,6 +245,9 @@ void PolygonalMesh::loadObjFile(std::istream& file) {
+         "The supplied std::istream object was not in good condition"
+         " on entrance -- did you check whether it opened successfully?");
+ 
++    // Ensure the handle is initialized - even if the obj is empty
++    initializeHandleIfEmpty();
++
+     std::string line;
+     Array_<int> indices;
+     Array_<int> normalIndices;

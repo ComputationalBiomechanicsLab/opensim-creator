@@ -9,15 +9,13 @@ OPynSim As a C++ Library
 
     The OPynSim C++ API (i.e. anything in ``libopynsim/`` or namespaced with ``opyn::``)
     and the oscar C++ API (``liboscar/``, ``osc::``) are **internal** APIs. They
-    exist to service the OPynSim python API (public) and OpenSim Creator's implementation
-    (internal). Therefore, if we think it makes sense to refactor/break those
-    APIs in order to better-service those needs, we will.
+    exist to service the public OPynSim Python API and OpenSim Creator's private
+    implementation.
 
-    All of this is to say, it's possible to use these C++ APIs in your downstream
-    project, but you should probably freeze the OPynSim version you use. Otherwise,
-    upgrades to OPynSim might break your C++ code. Any issues/emails/requests with
-    content like 'your change broke my C++ code' will receive a response along the
-    lines of 'read the friendly manual'.
+    It's possible to use these C++ APIs in your downstream project, but you should
+    freeze the OPynSim version you use. Otherwise, upgrades to OPynSim might break
+    your C++ code. Any issues/emails/requests with content like 'your change broke
+    my C++ code' will receive a response along the lines of 'read the friendly manual'.
 
 Doxygen Documentation
 ---------------------
@@ -111,11 +109,11 @@ pull it into your project.
 
 If you are building across multiple architectures and operating systems, then you
 either have to handle system setup (installing libraries, etc.) on a system-by-system
-basis, or build your dependencies from source for each target. OPynSim is an example of
-a source build - it builds everything it needs from source and installs it where
-specified (above). Other CMake projects typically also follow a standard
-configure-build-install pattern. For example, you wanted to add glm to a project
-then you'd build it and then install it into the same directory as OPynSim was installed:
+basis, or build your dependencies from source for each target. OPynSim is an example
+of the latter - the OPynSim project builds everything from source and installs it
+where specified. Other CMake projects typically also follow a standard
+configure-build-install pattern. For example, you wanted to add glm to a project then
+you'd build it and then install it into the same directory as OPynSim was installed:
 
 .. code-block:: bash
 
