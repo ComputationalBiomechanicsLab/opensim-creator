@@ -1,0 +1,82 @@
+Removes validation from OpenSim::TimeSeries table that checks
+if the time column is monotonically increasing.
+
+The reason it's removed is because there's data files in the
+wild (e.g. on SimTK.org, probably produced by an earlier
+version of OpenSim) that are invalid with this check, but
+OPynSim's aim is to ensure that all data files are readable
+and the caller (user) is expected to clean things up via
+the Python API, where necessary.
+
+---
+
+diff --git a/OpenSim/Common/TimeSeriesTable.h b/OpenSim/Common/TimeSeriesTable.h
+index 5434f7d54..e4e80d220 100644
+--- a/OpenSim/Common/TimeSeriesTable.h
++++ b/OpenSim/Common/TimeSeriesTable.h
+@@ -58,44 +58,6 @@ public:
+ #endif
+ };
+ 
+-class TimestampLessThanEqualToPrevious : public InvalidTimestamp {
+-public:
+-    TimestampLessThanEqualToPrevious(const std::string& file,
+-                                     size_t line,
+-                                     const std::string& func,
+-                                     size_t rowIndex,
+-                                     double new_timestamp,
+-                                     double prev_timestamp) :
+-        InvalidTimestamp(file, line, func) {
+-        std::string msg = "Timestamp at row " + std::to_string(rowIndex);
+-        msg += " with value " + std::to_string(new_timestamp);
+-        msg += " is less-than/equal to timestamp at row ";
+-        msg += std::to_string(rowIndex - 1) + " with value ";
+-        msg += std::to_string(prev_timestamp);
+-
+-        addMessage(msg);
+-    }
+-};
+-
+-class TimestampGreaterThanEqualToNext : public InvalidTimestamp {
+-public:
+-    TimestampGreaterThanEqualToNext(const std::string& file,
+-                                    size_t line,
+-                                    const std::string& func,
+-                                    size_t rowIndex,
+-                                    double new_timestamp,
+-                                    double next_timestamp) :
+-        InvalidTimestamp(file, line, func) {
+-        std::string msg = "Timestamp at row " + std::to_string(rowIndex);
+-        msg += " with value " + std::to_string(new_timestamp);
+-        msg += " is greater-than/equal to timestamp at row "; 
+-        msg += std::to_string(rowIndex + 1) + " with value "; 
+-        msg += std::to_string(next_timestamp);
+-
+-        addMessage(msg);
+-    }
+-};
+-
+ class TimeOutOfRange : public Exception {
+ public:
+     TimeOutOfRange(const std::string& file,
+@@ -520,19 +482,8 @@ protected:
+                      const RowVector& row) const override {
+         using DT = DataTable_<double, ETY>;
+ 
+-        if(DT::_indData.empty())
++        if (DT::_indData.empty()) {
+             return;
+-
+-        if(rowIndex > 0) {
+-            OPENSIM_THROW_IF(DT::_indData[rowIndex - 1] >= time,
+-                             TimestampLessThanEqualToPrevious, rowIndex, time, 
+-                             DT::_indData[rowIndex - 1]);
+-        }
+-
+-        if(rowIndex < DT::_indData.size() - 1) {
+-            OPENSIM_THROW_IF(DT::_indData[rowIndex + 1] <= time,
+-                             TimestampGreaterThanEqualToNext, rowIndex, time, 
+-                             DT::_indData[rowIndex + 1]);
+         }
+     }
+ 

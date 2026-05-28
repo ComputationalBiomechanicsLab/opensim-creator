@@ -1,0 +1,5 @@
+DataType=Quaternion
+endheader
+time	pelvis
+0	0.51,0.45,-0.67,0.288
+1	0.52,0.44,-0.65,0.3

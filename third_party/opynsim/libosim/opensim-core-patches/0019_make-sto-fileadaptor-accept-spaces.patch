@@ -1,0 +1,26 @@
+diff --git a/OpenSim/Common/FileAdapter.cpp b/OpenSim/Common/FileAdapter.cpp
+index 7305dda8a..833ff69c3 100644
+--- a/OpenSim/Common/FileAdapter.cpp
++++ b/OpenSim/Common/FileAdapter.cpp
+@@ -74,6 +74,8 @@ FileAdapter::getNextLine(std::istream& stream,
+             line.pop_back();
+ 
+         auto tokens = tokenize(line, delims);
++        // OPynSim modification: repeated whitespace/delimiters should be thrown away as padding rather than treated as an empty column.
++        std::erase_if(tokens, &std::string::empty);
+         if(tokens.size() > 0)
+             return tokens;
+     }
+diff --git a/OpenSim/Common/STOFileAdapter.h b/OpenSim/Common/STOFileAdapter.h
+index d661b53ac..8067ee8e4 100644
+--- a/OpenSim/Common/STOFileAdapter.h
++++ b/OpenSim/Common/STOFileAdapter.h
+@@ -122,7 +122,7 @@ public:
+ 
+ template<typename T>
+ STOFileAdapter_<T>::STOFileAdapter_() :
+-    DelimFileAdapter<T>("\t", // delimiter for read between elements
++    DelimFileAdapter<T>("\t ", // delimiter for read between elements (OPynSim: space is also supported, for legacy OpenSim STO file reading support)
+                         "\t",  // delimiter for write between elements
+                         ",",   // delim for reading components(within element)
+                         ","    // delim for writing components(within element)

@@ -176,24 +176,62 @@ TEST(opynsim, read_sto_can_read_and_print_a_bigger_pendulum_example)
     ASSERT_FALSE(got.empty());
 }
 
-TEST(opynsim, read_sto_throws_when_given_duplicate_time_rows)
+TEST(opynsim, read_sto_accepts_duplicate_time_rows)
 {
-    // This just checks current parser behavior.
+    // This behavior is counter to OpenSim.
     //
-    // TODO: The desired behavior actually should be that the user can specify whether they want:
-    //
-    // - To reject duplicate timestamp rows (current/OpenSim default)
-    // - To filter out duplicate timestamp rows (only accept the first, or only accept the last?)
-    // - To keep duplicate timestamp rows (i.e. allow duplicates)
-    //
-    // The reason why is that legacy `.sto` files in the wild (e.g. on SimTK.org, or
-    // opensim-org/opensim-models) can contain repeated rows with the same timestamp. It's
-    // wrong to allow these rows through, but OPynSim must provide easy mechanisms for dealing
-    // with invalid STO data because users will certainly encounter it.
+    // In OpenSim, an exception is thrown from `OpenSim::TimeSeriesTable` if
+    // two rows of an STO file have the same timestamp. However, `OpenSim::Storage`
+    // (legacy) used to allow it, which means there's STO files in the wild that
+    // contain duplicate rows. OPynSim falls back to the legacy behavior so that
+    // the parser is permissive enough to accept legacy data files. It's the
+    // caller's responsibility to clean up the mess.
 
     opyn::init();
 
-    ASSERT_ANY_THROW({ read_sto(opynsim_tests_resources_directory() / "Documents/sto/duplicate_time_row.sto"); });
+    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/duplicate_time_row.sto");
+    const std::vector<std::string> expected_columns = {"time", "col1", "col2"};
+    const std::vector<double> expected_timestamps = {0.0, 0.001, 0.001, 0.002};  // note: contains duplicates
+
+    ASSERT_EQ(df.columns(), expected_columns);
+    ASSERT_EQ(df["time"].to_list(), expected_timestamps);
+}
+
+TEST(opynsim, read_sto_flatterns_quaternion_stos)
+{
+    opyn::init();
+
+    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/quaternion.sto");
+    const std::vector<std::string> expected_columns = {"time", "pelvis_w", "pelvis_x", "pelvis_y", "pelvis_z"};
+    const std::vector<double> expected_timestamps = {0.0, 1.0};
+    const std::tuple<size_t, size_t> expected_shape = {2, 5};
+
+    ASSERT_EQ(df.columns(), expected_columns);
+    ASSERT_EQ(df["time"].to_list(), expected_timestamps);
+    ASSERT_EQ(df.shape(), expected_shape);
+}
+
+TEST(opynsim, read_sto_permits_legacy_delimiters)
+{
+    // Some older/custom STO files in opensim-models and SimTK use ' '
+    // as a delimiter. It's invalid, and rejected by the newer
+    // `OpenSim::TimeSeriesTable` API, but the legacy
+    // `OpenSim::Storage` API still accepts+parses these files, which
+    // means that applications like OpenSim GUI will accept the file, so
+    // OPynSim must also accept the file.
+
+    using namespace osc;  // `begin`, `end`
+
+    opyn::init();
+
+    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/legacy_delimiters.sto");
+    std::vector<std::string> expected_column_labels = {"time", "col1"};
+    std::vector<double> expected_times = {0.654092, 0.970842, 0.981167};
+    std::vector<double> expected_values = {0.000000, 0.256537, 0.256537};
+
+    ASSERT_EQ(df.columns(), expected_column_labels);
+    ASSERT_EQ(df["time"].to_list(), expected_times);
+    ASSERT_EQ(df["col1"].to_list(), expected_values);
 }
 
 TEST(opynsim, read_mot_works_on_minimal_example)
@@ -225,6 +263,25 @@ TEST(opynsim, read_mot_parses_one_data_column_correctly)
     ASSERT_EQ(df.columns(), expected_columns);
     ASSERT_EQ(df.attrs(), expected_attrs);
     ASSERT_EQ(df.shape(), expected_shape);
+}
+
+TEST(opynsim, read_mot_accepts_duplicate_time_rows)
+{
+    // This behavior is counter to OpenSim.
+    //
+    // In OpenSim, an exception is thrown from `OpenSim::TimeSeriesTable` if
+    // two rows of a MOT file have the same timestamp. OPynSim falls back
+    // to the permissive behavior so that  the parser can accept legacy
+    // data files. It's the caller's responsibility to clean up the mess.
+
+    opyn::init();
+
+    const DataFrame df = read_mot(opynsim_tests_resources_directory() / "Documents/duplicate_time_row.mot");
+    const std::vector<std::string> expected_columns = {"time", "col1", "col2"};
+    const std::vector<double> expected_timestamps = {0.0, 0.001, 0.001, 0.002};  // note: contains duplicates
+
+    ASSERT_EQ(df.columns(), expected_columns);
+    ASSERT_EQ(df["time"].to_list(), expected_timestamps);
 }
 
 TEST(opynsim, read_trc_works_on_minimal_example)
@@ -309,6 +366,25 @@ TEST(opynsim, read_trc_parses_leg39_swing_short_trc_correctly)
     ASSERT_EQ(df.columns(), expected_column_names);
     ASSERT_EQ(df.height(), 14);
     ASSERT_EQ(df.width(), expected_column_names.size());
+}
+
+TEST(opynsim, read_trc_accepts_duplicate_time_rows)
+{
+    // This behavior is counter to OpenSim.
+    //
+    // In OpenSim, an exception is thrown from `OpenSim::TimeSeriesTable` if
+    // two rows of a TRC file have the same timestamp. OPynSim falls back
+    // to the permissive behavior so that  the parser can accept legacy
+    // data files. It's the caller's responsibility to clean up the mess.
+
+    opyn::init();
+
+    const DataFrame df = read_trc(opynsim_tests_resources_directory() / "Documents/duplicate_time_row.trc");
+    const std::vector<std::string> expected_columns = {"time", "Marker1_x", "Marker1_y", "Marker1_z"};
+    const std::vector<double> expected_timestamps = {0.0, 1.0, 1.0, 2.0};  // note: contains duplicates
+
+    ASSERT_EQ(df.columns(), expected_columns);
+    ASSERT_EQ(df["time"].to_list(), expected_timestamps);
 }
 
 TEST(opynsim, read_csv_works_on_minimal_example)

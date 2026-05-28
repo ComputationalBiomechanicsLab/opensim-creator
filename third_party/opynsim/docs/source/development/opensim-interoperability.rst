@@ -9,16 +9,15 @@ entirely separately from OpenSim. This enables it to have a different
 development process/cadence and API design from OpenSim. However, although
 the implementation and API may differ in the details, a major goal of
 OPynSim is to always provide strong interoperability with OpenSim's
-**data formats**, so that it's capable of reading and writing data
-that can also be used by OpenSim-compatible tools in the wider
-ecosystem.
+**data formats**, so that it's capable of both reading and writing
+data that's compatible with tools in the wider OpenSim ecosystem.
 
 .. note::
 
-	OPynSim doesn't aim to emulate or reproduce the original OpenSim
-	API. The OpenSim project already ships C++ and Python APIs. You
-	should use it, where applicable. OPynSim ships a different API
-	that is specifically catered for Python interoperability.
+    OPynSim doesn't aim to emulate or reproduce the original OpenSim
+    API. The OpenSim project already ships C++ and Python APIs. You
+    should use it, where applicable. OPynSim ships a different API
+    that is specifically catered for Python interoperability.
 
 
 File Format Interoperability
@@ -48,14 +47,14 @@ easily be handled elsewhere.
 ========== ============== =============================================================================
 Format     Count          Comments
 ========== ============== =============================================================================
-.sto       38677 (45.6%)  OpenSim storage file. :func:`opynsim.read_sto`. Currently limited by an over-zealous validation rule in OpenSim that mandates a monotonically increasing time column.
+.sto       38677 (45.6%)  OpenSim storage file. :func:`opynsim.read_sto`.
 .vtp       14333 (16.9%)  VTK PolyData mesh file. :func:`opynsim.read_vtp`. Only vertices and faces are parsed. OpenSim <= 4.5 did not read any other data types. OPynSim does not plan on expanding VTP support beyond that.
-.mot       4403 (5.2%)    OpenSim motion file. :func:`opynsim.read_mot`. Currently limited by an over-zealous validation rule in OpenSim that mandates a monotonically increasing time column.
+.mot       4403 (5.2%)    OpenSim motion file. :func:`opynsim.read_mot`.
 .xml       3846 (4.5%)    Generic XML file. Use Python's in-built XML parser or a third-party library.
 .fig       2815 (3.3%)    MATLAB fig file. Use MATLAB to read it.
 .mat       2502 (2.9%)    MATLAB matrix file. Use MATLAB to read it.
 .osim      1949 (2.3%)    OpenSim model file. :func:`opynsim.read_osim`. Currently cannot read OpenSim v1 or v2 files.
-.trc       1927 (2.3%)    Mocap data file. :func:`opynsim.read_trc`. Currently limited by an over-zealous validation rule in OpenSim that mandates a monotonically increasing time column.
+.trc       1927 (2.3%)    Mocap data file. :func:`opynsim.read_trc`.
 .log       1849 (2.2%)    Plaintext log file. Use a text editor to read it.
 .ply       1640 (1.9%)    Mesh file. Only used in one project. Use Blender/Meshlab to read it.
 .m         1505 (1.8%)    MATLAB source code. Use MATLAB to read/run it.

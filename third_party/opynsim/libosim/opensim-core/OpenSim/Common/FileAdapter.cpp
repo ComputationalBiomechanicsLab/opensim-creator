@@ -74,6 +74,8 @@ FileAdapter::getNextLine(std::istream& stream,
             line.pop_back();
 
         auto tokens = tokenize(line, delims);
+        // OPynSim modification: repeated whitespace/delimiters should be thrown away as padding rather than treated as an empty column.
+        std::erase_if(tokens, &std::string::empty);
         if(tokens.size() > 0)
             return tokens;
     }

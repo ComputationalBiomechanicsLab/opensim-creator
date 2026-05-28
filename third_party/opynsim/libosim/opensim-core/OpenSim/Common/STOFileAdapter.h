@@ -122,7 +122,7 @@ public:
 
 template<typename T>
 STOFileAdapter_<T>::STOFileAdapter_() :
-    DelimFileAdapter<T>("\t", // delimiter for read between elements
+    DelimFileAdapter<T>("\t ", // delimiter for read between elements (OPynSim: space is also supported, for legacy OpenSim STO file reading support)
                         "\t",  // delimiter for write between elements
                         ",",   // delim for reading components(within element)
                         ","    // delim for writing components(within element)

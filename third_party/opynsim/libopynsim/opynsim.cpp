@@ -6,6 +6,8 @@
 
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
+#include <OpenSim/Common/FileAdapter.h>
+#include <OpenSim/Common/DataTable.h>
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Common/RegisterTypes_osimCommon.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
@@ -18,6 +20,7 @@
 #include <liboscar/formats/csv.h>
 #include <liboscar/formats/image.h>
 #include <liboscar/platform/log.h>
+#include <liboscar/utilities/assertions.h>
 #include <liboscar/utilities/conversion.h>
 
 #if defined(WIN32)
@@ -31,8 +34,13 @@
 #include <fstream>
 #include <iostream>
 #include <locale>
+#include <memory>
+#include <optional>
 #include <sstream>
+#include <string>
+#include <string_view>
 #include <stdexcept>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -219,7 +227,8 @@ namespace
         }();
     }
 
-    DataFrame read_opensim_datatable_into_data_frame(const OpenSim::DataTable& table)
+    DataFrame read_opensim_datatable_into_data_frame(
+        const OpenSim::DataTable_<double, double>& table)
     {
         // Transform source file into `opyn::DataFrame` inputs.
         std::vector<std::string> column_names;
@@ -266,6 +275,56 @@ namespace
             std::move(column_data),
             std::move(attrs),
         };
+    }
+
+    DataFrame read_dataframe_via_opensim_file_adaptor(
+        const std::filesystem::path& source,
+        std::optional<std::string_view> table_name = std::nullopt)
+    {
+        const auto tables = OpenSim::FileAdapter::createAdapterFromExtension(source.string())->read(source.string());
+        if (tables.size() > 1 and not table_name) {
+            std::stringstream ss;
+            ss << source << ": contains more than one table (";
+            std::string_view delim;
+            for (const auto& entry : tables) {
+                ss << delim << entry.first;
+                delim = ", ";
+            }
+            ss << ") but no table name was specified.";
+            throw std::runtime_error{std::move(ss).str()};
+        }
+
+        const OpenSim::AbstractDataTable* table{};
+        if (table_name) {
+            const auto it = tables.find(std::string{*table_name});
+            if (it == tables.end()) {
+                std::stringstream ss;
+                ss << source << "Could not find table '" << *table_name << "' in the data source";
+                throw std::runtime_error{std::move(ss).str()};
+            }
+            table = it->second.get();
+        } else {
+            table = tables.begin()->second.get();
+        }
+
+        // OPynSim always tries to flatten tables with suffixes, so that
+        // users always see one consistent `DataFrame` type. It's simpler
+        // than OpenSim's typed data table API but easier to work with in
+        // the wider Python ecosystem.
+        OSC_ASSERT(table != nullptr && "Earlier code should have set this");
+        if (const auto* doubles_table = dynamic_cast<const OpenSim::DataTable_<double, double>*>(table)) {
+            return read_opensim_datatable_into_data_frame(*doubles_table);
+        }
+        if (const auto* vec3_table = dynamic_cast<const OpenSim::DataTable_<double, SimTK::Vec3>*>(table)) {
+            return read_opensim_datatable_into_data_frame(vec3_table->flatten({"_x", "_y", "_z"}));
+        }
+        if (const auto* quaternion_table = dynamic_cast<const OpenSim::DataTable_<double, SimTK::Quaternion>*>(table)) {
+            return read_opensim_datatable_into_data_frame(quaternion_table->flatten({"_w", "_x", "_y", "_z"}));
+        }
+
+        std::stringstream ss;
+        ss << source << ": Specified data table has an unsupported data type (" << typeid(*table).name() << ").";
+        throw std::runtime_error{std::move(ss).str()};
     }
 
     osc::Texture2D read_texture_via_oscar(const std::filesystem::path& source)
@@ -346,26 +405,22 @@ ModelSpecification opyn::read_osim(const std::filesystem::path& source)
 
 DataFrame opyn::read_sto(const std::filesystem::path& source)
 {
-    OpenSim::TimeSeriesTable table{source.string()};
-    return read_opensim_datatable_into_data_frame(table);
+    return read_dataframe_via_opensim_file_adaptor(source);
 }
 
 DataFrame opyn::read_mot(const std::filesystem::path& source)
 {
-    OpenSim::TimeSeriesTable table{source.string()};
-    return read_opensim_datatable_into_data_frame(table);
+    return read_dataframe_via_opensim_file_adaptor(source);
 }
 
 DataFrame opyn::read_trc(const std::filesystem::path& source)
 {
-    OpenSim::TimeSeriesTableVec3 table{source.string()};
-    return read_opensim_datatable_into_data_frame(table.flatten({"_x", "_y", "_z"}));
+    return read_dataframe_via_opensim_file_adaptor(source);
 }
 
 DataFrame opyn::read_csv(const std::filesystem::path& source)
 {
-    OpenSim::DataTable table{source.string(), ""};
-    return read_opensim_datatable_into_data_frame(table);
+    return read_dataframe_via_opensim_file_adaptor(source);
 }
 
 osc::Mesh opyn::read_vtp(const std::filesystem::path& source)
