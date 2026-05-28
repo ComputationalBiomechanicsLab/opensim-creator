@@ -2,35 +2,28 @@
     "version": 6,
     "configurePresets": [
         {
-            "name": "Development",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Development",
+            "name": "mixin_RapidLinuxLinking",
+            "hidden": true,
+            "description": "Mixin to enable the mold linker, thin archives, and split dwarf files for faster linking (useful for development)",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development/install",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-
-                "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
+                "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=mold",
+                "CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=mold",
+                "CMAKE_MODULE_LINKER_FLAGS": "-fuse-ld=mold",
+                "CMAKE_CXX_ARCHIVE_CREATE": "<CMAKE_AR> srT <TARGET> <LINK_FLAGS> <OBJECTS>",
+                "CMAKE_CXX_FLAGS": "-gsplit-dwarf"
             }
         },
         {
-            "name": "Development-Inlined",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Development-Inlined",
+            "name": "mixin_InlinedDevelopment",
+            "hidden": true,
+            "description": "Mixin that enables inlining the third_party build into this build (useful for development)",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development-Inlined/install",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development-Inlined/install",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
-
-                "OSC_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OSC_BUILD_OSCAR_INLINE": "ON",
                 "OSC_BUILD_OPYNSIM_INLINE": "ON",
                 "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OPYN_PACKAGE": "OFF",
-                "OPYN_BUILD_DOCS": "OFF",
+                "OPYN_BUILD_DOCS": "ON",
                 "OPYN_BUILD_PYTHON_BINDINGS": "ON",
                 "OPYN_BUILD_TESTING": "ON",
                 "OPYN_VENV": "${sourceDir}/.venv",
@@ -39,13 +32,42 @@
             }
         },
         {
+            "name": "Development",
+            "description": "Recommended preset for day-to-day development",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Development",
+            "cacheVariables": {
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development/install",
+
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
+            }
+        },
+        {
+            "name": "Development-Inlined",
+            "inherits": ["Development", "mixin_InlinedDevelopment"],
+            "binaryDir": "${sourceDir}/build/Development-Inlined",
+            "cacheVariables": {
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development-Inlined/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development-Inlined/install"
+            }
+        },
+        {
+            "name": "Development-Inlined-RapidLinuxLinking",
+            "inherits": ["Development-Inlined", "mixin_RapidLinuxLinking"]
+        },
+        {
             "name": "ErrorCheck",
+            "description": "Builds with runtime error checking (leak checks, sanitizer checks) and linting - recommended for development/debugging harder code changes",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/ErrorCheck",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/ErrorCheck/install",
+
+                "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
@@ -53,64 +75,24 @@
                 "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
                 "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined -rdynamic",
                 "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
-
                 "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
         {
             "name": "ErrorCheck-Inlined",
-            "generator": "Ninja",
+            "inherits": ["ErrorCheck", "mixin_InlinedDevelopment"],
             "binaryDir": "${sourceDir}/build/ErrorCheck-Inlined",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck-Inlined/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/ErrorCheck-Inlined/install",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
-                "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
-                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined -rdynamic",
-                "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
 
-                "OSC_USE_STRICT_COMPILER_FLAGS": "ON",
-                "OSC_BUILD_OSCAR_INLINE": "ON",
-                "OSC_BUILD_OPYNSIM_INLINE": "ON",
-                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
-                "OPYN_PACKAGE": "OFF",
-                "OPYN_BUILD_DOCS": "OFF",
-                "OPYN_BUILD_PYTHON_BINDINGS": "ON",
-                "OPYN_BUILD_TESTING": "ON",
                 "OPYN_BUILD_PYTHON_TESTING": "OFF",
-                "OPYN_VENV": "${sourceDir}/.venv",
-                "OPYN_STRICT_ABI_CHECKS": "OFF",
-                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
                 "OPYN_GENERATE_STUBS": "OFF"
             }
         },
         {
-            "name": "Debug-Inlined",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Debug-Inlined",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug-Inlined/install",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Debug-Inlined/install",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
-
-                "OSC_USE_STRICT_COMPILER_FLAGS": "ON",
-                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
-                "OSC_BUILD_OSCAR_INLINE": "ON",
-                "OSC_BUILD_OPYNSIM_INLINE": "ON",
-                "OPYN_PACKAGE": "OFF",
-                "OPYN_BUILD_DOCS": "OFF",
-                "OPYN_BUILD_PYTHON_BINDINGS": "ON",
-                "OPYN_BUILD_TESTING": "ON",
-                "OPYN_VENV": "${sourceDir}/.venv",
-                "OPYN_STRICT_ABI_CHECKS": "OFF",
-                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
-            }
+            "name": "ErrorCheck-Inlined-RapidLinuxLinking",
+            "inherits": ["ErrorCheck-Inlined", "mixin_RapidLinuxLinking"]
         },
         {
             "name": "RelWithDebInfo",
@@ -179,7 +161,6 @@
         { "name": "Development-Inlined",   "configurePreset": "Development-Inlined"   },
         { "name": "ErrorCheck",            "configurePreset": "ErrorCheck"            },
         { "name": "ErrorCheck-Inlined",    "configurePreset": "ErrorCheck-Inlined"    },
-        { "name": "Debug-Inlined",         "configurePreset": "Debug-Inlined"         },
         { "name": "RelWithDebInfo",        "configurePreset": "RelWithDebInfo"        },
         { "name": "Release",               "configurePreset": "Release"               },
         { "name": "Release-MacOS-amd64",   "configurePreset": "Release-MacOS-amd64"   },
@@ -222,12 +203,6 @@
                 "LSAN_OPTIONS": "suppressions=${sourceDir}/scripts/suppressions_lsan.supp",
                 "LIBGL_ALWAYS_SOFTWARE": "1"
             }
-        },
-        {
-            "name": "Debug-Inlined",
-            "configurePreset": "Debug-Inlined",
-            "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error"}
         },
         {
             "name": "RelWithDebInfo",
@@ -300,13 +275,6 @@
                 { "type": "configure", "name": "ErrorCheck-Inlined" },
                 { "type": "build",     "name": "ErrorCheck-Inlined" },
                 { "type": "test",      "name": "ErrorCheck-Inlined" }
-            ]
-        },
-        {
-            "name": "Debug-Inlined",
-            "steps": [
-                { "type": "configure", "name": "Debug-Inlined" },
-                { "type": "build",     "name": "Debug-Inlined" }
             ]
         },
         {
