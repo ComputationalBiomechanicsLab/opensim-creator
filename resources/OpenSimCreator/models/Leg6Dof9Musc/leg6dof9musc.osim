@@ -1057,8 +1057,8 @@
 				<Body name="toes_r">
 					<mass>0.18614228</mass>
 					<mass_center> 0.0359425 0.00616157 -0.0184847</mass_center>
-					<inertia_xx>0</inertia_xx>
-					<inertia_yy>0</inertia_yy>
+					<inertia_xx>0.00045232</inertia_xx>
+					<inertia_yy>0.00045232</inertia_yy>
 					<inertia_zz>0.00090462</inertia_zz>
 					<inertia_xy>0</inertia_xy>
 					<inertia_xz>0</inertia_xz>

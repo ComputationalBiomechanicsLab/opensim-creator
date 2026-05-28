@@ -9364,8 +9364,8 @@ ffor control values-->
 				<Body name="toes_r">
 					<mass>       0.21700000 </mass>
 					<mass_center>       0.03500000       0.00600000      -0.01800000 </mass_center>
-					<inertia_xx>       0.00000000 </inertia_xx>
-					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_xx>       0.00050000 </inertia_xx>
+					<inertia_yy>       0.00050000 </inertia_yy>
 					<inertia_zz>       0.00100000 </inertia_zz>
 					<inertia_xy>       0.00000000 </inertia_xy>
 					<inertia_xz>       0.00000000 </inertia_xz>
@@ -10253,8 +10253,8 @@ ffor control values-->
 				<Body name="toes_l">
 					<mass>       0.21700000 </mass>
 					<mass_center>       0.03500000       0.00600000       0.01800000 </mass_center>
-					<inertia_xx>       0.00000000 </inertia_xx>
-					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_xx>       0.00050000 </inertia_xx>
+					<inertia_yy>       0.00050000 </inertia_yy>
 					<inertia_zz>       0.00100000 </inertia_zz>
 					<inertia_xy>       0.00000000 </inertia_xy>
 					<inertia_xz>       0.00000000 </inertia_xz>

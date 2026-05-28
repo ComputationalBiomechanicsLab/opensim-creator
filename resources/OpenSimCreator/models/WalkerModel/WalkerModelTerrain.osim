@@ -112,9 +112,9 @@
 				<Body name="Pelvis">
 					<mass>0.5</mass>
 					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>0.0001</inertia_xx>
+					<inertia_xx>0.00333334</inertia_xx>
 					<inertia_yy>0.00666666666666667</inertia_yy>
-					<inertia_zz>0.0001</inertia_zz>
+					<inertia_zz>0.00333334</inertia_zz>
 					<inertia_xy>0</inertia_xy>
 					<inertia_xz>0</inertia_xz>
 					<inertia_yz>0</inertia_yz>
@@ -241,8 +241,8 @@
 				<Body name="LeftThigh">
 					<mass>0.05</mass>
 					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>0.0001</inertia_xx>
-					<inertia_yy>0.0001</inertia_yy>
+					<inertia_xx>0.00052084</inertia_xx>
+					<inertia_yy>0.00052084</inertia_yy>
 					<inertia_zz>0.00104166666666667</inertia_zz>
 					<inertia_xy>0</inertia_xy>
 					<inertia_xz>0</inertia_xz>
@@ -318,8 +318,8 @@
 				<Body name="RightThigh">
 					<mass>0.05</mass>
 					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>0.0001</inertia_xx>
-					<inertia_yy>0.0001</inertia_yy>
+					<inertia_xx>0.00052084</inertia_xx>
+					<inertia_yy>0.00052084</inertia_yy>
 					<inertia_zz>0.00104166666666667</inertia_zz>
 					<inertia_xy>0</inertia_xy>
 					<inertia_xz>0</inertia_xz>
@@ -395,8 +395,8 @@
 				<Body name="LeftShank">
 					<mass>0.05</mass>
 					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>0.0001</inertia_xx>
-					<inertia_yy>0.0001</inertia_yy>
+					<inertia_xx>0.00052084</inertia_xx>
+					<inertia_yy>0.00052084</inertia_yy>
 					<inertia_zz>0.00104166666666667</inertia_zz>
 					<inertia_xy>0</inertia_xy>
 					<inertia_xz>0</inertia_xz>
@@ -472,8 +472,8 @@
 				<Body name="RightShank">
 					<mass>0.05</mass>
 					<mass_center> 0 0 0</mass_center>
-					<inertia_xx>0.0001</inertia_xx>
-					<inertia_yy>0.0001</inertia_yy>
+					<inertia_xx>0.00052084</inertia_xx>
+					<inertia_yy>0.00052084</inertia_yy>
 					<inertia_zz>0.00104166666666667</inertia_zz>
 					<inertia_xy>0</inertia_xy>
 					<inertia_xz>0</inertia_xz>
