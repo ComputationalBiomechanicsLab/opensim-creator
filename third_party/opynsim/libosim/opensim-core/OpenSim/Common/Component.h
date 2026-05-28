@@ -1033,7 +1033,6 @@ public:
     const T& getConnectee(const std::string& name) const {
         // get the Socket and check if it is connected.
         const Socket<T>& socket = getSocket<T>(name);
-        OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
         return socket.getConnectee();
     }
 

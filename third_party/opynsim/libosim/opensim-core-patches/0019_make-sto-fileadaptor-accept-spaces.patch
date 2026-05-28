@@ -1,3 +1,15 @@
+This patch makes `OpenSim::STOFileAdapter` also accept spaces as a delimiter
+and additionally makes it drop any empty columns (e.g. a sequence of spaces/tabs)
+so that (e.g.) a line containing a bunch of spaces around each field collapses down
+to one field.
+
+The reason why this is necessary is because of legacy differences between
+`OpenSim::STOFileAdapter` and `OpenSim::Storage`. The original `OpenSim::Storage`
+API accepts spaces as a valid STO field delimiter, and there's files in the wild
+(e.g. in `opensim-org/opensim-models`) that use space-delimited STO files.
+
+---
+
 diff --git a/OpenSim/Common/FileAdapter.cpp b/OpenSim/Common/FileAdapter.cpp
 index 7305dda8a..833ff69c3 100644
 --- a/OpenSim/Common/FileAdapter.cpp
@@ -7,7 +19,7 @@ index 7305dda8a..833ff69c3 100644
  
          auto tokens = tokenize(line, delims);
 +        // OPynSim modification: repeated whitespace/delimiters should be thrown away as padding rather than treated as an empty column.
-+        std::erase_if(tokens, &std::string::empty);
++        std::erase_if(tokens, [](const auto& token) { return token.empty(); });
          if(tokens.size() > 0)
              return tokens;
      }

@@ -1,0 +1,21 @@
+This removes an unnecessary assertion that triggers in OPynSim's test suite
+under debug mode.
+
+The reason it's unnecessary is because OpenSim sockets can now work without
+a connection (it just performs a slow tree traversal instead), but this assertion
+slipped through because OpenSim is almost never built in debug mode by upstream.
+
+---
+
+diff --git a/OpenSim/Common/Component.h b/OpenSim/Common/Component.h
+index 49addb93e..0f4840195 100644
+--- a/OpenSim/Common/Component.h
++++ b/OpenSim/Common/Component.h
+@@ -1033,7 +1033,6 @@ public:
+     const T& getConnectee(const std::string& name) const {
+         // get the Socket and check if it is connected.
+         const Socket<T>& socket = getSocket<T>(name);
+-        OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
+         return socket.getConnectee();
+     }
+ 

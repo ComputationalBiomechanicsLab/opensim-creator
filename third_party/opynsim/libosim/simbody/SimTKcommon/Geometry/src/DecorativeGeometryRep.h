@@ -416,7 +416,6 @@ public:
     // no default constructor
     DecorativeCylinderRep( Real r, Real hh) 
       : radius(r), halfHeight(hh) {
-        assert(radius>0&&halfHeight>0); // TODO
     }
 
     void setRadius(const Real& rad) {

@@ -1,0 +1,82 @@
+This patch removes some runtime (Debug) validation assertions. They are
+potentially useful, but not a good idea to be build-configuration-dependent
+because they are triggered by invalid input data (e.g. loading an osim file
+can trigger these assertions).
+
+OPynSim philosophy note: if a data file works in a release of OpenSim then
+OPynSim should try to accept it: regardless of build configuration. It isn't
+useful to trigger an assertion/exception on input data if there's already
+a bunch of data in a wild with these problems.
+
+---
+
+diff --git a/SimTKcommon/Geometry/src/DecorativeGeometryRep.h b/SimTKcommon/Geometry/src/DecorativeGeometryRep.h
+index 982e840c4..11cf09a88 100644
+--- a/SimTKcommon/Geometry/src/DecorativeGeometryRep.h
++++ b/SimTKcommon/Geometry/src/DecorativeGeometryRep.h
+@@ -416,7 +416,6 @@ public:
+     // no default constructor
+     DecorativeCylinderRep( Real r, Real hh) 
+       : radius(r), halfHeight(hh) {
+-        assert(radius>0&&halfHeight>0); // TODO
+     }
+ 
+     void setRadius(const Real& rad) {
+diff --git a/SimTKcommon/Mechanics/include/SimTKcommon/internal/MassProperties.h b/SimTKcommon/Mechanics/include/SimTKcommon/internal/MassProperties.h
+index 67f9ff399..7bf8ae72e 100644
+--- a/SimTKcommon/Mechanics/include/SimTKcommon/internal/MassProperties.h
++++ b/SimTKcommon/Mechanics/include/SimTKcommon/internal/MassProperties.h
+@@ -515,45 +515,15 @@ const UnitInertia_<P>& getAsUnitInertia() const
+ UnitInertia_<P>& updAsUnitInertia()
+ {   return *static_cast<UnitInertia_<P>*>(this); }
+ 
+-// If error checking is enabled (only in Debug mode), this 
+-// method will run some tests on the current contents of this Inertia 
+-// matrix and throw an error message if it is not valid. This should be 
+-// the same set of tests as run by the isValidInertiaMatrix() method above.
+ void errChk(const char* methodName) const {
+-#ifndef NDEBUG
+-    SimTK_ERRCHK(!isNaN(), methodName,
+-        "Inertia matrix contains a NaN.");
+-
+-    const Vec<3,P>& d = I_OF_F.getDiag();  // moments
+-    const Vec<3,P>& p = I_OF_F.getLower(); // products
+-    const P Ixx = d[0], Iyy = d[1], Izz = d[2];
+-    const P Ixy = p[0], Ixz = p[1], Iyz = p[2];
+-
+-    SimTK_ERRCHK3(d >= -SignificantReal, methodName,
+-        "Diagonals of an Inertia matrix must be nonnegative; got %g,%g,%g.",
+-        (double)Ixx,(double)Iyy,(double)Izz);
+-
+-    // TODO: This is looser than it should be as a workaround for distorted
+-    // rotation matrices that were produced by an 11,000 body chain that
+-    // Sam Flores encountered. 
+-    const P Slop = std::max(d.sum(),P(1))
+-                       * std::sqrt(NTraits<P>::getEps());
+-
+-    SimTK_ERRCHK3(   Ixx+Iyy+Slop>=Izz 
+-                  && Ixx+Izz+Slop>=Iyy 
+-                  && Iyy+Izz+Slop>=Ixx,
+-        methodName,
+-        "Diagonals of an Inertia matrix must satisfy the triangle "
+-        "inequality; got %g,%g,%g.",
+-        (double)Ixx,(double)Iyy,(double)Izz);
+-
+-    // Thanks to Paul Mitiguy for this condition on products of inertia.
+-    SimTK_ERRCHK(   Ixx+Slop>=std::abs(2*Iyz) 
+-                 && Iyy+Slop>=std::abs(2*Ixz)
+-                 && Izz+Slop>=std::abs(2*Ixy),
+-        methodName,
+-        "The magnitude of a product of inertia was too large to be physical.");
+-#endif
++    // OPynSim: never check inertia properties: even in debug mode.
++    //
++    // A large amount of models in the wild have inertia errors that weren't
++    // found because almost noone runs debug builds of OpenSim (in fact, OpenSim
++    // 4.3-4.6 ish can't even pass its own test suite in Debug mode). So it
++    // shouldn't crash/halt a debug build if it's given invalid inertias
++    // because that's become the norm: assertions/checks should either always
++    // happen or only be done for logic bugs.
+ }
+ 
+ // Inertia expressed in frame F and about F's origin OF. Note that frame F

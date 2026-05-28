@@ -515,45 +515,15 @@ const UnitInertia_<P>& getAsUnitInertia() const
 UnitInertia_<P>& updAsUnitInertia()
 {   return *static_cast<UnitInertia_<P>*>(this); }
 
-// If error checking is enabled (only in Debug mode), this 
-// method will run some tests on the current contents of this Inertia 
-// matrix and throw an error message if it is not valid. This should be 
-// the same set of tests as run by the isValidInertiaMatrix() method above.
 void errChk(const char* methodName) const {
-#ifndef NDEBUG
-    SimTK_ERRCHK(!isNaN(), methodName,
-        "Inertia matrix contains a NaN.");
-
-    const Vec<3,P>& d = I_OF_F.getDiag();  // moments
-    const Vec<3,P>& p = I_OF_F.getLower(); // products
-    const P Ixx = d[0], Iyy = d[1], Izz = d[2];
-    const P Ixy = p[0], Ixz = p[1], Iyz = p[2];
-
-    SimTK_ERRCHK3(d >= -SignificantReal, methodName,
-        "Diagonals of an Inertia matrix must be nonnegative; got %g,%g,%g.",
-        (double)Ixx,(double)Iyy,(double)Izz);
-
-    // TODO: This is looser than it should be as a workaround for distorted
-    // rotation matrices that were produced by an 11,000 body chain that
-    // Sam Flores encountered. 
-    const P Slop = std::max(d.sum(),P(1))
-                       * std::sqrt(NTraits<P>::getEps());
-
-    SimTK_ERRCHK3(   Ixx+Iyy+Slop>=Izz 
-                  && Ixx+Izz+Slop>=Iyy 
-                  && Iyy+Izz+Slop>=Ixx,
-        methodName,
-        "Diagonals of an Inertia matrix must satisfy the triangle "
-        "inequality; got %g,%g,%g.",
-        (double)Ixx,(double)Iyy,(double)Izz);
-
-    // Thanks to Paul Mitiguy for this condition on products of inertia.
-    SimTK_ERRCHK(   Ixx+Slop>=std::abs(2*Iyz) 
-                 && Iyy+Slop>=std::abs(2*Ixz)
-                 && Izz+Slop>=std::abs(2*Ixy),
-        methodName,
-        "The magnitude of a product of inertia was too large to be physical.");
-#endif
+    // OPynSim: never check inertia properties: even in debug mode.
+    //
+    // A large amount of models in the wild have inertia errors that weren't
+    // found because almost noone runs debug builds of OpenSim (in fact, OpenSim
+    // 4.3-4.6 ish can't even pass its own test suite in Debug mode). So it
+    // shouldn't crash/halt a debug build if it's given invalid inertias
+    // because that's become the norm: assertions/checks should either always
+    // happen or only be done for logic bugs.
 }
 
 // Inertia expressed in frame F and about F's origin OF. Note that frame F
