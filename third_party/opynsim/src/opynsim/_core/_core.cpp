@@ -532,7 +532,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
 
         _core_module.def(
             "read_jpeg",
-            [](const std::filesystem::path& source) { return opyn::read_png(source); },
+            [](const std::filesystem::path& source) { return opyn::read_jpeg(source); },
             nb::arg("source"),
             R"(
                 Returns a :class:`graphics.Texture2D` parsed from a ``.jpeg`` file on the caller's
@@ -541,6 +541,13 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 Raises:
                     RuntimeError: If the file cannot be found, read, or is invalid.
             )"
+        );
+
+        _core_module.def(
+            "read_jpg",
+            [](const std::filesystem::path& source) { return opyn::read_jpg(source); },
+            nb::arg("source"),
+            "An alias for :func:`read_jpeg`"
         );
     }
 }

@@ -515,7 +515,18 @@ TEST(opynsim, read_jpeg_works_for_minimal_jpeg_file)
 {
     opyn::init();
 
-    const osc::Texture2D jpeg = read_png(opynsim_tests_resources_directory() / "Documents/minimal.jpeg");
+    const osc::Texture2D jpeg = read_jpeg(opynsim_tests_resources_directory() / "Documents/minimal.jpeg");
+
+    ASSERT_EQ(jpeg.pixel_dimensions(), osc::Vector2i(1, 1));
+    ASSERT_EQ(jpeg.texture_format(), osc::TextureFormat::RGB24);
+    ASSERT_EQ(jpeg.pixels().front(), osc::Color::white());
+}
+
+TEST(opynsim, read_jpg_alias_also_works)
+{
+    opyn::init();
+
+    const osc::Texture2D jpeg = read_jpg(opynsim_tests_resources_directory() / "Documents/minimal.jpeg");
 
     ASSERT_EQ(jpeg.pixel_dimensions(), osc::Vector2i(1, 1));
     ASSERT_EQ(jpeg.texture_format(), osc::TextureFormat::RGB24);

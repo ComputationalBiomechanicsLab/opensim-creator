@@ -94,4 +94,7 @@ namespace opyn
     /// Returns a `Texture2D` parsed from `source`, throws if there's an IO
     /// or data validation error.
     osc::Texture2D read_jpeg(const std::filesystem::path& source);
+
+    /// An alias for `read_jpeg`.
+    osc::Texture2D read_jpg(const std::filesystem::path& source);
 }

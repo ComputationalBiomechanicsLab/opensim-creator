@@ -447,3 +447,8 @@ osc::Texture2D opyn::read_jpeg(const std::filesystem::path& source)
 {
     return read_texture_via_oscar(source);
 }
+
+osc::Texture2D opyn::read_jpg(const std::filesystem::path& source)
+{
+    return read_jpeg(source);
+}
