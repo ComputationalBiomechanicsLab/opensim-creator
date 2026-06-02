@@ -1,0 +1,21 @@
+Loosens an assertion/check in OpenSim that prevents
+reading the column headers of a table that has headers
+but no data rows. Some STO files in the wild are structured
+like this (probably, erroneously, but the parser shouldn't
+reject it).
+
+---
+
+diff --git a/OpenSim/Common/DataTable.h b/OpenSim/Common/DataTable.h
+index b059508bf..471cf5d6a 100644
+--- a/OpenSim/Common/DataTable.h
++++ b/OpenSim/Common/DataTable.h
+@@ -994,7 +994,7 @@ public:
+     \throws ColumnIndexOutOfRange If index is out of range for number of columns
+                                   in the table.                               */
+     VectorView getDependentColumnAtIndex(size_t index) const {
+-        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
++        // OPENSIM_THROW_IF(isEmpty(), EmptyTable);  // In OPynSim: Empty tables are permitted, because some studies have them.
+         OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
+                          ColumnIndexOutOfRange, index, 0,
+                          static_cast<size_t>(_depData.ncol() - 1));

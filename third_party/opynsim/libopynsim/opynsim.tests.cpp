@@ -13,12 +13,15 @@
 #include <liboscar/utilities/string_helpers.h>
 
 #include <array>
+#include <ranges>
 #include <string>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
 
 using namespace opyn;
+
+namespace rgs = std::ranges;
 
 TEST(opynsim, read_osim_throws_if_file_doesnt_exist)
 {
@@ -225,13 +228,70 @@ TEST(opynsim, read_sto_permits_legacy_delimiters)
     opyn::init();
 
     const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/legacy_delimiters.sto");
-    std::vector<std::string> expected_column_labels = {"time", "col1"};
-    std::vector<double> expected_times = {0.654092, 0.970842, 0.981167};
-    std::vector<double> expected_values = {0.000000, 0.256537, 0.256537};
+    const std::vector<std::string> expected_column_labels = {"time", "col1"};
+    const std::vector<double> expected_times = {0.654092, 0.970842, 0.981167};
+    const std::vector<double> expected_values = {0.000000, 0.256537, 0.256537};
 
     ASSERT_EQ(df.columns(), expected_column_labels);
     ASSERT_EQ(df["time"].to_list(), expected_times);
     ASSERT_EQ(df["col1"].to_list(), expected_values);
+}
+
+TEST(opynsim, read_sto_can_read_empty_sto_files)
+{
+    // STO files in the wild can sometimes pop up that contain just the headers
+    // but no data rows. These should be accepted, rather than throwing an exception,
+    // so that the caller can at least see what headers/attrs (metadata) was parsed
+    // from the file.
+
+    opyn::init();
+
+    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/table_is_empty.sto");
+    const std::vector<std::string> expected_column_labels = {"time", "col1", "col2", "col3"};
+    ASSERT_EQ(df.height(), 0);
+    ASSERT_EQ(df.columns(), expected_column_labels);
+    ASSERT_EQ(df["time"].size(), 0);
+}
+
+TEST(opynsim, read_sto_fills_missing_data_cells_with_NaNs) {
+    // STO files in the wild can sometimes be missing values for trailing
+    // cells - probably because the researcher concatenated some text files,
+    // there was a bug in a reporter/script somewhere, or similar.
+    //
+    // The missing cells are filled with NaNs, which is similar to how Python
+    // dataframe libraries like `pandas` behave.
+
+    opyn::init();
+
+    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/missing_data_cells.sto");
+    const std::vector<std::string> expected_column_labels = {"time", "col1", "col2", "col3"};
+    const std::vector<double> expected_time_values = {0.14167000, 0.15000000, 0.15833000, 0.16667000};
+    const std::vector<double> expected_col1_values = {-0.03791000, -0.02974300, -0.02206300, -0.01457500};
+    const std::vector<double> expected_col2_values = {-0.29808000, osc::quiet_nan_v<double>, 0.73455400, 0.73537100};
+    const std::vector<double> expected_col3_values = {osc::quiet_nan_v<double>, osc::quiet_nan_v<double>, -0.29808000, -0.30013700};
+
+    const auto equal_to_incl_nans = [](double lhs, double rhs)
+    {
+        return lhs == rhs or (std::isnan(lhs) and std::isnan(rhs));
+    };
+
+    ASSERT_EQ(df.columns(), expected_column_labels);
+    ASSERT_EQ(df["time"].to_list(), expected_time_values);
+    ASSERT_TRUE(rgs::equal(df["col1"], expected_col1_values, equal_to_incl_nans));
+    ASSERT_TRUE(rgs::equal(df["col2"], expected_col2_values, equal_to_incl_nans));
+    ASSERT_TRUE(rgs::equal(df["col3"], expected_col3_values, equal_to_incl_nans));
+}
+
+TEST(opynsim, read_sto_throws_when_row_has_too_many_columns)
+{
+    // STO files that contain a data row with too many values should throw an exception
+    // by default. Python APIs like pandas/polars offer workarounds like `on_bad_lines="skip"`
+    // and `truncate_ragged_lines=True` to deal with these kinds of files, which may
+    // be added to OPynSim later.
+
+    opyn::init();
+
+    ASSERT_ANY_THROW({ read_sto(opynsim_tests_resources_directory() / "Documents/sto/too_many_data_cells.sto"); });
 }
 
 TEST(opynsim, read_mot_works_on_minimal_example)

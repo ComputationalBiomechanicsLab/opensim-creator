@@ -15,6 +15,9 @@ namespace opyn
     // Related: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089017/SimTK+Simulation+Concepts
     class ModelState final {
     public:
+        /// Constructs an empty model state.
+        ModelState();
+
         ModelStateStage stage() const;
     private:
         friend class Model;

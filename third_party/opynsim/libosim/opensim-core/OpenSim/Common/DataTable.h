@@ -994,7 +994,7 @@ public:
     \throws ColumnIndexOutOfRange If index is out of range for number of columns
                                   in the table.                               */
     VectorView getDependentColumnAtIndex(size_t index) const {
-        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
+        // OPENSIM_THROW_IF(isEmpty(), EmptyTable);  // In OPynSim: Empty tables are permitted, because some studies have them.
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
                          ColumnIndexOutOfRange, index, 0,
                          static_cast<size_t>(_depData.ncol() - 1));

@@ -162,6 +162,10 @@ private:
     readElems_impl(const std::vector<std::string>& tokens,
                    SimTK::Vec<M>) const;
 
+    T nanElem_impl() const;
+    template<int M>
+    SimTK::Vec<M> nanElem_impl() const;
+
     /** Following overloads implement writeElem().                            */
     inline void writeElem_impl(std::ostream& stream,
                                const double& elem,
@@ -442,8 +446,18 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
         row.erase(row.begin());
 
         auto row_vector = readElems(row);
+        if (row_vector.size() < (int)column_labels.size()) {
+            // OPynSim modification: if there's too few data cells, fill the
+            // missing ones with NaNs (mimics pandas behavior).
+            row_vector.resizeKeep(column_labels.size());
+            for (int i = row_vector.size(); i < column_labels.size(); ++i) {
+                row_vector[i] = nanElem_impl();
+            }
+        }
 
-        OPENSIM_THROW_IF(row_vector.size() != (int)column_labels.size(),
+        // OPynSim modification: it's still an error to have too many data
+        // values for the column labels.
+        OPENSIM_THROW_IF(row_vector.size() > (int)column_labels.size(),
             RowLengthMismatch,
             fileName,
             line_num,
@@ -567,7 +581,72 @@ DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
 
     return elems;
 }
-  
+
+template<>
+inline double DelimFileAdapter<double>::nanElem_impl() const {
+    return std::numeric_limits<double>::quiet_NaN();
+}
+template<>
+inline SimTK::Vec<2> DelimFileAdapter<SimTK::Vec<2>>::nanElem_impl() const {
+    return SimTK::Vec<2>{std::numeric_limits<double>::quiet_NaN()};
+}
+template<>
+inline SimTK::Vec<3> DelimFileAdapter<SimTK::Vec<3>>::nanElem_impl() const {
+    return SimTK::Vec<3>{std::numeric_limits<double>::quiet_NaN()};
+}
+template<>
+inline SimTK::Vec<4> DelimFileAdapter<SimTK::Vec<4>>::nanElem_impl() const {
+    return SimTK::Vec<4>{std::numeric_limits<double>::quiet_NaN()};
+}
+template<>
+inline SimTK::Vec<5> DelimFileAdapter<SimTK::Vec<5>>::nanElem_impl() const {
+    return SimTK::Vec<5>{std::numeric_limits<double>::quiet_NaN()};
+}
+template<>
+inline SimTK::Vec<6> DelimFileAdapter<SimTK::Vec<6>>::nanElem_impl() const {
+    return SimTK::Vec<6>{std::numeric_limits<double>::quiet_NaN()};
+}
+template<>
+inline SimTK::Vec<7> DelimFileAdapter<SimTK::Vec<7>>::nanElem_impl() const {
+    return SimTK::Vec<7>{std::numeric_limits<double>::quiet_NaN()};
+}
+template<>
+inline SimTK::Vec<8> DelimFileAdapter<SimTK::Vec<8>>::nanElem_impl() const {
+    return SimTK::Vec<8>{std::numeric_limits<double>::quiet_NaN()};
+}
+template<>
+inline SimTK::Vec<9> DelimFileAdapter<SimTK::Vec<9>>::nanElem_impl() const {
+    return SimTK::Vec<9>{std::numeric_limits<double>::quiet_NaN()};
+}
+template<>
+inline SimTK::Vec<10> DelimFileAdapter<SimTK::Vec<10>>::nanElem_impl() const {
+    return SimTK::Vec<10>{std::numeric_limits<double>::quiet_NaN()};
+}
+template<>
+inline SimTK::Vec<11> DelimFileAdapter<SimTK::Vec<11>>::nanElem_impl() const {
+    return SimTK::Vec<11>{std::numeric_limits<double>::quiet_NaN()};
+}
+template<>
+inline SimTK::Vec<12> DelimFileAdapter<SimTK::Vec<12>>::nanElem_impl() const {
+    return SimTK::Vec<12>{std::numeric_limits<double>::quiet_NaN()};
+}
+template<>
+inline SimTK::UnitVec3 DelimFileAdapter<SimTK::UnitVec3>::nanElem_impl() const {
+    return SimTK::UnitVec3{};
+}
+template<>
+inline SimTK::Quaternion DelimFileAdapter<SimTK::Quaternion>::nanElem_impl() const {
+    auto rv = SimTK::Quaternion{};
+    rv.setQuaternionToNaN();
+    return rv;
+}
+template<>
+inline SimTK::SpatialVec DelimFileAdapter<SimTK::SpatialVec>::nanElem_impl() const {
+    auto rv = SimTK::SpatialVec{};
+    rv.setToNaN();
+    return rv;
+}
+
 template<typename T>
 void
 DelimFileAdapter<T>::extendWrite(const InputTables& absTables, 

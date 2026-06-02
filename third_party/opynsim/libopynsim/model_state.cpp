@@ -42,6 +42,8 @@ namespace
 
 class opyn::ModelState::Impl final {
 public:
+    Impl() = default;
+
     explicit Impl(SimTK::State&& state) : state_{std::move(state)} {}
 
     ModelStateStage stage() const { return to_opynsim_stage(state_.getSystemStage()); }
@@ -52,6 +54,9 @@ private:
     SimTK::State state_;
 };
 
+opyn::ModelState::ModelState() :
+    impl_{osc::make_cow<Impl>()}
+{}
 opyn::ModelState::ModelState(SimTK::State&& state) :
     impl_{osc::make_cow<Impl>(std::move(state))}
 {}
