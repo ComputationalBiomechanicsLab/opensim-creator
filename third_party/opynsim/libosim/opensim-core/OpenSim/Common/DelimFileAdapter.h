@@ -367,12 +367,6 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
                                      DataTypeMismatch,
                                      dataTypeName(),
                                      value);
-                } else if(trimmed_key == _versionString) {
-                    // Discard STO version number. Version number is added
-                    // during writing.
-                } else if(trimmed_key == _opensimVersionString) {
-                    // Discard OpenSim version number. Version number is added
-                    // during writing.
                 } else {
                     keyValuePairs.setValueForKey(key, value);
                 }

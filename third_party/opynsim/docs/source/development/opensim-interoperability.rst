@@ -16,18 +16,17 @@ data that's compatible with tools in the wider OpenSim ecosystem.
 
     OPynSim doesn't aim to emulate or reproduce the original OpenSim
     API. The OpenSim project already ships C++ and Python APIs. You
-    should use it, where applicable. OPynSim ships a different API
-    that is specifically catered for Python interoperability.
+    should them, where applicable. OPynSim ships a different API
+    that is specifically catered for simpler use-cases and Python
+    interoperability.
 
 
 File Format Interoperability
 ----------------------------
 
-It's important that OPynSim supports reading and writing the most
-commonly used data formats used in the OpenSim ecosystem, not
-just ``.osim`` model files. It acts as one infrastructural
-library that handles the users' most common data processing
-requirements.
+It's important that OPynSim supports reading and writing commonly-used
+data formats used in the OpenSim ecosystem, not just ``.osim`` model
+files.
 
 To get an idea of the distribution of data files in the OpenSim
 ecosystem, 226 OpenSim studies were collected from SimTK.org. Their
@@ -44,10 +43,7 @@ files account for 8 %. The rest are either human-readable plaintext
 third-party software (1.9 %, ``.ply``). Which is to say, if you combine
 OPynSim with the Python standard library, ignore MATLAB files, ignore
 macOS metadata files, and edit plaintext documents with a text
-editor then it's possible to parse >95 % of this collection. Other collections
-will contain different files, but it's assumed that other OpenSim-centric
-collections (e.g. paper's, other repositories, Zenodo, etc.) will contain
-many of these data files.
+editor then it's possible to parse >95 % of the collection.
 
 ========== ============== =============================================================================
 Format     Count          Comments
@@ -55,7 +51,7 @@ Format     Count          Comments
 .sto       36718 (45.6%)  OpenSim storage file. :func:`opynsim.read_sto`. Can parse 36711. 7 failures are malformed or contain too many data columns in one row.
 .vtp       13708 (16.9%)  VTK PolyData mesh file. :func:`opynsim.read_vtp`. Can parse 13233. 475 use unsupported appended binary data (415), raw binary data (30), or other unsupported flags (30). Only vertices and faces are parsed (OpenSim legacy behavior).
 .mot       4333 (5.2%)    OpenSim motion file. :func:`opynsim.read_mot`. Can parse 4320. 13 failures are mostly old SIMM files that use a ``range`` key, rather than a ``time`` column.
-.xml       3846 (4.5%)    Generic XML file. Use Python's in-built XML parser or a third-party library.
+.xml       3846 (4.5%)    Generic XML file. Use Python's in-built XML parser or a third-party XML parser.
 .fig       2815 (3.3%)    MATLAB fig file. Use MATLAB to read it.
 .mat       2502 (2.9%)    MATLAB matrix file. Use MATLAB to read it.
 .osim      1870 (2.3%)    OpenSim model file. :func:`opynsim.read_osim`. Can parse 1718. 152 failures require investigation, probably older v1 or v2 files.
@@ -64,10 +60,10 @@ Format     Count          Comments
 .ply       1640 (1.9%)    Polygon file format (mesh data). Use Blender/Meshlab to read it.
 .m         1505 (1.8%)    MATLAB source code. Use MATLAB to read/run it.
 .txt       1101 (1.3%)    Plaintext file. Use a text editor to read it.
-.csv       1067 (1.3%)    Comma-Separated Values file. Use Python's in-built CSV parser or :func:`opynsim.read_csv` (experimental). Beware, :func:`opynsim.read_csv` can only parse 16 of them (!) because it only supports numeric columns.
+.csv       1067 (1.3%)    Comma-Separated Values file. Use Python's in-built CSV parser or :func:`opynsim.read_csv` (experimental). Beware, :func:`opynsim.read_csv` can only parse 16 of them (!) because it currently only supports numeric columns.
 .stl       334 (0.8%)     Standard Triangle Language mesh file. :func:`opynsim.read_stl`. Can parse all of them.
 .png       628 (0.8%)     Portable Network Graphics image file. :func:`opynsim.read_png`. Can parse all of them.
-.h         634 (0.7%)     C/C++ source file. Use a suitable editor to read it.
+.h         634 (0.7%)     C/C++ source file. Use a text editor to read it.
 .obj       564 (0.7%)     Wavefront OBJ mesh file. :func:`opynsim.read_obj`. Can parse 100 % of them.
 .ds_store  502 (0.6%)     macOS hidden metadata file. Can be ignored.
 .pkl       415 (0.5%)     Python pickle file. Use Python's ``pickle`` module to read it.

@@ -22,6 +22,7 @@
 #include <liboscar/platform/log.h>
 #include <liboscar/utilities/assertions.h>
 #include <liboscar/utilities/conversion.h>
+#include <liboscar/utilities/string_helpers.h>
 
 #if defined(WIN32)
 #include <Windows.h>  // `GetEnvironmentVariableA` / `SetEnvironmentVariableA`
@@ -263,12 +264,47 @@ namespace
 
         // Clean out blank "header" metadata (OpenSim adds it but a file isn't strictly
         // required to have anything in it).
-        {
-            const auto it = attrs.find("header");
+        if (const auto it = attrs.find("header"); it != attrs.end()) {
             if (it->second.empty()) {
                 attrs.erase(it);
             }
         }
+
+        // If the file contains an `inDegrees` attribute, normalize it such that "y"
+        // and "yes" (case-insensitive) always become "yes" and anything else always
+        // becomes "no"
+        if (const auto it = attrs.find("inDegrees"); it != attrs.end()) {
+
+            if (   osc::is_equal_case_insensitive(it->second, "y")
+                or osc::is_equal_case_insensitive(it->second, "yes")) {
+
+                it->second = "yes";
+            } else {
+                it->second = "no";
+            }
+        }
+
+        // If the file is exactly version 0 and contains a special angles substring
+        // in the header then that should be coerced into an `inDegrees` key. This
+        // is a backwards compatibility shim because `OpenSim::Storage` works that
+        // way.
+        if (not attrs.contains("inDegrees")
+            and attrs.contains("version")
+            and attrs["version"] == "0"
+            and attrs.contains("header")) {
+
+            if (attrs["header"].contains("Angles are in degrees.")) {
+                attrs["inDegrees"] = "yes";
+            } else if (attrs["header"].contains("Angles are in radians.")) {
+                attrs["inDegrees"] = "no";
+            }
+        }
+
+        // Remove these keys: they're used to parse the file into memory, but once
+        // it's parsed, whatever's re-emitted will have whatever the current version
+        // is.
+        attrs.erase("version");
+        attrs.erase("OpenSimVersion");
 
         return DataFrame{
             std::move(column_names),

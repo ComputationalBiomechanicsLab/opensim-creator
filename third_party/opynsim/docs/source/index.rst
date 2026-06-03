@@ -21,23 +21,19 @@ To get started, see the :doc:`getting-started/installation` page. After that, we
 going through the :doc:`getting-started/quickstart` guide in order to get familiar with the
 Python API.
 
-**Do you want to help develop OPynSim?** Then great ❤️! There's a separate development quickstart
-guide that explains the top-level architecture of OPynSim, sets you up with a development
-environment, and explains the contribution process.
-
 
 Table of Contents
 -----------------
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
     :caption: Getting Started
 
     getting-started/installation
     getting-started/quickstart
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
     :caption: Concepts
 
     concepts/configuration

@@ -1,0 +1,24 @@
+This patch makes OpenSim permit the version and OpenSimVersion
+headers through the DelimFileAdapter API so that downstream
+code in OPynSim can inspect them to perform any legacy fixups
+for old STO and MOT files in the wild.
+
+---
+
+diff --git a/OpenSim/Common/DelimFileAdapter.h b/OpenSim/Common/DelimFileAdapter.h
+index dc0c8523..dc0e26bc 100644
+--- a/OpenSim/Common/DelimFileAdapter.h
++++ b/OpenSim/Common/DelimFileAdapter.h
+@@ -367,12 +367,6 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
+                                      DataTypeMismatch,
+                                      dataTypeName(),
+                                      value);
+-                } else if(trimmed_key == _versionString) {
+-                    // Discard STO version number. Version number is added
+-                    // during writing.
+-                } else if(trimmed_key == _opensimVersionString) {
+-                    // Discard OpenSim version number. Version number is added
+-                    // during writing.
+                 } else {
+                     keyValuePairs.setValueForKey(key, value);
+                 }

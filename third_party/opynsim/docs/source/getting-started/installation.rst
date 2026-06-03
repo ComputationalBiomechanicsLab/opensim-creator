@@ -3,13 +3,12 @@
 Installation
 ============
 
-OPynSim is pre-built for its `supported platforms`_ and uploaded `PyPi <https://pypi.org/project/opynsim/>`_, which
+OPynSim is pre-built for its `supported platforms`_ and uploaded to `PyPi <https://pypi.org/project/opynsim/>`_, which
 means you can easily install it with package managers such as `pip <https://pip.pypa.io>`_ and `uv <https://docs.astral.sh/uv/>`_
 for your project's chosen Python distribution.
 
-``opynsim`` is a fundamental package that's designed to have almost no dependencies. This means
-which you should be able to install it alongside a wide variety of other python packages and
-alternative Python distributions (e.g. `Anaconda <https://anaconda.org/>`_ and
+``opynsim`` is a fundamental package with minimal dependencies, making it compatible with a wide
+variety of other python packages and alternative Python distributions (e.g. `Anaconda <https://anaconda.org/>`_ and
 `Miniforge <https://github.com/conda-forge/miniforge>`_).
 
 pip
@@ -72,26 +71,20 @@ environment . For example, like this:
 
 .. _supported-platforms:
 
+
 Supported Platforms
 -------------------
 
-OPynSim isn't a pure Python library. It contains a native Python extension module,
-which means it's only compatible with the platforms that it's built for. The following
-platforms are currently supported:
+OPynSim contains a native Python extension module, so it's only compatible with
+the platforms that it's built for. The following platforms are currently built
+and deployed to `PyPi <https://pypi.org/project/opynsim/>`_ by the project:
 
-+----------------+------------------------------------------------------------------------------------------+------------------------+
-| Python Version | Operating System                                                                         | Processor Architecture |
-+================+==========================================================================================+========================+
-| ≥ 3.12         | Windows                                                                                  | amd64 (Intel/AMD)      |
-+----------------+------------------------------------------------------------------------------------------+------------------------+
-| ≥ 3.12         | MacOS ≥ 14.5 (Sonoma)                                                                    | amd64 (Intel)          |
-+----------------+------------------------------------------------------------------------------------------+------------------------+
-| ≥ 3.12         | MacOS ≥ 14.5 (Sonoma)                                                                    | arm64 (Apple Silicon)  |
-+----------------+------------------------------------------------------------------------------------------+------------------------+
-| ≥ 3.12         | manylinux_2_34_x86_64:                                                                   | amd64 (Intel/AMD)      |
-|                |                                                                                          |                        |
-|                | - Debian 12+                                                                             |                        |
-|                | - Ubuntu 21.10+                                                                          |                        |
-|                | - Fedora 35+                                                                             |                        |
-|                | - CentOS/RHEL 9+                                                                         |                        |
-+----------------+------------------------------------------------------------------------------------------+------------------------+
++----------------+------------------------------------------------------------------------------------------+-----------------------------------------+
+| Python Version | Operating System                                                                         | Processor Architecture                  |
++================+==========================================================================================+=========================================+
+| ≥ 3.12         | Windows                                                                                  | amd64 (Intel/AMD)                       |
++----------------+------------------------------------------------------------------------------------------+-----------------------------------------+
+| ≥ 3.12         | MacOS ≥ 14.5 (Sonoma)                                                                    | amd64 (Intel) and arm64 (Apple Silicon) |
++----------------+------------------------------------------------------------------------------------------+-----------------------------------------+
+| ≥ 3.12         | manylinux_2_34_x86_64 (Debian 12+, Ubuntu 21.10+, Fedora 35+, CentOS/RHEL 9+)            | amd64 (Intel/AMD)                       |
++----------------+------------------------------------------------------------------------------------------+-----------------------------------------+

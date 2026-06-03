@@ -21,6 +21,7 @@
 #include <nanobind/ndarray.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/string_view.h>
+#include <nanobind/stl/unordered_map.h>
 #include <nanobind/stl/variant.h>
 #include <nanobind/stl/vector.h>
 
@@ -91,6 +92,18 @@ namespace
         )");
         cls.def("__repr__", osc::stream_to_string<DataFrame>);
         cls.def("__str__", osc::stream_to_string<DataFrame>);
+        cls.def_prop_ro(
+            "attrs",
+            &DataFrame::attrs,
+            R"(
+                Returns the attributes (metadata) associated with this `DataFrame`.
+
+                These entries are nominally metadata, but can affect the behavior of functions that
+                read data from :class:`DataFrame`\s. Notably, functions like :meth:`opynsim.Model.states_from_dataframe`
+                look for attributes like 'inDegrees' to perform on-the-fly degrees-to-radians conversions on
+                legacy data files.
+            )"
+        );
     }
 }
 

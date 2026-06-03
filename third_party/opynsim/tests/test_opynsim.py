@@ -29,6 +29,71 @@ def test_read_sto_can_read_and_print_a_basic_sto_file():
 | 1.0  | 4.0     | 6.0     |
 """
 
+def test_read_sto_attrs_contains_expected_basic_headers():
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/two_data_columns.sto")
+    expected_attrs = {"meta1": "a", "meta2": "b"}
+
+    assert df.attrs == expected_attrs
+
+def test_read_sto_attrs_contains_in_degrees_when_yes_in_sto_header():
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/in_degrees.sto")
+    expected_attrs = {"inDegrees": "yes"}
+
+    assert df.attrs == expected_attrs
+
+def test_read_sto_attrs_contains_in_degrees_when_no_in_sto_header():
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/in_radians.sto")
+    expected_attrs = {"inDegrees": "no"}
+
+    assert df.attrs == expected_attrs
+
+def test_read_sto_attrs_normalizes_in_degrees_to_yes_when_passed_legacy_y_entry():
+    # Legacy STO file parsers accepted both "yes" and "y" (case-insensitive) for the
+    # `inDegrees` key. This should be normalized by the backend so that downstream
+    # code doesn't need to be aware of this legacy behavior.
+
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/in_degrees_legacy_y.sto")
+    expected_attrs = {"inDegrees": "yes"}
+
+    assert df.attrs == expected_attrs
+
+def test_read_sto_attrs_normalizes_in_degrees_to_yes_when_given_case_insensitive_format():
+    # Legacy STO file parsers handled the `inDegrees` key in a case-insensitive way. Meaning
+    # `inDegrees=YES`, `inDegrees=yes`, and `inDegrees=YeS` all behave the same. Similar story
+    # for `inDegrees=y` and `inDegrees=Y`: all should be normalized to `inDegrees=yes` so that
+    # downstream code doesn't need to be aware of this legacy behavior.
+
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/in_degrees_case_insensitive_yes.sto")
+    expected_attrs = {"inDegrees": "yes"}
+
+    assert df.attrs == expected_attrs
+
+def test_read_sto_handles_weird_angles_in_degrees_string_match():
+    # Legacy STO file parsers had an edge-case where they'd handle version=0 files
+    # with a line containing "Angles are in degrees." as equivalent to `inDegrees=yes`.
+
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/in_degrees_angles_header.sto")
+    expected_attrs = {"header": "Angles are in degrees.", "inDegrees": "yes"}
+
+    assert df.attrs == expected_attrs
+
+def test_read_sto_handles_weird_angles_in_radians_string_match():
+    # Legacy STO file parsers had an edge-case where they'd handle version=0 files
+    # with a line containing "Angles are in degrees." as equivalent to `inDegrees=yes`.
+
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/in_radians_angles_header.sto")
+    expected_attrs = {"header": "Angles are in radians.", "inDegrees": "no"}
+
+    assert df.attrs == expected_attrs
+
+def test_read_sto_doesnt_add_in_degrees_when_not_mentioned():
+    # With STO files, the absence of an inDegrees header implies the data is in radians.
+
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/in_radians_implicit.sto")
+    expected_attrs = {}
+
+    assert df.attrs == expected_attrs
+
 def test_read_mot_can_read_and_print_a_basic_mot_file():
     df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/one_data_column.mot")
 
