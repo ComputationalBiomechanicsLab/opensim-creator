@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <ranges>
 #include <utility>
 #include <vector>
 
@@ -29,6 +30,12 @@ namespace opyn
 
         /// Returns a shared handle to the element at specified location `pos`, with bounds checking.
         shared_handle handle_at(size_t pos) { return states_.at(pos); }
+
+    private:
+        auto view() const { return states_ | std::views::transform([](const auto& handle) -> const_reference { return *handle; }); }
+    public:
+        auto begin() const { return view().begin(); }
+        auto end() const { return view().end(); }
 
     private:
         std::vector<shared_handle> states_;

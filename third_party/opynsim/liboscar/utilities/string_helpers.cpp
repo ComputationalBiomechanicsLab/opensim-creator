@@ -148,6 +148,18 @@ std::string_view osc::substring_after_last(std::string_view sv, std::string_view
     }
 }
 
+std::optional<std::pair<std::string_view, std::string_view>> osc::rsplit_once(
+    std::string_view sv,
+    std::string_view::value_type delimiter)
+{
+    const auto pos = sv.find_last_of(delimiter);
+    if (pos == std::string_view::npos) {
+        return std::nullopt;
+    }
+
+    return std::pair{sv.substr(0, pos), sv.substr(pos+1)};
+}
+
 std::pair<char, char> osc::to_hex_chars(uint8_t b)
 {
     static_assert((std::numeric_limits<decltype(b)>::max() & 0xf) < c_nibble_to_character_lut.size());

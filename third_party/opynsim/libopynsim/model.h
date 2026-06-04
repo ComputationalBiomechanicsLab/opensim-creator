@@ -3,17 +3,19 @@
 #include <libopynsim/graphics/open_sim_decoration_options.h>
 #include <libopynsim/model_state.h>
 #include <libopynsim/model_state_stage.h>
+#include <libopynsim/model_states.h>
 #include <libopynsim/output_value.h>
 #include <libopynsim/symbol.h>
 
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/utilities/copy_on_upd_ptr.h>
 
+#include <string>
 #include <vector>
 
 namespace osc { class SceneCache; }
-
 namespace OpenSim { class Model; }
+namespace opyn { class DataFrame; }
 
 namespace opyn
 {
@@ -29,6 +31,10 @@ namespace opyn
         /// the state that was defined by the `ModelSpecification` used
         /// to build this model.
         ModelState initial_state() const;
+
+        /// Returns the names of the columns in `data_frame` that can
+        /// be associated with rotational coordinates in this `Model`.
+        std::vector<std::string> rotational_columns_in(const DataFrame& data_frame) const;
 
         /// Realize `model_state` to the given `model_state_stage`.
         void realize(ModelState& model_state, ModelStateStage model_state_stage) const;

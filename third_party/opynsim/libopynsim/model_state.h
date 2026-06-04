@@ -18,7 +18,11 @@ namespace opyn
         /// Constructs an empty model state.
         ModelState();
 
+        /// Returns the `ModelStateStage` that this state has been realized to.
         ModelStateStage stage() const;
+
+        /// Returns the time point, in seconds, that this state represents.
+        double time() const;
     private:
         friend class Model;
         explicit ModelState(SimTK::State&&);

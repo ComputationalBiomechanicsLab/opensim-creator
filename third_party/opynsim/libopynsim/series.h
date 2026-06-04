@@ -29,6 +29,9 @@ namespace opyn
         /// Returns the shape (rows) of this `Series`.
         std::tuple<size_t> shape() const;
 
+        /// Returns `true` if this `Series` contains no rows.
+        [[nodiscard]] bool empty() const;
+
         /// Returns the number of rows in this `Series`.
         size_type size() const;
 
@@ -44,8 +47,30 @@ namespace opyn
         /// Converts this `Series` into a list of its values.
         std::vector<double> to_list() const;
 
+        /// Returns a new `Series` with the same `name` as `*this`, but with
+        /// each data value replaced by `f(value)`.
+        Series map_elements(const std::function<double(double)>& f) const;
     private:
+        friend bool operator==(const Series&, const Series&);
+        friend Series operator*(double, const Series&);
+        friend Series operator*(const Series&, double);
+
         class Impl;
         osc::CopyOnUpdPtr<Impl> impl_;
     };
+
+    /// Returns `true` all members of `lhs` compare equivalent to `rhs`.
+    ///
+    /// Note: This operator confirms to IEEE 754 and C++'s regular type invariants,
+    /// which means identity checks are non-reflexive for special values. Therefore,
+    /// if either `lhs` or `rhs` contains `NaN`, this operator will return `false`.
+    bool operator==(const Series& lhs, const Series& rhs);
+
+    /// Returns a new `Series` with the same name as `rhs`, but with each
+    /// of its data values multiplied by `lhs`.
+    Series operator*(double lhs, const Series& rhs);
+
+    /// Returns a new `Series` with the same name as `lhs`, but with each
+    /// of its data values multiplied by `rhs`.
+    Series operator*(const Series& lhs, double rhs);
 }

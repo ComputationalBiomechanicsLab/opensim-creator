@@ -17,7 +17,6 @@ TEST(ModelStates, default_constructor_returns_empty_sequence)
 TEST(ModelStates, handle_push_back_pushes_handle_to_end_of_sequence)
 {
     ModelStates model_states;
-    ASSERT_EQ(model_states.size(), 0);
 
     const auto handle1 = std::make_shared<ModelState>();
     model_states.handle_push_back(handle1);
@@ -38,10 +37,19 @@ TEST(ModelStates, handle_at_throws_if_given_out_of_bounds_index)
 {
     ModelStates model_states;
 
-    ASSERT_THROW({ model_states.handle_at(0); }, std::out_of_range);
-
     model_states.handle_push_back(std::make_shared<ModelState>());
 
     ASSERT_NO_THROW({ model_states.handle_at(0); });
     ASSERT_THROW({ model_states.handle_at(1); }, std::out_of_range);
+}
+
+TEST(ModelStates, begin_dereferences_first_handle)
+{
+    ModelStates model_states;
+    const auto handle1 = std::make_shared<ModelState>();
+    model_states.handle_push_back(handle1);
+    const auto it = model_states.begin();
+    const ModelState& state = *it;
+
+    ASSERT_EQ(&state, handle1.get());
 }

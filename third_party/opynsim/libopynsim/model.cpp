@@ -2,6 +2,7 @@
 
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
+#include <libopynsim/data_frame.h>
 #include <libopynsim/model_state.h>
 #include <libopynsim/output_value.h>
 
@@ -12,15 +13,20 @@
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/utilities/conversion.h>
 #include <liboscar/utilities/copy_on_upd_ptr.h>
+#include <liboscar/utilities/string_helpers.h>
 #include <liboscar/utilities/typelist.h>
 
 #include <algorithm>
 #include <array>
+#include <concepts>
 #include <iterator>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <typeindex>
 #include <typeinfo>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 using namespace opyn;
@@ -153,6 +159,62 @@ namespace
 
         return rv;
     }
+
+    const OpenSim::Coordinate* find_rotational_coordinate_matching_name(
+        const OpenSim::Model& model,
+        std::string_view name)
+    {
+        // Matching has some legacy behaviors (see `OpenSim::SimbodyEngine::scaleRotationDofColumns`). The
+        // following names from data columns must be tested:
+        //
+        // - `${name}`                             Flat name, used in OpenSim 3.x (directly maps to a state variable/coordinate)
+        // - `${name}_u`                           Flat name for coordinate speed, used in OpenSim 3.x
+        // - `${name}_vel`                         Flat name for coordinate speed, used in SIMM and OpenSim 1-2
+        // - `${name}_acc`                         Flat name for coordinate acceleration, used in SIMM and OpenSim 1-2 when using RRA or CMC (RARE)?
+        // - `/${name}/value`                      Used in early OpenSim 4.0 betas? Legacy?
+        // - `/${name}/speed`                      Early OpenSim 4.0 betas? Legacy?
+        // - `/jointset/joint_name/${name}`        OpenSim 4.x
+        // - `/jointset/joint_name/${name}/value`  OpenSim 4.x
+        // - `/jointset/joint_name/${name}/speed`  OpenSim 4.x
+        //
+        // Additionally, these exist but don't count here (e.g. found online or from other sources,
+        // such as OpenSim GUI v4.6: `MotionDisplayer.java`):
+        //
+        // - `${name}_torque`                      Generalized coordinate "torque"
+        // - `${name}_force`                       Generalized coordinate "force"
+        // - `${FORCE_NAME} == some.dot.separated` Means "state of a muscle/force"
+        // - `${name}_sig`                         Flat name for a control signal related to a coordinate, used in OpenSim 3.x (RARE)
+
+        // See: `TableUtilities::findStateLabelIndexInternal`
+
+        // Normalize OpenSim 4.x paths to always be `/before/${name}`
+        if (const auto split = osc::rsplit_once(name, '/')) {
+            if (split->second == "value" or split->second == "speed") {
+                name = split->first;  // `/maybe/before/${name}/value` --> `/maybe/before/${name}`
+            }
+        }
+
+        // Drop any prefixes from a path hierarchy
+        if (const auto split = osc::rsplit_once(name, '/')) {
+            name = split->second;  // `/maybe/before/${name}` --> `${name}`
+        }
+
+        // Handle legacy "Flat name" suffixes
+        constexpr auto legacy_suffixes = std::to_array<std::string_view>({"_u", "_vel", "_acc"});
+        for (const auto& suffix : legacy_suffixes) {
+            if (name.ends_with(suffix)) {
+                name = name.substr(0, name.size() - suffix.size());
+            }
+        }
+
+        // `name` is now normalized, go search for it in `model`
+        for (const auto& coordinate : model.getComponentList<OpenSim::Coordinate>()) {
+            if (coordinate.getName() == name and coordinate.getMotionType() == OpenSim::Coordinate::Rotational) {
+                return &coordinate;
+            }
+        }
+        return nullptr;
+    }
 }
 
 class opyn::Model::Impl final {
@@ -166,6 +228,17 @@ public:
         // Copy the working state out of the model, so that the caller gets
         // an independent state.
         return ModelState{SimTK::State{model_.getWorkingState()}};
+    }
+
+    std::vector<std::string> rotational_columns_in(const DataFrame& data_frame) const
+    {
+        std::vector<std::string> rv;
+        for (const auto& series : data_frame) {
+            if (find_rotational_coordinate_matching_name(model_, series.name())) {
+                rv.emplace_back(series.name());
+            }
+        }
+        return rv;
     }
 
     void realize(ModelState& state, ModelStateStage stage) const
@@ -263,6 +336,11 @@ opyn::Model::Model(const OpenSim::Model& model) :
 opyn::ModelState opyn::Model::initial_state() const
 {
     return impl_->initial_state();
+}
+
+std::vector<std::string> opyn::Model::rotational_columns_in(const DataFrame& data_frame) const
+{
+    return impl_->rotational_columns_in(data_frame);
 }
 
 void opyn::Model::realize(ModelState& model_state, ModelStateStage model_state_stage) const

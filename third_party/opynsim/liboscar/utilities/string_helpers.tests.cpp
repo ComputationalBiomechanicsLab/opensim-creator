@@ -12,6 +12,7 @@
 #include <vector>
 
 using namespace osc;
+using std::literals::string_view_literals::operator ""sv;
 
 TEST(contains_case_insensitive, returns_true_if_search_string_is_empty)
 {
@@ -371,5 +372,24 @@ TEST(replace, works_as_intended)
     for (const auto& test_case : test_cases) {
         const std::string output = replace(test_case.str, test_case.from, test_case.to);
         ASSERT_EQ(output, test_case.expected_output);
+    }
+}
+
+TEST(rsplit_once, works_as_intended)
+{
+    struct TestCase final {
+        std::string_view input;
+        std::string_view::value_type delimiter;
+        std::optional<std::pair<std::string_view, std::string_view>> expected_output;
+    };
+    constexpr auto test_cases = std::to_array<TestCase>({
+        {"a/b/c", '/', std::pair{"a/b"sv, "c"sv}},
+        {"a/b.c", '.', std::pair{"a/b"sv, "c"sv}},
+        {"",      '/', std::nullopt},
+        {"/",     '/', std::pair{""sv, ""sv}},
+    });
+    for (const auto& [input, delimiter, expected_output] : test_cases) {
+        const auto output = rsplit_once(input, delimiter);
+        ASSERT_EQ(output, expected_output);
     }
 }

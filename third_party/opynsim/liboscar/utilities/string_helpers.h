@@ -52,6 +52,13 @@ namespace osc
     // the end of `sv`, or `sv` if `delimiter` does not occur within `sv`.
     std::string_view substring_after_last(std::string_view sv, std::string_view::value_type delimiter);
 
+    // Splits `sv` on the last occurrence of `delimiter` and returns the prefix
+    // before `delimiter` and suffix after `delimiter`.
+    std::optional<std::pair<std::string_view, std::string_view>> rsplit_once(
+        std::string_view sv,
+        std::string_view::value_type delimiter
+    );
+
     // converts the given byte into a 2-length hex character representation
     //
     // e.g. 0x00 --> ('0', '0')

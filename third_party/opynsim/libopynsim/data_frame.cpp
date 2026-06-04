@@ -127,6 +127,25 @@ opyn::DataFrame::const_reference opyn::DataFrame::operator[](std::string_view na
     return series_.at(column_to_index_lookup_.at(std::string{name}));
 }
 
+opyn::DataFrame opyn::DataFrame::with_series(Series series) const
+{
+    OSC_ASSERT_ALWAYS((this->empty() or this->height() == series.size()) && "DataFrame::with_series was called on a nonempty `DataFrame` with a `Series` of the wrong size");
+
+    DataFrame rv{*this};
+    const auto& [index_iterator, inserted] = rv.column_to_index_lookup_.try_emplace(
+        std::string{series.name()},
+        rv.series_.size()
+    );
+    if (inserted) {
+        rv.series_.push_back(std::move(series));
+    } else {
+        rv.series_[index_iterator->second] = std::move(series);
+    }
+    return rv;
+}
+
+bool opyn::operator==(const DataFrame&, const DataFrame&)= default;
+
 std::ostream& opyn::operator<<(std::ostream& out, const DataFrame& data_frame)
 {
     static constexpr size_t num_head_data_rows = 5;
