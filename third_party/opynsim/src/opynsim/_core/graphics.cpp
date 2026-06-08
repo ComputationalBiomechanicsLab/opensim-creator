@@ -1,6 +1,6 @@
 #include "graphics.h"
 
-#include <opynsim/_core/core.h>
+#include <opynsim/_core/_core.h>
 
 #include <libopynsim/graphics/render_model_in_state.h>
 #include <libopynsim/model.h>

@@ -3,6 +3,7 @@
 #include <liboscar/utilities/string_name.h>
 
 #include <functional>
+#include <iosfwd>
 #include <string_view>
 
 namespace opyn
@@ -26,11 +27,17 @@ namespace opyn
 
         /// Returns a `std::string_view` of the contents of this `Symbol`
         explicit operator std::string_view () const { return std::string_view{data_}; }
+
+        /// Returns the name (key, content) of this `Symbol`.
+        std::string_view name() const { return data_.name(); }
     private:
         friend struct std::hash<Symbol>;
 
         osc::StringName data_;
     };
+
+    /// Writes "Symbol(name={symbol.name()})" to `ostream`.
+    std::ostream& operator<<(std::ostream& ostream, const opyn::Symbol& symbol);
 }
 
 template<>

@@ -44,7 +44,7 @@ namespace opyn
         /// Returns an iterator past the last value in `*this`.
         const_iterator end() const;
 
-        /// Converts this `Series` into a list of its values.
+        /// Converts this `Series` into a `std::vector` of its values.
         std::vector<double> to_list() const;
 
         /// Returns a new `Series` with the same `name` as `*this`, but with

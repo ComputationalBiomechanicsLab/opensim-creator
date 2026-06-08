@@ -33,10 +33,29 @@ namespace opyn
         ModelState initial_state() const;
 
         /// Returns the names of the columns in `data_frame` that can
-        /// be associated with rotational coordinates in this `Model`.
+        /// be mapped to rotational state variables in this `Model` in
+        /// the column-order of `data_frame`.
         std::vector<std::string> rotational_columns_in(const DataFrame& data_frame) const;
 
-        /// Realize `model_state` to the given `model_state_stage`.
+        /// Returns associative mappings between the names of columns in
+        /// `data_frame` and state variables in this `Model`, where the
+        /// correspondence can be found.
+        std::unordered_map<std::string, Symbol> column_to_state_variable_mappings(const DataFrame& data_frame) const;
+
+        /// Returns `ModelStates` constructed from `data_frame`.
+        ///
+        /// Columns in `data_frame` will be mapped to state variables in this
+        /// `Model` (see: `column_to_state_variable_mappings`). Each row in
+        /// `data_frame` constructs one state in the returned `ModelStates`, in
+        /// row-order.
+        ///
+        /// If `data_frame.attrs()["inDegrees"] == "yes"` then rotational columns in
+        /// `data_frame` will be automatically converted into radians internally
+        /// (see: `rotational_columns_in`). This is to support `DataFrame`s loaded
+        /// from legacy data sources.
+        ModelStates states_from_data_frame(const DataFrame& data_frame) const;
+
+        /// Realizes `model_state` to the given `model_state_stage`.
         void realize(ModelState& model_state, ModelStateStage model_state_stage) const;
 
         size_t num_coordinates() const;

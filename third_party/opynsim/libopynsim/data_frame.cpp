@@ -92,6 +92,8 @@ opyn::DataFrame::DataFrame(
     attrs_{std::move(attrs)}
 {}
 
+bool opyn::DataFrame::operator==(const DataFrame&) const = default;
+
 std::vector<std::string> opyn::DataFrame::columns() const
 {
     std::vector<std::string> rv;
@@ -122,9 +124,22 @@ std::unordered_map<std::string, std::string> opyn::DataFrame::attrs() const
     return attrs_;
 }
 
+void opyn::DataFrame::set_attrs(std::unordered_map<std::string, std::string> new_attrs)
+{
+    attrs_ = std::move(new_attrs);
+}
+
 opyn::DataFrame::const_reference opyn::DataFrame::operator[](std::string_view name) const
 {
     return series_.at(column_to_index_lookup_.at(std::string{name}));
+}
+
+opyn::DataFrame::const_iterator opyn::DataFrame::find(std::string_view name) const
+{
+    if (const auto it = column_to_index_lookup_.find(std::string{name}); it != column_to_index_lookup_.end()) {
+        return series_.begin() + it->second;
+    }
+    return end();
 }
 
 opyn::DataFrame opyn::DataFrame::with_series(Series series) const
@@ -132,6 +147,7 @@ opyn::DataFrame opyn::DataFrame::with_series(Series series) const
     OSC_ASSERT_ALWAYS((this->empty() or this->height() == series.size()) && "DataFrame::with_series was called on a nonempty `DataFrame` with a `Series` of the wrong size");
 
     DataFrame rv{*this};
+    rv.attrs_.clear();
     const auto& [index_iterator, inserted] = rv.column_to_index_lookup_.try_emplace(
         std::string{series.name()},
         rv.series_.size()
@@ -143,8 +159,6 @@ opyn::DataFrame opyn::DataFrame::with_series(Series series) const
     }
     return rv;
 }
-
-bool opyn::operator==(const DataFrame&, const DataFrame&)= default;
 
 std::ostream& opyn::operator<<(std::ostream& out, const DataFrame& data_frame)
 {

@@ -898,7 +898,7 @@ namespace
             if (widget_) {
                 try {
                     widget_->on_mount();
-                } catch (const std::exception& ex) {
+                } catch (const std::exception&) {
                     std::stringstream ss;
                     ss << "Error mounting '" << widget_->name() << '\'';
                     std::throw_with_nested(std::runtime_error{std::move(ss).str()});
@@ -1181,10 +1181,13 @@ namespace
             }
 
             if (not widget_) {
-                return false;
+                return false;  // The window isn't showing an event yet.
             }
 
             auto e = try_parse_into_event(sdl_event, dimensions(), [this]{ return os_to_main_window_device_independent_ratio(); });
+            if (not e) {
+                return false;  // Could not parse the OS event into an `osc::Event`.
+            }
 
             bool handled = widget_->on_event(*e);
             if (next_widget_) {

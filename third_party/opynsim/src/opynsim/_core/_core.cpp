@@ -1,4 +1,4 @@
-#include "core.h"
+#include "_core.h"
 
 #include <opynsim/_core/config.h>
 #include <opynsim/_core/examples.h>
@@ -17,8 +17,9 @@
 #include <libopynsim/opynsim.h>
 #include <libopynsim/symbol.h>
 #include <nanobind/nanobind.h>
-#include <nanobind/stl/filesystem.h>
 #include <nanobind/ndarray.h>
+#include <nanobind/stl/filesystem.h>
+#include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/string_view.h>
 #include <nanobind/stl/unordered_map.h>
@@ -39,8 +40,7 @@ using namespace opyn;
 
 namespace nb = nanobind;
 
-namespace
-{
+namespace {
     std::unique_ptr<OPynSimApp> g_lazy_loaded_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     template<typename CppType>
@@ -105,61 +105,11 @@ namespace
             )"
         );
     }
-}
 
-opyn::OPynSimApp& opyn::get_lazy_loaded_opynsim_app()
-{
-    if (not g_lazy_loaded_app) {
-        g_lazy_loaded_app = std::make_unique<OPynSimApp>();
-    }
-    return *g_lazy_loaded_app;
-}
-
-void opyn::destroy_lazy_loaded_opynsim_app()
-{
-    g_lazy_loaded_app.reset();
-}
-
-NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables,misc-use-anonymous-namespace)
-{
-    // Install an exit handler that cleans up any lazy-loaded application state
-    // when the Python interpreter shuts down
-    nb::module_::import_("atexit").attr("register")(nb::cpp_function(&destroy_lazy_loaded_opynsim_app));
-
-    // Initialize `config` submodule (also initializes the `opynsim` C++ API, logging, etc.).
-    {
-        auto config_submodule = _core_module.def_submodule("config");
-        init_config_submodule(config_submodule);
-    }
-
-    // Initialize `examples` submodule.
-    {
-        auto examples_submodule = _core_module.def_submodule("examples");
-        init_examples_submodule(examples_submodule);
-    }
-
-    // Initialize `graphics` submodule.
-    {
-        auto graphics_submodule = _core_module.def_submodule("graphics");
-        init_graphics_submodule(graphics_submodule);
-    }
-
-    // Initialize `tps3d` submodule.
-    {
-        auto tps3d_submodule = _core_module.def_submodule("tps3d");
-        init_tps3d_submodule(tps3d_submodule);
-    }
-
-    // Initialize `ui` submodule.
-    {
-        auto ui_submodule = _core_module.def_submodule("ui");
-        init_ui_submodule(ui_submodule);
-    }
-
-    // Initialize top-level functions/classes
+    void register_symbol_class(nb::module_& m)
     {
         nb::class_<Symbol> symbol_class(
-            _core_module,
+            m,
             "Symbol",
             R"(
                 Represents an immutable, cheap-to-use, readable symbol.
@@ -193,9 +143,12 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         symbol_class.def("__eq__",   [](const Symbol& self, std::string_view rhs) { return self == rhs; });
         symbol_class.def("__contains__", [](const Symbol& self, std::string_view rhs) { return static_cast<std::string_view>(self).find(rhs) != std::string_view::npos; });
         nb::implicitly_convertible<std::string_view, Symbol>();
+    }
 
+    void register_model_specification_class(nb::module_& m)
+    {
         nb::class_<ModelSpecification> model_specification_class(
-            _core_module,
+            m,
             "ModelSpecification",
             R"(
                 A high-level specification for a :class:`Model`.
@@ -230,9 +183,12 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                         the provided :class:`ModelSpecification` is valid.
             )"
         );
+    }
 
+    void register_model_class(nb::module_& m)
+    {
         nb::class_<Model> model_class(
-            _core_module,
+            m,
             "Model",
             R"(
                 A validated, optimized, compiled, and ready-to-simulate model of a physics system.
@@ -274,6 +230,55 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 Therefore, it's recommended that callers perform any state modifications they need followed by
                 calling :meth:`realize` with a :class:`ModelStateStage` that's suitable for their desired
                 needs (e.g. user interfaces may need :attr:`ModelStateStage.REPORT`).
+            )"
+        );
+        model_class.def(
+            "column_to_state_variable_mappings",
+            &Model::column_to_state_variable_mappings,
+            nb::arg("data_frame"),
+            R"(
+                Returns associative mappings between the names of columns in
+                ``data_frame`` and state variables in this ``Model``, where
+                the correspondence can be found.
+
+                This mapping uses a variety of heuristics, including (e.g.)
+                accounting for legacy column headers supported by earlier
+                files in SIMM and OpenSim. It is how :meth:`states_from_dataframe`
+                maps dataframes into :class:`ModelState`\s, so it can be
+                useful for debugging why states aren't being read correctly.
+            )"
+        );
+        model_class.def(
+            "rotational_columns_in",
+            &Model::rotational_columns_in,
+            nb::arg("data_frame"),
+            R"(
+                Returns the names of columns in ``data_frame`` that can be
+                mapped to rotational state variables in this ``Model`` in
+                the column-order of ``data_frame``.
+
+                This is how :meth:`states_from_dataframe` automatically converts
+                degrees to radians when ``data_frame.attrs["inDegrees"] == "yes"``,
+                so it can be useful for debugging why states aren't
+                being read correctly.
+            )"
+        );
+        model_class.def(
+            "states_from_dataframe",
+            &Model::states_from_data_frame,
+            nb::arg("data_frame"),
+            R"(
+                Returns :class:`ModelStates` constructed from ``data_frame``.
+
+                Columns in ``data_frame`` will be mapped to state variables in
+                this ``Model`` (see: :meth:`column_to_state_variable_mappings`). Each
+                row in ``data_frame`` constructs one :class:`ModelState` in the returned
+                :class:`ModelStates`, in row-order.
+
+                If ``data_frame.attrs["inDegrees"] == "yes"`` then rotational columns
+                in ``data_frame`` will be automatically converted into radians internally
+                (see: :meth:`rotational_columns_in`). This is to support :class:`DataFrame`\s
+                loaded from legacy data sources.
             )"
         );
         model_class.def(
@@ -344,9 +349,12 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                 Returns the value of ``output`` for the given ``model_state``.
             )"
         );
+    }
 
+    void register_model_state_class(nb::module_& m)
+    {
         nb::class_<ModelState> model_state_class(
-            _core_module,
+            m,
             "ModelState",
             R"(
                 Represents a single state of a :class:`Model`.
@@ -368,10 +376,51 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
                     A state may be realized to a later stage with :meth:`Model.realize`.
             )"
         );
+    }
 
+    void register_model_states_class(nb::module_& m)
+    {
+        nb::class_<ModelStates> cls(
+            m,
+            "ModelStates",
+            R"(
+                Represents a sequence of :class:`ModelState`\s.
+
+                ``ModelStates`` is typically returned from functions that produce sequences
+                of :class:`ModelState`\s, such as :meth:`Model.states_from_dataframe`. The
+                API of ``ModelStates`` is list-like, meaning downstream code can iterate over
+                each ``ModelState``, use ``len`` with it, randomly access a state with ``model_states[idx]``
+                and so on.
+            )"
+        );
+        cls.def(nb::init<>());
+        cls.def("__len__", &ModelStates::size);
+        cls.def("__getitem__", [](ModelStates& states, ptrdiff_t idx)
+        {
+            if (idx < 0) {
+                idx += static_cast<ptrdiff_t>(states.size());
+            }
+            return states.handle_at(idx);
+        });
+        cls.def("__getitem__", [](ModelStates& states, const nb::slice& slice)
+        {
+            const auto [start, stop, step, slice_length] = slice.compute(states.size());
+            ModelStates rv;
+            rv.reserve(slice_length);
+            for (size_t i = 0; i < slice_length; ++i) {
+                const auto cur = static_cast<size_t>(start + (static_cast<decltype(step)>(i)*step));
+                rv.handle_push_back(states.handle_at(cur));
+            }
+            return rv;
+        });
+        cls.def("to_list", &ModelStates::to_handle_list);
+    }
+
+    void register_model_state_stage_class(nb::module_& m)
+    {
         static_assert(osc::num_options<ModelStateStage>() == 9);
         nb::enum_<ModelStateStage> model_state_stage_class(
-            _core_module,
+            m,
             "ModelStateStage",
             R"(
                 Represents a stage of state realization (computation).
@@ -410,19 +459,20 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         model_state_stage_class.value("REPORT",       ModelStateStage::report,       "Additional variables useful for output are known");
 
         // Define convenience aliases for the enum
-        _core_module.attr("STAGE_TOPOLOGY")     = model_state_stage_class.attr("TOPOLOGY");
-        _core_module.attr("STAGE_MODEL")        = model_state_stage_class.attr("MODEL");
-        _core_module.attr("STAGE_INSTANCE")     = model_state_stage_class.attr("INSTANCE");
-        _core_module.attr("STAGE_TIME")         = model_state_stage_class.attr("TIME");
-        _core_module.attr("STAGE_POSITION")     = model_state_stage_class.attr("POSITION");
-        _core_module.attr("STAGE_VELOCITY")     = model_state_stage_class.attr("VELOCITY");
-        _core_module.attr("STAGE_DYNAMICS")     = model_state_stage_class.attr("DYNAMICS");
-        _core_module.attr("STAGE_ACCELERATION") = model_state_stage_class.attr("ACCELERATION");
-        _core_module.attr("STAGE_REPORT")       = model_state_stage_class.attr("REPORT");
+        m.attr("STAGE_TOPOLOGY")     = model_state_stage_class.attr("TOPOLOGY");
+        m.attr("STAGE_MODEL")        = model_state_stage_class.attr("MODEL");
+        m.attr("STAGE_INSTANCE")     = model_state_stage_class.attr("INSTANCE");
+        m.attr("STAGE_TIME")         = model_state_stage_class.attr("TIME");
+        m.attr("STAGE_POSITION")     = model_state_stage_class.attr("POSITION");
+        m.attr("STAGE_VELOCITY")     = model_state_stage_class.attr("VELOCITY");
+        m.attr("STAGE_DYNAMICS")     = model_state_stage_class.attr("DYNAMICS");
+        m.attr("STAGE_ACCELERATION") = model_state_stage_class.attr("ACCELERATION");
+        m.attr("STAGE_REPORT")       = model_state_stage_class.attr("REPORT");
+    }
 
-        register_dataframe_class(_core_module);
-
-        _core_module.def(
+    void register_readers(nb::module_& m)
+    {
+        m.def(
             "read_osim",
             [](const std::filesystem::path& source) { return opyn::read_osim(source); },
             nb::arg("source"),
@@ -435,7 +485,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
 
-        _core_module.def(
+        m.def(
             "read_sto",
             [](const std::filesystem::path& source) { return opyn::read_sto(source); },
             nb::arg("source"),
@@ -448,7 +498,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
 
-        _core_module.def(
+        m.def(
             "read_mot",
             [](const std::filesystem::path& source) { return opyn::read_mot(source); },
             nb::arg("source"),
@@ -461,7 +511,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
 
-        _core_module.def(
+        m.def(
             "read_trc",
             [](const std::filesystem::path& source) { return opyn::read_trc(source); },
             nb::arg("source"),
@@ -474,7 +524,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
 
-        _core_module.def(
+        m.def(
             "read_csv",
             [](const std::filesystem::path& source) { return opyn::read_csv(source); },
             nb::arg("source"),
@@ -491,7 +541,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
 
-        _core_module.def(
+        m.def(
             "read_vtp",
             [](const std::filesystem::path& source) { return opyn::read_vtp(source); },
             nb::arg("source"),
@@ -504,7 +554,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
 
-        _core_module.def(
+        m.def(
             "read_obj",
             [](const std::filesystem::path& source) { return opyn::read_obj(source); },
             nb::arg("source"),
@@ -517,7 +567,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
 
-        _core_module.def(
+        m.def(
             "read_stl",
             [](const std::filesystem::path& source) { return opyn::read_obj(source); },
             nb::arg("source"),
@@ -530,7 +580,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
 
-        _core_module.def(
+        m.def(
             "read_png",
             [](const std::filesystem::path& source) { return opyn::read_png(source); },
             nb::arg("source"),
@@ -543,7 +593,7 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
 
-        _core_module.def(
+        m.def(
             "read_jpeg",
             [](const std::filesystem::path& source) { return opyn::read_jpeg(source); },
             nb::arg("source"),
@@ -556,11 +606,71 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
             )"
         );
 
-        _core_module.def(
+        m.def(
             "read_jpg",
             [](const std::filesystem::path& source) { return opyn::read_jpg(source); },
             nb::arg("source"),
             "An alias for :func:`read_jpeg`"
         );
     }
+}
+
+opyn::OPynSimApp& opyn::get_lazy_loaded_opynsim_app()
+{
+    if (not g_lazy_loaded_app) {
+        g_lazy_loaded_app = std::make_unique<OPynSimApp>();
+    }
+    return *g_lazy_loaded_app;
+}
+
+void opyn::destroy_lazy_loaded_opynsim_app()
+{
+    g_lazy_loaded_app.reset();
+}
+
+NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables,misc-use-anonymous-namespace)
+{
+    // Install an exit handler that cleans up any lazy-loaded application state
+    // when the Python interpreter shuts down
+    nb::module_::import_("atexit").attr("register")(nb::cpp_function(&destroy_lazy_loaded_opynsim_app));
+
+    // Initialize `config` submodule (also initializes the `opynsim` C++ API, logging, etc.).
+    {
+        auto config_submodule = _core_module.def_submodule("config");
+        init_config_submodule(config_submodule);
+    }
+
+    // Initialize `examples` submodule.
+    {
+        auto examples_submodule = _core_module.def_submodule("examples");
+        init_examples_submodule(examples_submodule);
+    }
+
+    // Initialize `graphics` submodule.
+    {
+        auto graphics_submodule = _core_module.def_submodule("graphics");
+        init_graphics_submodule(graphics_submodule);
+    }
+
+    // Initialize `tps3d` submodule.
+    {
+        auto tps3d_submodule = _core_module.def_submodule("tps3d");
+        init_tps3d_submodule(tps3d_submodule);
+    }
+
+    // Initialize `ui` submodule.
+    {
+        auto ui_submodule = _core_module.def_submodule("ui");
+        init_ui_submodule(ui_submodule);
+    }
+
+    // Initialize top-level functions/classes
+    register_symbol_class(_core_module);
+    register_model_specification_class(_core_module);
+    register_model_class(_core_module);
+    register_model_state_class(_core_module);
+    register_model_states_class(_core_module);
+    register_model_state_stage_class(_core_module);
+    register_dataframe_class(_core_module);
+    register_readers(_core_module);
 }

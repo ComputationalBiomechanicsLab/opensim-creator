@@ -94,6 +94,78 @@ def test_read_sto_doesnt_add_in_degrees_when_not_mentioned():
 
     assert df.attrs == expected_attrs
 
+def test_read_sto_column_to_state_variable_mappings_are_as_expected():
+    model = opynsim.read_osim(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum.osim").compile()
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum_trajectory.sto")
+    expected = {
+        "/jointset/pin/pin_coord_0/value": "/jointset/pin/pin_coord_0/value",
+        "/jointset/pin/pin_coord_0/speed": "/jointset/pin/pin_coord_0/speed",
+    }
+
+    assert model.column_to_state_variable_mappings(df) == expected
+
+def test_read_sto_is_compatible_with_rotational_columns_in_model():
+    model = opynsim.read_osim(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum.osim").compile()
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum_trajectory.sto")
+
+    assert model.rotational_columns_in(df) == ["/jointset/pin/pin_coord_0/value", "/jointset/pin/pin_coord_0/speed"]
+
+def test_read_sto_is_compatible_with_states_from_dataframe():
+    model = opynsim.read_osim(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum.osim").compile()
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum_trajectory.sto")
+
+    #df.attrs  # TODO
+
+    states = model.states_from_dataframe(df)
+
+    # Indexed access (`__len__`, `__getitem__`) should work like a list
+    # and the yielded `ModelState`s should be compatible with the existing
+    # state API.
+    assert len(states) == 201
+    for i in range(201):
+        model.realize(states[i], opynsim.STAGE_POSITION)
+        model.get_output_value(states[i], "/bodyset/head[position]")
+
+    # Negative indices behave identically to Python
+    assert states[200] == states[-1]
+
+    # Out-of-bounds access should raise an `IndexError` (compatible with
+    # the rest of the Python API).
+    with pytest.raises(IndexError):
+        _ = states[201]  # OOB
+
+    # Out-of-bounds access via a negative index should raise an `IndexError`
+    # (compatible with the rest of the Python API).
+    with pytest.raises(IndexError):
+        _ = states[-202]  # OOB
+
+    # Foreach (iterator) loops should also work
+    for state in states:
+        model.realize(state, opynsim.STAGE_ACCELERATION)
+        model.get_output_value(state, "/bodyset/head[angular_velocity]")
+
+    # Reverse iteration should also work
+    assert list(reversed(states))[0] == states[-1]
+
+    # ... and list comprehensions...
+    positions = [model.get_output_value(s, "/bodyset/head[position]") for s in states]
+    assert len(positions)
+
+    # ... and list slicing...
+    sliced = states[5:10]
+    assert isinstance(sliced, opynsim.ModelStates)
+    assert isinstance(sliced.to_list(), list)
+    assert sliced.to_list() == [states[5], states[6], states[7], states[8], states[9]]
+
+    # ... and list slicing with a step size...
+    step_sliced = states[5:10:2]
+    assert step_sliced.to_list() == [states[5], states[7], states[9]]
+
+    # ... and slicing with unusual indices
+    negative_sliced = states[-10:-1:3]
+    assert negative_sliced.to_list() == [states[-10], states[-7], states[-4]]
+
+
 def test_read_mot_can_read_and_print_a_basic_mot_file():
     df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/one_data_column.mot")
 

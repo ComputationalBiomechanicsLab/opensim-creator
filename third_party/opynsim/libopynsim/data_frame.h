@@ -31,6 +31,14 @@ namespace opyn
             std::unordered_map<std::string, std::string> attrs = {}
         );
 
+        /// Returns `true` all members of `lhs` compare equivalent to `rhs`.
+        ///
+        /// Note: This operator confirms to IEEE 754 and C++'s regular type invariants,
+        /// which means identity checks are non-reflexive for special values. Therefore,
+        /// if either `lhs` or `rhs` contains `NaN` values, this operator will
+        /// return `false`.
+        bool operator==(const DataFrame&) const;
+
         /// Returns this `DataFrame`'s column labels.
         std::vector<std::string> columns() const;
 
@@ -45,6 +53,9 @@ namespace opyn
 
         /// Returns this `DataFrame`'s metadata (e.g. header key-values).
         std::unordered_map<std::string, std::string> attrs() const;
+
+        /// Sets the `attrs` of this `DataFrame` to `new_attrs`.
+        void set_attrs(std::unordered_map<std::string, std::string> new_attrs);
 
         /// Returns the `Series` in `*this` that has the name `name`.
         ///
@@ -66,30 +77,28 @@ namespace opyn
         /// Returns an iterator past the last `Series` of `*this`.
         const_iterator end() const { return series_.end(); }
 
+        /// Returns an iterator to the `Series` in `*this` that has the name `name`.
+        ///
+        /// If no such `Series` is found, `end()` is returned.
+        const_iterator find(std::string_view name) const;
+
         /// Returns a new `DataFrame` with `series` merged into it.
         ///
-        /// The `name` of `series` dictates whether the merge appends `series`
-        /// to the end of `*this` or overwrites an existing `Series` in `*this`
-        /// with the same name.
+        /// - The `name` of `series` dictates whether the merge appends `series`
+        ///   to the end of `*this` or overwrites an existing `Series` in `*this`
+        ///   with the same name.
         ///
-        /// The `size` of `series` must match the `height` of `*this`, or `*this`
-        /// must be `empty`. Otherwise, a `std::exception` is thrown.
-        DataFrame with_series(Series) const;
+        /// - The `size` of `series` must match the `height` of `*this`, or `*this`
+        ///   must be `empty`. Otherwise, a `std::exception` is thrown.
+        ///
+        /// - The returned `Series` will always have empty `attrs`. It is up to the
+        ///   caller to decide how to propagate metadata.
+        DataFrame with_series(Series series) const;
     private:
-        friend bool operator==(const DataFrame&, const DataFrame&);
-
         std::vector<Series> series_;
         std::unordered_map<std::string, size_t> column_to_index_lookup_;
         std::unordered_map<std::string, std::string> attrs_;
     };
-
-    /// Returns `true` all members of `lhs` compare equivalent to `rhs`.
-    ///
-    /// Note: This operator confirms to IEEE 754 and C++'s regular type invariants,
-    /// which means identity checks are non-reflexive for special values. Therefore,
-    /// if either `lhs` or `rhs` contains `NaN` values, this operator will
-    /// return `false`.
-    bool operator==(const DataFrame& lhs, const DataFrame& rhs);
 
     /// Writes a pretty-printed representation of `data_frame` to `out`.
     std::ostream& operator<<(std::ostream& out, const DataFrame& data_frame);

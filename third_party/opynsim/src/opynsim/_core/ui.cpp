@@ -1,6 +1,6 @@
 #include "ui.h"
 
-#include <opynsim/_core/core.h>
+#include <opynsim/_core/_core.h>
 
 #include <libopynsim/ui/show_hello_ui.h>
 #include <libopynsim/ui/show_model_in_state.h>

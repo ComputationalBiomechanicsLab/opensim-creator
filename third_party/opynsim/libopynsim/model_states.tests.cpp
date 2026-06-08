@@ -53,3 +53,21 @@ TEST(ModelStates, begin_dereferences_first_handle)
 
     ASSERT_EQ(&state, handle1.get());
 }
+
+TEST(ModelStates, to_handle_list_returns_vector_of_handles_in_order)
+{
+    ModelStates model_states;
+    const auto handle1 = std::make_shared<ModelState>();
+    const auto handle2 = std::make_shared<ModelState>();
+    const auto handle3 = std::make_shared<ModelState>();
+
+    model_states.handle_push_back(handle1);
+    model_states.handle_push_back(handle2);
+    model_states.handle_push_back(handle3);
+
+    const auto handle_list = model_states.to_handle_list();
+    ASSERT_EQ(handle_list.size(), model_states.size());
+    for (size_t i = 0; i < handle_list.size(); ++i) {
+        ASSERT_EQ(handle_list[i], model_states.handle_at(i));
+    }
+}

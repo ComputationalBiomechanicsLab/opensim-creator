@@ -58,6 +58,11 @@ namespace osc
         {
             return lhs <=> std::string_view{rhs};
         }
+
+        std::string_view name() const
+        {
+            return static_cast<std::string_view>(*this);
+        }
     };
 }
 

@@ -7,7 +7,6 @@
 #include <libopynsim/output_value.h>
 
 #include <ankerl/unordered_dense.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/shims/cpp23/ranges.h>
@@ -15,6 +14,8 @@
 #include <liboscar/utilities/copy_on_upd_ptr.h>
 #include <liboscar/utilities/string_helpers.h>
 #include <liboscar/utilities/typelist.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/TableUtilities.h>
 
 #include <algorithm>
 #include <array>
@@ -215,6 +216,19 @@ namespace
         }
         return nullptr;
     }
+
+    std::optional<int> find_state_variable_index_by_name(const auto& state_variables, const std::string& column_name)
+    {
+        if (int idx = OpenSim::TableUtilities::findStateLabelIndex(state_variables, column_name); idx >= 0) {
+            return idx;
+        }
+        return std::nullopt;
+    }
+
+    std::optional<int> find_state_variable_index_by_name(const auto& state_variables, std::string_view column_name)
+    {
+        return find_state_variable_index_by_name(state_variables, std::string{column_name});
+    }
 }
 
 class opyn::Model::Impl final {
@@ -239,6 +253,73 @@ public:
             }
         }
         return rv;
+    }
+
+    std::unordered_map<std::string, Symbol> column_to_state_variable_mappings(const DataFrame& data_frame) const
+    {
+        const auto state_variable_names = model_.getStateVariableNames();
+        std::unordered_map<std::string, Symbol> rv;
+        for (const auto& column_name : data_frame.columns()) {
+            if (const auto index = find_state_variable_index_by_name(state_variable_names, column_name)) {
+                rv.insert_or_assign(column_name, Symbol{state_variable_names[*index]});
+            }
+        }
+        return rv;
+    }
+
+    ModelStates states_from_data_frame(const DataFrame& caller_data_frame) const
+    {
+        // This is similar to `OpenSim::StatesTrajectory::createFromStatesTable`, but
+        // handles angular autoconversion and uses OPynSim's `DataFrame` API instead.
+
+        // If the caller provided data in degrees then construct a converted `DataFrame`.
+        std::optional<DataFrame> converted_storage;
+        if (auto attrs = caller_data_frame.attrs(); attrs["inDegrees"] == "yes") {
+            DataFrame& converted = converted_storage.emplace(caller_data_frame);
+            for (const auto& rotational_column : rotational_columns_in(converted)) {
+                converted = converted.with_series(osc::deg_to_rad_v<double> * converted[rotational_column]);
+            }
+            attrs.erase("inDegrees");
+            converted.set_attrs(std::move(attrs));
+        }
+        const DataFrame& data_frame = converted_storage ? *converted_storage : caller_data_frame;
+
+        // Figure out the column-index-to-state-variable-index mapping.
+        std::vector<std::pair<size_t, int>> column_index_to_sv_index;
+        column_index_to_sv_index.reserve(data_frame.width());
+        const auto state_var_names = model_.getStateVariableNames();
+        {
+            for (size_t column = 0; column < data_frame.width(); ++column) {
+                if (const auto idx = find_state_variable_index_by_name(state_var_names, data_frame[column].name())) {
+                    column_index_to_sv_index.emplace_back(column, *idx);
+                }
+            }
+        }
+
+        // Use the mapping to construct each state.
+        ModelStates rv;
+        {
+            const size_t num_rows = data_frame.height();
+            rv.reserve(num_rows);
+            SimTK::Vector values{state_var_names.getSize(), SimTK::NaN};
+            for (size_t row = 0; row < num_rows; ++row) {
+                SimTK::State state{model_.getWorkingState()};          // Copy "base" state.
+                state.updY().setToNaN();                               // Ensure missing columns end up as `NaN`s.
+
+                if (const auto it = data_frame.find("time"); it != data_frame.end()) {
+                    state.setTime((*it)[row]);                         // Set state's time (if `data_frame` has it).
+                }
+                for (const auto& [column_index, sv_index] : column_index_to_sv_index) {
+                    values[sv_index] = data_frame[column_index][row];  // Map `data_frame` values into values vector
+                }
+                model_.setStateVariableValues(state, values);          // Write values vector into the state
+
+                // TODO: if (assemble) model_.assemble(state);
+
+                rv.emplace_back(std::move(state));                     // Append state to return value
+            }
+            return rv;
+        }
     }
 
     void realize(ModelState& state, ModelStateStage stage) const
@@ -305,7 +386,7 @@ public:
         const auto it = outputs_.find(output);
         if (it == outputs_.end()) {
             std::stringstream ss;
-            ss << static_cast<std::string>(output) << "Cannot find this output in the model";
+            ss << static_cast<std::string>(output) << ": Cannot find this output in the model";
             throw std::runtime_error{std::move(ss).str()};
         }
         return output_extraction_system().read_value(model_state.simbody_state(), *it->second);
@@ -341,6 +422,16 @@ opyn::ModelState opyn::Model::initial_state() const
 std::vector<std::string> opyn::Model::rotational_columns_in(const DataFrame& data_frame) const
 {
     return impl_->rotational_columns_in(data_frame);
+}
+
+std::unordered_map<std::string, Symbol> opyn::Model::column_to_state_variable_mappings(const DataFrame& data_frame) const
+{
+    return impl_->column_to_state_variable_mappings(data_frame);
+}
+
+ModelStates opyn::Model::states_from_data_frame(const DataFrame& data_frame) const
+{
+    return impl_->states_from_data_frame(data_frame);
 }
 
 void opyn::Model::realize(ModelState& model_state, ModelStateStage model_state_stage) const

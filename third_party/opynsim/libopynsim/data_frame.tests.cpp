@@ -18,6 +18,31 @@ TEST(DataFrame, default_constructed_is_empty)
     ASSERT_EQ(df.size(), 0);
 }
 
+TEST(DataFrame, attrs_returns_attrs_provided_via_constructor)
+{
+    const DataFrame df{{}, {}, {{"metadata1", "someval"}, {"metadata2", "someotherval"}}};
+    const std::unordered_map<std::string, std::string> expected{{"metadata1", "someval"}, {"metadata2", "someotherval"}};
+    const std::unordered_map<std::string, std::string> got = df.attrs();
+
+    ASSERT_EQ(got, expected);
+}
+
+TEST(DataFrame, set_attrs_modifies_attrs_in_place)
+{
+    const std::unordered_map<std::string, std::string> original_attrs = {
+        {"metadata1", "someval"},
+        {"metadata2", "someotherval"},
+    };
+    const std::unordered_map<std::string, std::string> new_attrs = {
+        {"updated", "val"},
+    };
+
+    DataFrame df{{}, {}, original_attrs};
+    ASSERT_EQ(df.attrs(), original_attrs);
+    df.set_attrs(new_attrs);
+    ASSERT_EQ(df.attrs(), new_attrs);
+}
+
 TEST(DataFrame, operator_bracket_by_name_returns_expected_series)
 {
     const std::vector<std::string> column_names = {"x", "y"};
@@ -212,4 +237,31 @@ TEST(DataFrame, with_series_throws_if_passed_series_with_different_size_to_exist
     ASSERT_ANY_THROW({ df.with_series({"column2", {2.0}});           }) << "Should be disallowed: appended column is shorter";
     ASSERT_NO_THROW ({ df.with_series({"column2", {2.0, 4.0}});      }) << "OK: correct length";
     ASSERT_ANY_THROW({ df.with_series({"column2", {2.0, 4.0, 6.0}}); }) << "Should be disallowed: appended column is longer";
+}
+
+TEST(DataFrame, with_series_erases_attributes)
+{
+    // This is to mimic polars behavior: the logic is that a transformation of
+    // a `DataFrame` with `with_series` could invalidate the attributes
+    // (metadata), so callers should explicitly make the decision to copy it
+    // or filter/change it.
+    const DataFrame df{{"column1"}, {{1.0, 2.0}}, {{"metadata", "value"}}};
+    const DataFrame got = df.with_series({"column2", {2.0, 4.0}});
+    const DataFrame expected{
+        {"column1",  "column2"},
+        {{1.0, 2.0}, {2.0, 4.0}},
+        {},                        // no attributes
+    };
+
+    ASSERT_EQ(got, expected);
+}
+
+TEST(DataFrame, find_returns_expected_iterators)
+{
+    const DataFrame df{{"column1", "column2", "column3"}, {{}, {}, {}}};
+
+    ASSERT_EQ(df.find("column1"), df.begin());
+    ASSERT_EQ(df.find("column2"), df.begin() + 1);
+    ASSERT_EQ(df.find("column3"), df.begin() + 2);
+    ASSERT_EQ(df.find("missing"), df.end());
 }

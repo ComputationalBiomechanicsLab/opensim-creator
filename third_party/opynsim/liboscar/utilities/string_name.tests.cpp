@@ -488,3 +488,9 @@ TEST(StringName, writes_identical_output_to_std_ostream_as_a_std_string_with_the
 
     ASSERT_EQ(string_stream.str(), stringname_stream.str());
 }
+
+TEST(StringName, name_returns_view_of_contents)
+{
+    ASSERT_EQ(StringName{"content"}.name(), "content");
+    ASSERT_EQ(StringName{}.name(), "");
+}
