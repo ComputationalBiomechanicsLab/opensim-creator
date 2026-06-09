@@ -70,6 +70,44 @@ TEST(Texture2D, default_constructor_creates_sRGBA_texture_with_expected_params)
     ASSERT_EQ(texture_2d.filter_mode(), TextureFilterMode::Linear);
 }
 
+TEST(Texture2D, pixels24_copies_rgb_channels_and_ignores_alpha)
+{
+    Texture2D texture_2d{Vector2i(2, 2)};
+    texture_2d.set_pixels(std::to_array({
+        Color::red().with_alpha(0.25f),
+        Color::green().with_alpha(0.5f),
+        Color::blue().with_alpha(0.75f),
+        Color::white().with_alpha(1.0f),
+    }));
+    const std::vector<Color24> expected = {
+        Color24::red(),
+        Color24::green(),
+        Color24::blue(),
+        Color24::white(),
+    };
+    ASSERT_EQ(texture_2d.pixels24(), expected);
+}
+
+TEST(Texture2D, pixels24_correctly_converts_from_floating_point_textures)
+{
+    Texture2D texture_2d{Vector2i(2, 2), TextureFormat::RGBAFloat};
+    texture_2d.set_pixels(std::to_array<Color>({
+        {1.5f, 0.0f, 0.0f,  0.25f},  // Note: HDR should saturate when converted to LDR
+        {0.0f, 0.5f, 0.0f,  0.50f},
+        {0.0f, 0.0f, 0.75f, 0.75f},
+        {1.0f, 1.0f, 1.0f,  1.0f},
+    }));
+    const std::vector<Color24> expected = {
+        Color24{Unorm8{1.5f}, Unorm8{0.0f}, Unorm8{0.0f}},
+        Color24{Unorm8{0.0f}, Unorm8{0.5f}, Unorm8{0.0f}},
+        Color24{Unorm8{0.0f}, Unorm8{0.0f}, Unorm8{0.75f}},
+        Color24{Unorm8{1.0f}, Unorm8{1.0f}, Unorm8{1.0f}},
+    };
+    const std::vector<Color24> got = texture_2d.pixels24();
+    ASSERT_EQ(got, expected);
+    ASSERT_EQ(got.front()[0], 0xff) << "HDR values should saturate";
+}
+
 TEST(Texture2D, can_set_pixels32_on_default_constructed_instance)
 {
     const Vector2i pixel_dimensions = {1, 1};

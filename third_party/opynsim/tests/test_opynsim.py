@@ -110,13 +110,11 @@ def test_read_sto_is_compatible_with_rotational_columns_in_model():
 
     assert model.rotational_columns_in(df) == ["/jointset/pin/pin_coord_0/value", "/jointset/pin/pin_coord_0/speed"]
 
-def test_read_sto_is_compatible_with_states_from_dataframe():
+def test_read_sto_is_compatible_with_states_from_data_frame():
     model = opynsim.read_osim(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum.osim").compile()
     df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum_trajectory.sto")
 
-    #df.attrs  # TODO
-
-    states = model.states_from_dataframe(df)
+    states = model.states_from_data_frame(df)
 
     # Indexed access (`__len__`, `__getitem__`) should work like a list
     # and the yielded `ModelState`s should be compatible with the existing

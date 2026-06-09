@@ -1,6 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/color.h>
+#include <liboscar/graphics/color24.h>
 #include <liboscar/graphics/color32.h>
 #include <liboscar/graphics/color_space.h>
 #include <liboscar/graphics/texture_filter_mode.h>
@@ -120,6 +121,21 @@ namespace osc
         //   components default to `0.0f` - apart from alpha, which defaults to `1.0f`.
         std::vector<Color32> pixels32() const;
         void set_pixels32(std::span<const Color32>);
+
+        // Returns the pixels, parsed into a `Color24` (i.e. LDR sRGB RGB) format, where:
+        //
+        // - Pixels are returned row-by-row
+        //   - The first pixel corresponds to the lower-left corner of the image.
+        //   - Subsequent pixels progress left-to-right through the remaining pixels in the
+        //     lowest row of the image, and then in successively higher rows of the image.
+        //   - The final pixel corresponds to the upper-right corner of the image.
+        //   - Note: this right-handed coordinate system matches samplers in GLSL shaders. That
+        //     is, a texture/uv coordinate of `(0, 0)` used in a shader would sample the bottom-left
+        //     pixel of the texture in GLSL.
+        // - The returned pixels are parsed from the underlying `TextureFormat` storage. If
+        //   the storage format has fewer components than a `Color` (RGB), the missing
+        //   components default to `0.0f` - apart from alpha, which defaults to `1.0f`.
+        std::vector<Color24> pixels24() const;
 
         // - must contain pixel _data_ row-by-row
         // - the size of the data span must be equal to:

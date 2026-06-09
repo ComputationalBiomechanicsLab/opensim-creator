@@ -1,6 +1,7 @@
 #pragma once
 
 #include <liboscar/graphics/color_component.h>
+#include <liboscar/graphics/rgb.h>
 #include <liboscar/maths/common_functions.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/utilities/hash_helpers.h>
@@ -25,115 +26,29 @@ namespace osc
         using iterator = value_type*;
         using const_iterator = const value_type*;
 
-        static constexpr Rgba lightest_grey()
-        {
-            return {0.95f, 0.95f, 0.95f};
-        }
+        static constexpr Rgba clear() { return {0.0f, 0.0f, 0.0f, 0.0f}; }
 
-        static constexpr Rgba lighter_grey()
-        {
-            return {0.85f, 0.85f, 0.85f};
-        }
-
-        static constexpr Rgba light_grey()
-        {
-            return {0.7f, 0.7f, 0.7f};
-        }
-
-        static constexpr Rgba dark_grey()
-        {
-            return {0.5f, 0.5f, 0.5f};
-        }
-
-        static constexpr Rgba darker_grey()
-        {
-            return {0.35f, 0.35f, 0.35f};
-        }
-
-        static constexpr Rgba darkest_grey()
-        {
-            return {0.05f, 0.05f, 0.05f};
-        }
-
-        static constexpr Rgba black()
-        {
-            return {0.0f, 0.0f, 0.0f};
-        }
-
-        static constexpr Rgba blue()
-        {
-            return {0.0f, 0.0f, 1.0f};
-        }
-
-        static constexpr Rgba muted_blue()
-        {
-            return {0.06f, 0.53f, 0.98f};
-        }
-
-        static constexpr Rgba clear()
-        {
-            return {0.0f, 0.0f, 0.0f, 0.0f};
-        }
-
-        static constexpr Rgba green()
-        {
-            return {0.0f, 1.0f, 0.0f};
-        }
-
-        static constexpr Rgba muted_green()
-        {
-            return {0.5f, 1.0f, 0.5f};
-        }
-
-        static constexpr Rgba dark_green()
-        {
-            return {0.0f, 0.6f, 0.0f};
-        }
-
-        static constexpr Rgba red()
-        {
-            return {1.0f, 0.0f, 0.0f};
-        }
-
-        static constexpr Rgba muted_red()
-        {
-            return {1.0f, 0.5f, 0.5f};
-        }
-
-        static constexpr Rgba white()
-        {
-            return {1.0f, 1.0f, 1.0f};
-        }
-
-        static constexpr Rgba yellow()
-        {
-            return {1.0f, 1.0f, 0.0f};
-        }
-
-        static constexpr Rgba muted_yellow()
-        {
-            return {1.0f, 1.0f, 0.6f};
-        }
-
-        static constexpr Rgba orange()
-        {
-            return {255.0f/255.0f, 165.0f/255.0f, 0.0f};
-        }
-
-        static constexpr Rgba cyan()
-        {
-            return {0.0f, 1.0f, 1.0f};
-        }
-
-        static constexpr Rgba magenta()
-        {
-            return {1.0f, 0.0f, 1.0f};
-        }
-
-        static constexpr Rgba purple()
-        {
-            return {191.0f/255.0f, 85.0f/255.0f, 236.0f/255.0f};
-        }
+        static constexpr Rgba white()         { return Rgb<T>::white();         }
+        static constexpr Rgba lightest_grey() { return Rgb<T>::lightest_grey(); }
+        static constexpr Rgba lighter_grey()  { return Rgb<T>::lighter_grey();  }
+        static constexpr Rgba light_grey()    { return Rgb<T>::light_grey();    }
+        static constexpr Rgba dark_grey()     { return Rgb<T>::dark_grey();     }
+        static constexpr Rgba darker_grey()   { return Rgb<T>::darker_grey();   }
+        static constexpr Rgba darkest_grey()  { return Rgb<T>::darkest_grey();  }
+        static constexpr Rgba black()         { return Rgb<T>::black();         }
+        static constexpr Rgba muted_red()     { return Rgb<T>::muted_red();     }
+        static constexpr Rgba red()           { return Rgb<T>::red();           }
+        static constexpr Rgba muted_green()   { return Rgb<T>::muted_green();   }
+        static constexpr Rgba green()         { return Rgb<T>::green();         }
+        static constexpr Rgba dark_green()    { return Rgb<T>::dark_green();    }
+        static constexpr Rgba muted_blue()    { return Rgb<T>::muted_blue();    }
+        static constexpr Rgba blue()          { return Rgb<T>::blue();          }
+        static constexpr Rgba cyan()          { return Rgb<T>::cyan();          }
+        static constexpr Rgba magenta()       { return Rgb<T>::magenta();       }
+        static constexpr Rgba muted_yellow()  { return Rgb<T>::muted_yellow();  }
+        static constexpr Rgba yellow()        { return Rgb<T>::yellow();        }
+        static constexpr Rgba orange()        { return Rgb<T>::orange();        }
+        static constexpr Rgba purple()        { return Rgb<T>::purple();        }
 
         Rgba() = default;
 
@@ -184,42 +99,23 @@ namespace osc
             a{static_cast<T>(v.a)}
         {}
 
-        constexpr reference operator[](size_type pos)
-        {
-            static_assert(sizeof(Rgba) == 4*sizeof(value_type));
-            return (&r)[pos];
-        }
+        constexpr Rgba(const Rgb<T>& rgb, T alpha = T{1.0f}) :
+            r{rgb.r},
+            g{rgb.g},
+            b{rgb.b},
+            a{alpha}
+        {}
 
-        constexpr const_reference operator[](size_type pos) const
-        {
-            static_assert(sizeof(Rgba) == 4*sizeof(value_type));
-            return (&r)[pos];
-        }
+        constexpr reference       operator[](size_type pos)       { return *(begin() + pos); }
+        constexpr const_reference operator[](size_type pos) const { return *(begin() + pos); }
 
-        constexpr size_t size() const
-        {
-            return 4;
-        }
+        constexpr size_t size() const { return 4; }
 
-        constexpr iterator begin()
-        {
-            return &r;
-        }
+        constexpr iterator       begin()       { return &r; }
+        constexpr const_iterator begin() const { return &r; }
 
-        constexpr iterator end()
-        {
-            return &r + size();
-        }
-
-        constexpr const_iterator begin() const
-        {
-            return &r;
-        }
-
-        constexpr const_iterator end() const
-        {
-            return &r + size();
-        }
+        constexpr iterator       end()       { return &r + size(); }
+        constexpr const_iterator end() const { return &r + size(); }
 
         friend bool operator==(const Rgba&, const Rgba&) = default;
 
@@ -260,6 +156,11 @@ namespace osc
             Rgba copy{*this};
             copy[pos] = value;
             return copy;
+        }
+
+        constexpr Rgb<T> rgb() const
+        {
+            return {r, g, b};
         }
 
         value_type r{};

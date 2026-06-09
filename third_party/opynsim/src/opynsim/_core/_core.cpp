@@ -99,7 +99,7 @@ namespace {
                 Returns the attributes (metadata) associated with this `DataFrame`.
 
                 These entries are nominally metadata, but can affect the behavior of functions that
-                read data from :class:`DataFrame`\s. Notably, functions like :meth:`opynsim.Model.states_from_dataframe`
+                read data from :class:`DataFrame`\s. Notably, functions like :meth:`opynsim.Model.states_from_data_frame`
                 look for attributes like 'inDegrees' to perform on-the-fly degrees-to-radians conversions on
                 legacy data files.
             )"
@@ -243,7 +243,7 @@ namespace {
 
                 This mapping uses a variety of heuristics, including (e.g.)
                 accounting for legacy column headers supported by earlier
-                files in SIMM and OpenSim. It is how :meth:`states_from_dataframe`
+                files in SIMM and OpenSim. It is how :meth:`states_from_data_frame`
                 maps dataframes into :class:`ModelState`\s, so it can be
                 useful for debugging why states aren't being read correctly.
             )"
@@ -257,14 +257,14 @@ namespace {
                 mapped to rotational state variables in this ``Model`` in
                 the column-order of ``data_frame``.
 
-                This is how :meth:`states_from_dataframe` automatically converts
+                This is how :meth:`states_from_data_frame` automatically converts
                 degrees to radians when ``data_frame.attrs["inDegrees"] == "yes"``,
                 so it can be useful for debugging why states aren't
                 being read correctly.
             )"
         );
         model_class.def(
-            "states_from_dataframe",
+            "states_from_data_frame",
             &Model::states_from_data_frame,
             nb::arg("data_frame"),
             R"(
@@ -387,7 +387,7 @@ namespace {
                 Represents a sequence of :class:`ModelState`\s.
 
                 ``ModelStates`` is typically returned from functions that produce sequences
-                of :class:`ModelState`\s, such as :meth:`Model.states_from_dataframe`. The
+                of :class:`ModelState`\s, such as :meth:`Model.states_from_data_frame`. The
                 API of ``ModelStates`` is list-like, meaning downstream code can iterate over
                 each ``ModelState``, use ``len`` with it, randomly access a state with ``model_states[idx]``
                 and so on.

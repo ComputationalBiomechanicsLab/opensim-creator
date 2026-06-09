@@ -1133,115 +1133,59 @@ void osc::Cubemap::set_pixel_data(CubemapFace face, std::span<const uint8_t> pix
     impl_.upd()->set_pixel_data(face, pixel_components_row_by_row);
 }
 
-namespace
-{
-    std::vector<Color> convert_pixel_bytes_to_color(
-        std::span<const uint8_t> pixel_bytes,
-        TextureFormat pixel_format)
+namespace {
+    template<typename T>
+    requires ColorComponent<typename T::value_type>
+    std::vector<T> read_pixel_data_into(
+        std::span<const uint8_t> pixel_data,
+        TextureFormat pixel_format,
+        T default_color = {})
     {
         const TextureComponentFormat component_format = component_format_of(pixel_format);
-
         const size_t num_components = num_components_in(pixel_format);
         const size_t num_bytes_per_component = num_bytes_per_component_in(component_format);
         const size_t num_bytes_per_pixel = num_bytes_per_component * num_components;
-        const size_t num_pixels = pixel_bytes.size() / num_bytes_per_pixel;
+        const size_t num_pixels = pixel_data.size() / num_bytes_per_pixel;
+        const size_t num_components_to_copy = min(num_components, std::tuple_size_v<T>);
 
-        OSC_ASSERT(pixel_bytes.size() % num_bytes_per_pixel == 0);
+        OSC_ASSERT(pixel_data.size() % num_bytes_per_pixel == 0);
 
-        std::vector<Color> rv;
+        std::vector<T> rv;
         rv.reserve(num_pixels);
 
         static_assert(num_options<TextureComponentFormat>() == 2);
         if (component_format == TextureComponentFormat::Uint8) {
+            // Unpack 8-bit component bytes into return value.
 
-            // unpack 8-bit component bytes into floating-point Color components
             for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
                 const size_t pixel_begin = num_bytes_per_pixel * pixel;
 
-                Color color = Color::black();
-                for (size_t component = 0; component < num_components; ++component) {
-                    const size_t component_begin = pixel_begin + component;
-                    color[component] = Unorm8{pixel_bytes[component_begin]}.normalized_value();
+                auto& out = rv.emplace_back(default_color);
+                for (size_t component = 0; component < num_components_to_copy; ++component) {
+                    out[component] = static_cast<T::value_type>(Unorm8{pixel_data[pixel_begin + component]});
                 }
-                rv.push_back(color);
             }
         }
         else if (component_format == TextureComponentFormat::Float32 and num_bytes_per_component == sizeof(float)) {
+            // Unpack 32-bit component floats into return value.
 
-            // read 32-bit component floats into Color components
             for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
                 const size_t pixel_begin = num_bytes_per_pixel * pixel;
 
-                Color color = Color::black();
-                for (size_t component = 0; component < num_components; ++component) {
+                auto& out = rv.emplace_back(default_color);
+                for (size_t component = 0; component < num_components_to_copy; ++component) {
                     const size_t component_begin = pixel_begin + component*num_bytes_per_component;
 
-                    const std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
+                    const std::span<const uint8_t> component_span{pixel_data.data() + component_begin, sizeof(float)};
                     alignas(float) std::array<uint8_t, sizeof(float)> tmp_array{};
                     rgs::copy(component_span, tmp_array.begin());
 
-                    color[component] = std::bit_cast<float>(tmp_array);
+                    out[component] = static_cast<T::value_type>(std::bit_cast<float>(tmp_array));
                 }
-                rv.push_back(color);
             }
         }
         else {
             OSC_ASSERT(false && "unsupported texture component format or bytes per component detected");
-        }
-
-        return rv;
-    }
-
-    std::vector<Color32> convert_pixel_bytes_to_color32(
-        std::span<const uint8_t> pixel_bytes,
-        TextureFormat pixel_format)
-    {
-        const TextureComponentFormat component_format = component_format_of(pixel_format);
-
-        const size_t num_components = num_components_in(pixel_format);
-        const size_t num_bytes_per_component = num_bytes_per_component_in(component_format);
-        const size_t num_bytes_per_pixel = num_bytes_per_component * num_components;
-        const size_t num_pixels = pixel_bytes.size() / num_bytes_per_pixel;
-
-        std::vector<Color32> rv;
-        rv.reserve(num_pixels);
-
-        static_assert(num_options<TextureComponentFormat>() == 2);
-        if (component_format == TextureComponentFormat::Uint8) {
-
-            // read 8-bit component bytes into 8-bit Color32 color components
-            for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
-                const size_t pixel_begin = num_bytes_per_pixel * pixel;
-
-                Color32 color = {0x00, 0x00, 0x00, 0xff};
-                for (size_t component = 0; component < num_components; ++component) {
-                    const size_t component_begin = pixel_begin + component;
-                    color[component] = pixel_bytes[component_begin];
-                }
-                rv.push_back(color);
-            }
-        }
-        else {
-            static_assert(std::is_same_v<Color::value_type, float>);
-            OSC_ASSERT(num_bytes_per_component == sizeof(float));
-
-            // pack 32-bit component floats into 8-bit Color32 color components
-            for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
-                const size_t pixel_begin = num_bytes_per_pixel * pixel;
-
-                Color32 color = {0x00, 0x00, 0x00, 0xff};
-                for (size_t component = 0; component < num_components; ++component) {
-                    const size_t component_begin = pixel_begin + component*sizeof(float);
-
-                    const std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
-                    alignas(float) std::array<uint8_t, sizeof(float)> tmp_array{};
-                    rgs::copy(component_span, tmp_array.begin());
-                    const auto component_float = std::bit_cast<float>(tmp_array);
-
-                    color[component] = Unorm8{component_float};
-                }
-                rv.push_back(color);
-            }
         }
 
         return rv;
@@ -1431,7 +1375,7 @@ public:
 
     std::vector<Color> pixels() const
     {
-        return convert_pixel_bytes_to_color(pixel_data_, texture_format_);
+        return read_pixel_data_into<Color>(pixel_data_, texture_format_, Color::black());
     }
 
     void set_pixels(std::span<const Color> pixels)
@@ -1442,7 +1386,7 @@ public:
 
     std::vector<Color32> pixels32() const
     {
-        return convert_pixel_bytes_to_color32(pixel_data_, texture_format_);
+        return read_pixel_data_into<Color32>(pixel_data_, texture_format_, Color32::black());
     }
 
     void set_pixels32(std::span<const Color32> pixels)
@@ -1450,6 +1394,11 @@ public:
         OSC_ASSERT(ssize(pixels) == area_of(pixel_dimensions_));
         convert_color32s_to_pixel_bytes(pixels, texture_format_, pixel_data_);
         maybe_opengl_data_.reset();  // If the CPU pixel data changes, it should trigger a re-upload (#1145)
+    }
+
+    std::vector<Color24> pixels24() const
+    {
+        return read_pixel_data_into<Color24>(pixel_data_, texture_format_, Color24::black());
     }
 
     std::span<const uint8_t> pixel_data() const
@@ -1718,6 +1667,11 @@ std::vector<Color32> osc::Texture2D::pixels32() const
 void osc::Texture2D::set_pixels32(std::span<Color32 const> pixels)
 {
     impl_.upd()->set_pixels32(pixels);
+}
+
+std::vector<Color24> osc::Texture2D::pixels24() const
+{
+    return impl_->pixels24();
 }
 
 std::span<const uint8_t> osc::Texture2D::pixel_data() const

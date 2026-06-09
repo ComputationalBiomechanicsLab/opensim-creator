@@ -49,6 +49,7 @@ Table of Contents
     examples/overlay-model-over-plot
     examples/plot-model-output-vs-property
     examples/render-model-to-png
+    examples/render-motion-to-video-file
     examples/show-model-in-state
 
 .. autosummary::

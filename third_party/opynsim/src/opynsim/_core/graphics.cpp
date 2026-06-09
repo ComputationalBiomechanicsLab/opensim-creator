@@ -7,6 +7,8 @@
 #include <libopynsim/model_state.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/texture2d.h>
+#include <liboscar/maths/geometric_functions.h>
+#include <liboscar/utilities/assertions.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/ndarray.h>
 #include <nanobind/stl/pair.h>
@@ -18,12 +20,15 @@
 #include <cstdint>
 #include <memory>
 #include <new>
+#include <span>
 #include <utility>
+#include <vector>
 
 namespace nb = nanobind;
 
 namespace
 {
+    /// Wrap a unique pointer into a capsule.
     template<typename T>
     nb::capsule to_capsule(std::unique_ptr<T> p)
     {
@@ -33,16 +38,38 @@ namespace
         };
     }
 
+    /// Vertically flips `data`, which is assumed to be in a `dimensions.x()` by `dimensions.y()` grid.
+    template<typename T>
+    void vertically_flip(std::span<T> data, osc::Vector2uz dimensions)
+    {
+        OSC_ASSERT(data.size() == osc::area_of(dimensions));
+        for (size_t row = 0; row < dimensions.y() / 2; ++row) {
+            const auto top_row_it = data.begin() + (row * dimensions.x());
+            const auto bottom_row_it = data.begin() + ((dimensions.y() - 1 - row) * dimensions.x());
+            std::swap_ranges(top_row_it, top_row_it + dimensions.x(), bottom_row_it);
+        }
+    }
+
+    /// Returns `pixels`, which is assumed to be in a `dimensions.x()` by `dimensions.y()` grid, as
+    /// a Python-compatible `ndarray`.
+    template<typename T>
+    auto to_ndarray(
+        std::unique_ptr<std::vector<T>> pixels,
+        osc::Vector2uz dimensions) -> nb::ndarray<nb::numpy, const uint8_t, nb::shape<-1, -1, std::tuple_size_v<T>>>
+    {
+        static_assert(sizeof(typename T::value_type) == 1);
+        static_assert(sizeof(T) == std::tuple_size_v<T> * sizeof(typename T::value_type));
+
+        const uint8_t* pixel_pointer = std::launder(reinterpret_cast<const uint8_t*>(pixels->data()));
+        constexpr size_t ndim = 3;
+        const auto shape = std::to_array<size_t>({ dimensions.y(), dimensions.x(), std::tuple_size_v<T> });
+
+        return {pixel_pointer, ndim, shape.data(), to_capsule(std::move(pixels))};
+    }
+
     nb::ndarray<nb::numpy, const uint8_t, nb::shape<-1, -1, 4>> pixels_rgba32_impl(
         const osc::Texture2D& texture_2d)
     {
-        static_assert(sizeof(osc::Color32) == 4, "required to cast the pointer to uint8_t with no gaps between pixels");
-        static_assert(alignof(osc::Color32) == 4);
-        static_assert(offsetof(osc::Color32, r) == 0);
-        static_assert(offsetof(osc::Color32, g) == 1);
-        static_assert(offsetof(osc::Color32, b) == 2);
-        static_assert(offsetof(osc::Color32, a) == 3);
-
         // Get the pixels from the texture
         const osc::Vector2uz pixel_dimensions = texture_2d.pixel_dimensions();
         auto decoded_pixels = std::make_unique<std::vector<osc::Color32>>(texture_2d.pixels32());
@@ -50,18 +77,26 @@ namespace
         // Vertically flip the pixels. This is necessary because oscar uses
         // a "Y points up" encoding whereas almost all Python libraries use
         // a "Y points down" encoding.
-        for (size_t row = 0; row < pixel_dimensions.y() / 2; ++row) {
-            const auto top_row_it = decoded_pixels->begin() + (row * pixel_dimensions.x());
-            const auto bottom_row_it = decoded_pixels->begin() + ((pixel_dimensions.y() - 1 - row) * pixel_dimensions.x());
-            std::swap_ranges(top_row_it, top_row_it + pixel_dimensions.x(), bottom_row_it);
-        }
+        vertically_flip(std::span{*decoded_pixels}, pixel_dimensions);
 
-        // Cast the pixel pointer from `const Color32*` to `const uint8_t*`, so that the
-        // shape of the ndarray matches how Python APIs typically expect it (`(h, w, 4)`).
-        const uint8_t* pixel_pointer = std::launder(reinterpret_cast<const uint8_t*>(decoded_pixels->data()));
+        // Convert into a 2-dimensional ndarray
+        return to_ndarray(std::move(decoded_pixels), pixel_dimensions);
+    }
 
-        const auto shape = std::to_array<size_t>({ pixel_dimensions.y(), pixel_dimensions.x(), 4 });
-        return {pixel_pointer, 3, shape.data(), to_capsule(std::move(decoded_pixels))};
+    nb::ndarray<nb::numpy, const uint8_t, nb::shape<-1, -1, 3>> pixels_rgb24_impl(
+        const osc::Texture2D& texture_2d)
+    {
+        // Get the pixels from the texture
+        const osc::Vector2uz pixel_dimensions = texture_2d.pixel_dimensions();
+        auto decoded_pixels = std::make_unique<std::vector<osc::Color24>>(texture_2d.pixels24());
+
+        // Vertically flip the pixels. This is necessary because oscar uses
+        // a "Y points up" encoding whereas almost all Python libraries use
+        // a "Y points down" encoding.
+        vertically_flip(std::span{*decoded_pixels}, pixel_dimensions);
+
+        // Convert into a 2-dimensional ndarray
+        return to_ndarray(std::move(decoded_pixels), pixel_dimensions);
     }
 
     nb::ndarray<nb::numpy, const float, nb::shape<-1, 3>> mesh_vertices_impl(
@@ -183,20 +218,36 @@ namespace
                 the 3rd dimension is a raw uint8 (0-255) pixel value for the red (R), green (G),
                 blue (B), and alpha (A) components of the texture respectively.
 
-                The grid layout and component encoding of the returned array tries to match the
-                conventions used by other Python libraries (e.g. matplotlib, pyvista) and
-                image tools so that the render is easy to compose into other systems.
+                The layout of the pixels is such that the first pixel in the first row (``rv[0, 0]``)
+                starts in the top-left of the image. Subsequent pixels within that row are then
+                encoded left-to-right. The following row (``rv[1]``) is then below that row, and so on,
+                until the final pixel, which is in the bottom-right of the image.
+
+                The encoding of the components of a pixel is such that the lowest value for each
+                component is zero, representing zero intensity of that component. The highest value
+                for each component is 255, representing the maximum intensity of that
+                component. The color components (R, G, and B) are in an sRGB color space, while the
+                alpha component (A) is linear.
+            )"
+        );
+        texture2d_class.def(
+            "pixels_rgb24",
+            pixels_rgb24_impl,
+            nb::rv_policy::move,
+            R"(
+                Returns an ndarray with the shape ``(height, width, 3)``, where each element of
+                the 3rd dimension is a raw uint8 (0-255) pixel value for the red (R), green (G),
+                and blue (B) components of the texture respectively.
 
                 The layout of the pixels is such that the first pixel in the first row (``rv[0, 0]``)
                 starts in the top-left of the image. Subsequent pixels within that row are then
                 encoded left-to-right. The following row (``rv[1]``) is then below that row, and so on,
                 until the final pixel, which is in the bottom-right of the image.
 
-                The encoding the the components of a pixel is such that the lowest value for each
+                The encoding of the components of a pixel is such that the lowest value for each
                 component is zero, representing zero intensity of that component. The highest value
                 for each component is 255, representing the maximum intensity of that
-                component. The color components (R, G, and B) are in an sRGB color space, while the
-                alpha component (A) is linear.
+                component. All components are in an sRGB color space.
             )"
         );
     }

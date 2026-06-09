@@ -20,6 +20,21 @@ TEST(Rgba, can_be_instantiated_with_Unorm8_template_arg)
     [[maybe_unused]] const Rgba<Unorm8> this_should_compile;
 }
 
+TEST(Rgba, can_be_constructed_from_Rgb_of_same_type)
+{
+    static_assert(Rgba{Rgb{0.25f, 0.50f, 0.75f}} == Rgba<float>{0.25, 0.5f, 0.75f, 1.0f});
+}
+
+TEST(Rgba, can_be_constructed_from_Rgb_with_custom_alpha)
+{
+    static_assert(Rgba{Rgb<float>{0.25f, 0.50f, 0.75f}, 0.33f} == Rgba<float>{0.25, 0.5f, 0.75f, 0.33f});
+}
+
+TEST(Rgba, rgb_returns_Rgba_converted_into_Rgb)
+{
+    static_assert(Rgba{0.1f, 0.2f, 0.3f}.rgb() == Rgb{0.1f, 0.2f, 0.3f});
+}
+
 TEST(Rgba, can_write_float_components_to_std_ostream)
 {
     std::stringstream ss;
@@ -159,4 +174,9 @@ TEST(Rgba, saturate_works_as_expected)
     const Rgba<float> expected = {1.0f, 1.0f, 0.0f, 0.5f};
 
     ASSERT_EQ(result, expected);
+}
+
+TEST(Rgba, size_is_4)
+{
+    static_assert(Rgba<float>{}.size() == 4);
 }
