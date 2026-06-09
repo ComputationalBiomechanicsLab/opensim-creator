@@ -106,6 +106,19 @@
             }
         },
         {
+            "name": "RelWithDebInfo-Inlined",
+            "inherits": ["RelWithDebInfo", "mixin_InlinedDevelopment"],
+            "binaryDir": "${sourceDir}/build/RelWithDebInfo-Inlined",
+            "cacheVariables": {
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo-Inlined/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/RelWithDebInfo-Inlined/install"
+            }
+        },
+        {
+            "name": "RelWithDebInfo-Inlined-RapidLinuxLinking",
+            "inherits": ["RelWithDebInfo-Inlined", "mixin_RapidLinuxLinking"]
+        },
+        {
             "name": "Release",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release",
@@ -157,87 +170,90 @@
         }
     ],
     "buildPresets": [
-        { "name": "Development",           "configurePreset": "Development"           },
-        { "name": "Development-Inlined",   "configurePreset": "Development-Inlined"   },
-        { "name": "ErrorCheck",            "configurePreset": "ErrorCheck"            },
-        { "name": "ErrorCheck-Inlined",    "configurePreset": "ErrorCheck-Inlined"    },
-        { "name": "RelWithDebInfo",        "configurePreset": "RelWithDebInfo"        },
-        { "name": "Release",               "configurePreset": "Release"               },
-        { "name": "Release-MacOS-amd64",   "configurePreset": "Release-MacOS-amd64"   },
-        { "name": "Release-MacOS-arm64",   "configurePreset": "Release-MacOS-arm64"   },
-        { "name": "Release-Windows-amd64", "configurePreset": "Release-Windows-amd64" }
+        { "name": "Development",            "configurePreset": "Development"            },
+        { "name": "Development-Inlined",    "configurePreset": "Development-Inlined"    },
+        { "name": "ErrorCheck",             "configurePreset": "ErrorCheck"             },
+        { "name": "ErrorCheck-Inlined",     "configurePreset": "ErrorCheck-Inlined"     },
+        { "name": "RelWithDebInfo",         "configurePreset": "RelWithDebInfo"         },
+        { "name": "RelWithDebInfo-Inlined", "configurePreset": "RelWithDebInfo-Inlined" },
+        { "name": "Release",                "configurePreset": "Release"                },
+        { "name": "Release-MacOS-amd64",    "configurePreset": "Release-MacOS-amd64"    },
+        { "name": "Release-MacOS-arm64",    "configurePreset": "Release-MacOS-arm64"    },
+        { "name": "Release-Windows-amd64",  "configurePreset": "Release-Windows-amd64"  }
     ],
     "testPresets": [
         {
-            "name": "Development",
-            "configurePreset": "Development",
+            "name": "mixin_TestBase",
+            "description": "Mixin for common test options",
+            "hidden": true,
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "mixin_TestAsan",
+            "description": "Mixin to add necessary ASAN/UBSAN/LSAN flags to the test suite",
+            "hidden": true,
+            "environment": {
+                "ASAN_OPTIONS": "abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:strict_init_order=true:detect_invalid_pointer_pairs=2",
+                "UBSAN_OPTIONS": "abort_on_error=1:print_stacktrace=1:print_summary=1:suppressions=${sourceDir}/scripts/suppressions_ubsan.supp",
+                "LSAN_OPTIONS": "suppressions=${sourceDir}/scripts/suppressions_lsan.supp",
+                "LIBGL_ALWAYS_SOFTWARE": "1"
+            }
+        },
+        {
+            "name": "Development",
+            "configurePreset": "Development",
+            "inherits": ["mixin_TestBase"]
         },
         {
             "name": "Development-Inlined",
             "configurePreset": "Development-Inlined",
-            "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error"}
+            "inherits": ["Development"]
         },
         {
             "name": "ErrorCheck",
             "configurePreset": "ErrorCheck",
-            "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error"},
-            "environment": {
-                "ASAN_OPTIONS": "abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:strict_init_order=true:detect_invalid_pointer_pairs=2",
-                "UBSAN_OPTIONS": "abort_on_error=1:print_stacktrace=1:print_summary=1:suppressions=${sourceDir}/scripts/suppressions_ubsan.supp",
-                "LSAN_OPTIONS": "suppressions=${sourceDir}/scripts/suppressions_lsan.supp",
-                "LIBGL_ALWAYS_SOFTWARE": "1"
-            }
+            "inherits": ["mixin_TestBase", "mixin_TestAsan"]
         },
         {
             "name": "ErrorCheck-Inlined",
             "configurePreset": "ErrorCheck-Inlined",
-            "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error"},
-            "environment": {
-                "ASAN_OPTIONS": "abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:strict_init_order=true:detect_invalid_pointer_pairs=2",
-                "UBSAN_OPTIONS": "abort_on_error=1:print_stacktrace=1:print_summary=1:suppressions=${sourceDir}/scripts/suppressions_ubsan.supp",
-                "LSAN_OPTIONS": "suppressions=${sourceDir}/scripts/suppressions_lsan.supp",
-                "LIBGL_ALWAYS_SOFTWARE": "1"
-            }
+            "inherits": ["ErrorCheck"]
         },
         {
             "name": "RelWithDebInfo",
             "configurePreset": "RelWithDebInfo",
-            "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error"}
+            "inherits": ["mixin_TestBase"]
+        },
+        {
+            "name": "RelWithDebInfo-Inlined",
+            "configurePreset": "RelWithDebInfo-Inlined",
+            "inherits": ["RelWithDebInfo"]
         },
         {
             "name": "Release",
             "configurePreset": "Release",
-            "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error"}
+            "inherits": ["mixin_TestBase"]
         },
         {
             "name": "Release-MacOS-amd64",
             "configurePreset": "Release-MacOS-amd64",
-            "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error"}
+            "inherits": ["mixin_TestBase"]
         },
         {
             "name": "Release-MacOS-arm64",
             "configurePreset": "Release-MacOS-arm64",
-            "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error"}
+            "inherits": ["mixin_TestBase"]
         },
         {
             "name": "Release-Windows-amd64",
             "configurePreset": "Release-Windows-amd64",
+            "inherits": ["mixin_TestBase"],
             "filter": {
                 "exclude": {
                     "name": "Graphics|MeshDepthWritingMaterialFixture|MeshNormalVectorsMaterialFixture|ShaderTest|MaterialTest|RegisteredDemoTabsTest|RegisteredOpenSimCreatorTabs|AddComponentPopup|LoadingTab"
                 }
-            },
-            "output": { "outputOnFailure": true },
-            "execution": { "noTestsAction": "error" }
+            }
         }
     ],
     "packagePresets": [
@@ -282,6 +298,13 @@
             "steps": [
                 { "type": "configure", "name": "RelWithDebInfo" },
                 { "type": "build",     "name": "RelWithDebInfo" }
+            ]
+        },
+        {
+            "name": "RelWithDebInfo-Inlined",
+            "steps": [
+                { "type": "configure", "name": "RelWithDebInfo-Inlined" },
+                { "type": "build",     "name": "RelWithDebInfo-Inlined" }
             ]
         },
         {

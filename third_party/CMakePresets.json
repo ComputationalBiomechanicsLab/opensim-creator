@@ -2,21 +2,16 @@
     "version": 6,
     "configurePresets": [
         {
-            "name": "Development",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/../build/third_party/Development",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development/install"
-            }
+            "name": "mixin_ConfigBase",
+            "description": "Common base settings for all configurations",
+            "hidden": true,
+            "generator": "Ninja"
         },
         {
-            "name": "Development-Inlined",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/../build/third_party/Development-Inlined",
+            "name": "mixin_InlinedDevelopment",
+            "hidden": true,
+            "description": "Enables inlining the OPynSim build into this build (useful for development)",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development-Inlined/install",
                 "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
                 "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
                 "OSCDEPS_BUILD_OSCAR": "OFF",
@@ -24,8 +19,25 @@
             }
         },
         {
+            "name": "Development",
+            "inherits": ["mixin_ConfigBase"],
+            "binaryDir": "${sourceDir}/../build/third_party/Development",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development/install"
+            }
+        },
+        {
+            "name": "Development-Inlined",
+            "inherits": ["Development", "mixin_InlinedDevelopment"],
+            "binaryDir": "${sourceDir}/../build/third_party/Development-Inlined",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development-Inlined/install"
+            }
+        },
+        {
             "name": "ErrorCheck",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/../build/third_party/ErrorCheck",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
@@ -38,37 +50,15 @@
         },
         {
             "name": "ErrorCheck-Inlined",
-            "generator": "Ninja",
+            "inherits": ["ErrorCheck", "mixin_InlinedDevelopment"],
             "binaryDir": "${sourceDir}/../build/third_party/ErrorCheck-Inlined",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck-Inlined/install",
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined",
-                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined",
-                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
-                "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
-                "OSCDEPS_BUILD_OSCAR": "OFF",
-                "OSCDEPS_BUILD_OPYNSIM": "OFF"
-            }
-        },
-        {
-            "name": "Debug-Inlined",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/../build/third_party/Debug-Inlined",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Debug-Inlined/install",
-                "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
-                "OSCDEPS_BUILD_OPYNSIM_DEPS": "ON",
-                "OSCDEPS_BUILD_OSCAR": "OFF",
-                "OSCDEPS_BUILD_OPYNSIM": "OFF"
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck-Inlined/install"
             }
         },
         {
             "name": "RelWithDebInfo",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/../build/third_party/RelWithDebInfo",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
@@ -76,8 +66,16 @@
             }
         },
         {
+            "name": "RelWithDebInfo-Inlined",
+            "inherits": ["RelWithDebInfo", "mixin_InlinedDevelopment"],
+            "binaryDir": "${sourceDir}/../build/third_party/RelWithDebInfo-Inlined",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/RelWithDebInfo-Inlined/install"
+            }
+        },
+        {
             "name": "Release",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/../build/third_party/Release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
@@ -87,7 +85,7 @@
         },
         {
             "name": "Release-MacOS-amd64",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/../build/third_party/Release-MacOS-amd64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
@@ -98,7 +96,7 @@
         },
         {
             "name": "Release-MacOS-arm64",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/../build/third_party/Release-MacOS-arm64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
@@ -109,7 +107,7 @@
         },
         {
             "name": "Release-Windows-amd64",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/../build/third_party/Release-Windows-amd64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
@@ -119,16 +117,16 @@
         }
     ],
     "buildPresets": [
-        { "name": "Development",           "configurePreset": "Development"           },
-        { "name": "Development-Inlined",   "configurePreset": "Development-Inlined"   },
-        { "name": "ErrorCheck",            "configurePreset": "ErrorCheck"            },
-        { "name": "ErrorCheck-Inlined",    "configurePreset": "ErrorCheck-Inlined"    },
-        { "name": "Debug-Inlined",         "configurePreset": "Debug-Inlined"         },
-        { "name": "RelWithDebInfo",        "configurePreset": "RelWithDebInfo"        },
-        { "name": "Release",               "configurePreset": "Release"               },
-        { "name": "Release-MacOS-amd64",   "configurePreset": "Release-MacOS-amd64"   },
-        { "name": "Release-MacOS-arm64",   "configurePreset": "Release-MacOS-arm64"   },
-        { "name": "Release-Windows-amd64", "configurePreset": "Release-Windows-amd64" }
+        { "name": "Development",            "configurePreset": "Development"            },
+        { "name": "Development-Inlined",    "configurePreset": "Development-Inlined"    },
+        { "name": "ErrorCheck",             "configurePreset": "ErrorCheck"             },
+        { "name": "ErrorCheck-Inlined",     "configurePreset": "ErrorCheck-Inlined"     },
+        { "name": "RelWithDebInfo",         "configurePreset": "RelWithDebInfo"         },
+        { "name": "RelWithDebInfo-Inlined", "configurePreset": "RelWithDebInfo-Inlined" },
+        { "name": "Release",                "configurePreset": "Release"                },
+        { "name": "Release-MacOS-amd64",    "configurePreset": "Release-MacOS-amd64"    },
+        { "name": "Release-MacOS-arm64",    "configurePreset": "Release-MacOS-arm64"    },
+        { "name": "Release-Windows-amd64",  "configurePreset": "Release-Windows-amd64"  }
     ],
     "workflowPresets": [
         {
@@ -160,17 +158,17 @@
             ]
         },
         {
-            "name": "Debug-Inlined",
-            "steps": [
-                { "type": "configure", "name": "Debug-Inlined" },
-                { "type": "build",     "name": "Debug-Inlined" }
-            ]
-        },
-        {
             "name": "RelWithDebInfo",
             "steps": [
                 { "type": "configure", "name": "RelWithDebInfo" },
                 { "type": "build",     "name": "RelWithDebInfo" }
+            ]
+        },
+        {
+            "name": "RelWithDebInfo-Inlined",
+            "steps": [
+                { "type": "configure", "name": "RelWithDebInfo-Inlined" },
+                { "type": "build",     "name": "RelWithDebInfo-Inlined" }
             ]
         },
         {
