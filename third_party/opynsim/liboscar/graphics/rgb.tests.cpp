@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <ranges>
 
 using namespace osc;
@@ -51,8 +52,8 @@ TEST(Rgb, converting_constructor_from_Vector3_behaves_as_expected)
 
 TEST(Rgb, satisfies_contiguous_range_api)
 {
-    static_assert(std::ranges::contiguous_range<Rgb<float>>);
-    static_assert(std::ranges::contiguous_range<Rgb<Unorm8>>);
+    static_assert(rgs::contiguous_range<Rgb<float>>);
+    static_assert(rgs::contiguous_range<Rgb<Unorm8>>);
 }
 
 TEST(Rgb, operator_bracket_const_works_as_expected)

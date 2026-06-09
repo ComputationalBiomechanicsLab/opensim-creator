@@ -83,6 +83,18 @@ namespace osc
         value_type g{};
         value_type b{};
     };
+
+    template<size_t I, typename T>
+    constexpr const T& get(const Rgb<T>& v) { return v[I]; }
+
+    template<size_t I, typename T>
+    constexpr T& get(Rgb<T>& v) { return v[I]; }
+
+    template<size_t I, typename T>
+    constexpr T&& get(Rgb<T>&& v) { return std::move(v[I]); }
+
+    template<size_t I, typename T>
+    constexpr const T&& get(const Rgb<T>&& v) { return std::move(v[I]); }
 }
 
 template<osc::ColorComponent T>
