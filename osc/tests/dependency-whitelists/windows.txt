@@ -1,4 +1,5 @@
 KERNEL32\.dll
+api-ms-win-core-synch-.*\.dll
 api-ms-win-crt-.*\.dll
 ucrtbase.*\.dll
 shell32\.dll
