@@ -17,6 +17,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
     - name: build
       shell: cmd
       run: |
@@ -42,6 +47,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_unix.sh Release-MacOS-amd64
 
@@ -58,6 +68,11 @@ jobs:
       CTEST_PARALLEL_LEVEL: 1
     steps:
     - uses: actions/checkout@v4
+
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
 
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_unix.sh Release-MacOS-arm64
@@ -76,6 +91,11 @@ jobs:
 
     - name: setup system
       run: cd $GITHUB_WORKSPACE && sudo apt-get update && sudo apt-get install $(sed 's/#.*//' "docker/ubuntu22_apt.txt" | xargs)
+
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
 
     # Use `xvfb-run` so that the UI tests can run against a virtual windowing system
     # Use `gcc` 12, because OpenSim Creator uses C++20, which is a bit new for Ubuntu 22.04
