@@ -11,6 +11,9 @@ else
     CONFIGS=("$@")
 fi
 
+# Setup project-level Python virtual environment
+./scripts/setup_venv.py
+
 for CONFIG in "${CONFIGS[@]}"; do
     echo "=== Building configuration: $CONFIG ==="
 
