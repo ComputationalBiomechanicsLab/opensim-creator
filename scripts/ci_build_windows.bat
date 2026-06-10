@@ -6,7 +6,7 @@ REM This is what build agents should run to build release amd64 binaries of Open
 
 REM set default configuration if none provided
 IF "%~1"=="" (
-    set CONFIGS=Release
+    set CONFIGS=Development
 ) ELSE (
     set CONFIGS=%*
 )
