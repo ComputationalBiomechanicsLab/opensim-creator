@@ -26,7 +26,7 @@ unset(_osc_extra_sources)
 set_target_properties(testopensimcreator PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(testopensimcreator PUBLIC cxx_std_23)
 if(OSC_USE_STRICT_COMPILER_FLAGS)
-    include(../cmake/osc_strict_compiler_options.cmake)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/osc_strict_compiler_options.cmake)
     target_compile_options(testopensimcreator PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
 endif()
 target_include_directories(testopensimcreator
