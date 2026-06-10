@@ -1,22 +1,41 @@
-if(APPLE)
-    find_package(Python REQUIRED COMPONENTS Interpreter)
+include(../../cmake/osc_find_python.cmake)
+
+# Perform runtime dynamic library dependency (dll/so/dylib) whitelist
+# testing if `OSC_STRICT_ABI_CHECKS` is enabled.
+if(OSC_STRICT_ABI_CHECKS)
+    osc_find_python()
+
+    if(WIN32)
+        set(OSC_DEPENDENCY_WHITELIST_FILENAME "windows.txt")
+    elseif(UNIX AND NOT APPLE)
+        set(OSC_DEPENDENCY_WHITELIST_FILENAME "linux.txt")
+    elseif(APPLE)
+        set(OSC_DEPENDENCY_WHITELIST_FILENAME "macos.txt")
+    else()
+        message(FATAL_ERROR "Unsupported platform detected: cannot perform OSC_STRICT_ABI_CHECKS: disable this option or fix this error!")
+    endif()
 
     add_test(
-        NAME test_macos-dependencies
+        NAME test_core_dependencies_pass_whitelist
+        COMMAND
+            "${Python_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/opynsim/tests/check_dependencies.py"
+            "--verbose"
+            "$<TARGET_FILE:osc>"
+            "${CMAKE_CURRENT_SOURCE_DIR}/dependency-whitelists/${OSC_DEPENDENCY_WHITELIST_FILENAME}"
+    )
+endif()
+
+# Perform Apple SDK version checks, if applicable.
+if(OSC_STRICT_ABI_CHECKS AND APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
+    osc_find_python()
+
+    add_test(
+        NAME test_macos-targets-deployment-target
         COMMAND
         "${Python_EXECUTABLE}"
-        "${CMAKE_CURRENT_SOURCE_DIR}/test_macos-dependencies.py"
+        "${CMAKE_CURRENT_SOURCE_DIR}/check_macos-supports-min_os_version.py"
+        "${CMAKE_OSX_DEPLOYMENT_TARGET}"
         "$<TARGET_FILE:osc>"
     )
-
-    if(CMAKE_OSX_DEPLOYMENT_TARGET)
-        add_test(
-            NAME test_macos-uses-sdk
-            COMMAND
-            "${Python_EXECUTABLE}"
-            "${CMAKE_CURRENT_SOURCE_DIR}/test_macos-uses-sdk.py"
-            "${CMAKE_OSX_DEPLOYMENT_TARGET}"
-            "$<TARGET_FILE:osc>"
-        )
-    endif()
 endif()

@@ -10,15 +10,22 @@ jobs:
   windows_amd64:
     name: Windows (amd64)
     runs-on: windows-2022
+    env:
+      # Filter out tests that require OpenGL 3.3 support (GitHub Windows
+      # runner doesn't support it).
+      OSC_TEST_EXCLUDE_FILTER: "Graphics|MeshDepthWritingMaterialFixture|MeshNormalVectorsMaterialFixture|ShaderTest|MaterialTest|RegisteredDemoTabsTest|RegisteredOpenSimCreatorTabs|AddComponentPopup|LoadingTab"
     steps:
     - uses: actions/checkout@v4
 
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
     - name: build
       shell: cmd
-      # use subst to hack around Windows path length issues
       run: |
-        cd %GITHUB_WORKSPACE%
-        scripts\ci_build_windows.bat Release-Windows-amd64
+        cd %GITHUB_WORKSPACE% && scripts\ci_build_windows.bat Release-Windows-amd64
 
     - uses: actions/upload-artifact@v4
       with:
@@ -40,6 +47,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_unix.sh Release-MacOS-amd64
 
@@ -56,6 +68,11 @@ jobs:
       CTEST_PARALLEL_LEVEL: 1
     steps:
     - uses: actions/checkout@v4
+
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
 
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_unix.sh Release-MacOS-arm64
@@ -75,13 +92,18 @@ jobs:
     - name: setup system
       run: cd $GITHUB_WORKSPACE && sudo apt-get update && sudo apt-get install $(sed 's/#.*//' "docker/ubuntu22_apt.txt" | xargs)
 
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
     # Use `xvfb-run` so that the UI tests can run against a virtual windowing system
     # Use `gcc` 12, because OpenSim Creator uses C++20, which is a bit new for Ubuntu 22.04
     - name: run build script
-      run: cd $GITHUB_WORKSPACE && CC=gcc-12 CXX=g++-12 xvfb-run ./scripts/ci_build_unix.sh
+      run: cd $GITHUB_WORKSPACE && CC=gcc-12 CXX=g++-12 xvfb-run ./scripts/ci_build_unix.sh Release-Linux-amd64
 
     - uses: actions/upload-artifact@v4
       with:
         name: opensimcreator-ubuntu22-amd64-deb
-        path: build/Release/*.deb
+        path: build/Release-Linux-amd64/*.deb
         if-no-files-found: error

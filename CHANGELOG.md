@@ -14,6 +14,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   and moving around with the camera (#1179).
 - The preview experimental data tab will now change its name to match the last file that was
   previewed in the tab, so that it's easier to work with multiple tabs open (#1181).
+- The Linux release build now statically links libstdc++ and libgcc_s, in preparation
+  for a multi-/old-distro tar.gz portable installer.
 
 ## [0.7.3] - 2026/03/27
 

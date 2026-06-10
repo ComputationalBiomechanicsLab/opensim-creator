@@ -2,6 +2,16 @@
     "version": 6,
     "configurePresets": [
         {
+            "name": "mixin_ConfigBase",
+            "description": "Common base settings for all configurations",
+            "hidden": true,
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "OSC_VENV": "${sourceDir}/.venv"
+            }
+        },
+        {
             "name": "mixin_RapidLinuxLinking",
             "hidden": true,
             "description": "Mixin to enable the mold linker, thin archives, and split dwarf files for faster linking (useful for development)",
@@ -33,15 +43,12 @@
         },
         {
             "name": "Development",
-            "description": "Recommended preset for day-to-day development",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/build/Development",
             "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development/install",
-
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
@@ -60,15 +67,12 @@
         },
         {
             "name": "ErrorCheck",
-            "description": "Builds with runtime error checking (leak checks, sanitizer checks) and linting - recommended for development/debugging harder code changes",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/build/ErrorCheck",
             "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/ErrorCheck/install",
-
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
@@ -85,7 +89,6 @@
             "cacheVariables": {
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck-Inlined/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/ErrorCheck-Inlined/install",
-
                 "OPYN_BUILD_PYTHON_TESTING": "OFF",
                 "OPYN_GENERATE_STUBS": "OFF"
             }
@@ -96,13 +99,12 @@
         },
         {
             "name": "RelWithDebInfo",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/RelWithDebInfo/install",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/RelWithDebInfo/install"
             }
         },
         {
@@ -119,53 +121,54 @@
             "inherits": ["RelWithDebInfo-Inlined", "mixin_RapidLinuxLinking"]
         },
         {
-            "name": "Release",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Release",
+            "name": "Release-Linux-amd64",
+            "inherits": ["mixin_ConfigBase"],
+            "binaryDir": "${sourceDir}/build/Release-Linux-amd64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release/install",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-Linux-amd64/install",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Linux-amd64/install",
+                "CMAKE_EXE_LINKER_FLAGS": "-static-libstdc++ -static-libgcc",
+                "CMAKE_SHARED_LINKER_FLAGS": "-static-libstdc++ -static-libgcc",
+                "OSC_STRICT_ABI_CHECKS": "ON"
             }
         },
         {
             "name": "Release-MacOS-amd64",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/build/Release-MacOS-amd64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-MacOS-amd64/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-MacOS-amd64/install",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_OSX_ARCHITECTURES": "x86_64",
-                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5"
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "OSC_STRICT_ABI_CHECKS": "ON"
             }
         },
         {
             "name": "Release-MacOS-arm64",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/build/Release-MacOS-arm64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-MacOS-arm64/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-MacOS-arm64/install",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
-                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5"
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "OSC_STRICT_ABI_CHECKS": "ON"
             }
         },
         {
             "name": "Release-Windows-amd64",
-            "generator": "Ninja",
+            "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/build/Release-Windows-amd64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-Windows-amd64/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Windows-amd64/install",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded"
+                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded",
+                "OSC_STRICT_ABI_CHECKS": "ON"
             }
         }
     ],
@@ -176,7 +179,7 @@
         { "name": "ErrorCheck-Inlined",     "configurePreset": "ErrorCheck-Inlined"     },
         { "name": "RelWithDebInfo",         "configurePreset": "RelWithDebInfo"         },
         { "name": "RelWithDebInfo-Inlined", "configurePreset": "RelWithDebInfo-Inlined" },
-        { "name": "Release",                "configurePreset": "Release"                },
+        { "name": "Release-Linux-amd64",    "configurePreset": "Release-Linux-amd64"    },
         { "name": "Release-MacOS-amd64",    "configurePreset": "Release-MacOS-amd64"    },
         { "name": "Release-MacOS-arm64",    "configurePreset": "Release-MacOS-arm64"    },
         { "name": "Release-Windows-amd64",  "configurePreset": "Release-Windows-amd64"  }
@@ -187,7 +190,12 @@
             "description": "Mixin for common test options",
             "hidden": true,
             "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error"}
+            "execution": {"noTestsAction": "error"},
+            "filter": {
+                "exclude": {
+                    "name": "$env{OSC_TEST_EXCLUDE_FILTER}"
+                }
+            }
         },
         {
             "name": "mixin_TestAsan",
@@ -231,8 +239,8 @@
             "inherits": ["RelWithDebInfo"]
         },
         {
-            "name": "Release",
-            "configurePreset": "Release",
+            "name": "Release-Linux-amd64",
+            "configurePreset": "Release-Linux-amd64",
             "inherits": ["mixin_TestBase"]
         },
         {
@@ -248,16 +256,11 @@
         {
             "name": "Release-Windows-amd64",
             "configurePreset": "Release-Windows-amd64",
-            "inherits": ["mixin_TestBase"],
-            "filter": {
-                "exclude": {
-                    "name": "Graphics|MeshDepthWritingMaterialFixture|MeshNormalVectorsMaterialFixture|ShaderTest|MaterialTest|RegisteredDemoTabsTest|RegisteredOpenSimCreatorTabs|AddComponentPopup|LoadingTab"
-                }
-            }
+            "inherits": ["mixin_TestBase"]
         }
     ],
     "packagePresets": [
-        { "name": "Release",               "configurePreset": "Release"               },
+        { "name": "Release-Linux-amd64",   "configurePreset": "Release-Linux-amd64"   },
         { "name": "Release-MacOS-amd64",   "configurePreset": "Release-MacOS-amd64"   },
         { "name": "Release-MacOS-arm64",   "configurePreset": "Release-MacOS-arm64"   },
         { "name": "Release-Windows-amd64", "configurePreset": "Release-Windows-amd64" }
@@ -308,12 +311,12 @@
             ]
         },
         {
-            "name": "Release",
+            "name": "Release-Linux-amd64",
             "steps": [
-                { "type": "configure", "name": "Release" },
-                { "type": "build",     "name": "Release" },
-                { "type": "test",      "name": "Release" },
-                { "type": "package",   "name": "Release" }
+                { "type": "configure", "name": "Release-Linux-amd64" },
+                { "type": "build",     "name": "Release-Linux-amd64" },
+                { "type": "test",      "name": "Release-Linux-amd64" },
+                { "type": "package",   "name": "Release-Linux-amd64" }
             ]
         },
         {

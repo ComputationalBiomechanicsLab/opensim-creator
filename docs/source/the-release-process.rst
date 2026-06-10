@@ -21,10 +21,11 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Create an issue called something like `Release XX.xx.pp`
     - [ ] Copy this checklist into it
     - [ ] Bump the VERSION in the top-level `CMakeLists.txt` accordingly
-    - [ ] Use `./scripts/build_linux_debugging.sh` to clean-build a debug (+ libASAN)
-          version of OpenSim Creator on Ubuntu 24 (debugging os).
+    - [ ] Build the project with `ErrorCheck` on Ubuntu 24 and ensure all tests etc. pass
+          with it. Must be ran with `ctest --preset ErrorCheck` because there's ASAN
+          options (suppressions) that must be handled.
     - [ ] Ensure the `clang-tidy` lints and test suite passes with the debug build
-    - [ ] Ensure the test suite passes under valgrind (see: `scripts/build_linux_valgrind.sh`)
+    - [ ] Ensure the test suite passes under `valgrind`: `LIBGL_ALWAYS_SOFTWARE=1 valgrind --leak-check=full --trace-children=yes --suppressions=${PWD}/scripts/suppressions_valgrind.supp -- ctest --test-dir build/RelWithDebInfo --output-on-failure`
     - [ ] Manually spot-check new changes with the debug+ASAN build
     - [ ] Fix all bugs/problems found during the above steps
     - [ ] Commit any fixes to CI and ensure CI passes

@@ -45,7 +45,7 @@ set(OSC_STRICT_COMPILER_OPTIONS
     # gcc flags
     $<$<CXX_COMPILER_ID:GNU>:
         -Wtrampolines            # warn if using trampoline functions (requires executable stack)
-        -Wlogical-op             # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
+        -Wlogical-op             # warn if a suspicious use of a logical operator is detected (e.g. i < 0 && i < 0)
 
         -Wno-uninitialized       # don't warn if using an uninitialized variable (produces false positives in some versions of gcc)
         -Wno-restrict            # don't warn if `restrict` is misused (produces false positives in googletest: https://github.com/google/googletest/issues/4232)

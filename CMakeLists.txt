@@ -7,6 +7,7 @@ option(OSC_BUILD_OPYNSIM_INLINE "Inline the OPynSim build"                      
 option(OSC_BUILD_OSCAR_INLINE   "Inline the oscar build"                                OFF)
 option(OSC_BUILD_DOCS           "Build OpenSim Creator's documentation"                 OFF)
 option(OSC_CONFIGURE_PACKAGING  "Configure the build to support installation/packaging" ON)
+option(OSC_STRICT_ABI_CHECKS    "Run binary compatibility tests"                        OFF)
 
 if(BUILD_TESTING)
     # This has to be done at the top-level, so that `ctest --show-only` works for

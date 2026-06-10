@@ -49,6 +49,13 @@ if(OPYN_BUILD_PYTHON_BINDINGS)
     set_target_properties(oscar PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 target_compile_features(oscar PUBLIC cxx_std_23)
+target_compile_options(oscar PRIVATE
+    $<$<CXX_COMPILER_ID:AppleClang>:
+        -Wunguarded-availability            # Enable checks for APIs newer than `CMAKE_OSX_DEPLOYMENT_TARGET`.
+        -Werror=unguarded-availability      # Turn those checks into hard compilation errors.
+        -Werror=unguarded-availability-new  # Catch newly introduced APIs in the latest SDKs as errors
+    >
+)
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     target_compile_options(oscar PRIVATE ${OPYN_STRICT_COMPILER_OPTIONS})

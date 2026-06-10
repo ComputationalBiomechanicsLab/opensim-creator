@@ -2,6 +2,13 @@ add_executable(oscar_demo_viewer
     oscar_demo_viewer.cpp
 )
 target_link_libraries(oscar_demo_viewer PUBLIC oscar_demos)
+target_compile_options(oscar_demo_viewer PRIVATE
+    $<$<CXX_COMPILER_ID:AppleClang>:
+        -Wunguarded-availability            # Enable checks for APIs newer than `CMAKE_OSX_DEPLOYMENT_TARGET`.
+        -Werror=unguarded-availability      # Turn those checks into hard compilation errors.
+        -Werror=unguarded-availability-new  # Catch newly introduced APIs in the latest SDKs as errors
+    >
+)
 
 # Handle installation
 if(TRUE)

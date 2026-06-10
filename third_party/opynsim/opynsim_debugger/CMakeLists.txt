@@ -12,5 +12,12 @@ configure_file(
 )
 add_executable(opynsim_debugger ${CMAKE_CURRENT_BINARY_DIR}/generated/opynsim_debugger.cpp)
 target_compile_features(opynsim_debugger PUBLIC cxx_std_20)
+target_compile_options(opynsim_debugger PRIVATE
+    $<$<CXX_COMPILER_ID:AppleClang>:
+        -Wunguarded-availability            # Enable checks for APIs newer than `CMAKE_OSX_DEPLOYMENT_TARGET`.
+        -Werror=unguarded-availability      # Turn those checks into hard compilation errors.
+        -Werror=unguarded-availability-new  # Catch newly introduced APIs in the latest SDKs as errors
+    >
+)
 target_link_libraries(opynsim_debugger PUBLIC Python::Python)
 add_dependencies(opynsim_debugger _core)  # ensure bindings are built first

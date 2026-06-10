@@ -74,13 +74,14 @@
             }
         },
         {
-            "name": "Release",
+            "name": "Release-Linux-amd64",
             "inherits": ["mixin_ConfigBase"],
-            "binaryDir": "${sourceDir}/../build/third_party/Release",
+            "binaryDir": "${sourceDir}/../build/third_party/Release-Linux-amd64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release/install",
-                "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded"
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release-Linux-amd64/install",
+                "CMAKE_EXE_LINKER_FLAGS": "-static-libstdc++ -static-libgcc",
+                "CMAKE_SHARED_LINKER_FLAGS": "-static-libstdc++ -static-libgcc"
             }
         },
         {
@@ -123,7 +124,7 @@
         { "name": "ErrorCheck-Inlined",     "configurePreset": "ErrorCheck-Inlined"     },
         { "name": "RelWithDebInfo",         "configurePreset": "RelWithDebInfo"         },
         { "name": "RelWithDebInfo-Inlined", "configurePreset": "RelWithDebInfo-Inlined" },
-        { "name": "Release",                "configurePreset": "Release"                },
+        { "name": "Release-Linux-amd64",    "configurePreset": "Release-Linux-amd64"    },
         { "name": "Release-MacOS-amd64",    "configurePreset": "Release-MacOS-amd64"    },
         { "name": "Release-MacOS-arm64",    "configurePreset": "Release-MacOS-arm64"    },
         { "name": "Release-Windows-amd64",  "configurePreset": "Release-Windows-amd64"  }
@@ -172,10 +173,10 @@
             ]
         },
         {
-            "name": "Release",
+            "name": "Release-Linux-amd64",
             "steps": [
-                { "type": "configure", "name": "Release" },
-                { "type": "build",     "name": "Release" }
+                { "type": "configure", "name": "Release-Linux-amd64" },
+                { "type": "build",     "name": "Release-Linux-amd64" }
             ]
         },
         {

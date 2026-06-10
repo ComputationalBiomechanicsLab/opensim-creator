@@ -1,0 +1,17 @@
+function(osc_find_python)
+    if(OSC_VENV)
+        if(WIN32)
+            set(_osc_python_exe "${OSC_VENV}/Scripts/python.exe")
+        else()
+            set(_osc_python_exe "${OSC_VENV}/bin/python")
+        endif()
+
+        if(NOT EXISTS ${_osc_python_exe})
+            message(FATAL_ERROR "${_osc_python_exe}: python executable not found, but OSC_VENV was set to this path?")
+        endif()
+
+        set(Python_EXECUTABLE "${_osc_python_exe}" CACHE FILEPATH "Path to Python interpreter" FORCE)
+        unset(_osc_python_exe)
+    endif()
+    find_package(Python REQUIRED COMPONENTS Interpreter)
+endfunction()

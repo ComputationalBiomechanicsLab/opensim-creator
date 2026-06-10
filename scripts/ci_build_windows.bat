@@ -2,13 +2,19 @@
 setlocal enabledelayedexpansion
 
 REM Performs an end-to-end CI build of OpenSim Creator.
-REM This is what build agents should run to build release amd64 binaries of OpenSim Creator on Windows.
 
 REM set default configuration if none provided
 IF "%~1"=="" (
-    set CONFIGS=Release
+    set CONFIGS=Development
 ) ELSE (
     set CONFIGS=%*
+)
+
+REM Setup project-level python virtual environment
+python scripts/setup_venv.py
+IF %ERRORLEVEL% NEQ 0 (
+    echo Failed to setup virtual environment
+    exit /b %ERRORLEVEL%
 )
 
 REM Activate the latest Visual Studio environment (so that Ninja, cmake, etc. are available)

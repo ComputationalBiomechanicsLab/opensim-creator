@@ -31,6 +31,13 @@ PUBLIC
     $<INSTALL_INTERFACE:include>                               # `libopysim` is installed into the `include` root
 )
 target_compile_features(opynsim PUBLIC cxx_std_20)  # CARE: MSVC C++23 isn't ABI-stable yet
+target_compile_options(opynsim PRIVATE
+    $<$<CXX_COMPILER_ID:AppleClang>:
+        -Wunguarded-availability            # Enable checks for APIs newer than `CMAKE_OSX_DEPLOYMENT_TARGET`.
+        -Werror=unguarded-availability      # Turn those checks into hard compilation errors.
+        -Werror=unguarded-availability-new  # Catch newly introduced APIs in the latest SDKs as errors
+    >
+)
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     target_compile_options(opynsim PRIVATE ${OPYN_STRICT_COMPILER_OPTIONS})

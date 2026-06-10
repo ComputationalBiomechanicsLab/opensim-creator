@@ -16,7 +16,7 @@ Visual Studio 2022/2026
   (in the repository root) and the dependencies build (in ``third_party/``). Visual
   Studio natively understands how to load folders containing these files, and should
   automatically present each preset as a user-selectable configuration (e.g. ``Development``
-  and ``Release`` will be listed as options).
+  and ``RelWithDebInfo`` will be listed as options).
 
 - If you want to build OpenSim Creator via the Visual Studio UI, then you should:
 
