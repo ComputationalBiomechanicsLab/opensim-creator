@@ -1,4 +1,6 @@
 linux-vdso\.so.*
 libm\.so.*
+libpthread\.so.*
+libdl\.so.*
 libc\.so.*
 ld-linux-x86-64\.so.*
