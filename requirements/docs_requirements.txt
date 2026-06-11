@@ -1,4 +1,0 @@
-Sphinx==9.1.0
-sphinx-book-theme==1.1.4
-sphinx-autobuild
-

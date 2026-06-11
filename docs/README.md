@@ -16,7 +16,7 @@ environment with:
 
 - `python` and `pip`
 - A python virtual environment (can be a `venv`, e.g. `python -m venv .venv/ && source .venv/bin/activate`)
-- All relevant python packages installed into that environment (e.g. `pip install -r ../requirements/docs_requirements.txt`)
+- All relevant python packages installed into that environment (e.g. `pip install -r ../requirements/all_requirements.txt`)
 
 E.g. here's how you'd set up a suitable development environment on Ubuntu:
 
@@ -24,7 +24,7 @@ E.g. here's how you'd set up a suitable development environment on Ubuntu:
 apt install python
 python -m venv .venv/
 source .venv/bin/activate
-pip install -r ../requirements/docs_requirements.txt
+pip install -r ../requirements/all_requirements.txt
 ```
 
 

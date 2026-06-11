@@ -1,1 +1,1 @@
-sphinx-autobuild
+sphinx-autobuild==2025.8.25

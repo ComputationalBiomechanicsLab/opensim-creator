@@ -1,1 +1,1 @@
-twine
+twine==6.2.0

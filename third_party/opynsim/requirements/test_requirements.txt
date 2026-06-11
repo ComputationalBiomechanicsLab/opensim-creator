@@ -1,2 +1,2 @@
-lief
-pytest
+lief==0.14.1
+pytest==9.0.3

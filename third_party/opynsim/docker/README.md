@@ -16,11 +16,11 @@ docker ps
 docker container prune
 
 # Build a development environment image
-cd docker && docker build -t oscar-ubuntu22 -f ubuntu22-ci.Dockerfile . && cd -
+cd docker && docker build -t opynsim:ubuntu22-ci -f ubuntu22-ci.Dockerfile . && cd -
 
 # Build project via the environment
 # --init is necessary to prevent the bash script from being PID=1, which can
 #        make xvfb-run hang
 BUILD_TYPE=Release
-docker run --init --rm -v "${PWD}:/project" -w /project oscar-ubuntu22 bash -c "cd third_party && cmake --workflow --preset ${BUILD_TYPE} && cd .. && xvfb-run cmake --workflow --preset ${BUILD_TYPE}"
+docker run --init --rm -v "${PWD}:/project" -w /project opynsim:ubuntu22-ci bash -c "cd third_party && cmake --workflow --preset ${BUILD_TYPE} && cd .. && xvfb-run cmake --workflow --preset ${BUILD_TYPE}"
 ```

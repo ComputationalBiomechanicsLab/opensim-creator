@@ -9,7 +9,7 @@ opynsim
 -------
 
 - https://github.com/opynsim/opynsim
-- Version (approx): 5cec40ddbbbbaa7e4fdffa87af2d4ad244fa1205
+- Version (approx): c27efd7b63e5275547a164b935b8ab79a98f99e2
 - Licensed under the Apache 2.0 license
 - Copyright (c) 2026 Adam Kewley
 
