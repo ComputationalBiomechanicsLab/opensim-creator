@@ -40,11 +40,13 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Assemble/build/sign release artifacts:
       - [ ] Create a source tarball with `./scripts/ci_bundle-sources.sh ${VERSION}`
       - [ ] Build MacOS release on developer's machine (GitHub Actions doesn't store developer's private keys):
+        - [ ] Setup local Python 3.12 virtual environment with something like `python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt`
         - [ ] Ensure secret codesigning environment variables are set: `OSC_CODESIGN_DEVELOPER_ID`,
               `OSC_NOTARIZATION_APPLE_ID`, `OSC_NOTARIZATION_TEAM_ID`, and `OSC_NOTARIZATION_PASSWORD`.
         - [ ] Build and notarize an **arm64** release on the developer's machine with `OSC_CODESIGN_ENABLED=1 OSC_NOTARIZATION_ENABLED=1 ./scripts/ci_build_unix.sh Release-MacOS-arm64`
         - [ ] Build and notarize an **amd64** release on the developer's machine with `OSC_CODESIGN_ENABLED=1 OSC_NOTARIZATION_ENABLED=1 ./scripts/ci_build_unix.sh Release-MacOS-amd64`
       - [ ] Build Windows release on developer's machine (GitHub Actions cannot access physical signing USB keys):
+        - [ ] Setup local Python virtual environment with something like `py -3.12 -m venv . venv && call .venv\Scripts\activate && pip install -r requirements/all_requirements.txt`
         - [ ] Build and codesign an **amd64** release on the developer's machine with `OSC_CODESIGN_ENABLED=1 ./scripts/ci_build_windows.bat Release-Windows-amd64`
       - [ ] Combine all artifacts into a single location/directory:
         - [ ] Source tarball
@@ -90,8 +92,8 @@ Creator, it's usually copied into a GitHub issue:
 Release Build Matrix
 --------------------
 
-Here is a top-level overview of the architectures/platforms/compilers that we use
-to produce OpenSim Creator's releases. Feature developers don't need to use exactly
+Here is a **rough** top-level overview of the architectures/platforms/compilers that
+are used to produce OpenSim Creator's releases. Developers don't need to use exactly
 the same combinations (it's healthy to exercise other combinations!) but these are
 the ones that are used during a release, so everything must eventually compile+pass
 with these combinations:
@@ -101,10 +103,10 @@ with these combinations:
 
    * - Architecture
      - Target Operating System
-     - C++ Compiler
+     - C++ Toolchain Used
    * - amd64
      - Windows 10 (>= v1507)
-     - MSVC 19.43.34808.0 (VS 17.13.358, Windows SDK 10.0.26100.0)
+     - MSVC 19.44.35227.0
    * - amd64
      - MacOS 14.5
      - XCode 15.4
@@ -112,28 +114,11 @@ with these combinations:
      - MacOS 14.5
      - XCode 15.4
    * - amd64
-     - Ubuntu 22.04
-     - gcc 12.3.0 (``gcc-12``, installed via ``apt``). For development, ``clang-18`` also works.
+     - Linux /w glibc 2.28 (e.g. Ubuntu >=20.04, Debian >=10, AlmaLinux >=8, RHEL >=8, OpenSUSE >=15)
+     - gcc 15 (e.g. ``gcc-toolset-15-gcc`` in AlmaLinux8)
 
 Notably, these toolchains **do not** have 100 % coverage of the C++20/23 language or
 library specifications. So check `C++ Compiler Support`_ if you plan on using a newer C++
 features.
-
-Release Matrix Upgrades/Changes
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Because it's exhausting to constantly update/change build pipelines (even if I'm *particularly*
-desperate for ``std::format`` support 😉 - looking at you, ``gcc-12``), this build matrix should
-only be checked/updated occasionally. The next scheduled times that we will check this matrix are:
-
-- October 2025, which is when Windows 10 support is EOL. The build system will be upgraded
-  to target Windows 11.
-- May 2026, which is when Ubuntu 22.04 is EOL for unpaid customers. The build system will
-  then be upgraded to target Ubuntu 24.04.
-- September 2026, which is when MacOS 14 is likely to be unsupported. The build system will
-  then be upgraded to target MacOS 15 (Sequoia).
-
-The build matrix might also change because of upgrades/changes to the CI server. Those changes
-will (hopefully) be mostly limited to minor bugfix upgrades.
 
 .. _C++ Compiler Support: https://en.cppreference.com/w/cpp/compiler_support

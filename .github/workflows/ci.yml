@@ -22,7 +22,11 @@ jobs:
       with:
         python-version: '3.12'
 
-    - name: build
+    - name: Setup Python Virtual Environment
+      shell: cmd
+      run: cd %GITHUB_WORKSPACE% && python -m venv .venv && call .venv\Scripts\activate && pip install -r requirements\all_requirements.txt
+
+    - name: Build OpenSim Creator
       shell: cmd
       run: |
         cd %GITHUB_WORKSPACE% && scripts\ci_build_windows.bat Release-Windows-amd64
@@ -52,6 +56,9 @@ jobs:
       with:
         python-version: '3.12'
 
+    - name: Setup Python Virtual Environment
+      run: cd ${GITHUB_WORKSPACE} && python -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt
+
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_unix.sh Release-MacOS-amd64
 
@@ -74,6 +81,9 @@ jobs:
       with:
         python-version: '3.12'
 
+    - name: Setup Python Virtual Environment
+      run: cd ${GITHUB_WORKSPACE} && python -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt
+
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_unix.sh Release-MacOS-arm64
 
@@ -83,27 +93,24 @@ jobs:
         path: build/Release-MacOS-arm64/*.dmg
         if-no-files-found: error
 
-  ubuntu22_amd64:
-    name: Ubuntu 22.04 (amd64)
-    runs-on: ubuntu-22.04
+  almalinux18_amd64:
+    name: AlmaLinux 8 (amd64, docker)
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
 
-    - name: setup system
-      run: cd $GITHUB_WORKSPACE && sudo apt-get update && sudo apt-get install $(sed 's/#.*//' "docker/ubuntu22_apt.txt" | xargs)
+    - name: Build OS (AlmaLinux8) Docker Image
+      run: cd ${GITHUB_WORKSPACE}/docker && docker build -f almalinux8.Dockerfile -t opensim-creator:almalinux8 .
 
-    - name: Setup Python 3.12
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
+    - name: Setup Python Virtual Environment
+      run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opensim-creator:almalinux8 /bin/bash -c "python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt"
 
-    # Use `xvfb-run` so that the UI tests can run against a virtual windowing system
-    # Use `gcc` 12, because OpenSim Creator uses C++20, which is a bit new for Ubuntu 22.04
-    - name: run build script
-      run: cd $GITHUB_WORKSPACE && CC=gcc-12 CXX=g++-12 xvfb-run ./scripts/ci_build_unix.sh Release-Linux-amd64
+    - name: Build
+      run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opensim-creator:almalinux8 /bin/bash -c "xvfb-run ./scripts/ci_build_unix.sh Release-Linux-amd64"
 
     - uses: actions/upload-artifact@v4
       with:
         name: opensimcreator-ubuntu22-amd64-deb
         path: build/Release-Linux-amd64/*.deb
         if-no-files-found: error
+

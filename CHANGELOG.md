@@ -16,6 +16,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   previewed in the tab, so that it's easier to work with multiple tabs open (#1181).
 - The Linux release build now statically links libstdc++ and libgcc_s, in preparation
   for a multi-/old-distro tar.gz portable installer.
+- Linux releases are now built with AlmaLinux 8, which enables using C++23 on Linux
+  distributions based on glibc version >=2.28. This means OpenSim Creator is now
+  compatible with Ubuntu >=20.04, Debian >=10, AlmaLinux >=8, RHEL >=8, and OpenSUSE >=15.
 
 ## [0.7.3] - 2026/03/27
 

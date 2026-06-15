@@ -10,13 +10,6 @@ IF "%~1"=="" (
     set CONFIGS=%*
 )
 
-REM Setup project-level python virtual environment
-python scripts/setup_venv.py
-IF %ERRORLEVEL% NEQ 0 (
-    echo Failed to setup virtual environment
-    exit /b %ERRORLEVEL%
-)
-
 REM Activate the latest Visual Studio environment (so that Ninja, cmake, etc. are available)
 call scripts/env_vs-x64.bat
 IF %ERRORLEVEL% NEQ 0 (
