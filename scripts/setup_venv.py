@@ -9,7 +9,10 @@ def main():
     requirements_file_path = Path("requirements") / "all_requirements.txt"
 
     # Create virtual environment if it doesn't exist yet
-    if not venv_path.exists():
+    #
+    # An empty directory should be treated as "not created yet" also
+    # so that systems like docker can mask the host's venv
+    if not venv_path.exists() or not any(venv_path.iterdir()):
         print(f"Creating project virtual environment at {venv_path}")
         subprocess.run([sys.executable, "-m", "venv", str(venv_path)], check=True)
         print("Virtual environment created.")
