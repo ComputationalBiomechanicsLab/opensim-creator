@@ -10,9 +10,18 @@ gcc-toolset-13-gcc-c++   # C++ compiler
 python3.12               # Python runtime that's compatible with OPynSim
 python3.12-devel         # Python headers. Used when building native Python extensions for OPynSim
 python3.12-pip           # Package installer for Python
-pkgconfig                # Needed by third_party build
-libX11-devel             # Needed by third_party build (SDL3)
-libXext-devel            # Needed by third_party build (SDL3)
-xorg-x11-server-Xvfb     # Used to run tests on headless servers with `xvfb-run`
+pkgconfig                # SDL3        : needed by its build
+libX11-devel             # SDL3+X11    : X11 windowing system
+libXext-devel            # SDL3+X11    : windowing system extensions
+libXrandr-devel          # SDL3+X11    : resize/rotate/reflection queries
+libXi-devel              # SDL3+X11    : Input extensions e.g. raw mouse input
+libXcursor-devel         # SDL3+X11    : Cursor management
+libXfixes-devel          # SDL3+X11    : Various X11 fixes
+libXScrnSaver-devel      # SDL3+X11    : Screen saver disabler (SDL_DisableScreenSaver)
+xorg-x11-server-Xvfb     # SDL3+X11    : For running headless test suites
+wayland-devel            # SDL3+Wayland: Wayland windowing system
+libxkbcommon-devel       # SDL3+Wayland: Keyboard mapping
 mesa-libGL-devel         # OpenGL development headers (liboscar graphics renderer)
-mesa-dri-drivers         # Mesa graphics driver implementations (incl. software OpenGL renderer)
+mesa-libEGL-devel        # OpenGL: Modern OpenGL windowing-system-independent graphics context support
+mesa-libGLES-devel       # OpenGL: GLES support
+mesa-dri-drivers         # OpenGL: Hardware/software rendering engines (incl. llvmpipe)

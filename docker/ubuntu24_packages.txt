@@ -24,4 +24,5 @@ libopengl-dev           # OpenGL: Vendor-neutral OpenGL headers and libOpenGL.so
 libgl1-mesa-dev         # OpenGL: X11/GLX translation library
 libgl1-mesa-dri         # OpenGL: Hardware/software rendering engines (incl. llvmpipe)
 libglx-mesa0            # OpenGL: X11/GLX implementation library
+libgles2-mesa-dev       # OpenGL: GLES support
 libegl-dev              # OpenGL: Modern OpenGL windowing-system-independent graphics context support
