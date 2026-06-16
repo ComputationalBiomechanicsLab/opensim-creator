@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7703588.svg)](https://doi.org/10.5281/zenodo.7703588) [![DOI](https://joss.theoj.org/papers/10.21105/joss.08284/status.svg)](https://doi.org/10.21105/joss.08284)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.08284/status.svg)](https://doi.org/10.21105/joss.08284)
 
 # OpenSim Creator <img src="resources/OpenSimCreator/textures/osc.svg" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
 
@@ -20,9 +20,7 @@
 ![screenshot](docs/source/_static/screenshot.jpg)
 
 OpenSim Creator (`osc`) is a standalone UI for building and editing
-[OpenSim](https://github.com/opensim-org/opensim-core) models. It's available
-as a freestanding all-in-one [installer](../../releases/latest) for Windows 10 (>= 1507),
-MacOS (>= 14.5, Sonoma), and Ubuntu (>= 22.04, Jammy Jellyfish).
+[OpenSim](https://github.com/opensim-org/opensim-core) models.
 
 `osc` started development in 2021 in the [Biomechanical Engineering](https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering)
 department at [TU Delft](https://www.tudelft.nl/). Architecturally, `osc` is a C++ codebase
@@ -48,7 +46,6 @@ If you want to cite the underlying simulation/modelling algorithm (OpenSim), cit
 
 > Seth A, Hicks JL, Uchida TK, Habib A, Dembia CL, et al. (2018) **OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement.** _PLOS Computational Biology_ 14(7): e1006223. https://doi.org/10.1371/journal.pcbi.1006223
 
-Related: [CITATION.cff](CITATION.cff) and [codemeta.json](codemeta.json) 
 
 ## 🌲Sustainability, Archiving, and Mirrors
 

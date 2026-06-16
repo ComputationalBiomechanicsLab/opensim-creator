@@ -1,0 +1,27 @@
+# Package list for Ubuntu24, can be installed with:
+#     apt-get install -y $(sed 's/#.*//' ubuntu24_packages.txt | xargs)
+git                     # Version control
+cmake                   # Top-level build system
+ninja-build             # Parallel build system
+build-essential         # C/C++ compiler, deb packaging, etc.
+python3.12              # Python runtime that's compatible with OPynSim
+python3.12-dev          # Python development headers that are compatible with OPynSim
+python3.12-venv         # Used to create local Python virtual environments
+pkg-config              # SDL3        : needed by its build
+libx11-dev              # SDL3+X11    : X11 windowing system
+libxext-dev             # SDL3+X11    : windowing system extensions
+libxrandr-dev           # SDL3+X11    : resize/rotate/reflection queries
+libxi-dev               # SDL3+X11    : Input extensions e.g. raw mouse input
+libxcursor-dev          # SDL3+X11    : Cursor management
+libxfixes-dev           # SDL3+X11    : Various X11 fixes
+libxss-dev              # SDL3+X11    : Screen saver disabler (SDL_DisableScreenSaver)
+xvfb                    # SDL3+X11    : For running headless test suites
+libwayland-dev          # SDL3+Wayland: Wayland windowing system
+libxkbcommon-dev        # SDL3+Wayland: Keyboard mapping
+libdecor-0-dev          # SDL3+Wayland: Window border rendering
+cage                    # SDL3+Wayland: For running headless test suites
+libopengl-dev           # OpenGL: Vendor-neutral OpenGL headers and libOpenGL.so
+libgl1-mesa-dev         # OpenGL: X11/GLX translation library
+libgl1-mesa-dri         # OpenGL: Hardware/software rendering engines (incl. llvmpipe)
+libglx-mesa0            # OpenGL: X11/GLX implementation library
+libegl-dev              # OpenGL: Modern OpenGL windowing-system-independent graphics context support

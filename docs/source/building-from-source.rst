@@ -108,7 +108,7 @@ MacOS Build
     2. Run the build script: ``./scripts/ci_build_unix.sh Development``
 
 
-Building on Ubuntu (22.04 or newer)
+Building on Ubuntu (24.04 or newer)
 -----------------------------------
 
 Ubuntu Environment Setup
@@ -121,9 +121,7 @@ Ubuntu Environment Setup
     2. ``cd`` into the source dir: ``cd opensim-creator``
     3. The remaining build steps are performed in the source directory
 3. Get ``apt`` dependencies:
-    1. ``apt`` dependencies are listed in the ``docker/`` directory with an ``_apt.txt`` suffix
-    2. For example, if you're on Ubuntu 22.04, you could run ``apt-get install $(sed 's/#.*//' "docker/ubuntu22_apt.txt" | xargs)``
-       to install the necessary Ubuntu 22.04 apt dependencies
+    1. ``apt`` dependencies are listed in the ``docker/`` directory with an ``_packages.txt`` suffix
 4. Create a local Python 3.12 virtual environment:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Create a virtual environment (e.g. ``python3.12 -m venv .venv``) and activate it (``source .venv/bin/activate``)

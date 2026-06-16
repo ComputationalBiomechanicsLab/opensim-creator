@@ -115,7 +115,7 @@ with these combinations:
      - XCode 15.4
    * - amd64
      - Linux /w glibc 2.28 (e.g. Ubuntu >=20.04, Debian >=10, AlmaLinux >=8, RHEL >=8, OpenSUSE >=15)
-     - gcc 15 (e.g. ``gcc-toolset-15-gcc`` in AlmaLinux8)
+     - gcc 13.3.0 (e.g. ``gcc-toolset-13-gcc`` in AlmaLinux8)
 
 Notably, these toolchains **do not** have 100 % coverage of the C++20/23 language or
 library specifications. So check `C++ Compiler Support`_ if you plan on using a newer C++

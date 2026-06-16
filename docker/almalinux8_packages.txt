@@ -1,0 +1,18 @@
+# This package list assumes epel-release and powertools are enabled:
+#     dnf install -y epel-release 'dnf-command(config-manager)'
+#     dnf config-manager --set-enabled powertools
+git                      # Version control
+cmake                    # Top-level build system
+ninja-build              # Parallel build system
+dpkg-dev                 # Needed to build `.deb` packages
+gcc-toolset-13-gcc       # C compiler
+gcc-toolset-13-gcc-c++   # C++ compiler
+python3.12               # Python runtime that's compatible with OPynSim
+python3.12-devel         # Python headers. Used when building native Python extensions for OPynSim
+python3.12-pip           # Package installer for Python
+pkgconfig                # Needed by third_party build
+libX11-devel             # Needed by third_party build (SDL3)
+libXext-devel            # Needed by third_party build (SDL3)
+xorg-x11-server-Xvfb     # Used to run tests on headless servers with `xvfb-run`
+mesa-libGL-devel         # OpenGL development headers (liboscar graphics renderer)
+mesa-dri-drivers         # Mesa graphics driver implementations (incl. software OpenGL renderer)

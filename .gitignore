@@ -1,9 +1,10 @@
 # setup: bundled stuff
 .venv/
+.venv-*/
 
 # build: artifacts/side-effects
 build/
-docs/build
+build-*/
 
 # build: intermediate/output files
 *.slo

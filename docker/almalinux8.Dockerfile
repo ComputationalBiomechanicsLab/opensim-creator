@@ -1,19 +1,23 @@
 FROM almalinux:8.10
 
+# Copy package list into container
+COPY almalinux8_packages.txt /tmp/almalinux8_packages.txt
+
 # Enable PowerTools (necessary to install ninja-build)
 RUN dnf install -y epel-release 'dnf-command(config-manager)' && \
     dnf config-manager --set-enabled powertools
 
-# Install OpenSim Creator development dependencies
+# Install system dependencies (+cleanup)
 RUN dnf update -y && \
     dnf groupinstall "Development Tools" -y && \
-    dnf install -y git cmake pkgconfig ninja-build dpkg-dev python3.12 python3.12-pip python3.12-devel gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ libX11-devel libXext-devel xorg-x11-server-Xvfb mesa-libGL-devel mesa-dri-drivers && \
-    dnf clean all
+    dnf install -y $(sed 's/#.*//' /tmp/almalinux8_packages.txt | xargs) && \
+    dnf clean all && \
+    rm /tmp/almalinux8_packages.txt
 
-# Automatically activate GCC 15 when running a container
-ENV BASH_ENV=/opt/rh/gcc-toolset-15/enable \
-    ENV=/opt/rh/gcc-toolset-15/enable \
-    PROMPT_COMMAND=". /opt/rh/gcc-toolset-15/enable"
+# Automatically activate GCC 13 when running a container
+ENV BASH_ENV=/opt/rh/gcc-toolset-13/enable \
+    ENV=/opt/rh/gcc-toolset-13/enable \
+    PROMPT_COMMAND=". /opt/rh/gcc-toolset-13/enable"
 
 # Set the default shell
 CMD ["/bin/bash"]
