@@ -47,7 +47,7 @@ Creator, it's usually copied into a GitHub issue:
         - [ ] Build and notarize an **amd64** release on the developer's machine with `OSC_CODESIGN_ENABLED=1 OSC_NOTARIZATION_ENABLED=1 ./scripts/ci_build_unix.sh Release-MacOS-amd64`
       - [ ] Build Windows release on developer's machine (GitHub Actions cannot access physical signing USB keys):
         - [ ] Setup local Python virtual environment with something like `py -3.12 -m venv . venv && call .venv\Scripts\activate && pip install -r requirements/all_requirements.txt`
-        - [ ] Build and codesign an **amd64** release on the developer's machine with `OSC_CODESIGN_ENABLED=1 ./scripts/ci_build_windows.bat Release-Windows-amd64`
+        - [ ] Build and codesign an **amd64** release on the developer's machine by building the `Release-Windows-amd64-Codesigned` cmake workflow (use `Release-Windows-amd64` third-party build).
       - [ ] Combine all artifacts into a single location/directory:
         - [ ] Source tarball
         - [ ] Linux DEB package
@@ -75,8 +75,8 @@ Creator, it's usually copied into a GitHub issue:
           `files.opensimcreator.com/releases`
       - [ ] Upload with (e.g.): `rsync --delete --exclude .git/ -avz files.opensimcreator.com/ files.opensimcreator.com:/var/www/files.opensimcreator.com/`
     - [ ] Update `docs.opensimcreator.com` to host the documentation
-      - [ ] Build the docs yourself (e.g. with `./scripts/ci_build_docs.sh`), or get the CI build of them
-      - [ ] Upload with (e.g.) `./scripts/deploy_docs.sh` (requires SSH credentials)
+      - [ ] Build the docs (e.g. build the `opensimcreator_docs` target), or get the CI build of them.
+      - [ ] Deploy the docs (e.g. build the `opensimcreator_docs_deploy` target): requires server credentials.
     - [ ] Update `www.opensimcreator.com` with a basic announcement news post
       - [ ] Edit https://github.com/ComputationalBiomechanicsLab/www.opensimcreator.com appropriately
       - [ ] Build the docs yourself with `hugo`

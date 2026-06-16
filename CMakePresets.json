@@ -29,6 +29,7 @@
             "description": "Mixin that enables inlining the third_party build into this build (useful for development)",
             "cacheVariables": {
                 "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
+                "OSC_BUILD_DOCS": "ON",
                 "OSC_BUILD_OSCAR_INLINE": "ON",
                 "OSC_BUILD_OPYNSIM_INLINE": "ON",
                 "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
@@ -170,19 +171,27 @@
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded",
                 "OSC_STRICT_ABI_CHECKS": "ON"
             }
+        },
+        {
+            "name": "Release-Windows-amd64-Codesigned",
+            "inherits": ["Release-Windows-amd64"],
+            "cacheVariables": {
+                "OSC_CODESIGN_ENABLED": "ON"
+            }
         }
     ],
     "buildPresets": [
-        { "name": "Development",            "configurePreset": "Development"            },
-        { "name": "Development-Inlined",    "configurePreset": "Development-Inlined"    },
-        { "name": "ErrorCheck",             "configurePreset": "ErrorCheck"             },
-        { "name": "ErrorCheck-Inlined",     "configurePreset": "ErrorCheck-Inlined"     },
-        { "name": "RelWithDebInfo",         "configurePreset": "RelWithDebInfo"         },
-        { "name": "RelWithDebInfo-Inlined", "configurePreset": "RelWithDebInfo-Inlined" },
-        { "name": "Release-Linux-amd64",    "configurePreset": "Release-Linux-amd64"    },
-        { "name": "Release-MacOS-amd64",    "configurePreset": "Release-MacOS-amd64"    },
-        { "name": "Release-MacOS-arm64",    "configurePreset": "Release-MacOS-arm64"    },
-        { "name": "Release-Windows-amd64",  "configurePreset": "Release-Windows-amd64"  }
+        { "name": "Development",                       "configurePreset": "Development"                      },
+        { "name": "Development-Inlined",               "configurePreset": "Development-Inlined"              },
+        { "name": "ErrorCheck",                        "configurePreset": "ErrorCheck"                       },
+        { "name": "ErrorCheck-Inlined",                "configurePreset": "ErrorCheck-Inlined"               },
+        { "name": "RelWithDebInfo",                    "configurePreset": "RelWithDebInfo"                   },
+        { "name": "RelWithDebInfo-Inlined",            "configurePreset": "RelWithDebInfo-Inlined"           },
+        { "name": "Release-Linux-amd64",               "configurePreset": "Release-Linux-amd64"              },
+        { "name": "Release-MacOS-amd64",               "configurePreset": "Release-MacOS-amd64"              },
+        { "name": "Release-MacOS-arm64",               "configurePreset": "Release-MacOS-arm64"              },
+        { "name": "Release-Windows-amd64",             "configurePreset": "Release-Windows-amd64"            },
+        { "name": "Release-Windows-amd64-Codesigned",  "configurePreset": "Release-Windows-amd64-Codesigned" }
     ],
     "testPresets": [
         {
@@ -257,13 +266,19 @@
             "name": "Release-Windows-amd64",
             "configurePreset": "Release-Windows-amd64",
             "inherits": ["mixin_TestBase"]
+        },
+        {
+            "name": "Release-Windows-amd64-Codesigned",
+            "configurePreset": "Release-Windows-amd64-Codesigned",
+            "inherits": ["mixin_TestBase"]
         }
     ],
     "packagePresets": [
-        { "name": "Release-Linux-amd64",   "configurePreset": "Release-Linux-amd64"   },
-        { "name": "Release-MacOS-amd64",   "configurePreset": "Release-MacOS-amd64"   },
-        { "name": "Release-MacOS-arm64",   "configurePreset": "Release-MacOS-arm64"   },
-        { "name": "Release-Windows-amd64", "configurePreset": "Release-Windows-amd64" }
+        { "name": "Release-Linux-amd64",              "configurePreset": "Release-Linux-amd64"   },
+        { "name": "Release-MacOS-amd64",              "configurePreset": "Release-MacOS-amd64"   },
+        { "name": "Release-MacOS-arm64",              "configurePreset": "Release-MacOS-arm64"   },
+        { "name": "Release-Windows-amd64",            "configurePreset": "Release-Windows-amd64" },
+        { "name": "Release-Windows-amd64-Codesigned", "configurePreset": "Release-Windows-amd64-Codesigned" }
     ],
     "workflowPresets": [
         {
@@ -344,6 +359,15 @@
                 { "type": "build",     "name": "Release-Windows-amd64" },
                 { "type": "test",      "name": "Release-Windows-amd64" },
                 { "type": "package",   "name": "Release-Windows-amd64" }
+            ]
+        },
+        {
+            "name": "Release-Windows-amd64-Codesigned",
+            "steps": [
+                { "type": "configure", "name": "Release-Windows-amd64-Codesigned" },
+                { "type": "build",     "name": "Release-Windows-amd64-Codesigned" },
+                { "type": "test",      "name": "Release-Windows-amd64-Codesigned" },
+                { "type": "package",   "name": "Release-Windows-amd64-Codesigned" }
             ]
         }
     ]

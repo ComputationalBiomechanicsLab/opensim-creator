@@ -63,10 +63,12 @@ Assuming your environment has been set up correctly (explained above), the
 easiest way to build OpenSim Creator is with an end-to-end build script. The steps
 are:
 
-1. Open a PowerShell terminal (``Shift+Right-Click`` -> ``Open Powershell window here``)
-2. Either ``cd`` into the ``opensim-creator`` directory (if cloned when you setup
-   the environment, above), or clone it with ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``.
-3. Run ``./scripts/ci_build_windows.bat Development``
+1. Open a batch (``cmd.exe``) terminal.
+2. Change into the ``opensim-creator`` source code directory (e.g. with ``cd opensim-creator``).
+3. Activate the Visual Studio environment with ``call .\scripts\env_vs-x64.bat``.
+4. Build OpenSim Creator's dependencies with ``cd third_party && cmake --workflow --preset Development && cd ..``.
+5. Build OpenSim Creator with ``cmake --workflow --preset Development``.
+6. The build directory (``build\Development``) should contain the build outputs (e.g. the installer).
 
 
 Building on MacOS (Sonoma or newer)

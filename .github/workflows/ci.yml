@@ -59,7 +59,7 @@ jobs:
     - name: Setup Python Virtual Environment
       run: cd ${GITHUB_WORKSPACE} && python -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt
 
-    - name: run build script
+    - name: Build OpenSim Creator
       run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_unix.sh Release-MacOS-amd64
 
     - uses: actions/upload-artifact@v4
@@ -84,7 +84,7 @@ jobs:
     - name: Setup Python Virtual Environment
       run: cd ${GITHUB_WORKSPACE} && python -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt
 
-    - name: run build script
+    - name: Build OpenSim Creator
       run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_unix.sh Release-MacOS-arm64
 
     - uses: actions/upload-artifact@v4
@@ -105,7 +105,7 @@ jobs:
     - name: Setup Python Virtual Environment
       run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opensim-creator:almalinux8 /bin/bash -c "python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt"
 
-    - name: Build
+    - name: Build OpenSim Creator
       run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opensim-creator:almalinux8 /bin/bash -c "xvfb-run ./scripts/ci_build_unix.sh Release-Linux-amd64"
 
     - uses: actions/upload-artifact@v4
@@ -113,4 +113,3 @@ jobs:
         name: opensimcreator-ubuntu22-amd64-deb
         path: build/Release-Linux-amd64/*.deb
         if-no-files-found: error
-
