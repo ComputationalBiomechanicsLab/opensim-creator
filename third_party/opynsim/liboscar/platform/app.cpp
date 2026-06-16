@@ -2160,15 +2160,18 @@ private:
     // the number of frames that the main loop should poll - even when in waiting mode
     int32_t num_frames_to_poll_ = 0;
 
-    // runtime cache of initialized singletons
-    SynchronizedValue<ankerl::unordered_dense::map<TypeInfoReference, std::shared_ptr<void>>> singletons_;
-
     // main application window (initialized when the user first `show`s a `Widget`).
     OscarWindow main_window_{
         metadata_.maximize_main_window().value_or(true),
         metadata_.headless_mode().value_or(config_.get_value<bool>("headless_mode")),
         metadata_.human_readable_application_name().c_str()
     };
+
+    // runtime cache of initialized singletons
+    //
+    // NOTE: this must be destroyed BEFORE any graphics contexts, because
+    // a singleton might (e.g.) contain `Shader` handles or similar.
+    SynchronizedValue<ankerl::unordered_dense::map<TypeInfoReference, std::shared_ptr<void>>> singletons_;
 };
 
 App& osc::App::upd()
