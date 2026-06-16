@@ -38,7 +38,7 @@ Creator, it's usually copied into a GitHub issue:
           roughly matches something release-ey).
     - [ ] Rebase any currently-active feature branches onto the release commit (discourage stale branches)
     - [ ] Assemble/build/sign release artifacts:
-      - [ ] Create a source tarball with `./scripts/ci_bundle-sources.sh ${VERSION}`
+      - [ ] Create a source tarball with `git archive --format=tar --prefix=opensimcreator-${VERSION}/ ${VERSION} | xz -c > "opensimcreator-${VERSION}-src.tar.xz"`
       - [ ] Build MacOS release on developer's machine (GitHub Actions doesn't store developer's private keys):
         - [ ] Setup local Python 3.12 virtual environment with something like `python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt`
         - [ ] Ensure secret codesigning environment variables are set: `OSC_CODESIGN_DEVELOPER_ID`,
