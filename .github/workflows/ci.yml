@@ -113,3 +113,10 @@ jobs:
         name: opensimcreator-linux-amd64-deb
         path: build/Release-Linux-amd64/*.deb
         if-no-files-found: error
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: opensimcreator-linux-amd64-tarxz
+        path: build/Release-Linux-amd64/*.tar.xz
+        if-no-files-found: error
+

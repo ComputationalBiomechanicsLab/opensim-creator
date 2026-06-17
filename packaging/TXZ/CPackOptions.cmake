@@ -1,0 +1,10 @@
+# use the naming convention `opensimcreator-$version-linux-$arch.exe`
+if(UNIX AND NOT APPLE)
+    # Use `amd64` rather than `x86_64`, to match other binaries (e.g. deb packages)
+    string(TOLOWER "${CPACK_OSC_CMAKE_SYSTEM_PROCESSOR}" _arch)
+    if(_arch STREQUAL "x86_64")
+        set(_arch "amd64")
+    endif()
+    set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-linux-${_arch}")
+    unset(_arch_lowercase)
+endif()
