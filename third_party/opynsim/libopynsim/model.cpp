@@ -1,6 +1,7 @@
 #include "model.h"
 
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
+#include <libopynsim/utilities/simbody_x_opynsim.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
 #include <libopynsim/data_frame.h>
 #include <libopynsim/model_state.h>
@@ -12,6 +13,7 @@
 #include <liboscar/shims/cpp23/ranges.h>
 #include <liboscar/utilities/conversion.h>
 #include <liboscar/utilities/copy_on_upd_ptr.h>
+#include <liboscar/utilities/enum_helpers.h>
 #include <liboscar/utilities/string_helpers.h>
 #include <liboscar/utilities/typelist.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -237,11 +239,13 @@ public:
         model_{construct_built_model(model)}
     {}
 
-    ModelState initial_state() const
+    ModelState initial_state(ModelStateStage realized_to) const
     {
         // Copy the working state out of the model, so that the caller gets
         // an independent state.
-        return ModelState{SimTK::State{model_.getWorkingState()}};
+        ModelState rv{SimTK::State{model_.getWorkingState()}};
+        realize(rv, realized_to);
+        return rv;
     }
 
     std::vector<std::string> rotational_columns_in(const DataFrame& data_frame) const
@@ -267,7 +271,7 @@ public:
         return rv;
     }
 
-    ModelStates states_from_data_frame(const DataFrame& caller_data_frame) const
+    ModelStates states_from_data_frame(const DataFrame& caller_data_frame, ModelStateStage realized_to) const
     {
         // This is similar to `OpenSim::StatesTrajectory::createFromStatesTable`, but
         // handles angular autoconversion and uses OPynSim's `DataFrame` API instead.
@@ -303,20 +307,21 @@ public:
             rv.reserve(num_rows);
             SimTK::Vector values{state_var_names.getSize(), SimTK::NaN};
             for (size_t row = 0; row < num_rows; ++row) {
-                SimTK::State state{model_.getWorkingState()};          // Copy "base" state.
-                state.updY().setToNaN();                               // Ensure missing columns end up as `NaN`s.
+                SimTK::State state{model_.getWorkingState()};                      // Copy "base" state.
+                state.updY().setToNaN();                                           // Ensure missing columns end up as `NaN`s.
 
                 if (const auto it = data_frame.find("time"); it != data_frame.end()) {
-                    state.setTime((*it)[row]);                         // Set state's time (if `data_frame` has it).
+                    state.setTime((*it)[row]);                                     // Set state's time (if `data_frame` has it).
                 }
                 for (const auto& [column_index, sv_index] : column_index_to_sv_index) {
-                    values[sv_index] = data_frame[column_index][row];  // Map `data_frame` values into values vector
+                    values[sv_index] = data_frame[column_index][row];              // Map `data_frame` values into values vector
                 }
-                model_.setStateVariableValues(state, values);          // Write values vector into the state
+                model_.setStateVariableValues(state, values);                      // Write values vector into the state
 
                 // TODO: if (assemble) model_.assemble(state);
+                model_.getSystem().realize(state, to_simbody_stage(realized_to));  // Realize state to caller-specified stage
 
-                rv.emplace_back(std::move(state));                     // Append state to return value
+                rv.emplace_back(std::move(state));                                 // Append state to return value
             }
             return rv;
         }
@@ -324,15 +329,8 @@ public:
 
     void realize(ModelState& state, ModelStateStage stage) const
     {
-        switch (stage) {
-        case ModelStateStage::time:         model_.realizeTime(state.simbody_state());         break;
-        case ModelStateStage::position:     model_.realizePosition(state.simbody_state());     break;
-        case ModelStateStage::velocity:     model_.realizeVelocity(state.simbody_state());     break;
-        case ModelStateStage::dynamics:     model_.realizeDynamics(state.simbody_state());     break;
-        case ModelStateStage::acceleration: model_.realizeAcceleration(state.simbody_state()); break;
-        case ModelStateStage::report:       model_.realizeReport(state.simbody_state());       break;  // NOLINT(bugprone-branch-clone)
-        default:                            model_.realizeReport(state.simbody_state());       break;
-        }
+        static_assert(osc::num_options<ModelStateStage>() == 9);
+        model_.getSystem().realize(state.simbody_state(), to_simbody_stage(stage));
     }
 
     size_t num_coordinates() const
@@ -414,9 +412,9 @@ opyn::Model::Model(const OpenSim::Model& model) :
     impl_{osc::make_cow<Impl>(model)}
 {}
 
-opyn::ModelState opyn::Model::initial_state() const
+opyn::ModelState opyn::Model::initial_state(ModelStateStage realized_to) const
 {
-    return impl_->initial_state();
+    return impl_->initial_state(realized_to);
 }
 
 std::vector<std::string> opyn::Model::rotational_columns_in(const DataFrame& data_frame) const
@@ -429,9 +427,9 @@ std::unordered_map<std::string, Symbol> opyn::Model::column_to_state_variable_ma
     return impl_->column_to_state_variable_mappings(data_frame);
 }
 
-ModelStates opyn::Model::states_from_data_frame(const DataFrame& data_frame) const
+ModelStates opyn::Model::states_from_data_frame(const DataFrame& data_frame, ModelStateStage realized_to) const
 {
-    return impl_->states_from_data_frame(data_frame);
+    return impl_->states_from_data_frame(data_frame, realized_to);
 }
 
 void opyn::Model::realize(ModelState& model_state, ModelStateStage model_state_stage) const

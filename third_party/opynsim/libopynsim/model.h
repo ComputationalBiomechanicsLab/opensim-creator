@@ -30,7 +30,10 @@ namespace opyn
         /// Returns the initial (default) state of this model, which is
         /// the state that was defined by the `ModelSpecification` used
         /// to build this model.
-        ModelState initial_state() const;
+        ///
+        /// The `realized_to` argument ensures the returned `ModelState`
+        /// is realized as-if by calling `this->realize(returned_state, realized_to)`.
+        ModelState initial_state(ModelStateStage realized_to = ModelStateStage::instance) const;
 
         /// Returns the names of the columns in `data_frame` that can
         /// be mapped to rotational state variables in this `Model` in
@@ -53,7 +56,13 @@ namespace opyn
         /// `data_frame` will be automatically converted into radians internally
         /// (see: `rotational_columns_in`). This is to support `DataFrame`s loaded
         /// from legacy data sources.
-        ModelStates states_from_data_frame(const DataFrame& data_frame) const;
+        ///
+        /// The `realized_to` argument ensures each returned `ModelState`s is realized
+        /// as-if by calling `this->realize(returned_states[i], realized_to)`.
+        ModelStates states_from_data_frame(
+            const DataFrame& data_frame,
+            ModelStateStage realized_to = ModelStateStage::instance
+        ) const;
 
         /// Realizes `model_state` to the given `model_state_stage`.
         void realize(ModelState& model_state, ModelStateStage model_state_stage) const;

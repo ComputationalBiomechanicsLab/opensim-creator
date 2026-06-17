@@ -7,6 +7,14 @@ import pytest
 def test_can_construct_blank_ModelSpecification():
     model_specification = opynsim.ModelSpecification()
 
+def test_model_initial_state_state_defaults_to_instance():
+    model = opynsim.ModelSpecification().compile()
+    assert model.initial_state().stage == opynsim.STAGE_INSTANCE
+
+def test_model_initial_state_realize_to_realizes_model_to_state():
+    model = opynsim.ModelSpecification().compile()
+    assert model.initial_state(realized_to=opynsim.STAGE_ACCELERATION).stage == opynsim.STAGE_ACCELERATION
+
 def test_read_osim_throws_if_given_invalid_path():
     with pytest.raises(Exception):
         opynsim.read_osim("/this/doesnt/exist")
@@ -116,6 +124,10 @@ def test_read_sto_is_compatible_with_states_from_data_frame():
 
     states = model.states_from_data_frame(df)
 
+    # By default, the states should all be realized to STAGE_INSTANCE
+    for state in states:
+        assert state.stage == opynsim.STAGE_INSTANCE
+
     # Indexed access (`__len__`, `__getitem__`) should work like a list
     # and the yielded `ModelState`s should be compatible with the existing
     # state API.
@@ -163,6 +175,13 @@ def test_read_sto_is_compatible_with_states_from_data_frame():
     negative_sliced = states[-10:-1:3]
     assert negative_sliced.to_list() == [states[-10], states[-7], states[-4]]
 
+def test_states_from_data_frame_realized_to_works_as_intended():
+    model = opynsim.read_osim(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum.osim").compile()
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum_trajectory.sto")
+
+    states = model.states_from_data_frame(df, realized_to=opynsim.STAGE_ACCELERATION)
+    for state in states:
+        assert state.stage == opynsim.STAGE_ACCELERATION
 
 def test_read_mot_can_read_and_print_a_basic_mot_file():
     df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/one_data_column.mot")

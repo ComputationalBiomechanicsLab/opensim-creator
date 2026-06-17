@@ -25,6 +25,7 @@ namespace opyn
 
         /// Returns the time point, in seconds, that this state represents.
         double time() const;
+
     private:
         friend class Model;
 

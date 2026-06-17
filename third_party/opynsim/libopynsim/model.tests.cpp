@@ -93,3 +93,33 @@ TEST(Model, states_from_data_frame_works_for_basic_pendulum)
         ASSERT_NEAR(v, expected, 0.00000000001);
     }
 }
+
+TEST(Model, states_from_data_frame_realized_to_works_as_intended)
+{
+    opyn::init();
+
+    const Model model = read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
+    const DataFrame data_frame = read_sto(opynsim_tests_resources_directory() / "pendulum/pendulum_trajectory.sto");
+    const ModelStates model_states = model.states_from_data_frame(data_frame, ModelStateStage::acceleration);
+    for (const auto& model_state : model_states) {
+        ASSERT_EQ(model_state.stage(), ModelStateStage::acceleration);
+    }
+}
+
+TEST(Model, initial_state_by_default_is_realized_to_instance)
+{
+    opyn::init();
+
+    const Model model = ModelSpecification{}.compile();
+    ASSERT_EQ(model.initial_state().stage(), ModelStateStage::instance);
+}
+
+TEST(Model, initial_state_realized_to_realizes_state_to_specified_stage)
+{
+    opyn::init();
+
+    const Model model = ModelSpecification{}.compile();
+    for (const auto& stage : {ModelStateStage::time, ModelStateStage::report, ModelStateStage::dynamics}) {
+        ASSERT_EQ(model.initial_state(stage).stage(), stage);
+    }
+}

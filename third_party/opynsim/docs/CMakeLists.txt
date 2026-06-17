@@ -4,7 +4,7 @@ set(OPYN_SPHINX_OUTPUT_DIR  "${CMAKE_CURRENT_BINARY_DIR}/html")
 set(OPYN_DOXYGEN_OUTPUT_DIR "${OPYN_SPHINX_OUTPUT_DIR}/doxygen")
 
 # Create a custom build target that builds the Sphinx documentation
-add_custom_target(opynsim_docs ALL
+add_custom_target(opynsim_docs
     DEPENDS _core_development_stubs
     COMMAND
         ${CMAKE_COMMAND} -E env PYTHONPATH=$<TARGET_FILE_DIR:_core>/..

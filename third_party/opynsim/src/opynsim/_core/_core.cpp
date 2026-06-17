@@ -219,17 +219,17 @@ namespace {
         model_class.def(
             "initial_state",
             &Model::initial_state,
+            nb::kw_only{},
+            nb::arg("realized_to") = ModelStateStage::instance,
             R"(
                 Returns a :class:`ModelState` that represents the initial (default) state of this :class:`Model`.
 
-                The initial state of a :class:`Model` is dictated by its associated :class:`ModelSpecification`. For
-                example, if a translational coordinate in the specification had a ``default_value`` of ``1.0`` then
-                that would be written into the :class:`ModelState` returned by this function.
+                The initial state of a :class:`Model` is dictated by the :class:`ModelSpecification` used to
+                compile it. For example, if a translational coordinate in the specification had a ``default_value``
+                of ``1.0`` then that would be written into the :class:`ModelState` returned by this function.
 
-                This function does not guarantee the returned :class:`ModelState`'s :class:`ModelStateStage`.
-                Therefore, it's recommended that callers perform any state modifications they need followed by
-                calling :meth:`realize` with a :class:`ModelStateStage` that's suitable for their desired
-                needs (e.g. user interfaces may need :attr:`ModelStateStage.REPORT`).
+                The returned :class:`ModelState` will be realized to at least ``realized_to`` as-if by calling
+                ``model.realize(returned_state, realized_to)``.
             )"
         );
         model_class.def(
@@ -267,6 +267,8 @@ namespace {
             "states_from_data_frame",
             &Model::states_from_data_frame,
             nb::arg("data_frame"),
+            nb::kw_only{},
+            nb::arg("realized_to") = ModelStateStage::instance,
             R"(
                 Returns :class:`ModelStates` constructed from ``data_frame``.
 
@@ -279,6 +281,10 @@ namespace {
                 in ``data_frame`` will be automatically converted into radians internally
                 (see: :meth:`rotational_columns_in`). This is to support :class:`DataFrame`\s
                 loaded from legacy data sources.
+
+                Each of the returned :class:`ModelState`\s will be realized to at
+                least ``realized_to`` as-if by calling ``model.realize(returned_states[i], realized_to)``
+                on each of them.
             )"
         );
         model_class.def(
@@ -667,10 +673,10 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
     // Initialize top-level functions/classes
     register_symbol_class(_core_module);
     register_model_specification_class(_core_module);
+    register_model_state_stage_class(_core_module);
     register_model_class(_core_module);
     register_model_state_class(_core_module);
     register_model_states_class(_core_module);
-    register_model_state_stage_class(_core_module);
     register_dataframe_class(_core_module);
     register_readers(_core_module);
 }

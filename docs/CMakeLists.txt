@@ -5,7 +5,7 @@ set(OSC_SPHINX_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 osc_find_python()
 
 # Create a custom build target that builds the Sphinx documentation
-add_custom_target(opensimcreator_docs ALL
+add_custom_target(opensimcreator_docs
     COMMAND ${Python_EXECUTABLE} -m sphinx.cmd.build -E "${CMAKE_CURRENT_SOURCE_DIR}/source" "${OSC_SPHINX_OUTPUT_DIR}"
     COMMENT "Building Sphinx documentation"
 )

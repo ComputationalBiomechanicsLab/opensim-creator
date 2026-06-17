@@ -90,11 +90,22 @@ it in a visualizer without loading states externally:
     model_specification = opyn.examples.double_pendulum_specification()
     model = model_specification.compile()
 
-    state = model.initial_state()              # Produce an initial state of the model.
-    model.realize(state, opyn.STAGE_DYNAMICS)  # Realize it up to a simulation stage.
+    model_state = model.initial_state()              # Produce an initial state of the model.
+    model.realize(model_state, opyn.STAGE_DYNAMICS)  # Realize the state to a specific simulation stage.
 
 Once you have a :class:`opynsim.ModelState`, you can the manipulate and inspect it
-according to your modelling requirements.
+according to your modelling requirements. The above example uses :meth:`opynsim.Model.realize`
+to realize ``state`` to a later stage, which is sometimes necessary.
+
+A shorthand version of the above would be:
+
+.. code:: python
+
+	import opynsim as opyn
+	import opynsim.examples
+
+	model = opyn.examples.double_pendulum_model()  # or `*_specification().compile()`
+	model_state = model.initial_state(realized_to=opyn.STAGE_DYNAMICS)
 
 
 Visualize the Model in a State
@@ -115,22 +126,24 @@ renderer may read are available:
     import opynsim.ui
 
     model = opyn.examples.double_pendulum_model()
-    state = model.initial_state()
+    model_state = model.initial_state(
+        realized_to=opyn.STAGE_REPORT  # Required for rendering/UI
+    )
 
-    model.realize(state, opyn.STAGE_REPORT)    # required for rendering
-    opyn.ui.show_model_in_state(model, state)  # shows `model` in `state`
+    # Shows `model` in `state` in an interactive window.
+    opyn.ui.show_model_in_state(model, model_state)
 
 
 Render Visualization to an Image File
 -------------------------------------
 
-The OPynSim :doc:`../concepts/graphics` API provides lower-level utilities for rendering
-OPynSim's datastructures to an image (:class:`opynsim.graphics.Texture2D`). This can be useful
+The OPynSim :doc:`../concepts/graphics` API provides utilities for rendering OPynSim's
+datastructures to images (:class:`opynsim.graphics.Texture2D`). This can be useful
 for automating tasks like creating custom plots or creating images/videos of models.
 
 The API includes high-level functions, such as :func:`opynsim.graphics.render_model_in_state`,
-which returns a :class:`opynsim.graphics.Texture2D`, a class that exposes the raw pixels of
-the renderer to your Python code. The example below renders an :class:`opynsim.Model` + :class:`opynsim.ModelState` to
+which returns a :class:`opynsim.graphics.Texture2D`, which Python can read the rendered pixels
+from. The example below renders an :class:`opynsim.Model` + :class:`opynsim.ModelState` to
 a texture and then uses `Pillow <https://python-pillow.github.io/>`_ to write the raw pixel
 data to a PNG file:
 
@@ -143,8 +156,7 @@ data to a PNG file:
 
     # Create/import a `Model` + `ModelState`.
     model = opyn.examples.double_pendulum_model()
-    model_state = model.initial_state()
-    model.realize(model_state, opyn.STAGE_REPORT)  # required for rendering
+    model_state = model.initial_state(realized_to=opyn.STAGE_REPORT)
 
     # Render the `Model` + `ModelState` to a `Texture2D` (image).
     texture_2d = opyn.graphics.render_model_in_state(model, model_state)
