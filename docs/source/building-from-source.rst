@@ -121,7 +121,7 @@ Ubuntu Environment Setup
     2. ``cd`` into the source dir: ``cd opensim-creator``
     3. The remaining build steps are performed in the source directory
 3. Get ``apt`` dependencies:
-    1. ``apt`` dependencies are listed in the ``docker/`` directory with an ``_packages.txt`` suffix
+    1. ``apt`` dependencies are listed in the ``third_party/opynsim/docker/`` directory with an ``_packages.txt`` suffix
 4. Create a local Python 3.12 virtual environment:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Create a virtual environment (e.g. ``python3.12 -m venv .venv``) and activate it (``source .venv/bin/activate``)
