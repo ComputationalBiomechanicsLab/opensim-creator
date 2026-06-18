@@ -1,30 +1,13 @@
-# setup: bundled stuff
-.venv/
-.venv-*/
+# setup: local virtual environment(s)
+.venv*/
 
 # build: artifacts/side-effects
-build/
-build-*/
-
-# build: intermediate/output files
-*.slo
-*.lo
-*.o
-*.a
-*.la
-*.lai
-*.so
-*.so.*
-*.dll
-*.dylib
-
-# runtime: opensim log files
-**/opensim.log
+build*/
 
 # os: MacOS filesystem
 .DS_Store
 
-# LSP: `clangd` may create this (it does with nvim)
+# editor: Neovim (`clangd` may create this)
 .cache/
 
 # editor: QtCreator
@@ -33,8 +16,8 @@ CMakeLists.txt.user
 
 # editor: Visual Studio
 .vs/
-CMakeSettings.json
 out/
+CMakeSettings.json
 
 # editor: Visual Studio Code
 .vscode/
