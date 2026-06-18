@@ -28,8 +28,8 @@ target_compile_options(opensimcreator PRIVATE
     >
 )
 if(OSC_USE_STRICT_COMPILER_FLAGS)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)
-    target_compile_options(opensimcreator PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
+    include(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/opynsim/cmake/opynsim_strict_compiler_options.cmake)
+    opyn_add_strict_compiler_options_to(opensimcreator)
 endif()
 target_include_directories(opensimcreator
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>"  # so that `#include <libopensimcreator/HEADER.h>` works

@@ -40,7 +40,7 @@ target_compile_options(opynsim PRIVATE
 )
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
-    target_compile_options(opynsim PRIVATE ${OPYN_STRICT_COMPILER_OPTIONS})
+    opyn_add_strict_compiler_options_to(opynsim)
 endif()
 set_target_properties(opynsim PROPERTIES CXX_EXTENSIONS OFF)
 if(OPYN_BUILD_PYTHON_BINDINGS)

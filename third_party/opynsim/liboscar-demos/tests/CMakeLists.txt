@@ -21,7 +21,7 @@ set_target_properties(oscar_demos_tests PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(oscar_demos_tests PUBLIC cxx_std_23)
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/opynsim_strict_compiler_options.cmake)
-    target_compile_options(oscar_demos_tests PRIVATE ${OPYN_STRICT_COMPILER_OPTIONS})
+    opyn_add_strict_compiler_options_to(oscar_demos_tests)
 endif()
 target_link_libraries(oscar_demos_tests PRIVATE
     oscar

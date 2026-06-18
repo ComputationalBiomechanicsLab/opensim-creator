@@ -58,7 +58,7 @@ target_compile_options(oscar PRIVATE
 )
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
-    target_compile_options(oscar PRIVATE ${OPYN_STRICT_COMPILER_OPTIONS})
+    opyn_add_strict_compiler_options_to(oscar)
 endif()
 target_include_directories(oscar PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>         # so that `#include <liboscar/HEADER.h>` works

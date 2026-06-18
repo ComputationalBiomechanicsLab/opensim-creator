@@ -13,8 +13,8 @@ import os
 import re
 
 _blacklisted_directories = {'resources', 'opensim-core', 'simbody', '__pycache__', '_static'}
-_blacklisted_filenames = {'_core.abi3.so', 'METADATA.in'}
-_default_directories = ['libopynsim', 'libosim', 'src', 'hellooscar', 'liboscar', 'liboscar-demos', "opynsim_debugger", "oscar_demo_viewer", 'scripts', 'docs']
+_blacklisted_filenames = {re.compile(p) for p in [r'.*\.so$', r'METADATA.in', r'.*\.ico$', r'.*\.icns$', r'.*\.png$', r'.*\.bmp$']}
+_default_directories = ['libopynsim', 'libosim', 'src', 'hellooscar', 'liboscar', 'liboscar-demos', "opynsim_debugger", "oscar_demo_viewer", 'scripts', 'docs', 'libopensimcreator', '.github', 'cmake', 'docker', 'osc', 'packaging', 'requirements']
 
 def num_leading_tabs(s):
     rv = 0
@@ -44,7 +44,7 @@ def should_skip_dir(dirname):
 
 def should_skip_file(filename):
     for blacklisted_filename in _blacklisted_filenames:
-        if blacklisted_filename in filename:
+        if blacklisted_filename.match(filename):
             return True
     return False
 

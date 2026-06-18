@@ -69,8 +69,8 @@ target_compile_options(osc PRIVATE
     >
 )
 if(OSC_USE_STRICT_COMPILER_FLAGS)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
-    target_compile_options(osc PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
+    include(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/opynsim/cmake/opynsim_strict_compiler_options.cmake)
+    opyn_add_strict_compiler_options_to(osc)
 endif()
 target_link_libraries(osc PRIVATE opensimcreator)
 target_include_directories(osc
