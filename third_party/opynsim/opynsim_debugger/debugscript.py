@@ -2,6 +2,7 @@
 
 import opynsim
 import opynsim._core  # This is the _private_ native module, but can be handy to access when debugging
+import numpy          # This is OPynSim's only runtime dependency, and should be `import`able also
 
 # Put code here that you'd like to run via your IDE's native debugger and
 # then run the `opynsim_debugger.exe` target, which will build it, boot it,
