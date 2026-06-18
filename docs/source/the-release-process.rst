@@ -25,7 +25,7 @@ Creator, it's usually copied into a GitHub issue:
           with it. Must be ran with `ctest --preset ErrorCheck` because there's ASAN
           options (suppressions) that must be handled.
     - [ ] Ensure the `clang-tidy` lints and test suite passes with the debug build
-    - [ ] Ensure the test suite passes under `valgrind`: `LIBGL_ALWAYS_SOFTWARE=1 valgrind --leak-check=full --trace-children=yes --suppressions=${PWD}/scripts/suppressions_valgrind.supp -- ctest --test-dir build/RelWithDebInfo --output-on-failure`
+    - [ ] Ensure the test suite passes under `valgrind`: `LIBGL_ALWAYS_SOFTWARE=1 valgrind --leak-check=full --trace-children=yes -- ctest --test-dir build/RelWithDebInfo --output-on-failure`
     - [ ] Manually spot-check new changes with the debug+ASAN build
     - [ ] Fix all bugs/problems found during the above steps
     - [ ] Commit any fixes to CI and ensure CI passes
@@ -64,7 +64,7 @@ Creator, it's usually copied into a GitHub issue:
       - [ ] Otherwise, it requires @adamkewley's GitHub login to publish
             the generated draft from Zenodo
     - [ ] Update + commit the repository with the Zenodo release details:
-      - [ ] Use `./scripts/oneoff_bump-zenodo-details.py` to automatically do this
+      - [ ] Use `./scripts/bump-zenodo-details.py` to automatically do this
       - [ ] Ensure `codemeta.json`, `CITATION.cff`, and `README.md` refer to the
             correct Zenodo release.
     - [ ] Ensure the entire repository, incl. all tags, is pushed to the official
