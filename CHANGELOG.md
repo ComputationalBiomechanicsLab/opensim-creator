@@ -22,6 +22,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Portable Linux packaging in the form of a `.tar.xz` archive are now shipped
   with each release, which should enable using OpenSim Creator on most modern
   Linux desktop distributions.
+- Debian packages (`.deb`s) are now compressed with `xz`, rather than `gzip`, reducing
+  the package size from 22 MB to 14 MB (!).
 
 ## [0.7.3] - 2026/03/27
 

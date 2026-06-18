@@ -13,3 +13,6 @@ set(CPACK_PACKAGING_INSTALL_PREFIX /opt/osc)
 # visible (`/opt` isn't on the PATH by default).
 set(CPACK_OSC_DEB_PACKAGING_DIR "${CMAKE_CURRENT_LIST_DIR}")  # Forwarded variable
 set(CPACK_PRE_BUILD_SCRIPTS "${CMAKE_CURRENT_LIST_DIR}/AddUsrLocalEntries.cmake")
+
+# Compress the archive as much as possible
+set(CPACK_DEBIAN_COMPRESSION_TYPE "xz")
