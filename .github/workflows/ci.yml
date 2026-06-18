@@ -100,13 +100,13 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Build OS (AlmaLinux8) Docker Image
-      run: cd ${GITHUB_WORKSPACE}/docker && docker build -f almalinux8.Dockerfile -t opensim-creator:almalinux8 .
+      run: cd ${GITHUB_WORKSPACE}/third_party/opynsim/docker && docker build -f almalinux8.Dockerfile -t opynsim:almalinux8 .
 
     - name: Setup Python Virtual Environment
-      run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opensim-creator:almalinux8 /bin/bash -c "python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt"
+      run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt"
 
     - name: Build OpenSim Creator
-      run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opensim-creator:almalinux8 /bin/bash -c "xvfb-run ./scripts/ci_build_unix.sh Release-Linux-amd64"
+      run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "xvfb-run ./scripts/ci_build_unix.sh Release-Linux-amd64"
 
     - uses: actions/upload-artifact@v4
       with:

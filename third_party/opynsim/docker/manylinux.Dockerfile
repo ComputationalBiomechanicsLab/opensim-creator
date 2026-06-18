@@ -7,4 +7,3 @@ RUN alternatives --install /usr/bin/python3 python3 /opt/python/cp312-cp312/bin/
 
 # default shell
 cmd ["/bin/bash"]
-
