@@ -26,10 +26,13 @@ jobs:
       shell: cmd
       run: cd %GITHUB_WORKSPACE% && python -m venv .venv && call .venv\Scripts\activate && pip install -r requirements\all_requirements.txt
 
+    - name: Build OpenSim Creator Dependencies
+      shell: cmd
+      run: cd %GITHUB_WORKSPACE%/third_party && call opynsim/scripts/env_vs-x64.bat && cmake --workflow --preset Release-Windows-amd64
+
     - name: Build OpenSim Creator
       shell: cmd
-      run: |
-        cd %GITHUB_WORKSPACE% && scripts\ci_build_windows.bat Release-Windows-amd64
+      run: cd %GITHUB_WORKSPACE% && call third_party/opynsim/scripts/env_vs-x64.bat && cmake --workflow --preset Release-Windows-amd64
 
     - uses: actions/upload-artifact@v4
       with:

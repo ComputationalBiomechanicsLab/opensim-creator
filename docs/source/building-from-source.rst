@@ -65,7 +65,7 @@ are:
 
 1. Open a batch (``cmd.exe``) terminal.
 2. Change into the ``opensim-creator`` source code directory (e.g. with ``cd opensim-creator``).
-3. Activate the Visual Studio environment with ``call .\scripts\env_vs-x64.bat``.
+3. Activate the Visual Studio environment with ``call .\third_party\opynsim\scripts\env_vs-x64.bat``.
 4. Build OpenSim Creator's dependencies with ``cd third_party && cmake --workflow --preset Development && cd ..``.
 5. Build OpenSim Creator with ``cmake --workflow --preset Development``.
 6. The build directory (``build\Development``) should contain the build outputs (e.g. the installer).

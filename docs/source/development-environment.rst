@@ -37,7 +37,7 @@ Visual Studio 2022/2026
   - Open a terminal (``cmd.exe``) window
   - Run ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`` to get a copy of OpenSim Creator's sourcecode
   - ``cd opensim-creator``
-  - Activate the Visual Studio development environment by running ``call scripts\env_vs-x64.bat``. This
+  - Activate the Visual Studio development environment by running ``call third_party\opynsim\scripts\env_vs-x64.bat``. This
     gives the terminal access to tools like ``cmake``, ``ninja``, ``cl``, etc.
   - ``cd third_party && cmake --workflow --preset Development && cd ..``. This builds
     the third-party dependencies with the ``Development`` preset. See ``CMakePresets.json``
