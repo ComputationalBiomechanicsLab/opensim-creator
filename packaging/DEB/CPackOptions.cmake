@@ -3,7 +3,7 @@
 # Creates a standalone `.deb` package that should be installable on
 # Debian (and derivatives, such as Ubuntu and Linux Mint).
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgl1, libopengl0, libstdc++6")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgl1, libopengl0")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
 # Install the application into `/opt/osc` (we're not distributing it via `apt`)
