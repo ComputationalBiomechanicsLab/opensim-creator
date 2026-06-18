@@ -213,7 +213,6 @@
             "environment": {
                 "ASAN_OPTIONS": "abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:strict_init_order=true:detect_invalid_pointer_pairs=2",
                 "UBSAN_OPTIONS": "abort_on_error=1:print_stacktrace=1:print_summary=1:suppressions=${sourceDir}/scripts/suppressions_ubsan.supp",
-                "LSAN_OPTIONS": "suppressions=${sourceDir}/scripts/suppressions_lsan.supp",
                 "LIBGL_ALWAYS_SOFTWARE": "1"
             }
         },
