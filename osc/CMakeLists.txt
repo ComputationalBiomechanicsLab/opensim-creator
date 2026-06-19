@@ -47,13 +47,6 @@ configure_file(
 add_executable(osc osc.cpp)
 set_target_properties(osc PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(osc PUBLIC cxx_std_23)
-target_compile_options(osc PRIVATE
-    $<$<CXX_COMPILER_ID:AppleClang>:
-        -Wunguarded-availability            # Enable checks for APIs newer than `CMAKE_OSX_DEPLOYMENT_TARGET`.
-        -Werror=unguarded-availability      # Turn those checks into hard compilation errors.
-        -Werror=unguarded-availability-new  # Catch newly introduced APIs in the latest SDKs as errors
-    >
-)
 if(OSC_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/opynsim/cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(osc)

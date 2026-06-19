@@ -683,13 +683,6 @@ PUBLIC
     SWIG_PYTHON
 )
 target_compile_features(osim PUBLIC cxx_std_20)
-target_compile_options(osim PRIVATE
-    $<$<CXX_COMPILER_ID:AppleClang>:
-        -Wunguarded-availability            # Enable checks for APIs newer than `CMAKE_OSX_DEPLOYMENT_TARGET`.
-        -Werror=unguarded-availability      # Turn those checks into hard compilation errors.
-        -Werror=unguarded-availability-new  # Catch newly introduced APIs in the latest SDKs as errors
-    >
-)
 target_link_libraries(osim PUBLIC spdlog::spdlog)  # used by OpenSim (logging)
 
 # BLAS/LAPACK/OpenBLAS is used by simbody for linear algebra.

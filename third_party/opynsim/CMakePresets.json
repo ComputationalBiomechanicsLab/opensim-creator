@@ -78,7 +78,7 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_OSX_ARCHITECTURES": "x86_64",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
-                "CMAKE_OSX_SYSROOT": "macosx14.5",
+                "CMAKE_CXX_FLAGS": "-Wunguarded-availability -Werror=unguarded-availability -Werror=unguarded-availability-new",
 
                 "OPYN_VENV": "${sourceDir}/.venv",
                 "OPYN_STRICT_ABI_CHECKS": "ON"
@@ -95,7 +95,7 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
-                "CMAKE_OSX_SYSROOT": "macosx14.5",
+                "CMAKE_CXX_FLAGS": "-Wunguarded-availability -Werror=unguarded-availability -Werror=unguarded-availability-new",
 
                 "OPYN_VENV": "${sourceDir}/.venv",
                 "OPYN_STRICT_ABI_CHECKS": "ON"

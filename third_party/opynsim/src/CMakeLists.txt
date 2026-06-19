@@ -98,14 +98,6 @@ if(TRUE)
     # CARE: MSVC C++23 isn't ABI-stable yet
     target_compile_features(_core PUBLIC cxx_std_20)
 
-    target_compile_options(_core PRIVATE
-        $<$<CXX_COMPILER_ID:AppleClang>:
-            -Wunguarded-availability            # Enable checks for APIs newer than `CMAKE_OSX_DEPLOYMENT_TARGET`.
-            -Werror=unguarded-availability      # Turn those checks into hard compilation errors.
-            -Werror=unguarded-availability-new  # Catch newly introduced APIs in the latest SDKs as errors.
-        >
-    )
-
     # Link to the underlying `libopynsim` C++ code
     target_link_libraries(_core PRIVATE opynsim)
 
