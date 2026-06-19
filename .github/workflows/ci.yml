@@ -5,10 +5,6 @@ jobs:
   windows_amd64:
     name: Windows (amd64)
     runs-on: windows-2022
-    env:
-      # Filter out tests that require OpenGL 3.3 support (GitHub Windows
-      # runner doesn't support it).
-      OSC_TEST_EXCLUDE_FILTER: "Graphics|MeshDepthWritingMaterialFixture|MeshNormalVectorsMaterialFixture|ShaderTest|MaterialTest|RegisteredDemoTabsTest|RegisteredOpenSimCreatorTabs|AddComponentPopup|LoadingTab"
     steps:
     - uses: actions/checkout@v4
 
@@ -16,6 +12,13 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.12'
+
+    - name: Setup Mesa3D
+      shell: powershell
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/pal1000/mesa-dist-win/releases/download/26.1.2/mesa3d-26.1.2-release-msvc.7z" -OutFile "$env:TEMP\mesa3d.7z"
+        & "C:\Program Files\7-Zip\7z.exe" x "$env:TEMP\mesa3d.7z" "-o$env:TEMP\mesa3d" -y
+        & $env:TEMP\mesa3d\systemwidedeploy.cmd 1
 
     - name: Setup Python Virtual Environment
       shell: cmd
@@ -27,7 +30,8 @@ jobs:
 
     - name: Build OpenSim Creator
       shell: cmd
-      run: cd %GITHUB_WORKSPACE% && call third_party/opynsim/scripts/env_vs-x64.bat && cmake --workflow --preset Release-Windows-amd64
+      run: |
+        cd %GITHUB_WORKSPACE% && call third_party/opynsim/scripts/env_vs-x64.bat && cmake --workflow --preset Release-Windows-amd64
 
     - uses: actions/upload-artifact@v4
       with:
