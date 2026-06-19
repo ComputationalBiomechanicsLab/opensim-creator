@@ -36,20 +36,6 @@ set(
 )
 mark_as_advanced(OSC_LONG_APPNAME)
 
-# set OSC_BUILD_ID
-if(DEFINED ENV{OSC_BUILD_ID})
-    set(OSC_BUILD_ID "$ENV{OSC_BUILD_ID}"
-        CACHE STRING
-        "a unique identifier for this particular build configuration (handy for bug tracing)"
-        FORCE
-    )
-else()
-    set(OSC_BUILD_ID "CUSTOM_BUILD"
-        CACHE STRING
-        "a unique identifier for this particular build configuration (handy for bug tracing)"
-    )
-endif()
-
 # Configure `osc_config.h` (compile-time configuration)
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/osc_config.h.in"

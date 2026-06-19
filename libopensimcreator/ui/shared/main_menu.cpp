@@ -372,10 +372,12 @@ void osc::MainMenuAboutTab::onDraw()
         ui::draw_text(metadata.version_string().value_or("(not known)"));
         ui::next_column();
 
-        ui::draw_text("BUILD_ID");
-        ui::next_column();
-        ui::draw_text(metadata.build_id().value_or("(not known)"));
-        ui::next_column();
+        if (const auto build_id = metadata.build_id()) {
+            ui::draw_text("BUILD_ID");
+            ui::next_column();
+            ui::draw_text(*build_id);
+            ui::next_column();
+        }
 
         ui::draw_text("GRAPHICS_VENDOR");
         ui::next_column();

@@ -31,7 +31,6 @@ namespace
         metadata.set_config_filename("osc.toml");
         metadata.set_long_application_name(OSC_LONG_APPNAME_STRING);
         metadata.set_version_string(OSC_VERSION_STRING);
-        metadata.set_build_id(OSC_BUILD_ID);
         metadata.set_repository_url(OSC_REPO_URL);
         metadata.set_help_url(OSC_HELP_URL);
         metadata.set_documentation_url(OSC_DOCS_URL);

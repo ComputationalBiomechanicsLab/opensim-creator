@@ -1,10 +1,5 @@
 on: [push]
 
-env:
-  # Bake a GitHub build ID into the binary so that there's a way of looking
-  # up the build logs for a build via GitHub Actions' UI/API.
-  OSC_BUILD_ID: "GITHUB_${{ github.run_id }}.${{ github.run_number }}"
-
 jobs:
 
   windows_amd64:

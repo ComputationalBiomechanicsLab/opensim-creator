@@ -22,12 +22,6 @@
 
 // char[]
 //
-// unique build ID for this build of OSC. Bakes the build ID into
-// the binary, which is handy for user bug reports, etc.
-#define OSC_BUILD_ID "@OSC_BUILD_ID@"
-
-// char[]
-//
 // a URL for OSC's source code repo. Used by in-app links, shortcuts, etc. so that
 // users can just click and go, rather than having to separately browse to it.
 #define OSC_REPO_URL "@OSC_REPO_URL@"

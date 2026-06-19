@@ -24,6 +24,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   Linux desktop distributions.
 - Debian packages (`.deb`s) are now compressed with `xz`, rather than `gzip`, reducing
   the package size from 22 MB to 14 MB (!).
+- The GitHub build ID is no longer written into the application (or randomly generated), to
+  improve build reproducibility.
 
 ## [0.7.3] - 2026/03/27
 
