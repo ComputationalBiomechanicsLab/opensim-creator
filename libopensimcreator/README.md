@@ -6,7 +6,6 @@ launched by executables (e.g. `osc` - the main application executable).
 
 | Directory    | Description |
 |--------------| - |
-| `cmake/`     | CMake-specific scripts |
 | `documents/` | Support for "document" or "model" classes that are externally manipulated by the UI |
 | `platform/`  | Application-wide systems (e.g. `OpenSimCreatorApp`) that may be used by various parts of the UI |
 | `tests/`     | Code related to test suites |
