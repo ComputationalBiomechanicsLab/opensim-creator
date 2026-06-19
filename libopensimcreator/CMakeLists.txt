@@ -1,10 +1,6 @@
-option(OSC_USE_STRICT_COMPILER_FLAGS "Add stricter compilation flags to targets"      OFF)
-option(
-    OSC_LIBOPENSIMCREATOR_INSTALL
-    "Install libopensimcreator library and headers. Use at your own risk: opensimcreator's C++ API isn't stable, supported, or designed for public consumption (we use it for internal prototypes)"
-    OFF
-)
-mark_as_advanced(OSC_LIBOPENSIMCREATOR_INSTALL)  # Only for internal use at the moment
+option(OSC_USE_STRICT_COMPILER_FLAGS "Add stricter compilation flags to targets"                    OFF)
+option(OSC_LIBOPENSIMCREATOR_INSTALL "Install libopensimcreator library and headers (experimental)" OFF)
+mark_as_advanced(OSC_LIBOPENSIMCREATOR_INSTALL)
 
 if(NOT TARGET oscar)
     find_package(oscar REQUIRED)
