@@ -32,7 +32,7 @@ if(OSC_STRICT_ABI_CHECKS AND APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
         NAME test_macos-targets-deployment-target
         COMMAND
         "${Python_EXECUTABLE}"
-        "${CMAKE_CURRENT_SOURCE_DIR}/check_macos-supports-min_os_version.py"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/opynsim/tests/check_macos-supports-min_os_version.py"
         "${CMAKE_OSX_DEPLOYMENT_TARGET}"
         "$<TARGET_FILE:osc>"
     )

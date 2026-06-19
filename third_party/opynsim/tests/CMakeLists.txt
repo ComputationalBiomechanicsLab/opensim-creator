@@ -59,3 +59,15 @@ if(OPYN_STRICT_ABI_CHECKS AND UNIX)
             ${OPYN_PERMITTED_SYMBOLS}
     )
 endif()
+
+# Perform Apple SDK version checks, if applicable.
+if(OPYN_STRICT_ABI_CHECKS AND APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
+    add_test(
+        NAME test_macos-targets-deployment-target
+        COMMAND
+        "${Python_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/check_macos-supports-min_os_version.py"
+        "${CMAKE_OSX_DEPLOYMENT_TARGET}"
+        "$<TARGET_FILE:_core>"
+    )
+endif()
