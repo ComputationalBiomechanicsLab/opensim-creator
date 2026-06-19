@@ -63,10 +63,10 @@ jobs:
       run: cd ${GITHUB_WORKSPACE} && python -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt
 
     - name: Build OpenSim Creator Dependencies
-      run: cd %GITHUB_WORKSPACE%/third_party && cmake --workflow --preset Release-MacOS-amd64
+      run: cd ${GITHUB_WORKSPACE}/third_party && cmake --workflow --preset Release-MacOS-amd64
 
     - name: Build OpenSim Creator
-      run: cd $GITHUB_WORKSPACE && cmake --workflow --preset Release-MacOS-amd64
+      run: cd ${GITHUB_WORKSPACE} && cmake --workflow --preset Release-MacOS-amd64
 
     - uses: actions/upload-artifact@v4
       with:
@@ -91,10 +91,10 @@ jobs:
       run: cd ${GITHUB_WORKSPACE} && python -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt
 
     - name: Build OpenSim Creator Dependencies
-      run: cd %GITHUB_WORKSPACE%/third_party && cmake --workflow --preset Release-MacOS-arm64
+      run: cd ${GITHUB_WORKSPACE}/third_party && cmake --workflow --preset Release-MacOS-arm64
 
     - name: Build OpenSim Creator
-      run: cd $GITHUB_WORKSPACE && cmake --workflow --preset Release-MacOS-arm64
+      run: cd ${GITHUB_WORKSPACE} && cmake --workflow --preset Release-MacOS-arm64
 
     - uses: actions/upload-artifact@v4
       with:
