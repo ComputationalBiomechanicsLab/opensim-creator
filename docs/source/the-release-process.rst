@@ -43,8 +43,8 @@ Creator, it's usually copied into a GitHub issue:
         - [ ] Setup local Python 3.12 virtual environment with something like `python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt`
         - [ ] Ensure secret codesigning environment variables are set: `OSC_CODESIGN_DEVELOPER_ID`,
               `OSC_NOTARIZATION_APPLE_ID`, `OSC_NOTARIZATION_TEAM_ID`, and `OSC_NOTARIZATION_PASSWORD`.
-        - [ ] Build and notarize an **arm64** release on the developer's machine with `OSC_CODESIGN_ENABLED=1 OSC_NOTARIZATION_ENABLED=1 ./scripts/ci_build_unix.sh Release-MacOS-arm64`
-        - [ ] Build and notarize an **amd64** release on the developer's machine with `OSC_CODESIGN_ENABLED=1 OSC_NOTARIZATION_ENABLED=1 ./scripts/ci_build_unix.sh Release-MacOS-amd64`
+        - [ ] Build and notarize an **arm64** release on the developer's machine with `cmake --workflow --preset Release-MacOS-arm64-CodesignedAndNotarized`
+        - [ ] Build and notarize an **amd64** release on the developer's machine with `cmake --workflow --preset Release-MacOS-amd64-CodesignedAndNotarized`
       - [ ] Build Windows release on developer's machine (GitHub Actions cannot access physical signing USB keys):
         - [ ] Setup local Python virtual environment with something like `py -3.12 -m venv . venv && call .venv\Scripts\activate && pip install -r requirements/all_requirements.txt`
         - [ ] Build and codesign an **amd64** release on the developer's machine by building the `Release-Windows-amd64-Codesigned` cmake workflow (use `Release-Windows-amd64` third-party build).

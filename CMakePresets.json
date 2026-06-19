@@ -148,6 +148,15 @@
             }
         },
         {
+            "name": "Release-MacOS-amd64-CodesignedAndNotarized",
+            "description": "Codesigns + notarizes an amd64 release with Apple (requires: OSC_CODESIGN_DEVELOPER_ID, OSC_NOTARIZATION_APPLE_ID, OSC_NOTARIZATION_TEAM_ID, and OSC_NOTARIZATION_PASSWORD)",
+            "inherits": ["Release-MacOS-amd64"],
+            "cacheVariables": {
+                "OSC_CODESIGN_ENABLED": "ON",
+                "OSC_NOTARIZATION_ENABLED": "ON"
+            }
+        },
+        {
             "name": "Release-MacOS-arm64",
             "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/build/Release-MacOS-arm64",
@@ -158,6 +167,15 @@
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
                 "OSC_STRICT_ABI_CHECKS": "ON"
+            }
+        },
+        {
+            "name": "Release-MacOS-arm64-CodesignedAndNotarized",
+            "description": "Codesigns + notarizes an arm64 release with Apple (requires: OSC_CODESIGN_DEVELOPER_ID, OSC_NOTARIZATION_APPLE_ID, OSC_NOTARIZATION_TEAM_ID, and OSC_NOTARIZATION_PASSWORD",
+            "inherits": ["Release-MacOS-arm64"],
+            "cacheVariables": {
+                "OSC_CODESIGN_ENABLED": "ON",
+                "OSC_NOTARIZATION_ENABLED": "ON"
             }
         },
         {

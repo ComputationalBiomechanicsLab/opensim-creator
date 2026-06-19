@@ -62,8 +62,11 @@ jobs:
     - name: Setup Python Virtual Environment
       run: cd ${GITHUB_WORKSPACE} && python -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt
 
+    - name: Build OpenSim Creator Dependencies
+      run: cd %GITHUB_WORKSPACE%/third_party && cmake --workflow --preset Release-MacOS-amd64
+
     - name: Build OpenSim Creator
-      run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_unix.sh Release-MacOS-amd64
+      run: cd $GITHUB_WORKSPACE && cmake --workflow --preset Release-MacOS-amd64
 
     - uses: actions/upload-artifact@v4
       with:
@@ -87,8 +90,11 @@ jobs:
     - name: Setup Python Virtual Environment
       run: cd ${GITHUB_WORKSPACE} && python -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt
 
+    - name: Build OpenSim Creator Dependencies
+      run: cd %GITHUB_WORKSPACE%/third_party && cmake --workflow --preset Release-MacOS-arm64
+
     - name: Build OpenSim Creator
-      run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_unix.sh Release-MacOS-arm64
+      run: cd $GITHUB_WORKSPACE && cmake --workflow --preset Release-MacOS-arm64
 
     - uses: actions/upload-artifact@v4
       with:
@@ -108,8 +114,11 @@ jobs:
     - name: Setup Python Virtual Environment
       run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt"
 
+    - name: Build OpenSim Creator Dependencies
+      run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "cd third_party && cmake --workflow --preset Release-Linux-amd64"
+
     - name: Build OpenSim Creator
-      run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "xvfb-run ./scripts/ci_build_unix.sh Release-Linux-amd64"
+      run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "xvfb-run cmake --workflow --preset Release-Linux-amd64"
 
     - uses: actions/upload-artifact@v4
       with:
@@ -122,4 +131,3 @@ jobs:
         name: opensimcreator-linux-amd64-tarxz
         path: build/Release-Linux-amd64/*.tar.xz
         if-no-files-found: error
-
