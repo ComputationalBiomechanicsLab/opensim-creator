@@ -1,9 +1,7 @@
-include(../../cmake/osc_find_python.cmake)
-
 # Perform runtime dynamic library dependency (dll/so/dylib) whitelist
 # testing if `OSC_STRICT_ABI_CHECKS` is enabled.
 if(OSC_STRICT_ABI_CHECKS)
-    osc_find_python()
+    find_package(Python REQUIRED COMPONENTS Interpreter)
 
     if(WIN32)
         set(OSC_DEPENDENCY_WHITELIST_FILENAME "windows.txt")
@@ -28,7 +26,7 @@ endif()
 
 # Perform Apple SDK version checks, if applicable.
 if(OSC_STRICT_ABI_CHECKS AND APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
-    osc_find_python()
+    find_package(Python REQUIRED COMPONENTS Interpreter)
 
     add_test(
         NAME test_macos-targets-deployment-target

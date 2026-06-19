@@ -1,8 +1,6 @@
-include(../cmake/osc_find_python.cmake)
-
 set(OSC_SPHINX_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 
-osc_find_python()
+find_package(Python REQUIRED COMPONENTS Interpreter)
 
 # Create a custom build target that builds the Sphinx documentation
 add_custom_target(opensimcreator_docs

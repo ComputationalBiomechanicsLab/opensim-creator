@@ -8,6 +8,12 @@ option(OSC_BUILD_OSCAR_INLINE   "Inline the oscar build"                        
 option(OSC_BUILD_DOCS           "Build OpenSim Creator's documentation"                 OFF)
 option(OSC_CONFIGURE_PACKAGING  "Configure the build to support installation/packaging" ON)
 option(OSC_STRICT_ABI_CHECKS    "Run binary compatibility tests"                        OFF)
+set   (OSC_VENV "" CACHE PATH   "Path to a Python virtual environment (.venv) the build must use for anything Python-related")
+
+if(OSC_VENV)
+    include(third_party/opynsim/cmake/opynsim_set_python_executable_to_venv.cmake)
+    opyn_set_python_executable_to_venv(${OSC_VENV})
+endif()
 
 if(BUILD_TESTING)
     # This has to be done at the top-level, so that `ctest --show-only` works for
