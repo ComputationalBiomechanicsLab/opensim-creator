@@ -1,5 +1,8 @@
 python3\.dll
 KERNEL32\.dll
+MSVCP140.*\.dll
+VCRUNTIME140.*\.dll
+api-ms-win-core-synch-.*\.dll
 api-ms-win-crt-.*\.dll
 ucrtbase.*\.dll
 shell32\.dll
@@ -12,4 +15,4 @@ user32\.dll
 winmm\.dll
 gdi32\.dll
 setupapi\.dll
-vcruntime140.*\.dll
+

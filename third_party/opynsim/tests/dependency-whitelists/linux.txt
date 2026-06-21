@@ -1,7 +1,8 @@
 linux-vdso\.so.*
-libstdc\+\+\.so.*
 libm\.so.*
-libgcc_s\.so.*
+libpthread\.so.*
+libdl\.so.*
 libc\.so.*
 ld-linux-x86-64\.so.*
-
+libstdc\+\+\.so.*
+libgcc_s\.so.*

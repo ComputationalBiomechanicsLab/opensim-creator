@@ -8,11 +8,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup Python 3.12
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
-
     - name: Setup Mesa3D
       shell: powershell
       run: |
@@ -20,18 +15,23 @@ jobs:
         & "C:\Program Files\7-Zip\7z.exe" x "$env:TEMP\mesa3d.7z" "-o$env:TEMP\mesa3d" -y
         & $env:TEMP\mesa3d\systemwidedeploy.cmd 1
 
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
     - name: Setup Python Virtual Environment
       shell: cmd
       run: cd %GITHUB_WORKSPACE% && python -m venv .venv && call .venv\Scripts\activate && pip install -r requirements\all_requirements.txt
 
-    - name: Build OpenSim Creator Dependencies
+    - name: Build Dependencies
       shell: cmd
-      run: cd %GITHUB_WORKSPACE%/third_party && call opynsim/scripts/env_vs-x64.bat && cmake --workflow --preset Release-Windows-amd64
+      run: cd %GITHUB_WORKSPACE%\third_party && call opynsim\scripts\env_vs-x64.bat && cmake --workflow --preset Release-Windows-amd64
 
-    - name: Build OpenSim Creator
+    - name: Build Project
       shell: cmd
       run: |
-        cd %GITHUB_WORKSPACE% && call third_party/opynsim/scripts/env_vs-x64.bat && cmake --workflow --preset Release-Windows-amd64
+        cd %GITHUB_WORKSPACE% && call third_party\opynsim\scripts\env_vs-x64.bat && cmake --workflow --preset Release-Windows-amd64
 
     - uses: actions/upload-artifact@v4
       with:
@@ -43,34 +43,6 @@ jobs:
       with:
         name: opensimcreator-windows-amd64-zip
         path: build/Release-Windows-amd64/*windows-amd64.zip
-        if-no-files-found: error
-
-  macos_amd64:
-    name: MacOS (amd64)
-    runs-on: macos-14
-    env:
-      CTEST_PARALLEL_LEVEL: 1
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup Python 3.12
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
-
-    - name: Setup Python Virtual Environment
-      run: cd ${GITHUB_WORKSPACE} && python -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt
-
-    - name: Build OpenSim Creator Dependencies
-      run: cd ${GITHUB_WORKSPACE}/third_party && cmake --workflow --preset Release-MacOS-amd64
-
-    - name: Build OpenSim Creator
-      run: cd ${GITHUB_WORKSPACE} && cmake --workflow --preset Release-MacOS-amd64
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: opensimcreator-macos-amd64-dmg
-        path: build/Release-MacOS-amd64/*.dmg
         if-no-files-found: error
 
   macos_arm64:
@@ -89,10 +61,10 @@ jobs:
     - name: Setup Python Virtual Environment
       run: cd ${GITHUB_WORKSPACE} && python -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt
 
-    - name: Build OpenSim Creator Dependencies
+    - name: Build Dependencies
       run: cd ${GITHUB_WORKSPACE}/third_party && cmake --workflow --preset Release-MacOS-arm64
 
-    - name: Build OpenSim Creator
+    - name: Build Project
       run: cd ${GITHUB_WORKSPACE} && cmake --workflow --preset Release-MacOS-arm64
 
     - uses: actions/upload-artifact@v4
@@ -113,10 +85,10 @@ jobs:
     - name: Setup Python Virtual Environment
       run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt"
 
-    - name: Build OpenSim Creator Dependencies
+    - name: Build Dependencies
       run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "cd third_party && cmake --workflow --preset Release-Linux-amd64"
 
-    - name: Build OpenSim Creator
+    - name: Build Project
       run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "xvfb-run cmake --workflow --preset Release-Linux-amd64"
 
     - uses: actions/upload-artifact@v4

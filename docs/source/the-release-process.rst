@@ -44,7 +44,6 @@ Creator, it's usually copied into a GitHub issue:
         - [ ] Ensure secret codesigning environment variables are set: `OSC_CODESIGN_DEVELOPER_ID`,
               `OSC_NOTARIZATION_APPLE_ID`, `OSC_NOTARIZATION_TEAM_ID`, and `OSC_NOTARIZATION_PASSWORD`.
         - [ ] Build and notarize an **arm64** release on the developer's machine with `cmake --workflow --preset Release-MacOS-arm64-CodesignedAndNotarized`
-        - [ ] Build and notarize an **amd64** release on the developer's machine with `cmake --workflow --preset Release-MacOS-amd64-CodesignedAndNotarized`
       - [ ] Build Windows release on developer's machine (GitHub Actions cannot access physical signing USB keys):
         - [ ] Setup local Python virtual environment with something like `py -3.12 -m venv . venv && call .venv\Scripts\activate && pip install -r requirements/all_requirements.txt`
         - [ ] Build and codesign an **amd64** release on the developer's machine by building the `Release-Windows-amd64-Codesigned` cmake workflow (use `Release-Windows-amd64` third-party build).
@@ -52,7 +51,6 @@ Creator, it's usually copied into a GitHub issue:
         - [ ] Source tarball
         - [ ] Linux DEB package
         - [ ] MacOS codesigned and notarized arm64 dmg
-        - [ ] MacOS codesigned and notarized amd64 dmg
         - [ ] Windows codesigned amd64 msi
         - [ ] Windows amd64 portable zip
     - [ ] Create new release on github from the tagged commit
@@ -107,9 +105,6 @@ with these combinations:
    * - amd64
      - Windows 10 (>= v1507)
      - MSVC 19.44.35227.0
-   * - amd64
-     - MacOS 14.5
-     - XCode 15.4
    * - arm64
      - MacOS 14.5
      - XCode 15.4

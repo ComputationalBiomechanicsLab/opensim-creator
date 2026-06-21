@@ -40,7 +40,7 @@ Here's an example bash script for building and installing everything from source
 
     set -xeuo pipefail
 
-    build_type=Release          # alternatively: RelWithDebInfo/Debug/MinSizeRel
+    build_type=RelWithDebInfo   # alternatively: Development
     build_dir=${PWD}/build      # build   it in OPynSim's source directory
     install_dir=${PWD}/install  # install it in OpynSim's source directory
 

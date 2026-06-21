@@ -65,9 +65,22 @@ if(OPYN_STRICT_ABI_CHECKS AND APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
     add_test(
         NAME test_macos-targets-deployment-target
         COMMAND
-        "${Python_EXECUTABLE}"
-        "${CMAKE_CURRENT_SOURCE_DIR}/check_macos-supports-min_os_version.py"
-        "${CMAKE_OSX_DEPLOYMENT_TARGET}"
-        "$<TARGET_FILE:_core>"
+            "${Python_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/check_macos-supports-min_os_version.py"
+            "${CMAKE_OSX_DEPLOYMENT_TARGET}"
+            "$<TARGET_FILE:_core>"
     )
+endif()
+
+if(OPYN_STRICT_ABI_CHECKS AND OPYN_ABI_MAX_SYMBOL_VERSIONS)
+    separate_arguments(ARG_LIST NATIVE_COMMAND "${OPYN_ABI_MAX_SYMBOL_VERSIONS}")
+    add_test(
+        NAME test_max-symbol-versions
+        COMMAND
+            "${Python_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/check_symbol_max_versions.py"
+            "$<TARGET_FILE:_core>"
+            ${ARG_LIST}
+    )
+    unset(ARG_LIST)
 endif()

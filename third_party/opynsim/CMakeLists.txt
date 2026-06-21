@@ -47,7 +47,7 @@ if(OPYN_BUILD_PYTHON_BINDINGS OR OPYN_BUILD_DOCS)
 
     if(OPYN_STRICT_ABI_CHECKS)
         if((NOT Python_VERSION_MAJOR EQUAL 3) OR (NOT Python_VERSION_MINOR EQUAL 12))
-            message(FATAL_ERROR "When OPYN_STRICT_ABI_CHECKS is ON, the Python version MUST be 3.12.x (yours is ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}), so that the resulting ABI is valid for >= 3.12 clients.\nOne way to fix this is to create a 3.12 venv and pass it via OPYN_VENV, or use cmake Python hints like Python_ROOT_DIR\n\nOn Windows, you can even do this by creating the environment with something like `py -3.12 scripts\\setup_venv.py`.")
+            message(FATAL_ERROR "When OPYN_STRICT_ABI_CHECKS is ON, the Python version MUST be 3.12.x (yours is ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}), so that the resulting ABI is valid for >= 3.12 clients.\nOne way to fix this is to create a 3.12 venv and pass it via OPYN_VENV, or use cmake Python hints like Python_ROOT_DIR\n\nOn Windows, you can even do this by creating the environment with something like `py -3.12 -m venv .venv && call .venv/Scripts/activate.bat && py -3.12 pip install -r requirements/all_requirements.txt`.")
         endif()
     endif()
 endif()

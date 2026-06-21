@@ -135,29 +135,6 @@
             }
         },
         {
-            "name": "Release-MacOS-amd64",
-            "inherits": ["mixin_ConfigBase"],
-            "binaryDir": "${sourceDir}/build/Release-MacOS-amd64",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-MacOS-amd64/install",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-MacOS-amd64/install",
-                "CMAKE_OSX_ARCHITECTURES": "x86_64",
-                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
-                "CMAKE_CXX_FLAGS": "-Wunguarded-availability -Werror=unguarded-availability -Werror=unguarded-availability-new",
-                "OSC_STRICT_ABI_CHECKS": "ON"
-            }
-        },
-        {
-            "name": "Release-MacOS-amd64-CodesignedAndNotarized",
-            "description": "Codesigns + notarizes an amd64 release with Apple (requires: OSC_CODESIGN_DEVELOPER_ID, OSC_NOTARIZATION_APPLE_ID, OSC_NOTARIZATION_TEAM_ID, and OSC_NOTARIZATION_PASSWORD)",
-            "inherits": ["Release-MacOS-amd64"],
-            "cacheVariables": {
-                "OSC_CODESIGN_ENABLED": "ON",
-                "OSC_NOTARIZATION_ENABLED": "ON"
-            }
-        },
-        {
             "name": "Release-MacOS-arm64",
             "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/build/Release-MacOS-arm64",
@@ -201,17 +178,17 @@
         }
     ],
     "buildPresets": [
-        { "name": "Development",                       "configurePreset": "Development"                      },
-        { "name": "Development-Inlined",               "configurePreset": "Development-Inlined"              },
-        { "name": "ErrorCheck",                        "configurePreset": "ErrorCheck"                       },
-        { "name": "ErrorCheck-Inlined",                "configurePreset": "ErrorCheck-Inlined"               },
-        { "name": "RelWithDebInfo",                    "configurePreset": "RelWithDebInfo"                   },
-        { "name": "RelWithDebInfo-Inlined",            "configurePreset": "RelWithDebInfo-Inlined"           },
-        { "name": "Release-Linux-amd64",               "configurePreset": "Release-Linux-amd64"              },
-        { "name": "Release-MacOS-amd64",               "configurePreset": "Release-MacOS-amd64"              },
-        { "name": "Release-MacOS-arm64",               "configurePreset": "Release-MacOS-arm64"              },
-        { "name": "Release-Windows-amd64",             "configurePreset": "Release-Windows-amd64"            },
-        { "name": "Release-Windows-amd64-Codesigned",  "configurePreset": "Release-Windows-amd64-Codesigned" }
+        { "name": "Development",                                "configurePreset": "Development"                                },
+        { "name": "Development-Inlined",                        "configurePreset": "Development-Inlined"                        },
+        { "name": "ErrorCheck",                                 "configurePreset": "ErrorCheck"                                 },
+        { "name": "ErrorCheck-Inlined",                         "configurePreset": "ErrorCheck-Inlined"                         },
+        { "name": "RelWithDebInfo",                             "configurePreset": "RelWithDebInfo"                             },
+        { "name": "RelWithDebInfo-Inlined",                     "configurePreset": "RelWithDebInfo-Inlined"                     },
+        { "name": "Release-Linux-amd64",                        "configurePreset": "Release-Linux-amd64"                        },
+        { "name": "Release-MacOS-arm64",                        "configurePreset": "Release-MacOS-arm64"                        },
+        { "name": "Release-MacOS-arm64-CodesignedAndNotarized", "configurePreset": "Release-MacOS-arm64-CodesignedAndNotarized" },
+        { "name": "Release-Windows-amd64",                      "configurePreset": "Release-Windows-amd64"                      },
+        { "name": "Release-Windows-amd64-Codesigned",           "configurePreset": "Release-Windows-amd64-Codesigned"           }
     ],
     "testPresets": [
         {
@@ -272,13 +249,13 @@
             "inherits": ["mixin_TestBase"]
         },
         {
-            "name": "Release-MacOS-amd64",
-            "configurePreset": "Release-MacOS-amd64",
+            "name": "Release-MacOS-arm64",
+            "configurePreset": "Release-MacOS-arm64",
             "inherits": ["mixin_TestBase"]
         },
         {
-            "name": "Release-MacOS-arm64",
-            "configurePreset": "Release-MacOS-arm64",
+            "name": "Release-MacOS-arm64-CodesignedAndNotarized",
+            "configurePreset": "Release-MacOS-arm64-CodesignedAndNotarized",
             "inherits": ["mixin_TestBase"]
         },
         {
@@ -293,11 +270,11 @@
         }
     ],
     "packagePresets": [
-        { "name": "Release-Linux-amd64",              "configurePreset": "Release-Linux-amd64"   },
-        { "name": "Release-MacOS-amd64",              "configurePreset": "Release-MacOS-amd64"   },
-        { "name": "Release-MacOS-arm64",              "configurePreset": "Release-MacOS-arm64"   },
-        { "name": "Release-Windows-amd64",            "configurePreset": "Release-Windows-amd64" },
-        { "name": "Release-Windows-amd64-Codesigned", "configurePreset": "Release-Windows-amd64-Codesigned" }
+        { "name": "Release-Linux-amd64",                        "configurePreset": "Release-Linux-amd64"                        },
+        { "name": "Release-MacOS-arm64",                        "configurePreset": "Release-MacOS-arm64"                        },
+        { "name": "Release-MacOS-arm64-CodesignedAndNotarized", "configurePreset": "Release-MacOS-arm64-CodesignedAndNotarized" },
+        { "name": "Release-Windows-amd64",                      "configurePreset": "Release-Windows-amd64"                      },
+        { "name": "Release-Windows-amd64-Codesigned",           "configurePreset": "Release-Windows-amd64-Codesigned"           }
     ],
     "workflowPresets": [
         {
@@ -354,21 +331,21 @@
             ]
         },
         {
-            "name": "Release-MacOS-amd64",
-            "steps": [
-                { "type": "configure", "name": "Release-MacOS-amd64" },
-                { "type": "build",     "name": "Release-MacOS-amd64" },
-                { "type": "test",      "name": "Release-MacOS-amd64" },
-                { "type": "package",   "name": "Release-MacOS-amd64" }
-            ]
-        },
-        {
             "name": "Release-MacOS-arm64",
             "steps": [
                 { "type": "configure", "name": "Release-MacOS-arm64" },
                 { "type": "build",     "name": "Release-MacOS-arm64" },
                 { "type": "test",      "name": "Release-MacOS-arm64" },
                 { "type": "package",   "name": "Release-MacOS-arm64" }
+            ]
+        },
+        {
+            "name": "Release-MacOS-arm64-CodesignedAndNotarized",
+            "steps": [
+                { "type": "configure", "name": "Release-MacOS-arm64-CodesignedAndNotarized" },
+                { "type": "build",     "name": "Release-MacOS-arm64-CodesignedAndNotarized" },
+                { "type": "test",      "name": "Release-MacOS-arm64-CodesignedAndNotarized" },
+                { "type": "package",   "name": "Release-MacOS-arm64-CodesignedAndNotarized" }
             ]
         },
         {

@@ -26,6 +26,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   the package size from 22 MB to 14 MB (!).
 - The GitHub build ID is no longer written into the application (or randomly generated), to
   improve build reproducibility.
+- Deprecation: the project no longer ships Intel (amd64) binaries for macOS. It's hard to
+  test/verify those binaries on actual hardware because Apple hasn't sold it for 6
+  years. Moving forward, I recommend sticking with an earlier version of OpenSim Creator, or
+  building it from source on your Intel macOS device.
+
 
 ## [0.7.3] - 2026/03/27
 

@@ -5,72 +5,38 @@ jobs:
   windows_amd64:
     name: Windows (amd64)
     runs-on: windows-2022
-    env:
-      # Filter out tests that require OpenGL 3.3 support (GitHub Windows
-      # runner doesn't support it).
-      OPYN_TEST_EXCLUDE_FILTER: "RenderQueueFixture|Graphics|MaterialTest|MeshDepthWritingMaterialFixture|MeshNormalVectorsMaterialFixture|ShaderTest|RegisteredDemoTabsTest"
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Mesa3D
+        shell: powershell
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/pal1000/mesa-dist-win/releases/download/26.1.2/mesa3d-26.1.2-release-msvc.7z" -OutFile "$env:TEMP\mesa3d.7z"
+          & "C:\Program Files\7-Zip\7z.exe" x "$env:TEMP\mesa3d.7z" "-o$env:TEMP\mesa3d" -y
+          & $env:TEMP\mesa3d\systemwidedeploy.cmd 1
 
       - name: Setup Python 3.12
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
-      - name: Run Build Script
+      - name: Setup Python Virtual Environment
         shell: cmd
-        run: call .\scripts\e2e_setup-and-build-windows.bat
+        run: cd %GITHUB_WORKSPACE% && python -m venv .venv && call .venv\Scripts\activate && pip install -r requirements\all_requirements.txt
+
+      - name: Build Dependencies
+        shell: cmd
+        run: cd %GITHUB_WORKSPACE%/third_party && call %GITHUB_WORKSPACE%/scripts/env_vs-x64.bat && cmake --workflow --preset Release-Windows-amd64
+
+      - name: Build Project
+        shell: cmd
+        run: |
+          cd %GITHUB_WORKSPACE% && call scripts/env_vs-x64.bat && cmake --workflow --preset Release-Windows-amd64
 
       - uses: actions/upload-artifact@v4
         with:
           name: opynsim-windows-wheel
-          path: build/Release/*win_amd64.whl
-          if-no-files-found: error
-
-  ubuntu22_amd64:
-    name: Ubuntu 22.04 (amd64)
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: setup system
-        run: cd $GITHUB_WORKSPACE && sudo apt-get update && sudo apt-get install $(sed 's/#.*//' "docker/ubuntu22_apt.txt" | xargs)
-
-      - name: Setup Python 3.12
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-
-      - name: Run Build Script
-        run: CC=gcc-12 CXX=g++-12 xvfb-run ./scripts/e2e_setup-and-build-unix.sh
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: opynsim-ubuntu22-wheel
-          path: build/Release/*manylinux_2_35_x86_64.whl
-          if-no-files-found: error
-
-  macos_amd64:
-    name: MacOS (amd64)
-    runs-on: macos-14
-    env:
-      CTEST_PARALLEL_LEVEL: 1
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python 3.12 (x86_64)
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          architecture: 'x64'
-
-      - name: Run Build Script
-        run: arch -x86_64 /usr/bin/env bash ./scripts/e2e_setup-and-build-unix.sh Release-MacOS-amd64
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: opynsim-macos-amd64-wheel
-          path: build/Release-MacOS-amd64/*macosx_14_0_x86_64.whl
+          path: build/Release-Windows-amd64/*win_amd64.whl
           if-no-files-found: error
 
   macos_arm64:
@@ -86,8 +52,14 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Run Build Script
-        run: ./scripts/e2e_setup-and-build-unix.sh Release-MacOS-arm64
+      - name: Setup Python Virtual Environment
+        run: cd ${GITHUB_WORKSPACE} && python -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt
+
+      - name: Build Dependencies
+        run: cd ${GITHUB_WORKSPACE}/third_party && cmake --workflow --preset Release-MacOS-arm64
+
+      - name: Build Project
+        run: cd ${GITHUB_WORKSPACE} && cmake --workflow --preset Release-MacOS-arm64
 
       - uses: actions/upload-artifact@v4
         with:
@@ -95,27 +67,21 @@ jobs:
           path: build/Release-MacOS-arm64/*macosx_14_0_arm64.whl
           if-no-files-found: error
 
-  manylinux_amd64:
+  almalinux18_amd64:
+    name: AlmaLinux 8 (amd64, docker)
     runs-on: ubuntu-latest
-    container:
-      image: quay.io/pypa/manylinux_2_34_x86_64
-    env:
-      # Filter out tests that require OpenGL 3.3 support (manylinux
-      # runner doesn't support it).
-      OPYN_TEST_EXCLUDE_FILTER: "RenderQueueFixture|Graphics|MaterialTest|MeshDepthWritingMaterialFixture|MeshNormalVectorsMaterialFixture|ShaderTest|RegisteredDemoTabsTest"
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Ninja
-        run: |
-          yum install -y epel-release
-          yum install -y ninja-build
+      - name: Build OS (AlmaLinux8) Docker Image
+        run: cd ${GITHUB_WORKSPACE}/docker && docker build -f almalinux8.Dockerfile -t opynsim:almalinux8 .
 
-      - name: Run Build Script
-        run: PATH=/opt/python/cp312-cp312/bin:${PATH} ./scripts/e2e_setup-and-build-unix.sh
+      - name: Setup Python Virtual Environment
+        run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt"
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: opynsim-manylinux-wheel
-          path: build/Release/*manylinux_2_34_x86_64.whl
-          if-no-files-found: error
+      - name: Build Dependencies
+        run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "cd third_party && cmake --workflow --preset Release-Linux-amd64"
+
+      - name: Build Project
+        run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "xvfb-run cmake --workflow --preset Release-Linux-amd64"
+
