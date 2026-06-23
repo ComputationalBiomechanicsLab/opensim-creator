@@ -12,6 +12,7 @@
 #include <vector>
 
 using namespace opyn;
+namespace vws = std::views;
 
 TEST(Model, rotational_columns_in_returns_empty_if_given_empty_DataFrame)
 {
@@ -29,8 +30,8 @@ TEST(Model, rotational_columns_in_returns_rotational_columns_for_pendulum_input)
 
     const Model model = read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
     const DataFrame data_frame = read_sto(opynsim_tests_resources_directory() / "pendulum/pendulum_trajectory.sto");
-    const std::vector<std::string> got = model.rotational_columns_in(data_frame);
-    const std::vector<std::string> expected = {"/jointset/pin/pin_coord_0/value", "/jointset/pin/pin_coord_0/speed"};
+    const std::unordered_set<std::string> got = model.rotational_columns_in(data_frame);
+    const std::unordered_set<std::string> expected = {"/jointset/pin/pin_coord_0/value", "/jointset/pin/pin_coord_0/speed"};
 
     ASSERT_EQ(got, expected);
 }
@@ -122,4 +123,25 @@ TEST(Model, initial_state_realized_to_realizes_state_to_specified_stage)
     for (const auto& stage : {ModelStateStage::time, ModelStateStage::report, ModelStateStage::dynamics}) {
         ASSERT_EQ(model.initial_state(stage).stage(), stage);
     }
+}
+
+TEST(Model, convert_data_frame_to_radians_degrees_sto_file_to_radians)
+{
+    opyn::init();
+
+    const Model model = read_osim(opynsim_tests_resources_directory() / "models/DoublePendulum/double_pendulum.osim").compile();
+    const DataFrame data_frame = read_sto(opynsim_tests_resources_directory() / "Documents/sto/double_pendulum_run.sto");
+    const DataFrame rv = model.convert_data_frame_to_radians(data_frame);
+
+    ASSERT_EQ(data_frame.get_attr("inDegrees"), "yes");
+    for (const auto& column_name : model.rotational_columns_in(data_frame)) {
+        const Series& before = data_frame[column_name];
+        const Series& after = rv[column_name];
+        ASSERT_EQ(before.name(), after.name());
+        ASSERT_EQ(before.shape(), after.shape());
+        for (const auto& [before_val, after_val] : vws::zip(before, after)) {
+            ASSERT_NEAR(osc::deg_to_rad_v<double> * before_val, after_val, 0.00001) << before.name() << "-->" << after.name() << " failed";
+        }
+    }
+    ASSERT_TRUE(not rv.has_attr("inDegrees"));
 }

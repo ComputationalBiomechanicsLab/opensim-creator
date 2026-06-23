@@ -11,6 +11,8 @@
 #include <liboscar/utilities/copy_on_upd_ptr.h>
 
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace osc { class SceneCache; }
@@ -35,15 +37,26 @@ namespace opyn
         /// is realized as-if by calling `this->realize(returned_state, realized_to)`.
         ModelState initial_state(ModelStateStage realized_to = ModelStateStage::instance) const;
 
-        /// Returns the names of the columns in `data_frame` that can
-        /// be mapped to rotational state variables in this `Model` in
-        /// the column-order of `data_frame`.
-        std::vector<std::string> rotational_columns_in(const DataFrame& data_frame) const;
+        /// Returns a set of the names of the columns in `data_frame` that can
+        /// be mapped to rotational state variables in this `Model`.
+        std::unordered_set<std::string> rotational_columns_in(const DataFrame& data_frame) const;
 
         /// Returns associative mappings between the names of columns in
         /// `data_frame` and state variables in this `Model`, where the
         /// correspondence can be found.
         std::unordered_map<std::string, Symbol> column_to_state_variable_mappings(const DataFrame& data_frame) const;
+
+        /// Returns a new `DataFrame` that's the result of converting rotational columns
+        /// in `data_frame` to radians (if applicable).
+        ///
+        /// Behavior:
+        /// - If `data_frame.attrs()["inDegrees"] != "yes"`, returns a
+        ///   copy of `data_frame` as-is.
+        /// - Otherwise, copies `data_frame` and uses `this->rotational_columns_in(copy)`
+        ///   to figure out which columns in are rotational, followed by scaling the
+        ///   entire column to radians. The `"inDegrees"` key is cleared from the
+        ///   returned copy.
+        DataFrame convert_data_frame_to_radians(const DataFrame& data_frame) const;
 
         /// Returns `ModelStates` constructed from `data_frame`.
         ///

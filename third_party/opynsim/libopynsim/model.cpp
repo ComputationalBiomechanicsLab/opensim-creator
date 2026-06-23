@@ -248,12 +248,12 @@ public:
         return rv;
     }
 
-    std::vector<std::string> rotational_columns_in(const DataFrame& data_frame) const
+    std::unordered_set<std::string> rotational_columns_in(const DataFrame& data_frame) const
     {
-        std::vector<std::string> rv;
+        std::unordered_set<std::string> rv;
         for (const auto& series : data_frame) {
             if (find_rotational_coordinate_matching_name(model_, series.name())) {
-                rv.emplace_back(series.name());
+                rv.emplace(series.name());
             }
         }
         return rv;
@@ -269,6 +269,33 @@ public:
             }
         }
         return rv;
+    }
+
+    DataFrame convert_data_frame_to_radians(const DataFrame& data_frame) const
+    {
+        if (data_frame.get_attr("inDegrees") != "yes") {
+            return data_frame;  // Already in radians?
+        }
+
+        const auto rotational_column_names = rotational_columns_in(data_frame);
+        if (rotational_column_names.empty()) {
+            return data_frame;  // No rotational columns
+        }
+
+        std::vector<Series> converted_series;
+        converted_series.reserve(data_frame.size());
+        for (const auto& series : data_frame) {
+            if (rotational_column_names.contains(std::string{series.name()})) {
+                converted_series.push_back(osc::deg_to_rad_v<double> * series);
+            } else {
+                converted_series.push_back(series);
+            }
+        }
+
+        auto attrs = data_frame.attrs();
+        attrs.erase("inDegrees");  // Handled by this method
+
+        return DataFrame{std::move(converted_series), std::move(attrs)};
     }
 
     ModelStates states_from_data_frame(const DataFrame& caller_data_frame, ModelStateStage realized_to) const
@@ -417,7 +444,7 @@ opyn::ModelState opyn::Model::initial_state(ModelStateStage realized_to) const
     return impl_->initial_state(realized_to);
 }
 
-std::vector<std::string> opyn::Model::rotational_columns_in(const DataFrame& data_frame) const
+std::unordered_set<std::string> opyn::Model::rotational_columns_in(const DataFrame& data_frame) const
 {
     return impl_->rotational_columns_in(data_frame);
 }
@@ -425,6 +452,11 @@ std::vector<std::string> opyn::Model::rotational_columns_in(const DataFrame& dat
 std::unordered_map<std::string, Symbol> opyn::Model::column_to_state_variable_mappings(const DataFrame& data_frame) const
 {
     return impl_->column_to_state_variable_mappings(data_frame);
+}
+
+DataFrame opyn::Model::convert_data_frame_to_radians(const DataFrame& data_frame) const
+{
+    return impl_->convert_data_frame_to_radians(data_frame);
 }
 
 ModelStates opyn::Model::states_from_data_frame(const DataFrame& data_frame, ModelStateStage realized_to) const

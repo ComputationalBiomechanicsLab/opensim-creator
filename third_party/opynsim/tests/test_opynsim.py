@@ -196,7 +196,15 @@ def test_read_sto_is_compatible_with_rotational_columns_in_model():
     model = opynsim.read_osim(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum.osim").compile()
     df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum_trajectory.sto")
 
-    assert model.rotational_columns_in(df) == ["/jointset/pin/pin_coord_0/value", "/jointset/pin/pin_coord_0/speed"]
+    assert model.rotational_columns_in(df) == {"/jointset/pin/pin_coord_0/value", "/jointset/pin/pin_coord_0/speed"}
+
+def test_read_sto_is_compatible_with_convert_data_frame_to_radians():
+    model = opynsim.read_osim(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum.osim").compile()
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum_trajectory.sto")
+    converted = model.convert_data_frame_to_radians(df)
+
+    assert df.shape == converted.shape
+    # TODO: also test values, but this requires a reader API in Python
 
 def test_read_sto_is_compatible_with_states_from_data_frame():
     model = opynsim.read_osim(Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum.osim").compile()

@@ -25,7 +25,17 @@ namespace
         std::unordered_map<std::string, size_t> rv;
         rv.reserve(series.size());
         for (size_t i = 0; i < series.size(); ++i) {
-            rv.insert_or_assign(std::string{series[i].name()}, i);
+            const Series& s = series[i];
+            const bool inserted = rv.try_emplace(std::string{s.name()}, i).second;
+            if (not inserted) {
+                std::stringstream ss;
+                ss << "The provided series ";
+                if (not s.name().empty()) {
+                    ss << '\'' << s.name() << "' ";
+                }
+                ss << "contains a duplicate name '" << s.name() << "': all series must have unique names";
+                throw std::runtime_error{std::move(ss).str()};
+            }
         }
         return rv;
     }
@@ -92,6 +102,20 @@ opyn::DataFrame::DataFrame(
     attrs_{std::move(attrs)}
 {}
 
+opyn::DataFrame::DataFrame(
+    std::vector<Series> series,
+    std::unordered_map<std::string, std::string> attrs) :
+
+    series_{std::move(series)},
+    column_to_index_lookup_{build_index_lookup(series_)},
+    attrs_{std::move(attrs)}
+{
+    if (not series_.empty()) {
+        const size_t num_rows_in_first_column = series_.front().size();
+        OSC_ASSERT_ALWAYS(rgs::all_of(series_, [num_rows_in_first_column](const auto& column) { return column.size() == num_rows_in_first_column; }));
+    }
+}
+
 bool opyn::DataFrame::operator==(const DataFrame&) const = default;
 
 std::vector<std::string> opyn::DataFrame::columns() const
@@ -127,6 +151,19 @@ std::unordered_map<std::string, std::string> opyn::DataFrame::attrs() const
 void opyn::DataFrame::set_attrs(std::unordered_map<std::string, std::string> new_attrs)
 {
     attrs_ = std::move(new_attrs);
+}
+
+bool opyn::DataFrame::has_attr(const std::string& key) const
+{
+    return attrs_.contains(key);
+}
+
+std::optional<std::string> opyn::DataFrame::get_attr(const std::string& key) const
+{
+    if (const auto it = attrs_.find(key); it != attrs_.end()) {
+        return it->second;
+    }
+    return std::nullopt;
 }
 
 opyn::DataFrame::const_reference opyn::DataFrame::operator[](std::string_view name) const

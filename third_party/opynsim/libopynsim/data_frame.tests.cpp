@@ -7,6 +7,7 @@
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <unordered_map>
 #include <vector>
 
 using namespace opyn;
@@ -84,7 +85,7 @@ TEST(DataFrame, string_formatting_works_with_single_empty_series)
 
 TEST(DataFrame, string_formatting_works_with_two_empty_series)
 {
-    const DataFrame df{{"column1", "column2"}, {{}, {}}};
+    const DataFrame df{std::vector<std::string>{"column1", "column2"}, {{}, {}}};
     const std::string got = osc::stream_to_string(df);
 
     constexpr std::string_view expected = R"(shape: (0, 2)
@@ -225,7 +226,7 @@ TEST(DataFrame, with_series_works_with_appending_empty_series_to_DataFrame_with_
 {
     const DataFrame df{{"column1"}, {{}}};
     const DataFrame got = df.with_series({"column2", {}});
-    const DataFrame expected{{"column1", "column2"}, {{}, {}}};
+    const DataFrame expected{std::vector<std::string>{"column1", "column2"}, {{}, {}}};
 
     ASSERT_EQ(got, expected);
 }
@@ -264,4 +265,56 @@ TEST(DataFrame, find_returns_expected_iterators)
     ASSERT_EQ(df.find("column2"), df.begin() + 1);
     ASSERT_EQ(df.find("column3"), df.begin() + 2);
     ASSERT_EQ(df.find("missing"), df.end());
+}
+
+TEST(DataFrame, has_attr_returns_expected_results)
+{
+    const DataFrame df{{}, {}, {{"key1", "value1"}, {"key2", "value2"}}};
+
+    ASSERT_TRUE(df.has_attr("key1"));
+    ASSERT_TRUE(df.has_attr("key2"));
+    ASSERT_FALSE(df.has_attr("key3"));
+    ASSERT_FALSE(df.has_attr(""));
+}
+
+TEST(DataFrame, get_attr_returns_expected_results)
+{
+    const DataFrame df{{}, {}, {{"key1", "value1"}, {"key2", "value2"}}};
+
+    ASSERT_EQ(df.get_attr("key1"), "value1");
+    ASSERT_EQ(df.get_attr("key2"), "value2");
+    ASSERT_EQ(df.get_attr("key3"), std::nullopt);
+    ASSERT_EQ(df.get_attr(""),     std::nullopt);
+}
+
+TEST(DataFrame, series_constructor_works_with_correct_inputs)
+{
+    const DataFrame df{{
+        Series{"col1", {1.0, 2.0, 3.0}},
+        Series{"col2", {2.0, 3.0, 4.0}},
+    }};
+
+    ASSERT_EQ(df.shape(), std::tuple(3uz, 2uz));
+}
+
+TEST(DataFrame, series_constructor_throws_if_given_differently_sized_series)
+{
+    try {
+        const DataFrame df{{
+            Series{"col1", {1.0, 2.0}},
+            Series{"col2", {1.0, 2.0, 3.0, 4.0}},
+        }};
+        FAIL() << "Should throw an exception when given differently-sized series";
+    } catch (const std::exception&) {}
+}
+
+TEST(DataFrame, series_constructor_assigns_attributes)
+{
+    const std::unordered_map<std::string, std::string> attrs = {
+        {"some", "metadata"},
+        {"stored-in-the", "table"},
+    };
+    const DataFrame df{std::vector{Series{"first", {1.0}}}, attrs};
+
+    ASSERT_EQ(df.attrs(), attrs);
 }

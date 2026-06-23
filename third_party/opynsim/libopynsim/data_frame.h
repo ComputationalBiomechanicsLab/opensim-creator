@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <iosfwd>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -24,10 +25,17 @@ namespace opyn
 
         /// Constructs a `DataFrame` with the given column names and data.
         ///
-        /// Throws an exception if `column_names.size() != column_data.size()`.
+        /// Throws an exception if `column_names.size() != column_data.size()` or
+        /// any entries in `column_data` have a different size.
         explicit DataFrame(
             std::vector<std::string> column_names,
             std::vector<std::vector<double>> column_data,
+            std::unordered_map<std::string, std::string> attrs = {}
+        );
+
+        /// Constructs a `DataFrame` with the given `series`.
+        explicit DataFrame(
+            std::vector<Series> series,
             std::unordered_map<std::string, std::string> attrs = {}
         );
 
@@ -56,6 +64,13 @@ namespace opyn
 
         /// Sets the `attrs` of this `DataFrame` to `new_attrs`.
         void set_attrs(std::unordered_map<std::string, std::string> new_attrs);
+
+        /// Returns `true` if `*this` has a metadata entry with a key of `key`.
+        bool has_attr(const std::string& key) const;
+
+        /// Returns the value of the metadata entry with key `key`, or `std::nullopt`
+        /// if the metadata contains no such entry.
+        std::optional<std::string> get_attr(const std::string& key) const;
 
         /// Returns the `Series` in `*this` that has the name `name`.
         ///

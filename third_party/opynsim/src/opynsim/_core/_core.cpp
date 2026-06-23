@@ -29,6 +29,7 @@
 #include <nanobind/stl/string_view.h>
 #include <nanobind/stl/tuple.h>
 #include <nanobind/stl/unordered_map.h>
+#include <nanobind/stl/unordered_set.h>
 #include <nanobind/stl/variant.h>
 #include <nanobind/stl/vector.h>
 
@@ -678,7 +679,7 @@ namespace {
                 of ``1.0`` then that would be written into the :class:`ModelState` returned by this function.
 
                 The returned :class:`ModelState` will be realized to at least ``realized_to`` as-if by calling
-                ``model.realize(returned_state, realized_to)``.
+                :meth:`Model.realize` on it.
             )"
         );
         model_class.def(
@@ -693,7 +694,7 @@ namespace {
                 This mapping uses a variety of heuristics, including (e.g.)
                 accounting for legacy column headers supported by earlier
                 files in SIMM and OpenSim. It is how :meth:`states_from_data_frame`
-                maps dataframes into :class:`ModelState`\s, so it can be
+                maps dataframes into :class:`ModelState`\s, so this method can be
                 useful for debugging why states aren't being read correctly.
             )"
         );
@@ -710,6 +711,19 @@ namespace {
                 degrees to radians when ``data_frame.attrs["inDegrees"] == "yes"``,
                 so it can be useful for debugging why states aren't
                 being read correctly.
+            )"
+        );
+        model_class.def(
+            "convert_data_frame_to_radians",
+            &Model::convert_data_frame_to_radians,
+            nb::arg("data_frame"),
+            R"(
+                Returns a new ``DataFrame`` with all rotational columns converted to radians (if applicable).
+
+                If ``data_frame.attrs["inDegrees"] == "yes"``, returns an identical clone of ``data_frame``.
+                Otherwise, creates a new :class:`DataFrame` where :meth:`rotational_columns_in` is
+                used to scale all rotational columns from degrees to radians (other columns are left unmodified).
+                The ``"inDegrees"`` key is cleared from the returned :class:`DataFrame`\'s attributes.
             )"
         );
         model_class.def(
@@ -732,8 +746,8 @@ namespace {
                 loaded from legacy data sources.
 
                 Each of the returned :class:`ModelState`\s will be realized to at
-                least ``realized_to`` as-if by calling ``model.realize(returned_states[i], realized_to)``
-                on each of them.
+                least ``realized_to`` as-if by calling :meth:`Model.realize` on
+                each of them.
             )"
         );
         model_class.def(
