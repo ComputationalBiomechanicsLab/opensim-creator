@@ -19,6 +19,7 @@ extensions = [
 autodoc_default_options = {
     'members': True,
     'undoc-members': True,
+    'special-members': '__init__, __call__, __arrow_c_stream__',
     'imported-members': True,
     'inherited-members': True,  # IMPORTANT: this is how the parser finds `opynsim._core` nanobind functions
     'show-inheritance': True,

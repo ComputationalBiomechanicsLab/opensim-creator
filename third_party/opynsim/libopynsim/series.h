@@ -1,5 +1,6 @@
 #pragma once
 
+#include <liboscar/utilities/c_string_view.h>
 #include <liboscar/utilities/copy_on_upd_ptr.h>
 
 #include <string>
@@ -24,7 +25,7 @@ namespace opyn
         Series(std::string name, std::vector<double> values);
 
         /// Returns the name of this `Series`.
-        std::string_view name() const;
+        osc::CStringView name() const;
 
         /// Returns the shape (rows) of this `Series`.
         std::tuple<size_t> shape() const;
@@ -43,6 +44,11 @@ namespace opyn
 
         /// Returns an iterator past the last value in `*this`.
         const_iterator end() const;
+
+        /// Returns a pointer to the underlying contiguous array that
+        /// backs `*this` (care: this API is unstable and might evolve
+        /// over time to support chunking, etc.).
+        const double* data() const;
 
         /// Converts this `Series` into a `std::vector` of its values.
         std::vector<double> to_list() const;

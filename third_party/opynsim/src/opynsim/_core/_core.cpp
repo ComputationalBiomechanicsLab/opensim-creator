@@ -1,12 +1,15 @@
 #include "_core.h"
 
+#include <opynsim/_core/arrow.h>
 #include <opynsim/_core/config.h>
 #include <opynsim/_core/examples.h>
 #include <opynsim/_core/graphics.h>
 #include <opynsim/_core/tps3d.h>
 #include <opynsim/_core/ui.h>
 
+#include <liboscar/utilities/assertions.h>
 #include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/scope_exit.h>
 #include <liboscar/utilities/string_helpers.h>
 #include <libopynsim/platform/opynsim_app.h>
 #include <libopynsim/data_frame.h>
@@ -19,22 +22,32 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/ndarray.h>
 #include <nanobind/stl/filesystem.h>
+#include <nanobind/stl/optional.h>
+#include <nanobind/stl/pair.h>
 #include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/string_view.h>
+#include <nanobind/stl/tuple.h>
 #include <nanobind/stl/unordered_map.h>
 #include <nanobind/stl/variant.h>
 #include <nanobind/stl/vector.h>
 
 #include <array>
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <functional>
 #include <memory>
+#include <new>
 #include <mutex>
+#include <sstream>
+#include <span>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <variant>
+#include <vector>
 
 using namespace opyn;
 
@@ -85,23 +98,459 @@ namespace {
         }, std::move(output_value));  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
     }
 
+    // Satisfied if `T` is an Arrow object (a C struct with a type-erased destructor).
+    template<typename T>
+    concept ArrowCObject = requires(T& value)
+    {
+        std::is_trivially_constructible_v<T>;
+        std::is_trivially_destructible_v<T>;
+        { value.release(&value) };
+        { value.private_data } -> std::same_as<void*&>;
+    };
+
+    // A template function that can be instantiated to create an Arrow C release callback
+    // that `delete`s the given `PrivateDataType`.
+    template<ArrowCObject T, typename PrivateDataType>
+    void private_data_releaser(T* ptr)
+    {
+        if (ptr->release) {
+            delete static_cast<PrivateDataType*>(ptr->private_data);
+            ptr->release = nullptr;
+        }
+    }
+
+    // A template function that can be instantiated to create an Arrow C callback that
+    // calls a `MemberFunction` of `PrivateData` with given `Args`.
+    template<ArrowCObject T, typename PrivateData, auto MemberFunction, typename... Args>
+    auto type_erased_callback(T* self, Args... args)
+    {
+        auto* pdata = static_cast<PrivateData*>(self->private_data);
+        return (pdata->*MemberFunction)(args...);
+    }
+
+    // Represents a nullable owned handle to an `ArrowCObject`.
+    template<ArrowCObject T>
+    class ArrowHandle final {
+    public:
+        ArrowHandle() = default;
+        ArrowHandle(const ArrowHandle&) = delete;
+        ArrowHandle(ArrowHandle&& tmp) noexcept :
+            ptr_{std::exchange(tmp.ptr_, nullptr)}
+        {}
+        ~ArrowHandle() noexcept
+        {
+            if (ptr_) {
+                if (ptr_->release) {
+                    ptr_->release(ptr_);
+                }
+                delete ptr_;
+            }
+        }
+        ArrowHandle& operator=(const ArrowHandle&) = delete;
+        ArrowHandle& operator=(ArrowHandle&& rhs) noexcept { std::swap(ptr_, rhs.ptr_); return *this; }
+
+        T* release() { return std::exchange(ptr_, nullptr); }
+        T& operator*() const { return *ptr_; }
+
+    private:
+        T* ptr_ = new T{};
+    };
+
+    template<ArrowCObject T>
+    struct ArrowLifetimeWrapper final : T {
+        ArrowLifetimeWrapper() : T{} {}
+        ArrowLifetimeWrapper(const ArrowLifetimeWrapper&) = delete;
+        ArrowLifetimeWrapper(ArrowLifetimeWrapper&&) noexcept = delete;
+        ~ArrowLifetimeWrapper() noexcept { if (this->release) { this->release(this); }}
+        ArrowLifetimeWrapper& operator=(const ArrowLifetimeWrapper&) = delete;
+        ArrowLifetimeWrapper& operator=(ArrowLifetimeWrapper&&) noexcept = delete;
+    };
+
+    template<ArrowCObject T>
+    nb::capsule to_capsule(ArrowHandle<T> handle, char const* name)
+    {
+        return nb::capsule(handle.release(), name, [](void* p) noexcept { delete static_cast<T*>(p); });
+    }
+
+    // Represents a contiguous sequence of `ArrowHandle<T>`s.
+    template<ArrowCObject T>
+    class ArrowChildren final {
+    public:
+        void reserve(size_t new_cap) { handles_.reserve(new_cap); }
+        ArrowHandle<T>& emplace_back() { return handles_.emplace_back(); }
+        int64_t n_children() const { return static_cast<int64_t>(handles_.size()); }
+        T** children()
+        {
+            static_assert(sizeof(ArrowHandle<T>) == sizeof(T*));
+            static_assert(alignof(ArrowHandle<T>) == alignof(T*));
+            static_assert(std::is_standard_layout_v<ArrowHandle<T>>);
+            return handles_.empty() ? nullptr : reinterpret_cast<T**>(std::launder(handles_.data()));
+        }
+    private:
+        std::vector<ArrowHandle<T>> handles_;
+    };
+
+    template<ArrowCObject T, typename U>
+    void arrow_assign(T&, const U&);
+
+    template<ArrowCObject T>
+    ArrowChildren<T> generate_children(const DataFrame& data_frame)
+    {
+        ArrowChildren<T> rv;
+        rv.reserve(data_frame.size());
+        for (const auto& series : data_frame) {
+            auto& handle = rv.emplace_back();
+            arrow_assign(*handle, series);
+        }
+        return rv;
+    }
+
+    template<>
+    void arrow_assign(ArrowSchema& lhs, const Series& series)
+    {
+        using PrivateData = Series;
+        auto pdata = std::make_unique<PrivateData>(series);
+
+        lhs.format = "g";  static_assert(std::same_as<Series::value_type, double>);
+        lhs.name = pdata->name().c_str();
+        lhs.metadata = nullptr;
+        lhs.flags = int64_t{0};
+        lhs.n_children = int64_t{0};
+        lhs.children = nullptr;
+        lhs.dictionary = nullptr;
+        lhs.release = private_data_releaser<ArrowSchema, PrivateData>;
+        lhs.private_data = pdata.release();
+    }
+
+    void arrow_assign(ArrowSchema& lhs, const DataFrame& data_frame)
+    {
+        struct PrivateData {
+            explicit PrivateData(const DataFrame& data_frame) : data_frame{data_frame} {}
+
+            DataFrame data_frame;
+            ArrowChildren<ArrowSchema> children = generate_children<ArrowSchema>(data_frame);
+        };
+        auto pdata = std::make_unique<PrivateData>(data_frame);
+
+        lhs.format = "+s";
+        lhs.name = "";
+        lhs.metadata = nullptr;
+        lhs.flags = int64_t{0};
+        lhs.n_children = pdata->children.n_children();
+        lhs.children = pdata->children.children();
+        lhs.dictionary = nullptr;
+        lhs.release = private_data_releaser<ArrowSchema, PrivateData>;
+        lhs.private_data = pdata.release();
+    }
+
+    template<>
+    void arrow_assign(ArrowArray& lhs, const Series& series)
+    {
+        struct PrivateData {
+            explicit PrivateData(const Series& series) : series{series} {}
+
+            Series series;
+            std::vector<const void*> buffers = {nullptr, series.data()};  // [validity bitmap (unused), data]
+        };
+        auto pdata = std::make_unique<PrivateData>(series);
+
+        lhs.length = static_cast<int64_t>(pdata->series.size());
+        lhs.null_count = 0;
+        lhs.offset = 0;
+        lhs.n_buffers = static_cast<int64_t>(pdata->buffers.size());
+        lhs.buffers = pdata->buffers.data();
+        lhs.n_children = 0;
+        lhs.children = nullptr;
+        lhs.dictionary = nullptr;
+        lhs.release = private_data_releaser<ArrowArray, PrivateData>;
+        lhs.private_data = pdata.release();
+    }
+
+    template<>
+    void arrow_assign(ArrowArray& lhs, const DataFrame& data_frame)
+    {
+        struct PrivateData {
+            explicit PrivateData(const DataFrame& data_frame) : data_frame{data_frame} {}
+
+            DataFrame data_frame;
+            ArrowChildren<ArrowArray> children = generate_children<ArrowArray>(data_frame);
+            std::vector<const void*> buffers = {nullptr};  // [validity bitmap (unused)]
+        };
+        auto pdata = std::make_unique<PrivateData>(data_frame);
+
+        lhs.length = data_frame.height();
+        lhs.null_count = 0;
+        lhs.offset = 0;
+        lhs.n_buffers = pdata->buffers.size();
+        lhs.buffers = pdata->buffers.data();
+        lhs.n_children = pdata->children.n_children();
+        lhs.children = pdata->children.children();
+        lhs.dictionary = nullptr;
+        lhs.release = private_data_releaser<ArrowArray, PrivateData>;
+        lhs.private_data = pdata.release();
+    }
+
+    template<>
+    void arrow_assign(ArrowArrayStream& lhs, const DataFrame& data_frame)
+    {
+        struct PrivateData {
+            explicit PrivateData(const DataFrame& data_frame) :
+                data_frame_{data_frame}
+            {}
+
+            int get_schema(ArrowSchema* out)
+            {
+                last_error_.clear();
+
+                try {
+                    arrow_assign(*out, data_frame_);
+                    return 0;
+                }
+                catch (const std::bad_alloc& ex) {
+                    last_error_ = ex.what();
+                    return ENOMEM;
+                }
+            }
+
+            int get_next(ArrowArray* out)
+            {
+                last_error_.clear();
+
+                if (std::exchange(array_already_emitted_, true)) {
+                    out->release = nullptr;  // Spec: end of stream.
+                    return 0;
+                }
+
+                try {
+                    arrow_assign(*out, data_frame_);
+                    return 0;
+                }
+                catch (const std::bad_alloc& ex) {
+                    last_error_ = ex.what();
+                    return ENOMEM;
+                }
+            }
+
+            const char* get_last_error() const { return last_error_.data(); }
+
+            DataFrame data_frame_;
+            bool array_already_emitted_ = false;
+            std::string last_error_;
+        };
+        auto pdata = std::make_unique<PrivateData>(data_frame);
+
+        lhs.get_schema     =  type_erased_callback<ArrowArrayStream, PrivateData, &PrivateData::get_schema, ArrowSchema*>;
+        lhs.get_next       =  type_erased_callback<ArrowArrayStream, PrivateData, &PrivateData::get_next, ArrowArray*>;
+        lhs.get_last_error =  type_erased_callback<ArrowArrayStream, PrivateData, &PrivateData::get_last_error>;
+        lhs.release        = private_data_releaser<ArrowArrayStream, PrivateData>;
+        lhs.private_data   = pdata.release();
+    }
+
+    DataFrame construct_dataframe(ArrowArrayStream& stream)
+    {
+        ArrowLifetimeWrapper<ArrowSchema> schema;
+        if (stream.get_schema(&stream, &schema) != 0) {
+            throw std::runtime_error{"Failed to get `ArrowSchema` from the provided `ArrowArrayStream`"};
+        }
+
+        // Validate top-level schema.
+        if (std::string_view{schema.format} != "+s") {
+            throw std::runtime_error{"OPynSim can only parse a table (a struct, '+s') containing float64 columns into a `DataFrame` right now - you may need to flatten and convert your columns accordingly (sorry - work in progress!)"};
+        }
+
+        // Get column names and validate each column's data type.
+        std::vector<std::string> column_names;
+        column_names.reserve(schema.n_children);
+        for (int64_t i = 0; i < schema.n_children; ++i) {
+            auto& child = schema.children[i];
+            std::string_view format{child->format};
+            if (format != "g") {
+                std::stringstream ss;
+                ss << "Child " << i << " in the provided data table has an invalid type '" << format << "' (expected: 'g' - float64): OPynSim can only parse a flat table containing float64 series right now - you may need to convert your data accordingly (sorry - work in progress!)";
+                throw std::runtime_error{std::move(ss).str()};
+            }
+            column_names.push_back(child->name ? std::string{child->name} : std::string{});
+        }
+
+        // Read `ArrowArray` (chunks) into local vector.
+        std::vector<std::vector<double>> column_data;
+        column_data.resize(schema.n_children);
+        while (true) {
+            ArrowLifetimeWrapper<ArrowArray> array;
+            OSC_ASSERT(array.release == nullptr);
+            if (stream.get_next(&stream, &array) != 0) {
+                std::stringstream ss;
+                ss << "Error encountered when reading an array stream: " << stream.get_last_error(&stream);
+                throw std::runtime_error{std::move(ss).str()};
+            }
+            if (array.release == nullptr) {
+                break;  // This is how the API communicates "done"
+            }
+
+            OSC_ASSERT(array.n_children == column_data.size() && "The number of children in an array stream doesn't match the provided schema");
+
+            // Read each child of doubles (validated above)
+            for (size_t i = 0; i < column_data.size(); ++i) {
+                auto& chunk = array.children[i];
+                if (chunk->length > 0) {
+                    std::span source_span{
+                        static_cast<const double*>(chunk->buffers[1]) + chunk->offset,
+                        static_cast<size_t>(chunk->length)
+                    };
+                    column_data[i].insert(column_data[i].end(), source_span.begin(), source_span.end());
+                }
+            }
+        }
+
+        return DataFrame{std::move(column_names), std::move(column_data)};
+    }
+
     void register_dataframe_class(nb::module_& m)
     {
         nb::class_<DataFrame> cls(m, "DataFrame", R"(
-            Represents data as a table with rows and columns (:class:`opynsim.Series`).
+            Represents data as a table containing rows and columns.
+
+            :class:`DataFrame` currently only supports storing ``float64`` data. It enforces
+            no constraints on the number/order/labels of columns, or the values it contains.
+            However, other APIs in OPynSim may enforce stronger constraints (e.g. "The
+            supplied :class:`DataFrame` must contain a series named ``time`` with strongly
+            monotonically increasing values"). In general, those constraints are checked
+            at runtime and produce a validation error, but callers are expected to handle
+            filtering/cleaning/fixing their :class:`DataFrame` accordingly.
+
+            You can construct Pandas/Polars/pyarrow ``DataFrame``\s from OPynSim's
+            :class:`DataFrame` via their respective constructors, or via helper functions
+            like ``pandas.DataFrame.from_arrow`` (see: :meth:`__arrow_c_stream__`).
+            Conversely, you can convert third-party ``DataFrame``\s into OPynSim's
+            :class:`DataFrame` with :meth:`from_arrow`.
         )");
+        cls.def_static(
+            "from_arrow",
+            [](nb::object data)
+            {
+                auto arrow_c_stream_method = nb::getattr(data, "__arrow_c_stream__");
+                auto method_rv = arrow_c_stream_method();
+                auto stream_capsule = nb::cast<nb::capsule>(method_rv);
+
+                const char* capsule_name = stream_capsule.name();
+                if (not (capsule_name and std::string_view{capsule_name} == "arrow_array_stream")) {
+                    throw nb::value_error("Expected capsule name 'arrow_array_stream', but got something else");
+                }
+
+                auto* stream = static_cast<ArrowArrayStream*>(stream_capsule.data());
+                if (stream == nullptr) {
+                    throw nb::value_error("Capsule from '__arrow_c_stream__' contains a null pointer");
+                }
+
+                return construct_dataframe(*stream);
+            },
+            nb::arg("data"),
+            R"(
+                Constructs a `DataFrame` from an array-like Arrow object.
+
+                This function accepts any Arrow-compatible array-like object implementing the array-streaming
+                part of the `Arrow PyCapsule Protocol <https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html>`_
+                (i.e. having an ``__arrow_c_stream__`` method).
+
+                Notably, the ``DataFrame`` classes of popular third-party dataframe libraries such
+                as `Pandas <https://pandas.pydata.org/>`_ (>= v2.2.0) and `Polars <https://pola.rs/>`_ (>= v0.20.4)
+                implement the protocol, meaning you can use this function to optimally import those ``DataFrame``\s into
+                an OPynSim :class:`DataFrame`.
+            )"
+        );
+        cls.def(nb::init{}, "Default-constructs an empty ``DataFrame``.");
         cls.def("__repr__", osc::stream_to_string<DataFrame>);
         cls.def("__str__", osc::stream_to_string<DataFrame>);
         cls.def_prop_ro(
             "attrs",
             &DataFrame::attrs,
             R"(
-                Returns the attributes (metadata) associated with this `DataFrame`.
+                Returns the attributes (metadata) associated with ``self``.
 
-                These entries are nominally metadata, but can affect the behavior of functions that
-                read data from :class:`DataFrame`\s. Notably, functions like :meth:`opynsim.Model.states_from_data_frame`
-                look for attributes like 'inDegrees' to perform on-the-fly degrees-to-radians conversions on
-                legacy data files.
+                In some cases, attributes can affect the behavior of functions that read data
+                from :class:`DataFrame`\s. Notably, functions like :meth:`opynsim.Model.states_from_data_frame` look
+                for attributes like ``'inDegrees'`` to perform on-the-fly degrees-to-radians conversions
+                on legacy data files.
+            )"
+        );
+        cls.def(
+            "__arrow_c_stream__",
+            [](const DataFrame& data_frame,
+               [[maybe_unused]] std::optional<nb::capsule> requested_schema = std::nullopt)
+            {
+                ArrowHandle<ArrowArrayStream> stream;
+                arrow_assign(*stream, data_frame);
+                return to_capsule(std::move(stream), "arrow_array_stream");
+            },
+            nb::arg("requested_schema") = std::nullopt,
+            R"(
+                Exports this ``DataFrame`` as an ``ArrowSchema`` (see: `Apache Arrow PyCapsule Interface <https://arrow.apache.org/docs/dev/format/CDataInterface/PyCapsuleInterface.html>`_).
+
+                This is a low-level interface that other dataframe libraries (e.g. `Pandas <https://pandas.pydata.org/>`_
+                and `Polars <https://pola.rs/>`_) may use to natively read OPynSim's ``DataFrame``. For
+                example, ``polars.DataFrame.__init__`` accepts any object that implements the API, as
+                does ``pandas.DataFrame.from_arrow``.
+
+                Args:
+                    requested_schema: An optional Arrow schema capsule (currently ignored).
+
+                Returns:
+                    A ``PyCapsule`` called "arrow_array_stream" containing a C ``ArrowArrayStream`` struct.
+            )"
+        );
+        cls.def_prop_ro(
+            "shape",
+            &DataFrame::shape,
+            R"(
+                Returns the shape of the ``DataFrame``.
+            )"
+        );
+        cls.def(
+            "to_pandas",
+            [](const DataFrame& data_frame)
+            {
+                // Lazily import `pandas` (OPynSim isn't dependent on it) and perform
+                // runtime lookups to figure out how to export the data into a
+                // `pandas.DataFrame`.
+
+                nb::module_ pd = nb::module_::import_("pandas");
+                nb::object DataFrame = pd.attr("DataFrame");
+                nb::object from_arrow = DataFrame.attr("from_arrow");
+                nb::object data_frame_obj = nb::cast(&data_frame, nb::rv_policy::reference);
+                return from_arrow(data_frame_obj);
+            },
+            R"(
+                Returns a ``pandas.DataFrame`` constructed from ``self``.
+
+                The ``pandas`` module is lazily ``import``\ed when this method is called. It's
+                expected that the caller's environment supplies a version of ``pandas`` that is compatible with
+                the Arrow API (>= v2.2.0). This may require additionally supplying ``pyarrow``, which
+                ``pandas`` may internally use to implement the API.
+
+                See also: :meth:`__arrow_c_stream__` and :meth:`from_arrow`.
+            )"
+        );
+        cls.def(
+            "to_polars",
+            [](const DataFrame& data_frame)
+            {
+                // Lazily import `polars` (OPynSim isn't dependent on it) and perform
+                // runtime lookups to figure out how to export the data into a
+                // `polars.DataFrame`.
+
+                nb::module_ pd = nb::module_::import_("polars");
+                nb::object from_arrow = pd.attr("from_arrow");
+                nb::object data_frame_obj = nb::cast(&data_frame, nb::rv_policy::reference);
+                return from_arrow(data_frame_obj);
+            },
+            R"(
+                Returns a ``polars.DataFrame`` constructed from ``self``.
+
+                The ``polars`` module is lazily ``import``\ed when this method is called. It's
+                expected that the callers have installed a version of ``polars`` that is compatible with
+                the Arrow API (>= v0.20.4).
+
+                See also: :meth:`__arrow_c_stream__` and :meth:`from_arrow`.
             )"
         );
     }

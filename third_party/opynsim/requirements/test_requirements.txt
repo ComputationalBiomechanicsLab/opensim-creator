@@ -1,2 +1,5 @@
 lief==0.14.1
 pytest==9.0.3
+polars==1.41.2
+pandas==3.0.3
+pyarrow==24.0.0

@@ -101,11 +101,11 @@ A shorthand version of the above would be:
 
 .. code:: python
 
-	import opynsim as opyn
-	import opynsim.examples
+    import opynsim as opyn
+    import opynsim.examples
 
-	model = opyn.examples.double_pendulum_model()  # or `*_specification().compile()`
-	model_state = model.initial_state(realized_to=opyn.STAGE_DYNAMICS)
+    model = opyn.examples.double_pendulum_model()  # or `*_specification().compile()`
+    model_state = model.initial_state(realized_to=opyn.STAGE_DYNAMICS)
 
 
 Visualize the Model in a State

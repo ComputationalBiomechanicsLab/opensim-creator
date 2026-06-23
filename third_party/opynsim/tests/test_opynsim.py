@@ -1,10 +1,9 @@
 import opynsim
 
-import numpy as np
 from pathlib import Path
 import pytest
 
-def test_can_construct_blank_ModelSpecification():
+def test_can_default_construct_model_specification():
     model_specification = opynsim.ModelSpecification()
 
 def test_model_initial_state_state_defaults_to_instance():
@@ -14,6 +13,87 @@ def test_model_initial_state_state_defaults_to_instance():
 def test_model_initial_state_realize_to_realizes_model_to_state():
     model = opynsim.ModelSpecification().compile()
     assert model.initial_state(realized_to=opynsim.STAGE_ACCELERATION).stage == opynsim.STAGE_ACCELERATION
+
+def test_can_default_construct_data_frame():
+    data_frame = opynsim.DataFrame()
+    assert "shape: (0, 0)" in repr(data_frame)
+    assert "shape: (0, 0)" in str(data_frame)
+
+def test_data_frame_from_arrow_works_on_pandas_data_frame():
+    import pandas
+
+    pandas_df = pandas.DataFrame({
+        "col_a": [1.0, 2.0, 3.0],
+        "col_b": [4.0, 5.0, 6.0],
+    })
+
+    opynsim_df = opynsim.DataFrame.from_arrow(pandas_df)
+    assert opynsim_df.shape == pandas_df.shape
+
+def test_data_frame_from_arrow_works_on_polars_data_frame():
+    import polars
+
+    polars_df = polars.DataFrame({
+        "col_a": [1.0, 2.0, 3.0],
+        "col_b": [4.0, 5.0, 6.0],
+    })
+
+    opynsim_df = opynsim.DataFrame.from_arrow(polars_df)
+    assert opynsim_df.shape == polars_df.shape
+
+def test_data_frame_from_arrow_works_on_pyarrow_table():
+    import pyarrow as pa
+
+    pa_schema = pa.schema([
+        pa.field("col_1", pa.float64()),
+        pa.field("col_2", pa.float64()),
+    ])
+    pa_table = pa.Table.from_pydict({
+        "col_1": [100.0, 200.0],
+        "col_2": [0.001, 0.002]
+    }, schema=pa_schema)
+
+    opynsim_df = opynsim.DataFrame.from_arrow(pa_table)
+
+    assert opynsim_df.shape == pa_table.shape
+
+def test_data_frame_has__arrow_c_schema():
+    data_frame = opynsim.DataFrame()
+    assert hasattr(data_frame, "__arrow_c_stream__")
+    assert type(data_frame.__arrow_c_stream__()).__name__ == "PyCapsule"
+
+def test_data_frame_arrow_api_is_compatible_with_polars_constructor():
+    import polars
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/double_pendulum_run.sto")
+    polars_df = polars.DataFrame(df)
+    assert polars_df.shape == df.shape
+
+def test_data_frame_arrow_api_is_compatible_with_polars_from_arrow():
+    import polars
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/double_pendulum_run.sto")
+    polars_df = polars.from_arrow(df)
+    assert polars_df.shape == df.shape
+
+def test_data_frame_arrow_api_is_compatible_with_pyarrow():
+    import pyarrow  # note `pyarrow` is a runtime dependency of `pandas` when importing Arrow dataframes
+
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/double_pendulum_run.sto")
+    pyarrow_table = pyarrow.table(df)
+    assert pyarrow_table.shape == df.shape
+
+def test_data_frame_arrow_api_is_compatible_with_pandas_from_arrow():
+    import pandas
+    import pyarrow  # runtime dependency
+
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/double_pendulum_run.sto")
+    pandas_df = pandas.DataFrame.from_arrow(df)
+    assert pandas_df.shape == df.shape
+
+def test_data_frame_to_pandas_works():
+    df = opynsim.read_sto(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/sto/double_pendulum_run.sto")
+    pandas_df = df.to_pandas()
+
+    assert pandas_df.shape == df.shape
 
 def test_read_osim_throws_if_given_invalid_path():
     with pytest.raises(Exception):
@@ -222,6 +302,8 @@ def test_read_csv_can_read_and_print_a_basic_csv_file():
 """
 
 def test_read_vtp_can_read_a_basic_vtp_file():
+    import numpy as np
+
     mesh = opynsim.read_vtp(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/triangle.vtp")
     vertices = mesh.vertices
     faces = mesh.faces
@@ -233,6 +315,8 @@ def test_read_vtp_can_read_a_basic_vtp_file():
     assert np.array_equal(faces, np.array([0, 1, 2]))
 
 def test_read_obj_can_read_a_basic_obj_file():
+    import numpy as np
+
     mesh = opynsim.read_obj(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/triangle.obj")
     vertices = mesh.vertices
     faces = mesh.faces
@@ -244,6 +328,8 @@ def test_read_obj_can_read_a_basic_obj_file():
     assert np.array_equal(faces, np.array([0, 1, 2]))
 
 def test_read_stl_can_read_a_basic_stl_file():
+    import numpy as np
+
     mesh = opynsim.read_stl(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/triangle.stl")
     vertices = mesh.vertices
     faces = mesh.faces
@@ -255,6 +341,8 @@ def test_read_stl_can_read_a_basic_stl_file():
     assert np.array_equal(faces, np.array([0, 1, 2]))
 
 def test_read_png_can_read_minimal_png_file():
+    import numpy as np
+
     png = opynsim.read_png(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/minimal.png")
     pixels = png.pixels_rgba32()
 
@@ -262,6 +350,8 @@ def test_read_png_can_read_minimal_png_file():
     assert np.array_equal(pixels[0, 0], np.array([255, 255, 255, 255]))
 
 def test_read_jpeg_can_read_minimal_jpeg_file():
+    import numpy as np
+
     jpeg = opynsim.read_jpeg(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/minimal.jpeg")
     pixels = jpeg.pixels_rgba32()
 
@@ -269,6 +359,8 @@ def test_read_jpeg_can_read_minimal_jpeg_file():
     assert np.array_equal(pixels[0, 0], np.array([255, 255, 255, 255]))
 
 def test_read_jpg_alias_also_works():
+    import numpy as np
+
     jpeg = opynsim.read_jpg(Path(__file__).resolve().parent / "../libopynsim/tests/resources/Documents/minimal.jpeg")
     pixels = jpeg.pixels_rgba32()
 

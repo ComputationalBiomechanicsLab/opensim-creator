@@ -1,5 +1,7 @@
 #include "series.h"
 
+#include <liboscar/utilities/c_string_view.h>
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -17,13 +19,14 @@ public:
 
     friend bool operator==(const Impl&, const Impl&) = default;
 
-    std::string_view name() const { return name_; }
+    osc::CStringView name() const { return name_; }
     std::tuple<size_t> shape() const { return values_.size(); }
     [[nodiscard]] bool empty() const { return values_.empty(); }
     size_type size() const { return values_.size(); }
     const_reference operator[](size_type pos) const { return values_[pos]; }
     const_iterator begin() const { return values_.data(); }
     const_iterator end() const { return values_.data() + values_.size(); }
+    const double* data() const { return values_.data(); }
     std::vector<double> to_list() const { return values_; }
     Series map_elements(const std::function<double(double)>& f) const
     {
@@ -62,13 +65,14 @@ opyn::Series::Series(std::string name, std::vector<double> values) :
     impl_{osc::make_cow<Impl>(std::move(name), std::move(values))}
 {}
 
-std::string_view opyn::Series::name() const { return impl_->name(); }
+osc::CStringView opyn::Series::name() const { return impl_->name(); }
 std::tuple<size_t> opyn::Series::shape() const { return impl_->shape(); }
 bool opyn::Series::empty() const { return impl_->empty(); }
 opyn::Series::size_type opyn::Series::size() const { return impl_->size(); }
 opyn::Series::const_reference opyn::Series::operator[](size_type pos) const { return (*impl_)[pos]; }
 opyn::Series::const_iterator opyn::Series::begin() const { return impl_->begin(); }
 opyn::Series::const_iterator opyn::Series::end() const { return impl_->end(); }
+const double* opyn::Series::data() const { return impl_->data(); }
 std::vector<double> opyn::Series::to_list() const { return impl_->to_list(); }
 Series opyn::Series::map_elements(const std::function<double(double)>& f) const { return impl_->map_elements(f); }
 bool opyn::operator==(const Series& lhs, const Series& rhs) { return lhs.impl_ == rhs.impl_ or *lhs.impl_ == *rhs.impl_; }
