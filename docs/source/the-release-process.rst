@@ -102,13 +102,13 @@ with these combinations:
    * - Architecture
      - Target Operating System
      - C++ Toolchain Used
-   * - amd64
+   * - amd64 (/arch:AVX2)
      - Windows 10 (>= v1507)
      - MSVC 19.44.35227.0
    * - arm64
      - MacOS 14.5
      - XCode 15.4
-   * - amd64
+   * - amd64 (-march-x86-64-v3)
      - Linux /w glibc 2.28 (e.g. Ubuntu >=20.04, Debian >=10, AlmaLinux >=8, RHEL >=8, OpenSUSE >=15)
      - gcc 13.3.0 (e.g. ``gcc-toolset-13-gcc`` in AlmaLinux8)
 

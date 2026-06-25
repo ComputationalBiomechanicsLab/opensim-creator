@@ -20,7 +20,11 @@ target_include_directories(implot
     INTERFACE $<INSTALL_INTERFACE:include/implot>
 )
 target_compile_features(implot
-    PRIVATE cxx_std_17
+    PRIVATE cxx_std_23
+)
+set_target_properties(implot PROPERTIES
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS        OFF
 )
 target_link_libraries(implot PUBLIC imgui)
 

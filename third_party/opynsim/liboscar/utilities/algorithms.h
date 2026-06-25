@@ -151,4 +151,13 @@ namespace osc
         }
         return false;
     }
+
+    template<std::ranges::range R1, std::ranges::input_range R2>
+    requires
+        std::convertible_to<std::ranges::range_value_t<R2>, std::ranges::range_value_t<R1>> and
+        requires (R1& r1, std::ranges::iterator_t<R1> it, std::ranges::iterator_t<R2> first, std::ranges::sentinel_t<R2> last) { r1.insert(it, first, last); }
+    constexpr void append_range(R1& r1, R2&& r2)
+    {
+        r1.insert(std::ranges::end(r1), std::ranges::begin(r2), std::ranges::end(r2));
+    }
 }

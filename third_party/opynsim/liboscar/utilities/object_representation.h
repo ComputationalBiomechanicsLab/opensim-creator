@@ -10,7 +10,7 @@
 namespace osc
 {
     template<ObjectRepresentationByte Byte = std::byte, BitCastable T>
-    constexpr std::span<const Byte> view_object_representation(const T& v)
+    constexpr std::span<const Byte, sizeof(T)> view_object_representation(const T& v)
     {
         // this is one of the few cases where `reinterpret_cast` is guaranteed to be safe
         // for _examination_ (i.e. reading)
@@ -23,7 +23,7 @@ namespace osc
         // >
         // > - AliasedType is std::byte,(since C++17) char, or unsigned char: this permits
         // >   examination of the object representation of any object as an array of bytes.
-        return {reinterpret_cast<const Byte*>(&v), sizeof(T)};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        return std::span<const Byte, sizeof(T)>{reinterpret_cast<const Byte*>(&v), sizeof(T)};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
     }
 
     template<ObjectRepresentationByte Byte = std::byte, std::ranges::contiguous_range Range>

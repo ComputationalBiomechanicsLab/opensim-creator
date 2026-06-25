@@ -1,6 +1,9 @@
 add_executable(hellooscar hellooscar.cpp)
-set_target_properties(hellooscar PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(hellooscar PUBLIC cxx_std_23)
+set_target_properties(hellooscar PROPERTIES
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS        OFF
+)
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(hellooscar)

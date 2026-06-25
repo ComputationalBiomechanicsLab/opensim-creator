@@ -4,11 +4,15 @@
 
 #include <algorithm>
 #include <array>
+#include <list>
 #include <map>
+#include <ranges>
 #include <unordered_map>
+#include <vector>
 
 using namespace osc;
 namespace rgs = std::ranges;
+namespace vws = std::views;
 
 TEST(all_of, works_as_expected)
 {
@@ -209,4 +213,40 @@ TEST(is_eq_downcasted, works_as_expected)
     // incorrect downcast case (i.e. should never compare equal)
     ASSERT_FALSE(is_eq_downcasted<Derived1>(Derived1{1}, static_cast<const Base&>(Derived2{1.0})));
     ASSERT_FALSE(is_eq_downcasted<Derived1>(static_cast<const Base&>(Derived2{1.0}), Derived1(1)));
+}
+
+TEST(append_range, works_as_expected_with_vector)
+{
+    {
+        std::vector<int> v;
+        append_range(v, std::initializer_list<int>{1});
+        const std::vector<int> expected = {1};
+
+        ASSERT_EQ(v, expected);
+    }
+
+    {
+        std::vector<double> v = {1.0, 2.0};
+        append_range(v, std::array{3.0, 4.0, 5.0});
+        const std::vector<double> expected = {1.0, 2.0, 3.0, 4.0, 5.0};
+        ASSERT_EQ(v, expected);
+    }
+
+    {
+        std::vector<std::string> v{"strings", "are", "ranges"};
+        std::vector<std::string> extras{"gotta", "", "be", "", "careful"};
+        append_range(v,  extras | vws::filter(&std::string::empty));
+        std::vector<std::string> expected{"strings", "are", "ranges", "", ""};
+
+        ASSERT_EQ(v, expected);
+    }
+}
+
+TEST(append_range, also_works_on_list)
+{
+    std::list lst = {"how", "cute"};
+    append_range(lst, std::array{"definitely", "useful?"});
+    const std::list expected = {"how", "cute", "definitely", "useful?"};
+
+    ASSERT_EQ(lst, expected);
 }

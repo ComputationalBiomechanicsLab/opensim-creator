@@ -30,14 +30,17 @@ PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated/>  # so that `#include <libopynsim/opynsim_config.h>` works
     $<INSTALL_INTERFACE:include>                               # `libopysim` is installed into the `include` root
 )
-target_compile_features(opynsim PUBLIC cxx_std_20)  # CARE: MSVC C++23 isn't ABI-stable yet
+target_compile_features(opynsim PUBLIC cxx_std_23)
+set_target_properties(opynsim PROPERTIES
+    CXX_STANDARD_REQUIRED     ON
+    CXX_EXTENSIONS            OFF
+)
+if(OPYN_BUILD_PYTHON_BINDINGS)
+    set_target_properties(opynsim PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(opynsim)
-endif()
-set_target_properties(opynsim PROPERTIES CXX_EXTENSIONS OFF)
-if(OPYN_BUILD_PYTHON_BINDINGS)
-    set_target_properties(opynsim PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
 if(OPYN_BUILD_TESTING)

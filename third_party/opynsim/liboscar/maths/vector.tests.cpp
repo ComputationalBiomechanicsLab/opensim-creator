@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <concepts>
+#include <format>
 #include <ranges>
 #include <type_traits>
 
@@ -216,7 +217,7 @@ TEST(Vector, can_be_written_to_a_std_ostream)
 {
     std::stringstream ss;
     ss << Vector3i{-5, 0, 9};
-    ASSERT_EQ(ss.str(), "Vector3(-5, 0, 9)");
+    ASSERT_EQ(ss.str(), "Vector(-5, 0, 9)");
 }
 
 TEST(Vector, x_returns_first_element_as_const_reference)
@@ -359,4 +360,14 @@ TEST(Vector, zy_returns_expected_elements)
 TEST(Vector, zy_is_constexpr)
 {
     static_assert(Vector3i{5, 6, 7}.zy() == Vector2i{7, 6});
+}
+
+TEST(Vector, can_be_formatted)
+{
+    ASSERT_EQ(std::format("{}", Vector3i{1,2,3}), "Vector(1, 2, 3)");
+}
+
+TEST(Vector, uses_formatting_string_correctly)
+{
+    ASSERT_EQ(std::format("{:.2f}", Vector3d{1.337123, -2.89123, 50.1234}), "Vector(1.34, -2.89, 50.12)");
 }

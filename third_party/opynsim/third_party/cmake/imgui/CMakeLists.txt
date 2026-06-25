@@ -22,7 +22,11 @@ target_include_directories(imgui
     INTERFACE $<INSTALL_INTERFACE:include/imgui>
 )
 target_compile_features(imgui
-    PRIVATE cxx_std_17
+    PRIVATE cxx_std_23
+)
+set_target_properties(imgui PROPERTIES
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS        OFF
 )
 target_compile_definitions(imgui
     # Aggressively avoid obsolete functions

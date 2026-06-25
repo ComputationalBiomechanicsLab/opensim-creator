@@ -3,11 +3,14 @@ list(FILTER _oscar_demo_sources EXCLUDE REGEX "tests")
 add_library(oscar_demos STATIC ${_oscar_demo_sources})
 unset(_oscar_demo_sources)
 
-set_target_properties(oscar_demos PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(oscar_demos PUBLIC cxx_std_23)
+set_target_properties(oscar_demos PROPERTIES
+    CXX_STANDARD_REQUIRED     ON
+    CXX_EXTENSIONS            OFF
+)
 if(OPYN_BUILD_PYTHON_BINDINGS)
     set_target_properties(oscar_demos PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
-target_compile_features(oscar_demos PUBLIC cxx_std_23)
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(oscar_demos)

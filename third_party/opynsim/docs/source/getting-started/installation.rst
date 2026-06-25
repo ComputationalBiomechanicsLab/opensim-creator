@@ -75,16 +75,16 @@ environment . For example, like this:
 Supported Platforms
 -------------------
 
-OPynSim contains a native Python extension module, so it's only compatible with
-the platforms that it's built for. The following platforms are currently built
-and deployed to `PyPi <https://pypi.org/project/opynsim/>`_ by the project:
+OPynSim contains a native C++ Python extension module, so it's only compatible
+with the platforms that it's built for. The following platforms are currently
+built and deployed to `PyPi <https://pypi.org/project/opynsim/>`_ by the project:
 
-+----------------+------------------------------------------------------------------------------------------------+------------------------+
-| Python Version | Operating System                                                                               | Processor Architecture |
-+================+================================================================================================+========================+
-| ≥ 3.12         | Windows                                                                                        | amd64 (Intel/AMD)      |
-+----------------+------------------------------------------------------------------------------------------------+------------------------+
-| ≥ 3.12         | MacOS ≥ 14.5 (Sonoma)                                                                          | arm64 (Apple Silicon)  |
-+----------------+------------------------------------------------------------------------------------------------+------------------------+
-| ≥ 3.12         | Linux /w glibc 2.28 (e.g. Ubuntu >=20.04, Debian >=10, AlmaLinux >=8, RHEL >=8, OpenSUSE >=15) | amd64 (Intel/AMD)      |
-+----------------+------------------------------------------------------------------------------------------------+------------------------+
++----------------+------------------------------------------------------------------------------------------------+------------------------------------------+
+| Python Version | Operating System                                                                               | Processor Architecture                   |
++================+================================================================================================+==========================================+
+| ≥ 3.12         | Windows ≥ 10                                                                                   | amd64 (Intel/AMD chip with AVX2 support) |
++----------------+------------------------------------------------------------------------------------------------+------------------------------------------+
+| ≥ 3.12         | MacOS ≥ 14.5 (Sonoma)                                                                          | arm64 (Apple Silicon)                    |
++----------------+------------------------------------------------------------------------------------------------+------------------------------------------+
+| ≥ 3.12         | Linux /w glibc 2.28 (Ubuntu ≥ 20.04, Debian ≥ 10, AlmaLinux ≥ 8, RHEL ≥ 8, OpenSUSE ≥ 15)      | amd64 (Intel/AMD chip with AVX2 support) |
++----------------+------------------------------------------------------------------------------------------------+------------------------------------------+

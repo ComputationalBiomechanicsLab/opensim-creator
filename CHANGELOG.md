@@ -30,6 +30,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   test/verify those binaries on actual hardware because Apple hasn't sold it for 6
   years. Moving forward, I recommend sticking with an earlier version of OpenSim Creator, or
   building it from source on your Intel macOS device.
+- Windows and Linux amd64 (Intel/AMD) builds now require a CPU with AVX2 support. Most CPUs
+  made since 2013 have AVX2 support, apart from Celron (budget) CPUs, which have had it
+  since 2020.
 
 
 ## [0.7.3] - 2026/03/27

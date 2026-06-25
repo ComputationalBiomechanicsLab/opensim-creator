@@ -7,6 +7,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <format>
 #include <ostream>
 #include <ranges>
 #include <span>
@@ -567,14 +568,7 @@ namespace osc
     template<detail::OutputStreamable T, size_t N>
     std::ostream& operator<<(std::ostream& out, const Vector<T, N>& v)
     {
-        out << "Vector" << N << '(';
-        std::string_view delimiter;
-        for (const T& el : v) {
-            out << delimiter << el;
-            delimiter = ", ";
-        }
-        out << ')';
-        return out;
+        return out << std::format("{}", v);
     }
 
     // Returns the `I`th element of `v` (structured binding support)
@@ -593,6 +587,31 @@ namespace osc
     template<size_t I, typename T, size_t N>
     constexpr const T&& get(const Vector<T, N>&& v) { return std::move(v[I]); }
 }
+
+// A `std::formatter` that pretty-prints the `Vector`. The format string applies to
+// each element of the `Vector`.
+template<typename T, size_t N>
+struct std::formatter<osc::Vector<T, N>> {
+    template<class ParseCtx>
+    constexpr typename ParseCtx::iterator parse(ParseCtx& ctx) { return inner_.parse(ctx); }
+
+    template<class FmtCtx>
+    typename FmtCtx::iterator format(const osc::Vector<T, N>& v, FmtCtx& ctx) const
+    {
+        auto it = std::ranges::copy(std::string_view{"Vector("}, ctx.out()).out;
+        std::string_view delimeter;
+        for (const auto& el : v) {
+            it = std::ranges::copy(delimeter, it).out;
+            ctx.advance_to(it);
+            it = inner_.format(el, ctx);
+            delimeter = ", ";
+        }
+        *it++ = ')';
+        return it;
+    }
+private:
+    std::formatter<T> inner_;
+};
 
 // Returns the number of elements in a `Vector` at compile-time (`std::tuple_size_v` and structured binding support)
 template<typename T, size_t N>

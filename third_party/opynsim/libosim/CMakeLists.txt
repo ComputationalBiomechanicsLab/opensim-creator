@@ -682,7 +682,7 @@ PUBLIC
     # see https://github.com/simbody/simbody/pull/815 for details
     SWIG_PYTHON
 )
-target_compile_features(osim PUBLIC cxx_std_20)
+target_compile_features(osim PUBLIC cxx_std_23)
 target_link_libraries(osim PUBLIC spdlog::spdlog)  # used by OpenSim (logging)
 
 # BLAS/LAPACK/OpenBLAS is used by simbody for linear algebra.
@@ -692,7 +692,7 @@ else()
     target_link_libraries(osim PUBLIC BLAS::BLAS LAPACK::LAPACK)
 endif()
 set_target_properties(osim PROPERTIES
-    CXX_EXTENSIONS OFF
+    CXX_EXTENSIONS            OFF
     CXX_CLANG_TIDY            ""  # do not statically analyze third-party code
 )
 if(OPYN_BUILD_PYTHON_BINDINGS)

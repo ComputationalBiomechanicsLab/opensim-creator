@@ -17,8 +17,11 @@ add_executable(oscar_tests ${_oscar_test_sources} ${_oscar_test_extras})
 unset(_oscar_test_sources)
 unset(_oscar_test_extras)
 
-set_target_properties(oscar_tests PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(oscar_tests PUBLIC cxx_std_23)
+set_target_properties(oscar_tests PROPERTIES
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS        OFF
+)
 target_include_directories(oscar_tests PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/generated"  # so that `#include <liboscar/tests/oscar_tests_config.h>` works
 )

@@ -66,7 +66,9 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Linux-amd64/install",
 
                 "OPYN_STRICT_ABI_CHECKS": "ON",
-                "OPYN_ABI_MAX_SYMBOL_VERSIONS": "GLIBCXX_3.4.22 CXXABI_1.3.11 GLIBC_2.27 GCC_4.0.0"
+                "OPYN_ABI_MAX_SYMBOL_VERSIONS": "GLIBCXX_3.4.22 CXXABI_1.3.11 GLIBC_2.27 GCC_7.0.0",
+                "CMAKE_C_FLAGS": "-march=x86-64-v3",
+                "CMAKE_CXX_FLAGS": "-march=x86-64-v3"
             }
         },
         {
@@ -78,7 +80,9 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-Windows-amd64/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Windows-amd64/install",
 
-                "OPYN_STRICT_ABI_CHECKS": "ON"
+                "OPYN_STRICT_ABI_CHECKS": "ON",
+                "CMAKE_C_FLAGS": "/arch:AVX2",
+                "CMAKE_CXX_FLAGS": "/arch:AVX2 /EHsc"
             }
         },
         {

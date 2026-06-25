@@ -11,6 +11,10 @@ configure_file(
     @ONLY
 )
 add_executable(opynsim_debugger ${CMAKE_CURRENT_BINARY_DIR}/generated/opynsim_debugger.cpp)
-target_compile_features(opynsim_debugger PUBLIC cxx_std_20)
+target_compile_features(opynsim_debugger PUBLIC cxx_std_23)
+set_target_properties(opynsim_debugger PROPERTIES
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS        OFF
+)
 target_link_libraries(opynsim_debugger PUBLIC Python::Python)
 add_dependencies(opynsim_debugger _core)  # ensure bindings are built first

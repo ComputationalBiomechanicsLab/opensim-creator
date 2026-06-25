@@ -45,7 +45,9 @@
             "binaryDir": "${sourceDir}/../build/third_party/Release-Linux-amd64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release-Linux-amd64/install"
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release-Linux-amd64/install",
+                "CMAKE_C_FLAGS": "-march=x86-64-v3",
+                "CMAKE_CXX_FLAGS": "-march=x86-64-v3"
             }
         },
         {
@@ -54,7 +56,9 @@
             "binaryDir": "${sourceDir}/../build/third_party/Release-Windows-amd64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release-Windows-amd64/install"
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release-Windows-amd64/install",
+                "CMAKE_C_FLAGS": "/arch:AVX2",
+                "CMAKE_CXX_FLAGS": "/arch:AVX2 /EHsc"
             }
         },
         {

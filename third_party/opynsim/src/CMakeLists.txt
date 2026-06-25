@@ -95,8 +95,11 @@ if(TRUE)
         unset(_py_mm)
     endif()
 
-    # CARE: MSVC C++23 isn't ABI-stable yet
-    target_compile_features(_core PUBLIC cxx_std_20)
+    target_compile_features(_core PUBLIC cxx_std_23)
+    set_target_properties(_core PROPERTIES
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS        OFF
+    )
 
     # Link to the underlying `libopynsim` C++ code
     target_link_libraries(_core PRIVATE opynsim)
