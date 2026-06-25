@@ -99,29 +99,6 @@
             "inherits": ["ErrorCheck-Inlined", "mixin_RapidLinuxLinking"]
         },
         {
-            "name": "RelWithDebInfo",
-            "inherits": ["mixin_ConfigBase"],
-            "binaryDir": "${sourceDir}/build/RelWithDebInfo",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/RelWithDebInfo/install"
-            }
-        },
-        {
-            "name": "RelWithDebInfo-Inlined",
-            "inherits": ["RelWithDebInfo", "mixin_InlinedDevelopment"],
-            "binaryDir": "${sourceDir}/build/RelWithDebInfo-Inlined",
-            "cacheVariables": {
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo-Inlined/install",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/RelWithDebInfo-Inlined/install"
-            }
-        },
-        {
-            "name": "RelWithDebInfo-Inlined-RapidLinuxLinking",
-            "inherits": ["RelWithDebInfo-Inlined", "mixin_RapidLinuxLinking"]
-        },
-        {
             "name": "Release-Linux-amd64",
             "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/build/Release-Linux-amd64",
@@ -132,8 +109,8 @@
                 "CMAKE_EXE_LINKER_FLAGS": "-static-libstdc++ -static-libgcc",
                 "CMAKE_SHARED_LINKER_FLAGS": "-static-libstdc++ -static-libgcc",
                 "OSC_STRICT_ABI_CHECKS": "ON",
-                "CMAKE_C_FLAGS": "-march=x86-64-v3",
-                "CMAKE_CXX_FLAGS": "-march=x86-64-v3"
+                "CMAKE_C_FLAGS": "-O3 -g -march=x86-64-v3 -fno-math-errno -fno-trapping-math -ffp-contract=fast",
+                "CMAKE_CXX_FLAGS": "-O3 -g -march=x86-64-v3 -fno-math-errno -fno-trapping-math -ffp-contract=fast"
             }
         },
         {
@@ -146,7 +123,8 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-MacOS-arm64/install",
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
-                "CMAKE_CXX_FLAGS": "-Wunguarded-availability -Werror=unguarded-availability -Werror=unguarded-availability-new",
+                "CMAKE_C_FLAGS": "-O3 -g -fno-math-errno -fno-trapping-math -ffp-contract=fast",
+                "CMAKE_CXX_FLAGS": "-O3 -g -fno-math-errno -fno-trapping-math -ffp-contract=fast -Wunguarded-availability -Werror=unguarded-availability -Werror=unguarded-availability-new",
                 "OSC_STRICT_ABI_CHECKS": "ON"
             }
         },
@@ -169,8 +147,11 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Windows-amd64/install",
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded",
                 "OSC_STRICT_ABI_CHECKS": "ON",
-                "CMAKE_C_FLAGS": "/arch:AVX2",
-                "CMAKE_CXX_FLAGS": "/arch:AVX2 /EHsc"
+                "CMAKE_C_FLAGS": "/O2 /Zi /arch:AVX2",
+                "CMAKE_CXX_FLAGS": "/O2 /Zi /arch:AVX2 /EHsc",
+                "CMAKE_SHARED_LINKER_FLAGS": "/DEBUG /OPT:REF /OPT:ICF",
+                "CMAKE_MODULE_LINKER_FLAGS": "/DEBUG /OPT:REF /OPT:ICF",
+                "CMAKE_EXE_LINKER_FLAGS": "/DEBUG /OPT:REF /OPT:ICF"
             }
         },
         {
@@ -186,8 +167,6 @@
         { "name": "Development-Inlined",                        "configurePreset": "Development-Inlined"                        },
         { "name": "ErrorCheck",                                 "configurePreset": "ErrorCheck"                                 },
         { "name": "ErrorCheck-Inlined",                         "configurePreset": "ErrorCheck-Inlined"                         },
-        { "name": "RelWithDebInfo",                             "configurePreset": "RelWithDebInfo"                             },
-        { "name": "RelWithDebInfo-Inlined",                     "configurePreset": "RelWithDebInfo-Inlined"                     },
         { "name": "Release-Linux-amd64",                        "configurePreset": "Release-Linux-amd64"                        },
         { "name": "Release-MacOS-arm64",                        "configurePreset": "Release-MacOS-arm64"                        },
         { "name": "Release-MacOS-arm64-CodesignedAndNotarized", "configurePreset": "Release-MacOS-arm64-CodesignedAndNotarized" },
@@ -236,16 +215,6 @@
             "name": "ErrorCheck-Inlined",
             "configurePreset": "ErrorCheck-Inlined",
             "inherits": ["ErrorCheck"]
-        },
-        {
-            "name": "RelWithDebInfo",
-            "configurePreset": "RelWithDebInfo",
-            "inherits": ["mixin_TestBase"]
-        },
-        {
-            "name": "RelWithDebInfo-Inlined",
-            "configurePreset": "RelWithDebInfo-Inlined",
-            "inherits": ["RelWithDebInfo"]
         },
         {
             "name": "Release-Linux-amd64",
@@ -309,20 +278,6 @@
                 { "type": "configure", "name": "ErrorCheck-Inlined" },
                 { "type": "build",     "name": "ErrorCheck-Inlined" },
                 { "type": "test",      "name": "ErrorCheck-Inlined" }
-            ]
-        },
-        {
-            "name": "RelWithDebInfo",
-            "steps": [
-                { "type": "configure", "name": "RelWithDebInfo" },
-                { "type": "build",     "name": "RelWithDebInfo" }
-            ]
-        },
-        {
-            "name": "RelWithDebInfo-Inlined",
-            "steps": [
-                { "type": "configure", "name": "RelWithDebInfo-Inlined" },
-                { "type": "build",     "name": "RelWithDebInfo-Inlined" }
             ]
         },
         {

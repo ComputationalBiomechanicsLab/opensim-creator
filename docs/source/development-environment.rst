@@ -15,8 +15,8 @@ Visual Studio 2022/2026
 - The OpenSim Creator build uses ``CMakePresets.json`` files for both the main build
   (in the repository root) and the dependencies build (in ``third_party/``). Visual
   Studio natively understands how to load folders containing these files, and should
-  automatically present each preset as a user-selectable configuration (e.g. ``Development``
-  and ``RelWithDebInfo`` will be listed as options).
+  automatically present each preset as a user-selectable configuration (e.g. ``Development`` is
+  as an option).
 
 - If you want to build OpenSim Creator via the Visual Studio UI, then you should:
 

@@ -119,7 +119,7 @@ namespace {
     void private_data_releaser(T* ptr)
     {
         if (ptr->release) {
-            delete static_cast<PrivateDataType*>(ptr->private_data);
+            delete static_cast<PrivateDataType*>(ptr->private_data);  // NOLINT(cppcoreguidelines-owning-memory)
             ptr->release = nullptr;
         }
     }
@@ -174,7 +174,7 @@ namespace {
     template<ArrowCObject T>
     nb::capsule to_capsule(ArrowHandle<T> handle, char const* name)
     {
-        return nb::capsule(handle.release(), name, [](void* p) noexcept { delete static_cast<T*>(p); });
+        return nb::capsule(handle.release(), name, [](void* p) noexcept { delete static_cast<T*>(p); });  // NOLINT(cppcoreguidelines-owning-memory)
     }
 
     // Represents a contiguous sequence of `ArrowHandle<T>`s.
@@ -269,7 +269,7 @@ namespace {
     void arrow_assign(ArrowSchema& lhs, const DataFrame& data_frame)
     {
         struct PrivateData {
-            explicit PrivateData(const DataFrame& data_frame) : data_frame{data_frame} {}
+            explicit PrivateData(DataFrame data_frame) : data_frame{std::move(data_frame)} {}
 
             DataFrame data_frame;
             ArrowChildren<ArrowSchema> children = generate_children<ArrowSchema>(data_frame);
@@ -292,7 +292,7 @@ namespace {
     void arrow_assign(ArrowArray& lhs, const Series& series)
     {
         struct PrivateData {
-            explicit PrivateData(const Series& series) : series{series} {}
+            explicit PrivateData(Series series) : series{std::move(series)} {}
 
             Series series;
             std::vector<const void*> buffers = {nullptr, series.data()};  // [validity bitmap (unused), data]
@@ -315,7 +315,7 @@ namespace {
     void arrow_assign(ArrowArray& lhs, const DataFrame& data_frame)
     {
         struct PrivateData {
-            explicit PrivateData(const DataFrame& data_frame) : data_frame{data_frame} {}
+            explicit PrivateData(DataFrame data_frame) : data_frame{std::move(data_frame)} {}
 
             DataFrame data_frame;
             ArrowChildren<ArrowArray> children = generate_children<ArrowArray>(data_frame);
@@ -339,9 +339,7 @@ namespace {
     void arrow_assign(ArrowArrayStream& lhs, const DataFrame& data_frame)
     {
         struct PrivateData {
-            explicit PrivateData(const DataFrame& data_frame) :
-                data_frame_{data_frame}
-            {}
+            explicit PrivateData(DataFrame data_frame) : data_frame_{std::move(data_frame)} {}
 
             int get_schema(ArrowSchema* out)
             {
@@ -502,7 +500,7 @@ namespace {
             "from_arrow",
             [](nb::object data)
             {
-                auto arrow_c_stream_method = nb::getattr(data, "__arrow_c_stream__");
+                auto arrow_c_stream_method = nb::getattr(std::move(data), "__arrow_c_stream__");
                 auto method_rv = arrow_c_stream_method();
                 auto stream_capsule = nb::cast<nb::capsule>(method_rv);
 
@@ -558,7 +556,7 @@ namespace {
         cls.def(
             "__arrow_c_stream__",
             [](const DataFrame& data_frame,
-               [[maybe_unused]] std::optional<nb::capsule> requested_schema = std::nullopt)
+               [[maybe_unused]] const std::optional<nb::capsule>& requested_schema = std::nullopt)
             {
                 ArrowHandle<ArrowArrayStream> stream;
                 arrow_assign(*stream, data_frame);

@@ -305,7 +305,7 @@ TEST(DataFrame, series_constructor_throws_if_given_differently_sized_series)
             Series{"col2", {1.0, 2.0, 3.0, 4.0}},
         }};
         FAIL() << "Should throw an exception when given differently-sized series";
-    } catch (const std::exception&) {}
+    } catch (const std::exception&) {}  // NOLINT(bugprone-empty-catch)
 }
 
 TEST(DataFrame, series_constructor_assigns_attributes)

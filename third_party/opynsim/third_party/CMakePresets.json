@@ -24,19 +24,10 @@
             "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/../build/third_party/ErrorCheck",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck/install",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++"
-            }
-        },
-        {
-            "name": "RelWithDebInfo",
-            "inherits": ["mixin_ConfigBase"],
-            "binaryDir": "${sourceDir}/../build/third_party/RelWithDebInfo",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/RelWithDebInfo/install"
             }
         },
         {
@@ -46,8 +37,8 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release-Linux-amd64/install",
-                "CMAKE_C_FLAGS": "-march=x86-64-v3",
-                "CMAKE_CXX_FLAGS": "-march=x86-64-v3"
+                "CMAKE_C_FLAGS": "-O3 -g -march=x86-64-v3 -fno-math-errno -fno-trapping-math -ffp-contract=fast",
+                "CMAKE_CXX_FLAGS": "-O3 -g -march=x86-64-v3 -fno-math-errno -fno-trapping-math -ffp-contract=fast"
             }
         },
         {
@@ -57,8 +48,11 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release-Windows-amd64/install",
-                "CMAKE_C_FLAGS": "/arch:AVX2",
-                "CMAKE_CXX_FLAGS": "/arch:AVX2 /EHsc"
+                "CMAKE_C_FLAGS": "/O2 /Zi /arch:AVX2",
+                "CMAKE_CXX_FLAGS": "/O2 /Zi /arch:AVX2 /EHsc",
+                "CMAKE_SHARED_LINKER_FLAGS": "/DEBUG /OPT:REF /OPT:ICF",
+                "CMAKE_MODULE_LINKER_FLAGS": "/DEBUG /OPT:REF /OPT:ICF",
+                "CMAKE_EXE_LINKER_FLAGS": "/DEBUG /OPT:REF /OPT:ICF"
             }
         },
         {
@@ -69,7 +63,9 @@
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release-MacOS-arm64/install",
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
-                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5"
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "CMAKE_C_FLAGS": "-O3 -g -fno-math-errno -fno-trapping-math -ffp-contract=fast",
+                "CMAKE_CXX_FLAGS": "-O3 -g -fno-math-errno -fno-trapping-math -ffp-contract=fast -Wunguarded-availability -Werror=unguarded-availability -Werror=unguarded-availability-new"
             }
         }
     ],
@@ -81,10 +77,6 @@
         {
             "name": "ErrorCheck",
             "configurePreset": "ErrorCheck"
-        },
-        {
-            "name": "RelWithDebInfo",
-            "configurePreset": "RelWithDebInfo"
         },
         {
             "name": "Release-Linux-amd64",
@@ -112,13 +104,6 @@
             "steps": [
                 { "type": "configure", "name": "ErrorCheck" },
                 { "type": "build",     "name": "ErrorCheck" }
-            ]
-        },
-        {
-            "name": "RelWithDebInfo",
-            "steps": [
-                { "type": "configure", "name": "RelWithDebInfo" },
-                { "type": "build",     "name": "RelWithDebInfo" }
             ]
         },
         {

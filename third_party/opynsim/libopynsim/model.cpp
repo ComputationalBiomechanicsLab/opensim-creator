@@ -252,7 +252,7 @@ public:
     {
         std::unordered_set<std::string> rv;
         for (const auto& series : data_frame) {
-            if (find_rotational_coordinate_matching_name(model_, series.name())) {
+            if (find_rotational_coordinate_matching_name(model_, series.name()) != nullptr) {
                 rv.emplace(series.name());
             }
         }

@@ -33,6 +33,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Windows and Linux amd64 (Intel/AMD) builds now require a CPU with AVX2 support. Most CPUs
   made since 2013 have AVX2 support, apart from Celron (budget) CPUs, which have had it
   since 2020.
+- All release builds are now built with debug symbols enabled (stripped), so that the
+  optimized development build is identical to the release one (previously: `RelWithDebInfo`
+  uses slightly different optimization steps from `Release`).
 
 
 ## [0.7.3] - 2026/03/27

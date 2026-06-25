@@ -166,14 +166,15 @@ endif()
 # Installation
 #
 # Installation is effectively copying the staging directory to the
-# installation directory.
+# installation directory, but care must be taken to ensure debug
+# symbols are appropriately stripped.
 if(TRUE)
-    set(OPYN_PYTHON_INSTALL_PREFIX "lib/python3/site-packages/opynsim")
+    set(OPYN_PYTHON_INSTALL_DIR "lib/python3/site-packages/opynsim")
 
     # Install staged sources and stubs
     install(
         DIRECTORY   "${OPYN_OPYNSIM_STAGING_DIR}/"
-        DESTINATION "${OPYN_PYTHON_INSTALL_PREFIX}"
+        DESTINATION "${OPYN_PYTHON_INSTALL_DIR}"
         COMPONENT opynsim-python
         FILES_MATCHING
             PATTERN "*.py"
@@ -186,7 +187,45 @@ if(TRUE)
     # Install `_core` native extension module
     install(
         FILES $<TARGET_FILE:_core>
-        DESTINATION "${OPYN_PYTHON_INSTALL_PREFIX}"
+        DESTINATION "${OPYN_PYTHON_INSTALL_DIR}"
         COMPONENT opynsim-python
     )
+
+    # If `CMAKE_INSTALL_DO_STRIP` is `TRUE` at install-time, strip
+    # symbols from the `_core` native extension module.
+    #
+    # This is necessary because `CPACK_STRIP_FILES` doesn't automatically
+    # apply to `_core` because it's a `MODULE` target type.
+    if(CMAKE_STRIP)
+        install(CODE "
+            # This variable is automatically set to TRUE by CMake during 'cmake --install --strip' or CPack packaging
+            if(CMAKE_INSTALL_DO_STRIP)
+                # Feature-test the stripping tool (some use -x, some use --strip-unneeded)
+                execute_process(
+                    COMMAND \"${CMAKE_STRIP}\" --help
+                    OUTPUT_VARIABLE STRIP_HELP_OUT
+                    ERROR_VARIABLE STRIP_HELP_ERR
+                )
+                set(STRIP_INFO \"\${STRIP_HELP_OUT}\${STRIP_HELP_ERR}\")
+                if(STRIP_INFO MATCHES \"--strip-unneeded\")
+                    set(STRIP_FLAG \"--strip-unneeded\")  # GNU stripper
+                else()
+                    set(STRIP_FLAG \"-x\")                # Mach-O, LLVM/BSD stripper
+                endif()
+                message(STATUS \"Dynamically selected strip flag: \${STRIP_FLAG}\")
+
+                set(INSTALLED_MODULE \"\${CMAKE_INSTALL_PREFIX}/${OPYN_PYTHON_INSTALL_DIR}/\$<TARGET_FILE_NAME:_core>\")
+                message(NOTICE \"Stripping Python extension module: \${INSTALLED_MODULE}\")
+                execute_process(
+                    COMMAND \"${CMAKE_STRIP}\" \"\${STRIP_FLAG}\" \"\${INSTALLED_MODULE}\"
+                    RESULT_VARIABLE STRIP_RESULT
+                )
+                if(NOT STRIP_RESULT EQUAL 0)
+                    message(FATAL_ERROR \"Failed to strip extension module: \${INSTALLED_MODULE}\")
+                endif()
+            endif()
+            "
+            COMPONENT opynsim-python
+        )
+    endif()
 endif()

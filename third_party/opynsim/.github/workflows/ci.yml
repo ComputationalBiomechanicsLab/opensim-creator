@@ -85,3 +85,9 @@ jobs:
       - name: Build Project
         run: docker run --rm -v ${GITHUB_WORKSPACE}:/workspace -w /workspace opynsim:almalinux8 /bin/bash -c "xvfb-run cmake --workflow --preset Release-Linux-amd64"
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opynsim-linux-amd64-wheel
+          path: build/Release-Linux-amd64/*manylinux_2_28_x86_64.whl
+          if-no-files-found: error
+
