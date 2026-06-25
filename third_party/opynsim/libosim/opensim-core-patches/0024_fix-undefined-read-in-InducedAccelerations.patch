@@ -1,0 +1,19 @@
+Fixes a crash that pops up when running OPynSim with UBSAN
+enabled (doesn't print an error - just silently explodes
+on CLion O_o).
+
+---
+
+diff --git a/OpenSim/Analyses/InducedAccelerations.h b/OpenSim/Analyses/InducedAccelerations.h
+index 250ed4a51..886f5a114 100644
+--- a/OpenSim/Analyses/InducedAccelerations.h
++++ b/OpenSim/Analyses/InducedAccelerations.h
+@@ -109,7 +109,7 @@ protected:
+     /** List of all the contributors to the model acceleration */
+     Array<std::string> _contributors;
+ 
+-    bool _includeCOM;
++    bool _includeCOM = false;
+ 
+     // Internal work arrays to hold the induced accelerations at a given instant
+     Array<Array<double> *> _coordIndAccs;

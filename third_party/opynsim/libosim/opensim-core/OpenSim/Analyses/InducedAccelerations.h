@@ -109,7 +109,7 @@ protected:
     /** List of all the contributors to the model acceleration */
     Array<std::string> _contributors;
 
-    bool _includeCOM;
+    bool _includeCOM = false;
 
     // Internal work arrays to hold the induced accelerations at a given instant
     Array<Array<double> *> _coordIndAccs;
