@@ -46,7 +46,7 @@ public:
             for (size_t i = 0; i < 6; ++i) {
                 // axis-aligned vector
                 Vector3 v;
-                v[i % 3] = i/3 ? -1.0f : 1.0f;
+                v[i % 3] = (i/3) ? -1.0f : 1.0f;
 
                 const Matrix4x4 xform = model_matrix_ * translate(identity<Matrix4x4>(), 0.5f*v) * matrix4x4_cast(rotation(plane_.normal(), v));
                 const Color color = Color{0.4f}.with_element(i % 3, 0.8f);
@@ -70,6 +70,7 @@ public:
         }
 
         // Draw UI overlays (incl. gizmo)
+        #pragma warning(suppress : 6001)
         const auto bounds = AABB{.min = Vector3{-0.5f}, .max = Vector3{0.5f}};
         gizmo_.draw_to_foreground(
             model_matrix_,

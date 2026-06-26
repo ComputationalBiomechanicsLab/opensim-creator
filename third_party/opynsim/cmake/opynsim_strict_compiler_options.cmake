@@ -4,13 +4,59 @@ function(opyn_add_strict_compiler_options_to target)
     target_compile_options(${target} PRIVATE
         # msvc (Windows) flags
         $<$<CXX_COMPILER_ID:MSVC>:
-            /WX               # treat all warnings as errors
-            /W4               # set the warning level very high
-            /permissive-      # disable MSVC's permissive mode to ensure better ISO C++ conformance
-            /volatile:iso     # ensure `volatile` variables follow (less-strict) ISO standards
-            /Zc:preprocessor  # ensure preprocessor is standards conformant
-            /Zc:throwingNew   # assume `new` throws when memory cannot be allocated (ISO conformance)
-            /EHsc             # only handle standard, synchronous, C++ exceptions (ISO), asynchronous structured exceptions are fatal and non-catchable
+            /WX                 # treat all warnings as errors
+            /W4                 # set the warning level very high
+            /external:W0        # disable warnings for external headers
+            /analyze            # enable static code analysis
+            /analyze:plugin EspXEngine.dll  # enable extended static analysis checks
+            /analyze:external-  # disable static code analysis for external code
+            /wd28020            # disable a bounds check (/analyze sucks at it)
+            /wd6326             # disable noticing constant comparisons (/analyze mis-characterizes test suites)
+            /wd26445            # disable requiring gsl::span
+            /wd26440            # disable requiring noexcept
+            /wd26447            # disable detecting noexcept violations
+            /wd26446            # disable strict bounds checks
+            /wd26481            # disable disallowing raw pointer arithmetic
+            /wd26472            # disable specific arithmetic conversion checks
+            /wd26485            # disable "no array to pointer decay" checks
+            /wd26475            # disable disallowing function-style casts
+            /wd26467            # disable narrowing checks
+            /wd26455            # disable requiring noexcept default constructors
+            /wd26821            # disable requiring gsl::span over std::span for bounds checks
+            /wd26482            # disable requiring constant array access expressions
+            /wd26459            # disable std::uninitialized_copy bounds check
+            /wd26429            # disable null warning
+            /wd26460            # disable const-checking arguments
+            /wd26490            # disable reinterpret_cast warning
+            /wd26409            # disable disallowing new/delete
+            /wd26135            # disable lock annotation check
+            /wd26860            # disable noticing that std::optional<T>::value can throw
+            /wd26110            # disable faulty lock guard lifetime checks
+            /wd26451            # disable arithmetic overflow checks
+            /wd26496            # disable const-after-construction checks
+            /wd26814            # disable "can be constexpr" checks
+            /wd26417            # disable shared pointer reference param checks
+            /wd26826            # disable checking for C-style varargs (currently necessary)
+            /wd26400            # disable a gsl::owner<T> check when allocating
+            /wd26497            # disable constexpr check
+            /wd26813            # disable "use 'bitwise and' to check flag"
+            /wd26474            # disable "don't cast when it can be implicit"
+            /wd26402            # disable "return a scoped object instead of a heap-allocated one if has a move constructor"
+            /wd26457            # disable "void should not be used to ignore values"
+            /wd26491            # disable "don't use static_cast downcasts"
+            /wd26466            # disable "don't use static_cast downcasts"
+            /wd26493            # disable "don't use C-style casts"
+            /wd26831            # disable "allocation size might be the result of numerical overflow"
+            /wd26461            # disable "pointer can be marked 'const'"
+            /wd26473            # disable "do not cast between the same pointer types"
+            /wd26401            # disable "do not delete a raw pointer that is not an owner<T>"
+            /wd26403            # disable "reset or explicitly delete an owner<T> pointer"
+            /wd26426            # disable "global initializer calls a non-constexpr function"
+            /wd26818            # disable "switch statement does not cover all cases" (triggered by googletest macros)
+            /wd26414            # disable: "move, copy, reassign or reset a local smart pointer"
+            /wd26820            # disable: "this is a potentially expensive copy operation"
+            /wd26415            # disable: "smart pointer parameter is used only to access contained pointer"
+            /wd26418            # disable: "shared pointer parameter is not copied or moved"
         >
 
         # gcc/clang flags

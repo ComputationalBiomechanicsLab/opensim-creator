@@ -657,7 +657,7 @@ namespace
             return std::make_unique<MouseWheelEvent>(delta, source);
         }
         else if (e.type == SDL_EVENT_TEXT_INPUT) {
-            return std::make_unique<TextInputEvent>(std::string{static_cast<const char*>(e.text.text)});
+            return std::make_unique<TextInputEvent>(std::string{e.text.text});
         }
         else if (SDL_EVENT_DISPLAY_FIRST <= e.type and e.type <=  SDL_EVENT_DISPLAY_LAST) {
             return std::make_unique<DisplayStateChangeEvent>();
@@ -1435,7 +1435,7 @@ namespace
 // This is what "booting the application" actually initializes.
 class osc::AppPrivate final {
 public:
-    explicit AppPrivate(const AppMetadata& metadata) :  // NOLINT(modernize-pass-by-value)
+    explicit AppPrivate(const AppMetadata& metadata) :
         metadata_{metadata}
     {}
 
@@ -1473,7 +1473,7 @@ public:
             bool should_wait = is_in_wait_mode_ and num_frames_to_poll_ <= 0;
             num_frames_to_poll_ = max(0, num_frames_to_poll_ - 1);
 
-            for (SDL_Event e; should_wait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
+            for (SDL_Event e{}; should_wait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
                 should_wait = false;
 
                 // Edge-case: it's an `SDL_EVENT_USER`:
@@ -1582,6 +1582,9 @@ public:
     bool notify(Widget& receiver, Event& event)
     {
         Widget* current = &receiver;
+        if (not current) {
+            return false;
+        }
         do {
             if (current->on_event(event)) {
                 return true;

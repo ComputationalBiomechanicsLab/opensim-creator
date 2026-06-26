@@ -4,7 +4,6 @@
 #include <liboscar/utilities/copy_on_upd_ptr.h>
 
 #include <string>
-#include <string_view>
 #include <tuple>
 #include <vector>
 

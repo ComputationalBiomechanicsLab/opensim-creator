@@ -16,6 +16,9 @@ namespace osc
         // constructs a new lifetime
         ScopedLifetime(const ScopedLifetime&) : ScopedLifetime{} {}
 
+        // constructs a new lifetime
+        ScopedLifetime(ScopedLifetime&&) noexcept : ScopedLifetime{} {}
+
         // replaces the lifetime with a new lifetime
         ScopedLifetime& operator=(const ScopedLifetime& rhs)
         {
@@ -25,6 +28,12 @@ namespace osc
 
             lifetime_block_ = SharedLifetimeBlock{};
             return *this;
+        }
+
+        // replaces the lifetime with a new lifetime
+        ScopedLifetime& operator=(ScopedLifetime&& rhs) noexcept
+        {
+            return *this = static_cast<const ScopedLifetime&>(rhs);
         }
 
         ~ScopedLifetime() noexcept = default;

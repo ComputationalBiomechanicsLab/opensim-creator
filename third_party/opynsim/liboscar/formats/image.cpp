@@ -109,7 +109,7 @@ namespace
 
         const std::span<const float> pixel_span{
             pixel_data.get(),
-            static_cast<size_t>(dimensions.x()*dimensions.y()*num_components)
+            static_cast<size_t>(dimensions.x())*static_cast<size_t>(dimensions.y())*static_cast<size_t>(num_components)
         };
 
         Texture2D rv{dimensions, *texture_format, color_space};
@@ -156,7 +156,7 @@ namespace
         }
 
         Texture2D rv{dimensions, *texture_format, color_space};
-        rv.set_pixel_data({pixel_data.get(), static_cast<size_t>(dimensions.x()*dimensions.y()*num_components)});
+        rv.set_pixel_data({pixel_data.get(), static_cast<size_t>(dimensions.x())*static_cast<size_t>(dimensions.y())*static_cast<size_t>(num_components)});
         return rv;
     }
 
@@ -164,7 +164,7 @@ namespace
     {
         std::ostream& out = *static_cast<std::ostream*>(context);
         if (size > 0) {
-            out.write(static_cast<const char*>(data), std::streamsize{size});
+            out.write(static_cast<const char*>(data), static_cast<std::streamsize>(size));
         }
     }
 }

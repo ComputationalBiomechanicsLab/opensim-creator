@@ -981,14 +981,14 @@ bool opyn::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
         rv = TryDeleteItemFromSet(*ps, dynamic_cast<OpenSim::Probe*>(&c));
     }
     else if (auto* gp = dynamic_cast<OpenSim::GeometryPath*>(owner)) {
-        if (auto* app = dynamic_cast<OpenSim::AbstractPathPoint*>(&c)) {
+        if (const auto* app = dynamic_cast<OpenSim::AbstractPathPoint*>(&c)) {
             rv = TryDeleteItemFromSet(gp->updPathPointSet(), app);
         }
-        else if (auto* pw = dynamic_cast<OpenSim::PathWrap*>(&c)) {
+        else if (const auto* pw = dynamic_cast<OpenSim::PathWrap*>(&c)) {
             rv = TryDeleteItemFromSet(gp->updWrapSet(), pw);
         }
     }
-    else if (auto* geom = dynamic_cast<OpenSim::Geometry*>(&c)) {
+    else if (const auto* geom = dynamic_cast<OpenSim::Geometry*>(&c)) {
         // delete an OpenSim::Geometry from its owning OpenSim::Frame
 
         if (auto* frame = dynamic_cast<OpenSim::Frame*>(owner)) {
@@ -1302,7 +1302,7 @@ void opyn::GetAbsolutePathString(const OpenSim::Component& c, std::string& out)
     ptrdiff_t nEls = 0;
     std::array<const OpenSim::Component*, c_MaxEls> els{};
     const OpenSim::Component* cur = &c;
-    const OpenSim::Component* next = GetOwner(*cur);
+    const OpenSim::Component* next = GetOwner(c);
 
     if (!next) {
         // edge-case: caller provided a root

@@ -442,8 +442,11 @@ namespace osc
         //     ret.rotateZ = 0;
         // }
 
-        int i, j, k = 0;
-        T root, trace = Row[0].x() + Row[1].y() + Row[2].z();
+        int i = 0;
+        int j = 0;
+        int k = 0;
+        T root{};
+        T trace = Row[0].x() + Row[1].y() + Row[2].z();
         if (trace > static_cast<T>(0)) {
             root = sqrt(trace + static_cast<T>(1.0));
             r_orientation.w = static_cast<T>(0.5) * root;
@@ -460,7 +463,7 @@ namespace osc
             j = next[i];
             k = next[j];
 
-            int off = 1;
+            const int off = 1;
 
             root = sqrt(Row[i][i] - Row[j][j] - Row[k][k] + static_cast<T>(1.0));
 

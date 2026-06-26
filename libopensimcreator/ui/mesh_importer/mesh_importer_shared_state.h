@@ -900,7 +900,7 @@ namespace osc
 
             for (const LoadedMesh& lm : ok.meshes)
             {
-                MiObject* el = mg.tryUpdByID(ok.preferredAttachmentPoint);
+                const MiObject* el = mg.tryUpdByID(ok.preferredAttachmentPoint);
 
                 if (el)
                 {

@@ -230,11 +230,11 @@ public:
                 return true;
             }
         }
-        else if (auto* namedPanel = dynamic_cast<OpenNamedPanelEvent*>(&e)) {
+        else if (const auto* namedPanel = dynamic_cast<OpenNamedPanelEvent*>(&e)) {
             m_PanelManager->set_toggleable_panel_activated(namedPanel->panel_name(), true);
             return true;
         }
-        else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
+        else if (const auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
             auto popup = std::make_unique<ComponentContextMenu>(
                 &this->owner(),
                 "##componentcontextmenu",

@@ -113,7 +113,7 @@ StorageSchema opyn::StorageSchema::parse(const OpenSim::Storage& storage)
     int offset = 1;  // offset 0 == "time" (skip it)
 
     while (offset < labels.size()) {
-        const std::span<std::string> remainingLabels{&labels[offset], static_cast<size_t>(labels.size() - offset)};
+        const std::span<std::string> remainingLabels{&labels[offset], static_cast<size_t>(labels.size()) - static_cast<size_t>(offset)};
         if (const DataSeriesPattern* pattern = patterns.try_match(remainingLabels)) {
             annotations.push_back({
                 .dataColumnOffset = offset-1,  // drop time for this index

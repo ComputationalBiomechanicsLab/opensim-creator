@@ -15,8 +15,8 @@ namespace osc
     // returns the aspect ratio of `rect`
     inline float aspect_ratio_of(const Rect& rect)
     {
-        const auto [x, y] = rect.dimensions();
-        return x / y;
+        const auto d = rect.dimensions();
+        return d.x() / d.y();
     }
 
     // returns a `Rect` that tightly bounds `x` (i.e. a `Rect` with an area of zero)

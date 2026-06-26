@@ -32,14 +32,12 @@
                 "OSC_BUILD_DOCS": "ON",
                 "OSC_BUILD_OSCAR_INLINE": "ON",
                 "OSC_BUILD_OPYNSIM_INLINE": "ON",
-                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OPYN_PACKAGE": "OFF",
                 "OPYN_BUILD_DOCS": "ON",
                 "OPYN_BUILD_PYTHON_BINDINGS": "ON",
                 "OPYN_BUILD_TESTING": "ON",
                 "OPYN_VENV": "${sourceDir}/.venv",
-                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
-                "OPYN_STRICT_ABI_CHECKS": "OFF"
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
             }
         },
         {
@@ -49,8 +47,7 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development/install",
-                "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development/install"
             }
         },
         {
@@ -91,7 +88,8 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck-Inlined/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/ErrorCheck-Inlined/install",
                 "OPYN_BUILD_PYTHON_TESTING": "OFF",
-                "OPYN_GENERATE_STUBS": "OFF"
+                "OPYN_GENERATE_STUBS": "OFF",
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
         {
@@ -108,9 +106,10 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Linux-amd64/install",
                 "CMAKE_EXE_LINKER_FLAGS": "-static-libstdc++ -static-libgcc",
                 "CMAKE_SHARED_LINKER_FLAGS": "-static-libstdc++ -static-libgcc",
-                "OSC_STRICT_ABI_CHECKS": "ON",
                 "CMAKE_C_FLAGS": "-O3 -g -march=x86-64-v3 -fno-math-errno -fno-trapping-math -ffp-contract=fast",
-                "CMAKE_CXX_FLAGS": "-O3 -g -march=x86-64-v3 -fno-math-errno -fno-trapping-math -ffp-contract=fast"
+                "CMAKE_CXX_FLAGS": "-O3 -g -march=x86-64-v3 -fno-math-errno -fno-trapping-math -ffp-contract=fast",
+                "OSC_STRICT_ABI_CHECKS": "ON",
+                "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
         {
@@ -125,7 +124,8 @@
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
                 "CMAKE_C_FLAGS": "-O3 -g -fno-math-errno -fno-trapping-math -ffp-contract=fast",
                 "CMAKE_CXX_FLAGS": "-O3 -g -fno-math-errno -fno-trapping-math -ffp-contract=fast -Wunguarded-availability -Werror=unguarded-availability -Werror=unguarded-availability-new",
-                "OSC_STRICT_ABI_CHECKS": "ON"
+                "OSC_STRICT_ABI_CHECKS": "ON",
+                "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
         {
@@ -146,12 +146,13 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-Windows-amd64/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Windows-amd64/install",
                 "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded",
-                "OSC_STRICT_ABI_CHECKS": "ON",
                 "CMAKE_C_FLAGS": "/O2 /Zi /arch:AVX2",
                 "CMAKE_CXX_FLAGS": "/O2 /Zi /arch:AVX2 /EHsc",
                 "CMAKE_SHARED_LINKER_FLAGS": "/DEBUG /OPT:REF /OPT:ICF",
                 "CMAKE_MODULE_LINKER_FLAGS": "/DEBUG /OPT:REF /OPT:ICF",
-                "CMAKE_EXE_LINKER_FLAGS": "/DEBUG /OPT:REF /OPT:ICF"
+                "CMAKE_EXE_LINKER_FLAGS": "/DEBUG /OPT:REF /OPT:ICF",
+                "OSC_STRICT_ABI_CHECKS": "ON",
+                "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
             }
         },
         {

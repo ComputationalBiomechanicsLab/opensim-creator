@@ -55,7 +55,7 @@ Texture2D osc::SVG::read_into_texture(std::istream& in, float scale, float devic
         TextureWrapMode::Clamp,
         TextureFilterMode::Nearest,
     };
-    rv.set_pixel_data({bitmap.data(), static_cast<size_t>(bitmap.width()*bitmap.height()*4)});
+    rv.set_pixel_data({bitmap.data(), static_cast<size_t>(bitmap.width())*static_cast<size_t>(bitmap.height())*4uz});
     rv.set_device_pixel_ratio(device_pixel_ratio);
     return rv;
 }

@@ -11,7 +11,10 @@ namespace
     // copied from: https://en.cppreference.com/w/cpp/error/throw_with_nested
     void print_exception(const std::exception& ex, std::ostream& out, int indent)
     {
-        out << std::string(indent, ' ') << "exception: " << ex.what() << '\n';
+        for (int i = 0; i < indent; ++i) {
+            out << ' ';
+        }
+        out << "exception: " << ex.what() << '\n';
         try {
             std::rethrow_if_nested(ex);
         }

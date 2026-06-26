@@ -83,7 +83,7 @@ namespace
             ss << "A tab has unsaved changes:\n";
         }
 
-        for (Tab* t : tabsWithUnsavedChanges) {
+        for (const Tab* t : tabsWithUnsavedChanges) {
             ss << "\n  - " << t->name();
         }
         ss << "\n\n";
@@ -281,7 +281,7 @@ public:
                 handled = true;
             }
         }
-        else if (auto* closeTabEv = dynamic_cast<CloseTabEvent*>(&e)) {
+        else if (const auto* closeTabEv = dynamic_cast<CloseTabEvent*>(&e)) {
             impl_close_tab(closeTabEv->tabid_to_close());
             handled = true;
         }
@@ -323,7 +323,7 @@ public:
                 // The reason that users find this useful is because they might've just
                 // dragged a file into the UI to open something and, subsequently, want
                 // to load associated data (#918).
-                if (auto* dropEv = dynamic_cast<DropFileEvent*>(&e)) {
+                if (const auto* dropEv = dynamic_cast<DropFileEvent*>(&e)) {
                     const auto parentDirectory = dropEv->path().parent_path();
                     if (not parentDirectory.empty()) {
                         App::upd().set_prompt_initial_directory_to_show_fallback(parentDirectory);

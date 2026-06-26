@@ -54,7 +54,7 @@ void osc::gl::link_program(gl::Program& program)
     GLint log_length = 0;
     glGetProgramiv(program.get(), GL_INFO_LOG_LENGTH, &log_length);
 
-    std::vector<GLchar> error_message_bytes(log_length);
+    std::vector<GLchar> error_message_bytes(static_cast<size_t>(log_length));
     glGetProgramInfoLog(program.get(), static_cast<GLsizei>(error_message_bytes.size()), nullptr, error_message_bytes.data());
 
     std::stringstream ss;

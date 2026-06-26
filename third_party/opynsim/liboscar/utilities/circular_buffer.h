@@ -389,7 +389,7 @@ namespace osc
         //   you don't have to handle `begin_offset_ == end_offset_` edge
         //   cases and one-past-the end out-of-bounds checks
         class alignas(T) object_bytes { std::byte data[sizeof(T)]; };
-        std::array<object_bytes, N> raw_storage_bytes_;
+        std::array<object_bytes, N> raw_storage_bytes_{};
 
         // index (`T`-based, not raw byte based) of the first element
         ptrdiff_t begin_offset_ = 0;

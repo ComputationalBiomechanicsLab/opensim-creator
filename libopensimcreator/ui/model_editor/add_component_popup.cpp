@@ -413,7 +413,7 @@ private:
 
     void drawPathPointEditor()
     {
-        auto* protoAsPA = dynamic_cast<OpenSim::PathActuator*>(m_Proto.get());
+        const auto* protoAsPA = dynamic_cast<const OpenSim::PathActuator*>(m_Proto.get());
         if (not protoAsPA) {
             return;  // not a path actuator
         }

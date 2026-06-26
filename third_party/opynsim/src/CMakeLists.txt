@@ -100,6 +100,10 @@ if(TRUE)
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS        OFF
     )
+    if(OPYN_USE_STRICT_COMPILER_FLAGS)
+        include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
+        opyn_add_strict_compiler_options_to(_core)
+    endif()
 
     # Link to the underlying `libopynsim` C++ code
     target_link_libraries(_core PRIVATE opynsim)

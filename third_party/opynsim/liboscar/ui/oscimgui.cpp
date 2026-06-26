@@ -1022,9 +1022,9 @@ namespace
         }
         case EventType::MouseWheel: {
             const auto& wheel_event = dynamic_cast<const MouseWheelEvent&>(e);
-            auto [x, y] = wheel_event.delta();
+            const auto delta = wheel_event.delta();
             io.AddMouseSourceEvent(wheel_event.input_source() == MouseInputSource::TouchScreen ? ImGuiMouseSource_TouchScreen : ImGuiMouseSource_Mouse);
-            io.AddMouseWheelEvent(x, y);
+            io.AddMouseWheelEvent(delta.x(), delta.y());
             return true;
         }
         case EventType::MouseButtonDown:

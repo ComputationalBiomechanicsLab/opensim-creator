@@ -32,7 +32,7 @@ namespace osc
             return count;
         }
     private:
-        std::array<char_type, 1024> dummy_buffer_;
+        std::array<char_type, 512> dummy_buffer_{};
         size_t num_chars_written_ = 0;
     };
 }

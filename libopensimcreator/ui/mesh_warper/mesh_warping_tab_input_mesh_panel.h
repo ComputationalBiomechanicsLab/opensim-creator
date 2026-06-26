@@ -81,7 +81,7 @@ namespace osc
                 getMouseLandmarkCollisions(cameraRay) :
                 std::nullopt;
 
-            if (m_ManipulatorGizmo.is_over() or m_ManipulatorGizmo.is_over()) {
+            if (m_ManipulatorGizmo.is_over() or m_ManipulatorGizmo.is_using()) {
                 landmarkCollision.reset();
                 meshCollision.reset();
             }
@@ -367,7 +367,7 @@ namespace osc
                     {
                         m_State->clearSelection();
                     }
-                    m_State->select(*landmarkCollision->getSceneElementID());
+                    m_State->select(landmarkCollision->getSceneElementID().value());
                 }
                 else if (meshCollision)
                 {
@@ -392,7 +392,7 @@ namespace osc
                         this,
                         "##MeshInputContextMenu",
                         m_State,
-                        *landmarkCollision->getSceneElementID()
+                        landmarkCollision->getSceneElementID().value()
                     );
                 }
             }

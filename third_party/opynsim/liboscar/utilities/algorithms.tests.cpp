@@ -182,17 +182,17 @@ namespace
     };
     class Derived1 : public Base {
     public:
-        explicit constexpr Derived1(int data) : m_Data{data} {}
+        explicit constexpr Derived1(int data) : data_{data} {}
         constexpr friend bool operator==(const Derived1&, const Derived1&) = default;
     private:
-        int m_Data;
+        int data_;
     };
     class Derived2 : public Base {
     public:
-        explicit constexpr Derived2(double data) : m_Data{data} {}
+        explicit constexpr Derived2(double data) : data_{data} {}
         constexpr friend bool operator==(const Derived2&, const Derived2&) = default;
     private:
-        double m_Data;
+        double data_;
     };
 }
 
@@ -244,9 +244,9 @@ TEST(append_range, works_as_expected_with_vector)
 
 TEST(append_range, also_works_on_list)
 {
-    std::list lst = {"how", "cute"};
-    append_range(lst, std::array{"definitely", "useful?"});
-    const std::list expected = {"how", "cute", "definitely", "useful?"};
+    std::list<std::string> lst = {"how", "cute"};
+    append_range(lst, std::to_array<std::string>({"definitely", "useful?"}));
+    const std::list<std::string> expected = {"how", "cute", "definitely", "useful?"};
 
     ASSERT_EQ(lst, expected);
 }

@@ -36,6 +36,12 @@ namespace opyn
             scalingDocument->finalizeFromProperties();
         }
 
+        ScalingState(ScalingState&& tmp) noexcept :
+            ScalingState{static_cast<const ScalingState&>(tmp)}
+        {}
+
+        ~ScalingState() noexcept = default;
+
         ScalingState& operator=(const ScalingState& other)
         {
             // care: separate `ScalingState`s should act like separate instances with no
@@ -53,7 +59,7 @@ namespace opyn
             return *this;
         }
 
-        ~ScalingState() noexcept = default;
+        ScalingState& operator=(ScalingState&& tmp) noexcept { return *this = static_cast<const ScalingState&>(tmp); }
 
     // Source Model Methods
 

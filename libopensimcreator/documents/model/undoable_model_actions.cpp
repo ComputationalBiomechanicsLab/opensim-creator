@@ -1234,6 +1234,7 @@ bool osc::ActionAddPathPointToPathActuator(
     const auto* const gp = dynamic_cast<const OpenSim::GeometryPath*>(&pa->getPath());
     if (not gp) {
         log_warn("Cannot add a path point to an AbstractGeometryPath that isn't a normal GeometryPath");
+        return false;
     }
 
     const size_t n = size(gp->getPathPointSet());
@@ -1884,7 +1885,7 @@ bool osc::ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
     try {
         OpenSim::Model& mutModel = model.updModel();
 
-        OpenSim::Component* const mutComponent = FindComponentMut(mutModel, root);
+        const OpenSim::Component* const mutComponent = FindComponentMut(mutModel, root);
         if (not mutComponent) {
             model.setModelVersion(oldVersion);  // can't find the coordinate within the provided model
             return false;

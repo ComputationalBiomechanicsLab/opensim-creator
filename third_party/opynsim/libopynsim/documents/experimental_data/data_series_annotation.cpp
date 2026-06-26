@@ -130,7 +130,7 @@ std::vector<double> opyn::extractDataPoint(
 {
     // lol, `OpenSim::Storage` API, etc.
     const int aN = annotation.dataColumnOffset + static_cast<int>(numElementsIn(annotation.dataType));
-    std::vector<double> buffer(aN);
+    std::vector<double> buffer(static_cast<size_t>(aN));
     double* p = buffer.data();
     storage.getDataAtTime(time, aN, &p);
     buffer.erase(buffer.begin(), buffer.begin() + annotation.dataColumnOffset);

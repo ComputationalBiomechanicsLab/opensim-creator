@@ -974,7 +974,7 @@ public:
             *maybe_gpu_texture_ = CubemapOpenGLData{};
         }
 
-        CubemapOpenGLData& opengl_data = **maybe_gpu_texture_;
+        CubemapOpenGLData& opengl_data = maybe_gpu_texture_->value();
 
         if (opengl_data.source_data_version != data_version_) {
             upload_to_gpu(opengl_data);
@@ -1428,9 +1428,8 @@ public:
         if (not *maybe_opengl_data_) {
             upload_to_gpu();
         }
-        OSC_ASSERT(*maybe_opengl_data_);
 
-        Texture2DOpenGLData& buffers = **maybe_opengl_data_;
+        Texture2DOpenGLData& buffers = maybe_opengl_data_->value();
 
         if (buffers.texture_params_version != texture_params_version_) {
             update_opengl_texture_params(buffers);
@@ -1493,7 +1492,7 @@ private:
     TextureWrapMode wrap_mode_v_ = TextureWrapMode::Repeat;
     TextureWrapMode wrap_mode_w_ = TextureWrapMode::Repeat;
     TextureFilterMode filter_mode_ = TextureFilterMode::Nearest;
-    std::vector<uint8_t> pixel_data_ = std::vector<uint8_t>(num_bytes_per_pixel_in(texture_format_) * pixel_dimensions_.x() * pixel_dimensions_.y(), 0xff);
+    std::vector<uint8_t> pixel_data_ = std::vector<uint8_t>(num_bytes_per_pixel_in(texture_format_) * area_of(Vector2uz{pixel_dimensions_}), 0xff);
     float device_pixel_ratio_ = 1.0f;
     UID texture_params_version_;
     DefaultConstructOnCopy<std::optional<Texture2DOpenGLData>> maybe_opengl_data_;
@@ -1878,7 +1877,7 @@ namespace
             if (not *maybe_opengl_data_) {
                 upload_to_gpu();
             }
-            return **maybe_opengl_data_;
+            return maybe_opengl_data_->value();
         }
 
         void upload_to_gpu()
@@ -4701,10 +4700,10 @@ public:
 
     gl::VertexArray& upd_vertex_array()
     {
-        if (not *maybe_gpu_data_ or (*maybe_gpu_data_)->data_version != *version_) {
+        if (not *maybe_gpu_data_ or (*maybe_gpu_data_).value().data_version != *version_) {
             upload_to_gpu();
         }
-        return (*maybe_gpu_data_)->vao;
+        return (*maybe_gpu_data_).value().vao;
     }
 
     void draw_instanced(
@@ -4879,7 +4878,7 @@ private:
         if (not *maybe_gpu_data_) {
             *maybe_gpu_data_ = MeshOpenGLData{};
         }
-        MeshOpenGLData& buffers = **maybe_gpu_data_;
+        MeshOpenGLData& buffers = maybe_gpu_data_->value();
 
         // upload CPU-side vector data into the GPU-side buffer
         OSC_ASSERT(is_aligned_at_least(vertex_buffer_.bytes().data(), alignof(float)));
@@ -6098,7 +6097,7 @@ public:
             const Vector2i pixel_dimensions = App::get().main_window_pixel_dimensions();
             const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
 
-            std::vector<uint8_t> pixels(static_cast<size_t>(4*pixel_dimensions.x()*pixel_dimensions.y()));
+            std::vector<uint8_t> pixels(4 * area_of(Vector2uz{pixel_dimensions}));
             OSC_ASSERT(is_aligned_at_least(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
             gl::pixel_store_i(GL_PACK_ALIGNMENT, 4);
             glReadPixels(
@@ -7268,13 +7267,13 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
                     glClearBufferfv(
                         GL_COLOR,
                         static_cast<GLint>(i),
-                        value_ptr(static_cast<Vector4>(color_attachment.clear_color))
+                        value_ptr(Vector4f{color_attachment.clear_color})
                     );
                 }
             }
 
             // if requested, clear depth buffer
-            if (maybe_custom_render_target->depth_attachment() and maybe_custom_render_target->depth_attachment()->load_action == RenderBufferLoadAction::Clear) {
+            if (maybe_custom_render_target->depth_attachment() and maybe_custom_render_target->depth_attachment().value().load_action == RenderBufferLoadAction::Clear) {
                 gl::clear(GL_DEPTH_BUFFER_BIT);
             }
         }
@@ -7382,9 +7381,10 @@ void osc::GraphicsBackend::resolve_render_buffers(
     }
 
     // resolve depth (+stencil) buffer with a blit
-    if (render_target.depth_attachment() and render_target.depth_attachment()->store_action == RenderBufferStoreAction::Resolve) {
+    const auto& depth_attachment = render_target.depth_attachment();
+    if (depth_attachment and depth_attachment->store_action == RenderBufferStoreAction::Resolve) {
         bool can_resolve_buffer = false;  // changes if the underlying buffer data is resolve-able
-        const GLenum attachment = detail::has_stencil_component(render_target.depth_attachment()->buffer.format()) ?
+        const GLenum attachment = detail::has_stencil_component(depth_attachment->buffer.format()) ?
             GL_DEPTH_STENCIL_ATTACHMENT :
             GL_DEPTH_ATTACHMENT;
         std::visit(Overload
@@ -7413,11 +7413,11 @@ void osc::GraphicsBackend::resolve_render_buffers(
                 can_resolve_buffer = true;
             },
             [](SingleSampledCubemap&) {}  // don't resolve: it's single-sampled
-        }, render_target.depth_attachment()->buffer.impl_->upd_opengl_data());
+        }, depth_attachment->buffer.impl_->upd_opengl_data());
 
         if (can_resolve_buffer)
         {
-            const Vector2i pixel_dimensions = render_target.depth_attachment()->buffer.impl_->pixel_dimensions();
+            const Vector2i pixel_dimensions = depth_attachment->buffer.impl_->pixel_dimensions();
             gl::blit_framebuffer(
                 0,
                 0,

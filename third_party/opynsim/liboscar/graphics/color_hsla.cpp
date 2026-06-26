@@ -66,14 +66,14 @@ osc::ColorHSLA::ColorHSLA(const Color& color)
     // - https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
     // - https://stackoverflow.com/questions/39118528/rgb-to-hsl-conversion
 
-    const auto [r, g, b, a] = saturate(color);
-    const auto [min, max] = rgs::minmax({r, g, b});
+    const auto c = saturate(color);
+    const auto [min, max] = rgs::minmax({c.r, c.g, c.b});
     const float delta = max - min;
 
-    this->hue = calc_normalized_hsla_hue(r, g, b, min, max, delta);
+    this->hue = calc_normalized_hsla_hue(c.r, c.g, c.b, min, max, delta);
     this->lightness = 0.5f*(min + max);  // NOLINT(cppcoreguidelines-prefer-member-initializer)
     this->saturation = calc_hsla_saturation(lightness, min, max);
-    this->alpha = a;  // NOLINT(cppcoreguidelines-prefer-member-initializer)
+    this->alpha = c.a;  // NOLINT(cppcoreguidelines-prefer-member-initializer)
 }
 
 osc::ColorHSLA::operator Color() const

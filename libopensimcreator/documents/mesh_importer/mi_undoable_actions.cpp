@@ -343,7 +343,7 @@ bool osc::DeleteObject(MiUndoableDocument& udoc, UID id)
 {
     MiDocument& doc = udoc.upd_scratch();
 
-    MiObject* const obj = doc.tryUpdByID(id);
+    const MiObject* const obj = doc.tryUpdByID(id);
     if (!obj)
     {
         return false;

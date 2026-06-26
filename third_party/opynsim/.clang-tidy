@@ -16,6 +16,7 @@ Checks: >
   -modernize-loop-convert,
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
+  -modernize-pass-by-value,
   cppcoreguidelines-*,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,

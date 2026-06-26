@@ -427,7 +427,7 @@ TEST(OpenSimModel, ReassigningAnOffsetFrameForJointChildToParentDoesNotSegfault)
     joint->setName("joint");
 
     // add first offset frame as joint's parent
-    OpenSim::PhysicalOffsetFrame* parentToGroundOffset = [&model, &joint]()
+    const OpenSim::PhysicalOffsetFrame* parentToGroundOffset = [&model, &joint]()
     {
         auto pof1 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         pof1->setParentFrame(model.getGround());

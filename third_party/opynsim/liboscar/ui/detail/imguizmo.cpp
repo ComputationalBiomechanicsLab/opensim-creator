@@ -196,7 +196,7 @@ namespace
         float HatchedAxisLineThickness   = 6.0f;  // Thickness of hatched axis lines
         float CenterCircleSize           = 6.0f;  // Size of circle at the center of the translate/scale gizmo
 
-        ImVec4 Colors[COLOR::COUNT];
+        ImVec4 Colors[COLOR::COUNT]{};
     };
 
     constexpr ImGuiID blank_id()
@@ -988,7 +988,7 @@ public:
     bool IsHoveringWindow() const
     {
         ImGuiContext& g = *ImGui::GetCurrentContext();
-        ImGuiWindow* window = ImGui::FindWindowByName(mDrawList->_OwnerName);
+        const ImGuiWindow* window = ImGui::FindWindowByName(mDrawList->_OwnerName);
         if (g.HoveredWindow == window) {
             // Mouse hovering drawlist window
             return true;
@@ -1033,7 +1033,7 @@ public:
             // 1 axis constraint
             if (mCurrentOperation >= MT_MOVE_X and mCurrentOperation <= MT_MOVE_Z) {
                 const int axisIndex = mCurrentOperation - MT_MOVE_X;
-                const Vector4& axisValue = *(Vector4*)&mModel[axisIndex];
+                const Vector4& axisValue = mModel[axisIndex];
                 const float lengthOnAxis = dot(axisValue, delta);
                 delta = axisValue * lengthOnAxis;
             }
@@ -1171,7 +1171,7 @@ public:
             // 1 axis constraint
             if (mCurrentOperation >= MT_SCALE_X and mCurrentOperation <= MT_SCALE_Z) {
                 int axisIndex = mCurrentOperation - MT_SCALE_X;
-                const Vector4 &axisValue = *(Vector4*) &mModelLocal[axisIndex];
+                const Vector4& axisValue = mModelLocal[axisIndex];
                 float lengthOnAxis = dot(axisValue, delta);
                 delta = axisValue * lengthOnAxis;
 
@@ -1347,7 +1347,7 @@ public:
         // compute best projection axis
         Vector4 axesWorldDirections[3];
         Vector4 bestAxisWorldDirection = {0.0f, 0.0f, 0.0f, 0.0f};
-        int axes[3];
+        int axes[3]{};
         unsigned int numAxes = 1;
         axes[0] = mBoundsBestAxis;
         int bestAxis = axes[0];
@@ -1419,12 +1419,12 @@ public:
                     continue;
                 }
                 float boundDistance = sqrtf(ImLengthSqr(worldBound1 - worldBound2));
-                int stepCount = (int) (boundDistance / 10.f);
+                int stepCount = static_cast<int>(boundDistance / 10.f);
                 stepCount = min(stepCount, 1000);
                 for (int j = 0; j < stepCount; j++) {
-                    float stepLength = 1.f / (float) stepCount;
-                    float t1 = (float) j * stepLength;
-                    float t2 = (float) j * stepLength + stepLength * 0.5f;
+                    float stepLength = 1.f / static_cast<float>(stepCount);
+                    float t1 = static_cast<float>(j) * stepLength;
+                    float t2 = static_cast<float>(j) * stepLength + stepLength * 0.5f;
                     ImVec2 worldBoundSS1 = ImLerp(worldBound1, worldBound2, ImVec2(t1, t1));
                     ImVec2 worldBoundSS2 = ImLerp(worldBound1, worldBound2, ImVec2(t2, t2));
                     //drawList->AddLine(worldBoundSS1, worldBoundSS2, IM_COL32(0, 0, 0, 0) + anchorAlpha, 3.f);
@@ -1548,7 +1548,7 @@ public:
                 *matrix = res;
 
                 // info text
-                char tmps[512];
+                char tmps[512]{};  // TODO: use std::format
                 ImVec2 destinationPosOnScreen = worldToPos(mModel[3], mViewProjection);
                 ImFormatString(tmps, sizeof(tmps), "X: %.2f Y: %.2f Z: %.2f"
                                , (bounds[3] - bounds[0]) * length(mBoundsMatrix[0]) * length(scale[0])
@@ -1599,22 +1599,22 @@ public:
 
                     // HACK: osc: make translation circle orange, which stands out from the mostly-white geometry
                     for (int i = 0; i < 3; i++) {
-                        colors[i + 1] = (type == (int) (MT_MOVE_X + i)) ? selectionColor : GetColorU32(DIRECTION_X + i);
-                        colors[i + 4] = (type == (int) (MT_MOVE_YZ + i)) ? selectionColor : GetColorU32(PLANE_X + i);
+                        colors[i + 1] = (type == static_cast<int>(MT_MOVE_X + i)) ? selectionColor : GetColorU32(DIRECTION_X + i);
+                        colors[i + 4] = (type == static_cast<int>(MT_MOVE_YZ + i)) ? selectionColor : GetColorU32(PLANE_X + i);
                         colors[i + 4] = (type == MT_MOVE_SCREEN) ? selectionColor : colors[i + 4];
                     }
                     break;
                 case Operation::Rotate:
                     colors[0] = (type == MT_ROTATE_SCREEN) ? selectionColor : IM_COL32_WHITE;
                     for (int i = 0; i < 3; i++) {
-                        colors[i + 1] = (type == (int) (MT_ROTATE_X + i)) ? selectionColor : GetColorU32(DIRECTION_X + i);
+                        colors[i + 1] = (type == static_cast<int>(MT_ROTATE_X + i)) ? selectionColor : GetColorU32(DIRECTION_X + i);
                     }
                     break;
                 case Operation::ScaleU:
                 case Operation::Scale:
                     colors[0] = (type == MT_SCALE_XYZ) ? selectionColor : IM_COL32_WHITE;
                     for (int i = 0; i < 3; i++) {
-                        colors[i + 1] = (type == (int) (MT_SCALE_X + i)) ? selectionColor : GetColorU32(DIRECTION_X + i);
+                        colors[i + 1] = (type == static_cast<int>(MT_SCALE_X + i)) ? selectionColor : GetColorU32(DIRECTION_X + i);
                     }
                     break;
                 // note: this internal function is only called with three possible values for operation
@@ -1730,7 +1730,7 @@ public:
             );
 
             ImVec2 destinationPosOnScreen = circlePos[1];
-            char tmps[512];
+            char tmps[512]{};  // TODO: use std::format
             ImFormatString(
                 tmps,
                 sizeof(tmps),
@@ -1838,7 +1838,7 @@ public:
             drawList->AddCircle(destinationPosOnScreen, 6.f, translationLineColor);
             drawList->AddLine(ImVec2(sourcePosOnScreen.x + dif.x, sourcePosOnScreen.y + dif.y), ImVec2(destinationPosOnScreen.x - dif.x, destinationPosOnScreen.y - dif.y), translationLineColor, 2.f);
             */
-            char tmps[512];
+            char tmps[512]{};  // TODO: use std::format
             //Vector4 deltaInfo = context.mModel.v.position - context.mMatrixOrigin;
             int componentInfoIndex = (type - MT_SCALE_X) * 3;
             ImFormatString(
@@ -1927,7 +1927,7 @@ public:
             drawList->AddCircle(destinationPosOnScreen, 6.f, translationLineColor);
             drawList->AddLine(ImVec2(sourcePosOnScreen.x + dif.x, sourcePosOnScreen.y + dif.y), ImVec2(destinationPosOnScreen.x - dif.x, destinationPosOnScreen.y - dif.y), translationLineColor, 2.f);
             */
-            char tmps[512];
+            char tmps[512]{};  // TODO: use std::format
             //Vector4 deltaInfo = context.mModel.v.position - context.mMatrixOrigin;
             int componentInfoIndex = (type - MT_SCALE_X) * 3;
             ImFormatString(tmps, sizeof(tmps), c_scale_info_mask[type - MT_SCALE_X].c_str(),
@@ -2034,7 +2034,7 @@ public:
                               ImVec2(destinationPosOnScreen.x - dif.x(), destinationPosOnScreen.y - dif.y()),
                               translationLineColor, 2.f);
 
-            char tmps[512];
+            char tmps[512]{};  // TODO: use std::format
             Vector4 deltaInfo = mModel[3] - mMatrixOrigin;
             int componentInfoIndex = (type - MT_MOVE_X) * 3;
             ImFormatString(
@@ -2058,10 +2058,10 @@ public:
         }
     }
 
-    ImDrawList* mDrawList;
+    ImDrawList* mDrawList = nullptr;
     Style mStyle;
 
-    Mode mMode;
+    Mode mMode{};
     Matrix4x4 mViewMat;
     Matrix4x4 mProjectionMat;
     Matrix4x4 mModel;
@@ -2081,18 +2081,18 @@ public:
     Vector4 mRayOrigin;
     Vector4 mRayVector;
 
-    float  mRadiusSquareCenter;
-    ImVec2 mScreenSquareCenter;
-    ImVec2 mScreenSquareMin;
-    ImVec2 mScreenSquareMax;
+    float  mRadiusSquareCenter{};
+    ImVec2 mScreenSquareCenter{};
+    ImVec2 mScreenSquareMin{};
+    ImVec2 mScreenSquareMax{};
 
-    float mScreenFactor;
+    float mScreenFactor{};
     Vector4 mRelativeOrigin;
 
     bool mbUsing = false;
     bool mbEnable = true;
-    bool mbMouseOver;
-    bool mReversed; // reversed projection matrix
+    bool mbMouseOver{};
+    bool mReversed{}; // reversed projection matrix
 
     // translation
     Vector4 mTranslationPlan;
@@ -2102,21 +2102,21 @@ public:
 
     // rotation
     Vector4 mRotationVectorSource;
-    float mRotationAngle;
-    float mRotationAngleOrigin;
+    float mRotationAngle{};
+    float mRotationAngleOrigin{};
     //Vector4 mWorldToLocalAxis;
 
     // scale
     Vector4 mScale;
     Vector4 mScaleValueOrigin;
     Vector4 mScaleLast;
-    float mSaveMousePosx;
+    float mSaveMousePosx{};
 
     // save axis factor when using gizmo
-    bool mBelowAxisLimit[3];
+    bool mBelowAxisLimit[3]{};
     int mAxisMask = 0;
-    bool mBelowPlaneLimit[3];
-    float mAxisFactor[3];
+    bool mBelowPlaneLimit[3]{};
+    float mAxisFactor[3]{};
 
     float mAxisLimit=0.0025f;
     float mPlaneLimit=0.02f;
@@ -2126,13 +2126,12 @@ public:
     Vector4 mBoundsAnchor;
     Vector4 mBoundsPlan;
     Vector4 mBoundsLocalPivot;
-    int mBoundsBestAxis;
-    int mBoundsAxis[2];
+    int mBoundsBestAxis{};
+    int mBoundsAxis[2]{};
     bool mbUsingBounds = false;
     Matrix4x4 mBoundsMatrix;
 
-    //
-    int mCurrentOperation;
+    int mCurrentOperation{};
 
     float mX = 0.f;
     float mY = 0.f;
@@ -2146,7 +2145,7 @@ public:
     // check to not have multiple gizmo highlighted at the same time
     bool mbOverGizmoHotspot = false;
 
-    ImVector<ImGuiID> mIDStack;
+    ImVector<ImGuiID> mIDStack{};
     ImGuiID mEditingID = blank_id();
     Operation mOperation = Operation::None;
 

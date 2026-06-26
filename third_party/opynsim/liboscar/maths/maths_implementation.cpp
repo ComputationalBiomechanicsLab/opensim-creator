@@ -90,10 +90,10 @@ namespace
             // allocate an appropriate internal node
 
             // compute bounding box of remaining (children) prims
-            const AABB aabb = *bounding_aabb_of(
+            const AABB aabb = bounding_aabb_of(
                 std::span<const BVHPrim>{prims.begin() + begin, static_cast<size_t>(n)},
                 &BVHPrim::bounds
-            );
+            ).value();
 
             // compute slicing position along the longest dimension
             const auto longest_dim_index = max_element_index(dimensions_of(aabb));

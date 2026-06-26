@@ -10,7 +10,10 @@
 #include <liboscar/maths/geometric_functions.h>
 #include <liboscar/utilities/assertions.h>
 #include <nanobind/nanobind.h>
+#pragma warning(push)
+#pragma warning(disable : 4702) // Disable "unreachable code"
 #include <nanobind/ndarray.h>
+#pragma warning(pop)
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/unique_ptr.h>
 

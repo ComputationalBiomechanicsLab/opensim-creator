@@ -65,14 +65,14 @@ namespace
 int main()  // NOLINT(bugprone-exception-escape)
 {
     // Set PYTHONPATH to the local virtual environment and `opynsim`
-    set_pythonpath({ "@Python_SITELIB@", "@OPYN_CORE_DIRECTORY@/.." });
+    set_pythonpath({ R"(@Python_SITELIB@)", R"(@OPYN_CORE_DIRECTORY@/..)" });
 
     // Set the current working directory to the debugger's source directory (it's where
     // developers will probably dump data files etc. during development).
-    std::filesystem::current_path("@CMAKE_CURRENT_SOURCE_DIR@");
+    std::filesystem::current_path(R"(@CMAKE_CURRENT_SOURCE_DIR@)");
 
     // Read the source `debugscript.py`, ready for the Python interpreter
-    std::string code = read_file("@CMAKE_CURRENT_SOURCE_DIR@/debugscript.py");
+    std::string code = read_file(R"(@CMAKE_CURRENT_SOURCE_DIR@/debugscript.py)");
 
     // Initialize the Python interpreter and pump the script into it
     Py_Initialize();

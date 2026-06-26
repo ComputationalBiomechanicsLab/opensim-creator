@@ -178,6 +178,9 @@ namespace osc
         while (!rv && it != last) {
             rv = std::invoke(proj, *it++);
         }
+        if (not rv) {
+            return rv;
+        }
 
         // combine with remainder of range
         for (; it != last; ++it) {

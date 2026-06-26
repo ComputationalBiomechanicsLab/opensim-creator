@@ -22,7 +22,8 @@ osc::VertexFormat::VertexFormat(std::span<const VertexAttributeDescriptor> descr
         throw std::runtime_error{"Invalid `VertexFormat`, a `VertexFormat` should always contain at least `VertexAttribute::Position`"};
     }
 
-    for (auto it = attribute_descriptions_.begin(), end = attribute_descriptions_.end(); it != end; ++it) {
+    const auto end = attribute_descriptions_.end();
+    for (auto it = attribute_descriptions_.begin(); it != end; ++it) {
         if (cpp23::contains(it+1, end, it->attribute(), &VertexAttributeDescriptor::attribute)) {
             throw std::runtime_error{"Duplicate `VertexAttribute`s were passed to a `VertexFormat` each `VertexAttribute` must be unique"};
         }

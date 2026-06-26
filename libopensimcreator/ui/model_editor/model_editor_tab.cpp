@@ -228,7 +228,7 @@ public:
                 return true;
             }
         }
-        else if (auto* namedPanel = dynamic_cast<OpenNamedPanelEvent*>(&e)) {
+        else if (const auto* namedPanel = dynamic_cast<OpenNamedPanelEvent*>(&e)) {
             m_PanelManager->set_toggleable_panel_activated(namedPanel->panel_name(), true);
             return true;
         }
@@ -241,7 +241,7 @@ public:
                 return true;
             }
         }
-        else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
+        else if (const auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
             auto popup = std::make_unique<ComponentContextMenu>(
                 &this->owner(),
                 "##componentcontextmenu",
@@ -251,7 +251,7 @@ public:
             App::post_event<OpenPopupEvent>(owner(), std::move(popup));
             return true;
         }
-        else if (auto* addMusclePlotEvent = dynamic_cast<AddMusclePlotEvent*>(&e)) {
+        else if (const auto* addMusclePlotEvent = dynamic_cast<AddMusclePlotEvent*>(&e)) {
             const std::string name = m_PanelManager->suggested_dynamic_panel_name("muscleplot");
 
             m_PanelManager->push_dynamic_panel(

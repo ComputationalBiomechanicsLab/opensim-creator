@@ -21,7 +21,7 @@ std::optional<std::filesystem::path> osc::OverlayFilesystem::resource_filepath(c
         // codebases that *must* load data from the native filesystem - other
         // implementations shouldn't support the feature, so we use a downcast
         // here.
-        if (auto* native_filesystem = dynamic_cast<NativeFilesystem*>(layer.get())) {
+        if (const auto* native_filesystem = dynamic_cast<const NativeFilesystem*>(layer.get())) {
             if (auto resource_filepath = native_filesystem->resource_filepath(resource_path)) {
                 return resource_filepath;
             }

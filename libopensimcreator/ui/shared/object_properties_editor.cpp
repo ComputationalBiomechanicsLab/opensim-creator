@@ -1409,10 +1409,8 @@ namespace
             }
             ui::next_column();
 
-            if (*m_ReturnValueHolder) {
-                std::optional<ObjectPropertyEdit> edit;
-                std::swap(*m_ReturnValueHolder, edit);
-                return edit->getUpdater();
+            if (auto rv = std::exchange(*m_ReturnValueHolder, std::nullopt)) {
+                return rv->getUpdater();
             }
             else {
                 return std::nullopt;

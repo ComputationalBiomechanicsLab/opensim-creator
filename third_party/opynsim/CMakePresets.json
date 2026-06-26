@@ -20,9 +20,9 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development/install",
 
-                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OPYN_FORCE_ASSERTS_ENABLED": "ON",
                 "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "OFF",
                 "OPYN_STRICT_ABI_CHECKS": "OFF"
             }
         },
@@ -38,9 +38,9 @@
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
 
-                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OPYN_FORCE_ASSERTS_ENABLED": "ON",
                 "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OPYN_STRICT_ABI_CHECKS": "OFF"
             }
         },
@@ -54,6 +54,7 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Linux-amd64/install",
                 "CPACK_STRIP_FILES": "ON",
 
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OPYN_STRICT_ABI_CHECKS": "ON",
                 "OPYN_ABI_MAX_SYMBOL_VERSIONS": "GLIBCXX_3.4.22 CXXABI_1.3.11 GLIBC_2.27 GCC_7.0.0",
                 "CMAKE_C_FLAGS": "-O3 -g -march=x86-64-v3 -fno-math-errno -fno-trapping-math -ffp-contract=fast",
@@ -70,6 +71,7 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Release-Windows-amd64/install",
                 "CPACK_STRIP_FILES": "ON",
 
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OPYN_STRICT_ABI_CHECKS": "ON",
                 "CMAKE_C_FLAGS": "/O2 /Zi /arch:AVX2",
                 "CMAKE_CXX_FLAGS": "/O2 /Zi /arch:AVX2 /EHsc",
@@ -89,10 +91,10 @@
                 "CPACK_STRIP_FILES": "ON",
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OPYN_STRICT_ABI_CHECKS": "ON",
                 "CMAKE_C_FLAGS": "-O3 -g -fno-math-errno -fno-trapping-math -ffp-contract=fast",
-                "CMAKE_CXX_FLAGS": "-O3 -g -fno-math-errno -fno-trapping-math -ffp-contract=fast -Wunguarded-availability -Werror=unguarded-availability -Werror=unguarded-availability-new",
-
-                "OPYN_STRICT_ABI_CHECKS": "ON"
+                "CMAKE_CXX_FLAGS": "-O3 -g -fno-math-errno -fno-trapping-math -ffp-contract=fast -Wunguarded-availability -Werror=unguarded-availability -Werror=unguarded-availability-new"
             }
         }
     ],

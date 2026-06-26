@@ -79,7 +79,7 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
     const auto& registry = opyn::GetComponentRegistry<OpenSim::Joint>();
     auto maybeIdx = IndexOf<OpenSim::FreeJoint>(registry);
     ASSERT_TRUE(maybeIdx) << "can't find FreeJoint in type registry?";
-    auto idx = *maybeIdx;
+    auto idx = maybeIdx.value();
 
     // cache joint paths, because we are changing the model during this test and it might
     // invalidate the model's `getComponentList` function
@@ -266,7 +266,7 @@ TEST(OpenSimHelpers, AddModelComponentReturnsProvidedPointer)
     auto p = std::make_unique<OpenSim::PhysicalOffsetFrame>();
     p->setParentFrame(m.getGround());
 
-    OpenSim::PhysicalOffsetFrame* expected = p.get();
+    const OpenSim::PhysicalOffsetFrame* expected = p.get();
     ASSERT_EQ(&AddModelComponent(m, std::move(p)), expected);
 }
 
