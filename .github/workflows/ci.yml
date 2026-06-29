@@ -47,7 +47,7 @@ jobs:
 
   macos_arm64:
     name: MacOS (arm64)
-    runs-on: macos-14
+    runs-on: macos-26
     env:
       CTEST_PARALLEL_LEVEL: 1
     steps:
