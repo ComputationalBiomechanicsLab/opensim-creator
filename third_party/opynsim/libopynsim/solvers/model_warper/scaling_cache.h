@@ -185,6 +185,7 @@ namespace opyn
             inputs.apply_affine_scale = tpsInputs.applyAffineScale;
             inputs.apply_affine_rotation = tpsInputs.applyAffineRotation;
             inputs.apply_non_affine_warp = tpsInputs.applyNonAffineWarp;
+            inputs.bending_penalty = static_cast<float>(tpsInputs.bendingPenalty);
 
             // Solve the coefficients
             m_CoefficientsTODO = opyn::tps3d_solve_coefficients(inputs);

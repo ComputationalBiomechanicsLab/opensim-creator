@@ -23,6 +23,7 @@
 
 #include <array>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <optional>
 #include <span>
@@ -141,6 +142,12 @@ void osc::ActionSetRecalculatingNormals(MwUndoableDocument& doc, bool newState)
         "enabled recalculating normals" :
         "disabled recalculating normals";
     doc.commit_scratch(msg);
+}
+
+void osc::ActionSetBendingPenalty(MwUndoableDocument& doc, float newBendingPenalty)
+{
+    doc.upd_scratch().bendingPenalty = newBendingPenalty;
+    doc.commit_scratch(std::format("Set bending penalty to {}", newBendingPenalty));
 }
 
 void osc::ActionSetSourceLandmarksPrescale(MwUndoableDocument& doc, float newSourceLandmarksPrescale)

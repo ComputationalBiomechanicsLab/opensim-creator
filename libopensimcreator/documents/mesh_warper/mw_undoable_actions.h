@@ -50,6 +50,9 @@ namespace osc
     // sets whether the engine should recalculate the mesh's normal after applying the warp
     void ActionSetRecalculatingNormals(MwUndoableDocument&, bool newState);
 
+    // sets the pending penalty of the TPS warp
+    void ActionSetBendingPenalty(MwUndoableDocument&, float newBendingPenalty);
+
     // sets the source landmark prescale for the mesh warper
     void ActionSetSourceLandmarksPrescale(MwUndoableDocument&, float newSourceLandmarksPrescale);
 

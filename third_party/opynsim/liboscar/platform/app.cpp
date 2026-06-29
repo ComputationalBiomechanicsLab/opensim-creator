@@ -1467,63 +1467,8 @@ public:
     AppMainLoopStatus do_main_loop_step()
     {
         // 1. Pump events.
-        {
-            OSC_PERF("App/do_main_loop_step/pump_events");
-
-            bool should_wait = is_in_wait_mode_ and num_frames_to_poll_ <= 0;
-            num_frames_to_poll_ = max(0, num_frames_to_poll_ - 1);
-
-            for (SDL_Event e{}; should_wait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
-                should_wait = false;
-
-                // Edge-case: it's an `SDL_EVENT_USER`:
-                //
-                // - `SDL_EVENT_USER`'s are only launched from this compilation unit (search for it)
-                // - They're either:
-                //   - A custom event posted to a `Widget`
-                //   - A custom event posted to "the top-level application". The only situation where
-                //     that's permitted is thread marshalling.
-                //   - A "blank" event, used to crank the event loop and make the application redraw
-                //     the top-level widget
-                if (e.type == SDL_EVENT_USER) {
-                    if (e.user.data1 and e.user.data2) {
-                        // a custom event posted to a `Widget`
-                        auto* receiver_widget = static_cast<Widget*>(e.user.data1);
-                        auto custom_event = std::unique_ptr<Event>(static_cast<Event*>(e.user.data2));
-                        notify(*receiver_widget, *custom_event);
-                        continue;  // event handled - go get the next one
-                    }
-                    else if (not e.user.data1 and e.user.data2) {
-                        // a custom event posted to "the top-level application" (thread marshalling)
-                        auto custom_event = std::unique_ptr<Event>(static_cast<Event*>(e.user.data2));
-                        if (auto* marshalled_event = dynamic_cast<AppMarshalledCallbackEvent*>(custom_event.get())) {
-                            marshalled_event->invoke_callback();
-                        }
-                        continue;  // assume event is handled
-                    }
-                    else {
-                        // a "blank" event (`request_redraw`)
-                        continue;
-                    }
-                }
-
-                // Normal case: pass the event to the main window.
-                const bool window_handled_event = main_window_.on_event(e);
-
-                // If the main window didn't handle the event, it has "bubbled up" to the application
-                // level, so try to handle it here.
-                if (not window_handled_event and e.type == SDL_EVENT_QUIT) {
-                    // The OS requested the application to quit, and the main window didn't
-                    // have any special way of handling it, so the application should shut down.
-                    quit_requested_ = true;
-                }
-
-                // If something somewhere requested a quit (the OS, a subsystem, etc.) then exit
-                // the main loop right now and let a higher-level system handle the rest.
-                if (std::exchange(quit_requested_, false)) {
-                    return AppMainLoopStatus::quit_requested();
-                }
-            }
+        if (auto rv = process_events()) {
+            return *rv;
         }
 
         // 2. Update timers/counters.
@@ -2060,6 +2005,67 @@ public:
         e.type = SDL_EVENT_USER;
         num_frames_to_poll_ += 2;  // immediate rendering can require rendering 2 frames before it shows something
         SDL_PushEvent(&e);
+    }
+
+    std::optional<AppMainLoopStatus> process_events()
+    {
+        OSC_PERF("App/do_main_loop_step/pump_events");
+
+        bool should_wait = is_in_wait_mode_ and num_frames_to_poll_ <= 0;
+        num_frames_to_poll_ = max(0, num_frames_to_poll_ - 1);
+
+        for (SDL_Event e{}; should_wait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
+            should_wait = false;
+
+            // Edge-case: it's an `SDL_EVENT_USER`:
+            //
+            // - `SDL_EVENT_USER`'s are only launched from this compilation unit (search for it)
+            // - They're either:
+            //   - A custom event posted to a `Widget`
+            //   - A custom event posted to "the top-level application". The only situation where
+            //     that's permitted is thread marshalling.
+            //   - A "blank" event, used to crank the event loop and make the application redraw
+            //     the top-level widget
+            if (e.type == SDL_EVENT_USER) {
+                if (e.user.data1 and e.user.data2) {
+                    // a custom event posted to a `Widget`
+                    auto* receiver_widget = static_cast<Widget*>(e.user.data1);
+                    auto custom_event = std::unique_ptr<Event>(static_cast<Event*>(e.user.data2));
+                    notify(*receiver_widget, *custom_event);
+                    continue;  // event handled - go get the next one
+                }
+                else if (not e.user.data1 and e.user.data2) {
+                    // a custom event posted to "the top-level application" (thread marshalling)
+                    auto custom_event = std::unique_ptr<Event>(static_cast<Event*>(e.user.data2));
+                    if (auto* marshalled_event = dynamic_cast<AppMarshalledCallbackEvent*>(custom_event.get())) {
+                        marshalled_event->invoke_callback();
+                    }
+                    continue;  // assume event is handled
+                }
+                else {
+                    // a "blank" event (`request_redraw`)
+                    continue;
+                }
+            }
+
+            // Normal case: pass the event to the main window.
+            const bool window_handled_event = main_window_.on_event(e);
+
+            // If the main window didn't handle the event, it has "bubbled up" to the application
+            // level, so try to handle it here.
+            if (not window_handled_event and e.type == SDL_EVENT_QUIT) {
+                // The OS requested the application to quit, and the main window didn't
+                // have any special way of handling it, so the application should shut down.
+                quit_requested_ = true;
+            }
+
+            // If something somewhere requested a quit (the OS, a subsystem, etc.) then exit
+            // the main loop right now and let a higher-level system handle the rest.
+            if (std::exchange(quit_requested_, false)) {
+                return AppMainLoopStatus::quit_requested();
+            }
+        }
+        return std::nullopt;
     }
 
     ResourceLoader& upd_resource_loader() { return resource_loader_; }
@@ -2631,6 +2637,11 @@ void osc::App::make_main_loop_polling()
 void osc::App::request_redraw()
 {
     impl_->request_redraw();
+}
+
+void osc::App::process_events()
+{
+    impl_->process_events();
 }
 
 ResourceLoader& osc::App::upd_resource_loader()

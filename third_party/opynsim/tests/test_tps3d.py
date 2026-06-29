@@ -51,6 +51,15 @@ def test_solve_coefficients_returns_object_with_warp_point_method():
 
     assert isinstance(warped_point, np.ndarray)
 
+def test_solve_coefficients_returns_equality_comparable_object():
+    source_landmarks = np.array([[1, 2, 3]])
+    destination_landmarks = np.array([[4, 5, 6]])
+
+    a = tps3d.solve_coefficients(source_landmarks, destination_landmarks)
+    b = tps3d.solve_coefficients(source_landmarks, destination_landmarks)
+
+    assert a == b, "Even though they're different objects, they have the same values - this should behave correctly"
+
 def test_coefficients_repr_shows_user_a1_a2_and_a3():
     # Test that the user is able to, at a quick glance in the REPL or
     # a log/debug/error message, see the three affine coefficients of
@@ -137,3 +146,22 @@ def test_solve_coefficients_returns_object_that_performs_non_identity_warp():
     assert warped[0] != pytest.approx(0, nan_ok=False)
     assert warped[1] != pytest.approx(1, nan_ok=False)
     assert warped[2] != pytest.approx(0, nan_ok=False)
+
+def test_solve_coefficients_is_affected_by_bending_penalty():
+    source_landmarks = np.array([
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+    ])
+    destination_landmarks = np.array([
+        [9, 10, 11],
+        [12, 13, 14],
+        [15, 16, 17],
+    ])
+
+    defaulted = tps3d.solve_coefficients(source_landmarks, destination_landmarks)
+    zero_penalty = tps3d.solve_coefficients(source_landmarks, destination_landmarks, bending_penalty=0.0)
+    small_penalty = tps3d.solve_coefficients(source_landmarks, destination_landmarks, bending_penalty=0.0001)
+
+    assert zero_penalty == defaulted
+    assert small_penalty != zero_penalty

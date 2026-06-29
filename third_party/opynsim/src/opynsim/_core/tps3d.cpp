@@ -26,7 +26,8 @@ namespace
 {
     std::unique_ptr<TPSCoefficients3D<double>> calc_tps_coefficients(
         const nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu>& source_landmarks,
-        const nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu>& destination_landmarks)
+        const nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu>& destination_landmarks,
+        double bending_penalty)
     {
         OSC_ASSERT_ALWAYS(source_landmarks.size() == destination_landmarks.size() && "there must be an equal amount of source/destination landmarks");
         OSC_ASSERT_ALWAYS(source_landmarks.size() != 0 && "at least one pair of landmarks must be provided");
@@ -35,7 +36,7 @@ namespace
         const auto destination_landmarks_mdspan = to_mdspan(destination_landmarks);
 
         // Solve the coefficients
-        return std::make_unique<TPSCoefficients3D<double>>(tps3d_solve_coefficients(source_landmarks_mdspan, destination_landmarks_mdspan));
+        return std::make_unique<TPSCoefficients3D<double>>(tps3d_solve_coefficients(source_landmarks_mdspan, destination_landmarks_mdspan, bending_penalty));
     }
 
     nb::ndarray<double, nb::shape<3>, nb::device::cpu, nb::numpy> warp_point(
@@ -71,28 +72,28 @@ void opyn::init_tps3d_submodule(nanobind::module_& tps3d_module)
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a1); },
             nb::rv_policy::take_ownership,
             R"(
-                The first term of the warping equation. Some systems treat this as the translation component of the warp.
+                The first term of the warping equation (:math:`a_1`). This could be interpreted as the translation component of the warp.
             )"
         )
         .def_prop_ro("a2",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a2); },
             nb::rv_policy::take_ownership,
             R"(
-                The second term of the warping equation. Some systems treat this as the first column of a 3x3 scale + rotation matrix.
+                The second term of the warping equation (:math:`a_2`). This could be interpreted as the first column of a 3x3 linear transformation matrix (scale, rotation, and shear).
             )"
         )
         .def_prop_ro("a3",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a3); },
             nb::rv_policy::take_ownership,
             R"(
-                The second term of the warping equation. Some systems treat this as the second column of a 3x3 scale + rotation matrix.
+                The third term of the warping equation (:math:`a_3`). This could be interpreted as the second column of a 3x3 linear transformation matrix (scale, rotation, and shear).
             )"
         )
         .def_prop_ro("a4",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a4); },
             nb::rv_policy::take_ownership,
             R"(
-                The second term of the warping equation. Some systems treat this as the third column of a 3x3 scale + rotation matrix.
+                The fourth term of the warping equation (:math:`a_4`). This could be interpreted as the third column of a 3x3 linear transformation matrix (scale, rotation, and shear).
             )"
         )
         .def("warp_point",
@@ -107,23 +108,36 @@ void opyn::init_tps3d_submodule(nanobind::module_& tps3d_module)
                 Returns:
                     A 3-element ndarray that represents the warped point.
             )"
-        );
+        )
+        .def("__eq__", std::equal_to<TPSCoefficients3D<double>>{});
 
     tps3d_module.def(
         "solve_coefficients",
         calc_tps_coefficients,
         nb::arg("source_landmarks"),
         nb::arg("destination_landmarks"),
+        nb::kw_only{},
+        nb::arg("bending_penalty") = 0.0,
         R"(
-            Returns Thin-Plate Spline (TPS) warping coefficients solved by pairing N
-            "source" points (source_landmarks) with N "destination" points (destination_landmarks).
+            Returns Thin-Plate Spline (TPS) warping coefficients.
+
+            Solves the coefficients by by pairing N "source" points (``source_landmarks``)
+            with N "destination" points (``destination_landmarks``).
 
             Args:
-                source_landmarks: An (N, 3) array of 3D points.
-                destination_landmarks: An (N, 3) array of 3D points.
+                source_landmarks: An (N, 3) ndarray of 3D points.
+                destination_landmarks: An (N, 3) ndarray of 3D points.
+                bending_penalty: A bending penalty term that penalizes bending in the solution. This
+                    can be desirable when the accuracy of the affine transform is more important than
+                    the bending of the warp (e.g. when solving joint frames), or when the landmarks
+                    are a little noisy and the output would benefit from some smoothing (e.g. for
+                    display, high-poly meshes). The concept originates from `this <https://doi.org/10.1371/journal.pcbi.1014073>`_
+                    paper, and is also exposed as ``alpha`` in the `thin-plate-spline <https://github.com/raphaelreme/tps>`_
+                    Python package.
 
             Returns:
-                A TPSCoefficients3D object that contains the calculated coefficients.
+                A :class:`TPSCoefficients3D` object that contains the calculated coefficients.
+
         )"
     );
 }

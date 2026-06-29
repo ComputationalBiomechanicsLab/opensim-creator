@@ -3,6 +3,46 @@ import opynsim
 from pathlib import Path
 import pytest
 
+def test_symbol_works_as_expected():
+    a  = opynsim.Symbol("a")
+    a2 = opynsim.Symbol("a")
+    b  = opynsim.Symbol("b")
+    b2 = opynsim.Symbol("b")
+
+    # Try all equality permutations (reflexivity)
+    assert a == a2
+    assert a != b
+    assert a != b2
+    assert a2 == a
+    assert a2 != b
+    assert a2 != b
+    assert b != a
+    assert b != a2
+    assert b == b2
+    assert b2 != a
+    assert b2 != a2
+    assert b2 == b
+
+    # Ensure equality also works with built-in Python strings
+    assert a == "a" and "a" == a and a != "b" and "b" != a
+
+    # Ensure hashing with `set`s works
+    assert a in {a2}
+    assert a2 not in {b, b2}
+
+    # Conversion with `str` should act as-if it were a string all-along
+    # so that `Symbol`s can be pumped into third-party code more easily.
+    assert isinstance(str(a), str)
+    assert str(a) == "a"
+    assert str(b) == "b"
+
+    # Conversion with `repr` (e.g. for development, debugging) should still
+    # make it clear that it's a `Symbol` object, though.
+    assert repr(a) == 'Symbol("a")'
+
+    # Substring searching should also work
+    assert "sub" in opynsim.Symbol("substring")
+
 def test_can_default_construct_model_specification():
     model_specification = opynsim.ModelSpecification()
 

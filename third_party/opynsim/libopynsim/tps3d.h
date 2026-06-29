@@ -41,6 +41,25 @@ namespace opyn
         // warping algorithm is trying to fit a warping equation to.
         std::vector<LandmarkPair3D<T>> landmarks;
 
+        // A bending penalty term that smooths out the solution. The term originates
+        // in the academic literature from:
+        //
+        //     > "Do we need medical imaging-informed musculoskeletal models..."?
+        //     > E. Stansfield, W. Koller, B. Goncalves, H. Zainz, PLOS Comp. Biol.
+        //     > https://doi.org/10.1371/journal.pcbi.1014073
+        //
+        // Which used a Python library (PyPi: thin-plate-spline) that provides
+        // the functionality via a term it calls `alpha`:
+        //
+        //     > https://github.com/raphaelreme/tps/blob/v1.2.2/src/tps/thin_plate_spline.py#L141
+        //
+        // The academic paper refers to it as "[TPS] bending strength was penalized" (p13). Whereas
+        // the library calls it "regularization strength".
+        //
+        // This can be a useful parameter to fiddle when working with some datasets (e.g. in the paper
+        // they used a `bending_penalty` of `0.001` for muscle points, determined experimentally.
+        T bending_penalty{};  // By default, no penalty is applied.
+
         // Set this to `true` if the resulting warping equation should translate
         // points in the source coordinate system to the destination coordinate
         // system (i.e. enable/disable writing `a1`).
@@ -145,7 +164,8 @@ namespace opyn
     // such as the buffer layout of a Python scripting environment.
     TPSCoefficients3D<double> tps3d_solve_coefficients(
         cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> source_landmarks,
-        cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks
+        cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks,
+        double bending_penalty = 0.0
     );
 
     // Returns a warped point computed by evaluating a 3D Thin-Plate Spline (TPS)

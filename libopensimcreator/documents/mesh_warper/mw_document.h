@@ -21,6 +21,7 @@ namespace osc
         bool recalculateNormals;
         float sourceLandmarksPrescale;
         float destinationLandmarksPrescale;
+        float bendingPenalty;
         bool applyAffineTranslation;
         bool applyAffineScale;
         bool applyAffineRotation;

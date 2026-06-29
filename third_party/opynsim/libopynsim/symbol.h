@@ -2,6 +2,7 @@
 
 #include <liboscar/utilities/string_name.h>
 
+#include <format>
 #include <functional>
 #include <iosfwd>
 #include <string_view>
@@ -35,9 +36,35 @@ namespace opyn
 
         osc::StringName data_;
     };
+}
 
-    /// Writes "Symbol(name={symbol.name()})" to `ostream`.
-    std::ostream& operator<<(std::ostream& ostream, const opyn::Symbol& symbol);
+/// Formats `Symbol`s as "Symbol(\"{symbol.name()}\")"
+template<>
+struct std::formatter<opyn::Symbol> final {
+    constexpr auto parse(std::format_parse_context& ctx)
+    {
+        auto it = ctx.begin();
+        if (it != ctx.end() and *it != '}') {
+            throw std::format_error{"Symbol does not accept format specifiers"};
+        }
+        return it;
+    }
+
+    auto format(const opyn::Symbol& s, std::format_context& ctx) const
+    {
+        auto it = std::ranges::copy(std::string_view{"Symbol(\""}, ctx.out()).out;
+        it = std::ranges::copy(s.name(), it).out;
+        return std::ranges::copy(std::string_view{"\")"}, it).out;
+    }
+};
+
+namespace opyn
+{
+    /// Writes "Symbol(\"{symbol.name()}\")" to `ostream`.
+    inline std::ostream& operator<<(std::ostream& ostream, const opyn::Symbol& symbol)
+    {
+        return ostream << std::format("{}", symbol);
+    }
 }
 
 template<>

@@ -1,30 +1,25 @@
-include(CMakeDependentOption)
-
-option(OPYN_GENERATE_STUBS         "Generate Python stubs (.pyi) for native bindings" ON)
+option(OPYN_GENERATE_STUBS "Generate Python stubs (.pyi) for native bindings" ON)
 
 # Sanity-check universal builds (not allowed)
 if(APPLE AND CMAKE_OSX_ARCHITECTURES)
     list(LENGTH CMAKE_OSX_ARCHITECTURES _arch_count)
     if(_arch_count GREATER 1)
         message(FATAL_ERROR
-            "Universal builds are not allowed, because it's simpler to package python libraries one arch per package (imo)"
+            "Universal builds are not allowed, because it's simpler to package python libraries one arch per package"
             "CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES} contains multiple entries."
         )
     endif()
 endif()
 
-# Setup Python source code staging.
-#
-# This ensures the Python source code is copied into the build directory, so
-# that each build configuration (Debug, Release, etc.) has its own unique
-# staging directory that can be ran independently of the others.
+# Copy the Python source code into build directory, so each build configuration
+# (Debug, Release, etc.) has its own unique staging directory.
 if(TRUE)
-    set(OPYN_OPYNSIM_STAGING_DIR "${CMAKE_CURRENT_BINARY_DIR}/opynsim")
     set(OPYN_OPYNSIM_SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/opynsim")
+    set(OPYN_OPYNSIM_STAGING_DIR "${CMAKE_CURRENT_BINARY_DIR}/opynsim")
     set(OPYN_STAGING_OUTPUTS)
 
     # Setup custom build command that copies Python sources into the staging
-    # directory whenever one changes
+    # directory whenever a source file changes.
     file(GLOB_RECURSE OPYN_OPYNSIM_PYTHON_SOURCES "${OPYN_OPYNSIM_SOURCE_ROOT}/*.py")
     foreach(_src ${OPYN_OPYNSIM_PYTHON_SOURCES})
         file(RELATIVE_PATH _rel ${OPYN_OPYNSIM_SOURCE_ROOT} ${_src})
@@ -47,15 +42,11 @@ endif()
 #
 # This uses nanobind to build C++ code into a native Python extension module
 # that's built into the staging directory, which means that the resulting
-# staging directory contains everything it needs (Python + native module); for
-# example, to be ran from the command-line (using PYTHONPATH=staging_directory).
+# staging directory is compatible with PYTHONPATH (handy for debugging/dev).
 if(TRUE)
-    # Find nanobind
+    # Use nanobind (docs: https://nanobind.readthedocs.io/en/latest/api_cmake.html)
     find_package(nanobind REQUIRED)
 
-    # Use nanobind to declare the `opynsim._core` Python extension module target
-    #
-    # See https://nanobind.readthedocs.io/en/latest/api_cmake.html for API docs
     set(OPYN_NANOBIND_ARGS
         NB_STATIC             # Compile the nanobind library as a static library
         NB_SUPPRESS_WARNINGS  # Mark nanobind/Python directories as SYSTEM and disable clang-tidying them
@@ -69,13 +60,37 @@ if(TRUE)
     target_include_directories(_core
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # so that `#include <opynsim/_core/...>` works
     )
+    target_compile_features(_core PUBLIC cxx_std_23)
+    set_target_properties(_core PROPERTIES
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS        OFF
+    )
+    if(OPYN_USE_STRICT_COMPILER_FLAGS)
+        include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
+        opyn_add_strict_compiler_options_to(_core)
+    endif()
+    target_link_libraries(_core PRIVATE opynsim)
+    add_dependencies(_core opynsim_python_source_staging) # Dependent on the copied Python staging directory
 
-    # Set `OPYN_PYTHON_INTERPRETER_TAG` and `OPYN_PYTHON_ABI_TAG` on the `_core` module.
+    # Scrap all public symbols apart from `PyInit_*` / `_PyInit_*` (reduces symbol collisions).
+    if (APPLE)
+        target_link_options(_core PRIVATE "-Wl,-exported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/exports.txt")
+    elseif(UNIX AND NOT APPLE)  # i.e. Linux
+        target_link_options(_core PRIVATE "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/exports.map")
+    endif()
+
+    # Make `_core` build to the staging directory
+    set_target_properties(_core PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${OPYN_OPYNSIM_STAGING_DIR}
+        RUNTIME_OUTPUT_DIRECTORY ${OPYN_OPYNSIM_STAGING_DIR}
+    )
+
+    # Set `OPYN_PYTHON_INTERPRETER_TAG` and `OPYN_PYTHON_ABI_TAG` properties on
+    # the `_core` target.
     #
-    # This can help downstream build/packaging steps determine which python interpreter
-    # can use the resulting native module. When compiling with a stable ABI, the ABI
-    # tag is always "abi3". Otherwise, the ABI tag is tied to the python version that
-    # was used to compile the module.
+    # Used during packaging to determine wheel naming conventions etc. When compiling
+    # with a stable ABI, the ABI tag is always "abi3". Otherwise, the ABI tag is
+    # tied to the python version that was used to compile the module.
     if(TRUE)
         # Remove dot between MAJOR.MINOR → "3.11" → "311"
         string(REGEX MATCH "^[0-9]+\\.[0-9]+" _py_mm "${Python_VERSION}")
@@ -94,58 +109,6 @@ if(TRUE)
         unset(_py_tag)
         unset(_py_mm)
     endif()
-
-    target_compile_features(_core PUBLIC cxx_std_23)
-    set_target_properties(_core PROPERTIES
-        CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS        OFF
-    )
-    if(OPYN_USE_STRICT_COMPILER_FLAGS)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
-        opyn_add_strict_compiler_options_to(_core)
-    endif()
-
-    # Link to the underlying `libopynsim` C++ code
-    target_link_libraries(_core PRIVATE opynsim)
-
-    # When building for Windows with `OPYN_STRICT_ABI_CHECKS`, the
-    # libraries etc. should already be built with `/MT`, but good
-    # manners also dictate that, even when compiling with `/MT`,
-    # ucrt (included in Windows base install) and vcruntime
-    # (packaged with Python Windows installs) should be dynamically
-    # linked so that  memory allocations etc. share the same
-    # heap as other native code in Python.
-    #
-    # Compiling with `/MT` is related to dropping `msvcp140.dll`, and
-    # this special linking concern is something that has been mentioned
-    # in larger Python projects:
-    #
-    # - https://github.com/matplotlib/matplotlib/pull/28687
-    # - https://discuss.python.org/t/planning-for-an-msvc-abi-break/65102
-    if(OPYN_STRICT_ABI_CHECKS AND MSVC)
-        target_link_libraries(_core PRIVATE ucrt.lib vcruntime.lib)
-        target_link_options(_core PRIVATE "/NODEFAULTLIB:libucrt.lib" "/NODEFAULTLIB:libvcruntime.lib")
-    endif()
-
-    # Scrap all public symbols apart from `PyInit_*` / `_PyInit_*`
-    #
-    # This is to reduce symbol collisions when loading the library in a Python
-    # environment that might also be loading other native extension modules.
-    if (APPLE)
-        target_link_options(_core PRIVATE "-Wl,-exported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/exports.txt")
-    elseif(UNIX AND NOT APPLE)  # i.e. Linux
-        target_link_options(_core PRIVATE "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/exports.map")
-    endif()
-
-    # Ensure the staging directory is created and contains the necessary
-    # Python code before building `_core` into the staging directory
-    add_dependencies(_core opynsim_python_source_staging)
-
-    # Make `_core` build to the staging directory
-    set_target_properties(_core PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY ${OPYN_OPYNSIM_STAGING_DIR}
-        RUNTIME_OUTPUT_DIRECTORY ${OPYN_OPYNSIM_STAGING_DIR}
-    )
 
     # Build Python interface stubs (`.pyi`) for `_core` into the staging directory.
     #

@@ -10,6 +10,7 @@ osc::MwDocument::MwDocument() :
     recalculateNormals{false},
     sourceLandmarksPrescale{1.0f},
     destinationLandmarksPrescale{1.0f},
+    bendingPenalty{},
 
     // note: These should ideally match the model warper's defaults (#1122).
     applyAffineTranslation{false},

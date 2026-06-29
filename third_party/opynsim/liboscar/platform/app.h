@@ -191,7 +191,7 @@ namespace osc
         //     }
         //     teardown_main_loop();
         //
-        // which you may need to write yourself if your loop is external (e.g. from a browser's event loop)
+        // which you may need to write yourself if your loop is external (e.g. from a browser's event queue)
         void show(std::unique_ptr<Widget>);
 
         // constructs `TWidget` with `Args` and starts `show`ing it
@@ -207,7 +207,7 @@ namespace osc
         //
         // this is merely a *request* that the `App` will fulfill at a later
         // time (usually, after it's done handling some part of the top-level
-        // application rendering loop)
+        // application loop)
         //
         // When the App decides it's ready to transition to the new widget, it will:
         //
@@ -229,7 +229,7 @@ namespace osc
         //
         // this is merely a *request* that the `App` will fulfill at a later
         // time (usually, after it's done handling some part of the top-level
-        // application rendering loop)
+        // application loop)
         void request_quit();
 
         // Requests that the given function is executed on the main thread.
@@ -255,7 +255,7 @@ namespace osc
         //
         // - `callback` is called from the ui thread by the implementation when the user chooses
         //   a file, cancels, or there's an error. It is implementation-defined whether `callback`
-        //   is called immediately or as part of pumping the application event loop. `callback`
+        //   is called immediately or as part of pumping the application event queue. `callback`
         //   may not be called if the application quits/destructs prematurely.
         //
         // - `filters` should be a sequence of permitted `FileDialogFilter`s, which will constrain
@@ -288,7 +288,7 @@ namespace osc
         //
         // - `callback` is called from the ui thread by the implementation when the user chooses
         //   a file, cancels, or there's an error. It is implementation-defined whether `callback`
-        //   is called immediately or as part of pumping the application event loop. `callback` may
+        //   is called immediately or as part of pumping the application event queue. `callback` may
         //   not be called if the application quits/destructs prematurely.
         //
         // - `initial_directory_to_show` should be a filesystem path to a directory that should
@@ -308,7 +308,7 @@ namespace osc
         //
         // - `callback` is called from the main thread by the implementation when the user chooses
         //   a file, cancels or there's an error. It is implementation-defined whether `callback` is
-        //   called  immediately, or as part of pumping the application event loop. `callback` may
+        //   called  immediately, or as part of pumping the application event queue `callback` may
         //   not be called if the application quits/destructs prematurely.
         //
         // - `filters` should be a sequence of permitted `FileDialogFilter`s, which will constrain
@@ -443,6 +443,13 @@ namespace osc
         bool main_window_showing() const;
 
         // Sets if the main window is showing (`true`) or hidden (`false`).
+        //
+        // Note: on some OSes (e.g. macOS), the window state will not change
+        // until the event queue is pumped (e.g. because of a pending OS
+        // animation). Therefore, this function should be called either when
+        // the main thread is still pumping the event queue or when the
+        // caller is capable of calling `process_events()` (potentially,
+        // multiple times) afterwards.
         void set_main_window_showing(bool);
 
         // Focus the main application window, which usually brings it to
@@ -554,20 +561,25 @@ namespace osc
         // frame started
         AppClock::duration frame_delta_since_last_frame() const;
 
-        // makes main application event loop wait, rather than poll, for events
+        // makes main application loop wait, rather than poll, the event queue
         //
-        // By default, `App` is a *polling* event loop that renders as often as possible. This
-        // method makes the main application a *waiting* event loop that only moves forward when
-        // an event occurs.
+        // By default, `App` polls the event queue and renders as often as possible. This
+        // method makes the main application wait until at least one event is processed from
+        // the event queue.
         //
         // Rendering this way is *much* more power efficient (especially handy on TDP-limited devices
         // like laptops), but top-level widgets *must* ensure the application keeps moving forward by
-        // calling methods like `request_redraw` or by pumping other events into the loop.
+        // calling methods like `request_redraw` or by adding events into the event queue.
         bool is_main_loop_waiting() const;
         void set_main_loop_waiting(bool);
         void make_main_loop_waiting();
         void make_main_loop_polling();
-        void request_redraw();  // threadsafe: used to encourage a waiting main loop to redraw.
+        void request_redraw();  // threadsafe: puts a redraw request into the event queue.
+
+        // Processes pending events in the event queue. Manually calling this
+        // can be necessary to pump the event queue when the main thread is not
+        // running the main application loop.
+        void process_events();
 
     private:
         static int main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Widget>()>& widget_ctor);

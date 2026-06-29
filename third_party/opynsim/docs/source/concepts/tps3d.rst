@@ -12,8 +12,7 @@ points (landmarks) from both a "source" and "destination" to create warped "resu
 points. OPynSim's implementation of TPS was ported from
 `OpenSim Creator <https://www.opensimcreator.com/>`_, which provides a concrete use-case
 for TPS in its `mesh warper documentation <https://docs.opensimcreator.com/manual/en/latest/the-mesh-warper.html>`_. This
-documentation page is a brief explanation of the primary literature sources on the
-topic of TPS.
+documentation page is a brief explanation of TPS.
 
 The primary literature source for the TPS technique is:
 
@@ -50,7 +49,7 @@ OPynSim provides a Python API for the TPS technique, in the form of:
 
 - :func:`opynsim.tps3d.solve_coefficients`: a function that computes the warping equation
   coefficients (:math:`a_1`, :math:`a_2`, etc.) for the provided landmark pairs, which returns...
-- :class:`opynsim.tps3d.TPSCoefficients3D`: a class that represents the coefficients, which has...
+- :class:`opynsim.tps3d.TPSCoefficients3D`: a class that represents the coefficients, which has methods like...
 - :meth:`opynsim.tps3d.TPSCoefficients3D.warp_point`: a method that evaluates the warping
   equation (:math:`f`, above) for a single point.
 
@@ -94,6 +93,10 @@ Relevant Literature
 - 3D Point set warping by thin-plate/rbf function, Wang Lin (`link <3D Point set warping by thin-plate/rbf function_>`_)
     - MATLAB implementation of the algorithm
     - Useful for implementors
+- Do we need medical imaging-informed musculoskeletal models for simulations in healthy adults? A new workflow based on magnetic resonance imaging highlights the importance of personalized geometry (`link <Do we need medical imaging-informed MSK models>`_)
+    - Uses something similar to ``bending_penalty`` (:meth:`opynsim.tps3d.solve_coefficients`) in an academic context.
+- ``thin-plate-spline``: Open-Source Python TPS implementation (`link <thin-plate-spline Python Package>`_)
+    - Includes regularization support (called ``bending_penalty`` in OPynSim, ``alpha`` in ``thin-plate-spline``).
 
 .. _TPS General Info: https://en.wikipedia.org/wiki/Thin_plate_spline
 .. _TPS Primary Literature Source: https://ieeexplore.ieee.org/document/24792
@@ -105,3 +108,5 @@ Relevant Literature
 .. _Interactive Thin-Plate Spline Interpolation: https://github.com/sarathknv/tps
 .. _3D Thin Plate Spline Warping Function: https://uk.mathworks.com/matlabcentral/fileexchange/37576-3d-thin-plate-spline-warping-function
 .. _3D Point set warping by thin-plate/rbf function: https://uk.mathworks.com/matlabcentral/fileexchange/53867-3d-point-set-warping-by-thin-plate-rbf-function
+.. _Do we need medical imaging-informed MSK models:  https://doi.org/10.1371/journal.pcbi.1014073
+.. _thin-plate-spline Python Package: https://github.com/raphaelreme/tps
