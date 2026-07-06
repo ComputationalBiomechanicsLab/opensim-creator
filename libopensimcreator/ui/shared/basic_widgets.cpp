@@ -2,7 +2,6 @@
 
 #include <libopensimcreator/documents/model/undoable_model_actions.h>
 #include <libopensimcreator/documents/model/undoable_model_state_pair.h>
-#include <libopensimcreator/documents/simulation/integrator_method.h>
 #include <libopensimcreator/documents/simulation/simulation_model_state_pair.h>
 #include <libopensimcreator/documents/param_block.h>
 #include <libopensimcreator/documents/param_value.h>
@@ -22,6 +21,7 @@
 #include <libopynsim/graphics/open_sim_decoration_options.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
+#include <libopynsim/integrator_method.h>
 #include <liboscar/formats/dae.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/formats/stl.h>
@@ -157,9 +157,9 @@ namespace
         {
             ui::draw_text("%f", static_cast<float>(std::get<double>(v)));
         }
-        else if (std::holds_alternative<IntegratorMethod>(v))
+        else if (std::holds_alternative<opyn::IntegratorMethod>(v))
         {
-            ui::draw_text(std::get<IntegratorMethod>(v).label());
+            ui::draw_text(opyn::label_for(std::get<opyn::IntegratorMethod>(v)));
         }
         else if (std::holds_alternative<int>(v))
         {

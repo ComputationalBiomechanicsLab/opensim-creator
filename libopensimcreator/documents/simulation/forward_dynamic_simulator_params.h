@@ -1,8 +1,9 @@
 #pragma once
 
-#include <libopensimcreator/documents/simulation/integrator_method.h>
 #include <libopensimcreator/documents/simulation/simulation_clock.h>
 #include <libopensimcreator/documents/param_block.h>
+
+#include <libopynsim/integrator_method.h>
 
 namespace osc
 {
@@ -15,7 +16,7 @@ namespace osc
         SimulationClock::time_point finalTime;
 
         // which integration method to use for the simulation
-        IntegratorMethod integratorMethodUsed;
+        opyn::IntegratorMethod integratorMethodUsed;
 
         // the time interval, in simulation time, between report updates
         SimulationClock::duration reportingInterval;

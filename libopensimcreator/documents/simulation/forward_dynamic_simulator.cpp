@@ -2,7 +2,6 @@
 
 #include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/simulation/forward_dynamic_simulator_params.h>
-#include <libopensimcreator/documents/simulation/integrator_method.h>
 #include <libopensimcreator/documents/simulation/simulation_clock.h>
 #include <libopensimcreator/documents/simulation/simulation_report.h>
 #include <libopensimcreator/documents/simulation/simulation_status.h>
@@ -10,9 +9,11 @@
 #include <libopynsim/documents/output_extractors/output_extractor.h>
 #include <libopynsim/documents/output_extractors/integrator_output_extractor.h>
 #include <libopynsim/documents/output_extractors/multi_body_system_output_extractor.h>
+#include <libopynsim/integrator_method.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/shims/cpp20/stop_token.h>
 #include <liboscar/shims/cpp20/thread.h>
+#include <liboscar/utilities/enum_helpers.h>
 #include <liboscar/utilities/hash_helpers.h>
 #include <liboscar/utilities/perf_clock.h>
 #include <liboscar/utilities/uid.h>
@@ -192,12 +193,29 @@ namespace
         return s_Outputs;
     }
 
+    std::unique_ptr<SimTK::Integrator> ConstructIntegratorWithMethod(
+        const opyn::IntegratorMethod& method,
+        const SimTK::MultibodySystem& system)
+    {
+        static_assert(osc::num_options<opyn::IntegratorMethod>() == 7);
+        switch (method) {
+        case opyn::IntegratorMethod::RungeKuttaMerson:   return std::make_unique<SimTK::RungeKuttaMersonIntegrator>(system);
+        case opyn::IntegratorMethod::ExplicitEuler:      return std::make_unique<SimTK::ExplicitEulerIntegrator>(system);
+        case opyn::IntegratorMethod::RungeKutta2:        return std::make_unique<SimTK::RungeKutta2Integrator>(system);
+        case opyn::IntegratorMethod::RungeKutta3:        return std::make_unique<SimTK::RungeKutta3Integrator>(system);
+        case opyn::IntegratorMethod::RungeKuttaFeldberg: return std::make_unique<SimTK::RungeKuttaFeldbergIntegrator>(system);
+        case opyn::IntegratorMethod::SemiExplicitEuler2: return std::make_unique<SimTK::SemiExplicitEuler2Integrator>(system);
+        case opyn::IntegratorMethod::Verlet:             return std::make_unique<SimTK::VerletIntegrator>(system);
+        default:                                         std::unreachable();
+        }
+    }
+
     std::unique_ptr<SimTK::Integrator> CreateInitializedIntegrator(const SimulatorThreadInput& input)
     {
         const ForwardDynamicSimulatorParams& params = input.getParams();
 
         // create + init an integrator
-        auto integ = params.integratorMethodUsed.instantiate(input.getMultiBodySystem());
+        auto integ = ConstructIntegratorWithMethod(input.getParams().integratorMethodUsed, input.getMultiBodySystem());
         integ->setInternalStepLimit(params.integratorStepLimit);
         integ->setMinimumStepSize(params.integratorMinimumStepSize.count());
         integ->setMaximumStepSize(params.integratorMaximumStepSize.count());

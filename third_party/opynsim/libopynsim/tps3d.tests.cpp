@@ -21,7 +21,7 @@ namespace
     // points on the surface of a sphere with radius `radius` using the Fibonacci
     // lattice technique.
     template<std::floating_point T = double>
-    SimTK::Vec<3, T> generate_ith_fibonnaci_sphere_point(size_t i, size_t n, T radius = T(1.0))
+    SimTK::Vec<3, T> generate_ith_fibonnaci_sphere_point(size_t i, size_t n, T radius = static_cast<T>(1.0))
     {
         const T fi = static_cast<T>(i);
         const T fn = static_cast<T>(n);
@@ -45,7 +45,7 @@ namespace
     // dimensions. The point is created by projecting `p` onto the cube's
     // surface. `std::nullopt` is returned if the point is un-projectable.
     template<std::floating_point T>
-    std::optional<SimTK::Vec<3, T>> project_onto_cube_surface(const SimTK::Vec<3, T>& p, T half_side_length = T(1.0))
+    std::optional<SimTK::Vec<3, T>> project_onto_cube_surface(const SimTK::Vec<3, T>& p, T half_side_length = static_cast<T>(1.0))
     {
         const auto pa = p.abs();
         const T longest_axis = std::max({pa[0], pa[1], pa[2]});
@@ -81,7 +81,7 @@ namespace
 
     bool equal_within_absdiff(const SimTK::Vec3& lhs, const SimTK::Vec3& rhs, double absdiff)
     {
-        for (int i = 0; i < lhs.size(); ++i) {
+        for (int i = 0; i < SimTK::Vec3::size(); ++i) {
             if (not (std::abs(lhs[i] - rhs[i]) <= absdiff)) {
                 return false;
             }
@@ -93,7 +93,7 @@ namespace
     // an orthogonal scale factor.
     struct SimbodyAffineTransform final {
         SimTK::Vec3 scale{0.0};
-        SimTK::Transform transform{};
+        SimTK::Transform transform;
 
         SimTK::Vec3 operator*(const SimTK::Vec3& rhs) const
         {

@@ -13,6 +13,7 @@
 #include <liboscar/utilities/string_helpers.h>
 #include <libopynsim/platform/opynsim_app.h>
 #include <libopynsim/data_frame.h>
+#include <libopynsim/forward_dynamics_simulation.h>
 #include <libopynsim/model.h>
 #include <libopynsim/model_specification.h>
 #include <libopynsim/model_state.h>
@@ -710,36 +711,24 @@ namespace {
 
     void register_model_class(nb::module_& m)
     {
-        nb::class_<Model> model_class(
-            m,
-            "Model",
-            R"(
-                A compiled, ready-to-simulate, model of a physics system.
+        nb::class_<Model> cls(m, "Model", R"(
+            A compiled, ready-to-simulate, model of a physics system.
 
-                A :class:`Model` can only be created from a :class:`ModelSpecification` via the
-                :meth:`ModelSpecification.compile` function. Therefore, editing a :class:`Model` requires
-                editing its associated :class:`ModelSpecification` and recompiling it to create a
-                new :class:`Model`.
-            )"
-        );
-        model_class.def_prop_ro(
-            "num_coordinates",
-            &Model::num_coordinates,
-            R"(
-                Returns the number of coordinates in the model.
+            A :class:`Model` can only be created from a :class:`ModelSpecification` via the
+            :meth:`ModelSpecification.compile` function. Therefore, editing a :class:`Model` requires
+            editing its associated :class:`ModelSpecification` and recompiling it to create a
+            new :class:`Model`.
+        )");
+        cls.def_prop_ro("num_coordinates", &Model::num_coordinates, R"(
+            Returns the number of coordinates in the model.
 
-                A coordinate represents a single degree of freedom (DoF) in the model, such as a joint angle,
-                translation, or rotational parameter that contributes to the configuration/pose of a model.
-            )"
-        );
-        model_class.def_prop_ro(
-            "coordinates",
-            &Model::coordinates,
-            R"(
-                Returns a list of all the coordinates in the model.
-            )"
-        );
-        model_class.def(
+            A coordinate represents a single degree of freedom (DoF) in the model, such as a joint angle,
+            translation, or rotational parameter that contributes to the configuration/pose of a model.
+        )");
+        cls.def_prop_ro("coordinates", &Model::coordinates, R"(
+            Returns a list of all the coordinates in the model.
+        )");
+        cls.def(
             "initial_state",
             &Model::initial_state,
             nb::kw_only{},
@@ -755,7 +744,7 @@ namespace {
                 :meth:`Model.realize` on it.
             )"
         );
-        model_class.def(
+        cls.def(
             "column_to_state_variable_mappings",
             &Model::column_to_state_variable_mappings,
             nb::arg("data_frame"),
@@ -771,7 +760,7 @@ namespace {
                 useful for debugging why states aren't being read correctly.
             )"
         );
-        model_class.def(
+        cls.def(
             "rotational_columns_in",
             &Model::rotational_columns_in,
             nb::arg("data_frame"),
@@ -786,7 +775,7 @@ namespace {
                 being read correctly.
             )"
         );
-        model_class.def(
+        cls.def(
             "convert_data_frame_to_radians",
             &Model::convert_data_frame_to_radians,
             nb::arg("data_frame"),
@@ -800,7 +789,7 @@ namespace {
                 attributes.
             )"
         );
-        model_class.def(
+        cls.def(
             "states_from_data_frame",
             &Model::states_from_data_frame,
             nb::arg("data_frame"),
@@ -824,7 +813,7 @@ namespace {
                 each of them.
             )"
         );
-        model_class.def(
+        cls.def(
             "realize",
             &Model::realize,
             nb::arg("model_state"),
@@ -840,25 +829,25 @@ namespace {
                 and so on.
             )"
         );
-        model_class.def(
+        cls.def(
             "get_coordinate_value",
             &Model::get_coordinate_value,
             nb::arg("model_state"),
             nb::arg("coordinate"),
             R"(
                 Returns the value of the corresponding state variable in ``model_state`` for the
-                coordinate identified by ``coordinate``.
+                value of ``coordinate``.
             )"
         );
-        model_class.def(
+        cls.def(
             "set_coordinate_value",
             &Model::set_coordinate_value,
             nb::arg("model_state"),
             nb::arg("coordinate"),
             nb::arg("value"),
             R"(
-                Sets corresponding state variable in ``model_state`` for the coordinate identified by
-                ``coordinate`` to ``value``.
+                Sets corresponding state variable in ``model_state`` for the value of  ``coordinate``
+                to ``value``.
 
                 Changing the value of a coordinate changes ``model_state``'s :class:`ModelStateStage` to
                 :attr:`ModelStateStage.POSITION`. Therefore, you may need to use :meth:`realize` to
@@ -866,21 +855,72 @@ namespace {
                 requires a later stage (e.g. rendering).
             )"
         );
-        model_class.def_prop_ro(
-            "num_outputs",
-            &Model::num_outputs,
+        cls.def(
+            "get_coordinate_speed",
+            &Model::get_coordinate_speed,
+            nb::arg("model_state"),
+            nb::arg("coordinate"),
             R"(
-                Returns the number of outputs the model has.
+                Returns the value of the corresponding state variable in ``model_state`` for the
+                speed of ``coordinate``.
             )"
         );
-        model_class.def_prop_ro(
-            "outputs",
-            &Model::outputs,
+        cls.def(
+            "set_coordinate_speed",
+            &Model::set_coordinate_speed,
+            nb::arg("model_state"),
+            nb::arg("coordinate"),
+            nb::arg("speed"),
             R"(
-                Returns a list of all outputs the model has.
+                Sets the value corresponding state variable in ``model_state`` for the speed of ``coordinate``
+                to ``speed``.
+
+                Changing the speed of a coordinate changes ``model_state``'s :class:`ModelStateStage` to
+                :attr:`ModelStateStage.POSITION`. Therefore, you may need to use :meth:`realize` to
+                re-realize the state to a later stage if you intend on using the state with a method that
+                requires a later stage (e.g. rendering).
             )"
         );
-        model_class.def(
+        cls.def(
+            "is_coordinate_locked",
+            &Model::is_coordinate_locked,
+            nb::arg("model_state"),
+            nb::arg("coordinate"),
+            R"(
+                Returns ``True`` if ``coordinate`` is locked in ``model_state``.
+
+                Locking a coordinate prevents it from changing its value/speed (e.g. during
+                simulation, or in a solver).
+            )"
+        );
+        cls.def(
+            "set_coordinate_locked",
+            &Model::set_coordinate_locked,
+            nb::arg("model_state"),
+            nb::arg("coordinate"),
+            nb::arg("locked") = true,
+            R"(
+                Sets the locked state of ``coordinate`` in ``model_state`` to ``locked``.
+
+                Locking a coordinate prevents it from changing its value/speed (e.g. during
+                simulation, or in a solver).
+            )"
+        );
+        cls.def(
+            "is_coordinate_rotational",
+            &Model::is_coordinate_rotational,
+            nb::arg("coordinate"),
+            R"(
+                Returns ``True`` if ``coordinate`` is rotational (i.e. not translational, coupled, or undefined).
+            )"
+        );
+        cls.def_prop_ro("num_outputs", &Model::num_outputs, R"(
+            Returns the number of outputs the model has.
+        )");
+        cls.def_prop_ro("outputs", &Model::outputs, R"(
+            Returns a list of all outputs the model has.
+        )");
+        cls.def(
             "get_output_value",
             [](const Model& model, const ModelState& model_state, const Symbol& output)
             {
@@ -910,10 +950,17 @@ namespace {
             )"
         );
         model_state_class.def_prop_ro(
+            "time",
+            &ModelState::time,
+            R"(
+                Returns the time of the state.
+            )"
+        );
+        model_state_class.def_prop_ro(
             "stage",
             &ModelState::stage,
             R"(
-                Returns the current :class:`ModelStateStage` of the state.
+                Returns the :class:`ModelStateStage` of the state.
 
                 Notes:
                     A state may be realized to a later stage with :meth:`Model.realize`.
@@ -1000,6 +1047,11 @@ namespace {
         model_state_stage_class.value("DYNAMICS",     ModelStateStage::dynamics,     "The force acting on each body is known, along with total kinetic/potential energy.");
         model_state_stage_class.value("ACCELERATION", ModelStateStage::acceleration, "The time derivatives of all continuous state variables are known.");
         model_state_stage_class.value("REPORT",       ModelStateStage::report,       "Additional variables useful for output are known");
+
+        model_state_stage_class.def("__lt__", std::less<ModelStateStage>{});
+        model_state_stage_class.def("__le__", std::less_equal<ModelStateStage>{});
+        model_state_stage_class.def("__gt__", std::greater<ModelStateStage>{});
+        model_state_stage_class.def("__ge__", std::greater_equal<ModelStateStage>{});
 
         // Define convenience aliases for the enum
         m.attr("STAGE_TOPOLOGY")     = model_state_stage_class.attr("TOPOLOGY");
@@ -1091,6 +1143,57 @@ namespace {
         )");
         m.def("read_jpg", opyn::read_jpg, nb::arg("source"), "An alias for :func:`read_jpeg`");
     }
+
+    void register_integrator_settings(nb::module_& m)
+    {
+        nb::class_<IntegratorSettings> cls(m, "IntegratorSettings", R"(
+            Settings for a forward integrator (e.g. as used by :class:`ForwardDynamicsSimulation`).
+
+            **Note**: Modifying integrator settings can have a large effect on a simulation's
+            performance and behavior. When tweaking the settings, it is recommended to re-validate
+            the simulation's outcomes.
+        )");
+        cls.def(nb::init<>{});
+    }
+
+    void register_forward_dynamics_simulation_class(nb::module_& m)
+    {
+        nb::class_<ForwardDynamicsSimulation> cls(
+            m,
+            "ForwardDynamicsSimulation",
+            R"(
+                Represents an active forward-dynamics simulation.
+
+                The simulation stores a :class:`ModelState` that it integrates forward
+                in time to a caller-specified timepoint (see :meth:`integrate_to`).
+            )"
+        );
+        cls.def(
+            nb::init<Model, ModelState, std::optional<IntegratorSettings>>{},
+            nb::arg("model"),
+            nb::arg("model_state"),
+            nb::arg("integrator_settings") = std::nullopt,
+            R"(
+                Constructs a :class:`ForwardDynamicsSimulation` of ``model`` in ``model_state``.
+
+                Args:
+                    model: The :class:`Model` that is being integrated.
+                    model_state: The state of ``model`` that the simulator begins at.
+                    integrator_settings: The :class:`IntegratorSettings` that the simulation's integrator
+                        should use to integrate time forwards.
+            )"
+        );
+        cls.def(
+            "integrate_to",
+            &ForwardDynamicsSimulation::integrate_to,
+            nb::arg("time"),
+            nb::arg("realized_to") = ModelStateStage::report,
+            R"(
+                Integrates this simulation's internal :class:`ModelState` to ``time`` and
+                then returns a copy of the state realized to at least ``realized_to``.
+            )"
+        );
+    }
 }
 
 opyn::OPynSimApp& opyn::get_lazy_loaded_opynsim_app()
@@ -1151,4 +1254,6 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
     register_model_states_class(_core_module);
     register_dataframe_class(_core_module);
     register_readers(_core_module);
+    register_integrator_settings(_core_module);
+    register_forward_dynamics_simulation_class(_core_module);
 }

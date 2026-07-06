@@ -1,11 +1,12 @@
 #include "param_block_editor_popup.h"
 
-#include <libopensimcreator/documents/simulation/integrator_method.h>
 #include <libopensimcreator/documents/param_block.h>
 
+#include <libopynsim/integrator_method.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
 #include <liboscar/ui/popups/popup_private.h>
+#include <liboscar/utilities/enum_helpers.h>
 #include <liboscar/utilities/std_variant_helpers.h>
 
 #include <string_view>
@@ -45,12 +46,12 @@ namespace
         }
     }
 
-    bool DrawEditor(ParamBlock& b, int idx, IntegratorMethod im)
+    bool DrawEditor(ParamBlock& b, int idx, opyn::IntegratorMethod im)
     {
         bool rv = false;
-        if (ui::begin_combobox("##", im.label())) {
-            for (IntegratorMethod m : IntegratorMethod::all()) {
-                if (ui::draw_selectable(m.label(), m == im)) {
+        if (ui::begin_combobox("##", opyn::label_for(im))) {
+            for (opyn::IntegratorMethod m : osc::make_option_iterable<opyn::IntegratorMethod>()) {
+                if (ui::draw_selectable(opyn::label_for(m), m == im)) {
                     b.setValue(idx, m);
                     rv = true;
                 }

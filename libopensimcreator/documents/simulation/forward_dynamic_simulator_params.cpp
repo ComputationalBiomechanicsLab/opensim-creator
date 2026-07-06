@@ -31,6 +31,7 @@ namespace
 
 osc::ForwardDynamicSimulatorParams::ForwardDynamicSimulatorParams() :
     finalTime{SimulationClock::start() + SimulationClock::duration{10.0}},
+    integratorMethodUsed{opyn::IntegratorMethod::Default},
     reportingInterval{1.0/100.0},
     integratorStepLimit{20000},
     integratorMinimumStepSize{1.0e-8},
@@ -58,9 +59,9 @@ ForwardDynamicSimulatorParams osc::FromParamBlock(const ParamBlock& b)
     {
         rv.finalTime = SimulationClock::start() + SimulationClock::duration{std::get<double>(*finalTime)};
     }
-    if (auto integMethod = b.findValue(c_IntegratorMethodUsedTitle); integMethod && std::holds_alternative<IntegratorMethod>(*integMethod))
+    if (auto integMethod = b.findValue(c_IntegratorMethodUsedTitle); integMethod && std::holds_alternative<opyn::IntegratorMethod>(*integMethod))
     {
-        rv.integratorMethodUsed = std::get<IntegratorMethod>(*integMethod);
+        rv.integratorMethodUsed = std::get<opyn::IntegratorMethod>(*integMethod);
     }
     if (auto repInterv = b.findValue(c_ReportingIntervalTitle); repInterv && std::holds_alternative<double>(*repInterv))
     {

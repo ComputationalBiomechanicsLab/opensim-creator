@@ -80,21 +80,51 @@ namespace opyn
         /// Realizes `model_state` to the given `model_state_stage`.
         void realize(ModelState& model_state, ModelStateStage model_state_stage) const;
 
+        /// Returns the number of coordinates in the model.
         size_t num_coordinates() const;
-        std::vector<Symbol> coordinates() const;
-        double get_coordinate_value(const ModelState& model_state, const Symbol& coordinate) const;
-        void   set_coordinate_value(ModelState& model_state, const Symbol& coordinate, double value) const;
 
+        /// Returns all coordinates in the model.
+        std::vector<Symbol> coordinates() const;
+
+        /// Returns the value of `coordinate` in `model_state`.
+        double get_coordinate_value(const ModelState& model_state, const Symbol& coordinate) const;
+
+        /// Sets the value of `coordinate` in `model_state` to `value`.
+        void set_coordinate_value(ModelState& model_state, const Symbol& coordinate, double value) const;
+
+        /// Returns the speed of `coordinate` in `model_state`.
+        double get_coordinate_speed(const ModelState& model_state, const Symbol& coordinate) const;
+
+        /// Sets the speed of `coordinate` in `model_state` to `speed`.
+        void set_coordinate_speed(ModelState& model_state, const Symbol& coordinate, double speed) const;
+
+        /// Returns `true` if `coordinate` is locked in `model_state`.
+        bool is_coordinate_locked(const ModelState& model_state, const Symbol& coordinate) const;
+
+        /// Sets the locked state of `coordinate` in `model_state` to `locked`.
+        void set_coordinate_locked(ModelState& model_state, const Symbol& coordinate, bool locked = true) const;
+
+        /// Returns `true` if `coordinate` has a rotational (i.e. not translational or coupled).
+        bool is_coordinate_rotational(const Symbol& coordinate) const;
+
+        /// Returns the number of outputs in the model.
         size_t num_outputs() const;
+
+        /// Returns all outputs in the model.
         std::vector<Symbol> outputs() const;
+
+        /// Returns the value of `output` in `model_state`.
         OutputValue get_output_value(const ModelState& model_state, const Symbol& output) const;
 
+        /// Returns scene decorations that visually represent `*this` in `model_state`.
         std::vector<osc::SceneDecoration> decorations(
             osc::SceneCache&,
-            const ModelState&,
+            const ModelState& model_state,
             const OpenSimDecorationOptions& = {}
         ) const;
 
+        /// Returns the underlying `OpenSim::Model` (internal method: be careful with this).
+        const OpenSim::Model& open_sim_model() const;
     private:
         class Impl;
         osc::CopyOnUpdPtr<Impl> impl_;

@@ -1,8 +1,11 @@
 #pragma once
 
 #include <libopynsim/model_state_stage.h>
+#include <libopynsim/symbol.h>
 
 #include <liboscar/utilities/copy_on_upd_ptr.h>
+
+#include <unordered_map>
 
 namespace opyn { class Model; }
 namespace SimTK { class State; }
@@ -15,6 +18,8 @@ namespace opyn
     // Related: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089017/SimTK+Simulation+Concepts
     class ModelState final {
     public:
+        using attrs_type = std::unordered_map<Symbol, double>;
+
         /// Constructs an empty model state.
         ModelState();
 
@@ -26,12 +31,19 @@ namespace opyn
         /// Returns the time point, in seconds, that this state represents.
         double time() const;
 
-    private:
-        friend class Model;
+        /// Returns this `ModelState`'s metadata (e.g. integrator stats, performance counters).
+        const attrs_type& attrs() const;
 
+        /// Sets the `attrs` of this `ModelState` to `new_attrs`.
+        void set_attrs(attrs_type new_attrs);
+
+        /// Returns the underlying `SimTK::State` (internal method: be careful with this).
         const SimTK::State& simbody_state() const;
-        SimTK::State& simbody_state();
 
+        /// Returns the underlying `SimTK::State` (internal method: be careful with this).
+        SimTK::State& upd_simbody_state();
+
+    private:
         class Impl;
         osc::CopyOnUpdPtr<Impl> impl_;
     };

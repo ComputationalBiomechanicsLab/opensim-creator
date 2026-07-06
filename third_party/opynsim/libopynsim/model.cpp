@@ -384,7 +384,37 @@ public:
     void set_coordinate_value(ModelState& model_state, const Symbol& coordinate, double value) const
     {
         const auto& coord = model_.getComponent<OpenSim::Coordinate>(std::string{coordinate});
-        coord.setValue(model_state.simbody_state(), value);
+        coord.setValue(model_state.upd_simbody_state(), value);
+    }
+
+    double get_coordinate_speed(const ModelState& model_state, const Symbol& coordinate) const
+    {
+        const auto& coord = model_.getComponent<OpenSim::Coordinate>(std::string{coordinate});
+        return coord.getSpeedValue(model_state.simbody_state());
+    }
+
+    void set_coordinate_speed(ModelState& model_state, const Symbol& coordinate, double speed) const
+    {
+        const auto& coord = model_.getComponent<OpenSim::Coordinate>(std::string{coordinate});
+        coord.setSpeedValue(model_state.upd_simbody_state(), speed);
+    }
+
+    bool is_coordinate_locked(const ModelState& model_state, const Symbol& coordinate) const
+    {
+        const auto& coord = model_.getComponent<OpenSim::Coordinate>(std::string{coordinate});
+        return coord.getLocked(model_state.simbody_state());
+    }
+
+    void set_coordinate_locked(ModelState& model_state, const Symbol& coordinate, bool locked) const
+    {
+        const auto& coord = model_.getComponent<OpenSim::Coordinate>(std::string{coordinate});
+        coord.setLocked(model_state.upd_simbody_state(), locked);
+    }
+
+    bool is_coordinate_rotational(const Symbol& coordinate) const
+    {
+        const auto& coord = model_.getComponent<OpenSim::Coordinate>(std::string{coordinate});
+        return coord.getMotionType() == OpenSim::Coordinate::MotionType::Rotational;
     }
 
     size_t num_outputs() const
@@ -429,6 +459,8 @@ public:
             open_sim_decoration_options
         );
     }
+
+    const OpenSim::Model& open_sim_model() const { return model_; }
 
 private:
     OpenSim::Model model_;
@@ -489,6 +521,31 @@ void opyn::Model::set_coordinate_value(ModelState& model_state, const Symbol& co
     impl_->set_coordinate_value(model_state, coordinate, value);
 }
 
+double opyn::Model::get_coordinate_speed(const ModelState& model_state, const Symbol& coordinate) const
+{
+    return impl_->get_coordinate_speed(model_state, coordinate);
+}
+
+void opyn::Model::set_coordinate_speed(ModelState& model_state, const Symbol& coordinate, double speed) const
+{
+    impl_->set_coordinate_speed(model_state, coordinate, speed);
+}
+
+bool opyn::Model::is_coordinate_locked(const ModelState& model_state, const Symbol& coordinate) const
+{
+    return impl_->is_coordinate_locked(model_state, coordinate);
+}
+
+void opyn::Model::set_coordinate_locked(ModelState& model_state, const Symbol& coordinate, bool locked) const
+{
+    impl_->set_coordinate_locked(model_state, coordinate, locked);
+}
+
+bool opyn::Model::is_coordinate_rotational(const Symbol& coordinate) const
+{
+    return impl_->is_coordinate_rotational(coordinate);
+}
+
 size_t opyn::Model::num_outputs() const
 {
     return impl_->num_outputs();
@@ -510,4 +567,9 @@ std::vector<osc::SceneDecoration> opyn::Model::decorations(
     const OpenSimDecorationOptions& open_sim_decoration_options) const
 {
     return impl_->decorations(scene_cache, model_state, open_sim_decoration_options);
+}
+
+const OpenSim::Model& opyn::Model::open_sim_model() const
+{
+    return impl_->open_sim_model();
 }
