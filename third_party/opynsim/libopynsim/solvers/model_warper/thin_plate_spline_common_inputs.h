@@ -15,14 +15,14 @@ namespace opyn
             double sourceLandmarksPrescale_,
             double destinationLandmarksPrescale_,
             double blendingFactor_,
-            double bendingPenalty_) :
+            double warpingPenalty_) :
 
             sourceLandmarksPath{std::move(sourceLandmarksPath_)},
             destinationLandmarksPath{std::move(destinationLandmarksPath_)},
             sourceLandmarksPrescale{sourceLandmarksPrescale_},
             destinationLandmarksPrescale{destinationLandmarksPrescale_},
             blendingFactor{blendingFactor_},
-            bendingPenalty{bendingPenalty_}
+            warpingPenalty{warpingPenalty_}
         {}
 
         std::filesystem::path sourceLandmarksPath;
@@ -34,6 +34,6 @@ namespace opyn
         bool applyAffineRotation = true;
         bool applyNonAffineWarp = true;
         double blendingFactor = 1.0;
-        double bendingPenalty = 0.0;
+        double warpingPenalty = 0.0;
     };
 }

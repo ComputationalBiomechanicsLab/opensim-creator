@@ -144,10 +144,10 @@ void osc::ActionSetRecalculatingNormals(MwUndoableDocument& doc, bool newState)
     doc.commit_scratch(msg);
 }
 
-void osc::ActionSetBendingPenalty(MwUndoableDocument& doc, float newBendingPenalty)
+void osc::ActionSetWarpingPenalty(MwUndoableDocument& doc, float newWarpingPenalty)
 {
-    doc.upd_scratch().bendingPenalty = newBendingPenalty;
-    doc.commit_scratch(std::format("Set bending penalty to {}", newBendingPenalty));
+    doc.upd_scratch().warpingPenalty = newWarpingPenalty;
+    doc.commit_scratch(std::format("Set warping penalty to {}", newWarpingPenalty));
 }
 
 void osc::ActionSetSourceLandmarksPrescale(MwUndoableDocument& doc, float newSourceLandmarksPrescale)

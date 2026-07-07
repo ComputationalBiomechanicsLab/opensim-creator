@@ -65,7 +65,7 @@ namespace osc
                 source *= doc.sourceLandmarksPrescale;
                 destination *= doc.destinationLandmarksPrescale;
             }
-            newInputs.bending_penalty = doc.bendingPenalty;
+            newInputs.warping_penalty = doc.warpingPenalty;
             newInputs.apply_affine_translation = doc.applyAffineTranslation;
             newInputs.apply_affine_scale = doc.applyAffineScale;
             newInputs.apply_affine_rotation = doc.applyAffineRotation;

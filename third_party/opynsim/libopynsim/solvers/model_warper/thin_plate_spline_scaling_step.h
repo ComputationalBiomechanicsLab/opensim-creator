@@ -36,7 +36,7 @@ namespace opyn
         OpenSim_DECLARE_PROPERTY(compensate_for_frame_changes, bool, "If `landmarks_frame` is different from the source data's frame, and previous scaling steps have caused the spatial transform between those two frames to change, compensate for it by inverse-applying the difference between the frames to the result, so that the effect of those frame changes is compensated for. This can be necessary to stop double-warping for occurring (e.g. when separately warping a frame followed by warping data within that frame)");
         OpenSim_DECLARE_PROPERTY(source_landmarks_prescale, double, "Scaling factor that each source landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_prescale, double, "Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
-        OpenSim_DECLARE_PROPERTY(bending_penalty, double, "A bending penalty that smooths out the warp. Explained in OPynSim's Thin-Plate Spline documentation.");
+        OpenSim_DECLARE_PROPERTY(warping_penalty, double, "A warping penalty that smooths out the warp. Explained in OPynSim's Thin-Plate Spline documentation.");
 
         struct CommonParameters final {
             ThinPlateSplineCommonInputs tpsInputs;
@@ -57,7 +57,7 @@ namespace opyn
             constructProperty_compensate_for_frame_changes(false);
             constructProperty_source_landmarks_prescale(1.0);
             constructProperty_destination_landmarks_prescale(1.0);
-            constructProperty_bending_penalty(0.0);
+            constructProperty_warping_penalty(0.0);
         }
 
         // Overriders should still call this base method.
@@ -152,7 +152,7 @@ namespace opyn
                     get_source_landmarks_prescale(),
                     get_destination_landmarks_prescale(),
                     *blendingFactor,
-                    get_bending_penalty(),
+                    get_warping_penalty(),
                 },
                 .sourceLandmarksFrame = sourceLandmarksFrame,
                 .resultLandmarksFrame = resultLandmarksFrame,

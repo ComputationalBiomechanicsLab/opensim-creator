@@ -1,4 +1,4 @@
-#include "forward_dynamics_simulation.h"
+#include "forward_dynamics_solver.h"
 
 #include <libopynsim/integrator_settings.h>
 #include <libopynsim/model.h>
@@ -44,7 +44,7 @@ namespace
         rv->setMinimumStepSize(settings.minimum_step_size);
         rv->setMaximumStepSize(settings.maximum_step_size);
         rv->setAccuracy(settings.accuracy);
-        // rv->setFinalTime(end_time);
+        // rv->setFinalTime(end_time);  // defaults to infinity
         // rv->setReturnEveryInternalStep(true);
         return rv;
     }
@@ -55,13 +55,12 @@ namespace
         const SimTK::State& state)
     {
         SimTK::TimeStepper rv{system, integrator};
-        // rv.setReportAllSignificantStates(true);
         rv.initialize(state);
         return rv;
     }
 }
 
-class opyn::ForwardDynamicsSimulation::Impl final {
+class opyn::ForwardDynamicsSolver::Impl final {
 public:
     Impl(
         Model model,
@@ -75,12 +74,12 @@ public:
 
     ModelState integrate_to(double time, ModelStateStage realized_to)
     {
-        OSC_ASSERT_ALWAYS(time >= integrator_->getTime() && "The provided time must be greater or equal to the simulation's current time.");
+        OSC_ASSERT_ALWAYS(time >= integrator_->getTime() && "The provided time must be greater or equal to the internal `ModelState`'s current time.");
 
         const auto step_status = time_stepper_.stepTo(time);
 
-        // The final time is infinity. Therefore, only reason a simulation
-        // can end is if there's a problem.
+        // The integrator's final time is infinity. Therefore, the only reason
+        // a forward integration can end is if there's an error.
         if (integrator_->isSimulationOver()) {
             throw std::runtime_error{integrator_->getTerminationReasonString(integrator_->getTerminationReason())};
         }
@@ -98,14 +97,14 @@ public:
     SimTK::TimeStepper time_stepper_;
 };
 
-opyn::ForwardDynamicsSimulation::ForwardDynamicsSimulation(
+opyn::ForwardDynamicsSolver::ForwardDynamicsSolver(
     Model model,
     ModelState model_state,
     const std::optional<IntegratorSettings>& integrator_settings) :
     impl_{std::make_unique<Impl>(std::move(model), std::move(model_state), integrator_settings)}
 {}
-opyn::ForwardDynamicsSimulation::ForwardDynamicsSimulation(ForwardDynamicsSimulation&&) noexcept = default;
-opyn::ForwardDynamicsSimulation::~ForwardDynamicsSimulation() noexcept = default;
-opyn::ForwardDynamicsSimulation& opyn::ForwardDynamicsSimulation::operator=(ForwardDynamicsSimulation&&) noexcept = default;
+opyn::ForwardDynamicsSolver::ForwardDynamicsSolver(ForwardDynamicsSolver&&) noexcept = default;
+opyn::ForwardDynamicsSolver::~ForwardDynamicsSolver() noexcept = default;
+opyn::ForwardDynamicsSolver& opyn::ForwardDynamicsSolver::operator=(ForwardDynamicsSolver&&) noexcept = default;
 
-ModelState opyn::ForwardDynamicsSimulation::integrate_to(double time, ModelStateStage realized_to) { return impl_->integrate_to(time, realized_to); }
+ModelState opyn::ForwardDynamicsSolver::integrate_to(double time, ModelStateStage realized_to) { return impl_->integrate_to(time, realized_to); }

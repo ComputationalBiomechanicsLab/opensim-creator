@@ -13,7 +13,7 @@
 #include <liboscar/utilities/string_helpers.h>
 #include <libopynsim/platform/opynsim_app.h>
 #include <libopynsim/data_frame.h>
-#include <libopynsim/forward_dynamics_simulation.h>
+#include <libopynsim/solvers/forward_dynamics_solver.h>
 #include <libopynsim/model.h>
 #include <libopynsim/model_specification.h>
 #include <libopynsim/model_state.h>
@@ -682,8 +682,8 @@ namespace {
 
                 Notes:
                     OPynSim's API design separates the specification of a model (:class:`ModelSpecification`)
-                    from its validated, assembled, and optimized simulation representation (:class:`Model`) to ensure
-                    that the compilation process (:meth:`compile`) can freeze and optimize internal
+                    from its validated, assembled, and optimized physics engine representation (:class:`Model`)
+                    to ensure that the compilation process (:meth:`compile`) can freeze and optimize internal
                     datastructures at a single point in the process.
             )"
         );
@@ -712,7 +712,7 @@ namespace {
     void register_model_class(nb::module_& m)
     {
         nb::class_<Model> cls(m, "Model", R"(
-            A compiled, ready-to-simulate, model of a physics system.
+            A compiled model of a physics system.
 
             A :class:`Model` can only be created from a :class:`ModelSpecification` via the
             :meth:`ModelSpecification.compile` function. Therefore, editing a :class:`Model` requires
@@ -889,8 +889,7 @@ namespace {
             R"(
                 Returns ``True`` if ``coordinate`` is locked in ``model_state``.
 
-                Locking a coordinate prevents it from changing its value/speed (e.g. during
-                simulation, or in a solver).
+                Locking a coordinate prevents it from changing its value/speed (e.g. by a solver).
             )"
         );
         cls.def(
@@ -902,8 +901,7 @@ namespace {
             R"(
                 Sets the locked state of ``coordinate`` in ``model_state`` to ``locked``.
 
-                Locking a coordinate prevents it from changing its value/speed (e.g. during
-                simulation, or in a solver).
+                Locking a coordinate prevents it from changing its value/speed (e.g. by a solver).
             )"
         );
         cls.def(
@@ -1147,24 +1145,23 @@ namespace {
     void register_integrator_settings(nb::module_& m)
     {
         nb::class_<IntegratorSettings> cls(m, "IntegratorSettings", R"(
-            Settings for a forward integrator (e.g. as used by :class:`ForwardDynamicsSimulation`).
+            Settings for a forward integrator (e.g. as used by :class:`ForwardDynamicsSolver`).
 
-            **Note**: Modifying integrator settings can have a large effect on a simulation's
-            performance and behavior. When tweaking the settings, it is recommended to re-validate
-            the simulation's outcomes.
+            **Note**: Modifying integrator settings can have a large effect on its performance
+            and behavior. When tweaking the settings, it is recommended to re-validate outcomes.
         )");
         cls.def(nb::init<>{});
     }
 
-    void register_forward_dynamics_simulation_class(nb::module_& m)
+    void register_forward_dynamics_solver_class(nb::module_& m)
     {
-        nb::class_<ForwardDynamicsSimulation> cls(
+        nb::class_<ForwardDynamicsSolver> cls(
             m,
-            "ForwardDynamicsSimulation",
+            "ForwardDynamicsSolver",
             R"(
-                Represents an active forward-dynamics simulation.
+                Integrates the forward dynamics of a :class:`Model` + :class:`ModelState` pair.
 
-                The simulation stores a :class:`ModelState` that it integrates forward
+                The solver stores a :class:`ModelState` that it integrates forward
                 in time to a caller-specified timepoint (see :meth:`integrate_to`).
             )"
         );
@@ -1174,23 +1171,23 @@ namespace {
             nb::arg("model_state"),
             nb::arg("integrator_settings") = std::nullopt,
             R"(
-                Constructs a :class:`ForwardDynamicsSimulation` of ``model`` in ``model_state``.
+                Constructs a :class:`ForwardDynamicsSolver` of ``model`` in ``model_state``.
 
                 Args:
                     model: The :class:`Model` that is being integrated.
-                    model_state: The state of ``model`` that the simulator begins at.
-                    integrator_settings: The :class:`IntegratorSettings` that the simulation's integrator
-                        should use to integrate time forwards.
+                    model_state: The state of ``model`` that the solver begins integration from.
+                    integrator_settings: The :class:`IntegratorSettings` that the solvers's integrator
+                        uses for integration.
             )"
         );
         cls.def(
             "integrate_to",
-            &ForwardDynamicsSimulation::integrate_to,
+            &ForwardDynamicsSolver::integrate_to,
             nb::arg("time"),
             nb::arg("realized_to") = ModelStateStage::report,
             R"(
-                Integrates this simulation's internal :class:`ModelState` to ``time`` and
-                then returns a copy of the state realized to at least ``realized_to``.
+                Integrates the solvers's internal :class:`ModelState` forwards to ``time`` and
+                returns a copy of the internal state realized to at least ``realized_to``.
             )"
         );
     }
@@ -1255,5 +1252,5 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
     register_dataframe_class(_core_module);
     register_readers(_core_module);
     register_integrator_settings(_core_module);
-    register_forward_dynamics_simulation_class(_core_module);
+    register_forward_dynamics_solver_class(_core_module);
 }

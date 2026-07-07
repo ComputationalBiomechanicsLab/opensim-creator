@@ -27,7 +27,7 @@ namespace
     std::unique_ptr<TPSCoefficients3D<double>> calc_tps_coefficients(
         const nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu>& source_landmarks,
         const nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu>& destination_landmarks,
-        double bending_penalty)
+        double warping_penalty)
     {
         OSC_ASSERT_ALWAYS(source_landmarks.size() == destination_landmarks.size() && "there must be an equal amount of source/destination landmarks");
         OSC_ASSERT_ALWAYS(source_landmarks.size() != 0 && "at least one pair of landmarks must be provided");
@@ -36,7 +36,7 @@ namespace
         const auto destination_landmarks_mdspan = to_mdspan(destination_landmarks);
 
         // Solve the coefficients
-        return std::make_unique<TPSCoefficients3D<double>>(tps3d_solve_coefficients(source_landmarks_mdspan, destination_landmarks_mdspan, bending_penalty));
+        return std::make_unique<TPSCoefficients3D<double>>(tps3d_solve_coefficients(source_landmarks_mdspan, destination_landmarks_mdspan, warping_penalty));
     }
 
     nb::ndarray<double, nb::shape<3>, nb::device::cpu, nb::numpy> warp_point(
@@ -117,7 +117,7 @@ void opyn::init_tps3d_submodule(nanobind::module_& tps3d_module)
         nb::arg("source_landmarks"),
         nb::arg("destination_landmarks"),
         nb::kw_only{},
-        nb::arg("bending_penalty") = 0.0,
+        nb::arg("warping_penalty") = 0.0,
         R"(
             Returns Thin-Plate Spline (TPS) warping coefficients.
 
@@ -127,9 +127,9 @@ void opyn::init_tps3d_submodule(nanobind::module_& tps3d_module)
             Args:
                 source_landmarks: An (N, 3) ndarray of 3D points.
                 destination_landmarks: An (N, 3) ndarray of 3D points.
-                bending_penalty: A bending penalty term that penalizes bending in the solution. This
+                warping_penalty: A regularization term that penalizes warping in the solution. This
                     can be desirable when the accuracy of the affine transform is more important than
-                    the bending of the warp (e.g. when solving joint frames), or when the landmarks
+                    the smoothness of the warp (e.g. when solving joint frames), or when the landmarks
                     are a little noisy and the output would benefit from some smoothing (e.g. for
                     display, high-poly meshes). The concept originates from `this <https://doi.org/10.1371/journal.pcbi.1014073>`_
                     paper, and is also exposed as ``alpha`` in the `thin-plate-spline <https://github.com/raphaelreme/tps>`_

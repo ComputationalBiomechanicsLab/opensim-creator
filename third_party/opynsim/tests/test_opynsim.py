@@ -482,15 +482,15 @@ def test_model_state_stage_is_value_comparable():
     assert not (opynsim.STAGE_REPORT   >  opynsim.STAGE_REPORT)
     assert      opynsim.STAGE_REPORT   >  opynsim.STAGE_ACCELERATION
 
-def test_forward_dynamics_simulation_works_on_basic_example():
+def test_forward_dynamics_solver_works_on_basic_example():
     import numpy as np
 
     model = opynsim.examples.pendulum_model()
     state = model.initial_state()
-    simulation = opynsim.ForwardDynamicsSimulation(model, state)
+    solver = opynsim.ForwardDynamicsSolver(model, state)
     emitted_states = []
     for t in np.linspace(0, 1, 11):
-        emitted_states.append(simulation.integrate_to(t, realized_to=opynsim.STAGE_ACCELERATION))
+        emitted_states.append(solver.integrate_to(t, realized_to=opynsim.STAGE_ACCELERATION))
 
     for i in range(0, 11):
         assert emitted_states[i].time  == (i * 0.1)

@@ -147,7 +147,7 @@ def test_solve_coefficients_returns_object_that_performs_non_identity_warp():
     assert warped[1] != pytest.approx(1, nan_ok=False)
     assert warped[2] != pytest.approx(0, nan_ok=False)
 
-def test_solve_coefficients_is_affected_by_bending_penalty():
+def test_solve_coefficients_is_affected_by_warping_penalty():
     source_landmarks = np.array([
         [0, 1, 2],
         [3, 4, 5],
@@ -160,8 +160,8 @@ def test_solve_coefficients_is_affected_by_bending_penalty():
     ])
 
     defaulted = tps3d.solve_coefficients(source_landmarks, destination_landmarks)
-    zero_penalty = tps3d.solve_coefficients(source_landmarks, destination_landmarks, bending_penalty=0.0)
-    small_penalty = tps3d.solve_coefficients(source_landmarks, destination_landmarks, bending_penalty=0.0001)
+    zero_penalty = tps3d.solve_coefficients(source_landmarks, destination_landmarks, warping_penalty=0.0)
+    small_penalty = tps3d.solve_coefficients(source_landmarks, destination_landmarks, warping_penalty=0.0001)
 
     assert zero_penalty == defaulted
     assert small_penalty != zero_penalty

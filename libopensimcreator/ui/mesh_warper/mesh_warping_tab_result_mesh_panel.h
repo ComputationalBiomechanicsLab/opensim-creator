@@ -227,11 +227,11 @@ namespace osc
 
         void drawPrescaleInputs()
         {
-            float bendingPenalty = m_State->getScratch().bendingPenalty;
+            float warpingPenalty = m_State->getScratch().warpingPenalty;
             ui::set_cursor_panel_x(m_CursorXAtExportButton);
-            ui::draw_float_input("bending penalty", &bendingPenalty);
+            ui::draw_float_input("warping penalty", &warpingPenalty);
             if (ui::is_item_deactivated_after_edit()) {
-                ActionSetBendingPenalty(m_State->updUndoable(), bendingPenalty);
+                ActionSetWarpingPenalty(m_State->updUndoable(), warpingPenalty);
             }
 
             float sourcePrescale = m_State->getScratch().sourceLandmarksPrescale;

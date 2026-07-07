@@ -175,16 +175,16 @@ TEST(tps3d, solving_coefficients_on_sphere_to_cube_warp_can_warp_within_reasonab
     ASSERT_GT(r2, 0.98) << "The coefficient of determination (R^2) for the warp is lower than expected!";
 }
 
-TEST(tps3d, adjusting_bending_penalty_reduces_point_r2_but_increases_affine_transform_accuracy)
+TEST(tps3d, adjusting_warping_penalty_reduces_point_r2_but_increases_affine_transform_accuracy)
 {
-    // The `bending_penalty` argument is a regularizer that punishes bending
+    // The `warping_penalty` argument is a regularizer that punishes warping
     // (the `non_affine_terms` in the coefficients), but promotes the other
     // terms (the affine ones).
     //
     // The way to measure this effect is to apply a ground-truth affine
     // transform to the destination of a very-bendy warping pair
     // (e.g. sphere-to-cube). If you use TPS to calculate the affine
-    // transform of the pair, the accuracy is linked to the `bending_penalty`
+    // transform of the pair, the accuracy is linked to the `warping_penalty`
     // because a higher penalty weights the solver towards trying to
     // optimize the affine transform better (it will result in a worse
     // point-to-point R^2, but better affine-transform-to-affine-transform).
@@ -206,9 +206,9 @@ TEST(tps3d, adjusting_bending_penalty_reduces_point_r2_but_increases_affine_tran
 
     const TPSCoefficientSolverInputs3D<double> solver_inputs{input_points};
     TPSCoefficientSolverInputs3D<double> penalized_solver_inputs{input_points};
-    penalized_solver_inputs.bending_penalty = 0.01;  // Higher --> more weight given to the affine coefficients
+    penalized_solver_inputs.warping_penalty = 0.01;  // Higher --> more weight given to the affine coefficients
 
-    // Solve coefficients with/without a `bending_penalty`
+    // Solve coefficients with/without a `warping_penalty`
     const TPSCoefficients3D<double> coefs = tps3d_solve_coefficients(solver_inputs);
     const TPSCoefficients3D<double> penalized_coefs = tps3d_solve_coefficients(penalized_solver_inputs);
 
@@ -220,15 +220,15 @@ TEST(tps3d, adjusting_bending_penalty_reduces_point_r2_but_increases_affine_tran
     const ParameterSpaceError transform_error{actual_transform, transform};
     const ParameterSpaceError penalized_transform_error{actual_transform, penalized_transform};
 
-    // The penalized inputs should ideally produce a close/lower error (requires tweaking `bending_penalty`).
+    // The penalized inputs should ideally produce a close/lower error (requires tweaking `warping_penalty`).
     ASSERT_LT(penalized_transform_error.scale, transform_error.scale);
     ASSERT_LT(penalized_transform_error.rotation, transform_error.rotation);
     ASSERT_LT(penalized_transform_error.translation, transform_error.translation);
 }
 
-TEST(tps3d, setting_bending_penalty_very_high_effectively_yields_an_affine_transform)
+TEST(tps3d, setting_warping_penalty_very_high_effectively_yields_an_affine_transform)
 {
-    // If `bending_penalty` is set very high then the TPS coefficient solver
+    // If `warping_penalty` is set very high then the TPS coefficient solver
     // should yield coefficients that only really consider the affine component
     // of the warp.
 
@@ -248,10 +248,10 @@ TEST(tps3d, setting_bending_penalty_very_high_effectively_yields_an_affine_trans
     }
 
     TPSCoefficientSolverInputs3D<double> solver_inputs{input_points};
-    solver_inputs.bending_penalty = 100000.0;  // High: the solver should actively avoid bending.
+    solver_inputs.warping_penalty = 100000.0;  // High: the solver should actively avoid warping.
     const TPSCoefficients3D<double> coefs = tps3d_solve_coefficients(solver_inputs);
 
-    for (const auto& t : coefs.non_affine_terms) {  // Non-affine terms determine bending
+    for (const auto& t : coefs.non_affine_terms) {  // Non-affine terms determine warping
         ASSERT_LT(t.weight.abs(), 0.00001);
     }
 }

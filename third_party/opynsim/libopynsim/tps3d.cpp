@@ -123,7 +123,7 @@ namespace
     TPSCoefficients3D<T> TPSCalcCoefficients(
         cpp23::mdspan<const T, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> source_landmarks,
         cpp23::mdspan<const T, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks,
-        T bending_penalty)
+        T warping_penalty)
     {
         // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
         //
@@ -159,7 +159,7 @@ namespace
         //        |U(p10) U(p11) U(p12)  ...  |
         //        | ...    ...    ...   U(pnn)|
         //
-        //     - a is the `bending_penalty`, scaled along the diagonals of an identity
+        //     - a is the `warping_penalty`, scaled along the diagonals of an identity
         //       matrix (i.e - it's added to each diagonal element of `K`). Alternative
         //       implementations of TPS do it a matrix multiplication: https://github.com/raphaelreme/tps/blob/v1.2.2/src/tps/thin_plate_spline.py#L141
         //
@@ -195,8 +195,8 @@ namespace
 
                 L(row, col) = RadialBasisFunction3D(pis, pj);
             }
-            // Add the bending penalty term along `K`'s diagonals
-            L(row, row) += bending_penalty;
+            // Add the warping penalty term along `K`'s diagonals
+            L(row, row) += warping_penalty;
         }
 
         // populate the P part of matrix L (upper-right)
@@ -296,7 +296,7 @@ namespace
         auto rv = ::TPSCalcCoefficients<T>(
             {&inputs.landmarks.front().source[0], mapping},
             {&inputs.landmarks.front().destination[0], mapping},
-            inputs.bending_penalty
+            inputs.warping_penalty
         );
 
         // If required, modify the coefficients
@@ -382,9 +382,9 @@ TPSCoefficients3D<double> opyn::tps3d_solve_coefficients(const TPSCoefficientSol
 TPSCoefficients3D<double> opyn::tps3d_solve_coefficients(
     cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> source_landmarks,
     cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks,
-    double bending_penalty)
+    double warping_penalty)
 {
-    return ::TPSCalcCoefficients<double>(source_landmarks, destination_landmarks, bending_penalty);
+    return ::TPSCalcCoefficients<double>(source_landmarks, destination_landmarks, warping_penalty);
 }
 
 SimTK::Vec<3, float> opyn::tps3d_warp_point(
