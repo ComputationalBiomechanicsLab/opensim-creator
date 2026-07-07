@@ -36,6 +36,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - All release builds are now built with debug symbols enabled (stripped), so that the
   optimized development build is identical to the release one (previously: `RelWithDebInfo`
   uses slightly different optimization steps from `Release`).
+- The mesh warper and model warper now expose a `warping_penalty` parameter, which penalizes
+  warping the data non-linearly. This can be useful for reducing artefacts and implausible
+  warping - particularly in regions where landmarks are sparse or unevenly distributed.
+  Suggested by [Ekaterina Stansfield](https://orcid.org/0000-0001-8548-0995), from related
+  work ([10.1371/journal.pcbi.1014073](https://doi.org/10.1371/journal.pcbi.1014073)).
 
 
 ## [0.7.3] - 2026/03/27

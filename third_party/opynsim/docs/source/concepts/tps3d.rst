@@ -96,7 +96,7 @@ in regions where landmarks are sparse or unevenly distributed relative to the ge
 As a concrete example, in the personalized musculoskeletal modelling workflow described in the
 following literature source:
 
-    Stansfield et al. (2026, PLOS Computational Biology, 10.1371/journal.pcbi.1014073)
+    Stansfield et al. (2026, PLOS Computational Biology, `10.1371/journal.pcbi.1014073 <https://doi.org/10.1371/journal.pcbi.1014073>`_)
 
 They encountered those issues until they starting using something similar to OPynSim's ``warping_penalty``. In
 that study, they were using the `thin-plate-spline  <https://github.com/raphaelreme/tps>`_ Python package,
