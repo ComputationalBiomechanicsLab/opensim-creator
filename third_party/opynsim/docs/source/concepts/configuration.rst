@@ -1,3 +1,5 @@
+.. currentmodule:: opynsim
+
 Configuration
 =============
 
@@ -9,7 +11,7 @@ Logging
 -------
 
 It's useful to globally configure ``opynsim``\'s log level, so that downstream
-scripts can contain more/less feedback. It can be configured with :func:`opynsim.config.set_log_level`:
+scripts can contain more/less feedback. It can be configured with :func:`config.set_log_level`:
 
 .. code:: python
 
@@ -30,21 +32,21 @@ scripts can contain more/less feedback. It can be configured with :func:`opynsim
         ]
     )
 
-All log output from OPynSim goes via the ``logger.Logger`` returned by ``logger.getLogger("opynsim")``, or
-one of its children.
+All log output from OPynSim goes via the Python ``logger.Logger`` returned
+by ``logger.getLogger("opynsim")``, or one of its children.
 
 
 Resource Search Path
 --------------------
 
 Whenever OPynSim encounters a relative resource path in a file (e.g. ``pelvis.vtp`` in ``some_model.osim``), it
-performs a search for that resource on the caller's filesystem. The documentation for :func:`opynsim.config.get_search_paths`
+performs a search for that resource on the caller's filesystem. The documentation for :func:`config.get_search_paths`
 explains the process.
 
 Editing the search path can be useful for specifying central, shared, resource directories - particularly when
 sharing mesh data across multiple models located in different directories (e.g. you might have a one-model-per-study
-layout for models, but want a shared mesh geometry directory). :func:`opynsim.config.prepend_search_path` is one
-way to specify an additional shared directory:
+layout for models, but want a shared mesh geometry directory). :func:`config.prepend_search_path` is a
+way to globally specify an additional shared directory:
 
 .. code:: python
 
@@ -60,6 +62,6 @@ way to specify an additional shared directory:
     # to this exact location."
     opyn.config.prepend_search_path(Path("shared_geometry").absolute())
 
-See :func:`opynsim.config.get_search_paths` for a detailed explanation of the
-path resolution process. Alternatively, :func:`opynsim.config.append_search_path`
+See :func:`config.get_search_paths` for a detailed explanation of the
+path resolution process. Alternatively, :func:`config.append_search_path`
 can be used to specify a low-priority fallback directory.

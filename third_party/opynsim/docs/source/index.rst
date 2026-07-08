@@ -72,6 +72,7 @@ Table of Contents
    development/opynsim-as-a-cpp-library
    development/unofficial-doxygen-reference
    development/opensim-interoperability
+   development/the-release-process
 
 .. toctree::
     :caption: Other Links

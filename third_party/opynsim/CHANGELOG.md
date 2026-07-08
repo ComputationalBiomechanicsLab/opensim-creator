@@ -6,6 +6,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release] - YYYY/MM/DD
 
+## 0.0.6 - 2026/06/08
+
+0.0.6 is a pre-alpha development release, don't expect stability, or the
+CHANGELOG, to make much sense yet!
+
 - Patched an issue in OpenSim where it wasn't correctly clearing out memory
   when a model contained graph cycles (slave bodies, etc.).
 - Patched an issue in OpenSim where it could segfault with use-after-free
@@ -25,3 +30,4 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - `App::set_main_window_mouse_confinement`
 - Fixed an issue where `OpenSim::IMU` decorations were being emitted with
   negative scale factors (ComputationalBiomechanicsLab/opensim-creator/#1179).
+

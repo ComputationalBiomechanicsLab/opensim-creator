@@ -63,7 +63,7 @@ looks something like this:
 
 
 Implementation Notes
--------------------
+--------------------
 
 Basis Function
 ~~~~~~~~~~~~~~
