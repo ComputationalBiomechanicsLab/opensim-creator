@@ -561,7 +561,7 @@ namespace
             }
             catch (const std::exception& ex)
             {
-                log_error("error loading mesh: %s", ex.what());
+                log_error("error loading mesh: {}", ex.what());
                 continue;
             }
 
@@ -669,7 +669,7 @@ std::unique_ptr<OpenSim::Model> osc::CreateOpenSimModelFromMeshImporterDocument(
         log_error("cannot create an osim model: issues detected");
         for (const std::string& issue : issuesOut)
         {
-            log_error("issue: %s", issue.c_str());
+            log_error("issue: {}", issue);
         }
         return nullptr;
     }

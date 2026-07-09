@@ -155,7 +155,7 @@ R"(# configuration options
             return toml::parse_file(path.string());
         }
         catch (const std::exception& ex) {
-            log_warn("error parsing %s: %s", path.string().c_str(), ex.what());
+            log_warn("error parsing {}: {}", path.string(), ex.what());
             log_warn("the application will skip loading this configuration file, but you might want to fix it");
             return toml::table{};
         }
@@ -420,7 +420,7 @@ R"(# configuration options
             std::ofstream config_stream{*user_config_path_};
             if (not config_stream) {
                 if (not std::exchange(warning_already_issued_cannot_open_user_config_file_, true)) {
-                    log_warn("%s: could not open for writing: user settings will not be saved", user_config_path_->string().c_str());
+                    log_warn("{}: could not open for writing: user settings will not be saved", user_config_path_->string());
                 }
                 return;
             }

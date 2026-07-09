@@ -51,7 +51,7 @@ namespace osc
             ui::same_line();
             if (hover.isHoveringASceneElement())
             {
-                ui::draw_text_disabled("(Click: select %s)", FindElementNameOr(m_State->getScratch(), hover.getSceneElementID().value()).c_str());
+                ui::draw_text_disabled("(Click: select {})", FindElementNameOr(m_State->getScratch(), hover.getSceneElementID().value()));
             }
             else if (hover.getInput() == MiDocumentInputIdentifier::Source)
             {
@@ -73,7 +73,7 @@ namespace osc
                 color[i] = 1.0f;
 
                 ui::push_style_color(ui::ColorVar::Text, color);
-                ui::draw_text("%f", position[i]);
+                ui::draw_text("{}", position[i]);
                 ui::same_line();
                 ui::pop_style_color();
             }

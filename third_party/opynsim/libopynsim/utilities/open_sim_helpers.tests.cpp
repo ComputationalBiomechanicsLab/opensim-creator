@@ -121,11 +121,11 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
             InitializeState(model);
         }
         catch (const std::exception& ex) {
-            osc::log_info("exception thrown: %s", ex.what());
+            osc::log_info("exception thrown: {}", ex.what());
             osc::log_info("exceptions are skipped (this test is looking for hard-crashes, like segfaults)");
         }
 
-        osc::log_info("%s", msg.c_str());
+        osc::log_info("{}", msg);
     }
 }
 
@@ -212,7 +212,7 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
         // (it may have been indirectly deleted), then try to delete it
         if (OpenSim::Component* lookup = FindComponentMut(modifiedModel, c.getAbsolutePath())) {
             if (TryDeleteComponentFromModel(modifiedModel, *lookup)) {
-                osc::log_info("deleted %s (%s)", c.getName().c_str(), c.getConcreteClassName().c_str());
+                osc::log_info("deleted {} ({})", c.getName(), c.getConcreteClassName());
                 InitializeModel(modifiedModel);
                 InitializeState(modifiedModel);
             }

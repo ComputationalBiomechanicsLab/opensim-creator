@@ -2,14 +2,11 @@
 
 #include <liboscar/platform/log_message_view.h>
 #include <liboscar/platform/log_sink.h>
-#include <liboscar/utilities/algorithms.h>
 #include <liboscar/utilities/c_string_view.h>
 #include <liboscar/utilities/string_name.h>
 
 #include <algorithm>
-#include <cstdarg>
-#include <cstddef>
-#include <cstdio>
+#include <format>
 #include <memory>
 #include <string_view>
 #include <utility>
@@ -28,8 +25,8 @@ namespace osc
             log_sinks_{std::move(sink)}
         {}
 
-        /// Formats `fmt` with `std::vsnprintf` and then logs the formatted message with level `log_level`.
-        void log_message(LogLevel log_level, CStringView fmt, ...)
+        template<class... Args>
+        void log_message(LogLevel log_level, std::format_string<Args...> fmt, Args&&... args)
         {
             if (log_level < log_level_) {
                 return;  // the message's level is too low for this logger
@@ -43,23 +40,10 @@ namespace osc
             // else: there exists at least one sink that wants the message
 
             // format the format string with the arguments
-            std::vector<char> formatted_buffer(2048);
-            size_t n = 0;
-            {
-                va_list args;
-                va_start(args, fmt);
-                const int rv = std::vsnprintf(formatted_buffer.data(), formatted_buffer.size(), fmt.c_str(), args);
-                va_end(args);
-
-                if (rv <= 0) {
-                    return;  // formatting error: exit early
-                }
-
-                n = min(static_cast<size_t>(rv), formatted_buffer.size()-1);
-            }
+           const auto message = std::format(std::move(fmt), std::forward<Args>(args)...);
 
             // create a readonly view of the message that sinks _may_ consume
-            LogMessageView view{name_, CStringView{formatted_buffer.data(), n}, log_level};
+            LogMessageView view{name_, CStringView{message}, log_level};
 
             // sink the message
             for (; it != log_sinks_.end(); ++it) {

@@ -479,7 +479,7 @@ private:
         if (not m_CurrentErrors.empty()) {
             ui::push_style_color(ui::ColorVar::Text, Color::red());
             ui::draw_vertical_spacer(2.0f/15.0f);
-            ui::draw_text_wrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
+            ui::draw_text_wrapped("Error adding component to model: {}", m_CurrentErrors);
             ui::draw_vertical_spacer(2.0f/15.0f);
             ui::pop_style_color();
         }

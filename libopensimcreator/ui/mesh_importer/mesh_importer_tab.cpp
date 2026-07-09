@@ -847,7 +847,7 @@ private:
 
     void drawMIObjectContextMenuContentHeader(const MiObject& e)
     {
-        ui::draw_text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
+        ui::draw_text("{} {}", e.getClass().getIconUTF8(), e.getLabel());
         ui::same_line();
         ui::draw_text_disabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
         ui::same_line();
@@ -1369,7 +1369,7 @@ private:
                 OBJ::write(ofs, mesh, objMetadata, OBJWriterFlag::NoWriteNormals);
             }
             catch (std::exception& e) {
-                log_error("error saving obj output to %s: %s", p->string().c_str(), e.what());
+                log_error("error saving obj output to {}: {}", p->string(), e.what());
             }
         }, "obj");
     }
@@ -1397,7 +1397,7 @@ private:
                 STL::write(ofs, mesh, stlMetadata);
             }
             catch (std::exception& e) {
-                log_error("error saving stl output to %s: %s", p->string().c_str(), e.what());
+                log_error("error saving stl output to {}: {}", p->string(), e.what());
             }
         }, "stl");
     }
@@ -1601,7 +1601,7 @@ private:
     {
         MiDocument& mg = m_Shared->updModelGraph();
 
-        ui::draw_text("%s %s", c.getIconUTF8().c_str(), c.getNamePluralized().c_str());
+        ui::draw_text("{} {}", c.getIconUTF8(), c.getNamePluralized());
         ui::same_line();
         ui::draw_help_marker(c.getNamePluralized(), c.getDescription());
         ui::draw_vertical_spacer(5.0f/15.0f);
@@ -1657,9 +1657,8 @@ private:
             }
         }
 
-        if (empty)
-        {
-            ui::draw_text_disabled("(no %s)", c.getNamePluralized().c_str());
+        if (empty) {
+            ui::draw_text_disabled("(no {})", c.getNamePluralized());
         }
         ui::unindent();
     }
@@ -2005,7 +2004,7 @@ private:
     void drawMIObjectTooltip(const MiObject& e) const
     {
         ui::begin_tooltip_nowrap();
-        ui::draw_text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
+        ui::draw_text("{} {}", e.getClass().getIconUTF8(), e.getLabel());
         ui::same_line();
         ui::draw_text_disabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
         ui::end_tooltip_nowrap();

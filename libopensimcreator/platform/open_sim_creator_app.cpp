@@ -76,10 +76,10 @@ void osc::GloballyAddDirectoryToOpenSimGeometrySearchPath(const std::filesystem:
 {
     if (std::filesystem::exists(p) and std::filesystem::is_directory(p)) {
         opyn::prepend_search_path(p);
-        log_info("added geometry search path entry: %s", p.string().c_str());
+        log_info("added geometry search path entry: {}", p.string());
     }
     else {
-        log_warn("%s: does not exist, it will not be added to the geometry search path", p.string().c_str());
+        log_warn("{}: does not exist, it will not be added to the geometry search path", p.string());
     }
 }
 
@@ -101,7 +101,7 @@ osc::OpenSimCreatorApp::OpenSimCreatorApp(const AppMetadata& metadata) :
     if (const auto geometryDirectory = resource_filepath(geometryDirectoryPath)) {
         GloballyAddDirectoryToOpenSimGeometrySearchPath(*geometryDirectory);
     } else {
-        log_error("%s: cannot find geometry directory resource: falling back to not using one at all. You might need to update the osc.toml configuration file.", geometryDirectoryPath.string().c_str());
+        log_error("{}: cannot find geometry directory resource: falling back to not using one at all. You might need to update the osc.toml configuration file.", geometryDirectoryPath.string());
     }
     RegisterOpenSimCreatorTabs(upd_tab_registry());
     InitializeOpenSimCreatorSpecificSettingDefaults(upd_settings());

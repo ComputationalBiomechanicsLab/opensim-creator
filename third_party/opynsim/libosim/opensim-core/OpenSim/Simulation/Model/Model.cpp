@@ -1277,7 +1277,7 @@ void Model::generateDecorations
     }
 }
 
-void Model::equilibrateMuscles(SimTK::State& state) {
+void Model::equilibrateMuscles(SimTK::State& state) const {
     getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
     bool failed = false;

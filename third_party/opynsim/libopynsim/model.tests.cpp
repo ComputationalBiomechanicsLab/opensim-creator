@@ -62,6 +62,20 @@ TEST(Model, column_to_state_variable_mapping_returns_expected_result_for_basic_p
     ASSERT_EQ(got, expected);
 }
 
+TEST(Model, column_to_state_variable_mapping_works_with_legacy_column_headers)
+{
+    opyn::init();
+
+    const Model model = read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
+    const DataFrame data_frame = read_sto(opynsim_tests_resources_directory() / "pendulum/legacy_pendulum_trajectory.sto");
+    const std::unordered_map<std::string, Symbol> got = model.column_to_state_variable_mappings(data_frame);
+    const std::unordered_map<std::string, Symbol> expected = {
+        {"pin_coord_0", Symbol{"/jointset/pin/pin_coord_0/value"}},
+    };
+
+    ASSERT_EQ(got, expected);
+}
+
 TEST(Model, states_from_data_frame_works_for_basic_pendulum)
 {
     opyn::init();

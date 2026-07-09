@@ -90,7 +90,7 @@ namespace
                     App::post_event<OpenTabEvent>(*parent_ref, std::move(tab));
                 }
                 catch (const std::exception& ex) {
-                    log_error("encountered error while trying to load an STO file against the model: %s", ex.what());
+                    log_error("encountered error while trying to load an STO file against the model: {}", ex.what());
                 }
             },
             GetMotionFileFilters()
@@ -109,7 +109,7 @@ namespace
                 std::to_array({std::string_view{".osim"}})
             );
         } else {
-            log_warn("%s: no such directory: cannot iterate through example models: falling back to an empty list", exampleOsimsResourcePath.string().c_str());
+            log_warn("{}: no such directory: cannot iterate through example models: falling back to an empty list", exampleOsimsResourcePath.string());
         }
 
         rgs::sort(rv, is_filename_lexicographically_greater_than);
@@ -305,7 +305,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::draw_text("FPS");
         ui::next_column();
-        ui::draw_text("%.0f", static_cast<double>(ui::get_framerate()));
+        ui::draw_text("{:.0f}", ui::get_framerate());
         ui::next_column();
 
         ui::draw_text("MSXAA");

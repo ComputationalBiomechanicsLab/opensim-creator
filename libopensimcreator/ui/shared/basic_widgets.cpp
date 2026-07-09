@@ -76,7 +76,7 @@ namespace
 
             std::ofstream outfile{*p};
             if (not outfile) {
-                log_error("cannot save to %s: IO error", p->string().c_str());
+                log_error("cannot save to {}: IO error", p->string());
                 return;
             }
 
@@ -86,7 +86,7 @@ namespace
             };
 
             DAE::write(outfile, scene, daeMetadata);
-            log_info("wrote scene as a DAE file to %s", p->string().c_str());
+            log_info("wrote scene as a DAE file to {}", p->string());
         }, "dae");
     }
 
@@ -155,7 +155,7 @@ namespace
     {
         if (std::holds_alternative<double>(v))
         {
-            ui::draw_text("%f", static_cast<float>(std::get<double>(v)));
+            ui::draw_text("{}", std::get<double>(v));
         }
         else if (std::holds_alternative<opyn::IntegratorMethod>(v))
         {
@@ -163,7 +163,7 @@ namespace
         }
         else if (std::holds_alternative<int>(v))
         {
-            ui::draw_text("%i", std::get<int>(v));
+            ui::draw_text("{}", std::get<int>(v));
         }
         else
         {
@@ -220,7 +220,7 @@ namespace
                 ofs << content;
             }
             catch (const std::exception& e) {
-                log_error("error saving obj output to %s: %s", p->string().c_str(), e.what());
+                log_error("error saving obj output to {}: {}", p->string(), e.what());
             }
         }, "obj");
     }
@@ -264,7 +264,7 @@ namespace
                 ofs << content;
             }
             catch (const std::exception& e) {
-                log_error("error saving obj output to %s: %s", p->string().c_str(), e.what());
+                log_error("error saving obj output to {}: {}", p->string(), e.what());
             }
         }, "stl");
     }
@@ -436,7 +436,7 @@ bool osc::DrawWatchOutputMenu(
         }
 
         if (entriesDrawn == 0) {
-            ui::draw_text_disabled("%s has no outputs", c.getName().c_str());
+            ui::draw_text_disabled("{} has no outputs", c.getName());
         }
         ui::end_menu();
     }

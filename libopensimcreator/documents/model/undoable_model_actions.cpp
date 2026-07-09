@@ -97,7 +97,7 @@ namespace
                 }
 
                 if (response.has_error()) {
-                    log_error("Error opening dialog: %s", response.error().c_str());
+                    log_error("Error opening dialog: {}", response.error());
                     return;
                 }
 
@@ -125,12 +125,12 @@ namespace
         try
         {
             model.print(save_loc);
-            log_info("saved model to %s", save_loc.c_str());
+            log_info("saved model to {}", save_loc);
             return true;
         }
         catch (const OpenSim::Exception& ex)
         {
-            log_error("error saving model: %s", ex.what());
+            log_error("error saving model: {}", ex.what());
             return false;
         }
     }
@@ -488,7 +488,7 @@ bool osc::ActionUpdateModelFromBackingFile(UndoableModelStatePair& uim)
         return true;
     }
     catch (const std::exception& ex) {
-        log_error("error detected while trying to automatically load a model file: %s", ex.what());
+        log_error("error detected while trying to automatically load a model file: {}", ex.what());
         uim.rollback();
         return false;
     }
@@ -672,7 +672,7 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, SceneCache& mesh
         return true;
     }
     catch (const std::exception& ex) {
-        log_error("error detected while trying to reload a model file: %s", ex.what());
+        log_error("error detected while trying to reload a model file: {}", ex.what());
         uim.rollback();
         return false;
     }
@@ -960,13 +960,13 @@ bool osc::ActionChangeJointTypeTo(
 
     const auto* const target = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
     if (not target) {
-        log_error("could not find %s in the model", jointPath.toString().c_str());
+        log_error("could not find {} in the model", jointPath.toString());
         return false;
     }
 
     const auto* const owner = GetOwner<OpenSim::JointSet>(*target);
     if (not owner) {
-        log_error("%s is not owned by an OpenSim::JointSet", jointPath.toString().c_str());
+        log_error("{} is not owned by an OpenSim::JointSet", jointPath.toString());
         return false;
     }
 
@@ -974,7 +974,7 @@ bool osc::ActionChangeJointTypeTo(
 
     const std::optional<size_t> maybeIdx = FindJointInParentJointSet(*target);
     if (not maybeIdx) {
-        log_error("%s could not be found in its owner", jointPath.toString().c_str());
+        log_error("{} could not be found in its owner", jointPath.toString());
         return false;
     }
 
@@ -1439,7 +1439,7 @@ bool osc::ActionAddComponentToModel(
             added = &AddComponent(*desired, std::move(c));
         }
         else {
-            log_error("The target parent component, %s, could not be found: adding component to the model instead.", desiredParent.toString().c_str());
+            log_error("The target parent component, {}, could not be found: adding component to the model instead.", desiredParent.toString());
             added = &AddComponentToAppropriateSet(mutModel, std::move(c));
         }
 
@@ -1549,7 +1549,7 @@ bool osc::ActionRemoveWrapObjectFromGeometryPathWraps(
     }
 
     if (!index) {
-        log_info("cannot find the %s in %s: skipping deletion", wrapObject.getName().c_str(), geomPath.getName().c_str());
+        log_info("cannot find {} in {}: skipping deletion", wrapObject.getName(), geomPath.getName());
         return false;
     }
 
@@ -2435,7 +2435,7 @@ void osc::ActionExportModelGraphToDotviz(const std::shared_ptr<ModelStatePair>& 
             WriteComponentTopologyGraphAsDotViz(model->getModel(), of);
         }
         else {
-            log_error("error opening %s for writing", p->string().c_str());
+            log_error("error opening {} for writing", p->string());
         }
     }, "dot");
 }

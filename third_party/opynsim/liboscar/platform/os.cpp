@@ -110,10 +110,10 @@ void osc::open_url_in_os_default_web_browser(std::string_view url_view)
 {
     const std::string url{url_view};
     if (SDL_OpenURL(url.c_str())) {
-        log_info("opened %s", url.c_str());
+        log_info("opened {}", url);
     }
     else {
-        log_error("could not open '%s': %s", url.c_str(), SDL_GetError());
+        log_error("could not open '{}': {}", url, SDL_GetError());
     }
 }
 

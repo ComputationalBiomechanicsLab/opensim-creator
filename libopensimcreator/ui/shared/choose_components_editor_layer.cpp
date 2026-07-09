@@ -234,7 +234,7 @@ public:
 
         // show header
         ui::set_cursor_ui_position(panelState.viewportUiRect.ypd_top_left() + Vector2{10.0f, 10.0f});
-        ui::draw_text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
+        ui::draw_text("{} (ESC to cancel)", m_State.popupParams.popupHeaderText);
 
         // handle completion state (i.e. user selected enough components)
         if (m_State.alreadyChosenComponents.size() == m_State.popupParams.numComponentsUserMustChoose)

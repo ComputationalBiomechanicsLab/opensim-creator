@@ -21,6 +21,7 @@
 #include <concepts>
 #include <cstdarg>
 #include <cstddef>
+#include <format>
 #include <functional>
 #include <initializer_list>
 #include <optional>
@@ -103,58 +104,28 @@ namespace osc::ui
     // vertically align upcoming text baseline to FramePadding.y so that it will align properly to regularly framed items (call if you have text on a line before a framed item)
     void align_text_to_frame_padding();
 
-    namespace detail
+    void draw_text(std::string_view);
+    template<class... Args>
+    requires (sizeof...(Args) > 0)
+    void draw_text(std::format_string<Args...> fmt, Args&&... args)
     {
-        void draw_text_v(CStringView fmt, va_list);
-        inline void draw_text(CStringView fmt, ...)
-        {
-            va_list args;
-            va_start(args, fmt);
-            draw_text_v(fmt, args);
-            va_end(args);
-        }
-    }
-    void draw_text(CStringView);
-    template<typename... Args>
-    void draw_text(CStringView fmt, Args&&... args)
-    {
-        detail::draw_text(fmt, std::forward<Args>(args)...);
+        draw_text(std::format(std::move(fmt), std::forward<Args>(args)...));
     }
 
-    namespace detail
+    void draw_text_disabled(std::string_view);
+    template<class... Args>
+    requires (sizeof...(Args) > 0)
+    void draw_text_disabled(std::format_string<Args...> fmt, Args&&... args)
     {
-        void draw_text_disabled_v(CStringView fmt, va_list);
-        inline void draw_text_disabled(CStringView fmt, ...)
-        {
-            va_list args;
-            va_start(args, fmt);
-            draw_text_disabled_v(fmt, args);
-            va_end(args);
-        }
-    }
-    void draw_text_disabled(CStringView);
-    template<typename... Args>
-    void draw_text_disabled(CStringView fmt, Args&&... args)
-    {
-        detail::draw_text_disabled(fmt, std::forward<Args>(args)...);
+        draw_text_disabled(std::format(std::move(fmt), std::forward<Args>(args)...));
     }
 
-    namespace detail
+    void draw_text_wrapped(std::string_view);
+    template<class... Args>
+    requires (sizeof...(Args) > 0)
+    void draw_text_wrapped(std::format_string<Args...> fmt, Args&&... args)
     {
-        void draw_text_wrapped_v(CStringView fmt, va_list);
-        inline void draw_text_wrapped(CStringView fmt, ...)
-        {
-            va_list args;
-            va_start(args, fmt);
-            draw_text_wrapped_v(fmt, args);
-            va_end(args);
-        }
-    }
-    void draw_text_wrapped(CStringView);
-    template<typename... Args>
-    void draw_text_wrapped(CStringView fmt, Args&&... args)
-    {
-        detail::draw_text_wrapped(fmt, std::forward<Args>(args)...);
+        draw_text_wrapped(std::format(std::move(fmt), std::forward<Args>(args)...));
     }
 
     void draw_text_bullet_pointed(CStringView);
@@ -351,16 +322,12 @@ namespace osc::ui
 
     void close_current_popup();
 
-    namespace detail
+    void set_tooltip(CStringView text);
+    template<class... Args>
+    requires (sizeof...(Args) > 0)
+    void set_tooltip_fmt(std::format_string<Args...> fmt, Args&&... args)
     {
-        void set_tooltip_v(CStringView fmt, va_list);
-    }
-    inline void set_tooltip(CStringView fmt, ...)
-    {
-        va_list args;
-        va_start(args, fmt);
-        detail::set_tooltip_v(fmt, args);
-        va_end(args);
+        set_tooltip(std::format(std::move(fmt), std::forward<Args>(args)...));
     }
 
     void set_scroll_y_here();

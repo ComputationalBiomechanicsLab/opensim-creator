@@ -136,7 +136,7 @@ public:
             // show editor for setting window size
             {
                 const Vector2 s = App::get().main_window_dimensions();
-                ui::draw_text("%f %f", s.x(), s.y());
+                ui::draw_text("{} {}", s.x(), s.y());
                 if (ui::draw_button("change")) {
                     App::upd().set_main_window_dimensions({1920.0f, 1080.0f});
                 }

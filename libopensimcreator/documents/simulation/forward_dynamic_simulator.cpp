@@ -326,7 +326,7 @@ namespace
                 integ->getTerminationReason() != SimTK::Integrator::ReachedFinalTime)
             {
                 // simulation ended because of an error: report the error and exit
-                log_error("%s", integ->getTerminationReasonString(integ->getTerminationReason()).c_str());
+                log_error("{}", integ->getTerminationReasonString(integ->getTerminationReason()).c_str());
                 return SimulationStatus::Error;
             }
             else if (timestepRv == SimTK::Integrator::ReachedReportTime)
@@ -379,11 +379,11 @@ namespace
         }
         catch (const OpenSim::Exception& ex)
         {
-            log_error("OpenSim::Exception occurred when running a simulation: %s", ex.what());
+            log_error("OpenSim::Exception occurred when running a simulation: {}", ex.what());
         }
         catch (const std::exception& ex)
         {
-            log_error("std::exception occurred when running a simulation: %s", ex.what());
+            log_error("std::exception occurred when running a simulation: {}", ex.what());
         }
         catch (...)
         {

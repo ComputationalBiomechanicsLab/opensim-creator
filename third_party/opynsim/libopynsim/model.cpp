@@ -219,17 +219,12 @@ namespace
         return nullptr;
     }
 
-    std::optional<int> find_state_variable_index_by_name(const auto& state_variables, const std::string& column_name)
+    std::optional<int> find_column_index_associated_with_state_variable(const std::vector<std::string>& column_names, const std::string& state_variable_name)
     {
-        if (int idx = OpenSim::TableUtilities::findStateLabelIndex(state_variables, column_name); idx >= 0) {
+        if (int idx = OpenSim::TableUtilities::findStateLabelIndex(column_names, state_variable_name); idx >= 0) {
             return idx;
         }
         return std::nullopt;
-    }
-
-    std::optional<int> find_state_variable_index_by_name(const auto& state_variables, std::string_view column_name)
-    {
-        return find_state_variable_index_by_name(state_variables, std::string{column_name});
     }
 }
 
@@ -263,9 +258,10 @@ public:
     {
         const auto state_variable_names = model_.getStateVariableNames();
         std::unordered_map<std::string, Symbol> rv;
-        for (const auto& column_name : data_frame.columns()) {
-            if (const auto index = find_state_variable_index_by_name(state_variable_names, column_name)) {
-                rv.insert_or_assign(column_name, Symbol{state_variable_names[*index]});
+        const std::vector<std::string> columns = data_frame.columns();
+        for (int i = 0; i < state_variable_names.size(); ++i) {
+            if (const auto index = find_column_index_associated_with_state_variable(columns, state_variable_names[i])) {
+                rv.insert_or_assign(columns.at(*index), Symbol{state_variable_names[i]});
             }
         }
         return rv;
@@ -319,11 +315,10 @@ public:
         std::vector<std::pair<size_t, int>> column_index_to_sv_index;
         column_index_to_sv_index.reserve(data_frame.width());
         const auto state_var_names = model_.getStateVariableNames();
-        {
-            for (size_t column = 0; column < data_frame.width(); ++column) {
-                if (const auto idx = find_state_variable_index_by_name(state_var_names, data_frame[column].name())) {
-                    column_index_to_sv_index.emplace_back(column, *idx);
-                }
+        const auto column_names = data_frame.columns();
+        for (int i = 0; i < state_var_names.size(); ++i) {
+            if (const auto idx = find_column_index_associated_with_state_variable(column_names, state_var_names[i])) {
+                column_index_to_sv_index.emplace_back(*idx, i);
             }
         }
 
@@ -332,20 +327,20 @@ public:
         {
             const size_t num_rows = data_frame.height();
             rv.reserve(num_rows);
-            SimTK::Vector values{state_var_names.getSize(), SimTK::NaN};
             for (size_t row = 0; row < num_rows; ++row) {
                 SimTK::State state{model_.getWorkingState()};                      // Copy "base" state.
-                state.updY().setToNaN();                                           // Ensure missing columns end up as `NaN`s.
 
                 if (const auto it = data_frame.find("time"); it != data_frame.end()) {
                     state.setTime((*it)[row]);                                     // Set state's time (if `data_frame` has it).
                 }
+                SimTK::Vector values = model_.getStateVariableValues(state);       // Copy initial state variables TODO: establish what should be assembled/equilibrated etc.
                 for (const auto& [column_index, sv_index] : column_index_to_sv_index) {
                     values[sv_index] = data_frame[column_index][row];              // Map `data_frame` values into values vector
                 }
                 model_.setStateVariableValues(state, values);                      // Write values vector into the state
 
-                // TODO: if (assemble) model_.assemble(state);
+                //const_cast<OpenSim::Model&>(model_).assemble(state);  // TODO
+                //model_.equilibrateMuscles(state);  // TODO
                 model_.getSystem().realize(state, to_simbody_stage(realized_to));  // Realize state to caller-specified stage
 
                 rv.emplace_back(std::move(state));                                 // Append state to return value

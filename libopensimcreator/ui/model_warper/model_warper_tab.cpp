@@ -87,7 +87,7 @@ namespace
                 }
             }
             catch (const std::exception& ex) {
-                log_error("error processing deferred actions: %s", ex.what());
+                log_error("error processing deferred actions: {}", ex.what());
             }
         }
 
@@ -752,7 +752,7 @@ namespace
                     // UI for warped geometry directory toggle
                     const auto geomDir = m_State->tryGetWarpedGeometryDirectory();
                     if (geomDir) {
-                        ui::draw_text("Warped Geometry Directory: %s", geomDir->string().c_str());
+                        ui::draw_text("Warped Geometry Directory: {}", geomDir->string());
                     }
                     else {
                         ui::draw_text("Warped Geometry Directory: UNKNOWN");
@@ -917,7 +917,7 @@ namespace
                         ui::push_style_color(ui::ColorVar::Text, ui_color(message));
                         ui::draw_bullet_point();
                         if (const auto propName = message.tryGetPropertyName()) {
-                            ui::draw_text("%s: %s", propName->c_str(), message.getMessage());
+                            ui::draw_text("{}: {}", *propName, message.getMessage());
                         }
                         else {
                             ui::draw_text(message.getMessage());
@@ -1040,7 +1040,7 @@ public:
             m_Toolbar.on_draw();
             m_ExceptionThrownLastFrame = false;
         } catch (const std::exception& ex) {
-            log_error("an exception was thrown, probably due to an error in the document: %s", ex.what());
+            log_error("an exception was thrown, probably due to an error in the document: {}", ex.what());
 
             // The exception might've left the UI context in an invalid state, so reset it.
             log_error("resetting the UI");

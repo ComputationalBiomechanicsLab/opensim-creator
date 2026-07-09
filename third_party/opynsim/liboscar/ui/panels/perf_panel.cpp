@@ -27,7 +27,7 @@ public:
         ui::set_num_columns(2);
         ui::draw_text("FPS");
         ui::next_column();
-        ui::draw_text("%.0f", static_cast<double>(ui::get_framerate()));
+        ui::draw_text("{:.0f}", ui::get_framerate());
         ui::next_column();
         ui::set_num_columns();
 
@@ -80,15 +80,15 @@ public:
                 ui::table_set_column_index(column++);
                 ui::draw_text(measurement.label());
                 ui::table_set_column_index(column++);
-                ui::draw_text("%s:%u", measurement.filename().c_str(), measurement.line());
+                ui::draw_text("{}:{}", measurement.filename(), measurement.line());
                 ui::table_set_column_index(column++);
-                ui::draw_text("%zu", measurement.call_count());
+                ui::draw_text("{}", measurement.call_count());
                 ui::table_set_column_index(column++);
-                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.last_duration()).count()));
+                ui::draw_text("{} us", std::chrono::duration_cast<std::chrono::microseconds>(measurement.last_duration()).count());
                 ui::table_set_column_index(column++);
-                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.average_duration()).count()));
+                ui::draw_text("{} us", std::chrono::duration_cast<std::chrono::microseconds>(measurement.average_duration()).count());
                 ui::table_set_column_index(column++);
-                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.total_duration()).count()));
+                ui::draw_text("{} us", std::chrono::duration_cast<std::chrono::microseconds>(measurement.total_duration()).count());
             }
 
             ui::end_table();

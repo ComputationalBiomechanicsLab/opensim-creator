@@ -2,6 +2,7 @@
 
 #include <compare>
 #include <cstddef>
+#include <format>
 #include <iosfwd>
 #include <string_view>
 #include <string>
@@ -122,3 +123,6 @@ struct std::hash<osc::CStringView> final {
         return std::hash<std::string_view>{}(cstring_view);
     }
 };
+
+template<>
+struct std::formatter<osc::CStringView> final : std::formatter<std::string_view> {};

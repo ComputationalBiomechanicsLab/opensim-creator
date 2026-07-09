@@ -178,7 +178,7 @@ namespace opyn
                     inputs.landmarks.push_back(*landmark3d);
                 }
                 else {
-                    osc::log_warn("The landmarks %s could not be paired, might be missing in the source/destination?", p.name().c_str());
+                    osc::log_warn("The landmarks {} could not be paired, might be missing in the source/destination?", p.name());
                 }
             });
             inputs.apply_affine_translation = tpsInputs.applyAffineTranslation;

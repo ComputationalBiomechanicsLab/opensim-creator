@@ -1892,34 +1892,29 @@ void osc::ui::align_text_to_frame_padding()
     ImGui::AlignTextToFramePadding();
 }
 
-void osc::ui::draw_text(CStringView sv)
+void osc::ui::draw_text(std::string_view text)
 {
-    ImGui::TextUnformatted(sv.data(), sv.data() + sv.size());
+    ImGui::TextEx(text.data(), text.data() + text.size());
 }
 
-void osc::ui::detail::draw_text_v(CStringView fmt, va_list args)
+void osc::ui::draw_text_disabled(std::string_view text)
 {
-    ImGui::TextV(fmt.c_str(), args);
+    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+    draw_text(text);
+    ImGui::PopStyleColor();
 }
 
-void osc::ui::detail::draw_text_disabled_v(CStringView fmt, va_list args)
+void osc::ui::draw_text_wrapped(std::string_view text)
 {
-    ImGui::TextDisabledV(fmt.c_str(), args);
-}
-
-void osc::ui::draw_text_disabled(CStringView sv)
-{
-    ImGui::TextDisabled("%s", sv.c_str());
-}
-
-void osc::ui::draw_text_wrapped(CStringView sv)
-{
-    ImGui::TextWrapped("%s", sv.c_str());
-}
-
-void osc::ui::detail::draw_text_wrapped_v(CStringView fmt, va_list args)
-{
-    ImGui::TextWrappedV(fmt.c_str(), args);
+    ImGuiContext& g = *GImGui;
+    const bool need_backup = (g.CurrentWindow->DC.TextWrapPos < 0.0f);  // Keep existing wrap position if one is already set
+    if (need_backup) {
+        ImGui::PushTextWrapPos(0.0f);
+    }
+    draw_text(text);
+    if (need_backup) {
+        ImGui::PopTextWrapPos();
+    }
 }
 
 void osc::ui::draw_text_bullet_pointed(CStringView str)
@@ -2210,9 +2205,13 @@ void osc::ui::close_current_popup()
     ImGui::CloseCurrentPopup();
 }
 
-void osc::ui::detail::set_tooltip_v(CStringView fmt, va_list args)
+void osc::ui::set_tooltip(CStringView text)
 {
-    ImGui::SetTooltipV(fmt.c_str(), args);
+    if (not ImGui::BeginTooltipEx(ImGuiTooltipFlags_OverridePrevious, ImGuiWindowFlags_None)) {
+        return;
+    }
+    draw_text(text);
+    ImGui::EndTooltip();
 }
 
 void osc::ui::set_scroll_y_here()

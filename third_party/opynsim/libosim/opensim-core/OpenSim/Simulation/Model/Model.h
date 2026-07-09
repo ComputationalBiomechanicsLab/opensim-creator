@@ -463,7 +463,7 @@ public:
     /**
      * Update the state of all Muscles so they are in equilibrium.
      */
-    void equilibrateMuscles(SimTK::State& state);
+    void equilibrateMuscles(SimTK::State& state) const;
 
     //--------------------------------------------------------------------------
     /**@name       Access to the Simbody System and components

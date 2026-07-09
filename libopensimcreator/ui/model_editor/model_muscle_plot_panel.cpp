@@ -566,7 +566,7 @@ namespace
         }
         catch (const std::exception& ex)
         {
-            log_error("ComputePlotPointsMain: exception thrown while computing a plot: %s", ex.what());
+            log_error("ComputePlotPointsMain: exception thrown while computing a plot: {}", ex.what());
             inputs.shared->setErrorMessage(ex.what());
             inputs.shared->setStatus(PlottingTaskStatus::Error);
             return -1;
@@ -978,7 +978,7 @@ namespace
             }
             std::ofstream ofs{*p};
             if (not ofs) {
-                log_error("%s: cannot open path for writing", p->string().c_str());
+                log_error("{}: cannot open path for writing", p->string());
                 return;
             }
             ofs << csv;
@@ -1429,7 +1429,7 @@ namespace
             }
             std::ofstream ofs{*p};
             if (not ofs) {
-                log_error("%s: could not open file for writing", p->string().c_str());
+                log_error("{}: could not open file for writing", p->string());
                 return;
             }
             ofs << csv;
@@ -1545,7 +1545,7 @@ namespace
 
             if (m_Lines->getPlottingTaskStatus() == PlottingTaskStatus::Error) {
                 if (auto maybeErrorString = m_Lines->tryGetPlottingTaskErrorMessage()) {
-                    ui::draw_text("error: cannot show plot: %s", maybeErrorString->c_str());
+                    ui::draw_text("error: cannot show plot: {}", *maybeErrorString);
                 }
                 return nullptr;
             }
@@ -1555,7 +1555,7 @@ namespace
 
             const auto* maybeCoord = opyn::FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
             if (!maybeCoord) {
-                ui::draw_text("(no coordinate named %s in model)", latestParams.getCoordinatePath().toString().c_str());
+                ui::draw_text("(no coordinate named {} in model)", latestParams.getCoordinatePath().toString());
                 return nullptr;
             }
             const OpenSim::Coordinate& coord = *maybeCoord;

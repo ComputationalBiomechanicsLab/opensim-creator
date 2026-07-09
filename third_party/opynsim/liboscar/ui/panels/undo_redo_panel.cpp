@@ -62,7 +62,7 @@ void osc::UndoRedoPanel::draw_content(UndoRedoBase& storage)
     }
 
     ui::push_id(ui_id++);
-    ui::draw_text("  %s", storage.head().message().c_str());
+    ui::draw_text("  {}", storage.head().message());
     ui::pop_id();
 
     // draw redo entries oldest (lowest index) to newest (highest index)

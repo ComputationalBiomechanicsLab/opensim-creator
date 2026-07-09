@@ -63,10 +63,10 @@ namespace
                 return maybeEntry->construct_tab(&parent);
             }
 
-            log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", to<std::string>(*maybeRequestedTab).c_str());
+            log_warn("{}: cannot find a tab with this name in the tab registry: ignoring", to<std::string>(*maybeRequestedTab));
             log_warn("available tabsWithUnsavedChanges are:");
             for (auto&& tabRegistryEntry : tabRegistry) {
-                log_warn("    %s", tabRegistryEntry.name().c_str());
+                log_warn("    {}", tabRegistryEntry.name());
             }
         }
 
@@ -196,7 +196,7 @@ public:
                 // - soak up the exception to prevent the whole application from terminating
                 // - and emit the error to the log, because we have to assume that this
                 //   screen is about to die (it's being unmounted)
-                log_error("MainUIScreen::on_unmount: unmounting active tab threw an exception: %s", ex.what());
+                log_error("MainUIScreen::on_unmount: unmounting active tab threw an exception: {}", ex.what());
             }
 
             m_ActiveTabID = UID::empty();
@@ -242,7 +242,7 @@ public:
                     atLeastOneTabHandledQuit = m_Tabs[i]->on_event(e) || atLeastOneTabHandledQuit;
                 }
                 catch (const std::exception& ex) {
-                    log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
+                    log_error("MainUIScreen::on_event: exception thrown by tab: {}", ex.what());
 
                     // - the tab is faulty in some way
                     // - soak up the exception to prevent the whole application from terminating
@@ -301,7 +301,7 @@ public:
                 activeTabHandledEvent = active->on_event(e);
             }
             catch (const std::exception& ex) {
-                log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
+                log_error("MainUIScreen::on_event: exception thrown by tab: {}", ex.what());
 
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
@@ -348,7 +348,7 @@ public:
             }
             catch (const std::exception& ex) {
 
-                log_error("MainUIScreen::on_tick: tab thrown an exception: %s", ex.what());
+                log_error("MainUIScreen::on_tick: tab thrown an exception: {}", ex.what());
 
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
@@ -412,7 +412,7 @@ public:
                         active->on_draw_main_menu();
                     }
                     catch (const std::exception& ex) {
-                        log_error("MainUIScreen::drawTabSpecificMenu: tab thrown an exception: %s", ex.what());
+                        log_error("MainUIScreen::drawTabSpecificMenu: tab thrown an exception: {}", ex.what());
 
                         // - the tab is faulty in some way
                         // - soak up the exception to prevent the whole application from terminating
@@ -535,7 +535,7 @@ public:
                 active->on_draw();
             }
             catch (const std::exception& ex) {
-                log_error("MainUIScreen::drawUIConent: tab thrown an exception: %s", ex.what());
+                log_error("MainUIScreen::drawUIConent: tab thrown an exception: {}", ex.what());
 
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating

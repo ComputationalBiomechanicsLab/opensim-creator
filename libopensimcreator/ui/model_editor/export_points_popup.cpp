@@ -88,7 +88,7 @@ namespace
         ui::draw_text_disabled(component.getConcreteClassName());
 
         if (const std::optional<opyn::PointInfo> pointInfo = opyn::TryExtractPointInfo(component, state)) {
-            ui::draw_text_disabled("Expressed In: %s", pointInfo->frameAbsPath.toString().c_str());
+            ui::draw_text_disabled("Expressed In: {}", pointInfo->frameAbsPath.toString());
         }
 
         ui::end_tooltip();
@@ -528,7 +528,7 @@ namespace
 
             std::ofstream ofs{*p};
             if (not ofs) {
-                log_error("%s: error opening file for writing", p->string().c_str());
+                log_error("{}: error opening file for writing", p->string());
                 return;
             }
             ofs << csv;

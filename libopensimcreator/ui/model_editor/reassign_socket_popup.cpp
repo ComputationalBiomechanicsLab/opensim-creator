@@ -161,7 +161,7 @@ public:
 
         // draw UI
 
-        ui::draw_text("%s's new connectee:", socket->getName().c_str());
+        ui::draw_text("{}'s new connectee:", socket->getName());
 
         ui::set_next_item_width(ui::get_content_region_available().x());
         DrawSearchBar(m_EditedParams.search);

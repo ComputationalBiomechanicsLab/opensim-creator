@@ -229,7 +229,7 @@ void osc::ActionPromptUserToLoadMeshFile(
                 ActionLoadMesh(*doc, mesh, which);
             }
             catch (const std::exception& ex) {
-                log_error("Error importing %s: %s", response.front().c_str(), ex.what());
+                log_error("Error importing {}: {}", response.front().string(), ex.what());
             }
         },
         opyn::GetSupportedSimTKMeshFormatsAsFilters()

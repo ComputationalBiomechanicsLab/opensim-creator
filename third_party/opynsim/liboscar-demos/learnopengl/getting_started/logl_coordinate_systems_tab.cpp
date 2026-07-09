@@ -148,9 +148,9 @@ private:
         }
 
         const Vector3 camera_position = camera_.position();
-        ui::draw_text("camera pos = (%f, %f, %f)", camera_position.x(), camera_position.y(), camera_position.z());
+        ui::draw_text("camera pos = {}", camera_position);
         const EulerAngles camera_eulers = camera_.eulers();
-        ui::draw_text("camera eulers = (%f, %f, %f)", camera_eulers.x().count(), camera_eulers.y().count(), camera_eulers.z().count());
+        ui::draw_text("camera eulers = {}", camera_eulers);
         ui::end_panel();
 
         perf_panel_.on_draw();

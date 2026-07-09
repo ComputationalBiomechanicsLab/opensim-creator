@@ -274,7 +274,7 @@ namespace
                                     state->loadModelFile(response.front());
                                 }
                                 catch (const std::exception& ex) {
-                                    log_error("error detected: %s", ex.what());
+                                    log_error("error detected: {}", ex.what());
                                     log_error("rolling back model");
                                     state->rollbackModel();
                                 }
@@ -301,7 +301,7 @@ namespace
                                     state->loadModelTrajectoryFile(response.front());
                                 }
                                 catch (const std::exception& ex) {
-                                    log_error("error detected: %s", ex.what());
+                                    log_error("error detected: {}", ex.what());
                                     log_error("rolling back model");
                                     state->rollbackModel();
                                 }
@@ -324,7 +324,7 @@ namespace
                                     state->loadMotionFiles(response);
                                 }
                                 catch (const std::exception& ex) {
-                                    log_error("error detected: %s", ex.what());
+                                    log_error("error detected: {}", ex.what());
                                     log_error("rolling back model");
                                     state->rollbackModel();
                                 }
@@ -349,7 +349,7 @@ namespace
                                     state->loadXMLAsOpenSimDocument(response);
                                 }
                                 catch (const std::exception& ex) {
-                                    log_error("error detected: %s", ex.what());
+                                    log_error("error detected: {}", ex.what());
                                     log_error("rolling back model");
                                     state->rollbackModel();
                                 }
@@ -575,7 +575,7 @@ public:
             }
 
             m_ThrewExceptionLastFrame = true;
-            log_error("error detected: %s", ex.what());
+            log_error("error detected: {}", ex.what());
             log_error("rolling back model");
             m_UiState->rollbackModel();
         }

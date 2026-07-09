@@ -146,7 +146,7 @@ namespace
 
             if (edited)
             {
-                log_debug("%s edited", panel_name_.c_str());
+                log_debug("{} edited", panel_name_);
 
                 const auto& renderParamsAfter = params.getRenderParams();
 
@@ -273,10 +273,7 @@ namespace
                         //
                         // Because this is a visual overlay, we recover by just not showing the overlay.
                         cache.clear();
-                        log_warn("ModelViewerPanel: error sampling selected coordinate %s: %s",
-                            coordinate->getName().c_str(),
-                            ex.what()
-                        );
+                        log_warn("ModelViewerPanel: error sampling selected coordinate {}: {}", coordinate->getName(), ex.what());
                     }
                 }
                 m_PreviousModelStatePair = std::move(currentModelStatePair);  // Update cache key

@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <format>
 #include <string_view>
 
 using namespace osc;
@@ -57,4 +58,10 @@ TEST(CStringView, literal_suffix_returns_CStringView)
 {
     static_assert(std::same_as<decltype("hello"_cs), CStringView>);
     ASSERT_EQ("hello"_cs, CStringView{"hello"});
+}
+
+TEST(CStringView, works_with_std_format)
+{
+    const CStringView s{"some_string"};
+    ASSERT_EQ(std::format("{}", s), "some_string");
 }

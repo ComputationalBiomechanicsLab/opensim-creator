@@ -4,15 +4,11 @@
 #include <liboscar/platform/log_level.h>
 #include <liboscar/platform/log_message.h>
 #include <liboscar/utilities/circular_buffer.h>
-#include <liboscar/utilities/c_string_view.h>
 #include <liboscar/utilities/synchronized_value.h>
 
 #include <cstddef>
+#include <format>
 #include <memory>
-
-// log: logging implementation
-//
-// this implementation takes heavy inspiration from `spdlog`
 
 namespace osc
 {
@@ -26,45 +22,45 @@ namespace osc
     }
 
     template<typename... Args>
-    inline void log_message(LogLevel level, CStringView fmt, const Args&... args)
+    void log_message(LogLevel level, std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(level, fmt, args...);
+        global_default_logger_raw()->log_message(level, std::move(fmt), std::forward<Args>(args)...);
     }
 
     template<typename... Args>
-    inline void log_trace(CStringView fmt, const Args&... args)
+    void log_trace(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::trace, fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::trace, std::move(fmt), std::forward<Args>(args)...);
     }
 
     template<typename... Args>
-    inline void log_debug(CStringView fmt, const Args&... args)
+    void log_debug(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::debug, fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::debug, std::move(fmt), std::forward<Args>(args)...);
     }
 
     template<typename... Args>
-    void log_info(CStringView fmt, const Args&... args)
+    void log_info(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::info, fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::info, std::move(fmt), std::forward<Args>(args)...);
     }
 
     template<typename... Args>
-    void log_warn(CStringView fmt, const Args&... args)
+    void log_warn(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::warn, fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::warn, std::move(fmt), std::forward<Args>(args)...);
     }
 
     template<typename... Args>
-    void log_error(CStringView fmt, const Args&... args)
+    void log_error(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::err, fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::err, std::move(fmt), std::forward<Args>(args)...);
     }
 
     template<typename... Args>
-    void log_critical(CStringView fmt, const Args&... args)
+    void log_critical(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::critical, fmt, args...);
+        global_default_logger_raw()->log_message(LogLevel::critical, std::move(fmt), std::forward<Args>(args)...);
     }
 
     namespace detail

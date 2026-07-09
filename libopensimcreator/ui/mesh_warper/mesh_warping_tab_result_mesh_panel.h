@@ -122,13 +122,13 @@ namespace osc
                 ui::table_set_column_index(0);
                 ui::draw_text("# vertices");
                 ui::table_set_column_index(1);
-                ui::draw_text("%zu", m_State->getResultMesh().num_vertices());
+                ui::draw_text("{}", m_State->getResultMesh().num_vertices());
 
                 ui::table_next_row();
                 ui::table_set_column_index(0);
                 ui::draw_text("# triangles");
                 ui::table_set_column_index(1);
-                ui::draw_text("%zu", m_State->getResultMesh().num_indices()/3);
+                ui::draw_text("{}", m_State->getResultMesh().num_indices()/3);
 
                 ui::end_table();
             }

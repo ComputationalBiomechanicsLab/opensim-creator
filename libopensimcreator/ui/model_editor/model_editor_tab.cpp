@@ -321,7 +321,7 @@ public:
 
     void tryRecoveringFromException(const std::exception& ex)
     {
-        log_error("exception: thrown while drawing the model editor\n%s", potentially_nested_exception_to_string(ex, 1).c_str());
+        log_error("exception: thrown while drawing the model editor\n{}", potentially_nested_exception_to_string(ex, 1));
         log_error("Exceptions typically happen when an invalid edit is made to the model");
 
         if (m_ExceptionThrownLastFrame) {
@@ -336,7 +336,7 @@ public:
                 }
                 catch (const std::exception& ex2) {
                     log_error("undoing the model also failed with an error");
-                    log_error("%s", potentially_nested_exception_to_string(ex2, 1).c_str());
+                    log_error("{}", potentially_nested_exception_to_string(ex2, 1));
                     log_error("because the model isn't recoverable, closing the editor tab");
                     if (parent()) {
                         App::post_event<OpenTabEvent>(*parent(), std::make_unique<ErrorTab>(owner(), ex));
@@ -344,7 +344,7 @@ public:
                     }
                 }
 
-                log_error("sucessfully undone model");
+                log_error("successfully undone model");
                 m_ExceptionThrownLastFrame = false;  // reset flag
             }
             else if (!m_PopupManager.empty()) {
@@ -375,7 +375,7 @@ public:
                 m_ExceptionThrownLastFrame = true;
             }
             catch (const std::exception& ex2) {
-                log_error("model rollback thrown an exception: %s", ex2.what());
+                log_error("model rollback thrown an exception: {}", ex2.what());
                 log_error("because the model cannot be rolled back, closing the editor tab");
                 App::post_event<OpenTabEvent>(*parent(), std::make_unique<ErrorTab>(owner(), ex2));
                 App::post_event<CloseTabEvent>(*parent(), id());

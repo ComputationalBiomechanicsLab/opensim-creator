@@ -49,7 +49,7 @@ public:
             ui::set_num_columns(2);
             ui::draw_text("num reports");
             ui::next_column();
-            ui::draw_text("%zu", m_Simulation->getNumReports());
+            ui::draw_text("{}", m_Simulation->getNumReports());
             ui::next_column();
             ui::set_num_columns();
         }

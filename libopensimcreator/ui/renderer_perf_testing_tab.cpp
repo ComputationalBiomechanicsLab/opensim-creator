@@ -100,7 +100,7 @@ public:
         ui::begin_panel("stats");
         ui::draw_checkbox("paused", &m_Paused);
         ui::draw_checkbox("regenerate decorations each frame", &m_RegenerateDecorationsEachFrame);
-        ui::draw_text("%f", m_FrameTimeAccumulator.fps());
+        ui::draw_text("{}", m_FrameTimeAccumulator.fps());
         ui::same_line();
         if (ui::draw_small_button("reset")) {
             m_FrameTimeAccumulator.reset();
@@ -150,7 +150,7 @@ private:
         if (const auto rajagopal = App::resource_filepath(rajagopalPath)) {
             msp = UndoableModelStatePair{*rajagopal};
         } else {
-            log_error("%s: no such resource found: falling back to a blank model", rajagopalPath.string().c_str());
+            log_error("{}: no such resource found: falling back to a blank model", rajagopalPath.string());
         }
         ActionEnableAllWrappingSurfaces(msp);
         return msp;

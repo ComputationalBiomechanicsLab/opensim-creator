@@ -53,7 +53,7 @@ namespace
         {
             // do not throw, because it probably shouldn't crash the application if this
             // is an issue
-            log_error("%s: could not be opened for reading: cannot load recent files list", p.string().c_str());
+            log_error("{}: could not be opened for reading: cannot load recent files list", p.string());
             return {};
         }
 
@@ -125,7 +125,7 @@ void osc::RecentFiles::sync()
     std::ofstream fd{m_DiskLocation, std::ios::trunc};
     if (!fd)
     {
-        log_error("%s: could not be opened for writing: cannot update recent files list", m_DiskLocation.string().c_str());
+        log_error("{}: could not be opened for writing: cannot update recent files list", m_DiskLocation.string());
         return;
     }
 

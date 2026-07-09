@@ -305,7 +305,7 @@ private:
 
                     // ensure the tooltip doesn't occlude the line
                     ui::push_style_color(ui::ColorVar::PopupBg, ui::get_style_color(ui::ColorVar::PopupBg).with_alpha(0.5f));
-                    ui::set_tooltip("(%.2fs, %.4f)", static_cast<float>(timeLoc.time_since_epoch().count()), y);
+                    ui::set_tooltip_fmt("({:.2f}s, {:.4f})", timeLoc.time_since_epoch().count(), y);
                     ui::pop_style_color();
                 }
             }

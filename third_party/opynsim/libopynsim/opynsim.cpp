@@ -99,7 +99,7 @@ namespace
         {
             osc::log_message(
                 osc::to<osc::LogLevel>(msg.level),
-                "%s",
+                "{}",
                 osc::to<std::string>(msg.payload).c_str()
             );
         }
@@ -158,7 +158,7 @@ namespace
         if (std::setlocale(category, locale) == nullptr) { // NOLINT(concurrency-mt-unsafe)
             std::stringstream content;
             content << "error setting locale category " << category << " to " << locale;
-            osc::log_warn(std::move(content).str());
+            osc::log_warn("{}", std::move(content).str());
         }
     }
 
@@ -171,7 +171,7 @@ namespace
     // general US locale (e.g. the separator is always a period), causing problems.
     void set_global_locale_to_match_OpenSim()
     {
-        osc::log_info("setting locale to US (so that numbers are always in the format '0.x'");
+        osc::log_info("setting locale to US (so that numbers are always in the format '0.x')");
         const char* locale = "C";
         for (const char* envvar : {"LANG", "LC_CTYPE", "LC_NUMERIC", "LC_TIME", "LC_COLLATE", "LC_MONETARY", "LC_MESSAGES", "LC_ALL"}) {
             setenv_wrapper(envvar, locale, true);

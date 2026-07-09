@@ -6,6 +6,7 @@
 #include <cmath>
 #include <compare>
 #include <concepts>
+#include <format>
 #include <numbers>
 #include <ostream>
 #include <string_view>
@@ -175,6 +176,22 @@ struct std::common_type<osc::Angle<Rep1, Units1>, osc::Angle<Rep2, Units2>> {
     using type = osc::Angle<std::common_type_t<Rep1, Rep2>, units>;
 };
 
+template<std::floating_point Rep, osc::AngularUnitTraits Units>
+struct std::formatter<osc::Angle<Rep, Units>> final {
+    template<class ParseCtx>
+    constexpr auto parse(ParseCtx& ctx) { return inner_.parse(ctx); }
+
+    template<class FmtCtx>
+    auto format(const osc::Angle<Rep, Units>& angle, FmtCtx& ctx) const
+    {
+        auto it = inner_.format(angle.count(), ctx);
+        *it++ = ' ';
+        it = std::ranges::copy(Units::unit_label, it).out;
+        return it;
+    }
+private:
+    std::formatter<Rep> inner_;
+};
 
 // unit trait implementations for common units (rad, deg, turn)
 namespace osc

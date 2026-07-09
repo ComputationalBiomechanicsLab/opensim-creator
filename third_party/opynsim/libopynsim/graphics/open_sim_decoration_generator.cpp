@@ -1559,7 +1559,7 @@ Mesh opyn::ToOscMesh(
     }
     if (decs.size() > 1) {
         const auto path = mesh.getAbsolutePathString();
-        log_warn("%s: this OpenSim::Mesh component generated more than one decoration: OSC defaulted to using the first one, but that may not be correct: if you are seeing unusual behavior, then it's because OpenSim is doing something whacky when generating decorations for a mesh", path.c_str());
+        log_warn("{}: this OpenSim::Mesh component generated more than one decoration: OSC defaulted to using the first one, but that may not be correct: if you are seeing unusual behavior, then it's because OpenSim is doing something whacky when generating decorations for a mesh", path);
     }
     return std::move(decs.front().mesh);
 }

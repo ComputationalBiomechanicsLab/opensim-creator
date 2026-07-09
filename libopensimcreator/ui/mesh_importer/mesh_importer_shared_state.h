@@ -116,7 +116,7 @@ namespace osc
             }
             catch (const std::exception& ex)
             {
-                log_error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+                log_error("error occurred while trying to create an OpenSim model from the mesh editor scene: {}", ex.what());
             }
         }
 
@@ -150,7 +150,7 @@ namespace osc
                         state->m_MaybeModelGraphExportedUID = state->m_ModelGraphSnapshots.head_id();
                     }
                     catch (const std::exception& ex) {
-                        log_error("Error importing %s as a model: %s", response.front().c_str(), ex.what());
+                        log_error("Error importing {} as a model: {}", response.front().string(), ex.what());
                         return;  // Error importing the model
                     }
                 },
@@ -334,7 +334,7 @@ namespace osc
                     mesh.reloadMeshDataFromDisk();
                 }
                 catch (const std::exception& ex) {
-                    log_info("%s: error reloading: %s", mesh.getLabel().c_str(), ex.what());
+                    log_info("{}: error reloading: {}", mesh.getLabel(), ex.what());
                 }
             }
         }
@@ -857,7 +857,7 @@ namespace osc
                 m = CreateOpenSimModelFromMeshImporterDocument(getModelGraph(), m_ModelCreationFlags, issues);
             }
             catch (const std::exception& ex) {
-                log_error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+                log_error("error occurred while trying to create an OpenSim model from the mesh editor scene: {}", ex.what());
             }
 
             if (m) {
@@ -868,7 +868,7 @@ namespace osc
             }
             else {
                 for (const std::string& issue : issues) {
-                    log_error("%s", issue.c_str());
+                    log_error("{}", issue);
                 }
                 return false;
             }
@@ -934,7 +934,7 @@ namespace osc
         // called when the mesh loader responds with a mesh loading error
         void popMeshLoaderHandleErrorResponse(MeshLoadErrorResponse& err)
         {
-            log_error("%s: error loading mesh file: %s", err.path.string().c_str(), err.error.c_str());
+            log_error("{}: error loading mesh file: {}", err.path.string(), err.error);
         }
 
         void popMeshLoader()

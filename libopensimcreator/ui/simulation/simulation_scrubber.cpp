@@ -137,7 +137,7 @@ private:
     void drawStartTimeText()
     {
         const SimulationClock::time_point tStart = m_Simulation->getStartTime();
-        ui::draw_text_disabled("%.2f", static_cast<float>(tStart.time_since_epoch().count()));
+        ui::draw_text_disabled("{:.2f}", tStart.time_since_epoch().count());
     }
 
     void drawPlaybackSpeedSelector()
@@ -183,7 +183,7 @@ private:
     void drawEndTimeText()
     {
         const SimulationClock::time_point tEnd = m_Simulation->getEndTime();
-        ui::draw_text_disabled("%.2f", static_cast<float>(tEnd.time_since_epoch().count()));
+        ui::draw_text_disabled("{:.2f}", tEnd.time_since_epoch().count());
     }
 
     std::string m_Label;

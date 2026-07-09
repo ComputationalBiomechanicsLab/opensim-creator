@@ -103,7 +103,7 @@ public:
         ui::begin_panel("window");
         ui::draw_float_input("standardinput", &float_value_);
         ui::draw_float_circular_slider("custom slider", &float_value_, 15.0f, 5.0f);
-        ui::draw_text("%f", float_value_);
+        ui::draw_text("{}", float_value_);
         draw_toggle("custom toggle", &toggle_state_);
         ui::end_panel();
     }

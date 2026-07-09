@@ -496,7 +496,7 @@ namespace
     std::filesystem::path get_current_exe_dir_and_log_it()
     {
         auto rv = current_executable_directory();
-        log_info("executable directory: %s", rv.string().c_str());
+        log_info("executable directory: {}", rv.string());
         return rv;
     }
 
@@ -509,7 +509,7 @@ namespace
                 return resources_dir_path;
             }
             else {
-                log_warn("resources path fallback: tried %s, but it doesn't exist", resources_dir_path.string().c_str());
+                log_warn("resources path fallback: tried {}, but it doesn't exist", resources_dir_path.string());
             }
         }
 
@@ -518,7 +518,7 @@ namespace
             return resources_relative_to_exe;
         }
         else {
-            log_info("resources path fallback: using %s as a filler entry, but it doesn't actually exist: the application's configuration file has an incorrect/missing 'resources' key", resources_relative_to_exe.string().c_str());
+            log_info("resources path fallback: using {} as a filler entry, but it doesn't actually exist: the application's configuration file has an incorrect/missing 'resources' key", resources_relative_to_exe.string());
         }
 
         return resources_relative_to_exe;
@@ -543,7 +543,7 @@ namespace
         }
 
         if (resources_dir_setting_value->type() != VariantType::String) {
-            log_info("application setting for '%s' is not a string: falling back", resources_key.c_str());
+            log_info("application setting for '{}' is not a string: falling back", resources_key);
             return get_resources_dir_fallback_path(settings);
         }
 
@@ -559,7 +559,7 @@ namespace
 
         auto resolved_resource_dir = std::filesystem::weakly_canonical(config_file_dir / configured_resources_dir);
         if (not std::filesystem::exists(resolved_resource_dir)) {
-            log_info("'resources', in the application configuration, points to a location that does not exist (%s), so the application may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attemtping to fallback to a default resources location (which may or may not work).", resolved_resource_dir.string().c_str());
+            log_info("'resources', in the application configuration, points to a location that does not exist ({}), so the application may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attempting to fallback to a default resources location (which may or may not work).", resolved_resource_dir.string());
             return get_resources_dir_fallback_path(settings);
         }
 
@@ -569,7 +569,7 @@ namespace
     std::filesystem::path get_current_resources_path_and_log_it(const AppSettings& settings)
     {
         auto rv = get_resource_dir_from_settings(settings);
-        log_info("resource directory: %s", rv.string().c_str());
+        log_info("resource directory: {}", rv.string());
         return rv;
     }
 
@@ -579,7 +579,7 @@ namespace
         std::string_view application_name)
     {
         auto rv = user_data_directory(organization_name, application_name);
-        log_info("user data directory: %s", rv.string().c_str());
+        log_info("user data directory:{}", rv.string());
         return rv;
     }
 
@@ -913,7 +913,7 @@ namespace
                 try {
                     widget_->on_unmount();
                 } catch (const std::exception& ex) {
-                    log_error("error unmounting '%s': %s", widget_->name().c_str(), ex.what());
+                    log_error("error unmounting '{}': {}", widget_->name(), ex.what());
                 }
             }
         }
@@ -1270,7 +1270,7 @@ namespace
                 try {
                     widget_->on_unmount();
                 } catch (const std::exception& ex) {
-                    log_error("error unmounting '%s': %s", widget_->name().c_str(), ex.what());
+                    log_error("error unmounting '{}': {}", widget_->name(), ex.what());
                     widget_.reset();  // don't let a borked widget keep living
                     throw;
                 }
@@ -1312,13 +1312,13 @@ namespace
 
             std::unique_ptr<Widget> previous_widget;
             if (widget_) {
-                log_info("unmounting widget '%s'", widget_->name().c_str());
+                log_info("unmounting widget '{}'", widget_->name());
 
                 try {
                     widget_->on_unmount();
                 }
                 catch (const std::exception& ex) {
-                    log_error("error unmounting widget '%s': %s", widget_->name().c_str(), ex.what());
+                    log_error("error unmounting widget '{}': {}", widget_->name(), ex.what());
                     widget_.reset();
                     throw;
                 }
@@ -1335,14 +1335,14 @@ namespace
             // this might be indirectly visible from `on_mount`
             widget_ = std::move(next_widget_);
 
-            log_info("mounting widget '%s'", widget_->name().c_str());
+            log_info("mounting widget '{}'", widget_->name());
             try {
                 widget_->on_mount();
             } catch (const std::exception& ex) {
                 // if mounting the new `Widget` fails, destruct it here so that
                 // this `App` doesn't retain a potentially-screwed `Widget` longer
                 // than it should
-                log_error("error mounting widget '%s': %s", widget_->name().c_str(), ex.what());
+                log_error("error mounting widget '{}': {}", widget_->name(), ex.what());
                 widget_.reset();
                 throw;
             }
@@ -1351,12 +1351,12 @@ namespace
             // re-mount it before throwing, because the caller might be able
             // to recover the UI if it catches this (re-thrown) exception.
             if (not widget_ and previous_widget) {
-                log_error("re-mounting '%s' to recover from the error", previous_widget->name().c_str());
+                log_error("re-mounting '{}' to recover from the error", previous_widget->name());
                 widget_ = std::move(previous_widget);
                 try {
                     widget_->on_mount();
                 } catch (const std::exception& ex) {
-                    log_error("re-mounting '%s' failed, cannot show UI: %s", widget_->name().c_str(), ex.what());
+                    log_error("re-mounting '{}' failed, cannot show UI: {}", widget_->name(), ex.what());
                     widget_.reset();  // the backup plan is screwed as well :(
                     throw;
                 }
@@ -1451,7 +1451,7 @@ public:
             throw std::runtime_error{"tried to call `App::setup_main_loop` when a main window with a `Widget` is already being shown (and, therefore, `App::teardown_main_loop` wasn't called). If you want to change the main window's top-level widget from *within* some other widget, call `request_transition` instead"};
         }
 
-        log_info("initializing application main loop with widget '%s'", widget->name().c_str());
+        log_info("initializing application main loop with widget '{}'", widget->name());
 
         // Reset main loop variables
         perf_counter_ = SDL_GetPerformanceCounter();

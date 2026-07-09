@@ -907,12 +907,12 @@ bool opyn::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     OpenSim::Component* const owner = UpdOwner(m, c);
 
     if (!owner) {
-        osc::log_error("cannot delete %s: it has no owner", c.getName().c_str());
+        osc::log_error("cannot delete {}: it has no owner", c.getName());
         return false;
     }
 
     if (&c.getRoot() != &m) {
-        osc::log_error("cannot delete %s: it is not owned by the provided model", c.getName().c_str());
+        osc::log_error("cannot delete {}: it is not owned by the provided model", c.getName());
         return false;
     }
 
@@ -926,7 +926,7 @@ bool opyn::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
             ss << delim << connectee->getName();
             delim = ", ";
         }
-        osc::log_error("cannot delete %s: the following components connect to it via sockets: %s", c.getName().c_str(), std::move(ss).str().c_str());
+        osc::log_error("cannot delete {}: the following components connect to it via sockets: {}", c.getName(), std::move(ss).str());
         return false;
     }
 
@@ -936,7 +936,7 @@ bool opyn::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     // fixed in OpenSim itself
     for (const OpenSim::PathWrap& pw : m.getComponentList<OpenSim::PathWrap>()) {
         if (pw.getWrapObject() == &c) {
-            osc::log_error("cannot delete %s: it is used in a path wrap (%s)", c.getName().c_str(), GetAbsolutePathString(pw).c_str());
+            osc::log_error("cannot delete {}: it is used in a path wrap ({})", c.getName(), GetAbsolutePathString(pw));
             return false;
         }
     }
@@ -1021,7 +1021,7 @@ bool opyn::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     }
 
     if (!rv) {
-        osc::log_error("cannot delete %s: OpenSim Creator doesn't know how to delete a %s from its parent (maybe it can't?)", c.getName().c_str(), c.getConcreteClassName().c_str());
+        osc::log_error("cannot delete {}: OpenSim Creator doesn't know how to delete a {} from its parent (maybe it can't?)", c.getName(), c.getConcreteClassName());
     }
 
     return rv;
@@ -1119,7 +1119,7 @@ void opyn::TryEquilibrateMusclesOrLogWarning(OpenSim::Model& model, SimTK::State
         model.equilibrateMuscles(state);
     }
     catch (const std::exception& ex) {
-        osc::log_warn("Cannot equilibrate model's muscles: %s", ex.what());
+        osc::log_warn("Cannot equilibrate model's muscles: {}", ex.what());
     }
 }
 
@@ -1850,7 +1850,7 @@ std::unordered_map<int, int> opyn::CreateStorageIndexToModelStatevarMappingWithW
             ss << delimiter << el;
             delimiter = ", ";
         }
-        osc::log_warn("%s", std::move(ss).str().c_str());
+        osc::log_warn("{}", std::move(ss).str());
         osc::log_warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
         osc::log_warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
     }

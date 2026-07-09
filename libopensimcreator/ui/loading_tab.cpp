@@ -80,7 +80,7 @@ public:
             }
         }
         catch (const std::exception& ex) {
-            log_error("LoadingScreen::on_tick: exception thrown while loading model: %s", ex.what());
+            log_error("LoadingScreen::on_tick: exception thrown while loading model: {}", ex.what());
             m_LoadingErrorMsg = ex.what();
             m_IsFinishedLoading = true;
             return;
@@ -114,7 +114,7 @@ public:
 
         if (m_LoadingErrorMsg.empty()) {
             if (ui::begin_panel("Loading Message", nullptr, ui::PanelFlag::NoTitleBar)) {
-                ui::draw_text("loading: %s", m_OsimPath.string().c_str());
+                ui::draw_text("loading: {}", m_OsimPath.string());
                 ui::draw_progress_bar(m_LoadingProgress);
             }
             ui::end_panel();

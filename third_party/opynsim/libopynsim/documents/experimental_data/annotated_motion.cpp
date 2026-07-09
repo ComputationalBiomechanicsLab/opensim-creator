@@ -99,7 +99,7 @@ opyn::AnnotatedMotion::AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage
             addComponent(series.release());
         }
         catch (const std::exception& ex) {
-            osc::log_warn("Error loading a data series from %s: %s", getName().c_str(), ex.what());
+            osc::log_warn("Error loading a data series from {}: {}", getName(), ex.what());
         }
     }
 }

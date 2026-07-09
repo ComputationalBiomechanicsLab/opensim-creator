@@ -254,7 +254,7 @@ namespace osc
                 ui::begin_tooltip_nowrap();
                 ui::draw_text(se->getLabel());
                 ui::same_line();
-                ui::draw_text_disabled("(%s, click to choose)", se->getClass().getName().c_str());
+                ui::draw_text_disabled("({}, click to choose)", se->getClass().getName());
                 ui::end_tooltip_nowrap();
             }
         }

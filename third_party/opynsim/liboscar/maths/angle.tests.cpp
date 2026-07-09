@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 
+#include <format>
+
 using namespace osc;
 using namespace osc::literals;
 
@@ -119,4 +121,9 @@ TEST(Angle, std_is_convertible_to_works_between_angles)
     static_assert(std::convertible_to<Degrees, Radians>);
     static_assert(std::convertible_to<Degrees, Turns>);
     // etc. - many parts of the codebase require that these are automatically convertible
+}
+
+TEST(Angle, can_be_formatted)
+{
+    ASSERT_EQ(std::format("{:.0f}", 10_deg), "10 deg");
 }

@@ -108,7 +108,7 @@ public:
         const auto& guard = guarded_content.lock();
         for (const LogMessage& log_message : *guard) {
             ui::push_style_color(ui::ColorVar::Text, ::to_color(log_message.level()));
-            ui::draw_text("[%s]", to_cstringview(log_message.level()).c_str());
+            ui::draw_text("[{}]", to_cstringview(log_message.level()));
             ui::pop_style_color();
             ui::same_line();
             ui::draw_text_wrapped(log_message.payload());

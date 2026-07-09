@@ -47,7 +47,7 @@ bool osc::NativeFilesystem::impl_resource_exists(const ResourcePath& resource_pa
 ResourceStream osc::NativeFilesystem::impl_open(const ResourcePath& resource_path)
 {
     if (log_level() <= LogLevel::debug) {
-        log_debug("opening %s", resource_path.string().c_str());
+        log_debug("opening {}", resource_path.string());
     }
     return ResourceStream{calc_full_path(root_directory_, resource_path)};
 }

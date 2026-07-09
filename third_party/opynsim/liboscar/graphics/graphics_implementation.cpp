@@ -406,7 +406,7 @@ namespace
         if (not extensions_missing.empty()) {
             log_message(logging_level, "OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
             for (const auto& extension : extensions_missing) {
-                log_message(logging_level, "OpenGL:  - %s", extension.c_str());
+                log_message(logging_level, "OpenGL:  - {}", extension);
             }
             log_message(logging_level, "OpenGL: because extensions may be missing, rendering may behave abnormally");
             log_message(logging_level, "OpenGL: note: some graphics engines can mis-report an extension as missing");
@@ -414,7 +414,7 @@ namespace
 
         log_message(logging_level, "OpenGL: here is a list of all of the extensions supported by the graphics backend:");
         for (const auto& extension : extensions_available) {
-            log_message(logging_level, "OpenGL:  - %s", extension.c_str());
+            log_message(logging_level, "OpenGL:  - {}", extension);
         }
     }
 }
@@ -5817,7 +5817,7 @@ namespace
         for (const auto& capability : c_required_opengl_capabilities) {
             glEnable(capability.id);
             if (not glIsEnabled(capability.id)) {
-                log_warn("failed to enable %s: this may cause rendering issues", capability.label.c_str());
+                log_warn("failed to enable {}: this may cause rendering issues", capability.label);
             }
         }
 
@@ -5828,11 +5828,11 @@ namespace
         // print OpenGL information to console (handy for debugging user's rendering
         // issues)
         log_info(
-            "OpenGL initialized: info: %s, %s, (%s), GLSL %s",
-            glGetString(GL_VENDOR),
-            glGetString(GL_RENDERER),
-            glGetString(GL_VERSION),
-            glGetString(GL_SHADING_LANGUAGE_VERSION)
+            "OpenGL initialized: info: {}, {}, ({}), GLSL {}",
+            opengl_get_cstringview(GL_VENDOR),
+            opengl_get_cstringview(GL_RENDERER),
+            opengl_get_cstringview(GL_VERSION),
+            opengl_get_cstringview(GL_SHADING_LANGUAGE_VERSION)
         );
 
         return ctx;
@@ -5950,12 +5950,12 @@ namespace
 
         log_message(lvl,
             R"(OpenGL Debug message:
-id = %u
-message = %s
-source = %s
-type = %s
-severity = %s
-)", id, message, source_cstr.c_str(), type_cstr.c_str(), severity_cstr.c_str());
+id = {}
+message = {}
+source = {}
+type = {}
+severity = {}
+)", id, message, source_cstr, type_cstr, severity_cstr);
     }
 
     // enables OpenGL API debugging

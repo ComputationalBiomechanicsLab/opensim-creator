@@ -47,6 +47,6 @@ osc::TemporaryFile::~TemporaryFile() noexcept
         std::filesystem::remove(absolute_path_);
     }
     catch (const std::filesystem::filesystem_error& ex) {
-        log_error("Error closing a temporary file (%s): %s", absolute_path_.string().c_str(), ex.what());
+        log_error("Error closing a temporary file ({}): {}", absolute_path_.string(), ex.what());
     }
 }

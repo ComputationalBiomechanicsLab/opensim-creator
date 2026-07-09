@@ -46,7 +46,7 @@ namespace
             {
                 std::ofstream ofs{*p};
                 if (not ofs) {
-                    log_error("%s: error opening file for writing", p->string().c_str());
+                    log_error("{}: error opening file for writing", p->string());
                     return;  // error opening output file for writing
                 }
 
