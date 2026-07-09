@@ -125,7 +125,7 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
             osc::log_info("exceptions are skipped (this test is looking for hard-crashes, like segfaults)");
         }
 
-        osc::log_info("{}", msg);
+        osc::log_info(msg);
     }
 }
 

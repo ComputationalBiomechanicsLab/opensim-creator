@@ -7,11 +7,14 @@
 #include <libopynsim/ui/ui_callbacks.h>
 #include <libopynsim/model.h>
 #include <libopynsim/model_state.h>
+#include <liboscar/graphics/scene/scene_cache.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/array.h>
+#include <nanobind/stl/optional.h>
 #include <nanobind/stl/pair.h>
 
 #include <array>
+#include <optional>
 
 namespace nb = nanobind;
 using namespace opyn;
@@ -53,18 +56,18 @@ void opyn::init_ui_submodule(nanobind::module_& ui_module)
             const Model& model,
             const ModelState& model_state,
             std::pair<int, int> dimensions,
-            std::array<float, 4> background_color,
-            bool zoom_to_fit,
-            bool draw_floor)
+            const osc::Color& background_color,
+            bool draw_floor,
+            osc::SceneCache* scene_cache)
         {
             show_model_in_state(
                 get_lazy_loaded_opynsim_app(),
                 model,
                 model_state,
                 osc::Vector2{dimensions.first, dimensions.second},
-                osc::Color{background_color[0], background_color[1], background_color[2], background_color[3]},
-                zoom_to_fit,
+                background_color,
                 draw_floor,
+                scene_cache,
                 default_python_callbacks()
             );
         },
@@ -72,9 +75,9 @@ void opyn::init_ui_submodule(nanobind::module_& ui_module)
         nb::arg("model_state"),
         nb::kw_only{},
         nb::arg("dimensions") = std::make_pair(640, 480),
-        nb::arg("background_color") = std::to_array({1.0f, 1.0f, 1.0f, 1.0f}),
-        nb::arg("zoom_to_fit") = true,
+        nb::arg("background_color") = osc::Color::white(),
         nb::arg("draw_floor") = false,
+        nb::arg("scene_cache") = nullptr,
         R"(
             Displays an interactive visualizer for the given :class:`opynsim.Model` + :class:`opynsim.ModelState`
             in a window.
@@ -83,11 +86,11 @@ void opyn::init_ui_submodule(nanobind::module_& ui_module)
 
             Args:
                 model (opynsim.Model): The model to show.
-                model_state (opynsim.ModelState): The state of the model to show. Should be realized to at least :attr:`opynsim.ModelStateStage.REPORT`.
-                dimensions (tuple[int, int]): The desired output resolution (width, height) of the window in device-independent pixels.
-                background_color: The desired background color of the rendered scene, specified as normalized floats representing RGBA.
-                zoom_to_fit (bool): Tells the ui to automatically set up the camera to focus on the center of the bounds of the scene at a distance that can see the entire scene.
-                draw_floor (bool): Draws a chequered floor.
+                model_state (opynsim.ModelState): The state of the model to render. Should be realized to at least :attr:`opynsim.ModelStateStage.REPORT`.
+                dimensions (tuple[int, int]): The desired output resolution (width, height) of the rendered image in pixels.
+                background_color (opynsim.graphics.Color): The desired background color of the rendered scene.
+                draw_floor (bool): Toggles drawing a chequered floor at Y=0 in the scene.
+                scene_cache (opynsim.graphics.SceneCache): A scene cache from which the implementation pulls cached scene elements (shaders, meshes, etc.). Otherwise, the implementation loads all assets every time this function is called (slow).
         )"
     );
 }

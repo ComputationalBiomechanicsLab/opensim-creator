@@ -2,6 +2,7 @@
 
 #include <liboscar/graphics/rgba.h>
 
+#include <format>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -40,3 +41,26 @@ namespace osc
     // its luminance (L) by `factor`, and converting it back to RGBA
     Color multiply_luminance(const Color& color, float factor);
 }
+
+template<>
+struct std::formatter<osc::Color> final {
+    template<class ParseCtx>
+    constexpr auto parse(ParseCtx& ctx) { return inner_.parse(ctx); }
+
+    template<class FmtCtx>
+    auto format(const osc::Color color, FmtCtx& ctx) const
+    {
+        auto it = std::ranges::copy(std::string_view{"Color("}, ctx.out()).out;
+        std::string_view delimiter;
+        for (const auto& component : color) {
+            it = std::ranges::copy(delimiter, it).out;
+            ctx.advance_to(it);
+            it = inner_.format(component, ctx);
+            delimiter = ", ";
+        }
+        *it++ = ')';
+        return it;
+    }
+private:
+    std::formatter<osc::Color::value_type> inner_;
+};

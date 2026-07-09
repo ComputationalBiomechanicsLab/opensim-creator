@@ -106,7 +106,6 @@ namespace osc::ui
 
     void draw_text(std::string_view);
     template<class... Args>
-    requires (sizeof...(Args) > 0)
     void draw_text(std::format_string<Args...> fmt, Args&&... args)
     {
         draw_text(std::format(std::move(fmt), std::forward<Args>(args)...));
@@ -114,7 +113,6 @@ namespace osc::ui
 
     void draw_text_disabled(std::string_view);
     template<class... Args>
-    requires (sizeof...(Args) > 0)
     void draw_text_disabled(std::format_string<Args...> fmt, Args&&... args)
     {
         draw_text_disabled(std::format(std::move(fmt), std::forward<Args>(args)...));
@@ -122,7 +120,6 @@ namespace osc::ui
 
     void draw_text_wrapped(std::string_view);
     template<class... Args>
-    requires (sizeof...(Args) > 0)
     void draw_text_wrapped(std::format_string<Args...> fmt, Args&&... args)
     {
         draw_text_wrapped(std::format(std::move(fmt), std::forward<Args>(args)...));
@@ -324,7 +321,6 @@ namespace osc::ui
 
     void set_tooltip(CStringView text);
     template<class... Args>
-    requires (sizeof...(Args) > 0)
     void set_tooltip_fmt(std::format_string<Args...> fmt, Args&&... args)
     {
         set_tooltip(std::format(std::move(fmt), std::forward<Args>(args)...));

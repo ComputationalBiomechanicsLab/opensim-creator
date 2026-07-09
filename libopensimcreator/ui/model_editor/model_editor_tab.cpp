@@ -336,7 +336,7 @@ public:
                 }
                 catch (const std::exception& ex2) {
                     log_error("undoing the model also failed with an error");
-                    log_error("{}", potentially_nested_exception_to_string(ex2, 1));
+                    log_error(potentially_nested_exception_to_string(ex2, 1));
                     log_error("because the model isn't recoverable, closing the editor tab");
                     if (parent()) {
                         App::post_event<OpenTabEvent>(*parent(), std::make_unique<ErrorTab>(owner(), ex));

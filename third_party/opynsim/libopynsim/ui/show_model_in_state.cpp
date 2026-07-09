@@ -10,6 +10,7 @@
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/graphics/camera_v2.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/aabb_functions.h>
@@ -33,20 +34,18 @@ namespace
             const Model& model,
             const ModelState& model_state,
             osc::Color background_color,
-            bool zoom_to_fit,
             bool draw_floor,
+            osc::SceneCache* scene_cache,
             UiCallbacks callbacks) :
 
             callbacks_{std::move(callbacks)},
-            decorations_{model.decorations(scene_cache_, model_state)},
+            local_scene_cache_{scene_cache ? std::optional<osc::SceneCache>{} : osc::SceneCache{}},
+            scene_cache_{scene_cache ? scene_cache : &local_scene_cache_.value()},
+            decorations_{model.decorations(*scene_cache_, model_state)},
             background_color_{background_color},
-            fit_camera_on_next_frame_{zoom_to_fit},
+            fit_camera_on_next_frame_{true},
             draw_floor_{draw_floor}
-        {
-            // TODO: try and default the camera to look down the Z axis
-            camera.theta = {};
-            camera.phi = {};
-        }
+        {}
     private:
         bool impl_on_event(osc::Event& e) override
         {
@@ -96,8 +95,9 @@ namespace
 
         UiCallbacks callbacks_;
         osc::ui::Context ui_context_{osc::App::upd()};
-        osc::SceneCache scene_cache_;
-        osc::SceneRenderer scene_renderer_{scene_cache_};
+        std::optional<osc::SceneCache> local_scene_cache_;
+        osc::SceneCache* scene_cache_;
+        osc::SceneRenderer scene_renderer_{*scene_cache_};
         std::vector<osc::SceneDecoration> decorations_;
         osc::PolarPerspectiveCamera camera;
         osc::Color background_color_ = osc::Color::white();
@@ -113,20 +113,21 @@ void opyn::show_model_in_state(
     const ModelState& state,
     osc::Vector2 dimensions,
     osc::Color background_color,
-    bool zoom_to_fit,
     bool draw_floor,
+    osc::SceneCache* scene_cache,
     UiCallbacks callbacks)
 {
     app.set_main_window_showing(true);
     app.set_main_window_dimensions(dimensions);
     osc::ScopeExit hide_window_on_exit{[&app]{ app.set_main_window_showing(false); }};
     app.focus_main_window();
+
     app.show<BasicModelViewer>(
         model,
         state,
         background_color,
-        zoom_to_fit,
         draw_floor,
+        scene_cache,
         std::move(callbacks)
     );
 }

@@ -25,6 +25,11 @@ namespace osc
             log_sinks_{std::move(sink)}
         {}
 
+        void log_message(LogLevel log_level, std::string_view message)
+        {
+            log_message(log_level, "{}", message);
+        }
+
         template<class... Args>
         void log_message(LogLevel log_level, std::format_string<Args...> fmt, Args&&... args)
         {

@@ -326,7 +326,7 @@ namespace
                 integ->getTerminationReason() != SimTK::Integrator::ReachedFinalTime)
             {
                 // simulation ended because of an error: report the error and exit
-                log_error("{}", integ->getTerminationReasonString(integ->getTerminationReason()).c_str());
+                log_error(integ->getTerminationReasonString(integ->getTerminationReason()));
                 return SimulationStatus::Error;
             }
             else if (timestepRv == SimTK::Integrator::ReachedReportTime)

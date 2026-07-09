@@ -868,7 +868,7 @@ namespace osc
             }
             else {
                 for (const std::string& issue : issues) {
-                    log_error("{}", issue);
+                    log_error(issue);
                 }
                 return false;
             }

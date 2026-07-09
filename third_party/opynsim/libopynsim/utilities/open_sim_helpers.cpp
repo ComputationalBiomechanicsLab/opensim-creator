@@ -1850,7 +1850,7 @@ std::unordered_map<int, int> opyn::CreateStorageIndexToModelStatevarMappingWithW
             ss << delimiter << el;
             delimiter = ", ";
         }
-        osc::log_warn("{}", std::move(ss).str());
+        osc::log_warn(std::move(ss).str());
         osc::log_warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
         osc::log_warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
     }

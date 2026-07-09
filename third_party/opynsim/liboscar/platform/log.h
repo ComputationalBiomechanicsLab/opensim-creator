@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <format>
 #include <memory>
+#include <string_view>
 
 namespace osc
 {
@@ -21,46 +22,81 @@ namespace osc
         return global_default_logger_raw()->level();
     }
 
+    inline void log_message(LogLevel level, std::string_view message)
+    {
+        global_default_logger_raw()->log_message(level, message);
+    }
+
     template<typename... Args>
     void log_message(LogLevel level, std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(level, std::move(fmt), std::forward<Args>(args)...);
+        global_default_logger_raw()->log_message(level, fmt, std::forward<Args>(args)...);
+    }
+
+    inline void log_trace(std::string_view message)
+    {
+        log_message(LogLevel::trace, message);
     }
 
     template<typename... Args>
     void log_trace(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::trace, std::move(fmt), std::forward<Args>(args)...);
+        log_message(LogLevel::trace, fmt, std::forward<Args>(args)...);
+    }
+
+    inline void log_debug(std::string_view message)
+    {
+        log_message(LogLevel::debug, message);
     }
 
     template<typename... Args>
     void log_debug(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::debug, std::move(fmt), std::forward<Args>(args)...);
+        log_message(LogLevel::debug, fmt, std::forward<Args>(args)...);
+    }
+
+    inline void log_info(std::string_view message)
+    {
+        log_message(LogLevel::info, message);
     }
 
     template<typename... Args>
     void log_info(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::info, std::move(fmt), std::forward<Args>(args)...);
+        log_message(LogLevel::info, fmt, std::forward<Args>(args)...);
+    }
+
+    inline void log_warn(std::string_view message)
+    {
+        log_message(LogLevel::warn, message);
     }
 
     template<typename... Args>
     void log_warn(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::warn, std::move(fmt), std::forward<Args>(args)...);
+        log_message(LogLevel::warn, fmt, std::forward<Args>(args)...);
+    }
+
+    inline void log_error(std::string_view message)
+    {
+        log_message(LogLevel::err, message);
     }
 
     template<typename... Args>
     void log_error(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::err, std::move(fmt), std::forward<Args>(args)...);
+        log_message(LogLevel::err, fmt, std::forward<Args>(args)...);
+    }
+
+    inline void log_critical(std::string_view message)
+    {
+        log_message(LogLevel::critical, message);
     }
 
     template<typename... Args>
     void log_critical(std::format_string<Args...> fmt, Args&&... args)
     {
-        global_default_logger_raw()->log_message(LogLevel::critical, std::move(fmt), std::forward<Args>(args)...);
+        log_message(LogLevel::critical, fmt, std::forward<Args>(args)...);
     }
 
     namespace detail

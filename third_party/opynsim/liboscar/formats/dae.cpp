@@ -149,8 +149,10 @@ namespace
     {
         std::string_view delimiter;
         std::array<char, 512> buffer{};
+
         for (const float value : values) {
-            if (const auto size = std::snprintf(buffer.data(), buffer.size(), "%f", value); size > 0) {
+            const auto [ptr, size] = std::format_to_n(buffer.data(), buffer.size(), "{}", value);
+            if (0 < size and size <= std::ssize(buffer)) {
                 out << delimiter << std::string_view{buffer.data(), static_cast<size_t>(size)};
                 delimiter = " ";
             }

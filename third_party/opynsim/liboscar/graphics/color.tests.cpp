@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <array>
+#include <format>
 #include <type_traits>
 #include <utility>
 
@@ -456,4 +457,10 @@ TEST(Color, with_element_works_as_expected)
     ASSERT_EQ(Color::black().with_element(1, 1.0f), Color::green());
     ASSERT_EQ(Color::black().with_element(2, 1.0f), Color::blue());
     ASSERT_EQ(Color::clear().with_element(3, 0.5f), Color(0.0f, 0.5f));
+}
+
+TEST(Color, can_be_formatted)
+{
+    const Color color = {0.25f, 0.5f, 0.75f, 1.0f};
+    ASSERT_EQ(std::format("{:.2f}", color), "Color(0.25, 0.50, 0.75, 1.00)");
 }

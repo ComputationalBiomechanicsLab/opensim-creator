@@ -97,11 +97,7 @@ namespace
     protected:
         void sink_it_(const spdlog::details::log_msg& msg) override
         {
-            osc::log_message(
-                osc::to<osc::LogLevel>(msg.level),
-                "{}",
-                osc::to<std::string>(msg.payload).c_str()
-            );
+            osc::log_message(osc::to<osc::LogLevel>(msg.level), osc::to<std::string>(msg.payload));
         }
         void flush_() override {}
     };
@@ -156,9 +152,7 @@ namespace
     void setlocale_wrapper(int category, const char* locale)
     {
         if (std::setlocale(category, locale) == nullptr) { // NOLINT(concurrency-mt-unsafe)
-            std::stringstream content;
-            content << "error setting locale category " << category << " to " << locale;
-            osc::log_warn("{}", std::move(content).str());
+            osc::log_warn("error setting locale category {} to {}", category, locale);
         }
     }
 
