@@ -50,6 +50,7 @@ Creator, it's usually copied into a GitHub issue:
       - [ ] Combine all artifacts into a single location/directory:
         - [ ] Source tarball
         - [ ] Linux DEB package
+        - [ ] Linux portable .tar.xz
         - [ ] MacOS codesigned and notarized arm64 dmg
         - [ ] Windows codesigned amd64 msi
         - [ ] Windows amd64 portable zip
