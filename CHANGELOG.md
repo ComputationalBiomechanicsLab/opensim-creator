@@ -6,43 +6,50 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- Fixed joint range being the wrong way around in the "Make a leg" tutorial (#1178).
-- Removed unused/internal `MeshHittestTab`, `PerformanceAnalyzerTab`, and `TPS2DTab` (#467)
-- Removed `SoccerKickingModel` (quite large assets to package in an installation, you can still
-  get it from: https://simtk.org/projects/soccerkickmodel).
-- Fixed an issue where `OpenSim::IMU` components were rendering with negative scale factors
-  and moving around with the camera (#1179).
+## [0.8.0] - 2026/07/10
+
+0.8.0 modernizes OSC's build/packaging, adds a new `warping_penalty` parameter
+to the model/mesh warper, removes a few unused/big features/models, and fixes
+a few bugs.
+
 - The preview experimental data tab will now change its name to match the last file that was
   previewed in the tab, so that it's easier to work with multiple tabs open (#1181).
-- The Linux release build now statically links libstdc++ and libgcc_s, in preparation
-  for a multi-/old-distro tar.gz portable installer.
-- Linux releases are now built with AlmaLinux 8, which enables using C++23 on Linux
-  distributions based on glibc version >=2.28. This means OpenSim Creator is now
-  compatible with Ubuntu >=20.04, Debian >=10, AlmaLinux >=8, RHEL >=8, and OpenSUSE >=15.
-- Portable Linux packaging in the form of a `.tar.xz` archive are now shipped
-  with each release, which should enable using OpenSim Creator on most modern
-  Linux desktop distributions.
-- Debian packages (`.deb`s) are now compressed with `xz`, rather than `gzip`, reducing
-  the package size from 22 MB to 14 MB (!).
-- The GitHub build ID is no longer written into the application (or randomly generated), to
-  improve build reproducibility.
-- Deprecation: the project no longer ships Intel (amd64) binaries for macOS. It's hard to
-  test/verify those binaries on actual hardware because Apple hasn't sold it for 6
-  years. Moving forward, it is recommended to stick with an earlier version of OpenSim Creator, or
-  building it from source on your Intel macOS device.
-- Windows and Linux amd64 (Intel/AMD) builds now require a CPU with AVX2 support. Most CPUs
-  made since 2013 have AVX2 support, apart from Celron (budget) CPUs, which have had it
-  since 2020.
-- All release builds are now built with debug symbols enabled (stripped), so that the
-  optimized development build is identical to the release one (previously: `RelWithDebInfo`
-  uses slightly different optimization flags from `Release`, which makes it impossible to
-  reproduce like-for-like behavior with debug symbols).
 - The mesh warper and model warper now expose a `warping_penalty` parameter, which penalizes
-  warping the data non-linearly. This can be useful for reducing artefacts and implausible
+  warping the data non-linearly. This can be useful for reducing artifacts and implausible
   warping - particularly in regions where landmarks are sparse or unevenly distributed.
   Suggested by [Ekaterina Stansfield](https://orcid.org/0000-0001-8548-0995), from related
   work ([10.1371/journal.pcbi.1014073](https://doi.org/10.1371/journal.pcbi.1014073)). The
   TPS page in [docs.opynsim.eu](https://docs.opynsim.eu) explains it in more detail.
+- Linux releases are now built with AlmaLinux 8, which enables building modern C++ code
+  (like OSC's) against older glibc versions (>=2.28). This means OSC's releases are
+  now compatible with Ubuntu >=20.04, Debian >=10, AlmaLinux >=8, RHEL >=8, and
+  OpenSUSE >=15.
+- Portable Linux packaging in the form of a `.tar.xz` archive is now shipped
+  with each release, which should enable using OpenSim Creator on most modern
+  Linux desktop distributions (listed above).
+- The Linux release build now statically links `libstdc++` and `libgcc_s`, in preparation
+  for a multi-/old-distro `.tar.xz` portable installer.
+- Debian packages (`.deb`s) are now compressed with `xz`, rather than `gzip`, reducing
+  the package size from 22 MB to 14 MB.
+- The GitHub build ID is no longer written into the application (or randomly generated), to
+  improve build reproducibility.
+- Windows and Linux amd64 (Intel/AMD) builds now require a CPU with AVX2 support. Most CPUs
+  made since 2013 have AVX2 support, apart from Celeron (budget) CPUs, which have had it
+  since 2020.
+- Removed Intel (amd64) binary builds for macOS. It's hard to test/verify those binaries
+  on actual hardware because Apple hasn't sold it for 6 years. Moving forward, it is
+  recommended to stick with an earlier version of OpenSim Creator, or to build it from
+  source on your Intel macOS device.
+- Removed `SoccerKickingModel` (quite large assets to package in an installation, you can still
+  get it from: https://simtk.org/projects/soccerkickmodel).
+- All release builds are now built with debug symbols enabled (stripped), so that the
+  optimized development build is identical to the release one (previously: `RelWithDebInfo`
+  uses slightly different optimization flags from `Release`, which makes it impossible to
+  reproduce like-for-like behavior with debug symbols).
+- Fixed joint range being the wrong way around in the "Make a leg" tutorial (#1178).
+- Removed unused/internal `MeshHittestTab`, `PerformanceAnalyzerTab`, and `TPS2DTab` (#467).
+- Fixed an issue where `OpenSim::IMU` components were rendering with negative scale factors
+  and moving around with the camera (#1179).
 
 
 ## [0.7.3] - 2026/03/27
