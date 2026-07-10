@@ -28,19 +28,21 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   improve build reproducibility.
 - Deprecation: the project no longer ships Intel (amd64) binaries for macOS. It's hard to
   test/verify those binaries on actual hardware because Apple hasn't sold it for 6
-  years. Moving forward, I recommend sticking with an earlier version of OpenSim Creator, or
+  years. Moving forward, it is recommended to stick with an earlier version of OpenSim Creator, or
   building it from source on your Intel macOS device.
 - Windows and Linux amd64 (Intel/AMD) builds now require a CPU with AVX2 support. Most CPUs
   made since 2013 have AVX2 support, apart from Celron (budget) CPUs, which have had it
   since 2020.
 - All release builds are now built with debug symbols enabled (stripped), so that the
   optimized development build is identical to the release one (previously: `RelWithDebInfo`
-  uses slightly different optimization steps from `Release`).
+  uses slightly different optimization flags from `Release`, which makes it impossible to
+  reproduce like-for-like behavior with debug symbols).
 - The mesh warper and model warper now expose a `warping_penalty` parameter, which penalizes
   warping the data non-linearly. This can be useful for reducing artefacts and implausible
   warping - particularly in regions where landmarks are sparse or unevenly distributed.
   Suggested by [Ekaterina Stansfield](https://orcid.org/0000-0001-8548-0995), from related
-  work ([10.1371/journal.pcbi.1014073](https://doi.org/10.1371/journal.pcbi.1014073)).
+  work ([10.1371/journal.pcbi.1014073](https://doi.org/10.1371/journal.pcbi.1014073)). The
+  TPS page in [docs.opynsim.eu](https://docs.opynsim.eu) explains it in more detail.
 
 
 ## [0.7.3] - 2026/03/27

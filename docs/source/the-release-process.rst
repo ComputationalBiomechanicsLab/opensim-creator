@@ -25,8 +25,8 @@ Creator, it's usually copied into a GitHub issue:
           with it. Must be ran with `ctest --preset ErrorCheck` because there's ASAN
           options (suppressions) that must be handled.
     - [ ] Ensure the `clang-tidy` lints and test suite passes with the debug build
-    - [ ] Ensure the test suite passes under `valgrind`: `LIBGL_ALWAYS_SOFTWARE=1 valgrind --leak-check=full --trace-children=yes -- ctest --test-dir build/ErrorCheck --output-on-failure`
-    - [ ] Manually spot-check new changes with the debug+ASAN build
+    - [ ] Build `Release-Linux-amd64` and ensure the release build's test suite passes under `valgrind`: `LIBGL_ALWAYS_SOFTWARE=1 valgrind --leak-check=full --trace-children=yes -- ctest --test-dir build/Release-Linux-amd64 --output-on-failure`
+    - [ ] Manually spot-check new changes with the debug+ASAN build (might require settings `UBSAN_OPTIONS` - see `CMakePresets.json`
     - [ ] Fix all bugs/problems found during the above steps
     - [ ] Commit any fixes to CI and ensure CI passes
     - [ ] Clean-install the passing binaries on development machines, ensure they install on all OSes
