@@ -8,9 +8,9 @@
 
 #include <ankerl/unordered_dense.h>
 
+#include <format>
 #include <memory>
 #include <stdexcept>
-#include <sstream>
 #include <string>
 #include <string_view>
 
@@ -51,11 +51,7 @@ public:
         if (const auto it = icons_by_name_.find(icon_name); it != icons_by_name_.end()) {
             return it->second;
         }
-        else {
-            std::stringstream ss;
-            ss << "error finding icon: cannot find: " << icon_name;
-            throw std::runtime_error{std::move(ss).str()};
-        }
+        throw std::runtime_error{std::format("Error finding icon: cannot find: {}", icon_name)};
     }
 
 private:

@@ -25,6 +25,7 @@
 #include <vector>
 
 using namespace opyn;
+namespace rgs = std::ranges;
 
 TEST(fit_sphere_htbad, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 {
@@ -206,7 +207,7 @@ TEST(fit_ellipsoid_htbad, ThrowsErrorIfGivenLessThan9Points)
             phi += osc::Degrees{360.0f} / static_cast<float>(n);
         }
         std::vector<uint16_t> indices(n);
-        std::iota(indices.begin(), indices.end(), static_cast<uint16_t>(0));
+        rgs::iota(indices, static_cast<uint16_t>(0));
 
         osc::Mesh m;
         m.set_vertices(vertices);

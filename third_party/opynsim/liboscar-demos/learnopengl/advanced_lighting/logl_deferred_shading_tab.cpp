@@ -26,6 +26,7 @@
 
 using namespace osc::literals;
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -63,7 +64,7 @@ namespace
 
         std::vector<Vector3> rv;
         rv.reserve(n);
-        std::generate_n(std::back_inserter(rv), n, generator);
+        rgs::generate_n(std::back_inserter(rv), n, generator);
         return rv;
     }
 
@@ -78,7 +79,7 @@ namespace
 
         std::vector<Vector3> rv;
         rv.reserve(n);
-        std::generate_n(std::back_inserter(rv), n, generator);
+        rgs::generate_n(std::back_inserter(rv), n, generator);
         return rv;
     }
 

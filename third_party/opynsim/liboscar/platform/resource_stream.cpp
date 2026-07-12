@@ -1,11 +1,10 @@
 #include "resource_stream.h"
 
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <memory>
-#include <sstream>
 #include <stdexcept>
-#include <utility>
 
 namespace
 {
@@ -15,16 +14,12 @@ namespace
         // a `std::ifstream` to a directory because it handles all paths as
         // valid file descriptors.
         if (std::filesystem::is_directory(path)) {
-            std::stringstream ss;
-            ss << path.string() << ": is a directory, not a file";
-            throw std::runtime_error{std::move(ss).str()};
+            throw std::runtime_error{std::format("{}: is a directory, not a file", path.string())};
         }
 
         auto rv = std::make_unique<std::ifstream>(path, std::ios::binary | std::ios::in);
-        if (not (*rv)) {
-            std::stringstream ss;
-            ss << path << ": failed to load ResourceStream";
-            throw std::runtime_error{std::move(ss).str()};
+        if (not *rv) {
+            throw std::runtime_error{std::format("{}: failed to load ResourceStream", path.string())};
         }
         return rv;
     }

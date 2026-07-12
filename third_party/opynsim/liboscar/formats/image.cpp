@@ -12,15 +12,14 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
+#include <format>
 #include <istream>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <stdexcept>
-#include <utility>
 
 using namespace osc;
 
@@ -91,9 +90,7 @@ namespace
         }
 
         if (not pixel_data) {
-            std::stringstream ss;
-            ss << input_name << ": error loading HDR image: " << stbi_failure_reason();
-            throw std::runtime_error{std::move(ss).str()};
+            throw std::runtime_error{std::format("{}: error loading HDR image: {}", input_name, stbi_failure_reason())};
         }
 
         const std::optional<TextureFormat> texture_format = to_texture_format(
@@ -102,9 +99,7 @@ namespace
         );
 
         if (not texture_format) {
-            std::stringstream ss;
-            ss << input_name << ": error loading HDR image: no TextureFormat exists for " << num_components << "-floating-point component images";
-            throw std::runtime_error{std::move(ss).str()};
+            throw std::runtime_error{std::format("{}: error loading HDR image: no TextureFormat exists for {}-floating-point component images", input_name, num_components)};
         }
 
         const std::span<const float> pixel_span{
@@ -139,9 +134,7 @@ namespace
         }
 
         if (not pixel_data) {
-            std::stringstream ss;
-            ss << input_name  << ": error loading non-HDR image: " << stbi_failure_reason();
-            throw std::runtime_error{std::move(ss).str()};
+            throw std::runtime_error{std::format("{} error loading non-HDR image: {}", input_name, stbi_failure_reason())};
         }
 
         const std::optional<TextureFormat> texture_format = to_texture_format(
@@ -150,9 +143,7 @@ namespace
         );
 
         if (not texture_format) {
-            std::stringstream ss;
-            ss << input_name << ": error loading non-HDR image: no TextureFormat exists for " << num_components << "-8-bit component images";
-            throw std::runtime_error{std::move(ss).str()};
+            throw std::runtime_error{std::format("{}: error loading non-HDR image: no TextureFormat exists for {}-8-bit component images", input_name, num_components)};
         }
 
         Texture2D rv{dimensions, *texture_format, color_space};
@@ -232,9 +223,7 @@ void osc::PNG::write(
     stbi_flip_vertically_on_write(c_stb_false);
 
     if (rv == 0) {
-        std::stringstream ss;
-        ss << "failed to write a texture as a PNG: " << stbi_failure_reason();
-        throw std::runtime_error{std::move(ss).str()};
+        throw std::runtime_error{std::format("Failed to write a texture as a PNG: {}", stbi_failure_reason())};
     }
 }
 
@@ -264,8 +253,6 @@ void osc::JPEG::write(std::ostream& out, const Texture2D& texture, float quality
     stbi_flip_vertically_on_write(c_stb_false);
 
     if (rv == 0) {
-        std::stringstream ss;
-        ss << "failed to write a texture as a JPEG: " << stbi_failure_reason();
-        throw std::runtime_error{std::move(ss).str()};
+        throw std::runtime_error{std::format("failed to write a texture as a JPEG: {}", stbi_failure_reason())};
     }
 }

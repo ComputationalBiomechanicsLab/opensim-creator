@@ -20,7 +20,7 @@ struct nanobind::detail::type_caster<osc::Vector3f> final {
     using python_input_type = ndarray<float, shape<3>, c_contig>;
     using python_output_type = ndarray<float, numpy, shape<3>>;
 
-    NB_TYPE_CASTER(cpp_type, const_name("typename numpy.ndarray[dtype=float32, shape=(3,)]"));
+    NB_TYPE_CASTER(cpp_type, const_name("typename numpy.ndarray[dtype=float32, shape=(3,)]"))
 
     bool from_python(handle src, uint8_t flags, cleanup_list* cleanup_list) noexcept
     {

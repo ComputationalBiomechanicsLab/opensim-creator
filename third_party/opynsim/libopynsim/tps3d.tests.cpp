@@ -14,6 +14,7 @@
 #include <vector>
 
 using namespace opyn;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -125,7 +126,7 @@ namespace
     {
         const auto delta_rotation = (model * truth.invert()).asMat33();
         const double trace = delta_rotation(0, 0) + delta_rotation(1, 1) + delta_rotation(2, 2);
-        const double cos_theta = std::clamp((trace - 1.0) / 2.0, -1.0, 1.0);
+        const double cos_theta = rgs::clamp((trace - 1.0) / 2.0, -1.0, 1.0);
         const double angle_radians = std::acos(cos_theta);
         return angle_radians * (180.0 / std::numbers::pi_v<double>);
     }

@@ -61,6 +61,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <exception>
+#include <format>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -899,9 +900,8 @@ namespace
                 try {
                     widget_->on_mount();
                 } catch (const std::exception&) {
-                    std::stringstream ss;
-                    ss << "Error mounting '" << widget_->name() << '\'';
-                    std::throw_with_nested(std::runtime_error{std::move(ss).str()});
+                    auto msg = std::format("Error mounting '{}'", widget_->name());
+                    std::throw_with_nested(std::runtime_error{std::move(msg)});
                 }
             }
         }
@@ -1695,10 +1695,9 @@ public:
                 // the caller only provides the extension without the dot but the user may have
                 // manually written a string that is suffixed with the dot-less version of the
                 // extension (e.g. "somecsv")
-                std::stringstream full_extension;
-                full_extension << "." << *maybe_extension;
-                if (not path.string().ends_with(full_extension.str())) {
-                    path += full_extension.str();
+                const auto full_extension = std::format(".{}", *maybe_extension);
+                if (not path.string().ends_with(full_extension)) {
+                    path += full_extension;
                 }
             }
 
@@ -1707,12 +1706,7 @@ public:
         std::vector<FileDialogFilter> filters;
         filters.reserve(2);  // Upper bound
         if (maybe_extension) {
-            std::stringstream filter;
-            filter << "*." << *maybe_extension;
-            std::string filter_string{std::move(filter).str()};
-            std::stringstream name;
-            name << "Permitted File (" << filter_string << ')';
-            filters.emplace_back(std::move(name).str(), *maybe_extension);
+            filters.emplace_back(std::format("Permitted File (*.{})", *maybe_extension), *maybe_extension);
         }
         filters.push_back(FileDialogFilter::all_files());
 

@@ -286,9 +286,7 @@ TEST_F(MaterialTest, MaterialCallingGetColorArrayOnMaterialAfterSettingThemRetur
 
     const std::optional<std::span<const Color>> rv = material.get_array<Color>(key);
 
-    ASSERT_TRUE(rv);
-    ASSERT_EQ(std::size(*rv), std::size(colors));
-    ASSERT_TRUE(std::equal(std::begin(colors), std::end(colors), std::begin(*rv)));
+    ASSERT_TRUE(rv and rgs::equal(colors, *rv));
 }
 
 TEST_F(MaterialTest, MaterialGetFloatOnNewMaterialReturnsEmptyOptional)
@@ -499,9 +497,7 @@ TEST_F(MaterialTest, MaterialSetMatrix4x4ArrayCausesGetMat4ArrayToReturnSameSequ
     material.set_array<Matrix4x4>("someKey", matrix4x4_array);
 
     std::optional<std::span<const Matrix4x4>> rv = material.get_array<Matrix4x4>("someKey");
-    ASSERT_TRUE(rv.has_value());
-    ASSERT_EQ(matrix4x4_array.size(), rv->size());
-    ASSERT_TRUE(std::equal(matrix4x4_array.begin(), matrix4x4_array.end(), rv->begin()));
+    ASSERT_TRUE(rv and rgs::equal(matrix4x4_array, *rv));
 }
 
 TEST_F(MaterialTest, MaterialSetIntOnMaterialCausesGetIntToReturnTheProvidedValue)
@@ -832,7 +828,7 @@ TEST_F(MaterialTest, MaterialCanCompareNotEquals)
     ASSERT_NE(material_a, material_b);
 }
 
-TEST_F(MaterialTest, MaterialCanPrintToStringStream)
+TEST_F(MaterialTest, MaterialCanPrintToOstream)
 {
     const Material material = generate_material();
 

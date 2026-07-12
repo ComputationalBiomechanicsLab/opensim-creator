@@ -93,15 +93,7 @@ void osc::GuiRuler::on_draw(
             draw_list.add_circle_filled({end_ui_pos, circle_radius}, circle_color);
 
             // label the line's length
-            {
-                const std::string line_len_label = [&line_world_length]()
-                {
-                    std::stringstream ss;
-                    ss << std::setprecision(5) << line_world_length;
-                    return std::move(ss).str();
-                }();
-                draw_tooltip_with_bg(line_midpoint + offset_vec, line_len_label);
-            }
+            draw_tooltip_with_bg(line_midpoint + offset_vec, std::format("{:.5f}", line_world_length));
         }
         else {
             draw_list.add_circle_filled({start_ui_pos, circle_radius}, circle_color);

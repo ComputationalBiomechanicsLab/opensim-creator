@@ -4,20 +4,9 @@
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/utilities/conversion.h>
 
-#include <sstream>
+#include <format>
 #include <string>
 #include <string_view>
-#include <utility>
-
-namespace
-{
-    std::string create_panel_enabled_config_key(std::string_view panel_name)
-    {
-        std::stringstream ss;
-        ss << "panels/" << panel_name << "/enabled";
-        return std::move(ss).str();
-    }
-}
 
 osc::PanelPrivate::PanelPrivate(
     Panel& owner,
@@ -26,7 +15,7 @@ osc::PanelPrivate::PanelPrivate(
     ui::PanelFlags panel_flags) :
 
     WidgetPrivate{owner, parent},
-    panel_enabled_config_key_{create_panel_enabled_config_key(panel_name)},
+    panel_enabled_config_key_{std::format("panels/{}/enabled", panel_name)},
     panel_flags_{panel_flags}
 {
     set_name(panel_name);

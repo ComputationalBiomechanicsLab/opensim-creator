@@ -14,10 +14,10 @@
 #include <array>
 #include <cstddef>
 #include <cstdio>
+#include <format>
 #include <iomanip>
 #include <ostream>
 #include <span>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -106,25 +106,22 @@ namespace
 
             auto [mesh_iterator, mesh_inserted] = mesh_to_id.try_emplace(decoration.mesh, std::string{});
             if (mesh_inserted) {
-                std::stringstream id;
-                id << "mesh_" << latest_mesh++;
-                mesh_iterator->second = std::move(id).str();
-
+                mesh_iterator->second = std::format("mesh_{}", latest_mesh++);
                 rv.geometries.emplace_back(mesh_iterator->second, mesh_iterator->first);
             }
 
             auto [material_iterator, material_inserted] = color_to_material_id.try_emplace(std::get<Color>(decoration.shading), std::string{});
             if (material_inserted) {
-                std::stringstream id;
-                id << "material_" << latest_material++;
-                material_iterator->second = std::move(id).str();
-
+                material_iterator->second = std::format("material_{}", latest_material++);
                 rv.materials.emplace_back(material_iterator->second, material_iterator->first);
             }
 
-            std::stringstream instance_id;
-            instance_id << "instance_" << latest_instance++;
-            rv.instances.emplace_back(std::move(instance_id).str(), mesh_iterator->second, material_iterator->second, decoration.transform);
+            rv.instances.emplace_back(
+                std::format("instance_{}", latest_instance++),
+                mesh_iterator->second,
+                material_iterator->second,
+                decoration.transform
+            );
         }
 
         return rv;

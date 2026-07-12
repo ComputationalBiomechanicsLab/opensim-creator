@@ -7,10 +7,10 @@
 #include <liboscar/utilities/uid.h>
 
 #include <algorithm>
+#include <format>
 #include <functional>
 #include <memory>
 #include <optional>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -405,9 +405,7 @@ private:
 
     std::string calc_panel_name(std::string_view base_name, size_t ith_instance)
     {
-        std::stringstream ss;
-        ss << base_name << ith_instance;
-        return std::move(ss).str();
+        return std::format("{}{}", base_name, ith_instance);
     }
 
     void push_dynamic_panel(DynamicPanel p)

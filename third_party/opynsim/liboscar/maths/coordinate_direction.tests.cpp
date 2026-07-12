@@ -9,6 +9,7 @@
 #include <sstream>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 TEST(CoordinateDirection, is_regular)
 {
@@ -84,7 +85,7 @@ TEST(CoordinateDirection, have_an_expected_total_ordering)
         CoordinateDirection::minus_z(),
         CoordinateDirection::z(),
     });
-    ASSERT_TRUE(std::is_sorted(expected_order.begin(), expected_order.end()));
+    ASSERT_TRUE(rgs::is_sorted(expected_order));
 }
 
 TEST(CoordinateDirection, cross_works_as_expected)

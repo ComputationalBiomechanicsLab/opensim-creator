@@ -14,6 +14,7 @@
 #include <utility>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -159,7 +160,7 @@ TEST(Color, const_begin_and_end_iterators_behave_as_expected)
     const Color c = {1.0f, 0.25f, 0.1f, 0.3f};
     const auto expected = std::to_array({c.r, c.g, c.b, c.a});
 
-    ASSERT_TRUE(std::equal(c.begin(), c.end(), expected.begin(), expected.end()));
+    ASSERT_TRUE(rgs::equal(c, expected));
 }
 
 TEST(Color, non_const_begin_and_end_iterators_behave_as_expected)
@@ -167,7 +168,7 @@ TEST(Color, non_const_begin_and_end_iterators_behave_as_expected)
     const Color c = {1.0f, 0.25f, 0.1f, 0.3f};
     const auto expected = std::to_array({c.r, c.g, c.b, c.a});
 
-    ASSERT_TRUE(std::equal(c.begin(), c.end(), expected.begin(), expected.end()));
+    ASSERT_TRUE(rgs::equal(c, expected));
 }
 
 TEST(Color, operator_multiply_between_two_Colors_performs_componentwise_multiplication)

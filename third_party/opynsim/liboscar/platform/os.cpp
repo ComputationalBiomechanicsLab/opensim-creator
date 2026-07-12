@@ -2,7 +2,6 @@
 
 #include <liboscar/platform/log.h>
 #include <liboscar/utilities/scope_exit.h>
-#include <liboscar/utilities/string_helpers.h>
 
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_error.h>
@@ -14,10 +13,10 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <format>
 #include <fstream>
 #include <memory>
 #include <random>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -31,18 +30,14 @@ namespace
     {
         // nullptr disallowed
         if (p == nullptr) {
-            std::stringstream ss;
-            ss << method_name << ": returned null: " << SDL_GetError();
-            throw std::runtime_error{std::move(ss).str()};
+            throw std::runtime_error{std::format("{}: returned null: {}", method_name, SDL_GetError())};
         }
 
         std::string_view sv{p};
 
         // empty string disallowed
         if (sv.empty()) {
-            std::stringstream ss;
-            ss << method_name << ": returned an empty string";
-            throw std::runtime_error{std::move(ss).str()};
+            throw std::runtime_error{std::format("{}: returned an empty string", method_name)};
         }
 
         // remove trailing slash: it interferes with `std::filesystem::path`
@@ -136,25 +131,15 @@ bool osc::set_clipboard_text(std::string_view content)
 namespace
 {
     constexpr std::string_view c_valid_dynamic_characters = "abcdefghijklmnopqrstuvwxyz0123456789";
-    void write_dynamic_name_els(
-        std::default_random_engine& s_prng,
-        std::ostream& out)
-    {
-        std::array<char, 8> rv{};
-        rgs::sample(c_valid_dynamic_characters, rv.begin(), rv.size(), s_prng);
-        out << std::string_view{rv.begin(), rv.end()};
-    }
 
     std::filesystem::path generate_tempfile_name(
         std::default_random_engine& s_prng,
         std::string_view suffix,
         std::string_view prefix)
     {
-        std::stringstream ss;
-        ss << prefix;
-        write_dynamic_name_els(s_prng, ss);
-        ss << suffix;
-        return std::filesystem::path{std::move(ss).str()};
+        std::array<char, 8> chars{};
+        rgs::sample(c_valid_dynamic_characters, chars.begin(), chars.size(), s_prng);
+        return std::format("{}{}{}", prefix, std::string_view{chars.begin(), chars.end()}, suffix);
     }
 }
 

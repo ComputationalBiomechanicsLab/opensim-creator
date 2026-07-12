@@ -16,6 +16,7 @@
 #include <vector>
 
 using namespace opyn;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -179,7 +180,7 @@ TEST(LandmarkHelpers, GenerateNamesDoesNotChangeInputIfInputIsFullyNamed)
     };
     const auto output = GenerateNames(input);
 
-    ASSERT_TRUE(std::equal(output.begin(), output.end(), input.begin(), input.end()));
+    ASSERT_TRUE(rgs::equal(output, input, std::equal_to{}));
 }
 
 TEST(LandmarkHelpers, GenerateNamesGeneratesPrefixedNameForUnnamedInputs)
@@ -196,7 +197,7 @@ TEST(LandmarkHelpers, GenerateNamesGeneratesPrefixedNameForUnnamedInputs)
     };
     const auto output = GenerateNames(input, "someprefix_");
 
-    ASSERT_TRUE(std::equal(output.begin(), output.end(), expectedOutput.begin(), expectedOutput.end()));
+    ASSERT_TRUE(rgs::equal(output, expectedOutput, std::equal_to{}));
 }
 
 TEST(LandmarkHelpers, GenerateNamesBehavesAsExpectedInPathologicalCase)
@@ -217,5 +218,5 @@ TEST(LandmarkHelpers, GenerateNamesBehavesAsExpectedInPathologicalCase)
     };
     const auto output = GenerateNames(input, "someprefix_");
 
-    ASSERT_TRUE(std::equal(output.begin(), output.end(), expectedOutput.begin(), expectedOutput.end()));
+    ASSERT_TRUE(rgs::equal(output, expectedOutput, std::equal_to{}));
 }

@@ -1,11 +1,10 @@
 #include "virtual_filesystem.h"
 
+#include <format>
 #include <istream>
 #include <iterator>
-#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <utility>
 
 std::string osc::VirtualFilesystem::slurp(const ResourcePath& resource_path)
 {
@@ -30,9 +29,7 @@ std::string osc::VirtualFilesystem::slurp(const ResourcePath& resource_path)
         );
     }
     catch (const std::exception& ex) {
-        std::stringstream ss;
-        ss << resource_path << ": error reading resource: " << ex.what();
-        throw std::runtime_error{std::move(ss).str()};
+        throw std::runtime_error{std::format("{}: error reading resource: {}", resource_path.string(), ex.what())};
     }
 
     return rv;

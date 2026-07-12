@@ -7,6 +7,7 @@
 #include <random>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -123,6 +124,6 @@ std::vector<Vector4> osc::tests::generate_tangent_vectors(size_t n)
 std::vector<uint16_t> osc::tests::iota_index_range(size_t start, size_t end)
 {
     std::vector<uint16_t> rv(end - start);
-    std::iota(rv.begin(), rv.end(), static_cast<uint16_t>(start));
+    rgs::iota(rv, static_cast<uint16_t>(start));
     return rv;
 }

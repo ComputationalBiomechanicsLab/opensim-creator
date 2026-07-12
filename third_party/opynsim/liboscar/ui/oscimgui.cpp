@@ -1423,14 +1423,14 @@ namespace
     {
         const auto user_modifiers = to<PhysicalKeyModifiers>(shortcut.modifiers());
 
-        std::stringstream ss;
+        std::string rv;
         for (const auto& [mod, label] : c_combo_lut) {
             if (mod & user_modifiers) {
-                ss << label;
+                rv += label;
             }
         }
-        ss << to_human_readable(shortcut.key());
-        return std::move(ss).str();
+        rv += to_human_readable(shortcut.key());
+        return rv;
     }
 }
 

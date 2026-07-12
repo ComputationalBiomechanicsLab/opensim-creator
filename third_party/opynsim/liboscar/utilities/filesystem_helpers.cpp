@@ -4,10 +4,11 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <iterator>
 #include <span>
 #include <string_view>
 #include <utility>
+
+namespace rgs = std::ranges;
 
 void osc::for_each_file_with_extensions_recursive(
     const std::filesystem::path& root,
@@ -81,12 +82,5 @@ bool osc::is_filename_lexicographically_greater_than(const std::filesystem::path
 
 bool osc::is_subpath(const std::filesystem::path& dir, const std::filesystem::path& path)
 {
-    const auto num_dir_components = std::distance(dir.begin(), dir.end());
-    const auto num_path_components = std::distance(path.begin(), path.end());
-
-    if (num_path_components < num_dir_components) {
-        return false;
-    }
-
-    return std::equal(dir.begin(), dir.end(), path.begin());
+    return rgs::mismatch(dir, path).in1 == dir.end();
 }
