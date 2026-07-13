@@ -4,9 +4,8 @@
 # single directory tree that can be dragged to `/Applications` on MacOS.
 
 # the `.dmg` package only installs the application
-set(CPACK_DMG_COMPONENT_INSTALL ON)
+set(CPACK_DMG_COMPONENT_INSTALL OFF)
 set(CPACK_COMPONENTS_ALL "opensimcreator-application")
-set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
 set(CPACK_DMG_CREATE_APPLICATIONS_LINK ON)
 set(CPACK_DMG_VOLUME_NAME "${CPACK_OSC_LONG_APPNAME} ${CPACK_OSC_PROJECT_VERSION}")

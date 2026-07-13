@@ -5,9 +5,8 @@
 # OSC documentation).
 
 # the `.msi` package only installs the application (no docs/libs)
-set(CPACK_WIX_COMPONENT_INSTALL ON)
+set(CPACK_WIX_COMPONENT_INSTALL OFF)
 set(CPACK_COMPONENTS_ALL "opensimcreator-application")
-set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
 # use the naming convention `opensimcreator-$version-windows-$arch.exe` (#975)
 string(TOLOWER ${CPACK_OSC_CMAKE_SYSTEM_PROCESSOR} _arch_lowercase)
