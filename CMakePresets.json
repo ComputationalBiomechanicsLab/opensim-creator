@@ -109,6 +109,7 @@
                 "CMAKE_C_FLAGS": "-O3 -g -march=x86-64-v3 -fno-math-errno -fno-trapping-math -ffp-contract=fast",
                 "CMAKE_CXX_FLAGS": "-O3 -g -march=x86-64-v3 -fno-math-errno -fno-trapping-math -ffp-contract=fast",
                 "CPACK_STRIP_FILES": "ON",
+                "OSC_BUILD_DOCS": "ON",
                 "OSC_STRICT_ABI_CHECKS": "ON",
                 "OSC_USE_STRICT_COMPILER_FLAGS": "ON"
             }
@@ -248,6 +249,7 @@
     ],
     "packagePresets": [
         { "name": "Release-Linux-amd64",                        "configurePreset": "Release-Linux-amd64"                        },
+        { "name": "Release-Linux-amd64-src",                    "configurePreset": "Release-Linux-amd64", "configFile": "CPackSourceConfig.cmake" },
         { "name": "Release-MacOS-arm64",                        "configurePreset": "Release-MacOS-arm64"                        },
         { "name": "Release-MacOS-arm64-CodesignedAndNotarized", "configurePreset": "Release-MacOS-arm64-CodesignedAndNotarized" },
         { "name": "Release-Windows-amd64",                      "configurePreset": "Release-Windows-amd64"                      },
@@ -287,10 +289,11 @@
         {
             "name": "Release-Linux-amd64",
             "steps": [
-                { "type": "configure", "name": "Release-Linux-amd64" },
-                { "type": "build",     "name": "Release-Linux-amd64" },
-                { "type": "test",      "name": "Release-Linux-amd64" },
-                { "type": "package",   "name": "Release-Linux-amd64" }
+                { "type": "configure", "name": "Release-Linux-amd64"     },
+                { "type": "build",     "name": "Release-Linux-amd64"     },
+                { "type": "test",      "name": "Release-Linux-amd64"     },
+                { "type": "package",   "name": "Release-Linux-amd64"     },
+                { "type": "package",   "name": "Release-Linux-amd64-src" }
             ]
         },
         {

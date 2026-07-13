@@ -116,6 +116,7 @@ if(WIN32)
     cmake_policy(SET CMP0207 NEW)
     install(
         TARGETS osc
+        COMPONENT opensimcreator-application
         RUNTIME_DEPENDENCIES
             PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"  # don't install Windows-provided libs
             POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"  # don't install Windows-provided libs
@@ -137,6 +138,7 @@ if(WIN32)
             FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
             RENAME "osc.toml"
             DESTINATION "."
+            COMPONENT opensimcreator-application
         )
     endif()
 
@@ -144,6 +146,7 @@ if(WIN32)
     install(
         DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../resources/OpenSimCreator"
         DESTINATION "resources"
+        COMPONENT opensimcreator-application
     )
 elseif(UNIX AND NOT APPLE)
     # On Linux, configure an `osc.toml` that's used when running from the
@@ -172,6 +175,7 @@ elseif(UNIX AND NOT APPLE)
         RUNTIME_DEPENDENCIES
         DIRECTORIES ${CMAKE_INSTALL_LIBDIR}
         POST_EXCLUDE_REGEXES "^/usr/*" "^/lib/*"  # don't copy system-provided dependencies
+        COMPONENT opensimcreator-application
     )
 
     # On Linux (installation): install a user-facing `osc.toml` config file
@@ -190,13 +194,15 @@ elseif(UNIX AND NOT APPLE)
             FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_debian.toml"
             RENAME "osc.toml"
             DESTINATION "."
+            COMPONENT opensimcreator-application
         )
     endif()
 
     # On Linux (installation), copy `resources/` (assets) directory
     install(
         DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/../resources/OpenSimCreator"
-        DESTINATION "resources/"
+        DESTINATION "resources"
+        COMPONENT opensimcreator-application
     )
 elseif(APPLE)
     # On Apple, resource files (configuration, images, etc.) are
@@ -266,7 +272,11 @@ elseif(APPLE)
 
     # On Apple, at install time, just copy the bundle. Everything was
     # bundled at build time.
-    install(TARGETS osc BUNDLE DESTINATION .)
+    install(
+        TARGETS osc
+        BUNDLE DESTINATION .
+        COMPONENT opensimcreator-application
+    )
 endif()
 
 if (BUILD_TESTING)

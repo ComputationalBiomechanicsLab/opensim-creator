@@ -4,6 +4,11 @@
 # install WiX3 (e.g. ``wix314.exe``) from https://github.com/wixtoolset/wix3/releases (see
 # OSC documentation).
 
+# the `.msi` package only installs the application (no docs/libs)
+set(CPACK_WIX_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENTS_ALL "opensimcreator-application")
+set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
+
 # use the naming convention `opensimcreator-$version-windows-$arch.exe` (#975)
 string(TOLOWER ${CPACK_OSC_CMAKE_SYSTEM_PROCESSOR} _arch_lowercase)
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-windows-${_arch_lowercase}")

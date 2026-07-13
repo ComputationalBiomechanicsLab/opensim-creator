@@ -48,5 +48,23 @@ elseif(APPLE)
     set(CPACK_GENERATOR "DragNDrop")
 endif()
 
+# Specify how to package source files.
+#
+# Parses `.gitignore` into `CPACK_SOURCE_IGNORE_FILES`
+set(CPACK_SOURCE_GENERATOR "TXZ")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${PROJECT_VERSION}-src")
+set(CPACK_SOURCE_IGNORE_FILES "/.git/")
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/../.gitignore" GIT_IGNORE_LINES)
+foreach(LINE IN LISTS GIT_IGNORE_LINES)
+    string(STRIP "${LINE}" LINE)
+
+    # Ignore comments and empty lines
+    if(NOT LINE MATCHES "^#" AND NOT LINE STREQUAL "")
+        string(REPLACE "." "\\\\." LINE_REGEX "${LINE}")        # Escape dots (e.g., .obj -> \.obj)
+        string(REPLACE "*" ".*" LINE_REGEX "${LINE_REGEX}")     # Convert git wildcards (*) to regex wildcards (.*)
+        list(APPEND CPACK_SOURCE_IGNORE_FILES "${LINE_REGEX}")  # Append to the CPack ignore list
+    endif()
+endforeach()
+
 # Now that all `CPACK_` variables are set, include CPack
 include(CPack)

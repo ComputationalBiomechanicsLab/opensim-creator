@@ -1,9 +1,11 @@
+include(GNUInstallDirs)
+
 set(OSC_SPHINX_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 
 find_package(Python REQUIRED COMPONENTS Interpreter)
 
 # Create a custom build target that builds the Sphinx documentation
-add_custom_target(opensimcreator_docs
+add_custom_target(opensimcreator_docs ALL
     COMMAND ${Python_EXECUTABLE} -m sphinx.cmd.build -E "${CMAKE_CURRENT_SOURCE_DIR}/source" "${OSC_SPHINX_OUTPUT_DIR}"
     COMMENT "Building Sphinx documentation"
 )
@@ -31,4 +33,11 @@ add_custom_target(opensimcreator_docs_deploy
     DEPENDS opensimcreator_docs
     USES_TERMINAL
     COMMAND rsync -avz --delete "${OSC_SPHINX_OUTPUT_DIR}" "docs.opensimcreator.com:/var/www/docs.opensimcreator.com/manual/en/latest"
+)
+
+# Install the built documentation into the installation's data directory.
+install(
+    DIRECTORY "${OSC_SPHINX_OUTPUT_DIR}/"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/opensimcreator"
+    COMPONENT opensimcreator-docs
 )

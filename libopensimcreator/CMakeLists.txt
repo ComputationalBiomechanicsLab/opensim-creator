@@ -41,13 +41,22 @@ if(OSC_LIBOPENSIMCREATOR_INSTALL)
     install(
         DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/libopensimcreator"
+        COMPONENT opensimcreator-cpp
         FILES_MATCHING PATTERN "*.h"
         PATTERN "tests" EXCLUDE
     )
 
     # Install `libopensimcreator` library target
-    install(TARGETS opensimcreator EXPORT opensimcreatorTargets)
-    install(EXPORT opensimcreatorTargets DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opensimcreator")
+    install(
+        TARGETS opensimcreator
+        EXPORT opensimcreatorTargets
+        COMPONENT opensimcreator-cpp
+    )
+    install(
+        EXPORT opensimcreatorTargets
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opensimcreator"
+        COMPONENT opensimcreator-cpp
+    )
 
     # Generate + install an `opensimcreatorConfig.cmake` file
     configure_package_config_file(
@@ -55,5 +64,9 @@ if(OSC_LIBOPENSIMCREATOR_INSTALL)
         "${CMAKE_CURRENT_BINARY_DIR}/generated/opensimcreatorConfig.cmake"
         INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opensimcreator"
     )
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/opensimcreatorConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opensimcreator")
+    install(
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/opensimcreatorConfig.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opensimcreator"
+        COMPONENT opensimcreator-cpp
+    )
 endif()
