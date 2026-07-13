@@ -113,13 +113,12 @@ if(WIN32)
     # On Windows (installation), install `osc` and all of its RUNTIME_DEPENDENCIES
     #
     # https://stackoverflow.com/questions/62884439/how-to-use-cmake-file-get-runtime-dependencies-in-an-install-statement
-    cmake_policy(SET CMP0207 NEW)
     install(
         TARGETS osc
         COMPONENT opensimcreator-application
         RUNTIME_DEPENDENCIES
             PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"  # don't install Windows-provided libs
-            POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"  # don't install Windows-provided libs
+            POST_EXCLUDE_REGEXES ".*system32/.*[.]dll"  # don't install Windows-provided libs
     )
 
     # On Windows (installation), install a user-facing `osc.toml` config file
