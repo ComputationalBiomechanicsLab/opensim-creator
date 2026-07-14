@@ -5,7 +5,7 @@
 
 # the `.deb` package only installs the application
 set(CPACK_DEB_COMPONENT_INSTALL OFF)
-set(CPACK_COMPONENTS_ALL "opensimcreator-application")
+set(CPACK_COMPONENTS_ALL "osc_app")
 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgl1, libopengl0")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)

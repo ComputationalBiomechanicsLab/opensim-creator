@@ -39,5 +39,5 @@ add_custom_target(opensimcreator_docs_deploy
 install(
     DIRECTORY "${OSC_SPHINX_OUTPUT_DIR}/"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/opensimcreator"
-    COMPONENT opensimcreator-docs
+    COMPONENT osc_docs
 )

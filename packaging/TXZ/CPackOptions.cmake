@@ -1,10 +1,8 @@
-# The TXZ generator generates two packages base on the installation `COMPONENT`:
-#
-# - `opensimcreator-application`: The application (portable installer)
-# - `opensimcreator-docs`       : Built documentation (archive containing html files etc.)
+# The TXZ generator generates two packages based on the
+# installation `COMPONENT`
 
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-set(CPACK_COMPONENTS_ALL "opensimcreator-application" "opensimcreator-docs")
+set(CPACK_COMPONENTS_ALL "osc_app" "osc_docs")
 set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
 
 # Naming: Platform
@@ -26,5 +24,5 @@ if(_arch STREQUAL "x86_64")
 endif()
 
 # Setup per-component package names
-set(CPACK_ARCHIVE_OPENSIMCREATOR-APPLICATION_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${_platform}-${_arch}")
-set(CPACK_ARCHIVE_OPENSIMCREATOR-DOCS_FILE_NAME        "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-docs")
+set(CPACK_ARCHIVE_OSC_APP_FILE_NAME  "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${_platform}-${_arch}")
+set(CPACK_ARCHIVE_OSC_DOCS_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-docs")

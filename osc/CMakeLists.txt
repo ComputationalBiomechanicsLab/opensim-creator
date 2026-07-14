@@ -113,12 +113,15 @@ if(WIN32)
     # On Windows (installation), install `osc` and all of its RUNTIME_DEPENDENCIES
     #
     # https://stackoverflow.com/questions/62884439/how-to-use-cmake-file-get-runtime-dependencies-in-an-install-statement
+    if(POLICY CMP0207)
+        cmake_policy(SET CMP0207 NEW)
+    endif()
     install(
         TARGETS osc
-        COMPONENT opensimcreator-application
+        COMPONENT osc_app
         RUNTIME_DEPENDENCIES
             PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"  # don't install Windows-provided libs
-            POST_EXCLUDE_REGEXES ".*system32/.*[.]dll"  # don't install Windows-provided libs
+            POST_EXCLUDE_REGEXES ".*system32.*[.]dll"  # don't install Windows-provided libs
     )
 
     # On Windows (installation), install a user-facing `osc.toml` config file
@@ -137,7 +140,7 @@ if(WIN32)
             FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
             RENAME "osc.toml"
             DESTINATION "."
-            COMPONENT opensimcreator-application
+            COMPONENT osc_app
         )
     endif()
 
@@ -145,7 +148,7 @@ if(WIN32)
     install(
         DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../resources/OpenSimCreator"
         DESTINATION "resources"
-        COMPONENT opensimcreator-application
+        COMPONENT osc_app
     )
 elseif(UNIX AND NOT APPLE)
     # On Linux, configure an `osc.toml` that's used when running from the
@@ -174,7 +177,7 @@ elseif(UNIX AND NOT APPLE)
         RUNTIME_DEPENDENCIES
         DIRECTORIES ${CMAKE_INSTALL_LIBDIR}
         POST_EXCLUDE_REGEXES "^/usr/*" "^/lib/*"  # don't copy system-provided dependencies
-        COMPONENT opensimcreator-application
+        COMPONENT osc_app
     )
 
     # On Linux (installation): install a user-facing `osc.toml` config file
@@ -193,7 +196,7 @@ elseif(UNIX AND NOT APPLE)
             FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_debian.toml"
             RENAME "osc.toml"
             DESTINATION "."
-            COMPONENT opensimcreator-application
+            COMPONENT osc_app
         )
     endif()
 
@@ -201,7 +204,7 @@ elseif(UNIX AND NOT APPLE)
     install(
         DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/../resources/OpenSimCreator"
         DESTINATION "resources"
-        COMPONENT opensimcreator-application
+        COMPONENT osc_app
     )
 elseif(APPLE)
     # On Apple, resource files (configuration, images, etc.) are
@@ -274,7 +277,7 @@ elseif(APPLE)
     install(
         TARGETS osc
         BUNDLE DESTINATION .
-        COMPONENT opensimcreator-application
+        COMPONENT osc_app
     )
 endif()
 

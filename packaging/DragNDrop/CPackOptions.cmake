@@ -5,7 +5,7 @@
 
 # the `.dmg` package only installs the application
 set(CPACK_DMG_COMPONENT_INSTALL OFF)
-set(CPACK_COMPONENTS_ALL "opensimcreator-application")
+set(CPACK_COMPONENTS_ALL "osc_app")
 
 set(CPACK_DMG_CREATE_APPLICATIONS_LINK ON)
 set(CPACK_DMG_VOLUME_NAME "${CPACK_OSC_LONG_APPNAME} ${CPACK_OSC_PROJECT_VERSION}")

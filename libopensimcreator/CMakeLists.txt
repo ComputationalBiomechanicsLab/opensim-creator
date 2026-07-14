@@ -41,7 +41,7 @@ if(OSC_LIBOPENSIMCREATOR_INSTALL)
     install(
         DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/libopensimcreator"
-        COMPONENT opensimcreator-cpp
+        COMPONENT osc_cpp
         FILES_MATCHING PATTERN "*.h"
         PATTERN "tests" EXCLUDE
     )
@@ -50,12 +50,12 @@ if(OSC_LIBOPENSIMCREATOR_INSTALL)
     install(
         TARGETS opensimcreator
         EXPORT opensimcreatorTargets
-        COMPONENT opensimcreator-cpp
+        COMPONENT osc_cpp
     )
     install(
         EXPORT opensimcreatorTargets
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opensimcreator"
-        COMPONENT opensimcreator-cpp
+        COMPONENT osc_cpp
     )
 
     # Generate + install an `opensimcreatorConfig.cmake` file
@@ -67,6 +67,6 @@ if(OSC_LIBOPENSIMCREATOR_INSTALL)
     install(
         FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/opensimcreatorConfig.cmake"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opensimcreator"
-        COMPONENT opensimcreator-cpp
+        COMPONENT osc_cpp
     )
 endif()

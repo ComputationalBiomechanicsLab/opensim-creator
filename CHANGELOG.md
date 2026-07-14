@@ -6,6 +6,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed Windows installer (`.msi`) upgrades by ensuring a stable `CPACK_WIX_UPGRADE_GUID`
+  between releases, which should enable correct upgrade, repair, and removal behavior.
+
 ## [0.8.0] - 2026/07/10
 
 0.8.0 modernizes OSC's build/packaging, adds a new `warping_penalty` parameter

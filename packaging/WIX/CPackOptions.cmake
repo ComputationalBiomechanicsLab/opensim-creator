@@ -6,7 +6,8 @@
 
 # the `.msi` package only installs the application (no docs/libs)
 set(CPACK_WIX_COMPONENT_INSTALL OFF)
-set(CPACK_COMPONENTS_ALL "opensimcreator-application")
+set(CPACK_COMPONENTS_ALL "osc_app")
+set(CPACK_WIX_UI_REF "WixUI_InstallDir")  # Disable component selection dialog in installer
 
 # use the naming convention `opensimcreator-$version-windows-$arch.exe` (#975)
 string(TOLOWER ${CPACK_OSC_CMAKE_SYSTEM_PROCESSOR} _arch_lowercase)
@@ -19,32 +20,11 @@ set(CPACK_WIX_PRODUCT_ICON "${CPACK_OSC_PROJECT_SOURCE_DIR}/osc/osc.ico")
 set(CPACK_WIX_UI_BANNER "${CMAKE_CURRENT_LIST_DIR}/ui_banner.bmp")
 set(CPACK_WIX_UI_DIALOG "${CMAKE_CURRENT_LIST_DIR}/ui_dialog.bmp")
 
-# set `CPACK_WIX_UPGRADE_CODE` as a GUID derived from the project properties
-if(TRUE)
-    string(MD5 _osc_version_md5_hash "${CPACK_OSC_PROJECT_NAME}-${CPACK_OSC_PROJECT_VERSION}")
-    string(LENGTH "${_osc_version_md5_hash}" _hash_len)
-    if(_hash_len LESS 32)
-        message(FATAL_ERROR "MD5 hash too short: ${_osc_version_md5_hash}")
-    endif()
-    string(SUBSTRING "${_osc_version_md5_hash}" 0  8  _part1)
-    string(SUBSTRING "${_osc_version_md5_hash}" 8  4  _part2)
-    string(SUBSTRING "${_osc_version_md5_hash}" 12 4  _part3)
-    string(SUBSTRING "${_osc_version_md5_hash}" 16 4  _part4)
-    string(SUBSTRING "${_osc_version_md5_hash}" 20 12 _part5)
-    set(_osc_version_guid "${_part1}-${_part2}-${_part3}-${_part4}-${_part5}")
-
-    set(CPACK_WIX_UPGRADE_CODE "${_osc_version_guid}")  # must be stable between releases
-    set(CPACK_WIX_UPGRADE_GUID "${_osc_version_guid}")  # must be stable between releases
-
-    unset(_osc_version_guid)
-    unset(_part5)
-    unset(_part4)
-    unset(_part3)
-    unset(_part2)
-    unset(_part1)
-    unset(_osc_version_md5_hash)
-    message(STATUS "Using deterministic UpgradeCode: ${CPACK_WIX_UPGRADE_CODE}")
-endif()
+# Care: this should be stable between releases so that MSIs
+# can auto-update etc. This was generated with:
+#
+#     python -c "import uuid ; print(uuid.uuid44())"
+set(CPACK_WIX_UPGRADE_GUID "010c288b-5fe4-4164-afff-010ab377d349")
 
 # If requested, handle code signing
 if(CPACK_OSC_CODESIGN_ENABLED)
