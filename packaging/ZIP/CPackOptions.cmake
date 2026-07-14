@@ -8,3 +8,8 @@ if(WIN32)
     set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-windows-${_arch_lowercase}")
     unset(_arch_lowercase)
 endif()
+
+# If requested, handle code signing
+if(CPACK_OSC_CODESIGN_ENABLED)
+    include("${CMAKE_CURRENT_LIST_DIR}/../cmake/win_codesign.cmake")
+endif()

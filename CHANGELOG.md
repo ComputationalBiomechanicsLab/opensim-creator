@@ -8,6 +8,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fixed Windows installer (`.msi`) upgrades by ensuring a stable `CPACK_WIX_UPGRADE_GUID`
   between releases, which should enable correct upgrade, repair, and removal behavior.
+- The Windows portable installer (`.zip`) is now code signed, which should reduce the
+  severity of the warning message when running `bin/osc.exe` from it.
 
 ## [0.8.0] - 2026/07/10
 
