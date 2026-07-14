@@ -21,12 +21,11 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Create an issue called something like `Release XX.xx.pp`
     - [ ] Copy this checklist into it
     - [ ] Bump the VERSION in the top-level `CMakeLists.txt` accordingly
-    - [ ] Build the project with `ErrorCheck` on Ubuntu 24 and ensure all tests etc. pass
-          with it. Must be ran with `ctest --preset ErrorCheck` because there's ASAN
-          options (suppressions) that must be handled.
-    - [ ] Ensure the `clang-tidy` lints and test suite passes with the debug build
+    - [ ] Build the project with `ErrorCheck` on Linux and ensure all tests etc. pass
+          with it (`cmake --workflow --preset ErrorCheck`).
+    - [ ] Ensure the `clang-tidy` lints and test suite passes with the `ErrorCheck` build
     - [ ] Build `Release-Linux-amd64` and ensure the release build's test suite passes under `valgrind`: `LIBGL_ALWAYS_SOFTWARE=1 valgrind --leak-check=full --trace-children=yes -- ctest --test-dir build/Release-Linux-amd64 --output-on-failure`
-    - [ ] Manually spot-check new changes with the debug+ASAN build (might require settings `UBSAN_OPTIONS` - see `CMakePresets.json`
+    - [ ] Manually spot-check new changes with the debug+ASAN build (might require settings `UBSAN_OPTIONS` - see `CMakePresets.json`)
     - [ ] Fix all bugs/problems found during the above steps
     - [ ] Commit any fixes to CI and ensure CI passes
     - [ ] Clean-install the passing binaries on development machines, ensure they install on all OSes
@@ -38,7 +37,8 @@ Creator, it's usually copied into a GitHub issue:
           roughly matches something release-ey).
     - [ ] Rebase any currently-active feature branches onto the release commit (discourage stale branches)
     - [ ] Assemble/build/sign release artifacts:
-      - [ ] Create a source tarball with `git archive --format=tar --prefix=opensimcreator-${VERSION}/ ${VERSION} | xz -c > "opensimcreator-${VERSION}-src.tar.xz"`
+      - [ ] Download source tarball, or create it with `cpack --config CPackSourceConfig.cmake` in the build directory.
+      - [ ] Download documentation tarball, it's also created by the `Release-Linux-amd64` build
       - [ ] Build MacOS release on developer's machine (GitHub Actions doesn't store developer's private keys):
         - [ ] Setup local Python 3.12 virtual environment with something like `python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements/all_requirements.txt`
         - [ ] Ensure secret codesigning environment variables are set: `OSC_CODESIGN_DEVELOPER_ID`,
@@ -49,16 +49,17 @@ Creator, it's usually copied into a GitHub issue:
         - [ ] Build and codesign an **amd64** release on the developer's machine by building the `Release-Windows-amd64-Codesigned` cmake workflow (use `Release-Windows-amd64` third-party build).
       - [ ] Combine all artifacts into a single location/directory:
         - [ ] Source tarball
+        - [ ] Documentation tarball
         - [ ] Linux DEB package
         - [ ] Linux portable .tar.xz
         - [ ] MacOS codesigned and notarized arm64 dmg
         - [ ] Windows codesigned amd64 msi
-        - [ ] Windows amd64 portable zip
-    - [ ] Create new release on github from the tagged commit
+        - [ ] Windows codesigned amd64 portable zip
+    - [ ] Create new release on github from the tagged commit:
       - [ ] Upload all artifacts against it
       - [ ] Copy + paste the release summary paragraph from `CHANGELOG.md`, maybe modify the
             note a little for GitHub-specific stuff (e.g. links to things).
-    - [ ] Update Zenodo with the release (https://zenodo.org/records/18701339):
+    - [ ] Update Zenodo with the release (https://zenodo.org/records/18701339) :
       - [ ] This usually happens automatically, via a webhook in Zenodo
       - [ ] Otherwise, it requires @adamkewley's GitHub login to publish
             the generated draft from Zenodo
@@ -70,12 +71,12 @@ Creator, it's usually copied into a GitHub issue:
           TU Delft mirror at https://gitlab.tudelft.nl/computationalbiomechanicslab/opensim-creator
       - [ ] `git remote add gitlab https://gitlab.tudelft.nl/computationalbiomechanicslab/opensim-creator.git`
       - [ ] `git push gitlab main && git push gitlab TAG`
-    - [ ] Ensure all release artifacts, incl. the source tarball, are uploaded to
+    - [ ] Ensure all release artifacts are uploaded to:
           `files.opensimcreator.com/releases`
       - [ ] Upload with (e.g.): `rsync --delete --exclude .git/ -avz files.opensimcreator.com/ files.opensimcreator.com:/var/www/files.opensimcreator.com/`
-    - [ ] Update `docs.opensimcreator.com` to host the documentation
-      - [ ] Build the docs (e.g. build the `opensimcreator_docs` target), or get the CI build of them.
-      - [ ] Deploy the docs (e.g. build the `opensimcreator_docs_deploy` target): requires server credentials.
+    - [ ] Update `docs.opensimcreator.com` to host the documentation:
+      - [ ] Unpack the documentation tarball
+      - [ ] Deploy the documentation (also possible with the `opensimcreator_docs_deploy` target): requires server credentials.
     - [ ] Update `www.opensimcreator.com` with a basic announcement news post
       - [ ] Edit https://github.com/ComputationalBiomechanicsLab/www.opensimcreator.com appropriately
       - [ ] Build the docs yourself with `hugo`
