@@ -160,7 +160,6 @@ std::optional<osc::CStringView> opyn::GetOutputSubfieldLabel(ComponentOutputSubf
     case ComponentOutputSubfield::RY:         return "RY";
     case ComponentOutputSubfield::RZ:         return "RZ";
     case ComponentOutputSubfield::RMagnitude: return "RMagnitude";
-    case ComponentOutputSubfield::Default:    return "Magnitude";
     default:                                  return std::nullopt;
     }
 }

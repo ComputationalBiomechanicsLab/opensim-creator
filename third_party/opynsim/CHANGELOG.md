@@ -7,6 +7,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Upcoming Release] - YYYY/MM/DD
 
 - Fixed `Model.states_from_data_frame` not supporting legacy column headers.
+- The `ComponentOutputExtractor` name should now more-closely match the output names
+  returned by OPynSim's output API
 
 ## 0.0.6 - 2026/06/08
 

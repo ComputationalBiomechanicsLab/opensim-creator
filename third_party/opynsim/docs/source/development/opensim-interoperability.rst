@@ -16,7 +16,7 @@ data that's compatible with tools in the wider OpenSim ecosystem.
 
     OPynSim doesn't aim to emulate or reproduce the original OpenSim
     API. The OpenSim project already ships C++ and Python APIs. You
-    should them, where applicable. OPynSim ships a different API
+    should use them, where applicable. OPynSim ships a different API
     that is specifically catered for simpler use-cases and Python
     interoperability.
 
@@ -34,7 +34,7 @@ contents were scanned for file extensions to find the most common
 file formats used by researchers. The table below contains the top
 21 (64572, 97 %) most-used formats in the collection, with comments.
 2754 (3 %) of those files are removed from the table because they
-were found to be macOS metadata files.
+were found to be macOS metadata files (e.g. `.DS_STORE`).
 
 OPynSim currently provides parsers for around 75 % of the collection. Python
 itself provides parsers for 5 % (``.xml``, ``.pkl``). Proprietary MATLAB-specific

@@ -10,6 +10,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   between releases, which should enable correct upgrade, repair, and removal behavior.
 - The Windows portable installer (`.zip`) is now code signed, which should reduce the
   severity of the warning message when running `bin/osc.exe` from it.
+- Fixed `double` outputs incorrectly having a `.Magnitude` suffix (e.g. `/forceset/TRIlong[pennation_angle.Magnitude]`)
+- The `Output Watches` panel now has copy buttons next to the output name/value, which
+  copy them to the clipboard. Useful when writing OPynSim scripts (for `double` outputs,
+  the output name in OpenSim Creator should hopefully match the name used by OPynSim).
 
 ## [0.8.0] - 2026/07/10
 

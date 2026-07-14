@@ -6,6 +6,7 @@
 #include <libopensimcreator/platform/msmicons.h>
 
 #include <libopynsim/documents/output_extractors/shared_output_extractor.h>
+#include <liboscar/platform/os.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/panel_private.h>
 #include <liboscar/utilities/uid.h>
@@ -62,28 +63,45 @@ public:
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
         std::shared_ptr<Environment> env = m_Model->tryUpdEnvironment();
-        if (env->getNumUserOutputExtractors() > 0 and ui::begin_table("##OutputWatchesTable", 2, ui::TableFlag::SizingStretchProp)) {
+        if (env->getNumUserOutputExtractors() > 0 and ui::begin_table("##OutputWatchesTable", 3, ui::TableFlag::SizingStretchProp)) {
+            ui::table_setup_column("##Actions");
             ui::table_setup_column("Output", ui::ColumnFlag::WidthStretch);
             ui::table_setup_column("Value");
             ui::table_headers_row();
 
             for (int outputIdx = 0; outputIdx < env->getNumUserOutputExtractors(); ++outputIdx) {
-                int column = 0;
                 opyn::SharedOutputExtractor o = env->getUserOutputExtractor(outputIdx);
 
                 ui::push_id(outputIdx);
-
                 ui::table_next_row();
 
+                int column = 0;
+
+                // Column: actions
                 ui::table_set_column_index(column++);
-                if (ui::draw_small_button(MSMICONS_TRASH)) {
+                if (ui::draw_button(MSMICONS_TRASH)) {
                     env->removeUserOutputExtractor(outputIdx);
                 }
-                ui::same_line();
-                ui::draw_text(o.getName());
+                ui::draw_tooltip_if_item_hovered("Remove watch");
 
+                // Column: output name
                 ui::table_set_column_index(column++);
-                ui::draw_text(o.getValue<std::string>(m_Model->getModel(), m_CachedReport.simulationReport));
+                ui::draw_text(o.getName());
+                ui::same_line();
+                if (ui::draw_button(MSMICONS_COPY)) {
+                    set_clipboard_text(o.getName());
+                }
+                ui::draw_tooltip_if_item_hovered("Copy output name to clipboard");
+
+                // Column: output value
+                ui::table_set_column_index(column++);
+                const auto value_text = o.getValue<std::string>(m_Model->getModel(), m_CachedReport.simulationReport);
+                ui::draw_text(value_text);
+                ui::same_line();
+                if (ui::draw_button(MSMICONS_COPY)) {
+                    set_clipboard_text(value_text);
+                }
+                ui::draw_tooltip_if_item_hovered("Copy output value to clipboard");
 
                 ui::pop_id();
             }
