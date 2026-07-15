@@ -901,7 +901,7 @@ namespace
                     widget_->on_mount();
                 } catch (const std::exception&) {
                     auto msg = std::format("Error mounting '{}'", widget_->name());
-                    std::throw_with_nested(std::runtime_error{std::move(msg)});
+                    std::throw_with_nested(std::runtime_error{msg});
                 }
             }
         }

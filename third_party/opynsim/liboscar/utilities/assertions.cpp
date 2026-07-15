@@ -17,5 +17,5 @@ void osc::detail::on_assertion_failure(
         file_line,
         failing_code
     );
-    throw std::runtime_error{std::move(msg)};
+    throw std::runtime_error{msg};
 }

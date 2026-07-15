@@ -32,7 +32,7 @@ class NanobindFunctionDocumenter(FunctionDocumenter):
     """
     objtype = 'nanobindfunction'
     directivetype = 'function'                   # override emitting `autonanobindfunction::` with `autofunction::`
-    priority = 10 + FunctionDocumenter.priority  # Check this documenter before the base function one
+    priority = 20 + FunctionDocumenter.priority  # Check this documenter before the base function one
 
     @classmethod
     def can_document_member(cls, member, membername, isattr, parent):
@@ -52,6 +52,25 @@ html_logo = '_static/opynsim_banner_vertical.svg'
 html_favicon = '_static/opynsim_logo.svg'
 html_static_path = ['_static']  # note: static files listed here are copied after builtin static files (overwrite)
 
+# Modifies OPynSim's docstrings in-place by cleaning the prefix off them
+#
+# This simplifies what the user sees (`DataFrame` vs. `opynsim._core.DataFrame`)
+def clean_core_signatures(app, what, name, obj, options, signature, return_annotation):
+    if signature:
+        signature = signature.replace("opynsim._core.", "")
+    if return_annotation:
+        return_annotation = return_annotation.replace("opynsim._core.", "")
+    return signature, return_annotation
+
+# Modifies OPynSim's docstrings in-place by cleaning the prefix off them
+#
+# This simplifies what the user sees (`DataFrame` vs. `opynsim._core.DataFrame`)
+def clean_core_docstrings(app, what, name, obj, options, lines):
+    for i in range(len(lines)):
+        lines[i] = lines[i].replace("opynsim._core.", "")
+
 def setup(app):  # Ran when Sphinx is setting itself up
     app.setup_extension("sphinx.ext.autodoc")
-    app.add_autodocumenter(NanobindFunctionDocumenter, override=True)  # IMPORTANT: this is required to find nanobind functions
+    app.add_autodocumenter(NanobindFunctionDocumenter, override=True)  # This is required to find nanobind functions
+    app.connect("autodoc-process-signature", clean_core_signatures)    # This cleans up function signatures
+    app.connect("autodoc-process-docstring", clean_core_docstrings)    # This cleans up docstrings

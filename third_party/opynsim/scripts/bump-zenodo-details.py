@@ -13,6 +13,7 @@
 import datetime
 import re
 import subprocess
+from pathlib import Path
 
 class BumperInputs:
     def __init__(self, citation_string, doi_url, new_version, date_published, commit):
@@ -49,34 +50,35 @@ def _collect_inputs_from_user() -> BumperInputs:
 
     return BumperInputs(citation_string, doi_url, new_version, date_published, commit)
 
-def _slurp_file(path):
-    with open(path, 'r', encoding='utf-8') as fd:
-        return fd.read()
-
-def _overwrite_file(path, new_content):
-    with open(path, 'w', encoding='utf-8') as fd:
-        fd.write(new_content)
-
 def _update_readme(inputs: BumperInputs):
-    content = _slurp_file('README.md')
+    readme_md = Path("README.md")
+    content = readme_md.read_text()
     new_content = re.sub(r'^>.+?https://doi.org/[^/]+/zenodo.+?$', f'> {inputs.citation_string}', content, flags=re.MULTILINE)
-    _overwrite_file('README.md', new_content)
+    readme_md.write_text(new_content)
 
 def _update_citation_cff(inputs: BumperInputs):
-    content = _slurp_file('CITATION.cff')
+    citation_cff = Path("CITATION.cff")
+    if not citation_cff.exists():
+        print(f"{citation_cff} does not exist: skipping")
+        return
+    content = citation_cff.read_text()
     new_content = re.sub(r'value: \d+\.\d+/zenodo\.\d+', f'value: {inputs.doi}', content)
     new_content = re.sub(r'^commit: .+?$', f'commit: {inputs.commit}', new_content, flags=re.MULTILINE)
     new_content = re.sub(r'^version: .+?$', f'version: {inputs.new_version}', new_content, flags=re.MULTILINE)
     new_content = re.sub(r'^date-released: .+?$', f"date-released: '{inputs.date_published}'", new_content, flags=re.MULTILINE)
     new_content = re.sub(r'entry containing .+? binaries', f'entry containing {inputs.new_version} binaries', new_content)
-    _overwrite_file('CITATION.cff', new_content)
+    citation_cff.write_text(new_content)
 
 def _update_codemeta_json(inputs: BumperInputs):
-    content = _slurp_file('codemeta.json')
+    codemeta_json = Path("codemeta.json")
+    if not codemeta_json.exists():
+        print(f"{codemeta_json}: does not exist: skipping")
+        return
+    content = codemeta_json.read_text()
     new_content = re.sub(r'"https://doi.org.+?"', f'"{inputs.doi_url}"', content)
     new_content = re.sub(r'"datePublished": ".+?"', f'"datePublished": "{inputs.date_published}"', new_content)
     new_content = re.sub(r'"version": ".+?"', f'"version": "{inputs.new_version}"', new_content)
-    _overwrite_file('codemeta.json', new_content)
+    codemeta_json.write_text(new_content)
 
 def main():
     inputs = _collect_inputs_from_user()

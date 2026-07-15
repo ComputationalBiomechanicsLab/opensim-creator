@@ -6,14 +6,21 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release] - YYYY/MM/DD
 
+
+## 0.0.7 - 2026/07/15
+
+0.0.7 is a pre-alpha development release, don't expect stability, or an
+accurate CHANGELOG!
+
 - Fixed `Model.states_from_data_frame` not supporting legacy column headers.
 - The `ComponentOutputExtractor` name should now more-closely match the output names
   returned by OPynSim's output API
 
+
 ## 0.0.6 - 2026/06/08
 
-0.0.6 is a pre-alpha development release, don't expect stability, or the
-CHANGELOG, to make much sense yet!
+0.0.6 is a pre-alpha development release, don't expect stability, or an
+accurate CHANGELOG!
 
 - Patched an issue in OpenSim where it wasn't correctly clearing out memory
   when a model contained graph cycles (slave bodies, etc.).

@@ -476,6 +476,25 @@ namespace {
         return DataFrame{std::move(column_names), std::move(column_data), std::move(metadata)};
     }
 
+    DataFrame construct_dataframe_from_arrow_object_or_throw(const nb::object& data)
+    {
+        auto arrow_c_stream_method = nb::getattr(data, "__arrow_c_stream__");
+        auto method_rv = arrow_c_stream_method();
+        auto stream_capsule = nb::cast<nb::capsule>(method_rv);
+
+        const char* capsule_name = stream_capsule.name();
+        if (not (capsule_name and std::string_view{capsule_name} == "arrow_array_stream")) {
+            throw nb::value_error("Expected capsule name 'arrow_array_stream', but got something else");
+        }
+
+        auto* stream = static_cast<ArrowArrayStream*>(stream_capsule.data());
+        if (stream == nullptr) {
+            throw nb::value_error("Capsule from '__arrow_c_stream__' contains a null pointer");
+        }
+
+        return construct_dataframe(*stream);
+    }
+
     void register_dataframe_class(nb::module_& m)
     {
         nb::class_<DataFrame> cls(m, "DataFrame", R"(
@@ -490,53 +509,49 @@ namespace {
             accordingly.
 
             :class:`DataFrame`'s functionality is limited to being *just* good enough for common
-            OPynSim-related tasks. However, it the `Arrow PyCapsule Protocol <https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html>`_,
-            which lets you import/export :class:`DataFrame`\s to more-comprehensive libraries (e.g.
+            OPynSim-related tasks. However, it supports the `Arrow PyCapsule Protocol <https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html>`_,
+            which lets you import/export :class:`DataFrame`\s to third-party libraries (e.g.
             :meth:`DataFrame.from_arrow`, ``pandas.DataFrame.from_arrow``, ``polars.from_arrow``,
-            ``pyarrow.table.__init__``). If you want to do some fancy data manipulation, we
+            ``pyarrow.table.__init__``). If you need to do some fancy data manipulation, we
             recommend using one of those libraries.
         )");
         cls.def_static(
             "from_arrow",
-            [](const nb::object& data)
-            {
-                auto arrow_c_stream_method = nb::getattr(data, "__arrow_c_stream__");
-                auto method_rv = arrow_c_stream_method();
-                auto stream_capsule = nb::cast<nb::capsule>(method_rv);
-
-                const char* capsule_name = stream_capsule.name();
-                if (not (capsule_name and std::string_view{capsule_name} == "arrow_array_stream")) {
-                    throw nb::value_error("Expected capsule name 'arrow_array_stream', but got something else");
-                }
-
-                auto* stream = static_cast<ArrowArrayStream*>(stream_capsule.data());
-                if (stream == nullptr) {
-                    throw nb::value_error("Capsule from '__arrow_c_stream__' contains a null pointer");
-                }
-
-                return construct_dataframe(*stream);
-            },
+            &construct_dataframe_from_arrow_object_or_throw,
             nb::arg("data"),
             R"(
-                Constructs a `DataFrame` from an array-like Arrow object.
+                Constructs a :class:`DataFrame` from an array-like Arrow object.
 
                 This function accepts any Arrow-compatible array-like object implementing the array-streaming
                 part of the `Arrow PyCapsule Protocol <https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html>`_
                 (i.e. having an ``__arrow_c_stream__`` method).
 
                 Notably, the ``DataFrame`` classes of popular third-party dataframe libraries such
-                as `Pandas <https://pandas.pydata.org/>`_ (>= v2.2.0) and `Polars <https://pola.rs/>`_ (>= v0.20.4)
+                as `Pandas <https://pandas.pydata.org/>`_ (≥ v2.2.0) and `Polars <https://pola.rs/>`_ (≥ v0.20.4)
                 implement the protocol, meaning you can use this function to optimally import those ``DataFrame``\s into
                 an OPynSim :class:`DataFrame`.
             )"
         );
         cls.def(
-            nb::init{},
-            R"(
-                Constructs an empty ``DataFrame``.
+            "__init__",
+            [](DataFrame* self, const nb::object& data)
+            {
+                if (data.is_none()) {
+                    new (self) DataFrame{};  // Default construct
+                    return;
+                }
 
-                At the moment (WIP), the only way to construct a ``DataFrame`` that contains data is
-                via methods like :meth:`opynsim.read_sto`.
+                // Else: try constructing it as-if provided an Arrow stream
+                new (self) DataFrame{construct_dataframe_from_arrow_object_or_throw(data)};
+            },
+            nb::arg("data") = nb::none(),
+            R"(
+                Constructs a :class:`DataFrame`.
+
+                Args:
+                    data: If ``None``, constructs an empty :class:`DataFrame`. Otherwise, assumes ``data`` is
+                        an Arrow-compatible Python object with an  ``__arrow_c_stream__`` method and
+                        constructs the ``DataFrame`` as-if by calling :meth:`from_arrow`.
             )"
         );
         cls.def("__repr__", osc::stream_to_string<DataFrame>);
@@ -548,7 +563,7 @@ namespace {
                 Returns the attributes (metadata) associated with ``self``.
 
                 In some cases, attributes can affect the behavior of functions that read data
-                from :class:`DataFrame`\s. Notably, functions like :meth:`opynsim.Model.states_from_data_frame` look
+                from :class:`DataFrame`\s. Notably, functions like :meth:`Model.states_from_data_frame` look
                 for attributes like ``'inDegrees'`` to perform on-the-fly degrees-to-radians conversions
                 on legacy data files.
             )"
@@ -564,14 +579,14 @@ namespace {
             },
             nb::arg("requested_schema") = std::nullopt,
             R"(
-                Exports this ``DataFrame`` as an ``ArrowSchema`` (see: `Apache Arrow PyCapsule Interface <https://arrow.apache.org/docs/dev/format/CDataInterface/PyCapsuleInterface.html>`_).
+                Exports this :class:`DataFrame` as an ``ArrowSchema`` (see: `Apache Arrow PyCapsule Interface <https://arrow.apache.org/docs/dev/format/CDataInterface/PyCapsuleInterface.html>`_).
 
                 This is a low-level interface that other dataframe libraries (e.g. `Pandas <https://pandas.pydata.org/>`_
                 and `Polars <https://pola.rs/>`_) can use to natively read :class:`DataFrame`\s. For
                 example, ``polars.DataFrame.__init__`` accepts :class:`DataFrame`\s because it implements this
                 method, as does ``pandas.DataFrame.from_arrow``.
 
-                **Note**: This method also exports metadata (:meth:`attrs`), but third-party libraries handle
+                **Note**: This method also exports metadata (:attr:`attrs`), but third-party libraries handle
                 metadata inconsistently. At time of writing, `PyArrow <https://arrow.apache.org/docs/python/index.html>`_
                 encodes metadata into its table schema, but `Pandas <https://pandas.pydata.org/>`_ and `Polars <https://pola.rs/>`_
                 drop it. Therefore, we recommend that callers propagate metadata manually, or adjust their
@@ -589,7 +604,7 @@ namespace {
             "shape",
             &DataFrame::shape,
             R"(
-                Returns the shape of the ``DataFrame``.
+                Returns the shape of the :class:`DataFrame` (rows, columns).
             )"
         );
         cls.def(
@@ -611,7 +626,7 @@ namespace {
 
                 The ``pandas`` module is lazily ``import``\ed when this method is called. It's
                 expected that the caller's environment supplies a version of ``pandas`` that is compatible with
-                the Arrow API (>= v2.2.0). This may require additionally supplying ``pyarrow``, which
+                the Arrow API (≥ v2.2.0). This may require additionally supplying ``pyarrow``, which
                 ``pandas`` may internally use to implement the API.
 
                 See also: :meth:`__arrow_c_stream__` and :meth:`from_arrow`.
@@ -635,7 +650,7 @@ namespace {
 
                 The ``polars`` module is lazily ``import``\ed when this method is called. It's
                 expected that the callers have installed a version of ``polars`` that is compatible with
-                the Arrow API (>= v0.20.4).
+                the Arrow API (≥ v0.20.4).
 
                 See also: :meth:`__arrow_c_stream__` and :meth:`from_arrow`.
             )"
@@ -1159,7 +1174,8 @@ namespace {
             m,
             "ForwardDynamicsSolver",
             R"(
-                Integrates the forward dynamics of a :class:`Model` + :class:`ModelState` pair.
+                A solver that integrates the forward dynamics of a :class:`Model`
+                + :class:`ModelState` pair.
 
                 The solver stores a :class:`ModelState` that it integrates forward
                 in time to a caller-specified timepoint (see :meth:`integrate_to`).
@@ -1174,10 +1190,9 @@ namespace {
                 Constructs a :class:`ForwardDynamicsSolver` of ``model`` in ``model_state``.
 
                 Args:
-                    model: The :class:`Model` that is being integrated.
-                    model_state: The state of ``model`` that the solver begins integration from.
-                    integrator_settings: The :class:`IntegratorSettings` that the solvers's integrator
-                        uses for integration.
+                    model (Model): The model that is being integrated.
+                    model_state (ModelState): The state of ``model`` that the solver begins integration from.
+                    integrator_settings (IntegratorSettings): The integrator settings of the solvers's integrator.
             )"
         );
         cls.def(
@@ -1186,8 +1201,17 @@ namespace {
             nb::arg("time"),
             nb::arg("realized_to") = ModelStateStage::report,
             R"(
-                Integrates the solvers's internal :class:`ModelState` forwards to ``time`` and
-                returns a copy of the internal state realized to at least ``realized_to``.
+                Forward-integrates the solvers's :class:`ModelState` to ``time``.
+
+                Args:
+                    time (float): The endpoint that the integrator should integrate towards. Must be
+                        greater than or equal to the solver's current time.
+                    realized_to (ModelStateStage): The stage at which the returned :class:`ModelState`
+                        should be realized to by the solver.
+
+                Returns:
+                    A copy of the solver's :class:`ModelState` representing the model's state
+                    at ``time`` realized to ``realized_to``.
             )"
         );
     }
