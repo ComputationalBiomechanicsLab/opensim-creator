@@ -10,8 +10,8 @@
 #include <OpenSim/Common/Property.h>
 
 #include <filesystem>
+#include <format>
 #include <memory>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -95,9 +95,11 @@ namespace opyn
                 {
                     const auto [it, inserted] = rv.try_emplace(decl.name(), decl.default_value());
                     if (not inserted and it->second != decl.default_value()) {
-                        std::stringstream msg;
-                        msg << step.getAbsolutePath() << ": declares a scaling parameter (" << decl.name() << ") that has the same name as another scaling parameter, but they differ: the engine cannot figure out how to rectify this difference. The parameter should have a different name, or a disambiguating prefix added to it";
-                        throw std::runtime_error{std::move(msg).str()};
+                        auto msg = std::format("{}: declares a scaling parameter ({}) that has the same name as another scaling parameter, but they differ: the engine cannot figure out how to rectify this difference. The parameter should have a different name, or a disambiguating prefix added to it",
+                            step.getAbsolutePathString(),
+                            decl.name()
+                        );
+                        throw std::runtime_error{std::move(msg)};
                     }
                 });
             }

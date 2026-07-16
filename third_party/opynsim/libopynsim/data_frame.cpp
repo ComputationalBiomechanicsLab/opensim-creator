@@ -3,12 +3,12 @@
 #include <liboscar/utilities/assertions.h>
 
 #include <algorithm>
+#include <format>
 #include <functional>
 #include <cstddef>
 #include <cmath>
 #include <iomanip>
 #include <ostream>
-#include <sstream>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -28,13 +28,8 @@ namespace
             const Series& s = series[i];
             const bool inserted = rv.try_emplace(std::string{s.name()}, i).second;
             if (not inserted) {
-                std::stringstream ss;
-                ss << "The provided series ";
-                if (not s.name().empty()) {
-                    ss << '\'' << s.name() << "' ";
-                }
-                ss << "contains a duplicate name '" << s.name() << "': all series must have unique names";
-                throw std::runtime_error{std::move(ss).str()};
+                auto msg = std::format("The provided series contains a duplicate name '{}': all series must have unique names", s.name());
+                throw std::runtime_error{std::move(msg)};
             }
         }
         return rv;
@@ -72,22 +67,18 @@ namespace
             return "0.0";
         }
 
-        std::stringstream ss;
         const double abs_val = std::abs(val);
 
         if (1e-4 <= abs_val and abs_val < 1e6) {
-            ss << std::fixed << std::setprecision(precision) << val;
-
             // Trim trailing zeros
-            std::string rv = std::move(ss).str();
+            std::string rv = std::format("{:.{}f}", val, precision);
             rv.erase(rv.find_last_not_of('0') + 1, std::string::npos);
             if (rv.back() == '.') {
                 rv += '0';
             }
             return rv;
         } else {
-            ss << std::scientific << std::setprecision(precision) << val;
-            return std::move(ss).str();
+            return std::format("{:.{}e}", val, precision);
         }
     }
 }

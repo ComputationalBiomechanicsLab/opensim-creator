@@ -10,8 +10,8 @@
 
 #include <OpenSim/Simulation/Model/Geometry.h>
 
+#include <format>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -51,9 +51,10 @@ namespace opyn
             for (int i = 0; i < getProperty_meshes().size(); ++i) {
                 const auto* mesh = FindComponent<OpenSim::Mesh>(sourceModel, get_meshes(i));
                 if (not mesh) {
-                    std::stringstream msg;
-                    msg << get_meshes(i) << ": Cannot find entry in 'meshes' in the source model (or it isn't a Mesh).";
-                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                    messages.emplace_back(
+                        ScalingStepValidationState::Error,
+                        std::format("{}: Cannot find entry in 'meshes' in the source model (or it isn't a Mesh).", get_meshes(i))
+                    );
                 }
             }
 

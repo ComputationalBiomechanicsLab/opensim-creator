@@ -22,9 +22,9 @@
 #include <algorithm>
 #include <array>
 #include <concepts>
+#include <format>
 #include <iterator>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <typeindex>
 #include <typeinfo>
@@ -79,9 +79,8 @@ namespace
         {
             const auto it = rgs::find(opensim_type_indices_, std::type_index{typeid(output)});
             if (it == opensim_type_indices_.end()) {
-                std::stringstream ss;
-                ss << "Could not find a suitable output extractor for " << output.getName() << ": this is an engine error (it shouldn't have shown you it!)";
-                throw std::runtime_error{std::move(ss).str()};
+                auto msg = std::format("Could not find a suitable output extractor for {}: this is an engine error (it shouldn't have shown you it!)", output.getName());
+                throw std::runtime_error{std::move(msg)};
             }
             static_assert(std::tuple_size_v<decltype(opensim_type_indices_)> == std::tuple_size_v<decltype(value_extractors_)>);
             const auto& value_extractor = value_extractors_[std::distance(opensim_type_indices_.begin(), it)];
@@ -435,9 +434,7 @@ public:
     {
         const auto it = outputs_.find(output);
         if (it == outputs_.end()) {
-            std::stringstream ss;
-            ss << static_cast<std::string>(output) << ": Cannot find this output in the model";
-            throw std::runtime_error{std::move(ss).str()};
+            throw std::runtime_error{std::format("{}: Cannot find this output in the model", output.name())};
         }
         return output_extraction_system().read_value(model_state.simbody_state(), *it->second);
     }

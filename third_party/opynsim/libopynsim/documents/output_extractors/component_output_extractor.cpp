@@ -13,11 +13,11 @@
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/ComponentPath.h>
 
-#include <algorithm>
+#include <cstddef>
+#include <format>
 #include <memory>
-#include <sstream>
+#include <string>
 #include <typeinfo>
-#include <utility>
 
 using namespace opyn;
 
@@ -29,14 +29,12 @@ namespace
         const std::string& outputName,
         ComponentOutputSubfield subfield)
     {
-        std::stringstream ss;
-        ss << cp.toString() << '[' << outputName;
-        if (auto label = GetOutputSubfieldLabel(subfield))
-        {
-            ss << '.' << *label;
-        }
-        ss << ']';
-        return std::move(ss).str();
+        const auto label = GetOutputSubfieldLabel(subfield);
+        return std::format("{}[{}{}]",
+            cp.toString(),
+            outputName,
+            label ? std::format(".{}", *label) : ""
+        );
     }
 
     OutputValueExtractor MakeNullExtractor(OutputExtractorDataType type)

@@ -13,7 +13,7 @@
 #include <SimTKcommon/SmallMatrix.h>
 #include <SimTKcommon/internal/Transform.h>
 
-#include <sstream>
+#include <format>
 #include <string>
 #include <vector>
 
@@ -47,17 +47,19 @@ namespace opyn
             // Ensure `station_path` exists in the model (and is a `Station`)
             const auto* station = FindComponent<OpenSim::Station>(model, get_station_path());
             if (not station) {
-                std::stringstream msg;
-                msg << get_station_path() << ": Cannot find `station_path` in the source model (or it isn't a Station).";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                messages.emplace_back(
+                    ScalingStepValidationState::Error,
+                    std::format("{}: Cannot find `station_path` in the source model (or it isn't a Station).", get_station_path())
+                );
             }
 
             // Ensure `wrap_ellipsoid_path` exists in the model (and is a `WrapEllipsoid`)
             const auto* wrapEllipsoid = FindComponent<OpenSim::WrapEllipsoid>(model, get_wrap_ellipsoid_path());
             if (not wrapEllipsoid) {
-                std::stringstream msg;
-                msg << get_wrap_ellipsoid_path() << ": Cannot find 'wrap_ellipsoid_path' in the source model (or it isn't a `WrapEllipsoid`).";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                messages.emplace_back(
+                    ScalingStepValidationState::Error,
+                    std::format("{}: Cannot find 'wrap_ellipsoid_path' in the source model (or it isn't a `WrapEllipsoid`).", get_wrap_ellipsoid_path())
+                );
             }
 
             return messages;

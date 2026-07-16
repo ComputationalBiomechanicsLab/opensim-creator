@@ -10,10 +10,9 @@
 #include <liboscar/utilities/assertions.h>
 
 #include <filesystem>
+#include <format>
 #include <optional>
-#include <sstream>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace OpenSim { class Model; }
@@ -58,17 +57,19 @@ namespace opyn
             else if (const auto destinationMeshPath = modelFilesystemLocation->parent_path() / get_destination_mesh_file();
                 not std::filesystem::exists(destinationMeshPath)) {
 
-                std::stringstream msg;
-                msg << destinationMeshPath.string() << ": Cannot find `destination_mesh_file` on filesystem";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                messages.emplace_back(
+                    ScalingStepValidationState::Error,
+                    std::format("{}: : Cannot find `destination_mesh_file` on filesystem", destinationMeshPath.string())
+                );
             }
 
             // Ensure `source_mesh_component_path` exists in the model
             const auto* sourceMesh = FindComponent<OpenSim::Mesh>(sourceModel, get_source_mesh_component_path());
             if (not sourceMesh) {
-                std::stringstream msg;
-                msg << get_landmarks_frame() << ": Cannot find Mesh 'source_mesh_component_path' in the source model (or it isn't a Mesh).";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                messages.emplace_back(
+                    ScalingStepValidationState::Error,
+                    std::format("{}: Cannot find Mesh 'source_mesh_component_path' in the source model (or it isn't a Mesh).", get_source_mesh_component_path())
+                );
             }
 
             return messages;

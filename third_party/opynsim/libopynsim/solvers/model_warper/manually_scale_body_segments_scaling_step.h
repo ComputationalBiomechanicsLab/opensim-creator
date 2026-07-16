@@ -13,10 +13,10 @@
 #include <OpenSim/Common/ScaleSet.h>
 #include <SimTKcommon/SmallMatrix.h>
 
+#include <format>
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -51,9 +51,10 @@ namespace opyn
             for (int i = 0; i < getProperty_bodies().size(); ++i) {
                 const auto* body = FindComponent<OpenSim::Body>(sourceModel, get_bodies(i));
                 if (not body) {
-                    std::stringstream msg;
-                    msg << get_bodies(i) << ": Cannot find a `Body` in 'bodies' in the source model (or it isn't a `Body`).";
-                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                    messages.emplace_back(
+                        ScalingStepValidationState::Error,
+                        std::format("{}: Cannot find a `Body` in 'bodies' in the source model (or it isn't a `Body`).", get_bodies(i))
+                    );
                 }
             }
 
@@ -87,9 +88,8 @@ namespace opyn
             for (int i = 0; i < getProperty_bodies().size(); ++i) {
                 const auto* body = FindComponent<OpenSim::Body>(model, get_bodies(i));
                 if (not body) {
-                    std::stringstream msg;
-                    msg << get_bodies(i) << ": Cannot find a `Body` in 'bodies' in the source model (or it isn't a `Body`).";
-                    throw std::runtime_error{std::move(msg).str()};
+                    auto msg = std::format("{}: Cannot find a `Body` in 'bodies' in the source model (or it isn't a `Body`).", get_bodies(i));
+                    throw std::runtime_error{std::move(msg)};
                 }
 
                 auto scale = std::make_unique<OpenSim::Scale>();

@@ -11,7 +11,7 @@
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <SimTKcommon/SmallMatrix.h>
 
-#include <sstream>
+#include <format>
 #include <string>
 #include <vector>
 
@@ -44,9 +44,10 @@ namespace opyn
             for (int i = 0; i < getProperty_path_points().size(); ++i) {
                 const auto* pathPoint = FindComponent<OpenSim::PathPoint>(sourceModel, get_path_points(i));
                 if (not pathPoint) {
-                    std::stringstream msg;
-                    msg << get_path_points(i) << ": Cannot find a PathPoint in 'path_points' in the source model (or it isn't a PathPoint)";
-                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                    messages.emplace_back(
+                        ScalingStepValidationState::Error,
+                        std::format("{}: Cannot find a PathPoint in 'path_points' in the source model (or it isn't a PathPoint)", get_path_points(i))
+                    );
                 }
             }
 

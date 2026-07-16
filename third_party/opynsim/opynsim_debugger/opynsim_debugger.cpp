@@ -12,7 +12,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
-#include <sstream>
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -25,10 +25,7 @@ namespace
         if (not file) {
             throw std::runtime_error("Cannot open file: " + path.string());
         }
-
-        std::ostringstream buffer;
-        buffer << file.rdbuf();
-        return buffer.str();
+        return {std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
     }
 
     // Helper: set an environment variable called `name` to `value`

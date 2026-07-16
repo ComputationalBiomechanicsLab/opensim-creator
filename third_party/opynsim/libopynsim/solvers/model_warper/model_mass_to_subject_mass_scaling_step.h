@@ -9,8 +9,6 @@
 
 #include <functional>
 #include <optional>
-#include <sstream>
-#include <utility>
 #include <vector>
 
 namespace OpenSim { class Model; }
@@ -36,15 +34,17 @@ namespace opyn
             std::vector<ScalingStepValidationMessage> messages;
 
             if (parameters.lookup<double>("subject_mass").value_or(0.0) <= 0.0) {
-                std::stringstream msg;
-                msg << "The subject_mass scaling parameter must be greater than zero";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                messages.emplace_back(
+                    ScalingStepValidationState::Error,
+                    "The subject_mass scaling parameter must be greater than zero"
+                );
             }
 
             if (model.getTotalMass(model.getWorkingState()) <= 0.0) {
-                std::stringstream msg;
-                msg << "Cannot scale the model's mass to the subject's mass because the model itself has a mass of zero";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                messages.emplace_back(
+                    ScalingStepValidationState::Error,
+                    "Cannot scale the model's mass to the subject's mass because the model itself has a mass of zero"
+                );
             }
 
             return messages;

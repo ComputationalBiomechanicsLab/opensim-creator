@@ -7,6 +7,7 @@
 
 #include <concepts>
 #include <cstddef>
+#include <format>
 #include <memory>
 #include <optional>
 #include <span>
@@ -25,14 +26,11 @@ namespace
     StringLike&& validate_as_classname(StringLike&& str)
         requires std::constructible_from<std::string_view, StringLike&&>
     {
-        if (is_valid_identifier(str)) {
-            return std::forward<StringLike>(str);
+        if (not is_valid_identifier(str)) {
+            auto msg = std::format("{}: is not a valid class name: must be an 'identifier' (i.e. start with a letter/underscore, followed by letters/numbers/underscores)", str);
+            throw std::runtime_error{std::move(msg)};
         }
-        else {
-            std::stringstream ss;
-            ss << str << ": is not a valid class name: must an 'identifier' (i.e. start with a letter/underscore, followed by letters/numbers/underscores)";
-            throw std::runtime_error{std::move(ss).str()};
-        }
+        return std::forward<StringLike>(str);
     }
 
     template<std::copy_constructible T>
@@ -53,9 +51,8 @@ namespace
 
         for (size_t i = 0; i < properties.size(); ++i) {
             if (not rv.try_emplace(properties[i].name(), i).second) {
-                std::stringstream ss;
-                ss << properties[i].name() << ": duplicate property detected: each property of an object must be unique (incl. properties from the base class)";
-                throw std::runtime_error{std::move(ss).str()};
+                auto msg = std::format("{}: duplicate property detected: each property of an object must be unique (incl. properties from the base class)", properties[i].name().name());
+                throw std::runtime_error{std::move(msg)};
             }
         }
         return rv;

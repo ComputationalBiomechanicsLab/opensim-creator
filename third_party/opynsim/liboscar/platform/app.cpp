@@ -62,7 +62,6 @@
 #include <ctime>
 #include <exception>
 #include <format>
-#include <sstream>
 #include <stdexcept>
 #include <vector>
 
@@ -373,9 +372,8 @@ namespace
         CStringView value_readable_name)
     {
         if (not SDL_GL_SetAttribute(attribute, new_attribute_value)) {
-            std::stringstream msg;
-            msg << "SDL_GL_SetAttribute failed when setting " << attribute_readable_name << " = " << value_readable_name << ": " << SDL_GetError();
-            throw std::runtime_error{std::move(msg).str()};
+            auto msg = std::format("SDL_GL_SetAttribute failed when setting {} = {}: {}", attribute_readable_name, value_readable_name, SDL_GetError());
+            throw std::runtime_error{std::move(msg)};
         }
     }
 #endif

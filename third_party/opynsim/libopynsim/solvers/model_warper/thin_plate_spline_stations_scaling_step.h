@@ -11,7 +11,7 @@
 #include <liboscar/utilities/assertions.h>
 #include <OpenSim/Simulation/Model/Station.h>
 
-#include <sstream>
+#include <format>
 #include <string>
 
 namespace OpenSim { class Model; }
@@ -45,9 +45,10 @@ namespace opyn
             for (int i = 0; i < getProperty_stations().size(); ++i) {
                 const auto* station = FindComponent<OpenSim::Station>(sourceModel, get_stations(i));
                 if (not station) {
-                    std::stringstream msg;
-                    msg << get_stations(i) << ": Cannot a Station in 'stations' in the source model (or it isn't a Station).";
-                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                    messages.emplace_back(
+                        ScalingStepValidationState::Error,
+                        std::format("{}: Cannot a Station in 'stations' in the source model (or it isn't a Station).", get_stations(i))
+                    );
                 }
             }
 

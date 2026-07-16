@@ -11,7 +11,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <SimTKcommon/SmallMatrix.h>
 
-#include <sstream>
+#include <format>
 #include <string>
 #include <vector>
 
@@ -45,9 +45,10 @@ namespace opyn
             // Ensure every entry in `bodies` can be found in the source model.
             for (int i = 0; i < getProperty_bodies().size(); ++i) {
                 if (not FindComponent<OpenSim::Body>(sourceModel, get_bodies(i))) {
-                    std::stringstream msg;
-                    msg << get_bodies(i) << ": Cannot find a Body in 'bodies' in the source model (or it isn't a Body)";
-                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                    messages.emplace_back(
+                        ScalingStepValidationState::Error,
+                        std::format("{}: Cannot find a Body in 'bodies' in the source model (or it isn't a Body)", get_bodies(i))
+                    );
                 }
             }
 

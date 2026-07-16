@@ -9,13 +9,13 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <format>
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <optional>
 #include <ranges>
 #include <span>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -99,18 +99,14 @@ namespace
 
     std::string GenerateName(size_t suffix)
     {
-        std::stringstream ss;
-        ss << "unnamed_" << suffix;
-        return std::move(ss).str();
+        return std::format("unnamed_{}", suffix);
     }
 }
 
 std::string opyn::to_string(const CSVParseWarning& warning)
 {
-    std::stringstream ss;
     const size_t displayedLineNumber = warning.lineNumber+1;  // user-facing software (e.g. IDEs) start at 1
-    ss << "line " << displayedLineNumber << ": " << warning.message;
-    return std::move(ss).str();
+    return std::format("line {}: {}", displayedLineNumber, warning.message);
 }
 
 void opyn::ReadLandmarksFromCSV(
@@ -135,9 +131,7 @@ std::vector<Landmark> opyn::ReadLandmarksFromCSVIntoVectorOrThrow(
 {
     std::ifstream in{path};
     if (not in) {
-        std::stringstream ss;
-        ss << path.string() << ": cannot open landmarks file for reading";
-        throw std::runtime_error{std::move(ss).str()};
+        throw std::runtime_error{std::format("{}: cannot open landmarks file for reading", path.string())};
     }
 
     std::vector<Landmark> rv;

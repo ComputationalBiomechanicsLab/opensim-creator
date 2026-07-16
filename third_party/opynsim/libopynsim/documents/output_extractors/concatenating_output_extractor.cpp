@@ -10,8 +10,9 @@
 #include <liboscar/utilities/hash_helpers.h>
 
 #include <cstddef>
-#include <sstream>
+#include <format>
 #include <string>
+#include <utility>
 
 using namespace opyn;
 
@@ -40,14 +41,10 @@ namespace
         static_assert(osc::num_options<OutputExtractorDataType>() == 3);
 
         if (concatenatedType == OutputExtractorDataType::Vector2) {
-            std::stringstream ss;
-            ss << a.getName() << " vs. " << b.getName();
-            return std::move(ss).str();
+            return std::format("{} vs. {}", a.getName(), b.getName());
         }
         else {
-            std::stringstream ss;
-            ss << a.getName() << " + " << b.getName();
-            return std::move(ss).str();
+            return std::format("{} + {}", a.getName(), b.getName());
         }
     }
 }

@@ -7,8 +7,8 @@
 #include <libopynsim/utilities/open_sim_helpers.h>
 
 #include <filesystem>
+#include <format>
 #include <memory>
-#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -169,9 +169,8 @@ namespace opyn
                 scalingDocument->finalizeFromProperties();
             }
             else {
-                std::stringstream ss;
-                ss << path.string() << ": is a valid object file, but doesn't contain a ModelWarperV3Document";
-                throw std::runtime_error{std::move(ss).str()};
+                auto msg = std::format("{}: is a valid object file, but doesn't contain a ModelWarperV3Document", path.string());
+                throw std::runtime_error{std::move(msg)};
             }
         }
         std::optional<std::filesystem::path> scalingDocumentFilesystemLocation() const

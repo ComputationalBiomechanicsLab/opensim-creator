@@ -12,12 +12,11 @@
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <filesystem>
+#include <format>
 #include <functional>
 #include <optional>
-#include <sstream>
 #include <string>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 namespace opyn
@@ -89,9 +88,10 @@ namespace opyn
             else if (const auto sourceLandmarksPath = modelFilesystemLocation->parent_path() / get_source_landmarks_file();
                 not std::filesystem::exists(sourceLandmarksPath)) {
 
-                std::stringstream msg;
-                msg << sourceLandmarksPath.string() << ": Cannot find source landmarks file on filesystem";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                messages.emplace_back(
+                    ScalingStepValidationState::Error,
+                    std::format("{}: Cannot find source landmarks file on filesystem", sourceLandmarksPath.string())
+                );
             }
 
             // Ensure the `destination_landmarks_file` can be found (relative to the model osim).
@@ -101,17 +101,19 @@ namespace opyn
             else if (const auto destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
                 not std::filesystem::exists(destinationLandmarksPath)) {
 
-                std::stringstream msg;
-                msg << destinationLandmarksPath.string() << ": Cannot find destination landmarks file on filesystem";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                messages.emplace_back(
+                    ScalingStepValidationState::Error,
+                    std::format("{}: Cannot find destination landmarks file on filesystem", destinationLandmarksPath.string())
+                );
             }
 
             // Ensure `landmarks_frame` exists in the model
             const auto* landmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
             if (not landmarksFrame) {
-                std::stringstream msg;
-                msg << get_landmarks_frame() << ": Cannot find this frame in the source model (or it isn't a Frame).";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                messages.emplace_back(
+                    ScalingStepValidationState::Error,
+                    std::format("{}: Cannot find this frame in the source model (or it isn't a Frame).", get_landmarks_frame())
+                );
             }
 
             return messages;

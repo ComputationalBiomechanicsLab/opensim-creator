@@ -32,6 +32,7 @@
 #include <clocale>
 #include <cstring>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <iostream>
 #include <locale>
@@ -328,9 +329,8 @@ namespace
         if (table_name) {
             const auto it = tables.find(std::string{*table_name});
             if (it == tables.end()) {
-                std::stringstream ss;
-                ss << source << "Could not find table '" << *table_name << "' in the data source";
-                throw std::runtime_error{std::move(ss).str()};
+                auto msg = std::format("{}: Could not find table '{}' in the data source", source.string(), *table_name);
+                throw std::runtime_error{std::move(msg)};
             }
             table = it->second.get();
         } else {
@@ -352,18 +352,15 @@ namespace
             return read_opensim_datatable_into_data_frame(quaternion_table->flatten({"_w", "_x", "_y", "_z"}));
         }
 
-        std::stringstream ss;
-        ss << source << ": Specified data table has an unsupported data type (" << typeid(*table).name() << ").";
-        throw std::runtime_error{std::move(ss).str()};
+        auto msg = std::format("{}: : Specified data table has an unsupported data type ({}).", source.string(), typeid(*table).name());
+        throw std::runtime_error{std::move(msg)};
     }
 
     osc::Texture2D read_texture_via_oscar(const std::filesystem::path& source)
     {
         std::ifstream ifs{source, std::ios::in | std::ios::binary};
         if (not ifs) {
-            std::stringstream ss;
-            ss << source << ": Error opening input file";
-            throw std::runtime_error{std::move(ss).str()};
+            throw std::runtime_error{std::format("{}: : Error opening input file", source.string())};
         }
 
         return osc::Image::read_into_texture(ifs, source.filename().string(), osc::ColorSpace::sRGB);

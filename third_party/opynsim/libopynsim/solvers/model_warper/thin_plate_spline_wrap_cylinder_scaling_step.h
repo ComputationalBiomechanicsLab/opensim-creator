@@ -13,9 +13,8 @@
 #include <SimTKcommon/internal/UnitVec.h>
 #include <SimTKcommon/SmallMatrix.h>
 
-#include <sstream>
+#include <format>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace opyn
@@ -75,9 +74,10 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
             for (int i = 0; i < getProperty_wrap_cylinders().size(); ++i) {
                 const auto* offsetFrame = FindComponent<OpenSim::WrapCylinder>(sourceModel, get_wrap_cylinders(i));
                 if (not offsetFrame) {
-                    std::stringstream msg;
-                    msg << get_wrap_cylinders(i) << ": Cannot find a `WrapCylinder` in 'wrap_cylinders' in the source model (or it isn't a `WrapCylinder`).";
-                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                    messages.emplace_back(
+                        ScalingStepValidationState::Error,
+                        std::format("{}: Cannot find a `WrapCylinder` in 'wrap_cylinders' in the source model (or it isn't a `WrapCylinder`).", get_wrap_cylinders(i))
+                    );
                 }
             }
 

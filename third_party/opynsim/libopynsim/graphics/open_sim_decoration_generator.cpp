@@ -48,10 +48,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <format>
 #include <iterator>
 #include <memory>
 #include <optional>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -1553,9 +1553,8 @@ Mesh opyn::ToOscMesh(
     );
 
     if (decs.empty()) {
-        std::stringstream ss;
-        ss << mesh.getAbsolutePathString() << ": could not be converted into an OSC mesh because OpenSim did not emit any decorations for the given OpenSim::Mesh component";
-        throw std::runtime_error{std::move(ss).str()};
+        auto msg = std::format("{}: could not be converted into an OSC mesh because OpenSim did not emit any decorations for the given OpenSim::Mesh component", mesh.getAbsolutePathString());
+        throw std::runtime_error{std::move(msg)};
     }
     if (decs.size() > 1) {
         const auto path = mesh.getAbsolutePathString();

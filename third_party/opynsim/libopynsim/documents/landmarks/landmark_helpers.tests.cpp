@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <format>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -32,11 +33,8 @@ namespace
         const std::filesystem::path path = GetFixturesDir() / fixtureName;
 
         std::ifstream f{path};
-        if (!f)
-        {
-            std::stringstream ss;
-            ss << path << ": cannot open fixture path";
-            throw std::runtime_error{std::move(ss).str()};
+        if (not f) {
+            throw std::runtime_error{std::format("{}: cannot open fixture path", path.string())};
         }
         return f;
     }

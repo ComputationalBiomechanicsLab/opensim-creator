@@ -13,9 +13,8 @@
 #include <SimTKcommon/SmallMatrix.h>
 #include <SimTKcommon/internal/Transform.h>
 
-#include <sstream>
+#include <format>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace OpenSim { class Model; }
@@ -46,17 +45,19 @@ namespace opyn
             // Ensure `station_path` exists in the model (and is a `Station`)
             const auto* station = FindComponent<OpenSim::Station>(model, get_station_path());
             if (not station) {
-                std::stringstream msg;
-                msg << get_station_path() << ": Cannot find `station_path` in the source model (or it isn't a Station).";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                messages.emplace_back(
+                    ScalingStepValidationState::Error,
+                    std::format("{}: Cannot find `station_path` in the source model (or it isn't a Station).", get_station_path())
+                );
             }
 
             // Ensure `wrap_cylinder_path` exists in the model (and is a `WrapCylinder`)
             const auto* wrapCylinder = FindComponent<OpenSim::WrapCylinder>(model, get_wrap_cylinder_path());
             if (not wrapCylinder) {
-                std::stringstream msg;
-                msg << get_wrap_cylinder_path() << ": Cannot find 'wrap_cylinder_path' in the source model (or it isn't a `WrapCylinder`).";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                messages.emplace_back(
+                    ScalingStepValidationState::Error,
+                    std::format("{}: Cannot find 'wrap_cylinder_path' in the source model (or it isn't a `WrapCylinder`).", get_wrap_cylinder_path())
+                );
             }
 
             return messages;

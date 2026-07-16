@@ -11,7 +11,7 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <SimTKcommon/SmallMatrix.h>
 
-#include <sstream>
+#include <format>
 #include <string>
 #include <vector>
 
@@ -48,9 +48,10 @@ namespace opyn
             for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
                 const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
                 if (not offsetFrame) {
-                    std::stringstream msg;
-                    msg << get_offset_frames(i) << ": Cannot find a `PhysicalOffsetFrame` in 'offset_frames' in the source model (or it isn't a `PhysicalOffsetFrame`).";
-                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                    messages.emplace_back(
+                        ScalingStepValidationState::Error,
+                        std::format("{}: Cannot find a `PhysicalOffsetFrame` in 'offset_frames' in the source model (or it isn't a `PhysicalOffsetFrame`).", get_offset_frames(i))
+                    );
                 }
             }
 
