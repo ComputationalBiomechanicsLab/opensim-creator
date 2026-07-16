@@ -7,7 +7,7 @@
 
 using namespace osc;
 
-std::span<const FileDialogFilter> osc::GetOpenSimXMLFileFilters()
+std::span<const FileDialogFilter> opyn::GetOpenSimXMLFileFilters()
 {
     static const auto s_Filters = std::to_array<FileDialogFilter>({
         FileDialogFilter{"Extensible Markup Language (*.xml)", "xml"},
@@ -16,7 +16,7 @@ std::span<const FileDialogFilter> osc::GetOpenSimXMLFileFilters()
     return s_Filters;
 }
 
-std::span<const FileDialogFilter> osc::GetModelFileFilters()
+std::span<const FileDialogFilter> opyn::GetModelFileFilters()
 {
     static const auto s_Filters = std::to_array<FileDialogFilter>({
         FileDialogFilter{"OpenSim Model File (*.osim)", "osim"},
@@ -25,7 +25,7 @@ std::span<const FileDialogFilter> osc::GetModelFileFilters()
     return s_Filters;
 }
 
-std::span<const FileDialogFilter> osc::GetMotionFileFilters()
+std::span<const FileDialogFilter> opyn::GetMotionFileFilters()
 {
     static const auto s_Filters = std::to_array<FileDialogFilter>({
         FileDialogFilter{"Motion Data (*.sto, *.mot)", "sto;mot"},
@@ -36,7 +36,7 @@ std::span<const FileDialogFilter> osc::GetMotionFileFilters()
     return s_Filters;
 }
 
-std::span<const FileDialogFilter> osc::GetMotionFileFiltersIncludingTRC()
+std::span<const FileDialogFilter> opyn::GetMotionFileFiltersIncludingTRC()
 {
     static const auto s_Filters = std::to_array<FileDialogFilter>({
         FileDialogFilter{"Motion Data (*.sto, *.mot, *.trc)", "sto;mot;trc"},

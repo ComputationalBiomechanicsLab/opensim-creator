@@ -1,6 +1,5 @@
 #include "undoable_model_actions.h"
 
-#include <libopensimcreator/documents/file_filters.h>
 #include <libopensimcreator/documents/model/basic_model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/model/environment.h>
 #include <libopensimcreator/documents/model/undoable_model_state_pair.h>
@@ -16,6 +15,7 @@
 
 #include <libopynsim/component_registry/component_registry.h>
 #include <libopynsim/component_registry/static_component_registries.h>
+#include <libopynsim/documents/file_filters.h>
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <libopynsim/graphics/open_sim_decoration_options.h>
 #include <libopynsim/utilities/open_sim_helpers.h>

@@ -1,6 +1,5 @@
 #include "main_menu.h"
 
-#include <libopensimcreator/documents/file_filters.h>
 #include <libopensimcreator/documents/model/environment.h>
 #include <libopensimcreator/documents/model/model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/model/undoable_model_actions.h>
@@ -14,6 +13,7 @@
 #include <libopensimcreator/ui/simulation/simulation_tab.h>
 #include <libopensimcreator/ui/splash_tab.h>
 
+#include <libopynsim/documents/file_filters.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/platform/app.h>
@@ -93,7 +93,7 @@ namespace
                     log_error("encountered error while trying to load an STO file against the model: {}", ex.what());
                 }
             },
-            GetMotionFileFilters()
+            opyn::GetMotionFileFilters()
         );
     }
 

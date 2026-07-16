@@ -1,6 +1,5 @@
 #pragma once
 
-#include <libopensimcreator/documents/file_filters.h>
 #include <libopensimcreator/documents/mesh_importer/mi_body.h>
 #include <libopensimcreator/documents/mesh_importer/mi_crossref_direction.h>
 #include <libopensimcreator/documents/mesh_importer/mi_document.h>
@@ -17,6 +16,7 @@
 #include <libopensimcreator/ui/mesh_importer/mesh_importer_hover.h>
 #include <libopensimcreator/ui/mesh_importer/mesh_loader.h>
 
+#include <libopynsim/documents/file_filters.h>
 #include <libopynsim/graphics/simbody_mesh_loader.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/material.h>
@@ -154,7 +154,7 @@ namespace osc
                         return;  // Error importing the model
                     }
                 },
-                GetModelFileFilters()
+                opyn::GetModelFileFilters()
             );
         }
 

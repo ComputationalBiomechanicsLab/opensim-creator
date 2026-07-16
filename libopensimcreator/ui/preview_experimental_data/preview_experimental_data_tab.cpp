@@ -1,6 +1,5 @@
 #include "preview_experimental_data_tab.h"
 
-#include <libopensimcreator/documents/file_filters.h>
 #include <libopensimcreator/documents/model/model_state_pair_with_shared_environment.h>
 #include <libopensimcreator/documents/model/undoable_model_actions.h>
 #include <libopensimcreator/documents/model/undoable_model_state_pair.h>
@@ -20,6 +19,7 @@
 #include <libopynsim/documents/experimental_data/annotated_motion.h>
 #include <libopynsim/documents/experimental_data/file_backed_storage.h>
 #include <libopynsim/documents/model/model_state_pair.h>
+#include <libopynsim/documents/file_filters.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/maths/closed_interval.h>
@@ -279,7 +279,7 @@ namespace
                                     state->rollbackModel();
                                 }
                             },
-                            GetModelFileFilters()
+                            opyn::GetModelFileFilters()
                         );
                     }
 
@@ -306,7 +306,7 @@ namespace
                                     state->rollbackModel();
                                 }
                             },
-                            GetMotionFileFilters()
+                            opyn::GetMotionFileFilters()
                         );
                     }
                     if (not m_UiState->isModelLoaded()) {
@@ -329,7 +329,7 @@ namespace
                                     state->rollbackModel();
                                 }
                             },
-                            GetMotionFileFiltersIncludingTRC(),
+                            opyn::GetMotionFileFiltersIncludingTRC(),
                             std::nullopt,
                             true
                         );
@@ -355,7 +355,7 @@ namespace
                                 }
 
                             },
-                            GetOpenSimXMLFileFilters()
+                            opyn::GetOpenSimXMLFileFilters()
                         );
                     }
                     if (not m_UiState->isModelLoaded()) {
