@@ -179,7 +179,7 @@ private:
 
     void draw_skybox()
     {
-        camera_.set_clear_flags(CameraClearFlag::None);
+        camera_.set_clear_flags(ClearFlag::None);
         camera_.set_view_matrix_override(Matrix4x4{Matrix3x3{camera_.view_matrix()}});
         graphics::draw(
             skybox_,
@@ -189,7 +189,7 @@ private:
         );
         camera_.render_to_main_window();
         camera_.set_view_matrix_override(std::nullopt);
-        camera_.set_clear_flags(CameraClearFlag::Default);
+        camera_.set_clear_flags(ClearFlag::Default);
     }
 
     void draw_2d_ui()

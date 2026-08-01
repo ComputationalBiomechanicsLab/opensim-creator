@@ -10,6 +10,7 @@
 #include <liboscar/utilities/algorithms.h>
 #include <liboscar/utilities/assertions.h>
 #include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/exception_helpers.h>
 #include <liboscar/utilities/string_helpers.h>
 #include <libopynsim/platform/opynsim_app.h>
 #include <libopynsim/data_frame.h>
@@ -408,8 +409,11 @@ namespace {
             auto& child = schema.children[i];
             std::string_view format{child->format};
             if (format != "g") {
-                auto msg = std::format("Child {} in the provided data table has an invalid type '{}' (expected: 'g' - float64): OPynSim can only parse a flat table containing float64 series right now - you may need to convert your data accordingly (sorry - work in progress!)", i, format);
-                throw std::runtime_error{std::move(msg)};
+                throw osc::formatted_runtime_error(
+                    "Child {} in the provided data table has an invalid type '{}' (expected: 'g' - float64): OPynSim can only parse a flat table containing float64 series right now - you may need to convert your data accordingly (sorry - work in progress!)",
+                    i,
+                    format
+                );
             }
             column_names.push_back(child->name ? std::string{child->name} : std::string{});
         }
@@ -421,7 +425,7 @@ namespace {
             ArrowLifetimeWrapper<ArrowArray> array;
             OSC_ASSERT(array.release == nullptr);
             if (stream.get_next(&stream, &array) != 0) {
-                throw std::runtime_error{std::format("Error encountered when reading an array stream: {}", stream.get_last_error(&stream))};
+                throw osc::formatted_runtime_error("Error encountered when reading an array stream: {}", stream.get_last_error(&stream));
             }
             if (array.release == nullptr) {
                 break;  // This is how the API communicates "done"

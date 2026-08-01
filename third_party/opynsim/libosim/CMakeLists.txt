@@ -532,39 +532,7 @@ add_library(osim STATIC
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/StatesTrajectoryReporter.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/CoordinateReference.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/OrientationsReference.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/MarkerPairSet.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Orientation.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/GenericModelMaker.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CorrectionController.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/InverseDynamicsTool.cpp
-    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/osimToolsDLL.cpp  # (use `opyn::init` instead)
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/Measurement.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ActuatorForceTargetFast.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ForwardTool.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/DynamicsTool.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/VectorFunctionForActuators.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ActuatorForceTarget.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Point.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/RRATool.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/About.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/IKCoordinateTask.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/MarkerPlacer.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/AnalyzeTool.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMCTool.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ModelScaler.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/IMUInverseKinematicsTool.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/MeasurementSet.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/TrackingTask.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ScaleTool.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Task.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/SMC_Joint.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Joint.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/RegisterTypes_osimTools.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/InverseKinematicsTool.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_TaskSet.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/MuscleStateTrackingTask.cpp
-    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/MarkerPair.cpp
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/*  # OPynSim doesn't use OpenSim's tools
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/ModelFactory.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/Thelen2003Muscle.cpp
     ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/MuscleSecondOrderActivationDynamicModel.cpp
@@ -666,9 +634,6 @@ PRIVATE
     OPENSIM_SIMULATION_MAJOR_VERSION=${PROJECT_VERSION_MAJOR}
     OPENSIM_SIMULATION_MINOR_VERSION=${PROJECT_VERSION_MINOR}
     OPENSIM_SIMULATION_BUILD_VERSION=${PROJECT_VERSION_PATCH}
-    OPENSIM_TOOLS_MAJOR_VERSION=${PROJECT_VERSION_MAJOR}
-    OPENSIM_TOOLS_MINOR_VERSION=${PROJECT_VERSION_MINOR}
-    OPENSIM_TOOLS_BUILD_VERSION=${PROJECT_VERSION_PATCH}
     OPENSIM_DISABLE_LOG_FILE=1  # disable unconditionally writing `opensim.log` in the process's working dir
 
 PUBLIC
@@ -742,7 +707,7 @@ if(TRUE)
     install(FILES ${OPYN_GLOBBED_LEPTON_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/lepton" COMPONENT osim-cpp)
 
     # install OpenSim headers to `include/OpenSim` (compatible with `opensim-core`'s install)
-    set(OPYN_EXCLUDED_PATTERNS "/Test/" "/Tests/" "/Examples/" "/Moco/" "/Sandbox/" "C3DFileAdapter")
+    set(OPYN_EXCLUDED_PATTERNS "/Test/" "/Tests/" "/Examples/" "/Moco/" "/Sandbox/" "/Tools/" "C3DFileAdapter")
     file(GLOB_RECURSE OPYN_GLOBBED_HEADERS "${OPYN_OPENSIM_BASEDIR}/OpenSim/*.h")
     foreach(var ${OPYN_GLOBBED_HEADERS})
         set(OPYN_EXCLUDE FALSE)

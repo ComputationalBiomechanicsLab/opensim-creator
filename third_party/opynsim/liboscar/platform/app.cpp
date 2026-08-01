@@ -35,6 +35,7 @@
 #include <liboscar/utilities/assertions.h>
 #include <liboscar/utilities/conversion.h>
 #include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/exception_helpers.h>
 #include <liboscar/utilities/perf.h>
 #include <liboscar/utilities/scope_exit.h>
 #include <liboscar/utilities/synchronized_value.h>
@@ -372,8 +373,9 @@ namespace
         CStringView value_readable_name)
     {
         if (not SDL_GL_SetAttribute(attribute, new_attribute_value)) {
-            auto msg = std::format("SDL_GL_SetAttribute failed when setting {} = {}: {}", attribute_readable_name, value_readable_name, SDL_GetError());
-            throw std::runtime_error{std::move(msg)};
+            throw formatted_runtime_error(
+                "SDL_GL_SetAttribute failed when setting {} = {}: {}", attribute_readable_name, value_readable_name, SDL_GetError()
+            );
         }
     }
 #endif
@@ -898,8 +900,7 @@ namespace
                 try {
                     widget_->on_mount();
                 } catch (const std::exception&) {
-                    auto msg = std::format("Error mounting '{}'", widget_->name());
-                    std::throw_with_nested(std::runtime_error{msg});
+                    std::throw_with_nested(formatted_runtime_error("Error mounting '{}'", widget_->name()));
                 }
             }
         }

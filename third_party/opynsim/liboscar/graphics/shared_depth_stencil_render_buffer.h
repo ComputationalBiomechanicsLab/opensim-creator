@@ -61,6 +61,8 @@ namespace osc
         AntiAliasingLevel anti_aliasing_level() const;
         DepthStencilRenderBufferFormat format() const;
 
+        bool has_been_rendered_to() const;
+
         class DepthStencilRenderBuffer;
         const DepthStencilRenderBuffer& impl() const { return *impl_; }
     private:
@@ -69,8 +71,6 @@ namespace osc
         friend class RenderTexture;
 
         explicit SharedDepthStencilRenderBuffer(const DepthStencilRenderBuffer&);
-
-        bool has_been_rendered_to() const;
 
         std::shared_ptr<DepthStencilRenderBuffer> impl_;
     };

@@ -223,6 +223,15 @@ namespace osc
     }
 
     template<typename T>
+    Qua<T> quaternion_from_xyz(
+        const Vector<T, 3>& x,
+        const Vector<T, 3>& y,
+        const Vector<T, 3>& z)
+    {
+        return quaternion_cast(Matrix<T, 3, 3>(x, y, z));
+    }
+
+    template<typename T>
     RadiansT<T> pitch(const Qua<T>& q)
     {
         const T y = static_cast<T>(2) * (q.y * q.z + q.w * q.x);

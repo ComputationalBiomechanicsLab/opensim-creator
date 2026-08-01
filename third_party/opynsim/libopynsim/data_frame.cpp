@@ -1,6 +1,7 @@
 #include "data_frame.h"
 
 #include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/exception_helpers.h>
 
 #include <algorithm>
 #include <format>
@@ -28,8 +29,7 @@ namespace
             const Series& s = series[i];
             const bool inserted = rv.try_emplace(std::string{s.name()}, i).second;
             if (not inserted) {
-                auto msg = std::format("The provided series contains a duplicate name '{}': all series must have unique names", s.name());
-                throw std::runtime_error{std::move(msg)};
+                throw osc::formatted_runtime_error("The provided series contains a duplicate name '{}': all series must have unique names", s.name());
             }
         }
         return rv;

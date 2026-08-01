@@ -1,9 +1,11 @@
 #include "camera_v2.h"
 
-#include <liboscar/graphics/camera_clear_flags.h>
 #include <liboscar/graphics/camera_projection.h>
+#include <liboscar/graphics/clear_flags.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/angle.h>
+#include <liboscar/maths/common_functions.h>
+#include <liboscar/maths/constants.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/matrix_functions.h>
 #include <liboscar/maths/vector.h>
@@ -177,6 +179,41 @@ TEST(CameraV2, set_direction_to_standard_direction_causes_direction_to_return_ne
     camera.set_direction(default_direction);
 
     ASSERT_EQ(camera.direction(), default_direction);
+}
+
+TEST(CameraV2, principal_ray_points_from_origin_along_minus_z_when_default_initialized)
+{
+    ASSERT_EQ(CameraV2{}.principal_ray(), Ray(Vector3(0.0f), Vector3(0.0f, 0.0f, -1.0f)));
+}
+
+TEST(CameraV2, principal_ray_is_changed_by_changing_the_position_and_direction_of_the_camera)
+{
+    CameraV2 camera;
+    camera.set_position({3.0f, 2.0f, 1.0f});
+    camera.set_direction({1.0f, 0.0f, 0.0f});
+
+    ASSERT_EQ(camera.principal_ray().origin, Vector3(3.0f, 2.0f, 1.0f));
+    ASSERT_TRUE(all_of(equal_within_absdiff(camera.principal_ray().direction, Vector3(1.0f, 0.0f, 0.0f), sqrt_epsilon_v<float>)));
+}
+
+TEST(CameraV2, default_rotation_is_identity)
+{
+    ASSERT_EQ(CameraV2{}.rotation(), Quaternion{});
+}
+
+TEST(CameraV2, default_position_is_zero)
+{
+    ASSERT_EQ(CameraV2{}.position(), Vector3{});
+}
+
+TEST(CameraV2, default_direction_is_minus_z)
+{
+    ASSERT_EQ(CameraV2{}.direction(), Vector3(0.0f, 0.0f, -1.0f));
+}
+
+TEST(CameraV2, default_up_is_plus_y)
+{
+    ASSERT_EQ(CameraV2{}.up(), Vector3(0.0f, 1.0f, 0.0f));
 }
 
 TEST(CameraV2, set_direction_to_different_direction_gives_accurate_enough_results)

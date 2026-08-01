@@ -1,11 +1,12 @@
 #include "im_guizmo_demo_tab.h"
 
-#include <liboscar/graphics/camera.h>
+#include <liboscar/graphics/camera_v2.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/geometries/grid_geometry.h>
 #include <liboscar/graphics/geometries/plane_geometry.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/materials/mesh_basic_material.h>
-#include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/matrix_functions.h>
 #include <liboscar/maths/polar_perspective_camera.h>
@@ -38,11 +39,7 @@ public:
 
         // Render 3D scene: a grid floor and a cube that has a different color per face
         {
-            Camera render_camera;
-            render_camera.set_view_matrix_override(view_matrix);
-            render_camera.set_projection_matrix_override(projection_matrix);
-            render_camera.set_pixel_rect(workspace_screen_space_rect);
-
+            render_queue_.clear();
             for (size_t i = 0; i < 6; ++i) {
                 // axis-aligned vector
                 Vector3 v;
@@ -50,23 +47,27 @@ public:
 
                 const Matrix4x4 xform = model_matrix_ * translate(identity<Matrix4x4>(), 0.5f*v) * matrix4x4_cast(rotation(plane_.normal(), v));
                 const Color color = Color{0.4f}.with_element(i % 3, 0.8f);
-                graphics::draw(
+                render_queue_.emplace(
                     plane_.mesh(),
                     xform,
                     basic_material_,
-                    render_camera,
                     MeshBasicMaterial::PropertyBlock{color}
                 );
             }
             basic_material_.set_color(Color::white());
-            graphics::draw(
+            render_queue_.emplace(
                 grid_,
                 {.rotation = rotation(grid_.normal(), {0.0f, 1.0f, 0.0f})},
                 basic_material_,
-                render_camera,
                 MeshBasicMaterial::PropertyBlock{Color::white().with_alpha(0.1f)}
             );
-            render_camera.render_to_main_window();
+
+            CameraV2 camera;
+            camera.set_view_matrix_override(view_matrix);
+            camera.set_projection_matrix_override(projection_matrix);
+            graphics::render_to_main_window(render_queue_, camera, {
+                .viewport_rect = workspace_screen_space_rect,
+            });
         }
 
         // Draw UI overlays (incl. gizmo)
@@ -146,6 +147,7 @@ private:
     GridGeometry grid_{{.size = 20.0f, .num_divisions = 100}};
     PlaneGeometry plane_;
     MeshBasicMaterial basic_material_;
+    RenderQueue render_queue_;
     ui::GizmoOperationSnappingSteps snap_;
     bool bounding_box_ = false;
 };

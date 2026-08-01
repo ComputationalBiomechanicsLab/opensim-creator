@@ -2,17 +2,15 @@
 
 #include <liboscar/dom/property_info.h>
 #include <liboscar/utilities/algorithms.h>
+#include <liboscar/utilities/exception_helpers.h>
 #include <liboscar/utilities/string_helpers.h>
 #include <liboscar/utilities/string_name.h>
 
 #include <concepts>
 #include <cstddef>
-#include <format>
 #include <memory>
 #include <optional>
 #include <span>
-#include <sstream>
-#include <stdexcept>
 #include <string_view>
 #include <unordered_map>
 #include <utility>
@@ -27,8 +25,10 @@ namespace
         requires std::constructible_from<std::string_view, StringLike&&>
     {
         if (not is_valid_identifier(str)) {
-            auto msg = std::format("{}: is not a valid class name: must be an 'identifier' (i.e. start with a letter/underscore, followed by letters/numbers/underscores)", str);
-            throw std::runtime_error{std::move(msg)};
+            throw formatted_runtime_error(
+                "{}: is not a valid class name: must be an 'identifier' (i.e. start with a letter/underscore, followed by letters/numbers/underscores)",
+                str
+            );
         }
         return std::forward<StringLike>(str);
     }
@@ -51,8 +51,10 @@ namespace
 
         for (size_t i = 0; i < properties.size(); ++i) {
             if (not rv.try_emplace(properties[i].name(), i).second) {
-                auto msg = std::format("{}: duplicate property detected: each property of an object must be unique (incl. properties from the base class)", properties[i].name().name());
-                throw std::runtime_error{std::move(msg)};
+                throw formatted_runtime_error(
+                    "{}: duplicate property detected: each property of an object must be unique (incl. properties from the base class)",
+                    properties[i].name().name()
+                );
             }
         }
         return rv;

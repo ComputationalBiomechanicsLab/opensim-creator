@@ -214,9 +214,9 @@ private:
         background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
         graphics::draw(cube_mesh_, identity<Transform>(), background_material_, camera_);
         camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-        camera_.set_clear_flags(CameraClearFlag::None);
+        camera_.set_clear_flags(ClearFlag::None);
         camera_.render_to_main_window();
-        camera_.set_clear_flags(CameraClearFlag::Default);
+        camera_.set_clear_flags(ClearFlag::Default);
     }
 
     void draw_2d_ui()

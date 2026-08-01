@@ -25,6 +25,7 @@
 #include <liboscar/platform/log.h>
 #include <liboscar/utilities/algorithms.h>
 #include <liboscar/utilities/enum_helpers.h>
+#include <liboscar/utilities/exception_helpers.h>
 #include <liboscar/utilities/perf.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
@@ -48,9 +49,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <format>
-#include <iterator>
-#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -1553,12 +1551,15 @@ Mesh opyn::ToOscMesh(
     );
 
     if (decs.empty()) {
-        auto msg = std::format("{}: could not be converted into an OSC mesh because OpenSim did not emit any decorations for the given OpenSim::Mesh component", mesh.getAbsolutePathString());
-        throw std::runtime_error{std::move(msg)};
+        throw osc::formatted_runtime_error(
+            "{}: could not be converted into an OSC mesh because OpenSim did not emit any decorations for the given OpenSim::Mesh component",
+            mesh.getAbsolutePathString()
+        );
     }
     if (decs.size() > 1) {
-        const auto path = mesh.getAbsolutePathString();
-        log_warn("{}: this OpenSim::Mesh component generated more than one decoration: OSC defaulted to using the first one, but that may not be correct: if you are seeing unusual behavior, then it's because OpenSim is doing something whacky when generating decorations for a mesh", path);
+        log_warn("{}: this OpenSim::Mesh component generated more than one decoration: OSC defaulted to using the first one, but that may not be correct: if you are seeing unusual behavior, then it's because OpenSim is doing something wacky when generating decorations for a mesh",
+            mesh.getAbsolutePathString()
+        );
     }
     return std::move(decs.front().mesh);
 }

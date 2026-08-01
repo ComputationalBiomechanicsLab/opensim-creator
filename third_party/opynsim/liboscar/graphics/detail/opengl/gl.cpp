@@ -3,9 +3,8 @@
 #include <glad/glad.h>
 
 #include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/exception_helpers.h>
 
-#include <format>
-#include <stdexcept>
 #include <string_view>
 #include <vector>
 
@@ -33,7 +32,7 @@ void osc::gl::compile_from_source(const ShaderHandle& shader_handle, std::string
     std::vector<GLchar> error_message_bytes(log_length);
     glGetShaderInfoLog(shader_handle.get(), log_length, &log_length, error_message_bytes.data());
 
-    throw std::runtime_error{std::format("glCompileShader failed: {}", error_message_bytes.data())};
+    throw formatted_runtime_error("glCompileShader failed: {}", error_message_bytes.data());
 }
 
 void osc::gl::link_program(gl::Program& program)
@@ -55,5 +54,5 @@ void osc::gl::link_program(gl::Program& program)
     std::vector<GLchar> error_message_bytes(static_cast<size_t>(log_length));
     glGetProgramInfoLog(program.get(), static_cast<GLsizei>(error_message_bytes.size()), nullptr, error_message_bytes.data());
 
-    throw std::runtime_error{std::format("OpenGL: glLinkProgram() failed: {}", error_message_bytes.data())};
+    throw formatted_runtime_error("OpenGL: glLinkProgram() failed: {}", error_message_bytes.data());
 }

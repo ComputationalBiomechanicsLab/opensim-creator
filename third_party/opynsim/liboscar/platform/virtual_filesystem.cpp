@@ -1,9 +1,9 @@
 #include "virtual_filesystem.h"
 
-#include <format>
+#include <liboscar/utilities/exception_helpers.h>
+
 #include <istream>
 #include <iterator>
-#include <stdexcept>
 #include <string>
 
 std::string osc::VirtualFilesystem::slurp(const ResourcePath& resource_path)
@@ -29,7 +29,7 @@ std::string osc::VirtualFilesystem::slurp(const ResourcePath& resource_path)
         );
     }
     catch (const std::exception& ex) {
-        throw std::runtime_error{std::format("{}: error reading resource: {}", resource_path.string(), ex.what())};
+        throw formatted_runtime_error("{}: error reading resource: {}", resource_path.string(), ex.what());
     }
 
     return rv;

@@ -16,7 +16,6 @@
 #include <memory>
 
 using namespace osc;
-using namespace osc::detail;
 
 namespace
 {

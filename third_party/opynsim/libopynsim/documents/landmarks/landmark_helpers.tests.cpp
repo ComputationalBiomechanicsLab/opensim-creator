@@ -4,14 +4,13 @@
 
 #include <gtest/gtest.h>
 #include <liboscar/maths/vector.h>
+#include <liboscar/utilities/exception_helpers.h>
 
 #include <algorithm>
 #include <cstddef>
-#include <format>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -34,7 +33,7 @@ namespace
 
         std::ifstream f{path};
         if (not f) {
-            throw std::runtime_error{std::format("{}: cannot open fixture path", path.string())};
+            throw osc::formatted_runtime_error("{}: cannot open fixture path", path.string());
         }
         return f;
     }

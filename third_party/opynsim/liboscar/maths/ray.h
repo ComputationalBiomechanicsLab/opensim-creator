@@ -11,6 +11,8 @@ namespace osc
     // - see `LineSegment` for the finite version of this
     // - sometimes called `Ray` in the literature
     struct Ray final {
+        friend bool operator==(const Ray&, const Ray&) = default;
+
         Vector3 origin{};
         Vector3 direction = {0.0f, 1.0f, 0.0f};
     };

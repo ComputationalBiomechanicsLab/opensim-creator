@@ -1,6 +1,7 @@
 #include "os.h"
 
 #include <liboscar/platform/log.h>
+#include <liboscar/utilities/exception_helpers.h>
 #include <liboscar/utilities/scope_exit.h>
 
 #include <SDL3/SDL_clipboard.h>
@@ -30,14 +31,14 @@ namespace
     {
         // nullptr disallowed
         if (p == nullptr) {
-            throw std::runtime_error{std::format("{}: returned null: {}", method_name, SDL_GetError())};
+            throw formatted_runtime_error("{}: returned null: {}", method_name, SDL_GetError());
         }
 
         std::string_view sv{p};
 
         // empty string disallowed
         if (sv.empty()) {
-            throw std::runtime_error{std::format("{}: returned an empty string", method_name)};
+            throw formatted_runtime_error("{}: returned an empty string", method_name);
         }
 
         // remove trailing slash: it interferes with `std::filesystem::path`

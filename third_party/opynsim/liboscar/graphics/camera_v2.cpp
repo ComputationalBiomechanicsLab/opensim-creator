@@ -3,11 +3,16 @@
 #include <liboscar/graphics/camera_clipping_planes.h>
 #include <liboscar/graphics/camera_projection.h>
 #include <liboscar/maths/angle.h>
+#include <liboscar/maths/constants.h>
+#include <liboscar/maths/geometric_functions.h>
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/quaternion.h>
+#include <liboscar/maths/ray.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/utilities/enum_helpers.h>
 
+#include <cmath>
 #include <optional>
 
 using namespace osc;
@@ -50,23 +55,74 @@ public:
     Vector3 position() const                   { return position_; }
     void set_position(const Vector3& position) { position_ = position; }
 
-    Vector3 direction() const                    { return direction_; }
-    void set_direction(const Vector3& direction) { direction_ = direction; }
+    Quaternion rotation() const { return rotation_; }
+    void set_rotation(const Quaternion& rotation) { rotation_ = normalize(rotation); }
 
-    Vector3 up() const             { return up_; }
-    void set_up(const Vector3& up) { up_ = up; }
+    Vector3 direction() const                    { return rotation_ * Vector3{0.0f, 0.0f, -1.0f}; }
+    void set_direction(const Vector3& direction)
+    {
+        const auto length_squared = length2(direction);
+        if (length_squared <= epsilon_v<float>) {
+            return;  // Ignore degenerate vector.
+        }
+
+        const auto backward = -(direction/sqrt(length_squared));  // +Z (-Z is forward)
+        auto reference_up = up();
+
+        // Ensure `backward` will not be parallel with `reference_up`.
+        if (std::abs(dot(backward, reference_up)) > max_abs_dot_for_cross_v<float>) {
+            reference_up = rotation_ * Vector3{1.0f, 0.0f, 0.0f};
+        }
+
+        const auto right   = normalize(cross(reference_up, backward));
+        const auto up      = cross(backward, right);
+        rotation_ = quaternion_from_xyz(right, up, backward);
+    }
+
+    Vector3 up() const             { return rotation_ * Vector3{0.0f, 1.0f, 0.0f}; }
+    void set_up(const Vector3& up)
+    {
+        const auto length_squared = length2(up);
+        if (length_squared <= epsilon_v<float>) {
+            return;  // Ignore degenerate vector.
+        }
+
+        const auto nup = up/sqrt(length_squared);
+        const auto current_direction = direction();
+
+        // Ignore the new `up` if it's parallel with the current `direction`.
+        if (std::abs(dot(current_direction, nup)) > max_abs_dot_for_cross_v<float>) {
+            return;
+        }
+
+        const auto right = normalize(cross(current_direction, nup));
+        const auto backward = cross(right, nup);  // +Z (-Z is forward)
+
+        rotation_ = quaternion_from_xyz(right, nup, backward);
+    }
+
+    Ray principal_ray() const { return {position(), direction()}; }
 
     Matrix4x4 view_matrix() const
     {
         if (maybe_view_matrix_override_) {
             return *maybe_view_matrix_override_;
         }
-        return look_at(position(), position() + direction(), up());
+
+        const Quaternion inv_rotation = inverse(rotation_);
+        auto rv = matrix4x4_cast(inv_rotation);
+        rv[3] = Vector4{inv_rotation * -position_, 1.0f};
+        return rv;
     }
 
     Matrix4x4 inverse_view_matrix() const
     {
-        return inverse(view_matrix());
+        if (maybe_view_matrix_override_) {
+            return inverse(*maybe_view_matrix_override_);
+        }
+        auto rv = matrix4x4_cast(rotation_);
+        rv[3] = Vector4{position_, 1.0f};
+        return rv;
     }
 
     std::optional<Matrix4x4> view_matrix_override() const                        { return maybe_view_matrix_override_; }
@@ -77,10 +133,14 @@ public:
         if (maybe_projection_matrix_override_) {
             return *maybe_projection_matrix_override_;
         }
+
+        // Guard against zero/negative/NaN aspect ratios.
+        const float safe_aspect_ratio = aspect_ratio > 0.0f ? aspect_ratio : 1.0f;
+
         if (projection() == CameraProjection::Perspective) {
             return perspective(
                 vertical_field_of_view_,
-                aspect_ratio,
+                safe_aspect_ratio,
                 clipping_planes_.znear,
                 clipping_planes_.zfar
             );
@@ -88,7 +148,7 @@ public:
         // else: orthographic
         static_assert(osc::num_options<CameraProjection>() == 2);
         const float height = orthographic_size_;
-        const float width = height * aspect_ratio;
+        const float width = height * safe_aspect_ratio;
 
         const float right = 0.5f * width;
         const float left = -right;
@@ -111,14 +171,16 @@ public:
     }
 
 private:
+    // Transform
+    Vector3 position_;
+    Quaternion rotation_;
+    std::optional<Matrix4x4> maybe_view_matrix_override_;
+
+    // Projection
     CameraProjection projection_ = CameraProjection::Default;
     float orthographic_size_ = 2.0f;
     Radians vertical_field_of_view_ = 90_deg;
     CameraClippingPlanes clipping_planes_{0.1f, 100.0f};
-    Vector3 position_;
-    Vector3 direction_ = {0.0f, 0.0f, -1.0f};
-    Vector3 up_ = {0.0f, 1.0f, 0.0f};
-    std::optional<Matrix4x4> maybe_view_matrix_override_;
     std::optional<Matrix4x4> maybe_projection_matrix_override_;
 };
 
@@ -150,11 +212,16 @@ void osc::CameraV2::set_far_clipping_plane(float far_clipping_plane) { impl_.upd
 Vector3 osc::CameraV2::position() const                   { return impl_->position(); }
 void osc::CameraV2::set_position(const Vector3& position) { impl_.upd()->set_position(position); }
 
+Quaternion osc::CameraV2::rotation() const { return impl_->rotation(); }
+void osc::CameraV2::set_rotation(const Quaternion& rotation) { impl_.upd()->set_rotation(rotation); }
+
 Vector3 osc::CameraV2::direction() const                    { return impl_->direction(); }
 void osc::CameraV2::set_direction(const Vector3& direction) { impl_.upd()->set_direction(direction); }
 
 Vector3 osc::CameraV2::up() const             { return impl_->up(); }
 void osc::CameraV2::set_up(const Vector3& up) { impl_.upd()->set_up(up); }
+
+Ray osc::CameraV2::principal_ray() const { return impl_->principal_ray(); }
 
 Matrix4x4 osc::CameraV2::view_matrix() const                                    { return impl_->view_matrix(); }
 Matrix4x4 osc::CameraV2::inverse_view_matrix() const                            { return impl_->inverse_view_matrix(); }

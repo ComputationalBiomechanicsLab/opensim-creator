@@ -239,8 +239,8 @@ namespace
     void def_camera(nanobind::module_& m) {
         nb::class_<osc::CameraV2> cls(m, "Camera", R"(
             Represents a virtual camera at `position` in world space, looking along
-            a `direction` vector. The `up` vector specifies which direction corresponds
-            to the 'top' of the rendered image.
+            a normalized `direction` vector. The `up` vector (also normalized)
+            specifies which direction corresponds to the 'top' of the rendered image.
         )");
         cls.def(nb::init<>{});
         cls.def_prop_rw(
@@ -253,13 +253,13 @@ namespace
             "direction",
             &osc::CameraV2::direction,
             &osc::CameraV2::set_direction,
-            "Get/set the normalized direction the camera is looking toward."
+            "Get/set the direction the camera is looking toward. Normalized by the implementation."
         );
         cls.def_prop_rw(
             "up",
             &osc::CameraV2::up,
             &osc::CameraV2::set_up,
-            "Get/set the normalized direction vector that corresponds to the 'top' of the rendered image"
+            "Get/set the direction that corresponds to the 'top' of the rendered image. Normalized by the implementation."
         );
     }
 

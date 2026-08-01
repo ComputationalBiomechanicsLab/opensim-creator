@@ -1,7 +1,7 @@
 #include "camera.h"
 
-#include <liboscar/graphics/camera_clear_flags.h>
 #include <liboscar/graphics/camera_projection.h>
+#include <liboscar/graphics/clear_flags.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/math_helpers.h>
@@ -135,21 +135,21 @@ TEST(Camera, clear_flags_defaults_to_SolidColor_and_Depth)
 {
     const Camera camera;
 
-    ASSERT_TRUE(camera.clear_flags() & CameraClearFlag::SolidColor);
-    ASSERT_TRUE(camera.clear_flags() & CameraClearFlag::Depth);
+    ASSERT_TRUE(camera.clear_flags() & ClearFlag::SolidColor);
+    ASSERT_TRUE(camera.clear_flags() & ClearFlag::Depth);
 }
 
 TEST(Camera, set_clear_flags_works_as_expected)
 {
     Camera camera;
 
-    constexpr auto flags_to_test = std::to_array<CameraClearFlags>({
-        {CameraClearFlag::SolidColor},
-        {CameraClearFlag::Depth},
-        {CameraClearFlag::SolidColor, CameraClearFlag::Depth},
+    constexpr auto flags_to_test = std::to_array<ClearFlags>({
+        {ClearFlag::SolidColor},
+        {ClearFlag::Depth},
+        {ClearFlag::SolidColor, ClearFlag::Depth},
     });
 
-    for (const CameraClearFlags flags : flags_to_test) {
+    for (const ClearFlags flags : flags_to_test) {
         camera.set_clear_flags(flags);
         ASSERT_EQ(camera.clear_flags(), flags);
     }
@@ -405,16 +405,16 @@ TEST(Camera, inverse_view_projection_matrix_returns_expected_matrix)
 TEST(Camera, clear_flags_defaults_to_Default)
 {
     const Camera camera;
-    ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Default);
+    ASSERT_EQ(camera.clear_flags(), ClearFlag::Default);
 }
 
 TEST(Camera, set_clear_flags_causes_clear_flags_to_return_new_flags)
 {
     Camera camera;
 
-    ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Default);
-    camera.set_clear_flags(CameraClearFlag::None);
-    ASSERT_EQ(camera.clear_flags(), CameraClearFlag::None);
+    ASSERT_EQ(camera.clear_flags(), ClearFlag::Default);
+    camera.set_clear_flags(ClearFlag::None);
+    ASSERT_EQ(camera.clear_flags(), ClearFlag::None);
 }
 
 TEST(Camera, set_clear_flags_causes_copy_to_compare_not_equivalent)
@@ -423,8 +423,8 @@ TEST(Camera, set_clear_flags_causes_copy_to_compare_not_equivalent)
     const Camera copy = camera;
 
     ASSERT_EQ(camera, copy);
-    ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Default);
-    camera.set_clear_flags(CameraClearFlag::None);
+    ASSERT_EQ(camera.clear_flags(), ClearFlag::Default);
+    camera.set_clear_flags(ClearFlag::None);
     ASSERT_NE(camera, copy);
 }
 

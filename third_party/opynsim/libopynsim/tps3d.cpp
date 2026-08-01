@@ -160,8 +160,8 @@ namespace
         //        | ...    ...    ...   U(pnn)|
         //
         //     - a is the `warping_penalty`, scaled along the diagonals of an identity
-        //       matrix (i.e - it's added to each diagonal element of `K`). Alternative
-        //       implementations of TPS do it a matrix multiplication: https://github.com/raphaelreme/tps/blob/v1.2.2/src/tps/thin_plate_spline.py#L141
+        //       matrix (i.e - it's added to each diagonal element of `K`). Here's
+        //       an alternative implementation: https://github.com/raphaelreme/tps/blob/v1.2.2/src/tps/thin_plate_spline.py#L141
         //
         //     - P is a n-row 4-column matrix containing the number 1 (the constant term),
         //       x, y, and z (effectively, the p term):

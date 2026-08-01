@@ -375,7 +375,7 @@ FrustumPlanes osc::calc_frustum_planes(const Camera& camera, float aspect_ratio)
     const float half_h_size = half_v_size * aspect_ratio;
     const Vector3 pos = camera.position();
     const Vector3 front = camera.direction();
-    const Vector3 up = camera.upwards_direction();
+    const Vector3 up = camera.up();
     const Vector3 right = cross(front, up);
     const Vector3 front_mult_near = z_near * front;
     const Vector3 front_mult_far = z_far * front;

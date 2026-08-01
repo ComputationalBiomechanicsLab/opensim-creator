@@ -1,10 +1,12 @@
 #include "resource_stream.h"
 
+#include <liboscar/utilities/exception_helpers.h>
+
 #include <filesystem>
-#include <format>
 #include <fstream>
 #include <memory>
-#include <stdexcept>
+
+using namespace osc;
 
 namespace
 {
@@ -14,12 +16,12 @@ namespace
         // a `std::ifstream` to a directory because it handles all paths as
         // valid file descriptors.
         if (std::filesystem::is_directory(path)) {
-            throw std::runtime_error{std::format("{}: is a directory, not a file", path.string())};
+            throw formatted_runtime_error("{}: is a directory, not a file", path.string());
         }
 
         auto rv = std::make_unique<std::ifstream>(path, std::ios::binary | std::ios::in);
         if (not *rv) {
-            throw std::runtime_error{std::format("{}: failed to load ResourceStream", path.string())};
+            throw formatted_runtime_error("{}: failed to load ResourceStream", path.string());
         }
         return rv;
     }

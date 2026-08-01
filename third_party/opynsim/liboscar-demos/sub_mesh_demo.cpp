@@ -1,39 +1,31 @@
 #include "sub_mesh_demo.h"
 
-#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/graphics/geometries/circle_geometry.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>
-#include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/materials/mesh_basic_material.h>
+#include <liboscar/graphics/camera_v2.h>
+#include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/sub_mesh_descriptor.h>
 #include <liboscar/platform/app.h>
-#include <liboscar/platform/resource_loader.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/platform/widget_private.h>
 #include <liboscar/ui/oscimgui.h>
+#include <liboscar/utilities/algorithms.h>
 
 #include <array>
-#include <concepts>
 #include <cstdint>
 #include <memory>
 #include <optional>
-#include <ranges>
 #include <vector>
 
 using namespace osc;
-namespace rgs = std::ranges;
 
 namespace
 {
-    template<rgs::range T, rgs::range U>
-    requires std::same_as<typename T::value_type, typename U::value_type>
-    void insert_at_back(T& out, U els)
-    {
-        out.insert(out.end(), els.begin(), els.end());
-    }
-
     Mesh generate_mesh_with_sub_meshes()
     {
         const auto meshes = std::to_array<Mesh>({
@@ -49,8 +41,8 @@ namespace
 
         for (const auto& mesh : meshes) {
             const size_t first_vert = all_vertices.size();
-            insert_at_back(all_vertices, mesh.vertices());
-            insert_at_back(all_normals, mesh.normals());
+            append_range(all_vertices, mesh.vertices());
+            append_range(all_normals, mesh.normals());
 
             const size_t first_index = all_indices.size();
             for (const auto index : mesh.indices()) {
@@ -79,7 +71,6 @@ public:
     {
         set_name(static_label());
 
-        camera_.set_background_color(Color::white());
         camera_.set_clipping_planes({0.1f, 5.0f});
         camera_.set_position({0.0f, 0.0f, -2.5f});
         camera_.set_direction({0.0f, 0.0f, 1.0f});
@@ -90,27 +81,27 @@ public:
 
     void on_draw()
     {
-        const size_t num_sub_mesh_descriptors = mesh_with_sub_meshes_.num_submesh_descriptors();
-        for (size_t sub_mesh_index = 0; sub_mesh_index < num_sub_mesh_descriptors; ++sub_mesh_index) {
-            graphics::draw(
+        render_queue_.clear();
+        for (size_t sub_mesh_index = 0; sub_mesh_index < mesh_with_sub_meshes_.num_submesh_descriptors(); ++sub_mesh_index) {
+            render_queue_.emplace(
                 mesh_with_sub_meshes_,
                 identity<Transform>(),
                 material_,
-                camera_,
                 sub_mesh_index
             );
         }
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-        camera_.render_to_main_window();
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            .clear_color = Color::white(),
+        });
     }
 
 private:
-    ResourceLoader loader_ = App::resource_loader();
-    Camera camera_;
+    CameraV2 camera_;
+    RenderQueue render_queue_;
     MeshBasicMaterial material_;
     Mesh mesh_with_sub_meshes_ = generate_mesh_with_sub_meshes();
 };
-
 
 CStringView osc::SubMeshDemo::id() { return Impl::static_label(); }
 

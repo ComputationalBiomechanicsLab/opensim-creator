@@ -4,6 +4,7 @@
 
 #include <liboscar/formats/csv.h>
 #include <liboscar/maths/vector.h>
+#include <liboscar/utilities/exception_helpers.h>
 #include <liboscar/utilities/std_variant_helpers.h>
 #include <liboscar/utilities/string_helpers.h>
 
@@ -16,7 +17,6 @@
 #include <optional>
 #include <ranges>
 #include <span>
-#include <stdexcept>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -131,7 +131,7 @@ std::vector<Landmark> opyn::ReadLandmarksFromCSVIntoVectorOrThrow(
 {
     std::ifstream in{path};
     if (not in) {
-        throw std::runtime_error{std::format("{}: cannot open landmarks file for reading", path.string())};
+        throw osc::formatted_runtime_error("{}: cannot open landmarks file for reading", path.string());
     }
 
     std::vector<Landmark> rv;

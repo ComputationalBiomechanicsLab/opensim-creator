@@ -41,6 +41,7 @@ class NanobindFunctionDocumenter(FunctionDocumenter):
 # `sphinx.ext.autosummary` settings:
 autosummary_generate = True
 autosummary_imported_members = True
+python_maximum_signature_line_length = 80  # Ensure method signatures get linebreaks when they're long
 
 # `sphinx.ext.napoleon` settings:
 napoleon_google_docstring = True

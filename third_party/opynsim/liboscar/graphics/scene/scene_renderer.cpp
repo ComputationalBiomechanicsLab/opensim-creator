@@ -1,7 +1,7 @@
 #include "scene_renderer.h"
 
 #include <liboscar/graphics/camera.h>
-#include <liboscar/graphics/camera_clear_flags.h>
+#include <liboscar/graphics/clear_flags.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/color_render_buffer_params.h>
 #include <liboscar/graphics/depth_stencil_render_buffer_params.h>
@@ -597,7 +597,7 @@ public:
         camera_.set_view_matrix_override(params.view_matrix);
         camera_.set_projection_matrix_override(params.projection_matrix);
         camera_.set_background_color(params.background_color);
-        camera_.set_clear_flags(CameraClearFlag::Default);
+        camera_.set_clear_flags(ClearFlag::Default);
 
         // Setup final output texture params (doesn't change during passes)
         output_render_texture_.set_pixel_dimensions(params.device_pixel_ratio * params.dimensions);
@@ -614,7 +614,7 @@ public:
                 scene_oit_compositor_material_.set_depth_tested(false);
                 scene_oit_compositor_material_.set_transparent(true);
                 graphics::draw(quad_mesh_, camera_.inverse_view_projection_matrix(aspect_ratio_of(params.dimensions)), scene_oit_compositor_material_, camera_);
-                camera_.set_clear_flags(CameraClearFlag::None);
+                camera_.set_clear_flags(ClearFlag::None);
                 camera_.render_to(output_render_texture_);
             }
         }
@@ -622,7 +622,7 @@ public:
         // Composite rim highlights over the top of the final render
         if (maybe_rims) {
             graphics::draw(maybe_rims->mesh, maybe_rims->transform, maybe_rims->material, camera_);
-            camera_.set_clear_flags(CameraClearFlag::None);
+            camera_.set_clear_flags(ClearFlag::None);
             camera_.render_to(output_render_texture_);
         }
 
@@ -763,7 +763,7 @@ private:
             );
         }
 
-        camera_.set_clear_flags(CameraClearFlag::Default);
+        camera_.set_clear_flags(ClearFlag::Default);
         camera_.render_to(output_render_texture_);
     }
 

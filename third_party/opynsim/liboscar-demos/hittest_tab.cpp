@@ -1,6 +1,6 @@
 #include "hittest_tab.h"
 
-#include <liboscar/graphics/camera.h>
+#include <liboscar/graphics/camera_v2.h>
 #include <liboscar/graphics/geometries/aabb_geometry.h>
 #include <liboscar/graphics/geometries/circle_geometry.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>
@@ -8,6 +8,8 @@
 #include <liboscar/graphics/materials/mesh_basic_material.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/mesh_functions.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/collision_tests.h>
 #include <liboscar/maths/disc.h>
@@ -18,7 +20,7 @@
 #include <liboscar/maths/sphere.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
-#include <liboscar/ui/mouse_capturing_camera.h>
+#include <liboscar/ui/mouse_capturing_camera_v2.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
 
@@ -35,12 +37,11 @@ namespace
 {
     constexpr auto c_triangle_vertices = std::to_array<Vector3>({
         {-10.0f, -10.0f, 0.0f},
-        {+0.0f, +10.0f, 0.0f},
+        {+ 0.0f, +10.0f, 0.0f},
         {+10.0f, -10.0f, 0.0f},
     });
 
     struct SceneSphere final {
-
         explicit SceneSphere(Vector3 pos_) :
             pos{pos_}
         {}
@@ -75,13 +76,10 @@ namespace
         Mesh rv;
         rv.set_topology(MeshTopology::Lines);
         rv.set_vertices({
-            // -X to +X
-            {-0.05f, 0.0f, 0.0f},
-            {+0.05f, 0.0f, 0.0f},
-
-            // -Y to +Y
-            {0.0f, -0.05f, 0.0f},
-            {0.0f, +0.05f, 0.0f},
+            {-0.05f, 0.0f,  0.0f},  // -X
+            {+0.05f, 0.0f,  0.0f},  // +X
+            { 0.0f, -0.05f, 0.0f},  // -Y
+            { 0.0f, +0.05f, 0.0f},  // +Y
         });
         rv.set_indices({0, 1, 2, 3});
         return rv;
@@ -94,14 +92,6 @@ namespace
         rv.set_indices({0, 1, 2});
         return rv;
     }
-
-    Ray get_camera_ray(const Camera& camera)
-    {
-        return {
-            camera.position(),
-            camera.direction(),
-        };
-    }
 }
 
 class osc::HittestTab::Impl final : public TabPrivate {
@@ -110,9 +100,7 @@ public:
 
     explicit Impl(HittestTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
-    {
-        camera_.set_background_color({1.0f, 1.0f, 1.0f, 0.0f});
-    }
+    {}
 
     void on_mount()
     {
@@ -135,7 +123,7 @@ public:
     {
         // hit-test spheres
 
-        const Ray ray = get_camera_ray(camera_);
+        const Ray ray = camera_.principal_ray();
         float closest_distance = std::numeric_limits<float>::max();
         SceneSphere* closest_sphere = nullptr;
 
@@ -148,7 +136,7 @@ public:
             };
 
             const std::optional<RayCollision> collision = find_collision(ray, hittest_sphere);
-            if (collision and collision->distance >= 0.0f and collision->distance < closest_distance) {
+            if (collision and 0.0f <= collision->distance and collision->distance < closest_distance) {
                 closest_distance = collision->distance;
                 closest_sphere = &scene_sphere;
             }
@@ -162,26 +150,23 @@ public:
     void on_draw()
     {
         camera_.on_draw();
+        render_queue_.clear();
 
         // render spheres
         for (const SceneSphere& scene_sphere : scene_spheres_) {
-
-            graphics::draw(
+            render_queue_.emplace(
                 sphere_mesh_,
                 {.translation = scene_sphere.pos},
                 material_,
-                camera_,
                 scene_sphere.is_hovered ? blue_color_material_props_ : red_color_material_props_
             );
 
             // draw sphere AABBs
             if (showing_aabbs_) {
-
-                graphics::draw(
+                render_queue_.emplace(
                     wireframe_mesh_,
                     {.scale = half_widths_of(scene_sphere_aabb_), .translation = scene_sphere.pos},
                     material_,
-                    camera_,
                     black_color_material_props_
                 );
             }
@@ -189,7 +174,7 @@ public:
 
         // hittest + draw disc
         {
-            const Ray ray = get_camera_ray(camera_);
+            const Ray ray = camera_.principal_ray();
 
             const Disc scene_disc{
                 .origin = {0.0f, 0.0f, 0.0f},
@@ -205,28 +190,25 @@ public:
                 .radius = 1.0f,
             };
 
-            graphics::draw(
+            render_queue_.emplace(
                 circle_mesh_,
                 matrix4x4_transform_between(mesh_disc, scene_disc),
                 material_,
-                camera_,
                 maybe_collision ? blue_color_material_props_ : red_color_material_props_
             );
         }
 
         // hit-test + draw triangle
         {
-            const Ray ray = get_camera_ray(camera_);
             const std::optional<RayCollision> maybe_collision = find_collision(
-                ray,
+                camera_.principal_ray(),
                 Triangle{c_triangle_vertices.at(0), c_triangle_vertices.at(1), c_triangle_vertices.at(2)}
             );
 
-            graphics::draw(
+            render_queue_.emplace(
                 triangle_mesh_,
                 identity<Transform>(),
                 material_,
-                camera_,
                 maybe_collision ? blue_color_material_props_ : red_color_material_props_
             );
         }
@@ -234,21 +216,23 @@ public:
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
 
         // draw crosshair overlay
-        graphics::draw(
+        render_queue_.emplace(
             crosshair_mesh_,
             camera_.inverse_view_projection_matrix(aspect_ratio_of(workspace_screen_space_rect)),
             material_,
-            camera_,
             black_color_material_props_
         );
 
-        // draw scene to screen
-        camera_.set_pixel_rect(workspace_screen_space_rect);
-        camera_.render_to_main_window();
+        // render scene
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = workspace_screen_space_rect,
+            .clear_color = Color::white().with_alpha(0.0f),
+        });
     }
 
 private:
-    MouseCapturingCamera camera_;
+    MouseCapturingCameraV2 camera_;
+    RenderQueue render_queue_;
     MeshBasicMaterial material_;
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 12, .num_height_segments = 12}};
     Mesh wireframe_mesh_ = AABBGeometry{}.mesh();
@@ -263,7 +247,6 @@ private:
     std::vector<SceneSphere> scene_spheres_ = generate_scene_spheres();
     AABB scene_sphere_aabb_ = sphere_mesh_.bounds().value();
     Sphere sphere_bounding_sphere_ = bounding_sphere_of(sphere_mesh_).value();
-    EulerAngles camera_eulers;
     bool showing_aabbs_ = true;
 };
 

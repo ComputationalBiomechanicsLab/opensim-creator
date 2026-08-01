@@ -4,13 +4,12 @@
 #include <liboscar/platform/resource_loader.h>
 #include <liboscar/ui/icon.h>
 #include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/exception_helpers.h>
 #include <liboscar/utilities/transparent_string_hasher.h>
 
 #include <ankerl/unordered_dense.h>
 
-#include <format>
 #include <memory>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -51,7 +50,7 @@ public:
         if (const auto it = icons_by_name_.find(icon_name); it != icons_by_name_.end()) {
             return it->second;
         }
-        throw std::runtime_error{std::format("Error finding icon: cannot find: {}", icon_name)};
+        throw formatted_runtime_error("Error finding icon: cannot find: {}", icon_name);
     }
 
 private:

@@ -113,5 +113,13 @@ def test_camera_properties_work_as_expected():
     camera.direction = np.array([0.0, -1.0, 0.0])
     assert np.array_equal(camera.direction, np.array([0.0, -1.0, 0.0]))
 
+    # The camera's `direction` should normalize on being set.
+    camera.direction = np.array([0.0, -2.0, 0.0])  # length==2
+    assert np.array_equal(camera.direction, np.array([0.0, -1.0, 0.0]))
+
     camera.up = np.array([1.0, 0.0, 0.0])
+    assert np.array_equal(camera.up, np.array([1.0, 0.0, 0.0]))
+
+    # The camera's `up` should normalize on being set.
+    camera.up = np.array([3.0, 0.0, 0.0])  # length==3
     assert np.array_equal(camera.up, np.array([1.0, 0.0, 0.0]))

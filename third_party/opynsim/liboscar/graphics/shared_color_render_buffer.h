@@ -60,6 +60,8 @@ namespace osc
         TextureDimensionality dimensionality() const;
         AntiAliasingLevel anti_aliasing_level() const;
 
+        bool has_been_rendered_to() const;
+
         class ColorRenderBuffer;
         const ColorRenderBuffer& impl() const { return *impl_; }
     private:
@@ -68,8 +70,6 @@ namespace osc
         friend class RenderTexture;
 
         explicit SharedColorRenderBuffer(const ColorRenderBuffer&);
-
-        bool has_been_rendered_to() const;
 
         std::shared_ptr<ColorRenderBuffer> impl_;
     };

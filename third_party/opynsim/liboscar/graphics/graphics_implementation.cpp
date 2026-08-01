@@ -1,7 +1,8 @@
 #include <liboscar/graphics/anti_aliasing_level.h>
 #include <liboscar/graphics/camera.h>
-#include <liboscar/graphics/camera_clear_flags.h>
+#include <liboscar/graphics/camera_v2.h>
 #include <liboscar/graphics/camera_projection.h>
+#include <liboscar/graphics/clear_flags.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/color32.h>
 #include <liboscar/graphics/color_render_buffer_format.h>
@@ -21,8 +22,6 @@
 #include <liboscar/graphics/detail/depth_stencil_render_buffer_format_helpers.h>
 #include <liboscar/graphics/detail/material_value_traits.h>
 #include <liboscar/graphics/detail/material_value_traits_like.h>
-#include <liboscar/graphics/detail/maybe_index.h>
-#include <liboscar/graphics/detail/render_queue.h>
 #include <liboscar/graphics/detail/shader_property_type_list.h>
 #include <liboscar/graphics/detail/shader_property_type_traits.h>
 #include <liboscar/graphics/detail/texture_format_list.h>
@@ -43,6 +42,8 @@
 #include <liboscar/graphics/mesh_topology.h>
 #include <liboscar/graphics/render_buffer_load_action.h>
 #include <liboscar/graphics/render_buffer_store_action.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/render_target.h>
 #include <liboscar/graphics/render_target_color_attachment.h>
 #include <liboscar/graphics/render_target_depth_stencil_attachment.h>
@@ -574,24 +575,21 @@ namespace
 
 namespace
 {
-    // Sort the handles in a `RenderQueue` for optimal drawing.
+    // Sorts `handles` to elements in `queue` for optimal drawing.
     void sort_render_queue(
-        RenderQueue& queue,
-        RenderQueue::handle_iterator begin,
-        RenderQueue::handle_iterator end,
+        const RenderQueue& queue,
+        RenderQueue::handle_subrange handles,
         Vector3 camera_pos)
     {
         // Partition `RenderQueue` handles into `[opaque_objs | transparent_objs]`
-        const auto opaque_objs_end = rgs::partition(
-            begin,
-            end,
+        const auto opaque_objs_end = rgs::partition(handles,
             [&queue](auto&& handle) { return queue.is_opaque(handle); }
         ).begin();
 
         // Optimize `opaque_objs` partition (it can be reordered safely due to occlusion)
         //
         // First, batch `opaque_objs` into handles that reference the same `Material`.
-        auto material_batch_start = begin;
+        auto material_batch_start = handles.begin();
         while (material_batch_start != opaque_objs_end) {
 
             const auto material_batch_end = rgs::partition(
@@ -660,7 +658,7 @@ namespace
         // ensure they are drawn back-to-front
         rgs::sort(
             opaque_objs_end,
-            end,
+            handles.end(),
             rgs::greater{},
             [&queue, &camera_pos](auto&& handle) { return length2(queue.world_space_centroid(handle) - camera_pos); }
         );
@@ -4708,7 +4706,7 @@ public:
 
     void draw_instanced(
         size_t n,
-        MaybeIndex maybe_submesh_index)
+        RenderQueue::submesh_index_type maybe_submesh_index)
     {
         const SubMeshDescriptor descriptor = maybe_submesh_index ?
             submesh_descriptors_.at(*maybe_submesh_index) :         // draw the requested sub-mesh
@@ -5177,321 +5175,51 @@ public:
 
     Color background_color() const
     {
-        return background_color_;
+        return render_pass_config_.clear_color;
     }
 
     void set_background_color(const Color& color)
     {
-        background_color_ = color;
+        render_pass_config_.clear_color = color;
     }
 
-    CameraProjection projection() const
+    ClearFlags clear_flags() const
     {
-        return camera_projection_;
+        return render_pass_config_.clear_flags;
     }
 
-    void set_projection(CameraProjection projection)
+    void set_clear_flags(ClearFlags flags)
     {
-        camera_projection_ = projection;
-    }
-
-    float orthographic_size() const
-    {
-        return orthographic_size_;
-    }
-
-    void set_orthographic_size(float size)
-    {
-        orthographic_size_ = size;
-    }
-
-    Radians vertical_field_of_view() const
-    {
-        return perspective_vertical_field_of_view;
-    }
-
-    void set_vertical_field_of_view(Radians size)
-    {
-        perspective_vertical_field_of_view = size;
-    }
-
-    Radians horizontal_field_of_view(float aspect_ratio) const
-    {
-        return vertical_to_horizontal_field_of_view(vertical_field_of_view(), aspect_ratio);
-    }
-
-    CameraClippingPlanes clipping_planes() const
-    {
-        return clipping_planes_;
-    }
-
-    void set_clipping_planes(CameraClippingPlanes planes)
-    {
-        clipping_planes_ = planes;
-    }
-
-    float near_clipping_plane() const
-    {
-        return clipping_planes_.znear;
-    }
-
-    void set_near_clipping_plane(float distance)
-    {
-        clipping_planes_.znear = distance;
-    }
-
-    float far_clipping_plane() const
-    {
-        return clipping_planes_.zfar;
-    }
-
-    void set_far_clipping_plane(float distance)
-    {
-        clipping_planes_.zfar = distance;
-    }
-
-    CameraClearFlags clear_flags() const
-    {
-        return clear_flags_;
-    }
-
-    void set_clear_flags(CameraClearFlags flags)
-    {
-        clear_flags_ = flags;
+        render_pass_config_.clear_flags = flags;
     }
 
     std::optional<Rect> pixel_rect() const
     {
-        return maybe_screen_pixel_rect_;
+        return render_pass_config_.viewport_rect;
     }
 
     void set_pixel_rect(std::optional<Rect> maybe_pixel_rect)
     {
-        maybe_screen_pixel_rect_ = maybe_pixel_rect;
+        render_pass_config_.viewport_rect = maybe_pixel_rect;
     }
 
     std::optional<Rect> scissor_rect() const
     {
-        return maybe_scissor_rect_;
+        return render_pass_config_.scissor_rect;
     }
 
     void set_scissor_rect(std::optional<Rect> maybe_scissor_rect)
     {
-        maybe_scissor_rect_ = maybe_scissor_rect;
+        render_pass_config_.scissor_rect = maybe_scissor_rect;
     }
 
-    Vector3 position() const
-    {
-        return position_;
-    }
-
-    void set_position(const Vector3& position)
-    {
-        position_ = position;
-    }
-
-    Quaternion rotation() const
-    {
-        return rotation_;
-    }
-
-    void set_rotation(const Quaternion& rotation)
-    {
-        rotation_ = rotation;
-    }
-
-    Vector3 direction() const
-    {
-        return rotation_ * Vector3{0.0f, 0.0f, -1.0f};
-    }
-
-    void set_direction(const Vector3& direction)
-    {
-        rotation_ = osc::rotation(Vector3{0.0f, 0.0f, -1.0f}, direction);
-    }
-
-    Vector3 upwards_direction() const
-    {
-        return rotation_ * Vector3{0.0f, 1.0f, 0.0f};
-    }
-
-    Matrix4x4 view_matrix() const
-    {
-        if (maybe_view_matrix_override_) {
-            return *maybe_view_matrix_override_;
-        }
-        else {
-            return look_at(position_, position_ + direction(), upwards_direction());
-        }
-    }
-
-    Matrix4x4 inverse_view_matrix() const
-    {
-        return inverse(view_matrix());
-    }
-
-    std::optional<Matrix4x4> view_matrix_override() const
-    {
-        return maybe_view_matrix_override_;
-    }
-
-    void set_view_matrix_override(std::optional<Matrix4x4> maybe_view_matrix_override)
-    {
-        maybe_view_matrix_override_ = maybe_view_matrix_override;
-    }
-
-    Matrix4x4 projection_matrix(float aspect_ratio) const
-    {
-        if (maybe_projection_matrix_override_) {
-            return *maybe_projection_matrix_override_;
-        }
-        else if (camera_projection_ == CameraProjection::Perspective) {
-            return perspective(
-                perspective_vertical_field_of_view,
-                aspect_ratio,
-                clipping_planes_.znear,
-                clipping_planes_.zfar
-            );
-        }
-        else
-        {
-            const float height = orthographic_size_;
-            const float width = height * aspect_ratio;
-
-            const float right = 0.5f * width;
-            const float left = -right;
-            const float top = 0.5f * height;
-            const float bottom = -top;
-
-            return ortho(left, right, bottom, top, clipping_planes_.znear, clipping_planes_.zfar);
-        }
-    }
-
-    std::optional<Matrix4x4> projection_matrix_override() const
-    {
-        return maybe_projection_matrix_override_;
-    }
-
-    void set_projection_matrix_override(std::optional<Matrix4x4> maybe_projection_matrix_override)
-    {
-        maybe_projection_matrix_override_ = maybe_projection_matrix_override;
-    }
-
-    Matrix4x4 view_projection_matrix(float aspect_ratio) const
-    {
-        return projection_matrix(aspect_ratio) * view_matrix();
-    }
-
-    Matrix4x4 inverse_view_projection_matrix(float aspect_ratio) const
-    {
-        return inverse(view_projection_matrix(aspect_ratio));
-    }
-
-    void render_to_main_window();
-
-    void render_to(RenderTexture& render_texture)
-    {
-        static_assert(CameraClearFlag::All == CameraClearFlags{CameraClearFlag::SolidColor, CameraClearFlag::Depth});
-
-        // If the color/depth buffer(s) haven't been rendered to yet, they should be
-        // cleared (so that new buffers have a predictable initial state).Otherwise,
-        // clearing is dictated by `CameraClearFlag`.
-        //
-        // Failing to clear a newly-allocated buffer can lead to weird behavior (e.g.
-        // depth test failing and then ending up with nothing rendering, which then
-        // results in an inordinate amount of wasted fucking time - not that I'd know ;)).
-        bool should_clear_color_buffer =
-            not render_texture.upd_color_buffer().has_been_rendered_to() or
-            (clear_flags() & CameraClearFlag::SolidColor);
-        bool should_clear_depth_stencil_buffer =
-            not render_texture.upd_depth_buffer().has_been_rendered_to() or
-            (clear_flags() & CameraClearFlag::Depth);
-
-        RenderTarget render_target{
-            {
-                RenderTargetColorAttachment{
-                    // attach to render texture's color buffer
-                    .buffer = render_texture.upd_color_buffer(),
-
-                    // load the color buffer based on this camera's clear flags
-                    .load_action = should_clear_color_buffer ? RenderBufferLoadAction::Clear : RenderBufferLoadAction::Load,
-
-                    .store_action = RenderBufferStoreAction::Resolve,
-
-                    // ensure clear color matches colorspace of render texture
-                    .clear_color = is_srgb_encoded(render_texture.color_format()) ?
-                        to_linear_colorspace(background_color()) :
-                        background_color(),
-                },
-            },
-            RenderTargetDepthStencilAttachment{
-                // attach to the render texture's depth buffer
-                .buffer = render_texture.upd_depth_buffer(),
-
-                // load the depth buffer based on this camera's clear flags
-                .load_action = should_clear_depth_stencil_buffer ? RenderBufferLoadAction::Clear : RenderBufferLoadAction::Load,
-
-                .store_action = RenderBufferStoreAction::DontCare,
-            },
-        };
-        render_target.set_device_pixel_ratio(render_texture.device_pixel_ratio());
-
-        render_to(render_target);
-    }
-
-    void render_to(SharedDepthStencilRenderBuffer& shared_depth_stencil_buffer)
-    {
-        static_assert(CameraClearFlag::All == CameraClearFlags{CameraClearFlag::SolidColor, CameraClearFlag::Depth});
-
-        // If the color/depth buffer(s) haven't been rendered to yet, they should be
-        // cleared (so that new buffers have a predictable initial state).Otherwise,
-        // clearing is dictated by `CameraClearFlag`.
-        //
-        // Failing to clear a newly-allocated buffer can lead to weird behavior (e.g.
-        // depth test failing and then ending up with nothing rendering, which then
-        // results in an inordinate amount of wasted fucking time - not that I'd know ;)).
-        bool should_clear_depth_stencil_buffer =
-            not shared_depth_stencil_buffer.has_been_rendered_to() or
-            (clear_flags() & CameraClearFlag::Depth);
-
-        const RenderTarget render_target{
-            RenderTargetDepthStencilAttachment{
-                // attach to the render texture's depth buffer
-                .buffer = shared_depth_stencil_buffer,
-
-                // load the depth buffer based on this camera's clear flags
-                .load_action = should_clear_depth_stencil_buffer ? RenderBufferLoadAction::Clear : RenderBufferLoadAction::Load,
-
-                .store_action = RenderBufferStoreAction::DontCare,
-            },
-        };
-
-        render_to(render_target);
-    }
-
-    void render_to(const RenderTarget&);
+    RenderQueue& upd_render_queue() { return render_queue_; }
 
     friend bool operator==(const Impl&, const Impl&) = default;
 
-private:
-    friend class GraphicsBackend;
-
-    Color background_color_ = Color::clear();
-    CameraProjection camera_projection_ = CameraProjection::Default;
-    float orthographic_size_ = 2.0f;
-    Radians perspective_vertical_field_of_view = 90_deg;
-    CameraClippingPlanes clipping_planes_{1.0f, -1.0f};
-    CameraClearFlags clear_flags_ = CameraClearFlag::Default;
-    std::optional<Rect> maybe_screen_pixel_rect_ = std::nullopt;
-    std::optional<Rect> maybe_scissor_rect_ = std::nullopt;
-    Vector3 position_;
-    Quaternion rotation_ = identity<Quaternion>();
-    std::optional<Matrix4x4> maybe_view_matrix_override_;
-    std::optional<Matrix4x4> maybe_projection_matrix_override_;
+    RenderPassConfig render_pass_config_;
     RenderQueue render_queue_;
 };
-
-
 
 std::ostream& osc::operator<<(std::ostream& o, CameraProjection camera_projection)
 {
@@ -5500,11 +5228,15 @@ std::ostream& osc::operator<<(std::ostream& o, CameraProjection camera_projectio
 
 osc::Camera::Camera() :
     impl_{make_cowv<Impl>()}
-{}
+{
+    set_clipping_planes({1.0f, -1.0f});  // Legacy (V1) behavior.
+}
 
 void osc::Camera::reset()
 {
+    CameraV2::reset();
     impl_.upd()->reset();
+    set_clipping_planes({1.0f, -1.0f});  // Legacy (V1) behavior.
 }
 
 Color osc::Camera::background_color() const
@@ -5517,77 +5249,12 @@ void osc::Camera::set_background_color(const Color& color)
     impl_.upd()->set_background_color(color);
 }
 
-CameraProjection osc::Camera::projection() const
-{
-    return impl_->projection();
-}
-
-void osc::Camera::set_projection(CameraProjection camera_projection)
-{
-    impl_.upd()->set_projection(camera_projection);
-}
-
-float osc::Camera::orthographic_size() const
-{
-    return impl_->orthographic_size();
-}
-
-void osc::Camera::set_orthographic_size(float size)
-{
-    impl_.upd()->set_orthographic_size(size);
-}
-
-Radians osc::Camera::vertical_field_of_view() const
-{
-    return impl_->vertical_field_of_view();
-}
-
-void osc::Camera::set_vertical_field_of_view(Radians vertical_field_of_view)
-{
-    impl_.upd()->set_vertical_field_of_view(vertical_field_of_view);
-}
-
-Radians osc::Camera::horizontal_field_of_view(float aspect_ratio) const
-{
-    return impl_->horizontal_field_of_view(aspect_ratio);
-}
-
-CameraClippingPlanes osc::Camera::clipping_planes() const
-{
-    return impl_->clipping_planes();
-}
-
-void osc::Camera::set_clipping_planes(CameraClippingPlanes planes)
-{
-    impl_.upd()->set_clipping_planes(planes);
-}
-
-float osc::Camera::near_clipping_plane() const
-{
-    return impl_->near_clipping_plane();
-}
-
-void osc::Camera::set_near_clipping_plane(float near_clipping_plane)
-{
-    impl_.upd()->set_near_clipping_plane(near_clipping_plane);
-}
-
-float osc::Camera::far_clipping_plane() const
-{
-    return impl_->far_clipping_plane();
-}
-
-void osc::Camera::set_far_clipping_plane(float far_clipping_plane)
-{
-    impl_.upd()->set_far_clipping_plane(far_clipping_plane);
-}
-
-CameraClearFlags osc::Camera::clear_flags() const
+ClearFlags osc::Camera::clear_flags() const
 {
     return impl_->clear_flags();
 }
 
-void osc::Camera::set_clear_flags(CameraClearFlags clear_flags)
+void osc::Camera::set_clear_flags(ClearFlags clear_flags)
 {
     impl_.upd()->set_clear_flags(clear_flags);
 }
@@ -5612,104 +5279,33 @@ void osc::Camera::set_scissor_rect(std::optional<Rect> maybe_scissor_rect)
     impl_.upd()->set_scissor_rect(maybe_scissor_rect);
 }
 
-Vector3 osc::Camera::position() const
+RenderQueue& osc::Camera::upd_render_queue()
 {
-    return impl_->position();
-}
-
-void osc::Camera::set_position(const Vector3& position)
-{
-    impl_.upd()->set_position(position);
-}
-
-Quaternion osc::Camera::rotation() const
-{
-    return impl_->rotation();
-}
-
-void osc::Camera::set_rotation(const Quaternion& rotation)
-{
-    impl_.upd()->set_rotation(rotation);
-}
-
-Vector3 osc::Camera::direction() const
-{
-    return impl_->direction();
-}
-
-void osc::Camera::set_direction(const Vector3& direction)
-{
-    impl_.upd()->set_direction(direction);
-}
-
-Vector3 osc::Camera::upwards_direction() const
-{
-    return impl_->upwards_direction();
-}
-
-Matrix4x4 osc::Camera::view_matrix() const
-{
-    return impl_->view_matrix();
-}
-
-Matrix4x4 osc::Camera::inverse_view_matrix() const
-{
-    return impl_->inverse_view_matrix();
-}
-
-std::optional<Matrix4x4> osc::Camera::view_matrix_override() const
-{
-    return impl_->view_matrix_override();
-}
-
-void osc::Camera::set_view_matrix_override(std::optional<Matrix4x4> maybe_view_matrix_override)
-{
-    impl_.upd()->set_view_matrix_override(maybe_view_matrix_override);
-}
-
-Matrix4x4 osc::Camera::projection_matrix(float aspect_ratio) const
-{
-    return impl_->projection_matrix(aspect_ratio);
-}
-
-std::optional<Matrix4x4> osc::Camera::projection_matrix_override() const
-{
-    return impl_->projection_matrix_override();
-}
-
-void osc::Camera::set_projection_matrix_override(std::optional<Matrix4x4> maybe_projection_matrix_override)
-{
-    impl_.upd()->set_projection_matrix_override(maybe_projection_matrix_override);
-}
-
-Matrix4x4 osc::Camera::view_projection_matrix(float aspect_ratio) const
-{
-    return impl_->view_projection_matrix(aspect_ratio);
-}
-
-Matrix4x4 osc::Camera::inverse_view_projection_matrix(float aspect_ratio) const
-{
-    return impl_->inverse_view_projection_matrix(aspect_ratio);
+    return impl_.upd()->upd_render_queue();
 }
 
 void osc::Camera::render_to_main_window()
 {
-    impl_.upd()->render_to_main_window();
+    graphics::render_to_main_window(impl_->render_queue_, *this, impl_->render_pass_config_);
+    impl_.upd()->render_queue_.clear();
 }
 
 void osc::Camera::render_to(RenderTexture& render_texture)
 {
-    impl_.upd()->render_to(render_texture);
+    graphics::render_to(render_texture, impl_->render_queue_, *this, impl_->render_pass_config_);
+    impl_.upd()->render_queue_.clear();
 }
 
 void osc::Camera::render_to(const RenderTarget& render_target)
 {
-    impl_.upd()->render_to(render_target);
+    graphics::render_to(render_target, impl_->render_queue_, *this, impl_->render_pass_config_);
+    impl_.upd()->render_queue_.clear();
 }
 
 void osc::Camera::render_to(SharedDepthStencilRenderBuffer& shared_depth_stencil_buffer)
 {
-    impl_.upd()->render_to(shared_depth_stencil_buffer);
+    graphics::render_to(shared_depth_stencil_buffer, impl_->render_queue_, *this, impl_->render_pass_config_);
+    impl_.upd()->render_queue_.clear();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Camera& camera)
@@ -5719,9 +5315,8 @@ std::ostream& osc::operator<<(std::ostream& o, const Camera& camera)
 
 bool osc::operator==(const Camera& lhs, const Camera& rhs)
 {
-    return lhs.impl_ == rhs.impl_ || *lhs.impl_ == *rhs.impl_;
+    return static_cast<const CameraV2&>(lhs) == static_cast<const CameraV2&>(rhs) and (lhs.impl_ == rhs.impl_ or *lhs.impl_ == *rhs.impl_);
 }
-
 
 namespace
 {
@@ -6266,11 +5861,11 @@ namespace osc
 
         static void draw_batched_by_depth_testing(
             RenderPassState&,
-            RenderQueue&,
+            const RenderQueue&,
             RenderQueue::handle_subrange
         );
 
-        struct ViewportGeometry final {
+        struct ActualViewportGeometry final {
             struct Viewport {
                 Vector2 bottom_left;
                 Vector2 pixel_dimensions;
@@ -6282,31 +5877,30 @@ namespace osc
             };
             std::optional<Scissor> scissor;
         };
-        static ViewportGeometry calc_viewport_geometry(
-            Camera::Impl&,
+        static ActualViewportGeometry calc_viewport_geometry(
+            const RenderPassConfig&,
             const RenderTarget* maybe_custom_render_target
         );
         static float setup_top_level_pipeline_state(
-            Camera::Impl&,
+            const RenderPassConfig&,
             const RenderTarget* maybe_custom_render_target
         );
         static std::optional<gl::FrameBuffer> bind_and_clear_render_buffers(
-            Camera::Impl&,
+            const RenderPassConfig&,
             const RenderTarget* maybe_custom_render_target
         );
         static void resolve_render_buffers(
             const RenderTarget& maybe_custom_render_target
         );
-        static void flush_render_queue(
-            Camera::Impl& camera,
-            float aspect_ratio
-        );
         static void teardown_top_level_pipeline_state(
-            Camera::Impl&,
+            const RenderPassConfig&,
             const RenderTarget* maybe_custom_render_target
         );
-        static void render_camera_queue(
-            Camera::Impl& camera,
+
+        static void render(
+            const RenderQueue& render_queue,
+            const CameraV2& camera,
+            const RenderPassConfig& rp_config,
             const RenderTarget* maybe_custom_render_target = nullptr
         );
 
@@ -6362,16 +5956,6 @@ namespace osc
             size_t
         );
     };
-}
-
-void osc::Camera::Impl::render_to_main_window()
-{
-    GraphicsBackend::render_camera_queue(*this);
-}
-
-void osc::Camera::Impl::render_to(const RenderTarget& render_target)
-{
-    GraphicsBackend::render_camera_queue(*this, &render_target);
 }
 
 osc::GraphicsContext::GraphicsContext(SDL_Window& window)
@@ -6479,6 +6063,111 @@ void osc::graphics::draw(const Mesh& mesh, const Matrix4x4& transform, const Mat
 void osc::graphics::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block, size_t submesh_index)
 {
     GraphicsBackend::draw(mesh, transform, material, camera, material_prop_block, submesh_index);
+}
+
+void osc::graphics::render_to_main_window(
+    const RenderQueue& render_queue,
+    const CameraV2& camera,
+    const RenderPassConfig& render_pass_config)
+{
+    GraphicsBackend::render(render_queue, camera, render_pass_config);
+}
+
+void osc::graphics::render_to(
+    RenderTexture& render_texture,
+    const RenderQueue& render_queue,
+    const CameraV2& camera,
+    const RenderPassConfig& render_pass_config)
+{
+    static_assert(ClearFlag::All == ClearFlags{ClearFlag::SolidColor, ClearFlag::Depth});
+
+    // If the color/depth buffer(s) haven't been rendered to yet, they should be
+    // cleared (so that new buffers have a predictable initial state).Otherwise,
+    // clearing is dictated by `CameraClearFlag`.
+    //
+    // Failing to clear a newly-allocated buffer can lead to weird behavior (e.g.
+    // depth test failing and then ending up with nothing rendering, which then
+    // results in an inordinate amount of wasted fucking time - not that I'd know ;)).
+    bool should_clear_color_buffer =
+        not render_texture.upd_color_buffer().has_been_rendered_to() or
+        (render_pass_config.clear_flags & ClearFlag::SolidColor);
+    bool should_clear_depth_stencil_buffer =
+        not render_texture.upd_depth_buffer().has_been_rendered_to() or
+        (render_pass_config.clear_flags & ClearFlag::Depth);
+
+    RenderTarget render_target{
+        {
+            RenderTargetColorAttachment{
+                // attach to render texture's color buffer
+                .buffer = render_texture.upd_color_buffer(),
+
+                // load the color buffer based on this camera's clear flags
+                .load_action = should_clear_color_buffer ? RenderBufferLoadAction::Clear : RenderBufferLoadAction::Load,
+
+                .store_action = RenderBufferStoreAction::Resolve,
+
+                // ensure clear color matches colorspace of render texture
+                .clear_color = is_srgb_encoded(render_texture.color_format()) ?
+                    to_linear_colorspace(render_pass_config.clear_color) :
+                    render_pass_config.clear_color,
+            },
+        },
+        RenderTargetDepthStencilAttachment{
+            // attach to the render texture's depth buffer
+            .buffer = render_texture.upd_depth_buffer(),
+
+            // load the depth buffer based on this camera's clear flags
+            .load_action = should_clear_depth_stencil_buffer ? RenderBufferLoadAction::Clear : RenderBufferLoadAction::Load,
+
+            .store_action = RenderBufferStoreAction::DontCare,
+        },
+    };
+    render_target.set_device_pixel_ratio(render_texture.device_pixel_ratio());
+
+    GraphicsBackend::render(render_queue, camera, render_pass_config, &render_target);
+}
+
+void osc::graphics::render_to(
+    const RenderTarget& render_target,
+    const RenderQueue& render_queue,
+    const CameraV2& camera_v2,
+    const RenderPassConfig& render_pass_config)
+{
+    GraphicsBackend::render(render_queue, camera_v2, render_pass_config, &render_target);
+}
+
+void osc::graphics::render_to(
+    SharedDepthStencilRenderBuffer& shared_depth_stencil_render_buffer,
+    const RenderQueue& render_queue,
+    const CameraV2& camera_v2,
+    const RenderPassConfig& render_pass_config)
+{
+    static_assert(ClearFlag::All == ClearFlags{ClearFlag::SolidColor, ClearFlag::Depth});
+
+    // If the color/depth buffer(s) haven't been rendered to yet, they should be
+    // cleared (so that new buffers have a predictable initial state).Otherwise,
+    // clearing is dictated by `CameraClearFlag`.
+    //
+    // Failing to clear a newly-allocated buffer can lead to weird behavior (e.g.
+    // depth test failing and then ending up with nothing rendering, which then
+    // results in an inordinate amount of wasted fucking time - not that I'd know ;)).
+    bool should_clear_depth_stencil_buffer =
+        not shared_depth_stencil_render_buffer.has_been_rendered_to() or
+        (render_pass_config.clear_flags & ClearFlag::Depth);
+
+    const RenderTarget render_target{
+        RenderTargetDepthStencilAttachment{
+            // attach to the render texture's depth buffer
+            .buffer = shared_depth_stencil_render_buffer,
+
+            // load the depth buffer based on this camera's clear flags
+            .load_action = should_clear_depth_stencil_buffer ? RenderBufferLoadAction::Clear : RenderBufferLoadAction::Load,
+
+            .store_action = RenderBufferStoreAction::DontCare,
+        },
+    };
+
+    GraphicsBackend::render(render_queue, camera_v2, render_pass_config, &render_target);
 }
 
 void osc::graphics::blit(const Texture2D& source, RenderTexture& destination)
@@ -6680,7 +6369,7 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
     OSC_ASSERT(not handle_subrange.empty());
     auto& mesh_impl = const_cast<Mesh::Impl&>(*render_queue.mesh(handle_subrange.front()).impl_);
     const Shader::Impl& shader_impl = *render_queue.material(handle_subrange.front()).impl_->shader_.impl_;
-    const MaybeIndex maybe_submesh_index = render_queue.maybe_submesh_index(handle_subrange.front());
+    const RenderQueue::submesh_index_type maybe_submesh_index = render_queue.maybe_submesh_index(handle_subrange.front());
 
     gl::bind_vertex_array(mesh_impl.upd_vertex_array());
 
@@ -7007,7 +6696,7 @@ void osc::GraphicsBackend::draw_batched_by_opaqueness(
 
 void osc::GraphicsBackend::draw_batched_by_depth_testing(
     RenderPassState& render_pass_state,
-    RenderQueue& render_queue,
+    const RenderQueue& render_queue,
     RenderQueue::handle_subrange handle_subrange)
 {
     OSC_PERF("GraphicsBackend::draw_backed_by_depth_testing");
@@ -7024,7 +6713,7 @@ void osc::GraphicsBackend::draw_batched_by_depth_testing(
         if (depth_tested_end != batch_iterator) {
             // there are >0 depth-tested elements that are eligible for reordering
 
-            sort_render_queue(render_queue, batch_iterator, depth_tested_end, render_pass_state.camera_pos);
+            sort_render_queue(render_queue, {batch_iterator, depth_tested_end}, render_pass_state.camera_pos);
             draw_batched_by_opaqueness(render_pass_state, render_queue, {batch_iterator, depth_tested_end});
 
             batch_iterator = depth_tested_end;
@@ -7049,42 +6738,20 @@ void osc::GraphicsBackend::draw_batched_by_depth_testing(
     }
 }
 
-void osc::GraphicsBackend::flush_render_queue(Camera::Impl& camera, float aspect_ratio)
-{
-    OSC_PERF("GraphicsBackend::flush_render_queue");
-
-    RenderQueue& render_queue = camera.render_queue_;
-    if (render_queue.empty()) {
-        return;  // Nothing to flush
-    }
-
-    // Construct a `RenderPassState`, shared by all sub-passes (drawcalls)
-    RenderPassState render_pass_state{
-        .camera_pos = camera.position(),
-        .view_matrix = camera.view_matrix(),
-        .projection_matrix = camera.projection_matrix(aspect_ratio),
-    };
-
-    draw_batched_by_depth_testing(render_pass_state, render_queue, render_queue.handles());
-
-    // `RenderQueue` flushed: clear it
-    render_queue.clear();
-}
-
-osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geometry(
-    Camera::Impl& camera,
+osc::GraphicsBackend::ActualViewportGeometry osc::GraphicsBackend::calc_viewport_geometry(
+    const RenderPassConfig& rp_config,
     const RenderTarget* maybe_custom_render_target)
 {
-    ViewportGeometry rv;
+    ActualViewportGeometry rv;
     const float device_pixel_ratio = maybe_custom_render_target ?
         maybe_custom_render_target->device_pixel_ratio() :
         App::get().main_window_device_pixel_ratio();
 
     // handle viewport (which should be in raw pixels for low-level graphics API calls)
-    if (auto pixel_rect = camera.pixel_rect()) {
+    if (rp_config.viewport_rect) {
         rv.viewport = {
-            .bottom_left = device_pixel_ratio * pixel_rect->ypu_bottom_left(),
-            .pixel_dimensions = device_pixel_ratio * pixel_rect->dimensions()
+            .bottom_left = device_pixel_ratio * rp_config.viewport_rect->ypu_bottom_left(),
+            .pixel_dimensions = device_pixel_ratio * rp_config.viewport_rect->dimensions()
         };
     }
     else if (maybe_custom_render_target) {
@@ -7100,10 +6767,10 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
         };
     }
 
-    if (camera.maybe_scissor_rect_) {
+    if (rp_config.scissor_rect) {
         rv.scissor = {
-            .bottom_left = device_pixel_ratio * camera.maybe_scissor_rect_->ypu_bottom_left(),
-            .pixel_dimensions = device_pixel_ratio * camera.maybe_scissor_rect_->dimensions(),
+            .bottom_left = device_pixel_ratio * rp_config.scissor_rect->ypu_bottom_left(),
+            .pixel_dimensions = device_pixel_ratio * rp_config.scissor_rect->dimensions(),
         };
     }
 
@@ -7111,10 +6778,10 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
 }
 
 float osc::GraphicsBackend::setup_top_level_pipeline_state(
-    Camera::Impl& camera,
+    const RenderPassConfig& rp_config,
     const RenderTarget* maybe_custom_render_target)
 {
-    const auto viewport_geom = calc_viewport_geometry(camera, maybe_custom_render_target);
+    const auto viewport_geom = calc_viewport_geometry(rp_config, maybe_custom_render_target);
 
     gl::viewport(
         static_cast<GLint>(viewport_geom.viewport.bottom_left.x()),
@@ -7140,10 +6807,10 @@ float osc::GraphicsBackend::setup_top_level_pipeline_state(
 }
 
 void osc::GraphicsBackend::teardown_top_level_pipeline_state(
-    Camera::Impl& camera,
+    const RenderPassConfig& rp_config,
     const RenderTarget*)
 {
-    if (camera.maybe_scissor_rect_) {
+    if (rp_config.scissor_rect) {
         gl::disable(GL_SCISSOR_TEST);
     }
     gl::bind_framebuffer(GL_FRAMEBUFFER, gl::window_framebuffer);
@@ -7151,7 +6818,7 @@ void osc::GraphicsBackend::teardown_top_level_pipeline_state(
 }
 
 std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffers(
-    Camera::Impl& camera,
+    const RenderPassConfig& rp_config,
     const RenderTarget* maybe_custom_render_target)
 {
     // if necessary, create pass-specific FBO
@@ -7283,16 +6950,16 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
         gl::bind_framebuffer(GL_FRAMEBUFFER, gl::window_framebuffer);
 
         // we're rendering to the window
-        if (camera.clear_flags_ != CameraClearFlag::None) {
+        if (rp_config.clear_flags != ClearFlag::None) {
 
             // clear window
-            const GLenum clear_flags = camera.clear_flags_ & CameraClearFlag::SolidColor ?
+            const GLenum clear_flags = rp_config.clear_flags & ClearFlag::SolidColor ?
                 GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT :
                 GL_DEPTH_BUFFER_BIT;
 
             // clear color is in sRGB, but the window's framebuffer is sRGB-corrected
             // and assume that clear colors are in linear space
-            const Color linear_color = to_linear_colorspace(camera.background_color_);
+            const Color linear_color = to_linear_colorspace(rp_config.clear_color);
             gl::clear_color(
                 linear_color.r,
                 linear_color.g,
@@ -7434,8 +7101,10 @@ void osc::GraphicsBackend::resolve_render_buffers(
     }
 }
 
-void osc::GraphicsBackend::render_camera_queue(
-    Camera::Impl& camera,
+void osc::GraphicsBackend::render(
+    const RenderQueue& render_queue,
+    const CameraV2& camera,
+    const RenderPassConfig& rp_config,
     const RenderTarget* maybe_custom_render_target)
 {
     OSC_PERF("GraphicsBackend::render_camera_queue");
@@ -7443,16 +7112,29 @@ void osc::GraphicsBackend::render_camera_queue(
     if (maybe_custom_render_target) {
         maybe_custom_render_target->validate_or_throw();
     }
+    if (render_queue.empty()) {
+        return;  // Nothing to render.
+    }
 
+    // Setup top-level pipeline state and calculate output aspect ratio.
     const float output_aspect_ratio = setup_top_level_pipeline_state(
-        camera,
+        rp_config,
         maybe_custom_render_target
     );
 
+    // Construct a `RenderPassState`, shared by all sub-passes (drawcalls)
+    RenderPassState render_pass_state{
+        .camera_pos = camera.position(),
+        .view_matrix = camera.view_matrix(),
+        .projection_matrix = camera.projection_matrix(output_aspect_ratio),
+    };
+
+    // Copy `RenderQueue` handles so that they can be reordered.
+    std::vector<RenderQueue::handle_type> handles_copy = render_queue.handles();
     {
         const std::optional<gl::FrameBuffer> maybe_tmp_fbo_KEEPALIVE =
-            bind_and_clear_render_buffers(camera, maybe_custom_render_target);
-        flush_render_queue(camera, output_aspect_ratio);
+            bind_and_clear_render_buffers(rp_config, maybe_custom_render_target);
+        draw_batched_by_depth_testing(render_pass_state, render_queue, handles_copy);
     }
 
     if (maybe_custom_render_target) {
@@ -7460,54 +7142,54 @@ void osc::GraphicsBackend::render_camera_queue(
     }
 
     teardown_top_level_pipeline_state(
-        camera,
+        rp_config,
         maybe_custom_render_target
     );
 }
 
 void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera)
 {
-    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material);
+    camera.upd_render_queue().emplace(mesh, transform, material);
 }
 void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block)
 {
-    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, material_prop_block);
+    camera.upd_render_queue().emplace(mesh, transform, material, material_prop_block);
 }
 void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, size_t submesh_index)
 {
     if (submesh_index >= mesh.num_submesh_descriptors()) {
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
-    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, submesh_index);
+    camera.upd_render_queue().emplace(mesh, transform, material, submesh_index);
 }
 void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block, size_t submesh_index)
 {
     if (submesh_index >= mesh.num_submesh_descriptors()) {
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
-    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, material_prop_block, submesh_index);
+    camera.upd_render_queue().emplace(mesh, transform, material, material_prop_block, submesh_index);
 }
 void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera)
 {
-    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material);
+    camera.upd_render_queue().emplace(mesh, transform, material);
 }
 void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block)
 {
-    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, material_prop_block);
+    camera.upd_render_queue().emplace(mesh, transform, material, material_prop_block);
 }
 void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, size_t submesh_index)
 {
     if (submesh_index >= mesh.num_submesh_descriptors()) {
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
-    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, submesh_index);
+    camera.upd_render_queue().emplace(mesh, transform, material, submesh_index);
 }
 void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block, size_t submesh_index)
 {
     if (submesh_index >= mesh.num_submesh_descriptors()) {
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
-    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, material_prop_block, submesh_index);
+    camera.upd_render_queue().emplace(mesh, transform, material, material_prop_block, submesh_index);
 }
 
 void osc::GraphicsBackend::blit(
@@ -7548,7 +7230,7 @@ void osc::GraphicsBackend::blit_to_main_window(
     camera.set_pixel_rect(destination_screen_rect);
     camera.set_projection_matrix_override(identity<Matrix4x4>());
     camera.set_view_matrix_override(identity<Matrix4x4>());
-    camera.set_clear_flags(CameraClearFlag::None);
+    camera.set_clear_flags(ClearFlag::None);
 
     Material material_copy{material};
     material_copy.set("uTexture", source);
@@ -7568,7 +7250,7 @@ void osc::GraphicsBackend::blit_to_main_window(
     camera.set_pixel_rect(rect);
     camera.set_projection_matrix_override(identity<Matrix4x4>());
     camera.set_view_matrix_override(identity<Matrix4x4>());
-    camera.set_clear_flags(CameraClearFlag::None);
+    camera.set_clear_flags(ClearFlag::None);
 
     Material material_copy{g_graphics_context_impl->quad_material()};
     material_copy.set("uTexture", source);

@@ -1,9 +1,8 @@
 #include "assertions.h"
 
-#include <format>
-#include <stdexcept>
+#include <liboscar/utilities/exception_helpers.h>
+
 #include <string_view>
-#include <utility>
 
 void osc::detail::on_assertion_failure(
     std::string_view failing_code,
@@ -11,11 +10,11 @@ void osc::detail::on_assertion_failure(
     std::string_view file_name,
     unsigned int file_line)
 {
-    auto msg = std::format("{}:{}:{}: OSC_ASSERT({}) failed",
+    throw formatted_runtime_error(
+        "{}:{}:{}: OSC_ASSERT({}) failed",
         file_name,
         function_name,
         file_line,
         failing_code
     );
-    throw std::runtime_error{msg};
 }

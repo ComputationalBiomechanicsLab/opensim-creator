@@ -6,6 +6,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release] - YYYY/MM/DD
 
+- OpenSim's `Tools/` are no longer part of the build (unused)
+- The `graphics.Camera` class now auto-normalizes the `direction` and
+  `up` properties when they are set from Python code.
+
 
 ## 0.0.7 - 2026/07/15
 

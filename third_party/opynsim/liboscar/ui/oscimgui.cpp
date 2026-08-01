@@ -1,7 +1,7 @@
 #include "oscimgui.h"
 
 #include <liboscar/graphics/camera.h>
-#include <liboscar/graphics/camera_clear_flags.h>
+#include <liboscar/graphics/clear_flags.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/color_space.h>
 #include <liboscar/graphics/cull_mode.h>
@@ -517,7 +517,7 @@ namespace
         const Vector2 maxflip{clip_max.x(), (draw_data.DisplaySize.y) - clip_min.y()};
 
         // setup clipping rectangle
-        bd.camera.set_clear_flags(CameraClearFlag::None);
+        bd.camera.set_clear_flags(ClearFlag::None);
         bd.camera.set_scissor_rect(Rect::from_corners(minflip, maxflip));
 
         // setup sub-mesh description
@@ -3036,10 +3036,10 @@ bool osc::ui::update_polar_camera_from_all_inputs(
     return mouse_handled or keyboard_handled;
 }
 
-void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
+void osc::ui::update_camera_from_all_inputs(CameraV2& camera, EulerAngles& eulers)
 {
     const Vector3 front = camera.direction();
-    const Vector3 up = camera.upwards_direction();
+    const Vector3 up = camera.up();
     const Vector3 right = cross(front, up);
     const Vector2 mouseDelta = get_backend_data().mouse_delta_this_frame;  // Track actual physical movement of the mouse (relevant in relative mode).
 

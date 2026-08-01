@@ -1,6 +1,5 @@
 #pragma once
 
-#include <liboscar/graphics/detail/maybe_index.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/material_property_block.h>
 #include <liboscar/graphics/mesh.h>
@@ -12,15 +11,17 @@
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/transform_functions.h>
 #include <liboscar/maths/vector.h>
+#include <liboscar/utilities/value_or_sentinel.h>
 
 #include <cstddef>
 #include <iterator>
+#include <limits>
 #include <optional>
 #include <ranges>
 #include <type_traits>
 #include <vector>
 
-namespace osc::detail
+namespace osc
 {
     // Represents what's queued up whenever a caller calls `graphics::draw`
     class RenderQueue final {
@@ -31,6 +32,7 @@ namespace osc::detail
         using handle_subrange = std::ranges::subrange<handle_iterator>;
         using handle_const_subrange = std::ranges::subrange<handle_const_iterator>;
         using size_type = size_t;
+        using submesh_index_type = ValueOrSentinel<size_t, std::numeric_limits<size_t>::max()>;
 
         friend bool operator==(const RenderQueue&, const RenderQueue&) = default;
 
@@ -71,7 +73,7 @@ namespace osc::detail
             materials_.push_back(material);
             material_property_blocks_.push_back(blank_property_block_);
             meshes_.push_back(mesh);
-            maybe_submesh_indices_.emplace_back(std::nullopt);
+            maybe_submesh_indices_.emplace_back();
             model_matrices_.push_back(transform);
             return handles_.emplace_back(handles_.size());
         }
@@ -84,7 +86,7 @@ namespace osc::detail
             materials_.push_back(material);
             material_property_blocks_.push_back(material_prop_block);
             meshes_.push_back(mesh);
-            maybe_submesh_indices_.emplace_back(std::nullopt);
+            maybe_submesh_indices_.emplace_back();
             model_matrices_.push_back(transform);
             return handles_.emplace_back(handles_.size());
         }
@@ -137,8 +139,8 @@ namespace osc::detail
         const Mesh& mesh(handle_type id) const { return meshes_[id]; }
         Mesh& mesh(handle_type id) { return meshes_[id]; }
 
-        const MaybeIndex& maybe_submesh_index(handle_type id) const { return maybe_submesh_indices_[id]; }
-        MaybeIndex& maybe_submesh_index(handle_type id) { return maybe_submesh_indices_[id]; }
+        const submesh_index_type& maybe_submesh_index(handle_type id) const { return maybe_submesh_indices_[id]; }
+        submesh_index_type& maybe_submesh_index(handle_type id) { return maybe_submesh_indices_[id]; }
 
         const Matrix4x4& model_matrix(handle_type id) const { return model_matrices_[id]; }
         Matrix4x4& model_matrix(handle_type id) { return model_matrices_[id]; }
@@ -167,7 +169,7 @@ namespace osc::detail
         std::vector<Material> materials_;
         std::vector<MaterialPropertyBlock> material_property_blocks_;
         std::vector<Mesh> meshes_;
-        std::vector<MaybeIndex> maybe_submesh_indices_;
+        std::vector<submesh_index_type> maybe_submesh_indices_;
         std::vector<Matrix4x4> model_matrices_;
         std::vector<handle_type> handles_;
     };
