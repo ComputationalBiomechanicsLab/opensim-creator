@@ -4,15 +4,18 @@
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/graphics/geometries/plane_geometry.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>
+#include <liboscar/graphics/camera_v2.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/render_texture.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/matrix_functions.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
-#include <liboscar/ui/mouse_capturing_camera.h>
+#include <liboscar/ui/mouse_capturing_camera_v2.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/perf_panel.h>
 #include <liboscar/ui/tabs/tab_private.h>
@@ -44,13 +47,12 @@ namespace
     constexpr int c_num_cols = 7;
     constexpr float c_cell_spacing = 2.5f;
 
-    MouseCapturingCamera create_camera()
+    MouseCapturingCameraV2 create_camera()
     {
-        MouseCapturingCamera rv;
+        MouseCapturingCameraV2 rv;
         rv.set_position({0.0f, 0.0f, 20.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
-        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
@@ -84,9 +86,10 @@ namespace
             calc_cubemap_view_proj_matrices(projection_matrix, Vector3{})
         );
 
-        Camera camera;
-        graphics::draw(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material, camera);
-        camera.render_to(cubemap_render_target);
+        CameraV2 camera;
+        RenderQueue render_queue;
+        render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+        graphics::render_to(cubemap_render_target, render_queue, camera);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
         return cubemap_render_target;
@@ -113,9 +116,10 @@ namespace
             calc_cubemap_view_proj_matrices(capture_projection, Vector3{})
         );
 
-        Camera camera;
-        graphics::draw(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material, camera);
-        camera.render_to(irradiance_cubemap);
+        CameraV2 camera;
+        RenderQueue render_queue;
+        render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+        graphics::render_to(irradiance_cubemap, render_queue, camera);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
         return irradiance_cubemap;
@@ -142,8 +146,6 @@ namespace
         material.set("uEnvironmentMap", environment_map);
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
 
-        Camera camera;
-
         Cubemap rv{level_zero_width, TextureFormat::RGBFloat};  // TODO: add support for TextureFormat:::RGFloat16
         rv.set_wrap_mode(TextureWrapMode::Clamp);
         rv.set_filter_mode(TextureFilterMode::Mipmap);
@@ -156,6 +158,8 @@ namespace
 
         // render prefilter map such that each supported level of roughness maps into one
         // LOD of the cubemap's mipmaps
+        CameraV2 camera;
+        RenderQueue render_queue;
         for (size_t mip = 0; mip <= max_mipmap_level; ++mip) {
             const size_t mip_width = level_zero_width >> mip;
             capture_render_texture.set_pixel_dimensions({static_cast<int>(mip_width), static_cast<int>(mip_width)});
@@ -163,8 +167,9 @@ namespace
             const float mip_roughness = static_cast<float>(mip)/static_cast<float>(max_mipmap_level);
             material.set("uRoughness", mip_roughness);
 
-            graphics::draw(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material, camera);
-            camera.render_to(capture_render_texture);
+            render_queue.clear();
+            render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+            graphics::render_to(capture_render_texture, render_queue, camera);
             graphics::copy_texture(capture_render_texture, rv, mip);
         }
 
@@ -184,12 +189,13 @@ namespace
         }};
 
         // TODO: graphics::blit with material
-        Camera camera;
+        CameraV2 camera;
         camera.set_projection_matrix_override(identity<Matrix4x4>());
         camera.set_view_matrix_override(identity<Matrix4x4>());
 
-        graphics::draw(PlaneGeometry{{.dimensions = Vector2{2.0f}}}, identity<Transform>(), material, camera);
-        camera.render_to(render_texture);
+        RenderQueue render_queue;
+        render_queue.emplace(PlaneGeometry{{.dimensions = Vector2{2.0f}}}, identity<Transform>(), material);
+        graphics::render_to(render_texture, render_queue, camera);
 
         Texture2D rv{
             {512, 512},
@@ -267,10 +273,12 @@ private:
         pbr_material_.set("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
         pbr_material_.set("uBRDFLut", brdf_lookup_);
 
+        render_queue_.clear();
         draw_spheres();
         draw_lights();
-
-        camera_.render_to(output_render_texture_);
+        graphics::render_to(output_render_texture_, render_queue_, camera_, {
+            .clear_color = {0.1f, 1.0f},
+        });
     }
 
     void draw_spheres()
@@ -287,7 +295,7 @@ private:
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
 
-                graphics::draw(sphere_mesh_, {.translation = {x, y, 0.0f}}, pbr_material_, camera_);
+                render_queue_.emplace(sphere_mesh_, {.translation = {x, y, 0.0f}}, pbr_material_);
             }
         }
     }
@@ -297,11 +305,10 @@ private:
         pbr_material_.set("uAlbedoColor", Vector3{1.0f, 1.0f, 1.0f});
 
         for (const Vector3& pos : c_light_positions) {
-            graphics::draw(
+            render_queue_.emplace(
                 sphere_mesh_,
                 {.scale = Vector3{0.5f}, .translation = pos},
-                pbr_material_,
-                camera_
+                pbr_material_
             );
         }
     }
@@ -310,10 +317,12 @@ private:
     {
         background_material_.set("uEnvironmentMap", projected_map_);
         background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
-        graphics::draw(cube_mesh_, identity<Transform>(), background_material_, camera_);
-        camera_.set_clear_flags(ClearFlag::None);
-        camera_.render_to(output_render_texture_);
-        camera_.set_clear_flags(ClearFlag::Default);
+
+        render_queue_.clear();
+        render_queue_.emplace(cube_mesh_, identity<Transform>(), background_material_);
+        graphics::render_to(output_render_texture_, render_queue_, camera_, {
+            .clear_flags = ClearFlag::None,
+        });
     }
 
     void draw_2d_ui()
@@ -328,11 +337,6 @@ private:
     }
 
     ResourceLoader loader_ = App::resource_loader();
-
-    Texture2D texture_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
-        ColorSpace::Linear
-    );
 
     RenderTexture projected_map_ = load_equirectangular_hdr_texture_into_cubemap(loader_);
     RenderTexture irradiance_map_ = create_irradiance_cubemap(loader_, projected_map_);
@@ -349,7 +353,8 @@ private:
     Material pbr_material_ = create_material(loader_);
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
 
-    MouseCapturingCamera camera_ = create_camera();
+    MouseCapturingCameraV2 camera_ = create_camera();
+    RenderQueue render_queue_;
 
     PerfPanel perf_panel_{&owner()};
 };

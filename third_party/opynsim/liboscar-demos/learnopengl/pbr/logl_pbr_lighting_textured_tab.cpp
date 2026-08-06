@@ -4,10 +4,12 @@
 #include <liboscar/graphics/geometries/sphere_geometry.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
-#include <liboscar/ui/mouse_capturing_camera.h>
+#include <liboscar/ui/mouse_capturing_camera_v2.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/perf_panel.h>
 #include <liboscar/ui/tabs/tab_private.h>
@@ -38,13 +40,12 @@ namespace
     constexpr int c_num_cols = 7;
     constexpr float c_cell_spacing = 2.5f;
 
-    MouseCapturingCamera create_camera()
+    MouseCapturingCameraV2 create_camera()
     {
-        MouseCapturingCamera rv;
+        MouseCapturingCameraV2 rv;
         rv.set_position({0.0f, 0.0f, 20.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
-        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
@@ -124,14 +125,16 @@ public:
 private:
     void draw_3d_render()
     {
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-
         pbr_material_.set("uCameraWorldPosition", camera_.position());
 
+        render_queue_.clear();
         draw_spheres();
         draw_lights();
 
-        camera_.render_to_main_window();
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            .clear_color = {0.1f, 1.0f},
+        });
     }
 
     void draw_spheres()
@@ -140,7 +143,7 @@ private:
             for (int col = 0; col < c_num_cols; ++col) {
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
-                graphics::draw(sphere_mesh_, {.translation = {x, y, 0.0f}}, pbr_material_, camera_);
+                render_queue_.emplace(sphere_mesh_, {.translation = {x, y, 0.0f}}, pbr_material_);
             }
         }
     }
@@ -148,12 +151,13 @@ private:
     void draw_lights()
     {
         for (const Vector3& light_position : c_light_positions) {
-            graphics::draw(sphere_mesh_, {.scale = Vector3{0.5f}, .translation = light_position}, pbr_material_, camera_);
+            render_queue_.emplace(sphere_mesh_, {.scale = Vector3{0.5f}, .translation = light_position}, pbr_material_);
         }
     }
 
     ResourceLoader loader_ = App::resource_loader();
-    MouseCapturingCamera camera_ = create_camera();
+    MouseCapturingCameraV2 camera_ = create_camera();
+    RenderQueue render_queue_;
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
     Material pbr_material_ = create_material(loader_);
     PerfPanel perf_panel_{&owner()};

@@ -4,11 +4,13 @@
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/maths/quaternion_functions.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
-#include <liboscar/ui/mouse_capturing_camera.h>
+#include <liboscar/ui/mouse_capturing_camera_v2.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/log_viewer_panel.h>
 #include <liboscar/ui/panels/perf_panel.h>
@@ -50,13 +52,12 @@ namespace
     constexpr auto c_point_light_linears = std::to_array<float>({0.09f, 0.09f, 0.09f, 0.09f});
     constexpr auto c_point_light_quadratics = std::to_array<float>({0.032f, 0.032f, 0.032f, 0.032f});
 
-    MouseCapturingCamera create_camera()
+    MouseCapturingCameraV2 create_camera()
     {
-        MouseCapturingCamera rv;
+        MouseCapturingCameraV2 rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
-        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
@@ -94,13 +95,13 @@ namespace
         rv.set("uSpotLightCutoff", cos(45_deg));
         rv.set("uSpotLightOuterCutoff", cos(15_deg));
 
-        rv.set_array("uPointLightPos", c_point_light_positions);
-        rv.set_array("uPointLightConstant", c_point_light_constants);
-        rv.set_array("uPointLightLinear", c_point_light_linears);
+        rv.set_array("uPointLightPos",       c_point_light_positions);
+        rv.set_array("uPointLightConstant",  c_point_light_constants);
+        rv.set_array("uPointLightLinear",    c_point_light_linears);
         rv.set_array("uPointLightQuadratic", c_point_light_quadratics);
-        rv.set_array("uPointLightAmbient", c_point_light_ambients);
-        rv.set_array("uPointLightDiffuse", c_point_light_diffuses);
-        rv.set_array("uPointLightSpecular", c_point_light_speculars);
+        rv.set_array("uPointLightAmbient",   c_point_light_ambients);
+        rv.set_array("uPointLightDiffuse",   c_point_light_diffuses);
+        rv.set_array("uPointLightSpecular",  c_point_light_speculars);
 
         return rv;
     }
@@ -147,10 +148,9 @@ public:
     void on_draw()
     {
         camera_.on_draw();
+        render_queue_.clear();
 
-        // clear screen and ensure camera has correct pixel rect
-
-        // setup per-frame material vals
+        // setup per-frame material values
         multiple_lights_material_.set("uViewPos", camera_.position());
         multiple_lights_material_.set("uMaterialShininess", material_shininess_);
         multiple_lights_material_.set("uSpotLightPosition", camera_.position());
@@ -162,22 +162,27 @@ public:
             const Vector3& pos = c_cube_positions[i];
             const auto angle = i++ * 20_deg;
 
-            graphics::draw(
+            render_queue_.emplace(
                 mesh_,
                 {.rotation = angle_axis(angle, axis), .translation = pos},
-                multiple_lights_material_,
-                camera_
+                multiple_lights_material_
             );
         }
 
         // render lamps
         for (const Vector3& light_position : c_point_light_positions) {
-            graphics::draw(mesh_, {.scale = Vector3{0.2f}, .translation = light_position}, light_cube_material_, camera_);
+            render_queue_.emplace(
+                mesh_,
+                {.scale = Vector3{0.2f}, .translation = light_position},
+                light_cube_material_
+            );
         }
 
         // render to output (window)
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-        camera_.render_to_main_window();
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            .clear_color = {0.1f, 1.0f},
+        });
 
         // render auxiliary UI
         ui::begin_panel("controls");
@@ -195,7 +200,8 @@ private:
     Material light_cube_material_ = create_light_cube_material(loader_);
     Mesh mesh_ = BoxGeometry{}.mesh();
 
-    MouseCapturingCamera camera_ = create_camera();
+    MouseCapturingCameraV2 camera_ = create_camera();
+    RenderQueue render_queue_;
 
     float material_shininess_ = 64.0f;
 

@@ -4,10 +4,11 @@
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
-#include <liboscar/ui/mouse_capturing_camera.h>
+#include <liboscar/ui/mouse_capturing_camera_v2.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
 
@@ -18,9 +19,9 @@ using namespace osc;
 
 namespace
 {
-    MouseCapturingCamera create_camera()
+    MouseCapturingCameraV2 create_camera()
     {
-        MouseCapturingCamera rv;
+        MouseCapturingCameraV2 rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
@@ -77,9 +78,7 @@ public:
     void on_draw()
     {
         camera_.on_draw();
-
-        // clear screen and ensure camera has correct pixel rect
-        App::upd().main_window_clear(Color::dark_grey());
+        render_queue_.clear();
 
         // draw cube
         lighting_maps_material_.set("uViewPos", camera_.position());
@@ -88,15 +87,16 @@ public:
         lighting_maps_material_.set("uLightDiffuse", light_diffuse_);
         lighting_maps_material_.set("uLightSpecular", light_specular_);
         lighting_maps_material_.set("uMaterialShininess", material_shininess_);
-        graphics::draw(mesh_, identity<Transform>(), lighting_maps_material_, camera_);
+        render_queue_.emplace(mesh_, identity<Transform>(), lighting_maps_material_);
 
         // draw lamp
         light_cube_material_.set("uLightColor", Color::white());
-        graphics::draw(mesh_, light_transform_, light_cube_material_, camera_);
+        render_queue_.emplace(mesh_, light_transform_, light_cube_material_);
 
         // render 3D scene
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-        camera_.render_to_main_window();
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+        });
 
         // render 2D UI
         ui::begin_panel("controls");
@@ -116,7 +116,8 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/LightCube.frag"),
     }};
     Mesh mesh_ = BoxGeometry{}.mesh();
-    MouseCapturingCamera camera_ = create_camera();
+    MouseCapturingCameraV2 camera_ = create_camera();
+    RenderQueue render_queue_;
 
     Transform light_transform_ = {
         .scale = Vector3{0.2f},

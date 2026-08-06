@@ -367,7 +367,7 @@ BVH osc::create_triangle_bvh(const Mesh& mesh)
     return rv;
 }
 
-FrustumPlanes osc::calc_frustum_planes(const Camera& camera, float aspect_ratio)
+FrustumPlanes osc::calc_frustum_planes(const CameraV2& camera, float aspect_ratio)
 {
     const Radians fov_y = camera.vertical_field_of_view();
     const auto [z_near, z_far] = camera.clipping_planes();

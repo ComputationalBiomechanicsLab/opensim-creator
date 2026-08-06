@@ -3,6 +3,8 @@
 #include <liboscar/formats/image.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/render_texture.h>
 #include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
@@ -13,7 +15,7 @@
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
-#include <liboscar/ui/mouse_capturing_camera.h>
+#include <liboscar/ui/mouse_capturing_camera_v2.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/perf_panel.h>
 #include <liboscar/ui/tabs/tab_private.h>
@@ -41,13 +43,12 @@ namespace
         {150.0f, 150.0f, 150.0f},
     });
 
-    MouseCapturingCamera create_camera()
+    MouseCapturingCameraV2 create_camera()
     {
-        MouseCapturingCamera rv;
+        MouseCapturingCameraV2 rv;
         rv.set_position({0.0f, 0.0f, 20.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
-        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
@@ -78,9 +79,10 @@ namespace
         material.set("uEquirectangularMap", hdr_texture);
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vector3{}));
 
-        Camera camera;
-        graphics::draw(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material, camera);
-        camera.render_to(cubemap_render_target);
+        CameraV2 camera;
+        RenderQueue render_queue;
+        render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+        graphics::render_to(cubemap_render_target, render_queue, camera);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
         return cubemap_render_target;
@@ -104,9 +106,10 @@ namespace
         material.set("uEnvironmentMap", skybox);
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(captureProjection, Vector3{}));
 
-        Camera camera;
-        graphics::draw(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material, camera);
-        camera.render_to(irradiance_cubemap);
+        CameraV2 camera;
+        RenderQueue render_queue;
+        render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+        graphics::render_to(irradiance_cubemap, render_queue, camera);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
         return irradiance_cubemap;
@@ -133,8 +136,6 @@ namespace
         material.set("uEnvironmentMap", environment_map);
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
 
-        Camera camera;
-
         Cubemap rv{level_zero_width, TextureFormat::RGBAFloat};
         rv.set_wrap_mode(TextureWrapMode::Clamp);
         rv.set_filter_mode(TextureFilterMode::Mipmap);
@@ -145,6 +146,9 @@ namespace
         ));
         static_assert(max_mipmap_level == 7);
 
+        CameraV2 camera;
+        RenderQueue render_queue;
+
         // render prefilter map such that each supported level of roughness maps into one
         // LOD of the cubemap's mipmaps
         for (size_t mip = 0; mip <= max_mipmap_level; ++mip) {
@@ -153,9 +157,10 @@ namespace
 
             material.set("uRoughness", static_cast<float>(mip)/static_cast<float>(max_mipmap_level));
 
-            graphics::draw(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material, camera);
-            camera.render_to(capture_render_target);
+            render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+            graphics::render_to(capture_render_target, render_queue, camera);
             graphics::copy_texture(capture_render_target, rv, mip);
+            render_queue.clear();
         }
 
         return rv;
@@ -164,25 +169,26 @@ namespace
     Texture2D create_2D_brdf_lookup(ResourceLoader& loader)
     {
         // TODO: `graphics::blit` with material
-        Camera camera;
+        CameraV2 camera;
         camera.set_projection_matrix_override(identity<Matrix4x4>());
         camera.set_view_matrix_override(identity<Matrix4x4>());
 
-        graphics::draw(
+        RenderQueue render_queue;
+        render_queue.emplace(
             PlaneGeometry{{.dimensions = Vector2{2.0f}}},
             identity<Transform>(),
             Material{Shader{
                 loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/BRDF.vert"),
                 loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/BRDF.frag"),
-            }},
-            camera
+            }}
         );
 
         RenderTexture render_texture{{
             .pixel_dimensions = {512, 512},
             .color_format = ColorRenderBufferFormat::R16G16_SFLOAT,
         }};
-        camera.render_to(render_texture);
+
+        graphics::render_to(render_texture, render_queue, camera);
 
         Texture2D rv{
             {512, 512},
@@ -270,10 +276,30 @@ private:
     void draw_3d_render()
     {
         set_common_material_properties();
-        draw_spheres();
-        draw_lights();
 
-        camera_.render_to(output_render_);
+        render_queue_.clear();
+
+        // Add spheres
+        Vector3 sphere_pos = {-5.0f, 0.0f, 2.0f};
+        for (const IBLSpecularObjectTextures& texture : object_textures_) {
+            set_material_maps(pbr_material_, texture);
+            render_queue_.emplace(sphere_mesh_, {.translation = sphere_pos}, pbr_material_);
+            sphere_pos.x() += 2.0f;
+        }
+
+        // Add lights
+        for (const Vector3& position : c_light_positions) {
+            render_queue_.emplace(
+                sphere_mesh_,
+                {.scale = Vector3{0.5f}, .translation = position},
+                pbr_material_
+            );
+        }
+
+        // Render
+        graphics::render_to(output_render_, render_queue_, camera_, {
+            .clear_color = {0.1f, 1.0f},
+        });
     }
 
     void set_common_material_properties()
@@ -296,46 +322,20 @@ private:
         material.set("uAOMap", textures.ao_map);
     }
 
-    void draw_spheres()
-    {
-        Vector3 pos = {-5.0f, 0.0f, 2.0f};
-        for (const IBLSpecularObjectTextures& texture : object_textures_) {
-            set_material_maps(pbr_material_, texture);
-            graphics::draw(sphere_mesh_, {.translation = pos}, pbr_material_, camera_);
-            pos.x() += 2.0f;
-        }
-    }
-
-    void draw_lights()
-    {
-        for (const Vector3& position : c_light_positions) {
-            graphics::draw(
-                sphere_mesh_,
-                {.scale = Vector3{0.5f}, .translation = position},
-                pbr_material_,
-                camera_
-            );
-        }
-    }
-
     void draw_background()
     {
         background_material_.set("uEnvironmentMap", projected_map_);
         background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
 
-        graphics::draw(cube_mesh_, identity<Transform>(), background_material_, camera_);
-
-        camera_.set_clear_flags(ClearFlag::None);
-        camera_.render_to(output_render_);
-        camera_.set_clear_flags(ClearFlag::Default);
+        render_queue_.clear();
+        render_queue_.emplace(cube_mesh_, identity<Transform>(), background_material_);
+        graphics::render_to(output_render_, render_queue_, camera_, {
+            .clear_color = {0.1f, 1.0f},
+            .clear_flags = ClearFlag::None,
+        });
     }
 
     ResourceLoader loader_ = App::resource_loader();
-
-    Texture2D texture_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
-        ColorSpace::Linear
-    );
 
     std::array<IBLSpecularObjectTextures, 5> object_textures_ = std::to_array<IBLSpecularObjectTextures>({
         IBLSpecularObjectTextures{loader_.with_prefix("oscar_demos/learnopengl/textures/pbr/rusted_iron")},
@@ -360,7 +360,8 @@ private:
     Material pbr_material_ = create_material(loader_);
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
 
-    MouseCapturingCamera camera_ = create_camera();
+    MouseCapturingCameraV2 camera_ = create_camera();
+    RenderQueue render_queue_;
 
     PerfPanel perf_panel_{&owner()};
 };

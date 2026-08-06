@@ -3,6 +3,7 @@
 #include <liboscar/graphics/blit_flags.h>
 #include <liboscar/graphics/cubemap_face.h>
 #include <liboscar/graphics/material_property_block.h>
+#include <liboscar/graphics/render_pass_config.h>
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/rect.h>
 
@@ -19,7 +20,6 @@ namespace osc { class RenderQueue; }
 namespace osc { class RenderTarget; }
 namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
-namespace osc { struct RenderPassConfig; }
 namespace osc { struct Transform; }
 
 // rendering functions
@@ -47,10 +47,10 @@ namespace osc::graphics
     void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, size_t submesh_index);
     void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, const MaterialPropertyBlock&, size_t submesh_index);
 
-    void render_to_main_window(                     const RenderQueue&, const CameraV2&, const RenderPassConfig&);
-    void render_to(RenderTexture&,                  const RenderQueue&, const CameraV2&, const RenderPassConfig&);
-    void render_to(const RenderTarget&,             const RenderQueue&, const CameraV2&, const RenderPassConfig&);
-    void render_to(SharedDepthStencilRenderBuffer&, const RenderQueue&, const CameraV2&, const RenderPassConfig&);
+    void render_to_main_window(                     const RenderQueue&, const CameraV2&, const RenderPassConfig& = {});
+    void render_to(RenderTexture&,                  const RenderQueue&, const CameraV2&, const RenderPassConfig& = {});
+    void render_to(const RenderTarget&,             const RenderQueue&, const CameraV2&, const RenderPassConfig& = {});
+    void render_to(SharedDepthStencilRenderBuffer&, const RenderQueue&, const CameraV2&, const RenderPassConfig& = {});
 
     // Blits the `Texture` to the `RenderTexture`.
     void blit(

@@ -4,17 +4,20 @@
 #include <liboscar/graphics/geometries/icosahedron_geometry.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>
 #include <liboscar/graphics/geometries/torus_knot_geometry.h>
-#include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/materials/mesh_basic_material.h>
-#include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/scene/scene_helpers.h>
+#include <liboscar/graphics/camera_v2.h>
+#include <liboscar/graphics/graphics.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/collision_tests.h>
 #include <liboscar/maths/frustum_planes.h>
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/platform/app.h>
-#include <liboscar/ui/mouse_capturing_camera.h>
+#include <liboscar/ui/mouse_capturing_camera_v2.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
 
@@ -133,38 +136,42 @@ public:
         user_camera_.on_draw();  // update from inputs etc.
 
         // render from user's perspective on left-hand side
+        render_queue_.clear();
         for (const auto& decoration : decorations_) {
             const std::optional<AABB> decoration_world_aabb = decoration.world_space_bounds();
             if (decoration_world_aabb and is_intersecting(frustum, *decoration_world_aabb)) {
-                graphics::draw(decoration.mesh, decoration.transform, material_, user_camera_, blue_material_props_);
+                render_queue_.emplace(decoration.mesh, decoration.transform, material_, blue_material_props_);
             }
         }
-        user_camera_.set_pixel_rect(lhs_screen_space_rect);
-        user_camera_.render_to_main_window();
+        graphics::render_to_main_window(render_queue_, user_camera_, {
+            .viewport_rect = lhs_screen_space_rect,
+        });
 
         // render from top-down perspective on right-hand side
+        render_queue_.clear();
         for (const auto& decoration : decorations_) {
             const std::optional<AABB> decoration_world_aabb = decoration.world_space_bounds();
             const auto & props = (decoration_world_aabb and is_intersecting(frustum, *decoration_world_aabb)) ? blue_material_props_ : red_material_props_;
-            graphics::draw(decoration.mesh, decoration.transform, material_, top_down_camera_, props);
+            render_queue_.emplace(decoration.mesh, decoration.transform, material_, props);
         }
-        graphics::draw(
+        render_queue_.emplace(
             SphereGeometry{},
             {.scale = Vector3{0.1f}, .translation = user_camera_.position()},
             material_,
-            top_down_camera_,
             green_material_props_
         );
-        top_down_camera_.set_pixel_rect(rhs_screen_space_rect);
-        top_down_camera_.set_scissor_rect(rhs_screen_space_rect);  // stops camera clear from clearing left-hand side
-        top_down_camera_.set_background_color({0.1f, 1.0f});
-        top_down_camera_.render_to_main_window();
+        graphics::render_to_main_window(render_queue_, top_down_camera_, {
+            .viewport_rect = rhs_screen_space_rect,
+            .scissor_rect = rhs_screen_space_rect,  // stops clear from clearing left-hand side
+            .clear_color = {0.1f, 1.0f},
+        });
     }
 
 private:
-    MouseCapturingCamera user_camera_;
+    MouseCapturingCameraV2 user_camera_;
     std::vector<TransformedMesh> decorations_ = generateDecorations();
-    Camera top_down_camera_;
+    CameraV2 top_down_camera_;
+    RenderQueue render_queue_;
     MeshBasicMaterial material_;
     MeshBasicMaterial::PropertyBlock red_material_props_{Color::red()};
     MeshBasicMaterial::PropertyBlock blue_material_props_{Color::blue()};
