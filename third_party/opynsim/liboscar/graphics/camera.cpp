@@ -1,4 +1,4 @@
-#include "camera_v2.h"
+#include "camera.h"
 
 #include <liboscar/graphics/camera_clipping_planes.h>
 #include <liboscar/graphics/camera_projection.h>
@@ -18,7 +18,7 @@
 using namespace osc;
 using namespace osc::literals;
 
-class osc::CameraV2::Impl final {
+class osc::Camera::Impl final {
 public:
     Impl() = default;
 
@@ -184,53 +184,53 @@ private:
     std::optional<Matrix4x4> maybe_projection_matrix_override_;
 };
 
-osc::CameraV2::CameraV2() : impl_{make_cowv<Impl>()} {}
-bool osc::operator==(const CameraV2& lhs, const CameraV2& rhs) { return lhs.impl_ == rhs.impl_ or *lhs.impl_ == *rhs.impl_; }
+osc::Camera::Camera() : impl_{make_cowv<Impl>()} {}
+bool osc::operator==(const Camera& lhs, const Camera& rhs) { return lhs.impl_ == rhs.impl_ or *lhs.impl_ == *rhs.impl_; }
 
-void osc::CameraV2::reset() { impl_.upd()->reset(); }
+void osc::Camera::reset() { impl_.upd()->reset(); }
 
-CameraProjection osc::CameraV2::projection() const              { return impl_->projection(); }
-void osc::CameraV2::set_projection(CameraProjection projection) { impl_.upd()->set_projection(projection); }
+CameraProjection osc::Camera::projection() const              { return impl_->projection(); }
+void osc::Camera::set_projection(CameraProjection projection) { impl_.upd()->set_projection(projection); }
 
-float osc::CameraV2::orthographic_size() const                     { return impl_->orthographic_size(); }
-void osc::CameraV2::set_orthographic_size(float orthographic_size) { impl_.upd()->set_orthographic_size(orthographic_size); }
+float osc::Camera::orthographic_size() const                     { return impl_->orthographic_size(); }
+void osc::Camera::set_orthographic_size(float orthographic_size) { impl_.upd()->set_orthographic_size(orthographic_size); }
 
-Radians osc::CameraV2::vertical_field_of_view() const                          { return impl_->vertical_field_of_view(); }
-void osc::CameraV2::set_vertical_field_of_view(Radians vertical_field_of_view) { impl_.upd()->set_vertical_field_of_view(vertical_field_of_view); }
+Radians osc::Camera::vertical_field_of_view() const                          { return impl_->vertical_field_of_view(); }
+void osc::Camera::set_vertical_field_of_view(Radians vertical_field_of_view) { impl_.upd()->set_vertical_field_of_view(vertical_field_of_view); }
 
-Radians osc::CameraV2::horizontal_field_of_view(float aspect_ratio) const { return impl_->horizontal_field_of_view(aspect_ratio); }
+Radians osc::Camera::horizontal_field_of_view(float aspect_ratio) const { return impl_->horizontal_field_of_view(aspect_ratio); }
 
-CameraClippingPlanes osc::CameraV2::clipping_planes() const                   { return impl_->clipping_planes(); }
-void osc::CameraV2::set_clipping_planes(CameraClippingPlanes clipping_planes) { impl_.upd()->set_clipping_planes(clipping_planes); }
+CameraClippingPlanes osc::Camera::clipping_planes() const                   { return impl_->clipping_planes(); }
+void osc::Camera::set_clipping_planes(CameraClippingPlanes clipping_planes) { impl_.upd()->set_clipping_planes(clipping_planes); }
 
-float osc::CameraV2::near_clipping_plane() const                       { return impl_->near_clipping_plane(); }
-void osc::CameraV2::set_near_clipping_plane(float near_clipping_plane) { impl_.upd()->set_near_clipping_plane(near_clipping_plane); }
+float osc::Camera::near_clipping_plane() const                       { return impl_->near_clipping_plane(); }
+void osc::Camera::set_near_clipping_plane(float near_clipping_plane) { impl_.upd()->set_near_clipping_plane(near_clipping_plane); }
 
-float osc::CameraV2::far_clipping_plane() const                      { return impl_->far_clipping_plane(); }
-void osc::CameraV2::set_far_clipping_plane(float far_clipping_plane) { impl_.upd()->set_far_clipping_plane(far_clipping_plane); }
+float osc::Camera::far_clipping_plane() const                      { return impl_->far_clipping_plane(); }
+void osc::Camera::set_far_clipping_plane(float far_clipping_plane) { impl_.upd()->set_far_clipping_plane(far_clipping_plane); }
 
-Vector3 osc::CameraV2::position() const                   { return impl_->position(); }
-void osc::CameraV2::set_position(const Vector3& position) { impl_.upd()->set_position(position); }
+Vector3 osc::Camera::position() const                   { return impl_->position(); }
+void osc::Camera::set_position(const Vector3& position) { impl_.upd()->set_position(position); }
 
-Quaternion osc::CameraV2::rotation() const { return impl_->rotation(); }
-void osc::CameraV2::set_rotation(const Quaternion& rotation) { impl_.upd()->set_rotation(rotation); }
+Quaternion osc::Camera::rotation() const { return impl_->rotation(); }
+void osc::Camera::set_rotation(const Quaternion& rotation) { impl_.upd()->set_rotation(rotation); }
 
-Vector3 osc::CameraV2::direction() const                    { return impl_->direction(); }
-void osc::CameraV2::set_direction(const Vector3& direction) { impl_.upd()->set_direction(direction); }
+Vector3 osc::Camera::direction() const                    { return impl_->direction(); }
+void osc::Camera::set_direction(const Vector3& direction) { impl_.upd()->set_direction(direction); }
 
-Vector3 osc::CameraV2::up() const             { return impl_->up(); }
-void osc::CameraV2::set_up(const Vector3& up) { impl_.upd()->set_up(up); }
+Vector3 osc::Camera::up() const             { return impl_->up(); }
+void osc::Camera::set_up(const Vector3& up) { impl_.upd()->set_up(up); }
 
-Ray osc::CameraV2::principal_ray() const { return impl_->principal_ray(); }
+Ray osc::Camera::principal_ray() const { return impl_->principal_ray(); }
 
-Matrix4x4 osc::CameraV2::view_matrix() const                                    { return impl_->view_matrix(); }
-Matrix4x4 osc::CameraV2::inverse_view_matrix() const                            { return impl_->inverse_view_matrix(); }
-std::optional<Matrix4x4> osc::CameraV2::view_matrix_override() const            { return impl_->view_matrix_override(); }
-void osc::CameraV2::set_view_matrix_override(std::optional<Matrix4x4> override) { impl_.upd()->set_view_matrix_override(override); }
+Matrix4x4 osc::Camera::view_matrix() const                                    { return impl_->view_matrix(); }
+Matrix4x4 osc::Camera::inverse_view_matrix() const                            { return impl_->inverse_view_matrix(); }
+std::optional<Matrix4x4> osc::Camera::view_matrix_override() const            { return impl_->view_matrix_override(); }
+void osc::Camera::set_view_matrix_override(std::optional<Matrix4x4> override) { impl_.upd()->set_view_matrix_override(override); }
 
-Matrix4x4 osc::CameraV2::projection_matrix(float aspect_ratio) const                  { return impl_->projection_matrix(aspect_ratio); }
-std::optional<Matrix4x4> osc::CameraV2::projection_matrix_override() const            { return impl_->projection_matrix_override(); }
-void osc::CameraV2::set_projection_matrix_override(std::optional<Matrix4x4> override) { impl_.upd()->set_projection_matrix_override(override); }
+Matrix4x4 osc::Camera::projection_matrix(float aspect_ratio) const                  { return impl_->projection_matrix(aspect_ratio); }
+std::optional<Matrix4x4> osc::Camera::projection_matrix_override() const            { return impl_->projection_matrix_override(); }
+void osc::Camera::set_projection_matrix_override(std::optional<Matrix4x4> override) { impl_.upd()->set_projection_matrix_override(override); }
 
-Matrix4x4 osc::CameraV2::view_projection_matrix(float aspect_ratio) const         { return impl_->view_projection_matrix(aspect_ratio); }
-Matrix4x4 osc::CameraV2::inverse_view_projection_matrix(float aspect_ratio) const { return impl_->inverse_view_projection_matrix(aspect_ratio); }
+Matrix4x4 osc::Camera::view_projection_matrix(float aspect_ratio) const         { return impl_->view_projection_matrix(aspect_ratio); }
+Matrix4x4 osc::Camera::inverse_view_projection_matrix(float aspect_ratio) const { return impl_->inverse_view_projection_matrix(aspect_ratio); }

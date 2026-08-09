@@ -10,7 +10,7 @@
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
-#include <liboscar/graphics/camera_v2.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/aabb_functions.h>

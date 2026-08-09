@@ -12,6 +12,8 @@
 #include <liboscar/graphics/materials/mesh_depth_writing_material.h>
 #include <liboscar/graphics/materials/mesh_normal_vectors_material.h>
 #include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/render_target.h>
 #include <liboscar/graphics/render_texture.h>
 #include <liboscar/graphics/scene/scene_cache.h>
@@ -596,8 +598,6 @@ public:
         camera_.set_clipping_planes({params.near_clipping_plane, params.far_clipping_plane});
         camera_.set_view_matrix_override(params.view_matrix);
         camera_.set_projection_matrix_override(params.projection_matrix);
-        camera_.set_background_color(params.background_color);
-        camera_.set_clear_flags(ClearFlag::Default);
 
         // Setup final output texture params (doesn't change during passes)
         output_render_texture_.set_pixel_dimensions(params.device_pixel_ratio * params.dimensions);
@@ -613,17 +613,29 @@ public:
                 scene_oit_compositor_material_.set("uOITAccumulator", oit_render_buffer_);
                 scene_oit_compositor_material_.set_depth_tested(false);
                 scene_oit_compositor_material_.set_transparent(true);
-                graphics::draw(quad_mesh_, camera_.inverse_view_projection_matrix(aspect_ratio_of(params.dimensions)), scene_oit_compositor_material_, camera_);
-                camera_.set_clear_flags(ClearFlag::None);
-                camera_.render_to(output_render_texture_);
+                render_queue_.emplace(
+                    quad_mesh_,
+                    camera_.inverse_view_projection_matrix(aspect_ratio_of(params.dimensions)),
+                    scene_oit_compositor_material_
+                );
+                graphics::render_to(output_render_texture_, render_queue_, camera_, {
+                    .clear_flags = ClearFlag::None,
+                });
+                render_queue_.clear();
             }
         }
 
         // Composite rim highlights over the top of the final render
         if (maybe_rims) {
-            graphics::draw(maybe_rims->mesh, maybe_rims->transform, maybe_rims->material, camera_);
-            camera_.set_clear_flags(ClearFlag::None);
-            camera_.render_to(output_render_texture_);
+            render_queue_.emplace(
+                maybe_rims->mesh,
+                maybe_rims->transform,
+                maybe_rims->material
+            );
+            graphics::render_to(output_render_texture_, render_queue_, camera_, {
+                .clear_flags = ClearFlag::None,
+            });
+            render_queue_.clear();
         }
 
         // prevents copies on next frame
@@ -689,7 +701,12 @@ private:
                 }, dec.shading);
 
                 wireframe_prop_block.set(c_diffuse_color_propname, multiply_luminance(wireframe_color, 0.25f));
-                graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
+                render_queue_.emplace(
+                    dec.mesh,
+                    dec.transform,
+                    wireframe_material_,
+                    wireframe_prop_block
+                );
             }
 
             if (dec.has_flag(SceneDecorationFlag::NoDrawInScene)) {
@@ -701,7 +718,7 @@ private:
                 {
                     const Color32 color32{color};  // Renderer doesn't need HDR colors
                     if (color32.a != 0xff and params.order_independent_transparency) {
-                        return;  // OIT is handled in a seperate pass
+                        return;  // OIT is handled in a separate pass
                     }
 
                     const auto& [it, inserted] = color_cache_.try_emplace(color32);
@@ -712,15 +729,29 @@ private:
                     const Material& material = color32.a == 0xff ?
                             (backface_culled ? backface_culled_opaque_material : opaque_material) :
                             (backface_culled ? backface_culled_transparent_material : transparent_material);
-                    graphics::draw(dec.mesh, dec.transform, material, camera_, it->second);
+                    render_queue_.emplace(
+                        dec.mesh,
+                        dec.transform,
+                        material,
+                        it->second
+                    );
                 },
                 [this, &dec](const Material& material)
                 {
-                    graphics::draw(dec.mesh, dec.transform, material, camera_);
+                    render_queue_.emplace(
+                        dec.mesh,
+                        dec.transform,
+                        material
+                    );
                 },
                 [this, &dec](const std::pair<Material, MaterialPropertyBlock>& material_props_pair)
                 {
-                    graphics::draw(dec.mesh, dec.transform, material_props_pair.first, camera_, material_props_pair.second);
+                    render_queue_.emplace(
+                        dec.mesh,
+                        dec.transform,
+                        material_props_pair.first,
+                        material_props_pair.second
+                    );
                 }
             }, dec.shading);
 
@@ -729,7 +760,7 @@ private:
             // care: this only works for triangles, because normals-drawing material uses a geometry
             //       shader that assumes triangular input (opensim-creator#792)
             if (params.draw_mesh_normals and dec.mesh.topology() == MeshTopology::Triangles) {
-                graphics::draw(dec.mesh, dec.transform, normals_material_, camera_);
+                render_queue_.emplace(dec.mesh, dec.transform, normals_material_);
             }
         }
 
@@ -755,16 +786,17 @@ private:
                 scene_floor_material_.set("uHasShadowMap", false);
             }
 
-            graphics::draw(
+            render_queue_.emplace(
                 quad_mesh_,
                 calc_floor_transform(params.floor_position, params.fixup_scale_factor),
-                scene_floor_material_,
-                camera_
+                scene_floor_material_
             );
         }
 
-        camera_.set_clear_flags(ClearFlag::Default);
-        camera_.render_to(output_render_texture_);
+        graphics::render_to(output_render_texture_, render_queue_, camera_, {
+            .clear_color = params.background_color,
+        });
+        render_queue_.clear();
     }
 
     bool render_transparent_objects_to_oit_accumulators(
@@ -801,7 +833,12 @@ private:
                     if (inserted) {
                         it->second.set(c_diffuse_color_propname, color32);
                     }
-                    graphics::draw(decoration.mesh, decoration.transform, oit_material, camera_, it->second);
+                    render_queue_.emplace(
+                        decoration.mesh,
+                        decoration.transform,
+                        oit_material,
+                        it->second
+                    );
                 },
                 [](const auto&) {},  // Skip custom decorations (already done)
             }, decoration.shading);
@@ -825,19 +862,24 @@ private:
         }
 
         // Render to OIT floating-point buffer
-        camera_.render_to(RenderTarget{
-            RenderTargetColorAttachment{
-                .buffer = oit_render_buffer_,
-                .load_action = RenderBufferLoadAction::Clear,
-                .store_action = RenderBufferStoreAction::Resolve,
-                .clear_color = Color::clear(),
+        graphics::render_to(
+            RenderTarget{
+                RenderTargetColorAttachment{
+                    .buffer = oit_render_buffer_,
+                    .load_action = RenderBufferLoadAction::Clear,
+                    .store_action = RenderBufferStoreAction::Resolve,
+                    .clear_color = Color::clear(),
+                },
+                RenderTargetDepthStencilAttachment{
+                    .buffer = output_render_texture_.upd_depth_buffer(),
+                    .load_action = RenderBufferLoadAction::Load,        // Don't clear opaque depth
+                    .store_action = RenderBufferStoreAction::DontCare,  // Depth writing is disabled
+                }
             },
-            RenderTargetDepthStencilAttachment{
-                .buffer = output_render_texture_.upd_depth_buffer(),
-                .load_action = RenderBufferLoadAction::Load,        // Don't clear opaque depth
-                .store_action = RenderBufferStoreAction::DontCare,  // Depth writing is disabled
-            }
-        });
+            render_queue_,
+            camera_
+        );
+        render_queue_.clear();
 
         return true;
     }
@@ -894,7 +936,6 @@ private:
         camera_.set_clipping_planes({params.near_clipping_plane, params.far_clipping_plane});
         camera_.set_view_matrix_override(params.view_matrix);
         camera_.set_projection_matrix_override(params.projection_matrix);
-        camera_.set_background_color(Color::clear());
 
         // draw all selected geometry in a solid color
         color_cache_.clear();
@@ -917,7 +958,12 @@ private:
                 const Material& material = decoration.has_flag(SceneDecorationFlag::CanBackfaceCull) ?
                     backface_culled_rim_filler_material_ :
                     rim_filler_material_;
-                graphics::draw(decoration.mesh, decoration.transform, material, camera_, it->second);
+                render_queue_.emplace(
+                    decoration.mesh,
+                    decoration.transform,
+                    material,
+                    it->second
+                );
             }
         }
 
@@ -929,11 +975,17 @@ private:
         });
 
         // render to the off-screen solid-colored texture
-        camera_.render_to(RenderTarget{
-            RenderTargetColorAttachment{
-                .buffer = rims_render_texture_.upd_color_buffer(),
+        graphics::render_to(
+            RenderTarget{
+                RenderTargetColorAttachment{
+                    .buffer = rims_render_texture_.upd_color_buffer(),
+                },
             },
-        });
+            render_queue_,
+            camera_,
+            {.clear_color = Color::clear()}
+        );
+        render_queue_.clear();
 
         // configure a material that draws the off-screen colored texture on-screen
         //
@@ -963,7 +1015,7 @@ private:
             return std::nullopt;
         }
 
-        camera_.reset();
+        render_queue_.clear();
 
         // compute the bounds of, and draw, everything that casts a shadow
         std::optional<AABB> shadowcaster_aabbs;
@@ -975,7 +1027,7 @@ private:
             const Material& material = decoration.has_flag(SceneDecorationFlag::CanBackfaceCull) ?
                 backface_culled_depth_writer_material_ :
                 depth_writer_material_;
-            graphics::draw(decoration.mesh, decoration.transform, material, camera_);
+            render_queue_.emplace(decoration.mesh, decoration.transform, material);
         }
 
         if (not shadowcaster_aabbs) {
@@ -988,11 +1040,16 @@ private:
 
         camera_.set_view_matrix_override(matrices.view_matrix);
         camera_.set_projection_matrix_override(matrices.projection_matrix);
-        camera_.render_to(RenderTarget{
-            RenderTargetDepthStencilAttachment{
-                .buffer = shadow_map_render_buffer_,
+        graphics::render_to(
+            RenderTarget{
+                RenderTargetDepthStencilAttachment{
+                    .buffer = shadow_map_render_buffer_,
+                },
             },
-        });
+            render_queue_,
+            camera_
+        );
+        render_queue_.clear();
 
         return Shadows{
             .shadow_map = shadow_map_render_buffer_ ,
@@ -1015,6 +1072,7 @@ private:
 
     Mesh quad_mesh_;
     Camera camera_;
+    RenderQueue render_queue_;
     RenderTexture rims_render_texture_;
     SharedDepthStencilRenderBuffer shadow_map_render_buffer_{DepthStencilRenderBufferParams{
         .pixel_dimensions = {1024, 1024},

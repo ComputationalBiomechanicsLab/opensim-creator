@@ -1,8 +1,11 @@
 #include "logl_point_shadows_tab.h"
 
 #include <liboscar/formats/image.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/render_texture.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/maths/math_helpers.h>
@@ -78,7 +81,6 @@ namespace
         rv.set_position({0.0f, 0.0f, 5.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
-        rv.set_background_color(Color::clear());
         return rv;
     }
 }
@@ -94,18 +96,18 @@ public:
     void on_mount()
     {
         App::upd().make_main_loop_polling();
-        scene_camera_.on_mount();
+        camera_.on_mount();
     }
 
     void on_unmount()
     {
-        scene_camera_.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
     bool on_event(Event& e)
     {
-        return scene_camera_.on_event(e);
+        return camera_.on_event(e);
     }
 
     void on_tick()
@@ -117,7 +119,7 @@ public:
 
     void on_draw()
     {
-        scene_camera_.on_draw();
+        camera_.on_draw();
         draw_3d_scene();
         draw_2d_ui();
     }
@@ -153,11 +155,11 @@ private:
         shadow_mapping_material_.set("uFarPlane", zfar);
 
         // render (shadow mapping does not use the camera's view/projection matrices)
-        Camera camera;
         for (const SceneCube& cube : scene_cubes_) {
-            graphics::draw(cube_mesh_, cube.transform, shadow_mapping_material_, camera);
+            render_queue_.emplace(cube_mesh_, cube.transform, shadow_mapping_material_);
         }
-        camera.render_to(depth_texture_);
+        graphics::render_to(depth_texture_, render_queue_, Camera{});
+        render_queue_.clear();
     }
 
     void draw_shadow_mapped_scene_to_screen(const Rect& viewport_screen_space_rect)
@@ -167,25 +169,31 @@ private:
         // set shared material params
         material.set("uDiffuseTexture", m_WoodTexture);
         material.set("uLightPos", light_pos_);
-        material.set("uViewPos", scene_camera_.position());
+        material.set("uViewPos", camera_.position());
         material.set("uFarPlane", 25.0f);
         material.set("uShadows", soft_shadows_);
-
         material.set("uDepthMap", depth_texture_);
+
         for (const SceneCube& cube : scene_cubes_) {
             MaterialPropertyBlock material_props;
             material_props.set("uReverseNormals", cube.invert_normals);
-            graphics::draw(cube_mesh_, cube.transform, material, scene_camera_, material_props);
+            render_queue_.emplace(cube_mesh_, cube.transform, material, material_props);
         }
-        material.unset("uDepthMap");
 
         // also, draw the light as a little cube
+        material.unset("uDepthMap");
         material.set("uShadows", soft_shadows_);
-        graphics::draw(cube_mesh_, {.scale = Vector3{0.1f}, .translation = light_pos_}, material, scene_camera_);
+        render_queue_.emplace(
+            cube_mesh_,
+            {.scale = Vector3{0.1f}, .translation = light_pos_},
+            material
+        );
 
-        scene_camera_.set_pixel_rect(viewport_screen_space_rect);
-        scene_camera_.render_to_main_window();
-        scene_camera_.set_pixel_rect(std::nullopt);
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = viewport_screen_space_rect,
+            .clear_color = Color::clear(),
+        });
+        render_queue_.clear();
     }
 
     void draw_2d_ui()
@@ -216,7 +224,8 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
     }};
 
-    MouseCapturingCamera scene_camera_ = create_camera();
+    MouseCapturingCamera camera_ = create_camera();
+    RenderQueue render_queue_;
     Texture2D m_WoodTexture = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB

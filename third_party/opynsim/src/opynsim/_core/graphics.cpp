@@ -7,7 +7,7 @@
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <libopynsim/model.h>
 #include <libopynsim/model_state.h>
-#include <liboscar/graphics/camera_v2.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/texture2d.h>
 #include <liboscar/maths/geometric_functions.h>
@@ -237,7 +237,7 @@ namespace
     }
 
     void def_camera(nanobind::module_& m) {
-        nb::class_<osc::CameraV2> cls(m, "Camera", R"(
+        nb::class_<osc::Camera> cls(m, "Camera", R"(
             Represents a virtual camera at `position` in world space, looking along
             a normalized `direction` vector. The `up` vector (also normalized)
             specifies which direction corresponds to the 'top' of the rendered image.
@@ -245,20 +245,20 @@ namespace
         cls.def(nb::init<>{});
         cls.def_prop_rw(
             "position",
-            &osc::CameraV2::position,
-            &osc::CameraV2::set_position,
+            &osc::Camera::position,
+            &osc::Camera::set_position,
             "Get/set the position of the camera in world space."
         );
         cls.def_prop_rw(
             "direction",
-            &osc::CameraV2::direction,
-            &osc::CameraV2::set_direction,
+            &osc::Camera::direction,
+            &osc::Camera::set_direction,
             "Get/set the direction the camera is looking toward. Normalized by the implementation."
         );
         cls.def_prop_rw(
             "up",
-            &osc::CameraV2::up,
-            &osc::CameraV2::set_up,
+            &osc::Camera::up,
+            &osc::Camera::set_up,
             "Get/set the direction that corresponds to the 'top' of the rendered image. Normalized by the implementation."
         );
     }
@@ -367,7 +367,7 @@ namespace
                const osc::Color& background_color,
                bool draw_floor,
                osc::SceneCache* scene_cache,
-               const osc::CameraV2* camera)
+               const osc::Camera* camera)
             {
                 return render_model_in_state(
                     get_lazy_loaded_opynsim_app(),

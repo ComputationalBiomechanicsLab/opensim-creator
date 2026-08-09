@@ -65,7 +65,6 @@ namespace osc
         class ColorRenderBuffer;
         const ColorRenderBuffer& impl() const { return *impl_; }
     private:
-        friend class Camera;
         friend class GraphicsBackend;
         friend class RenderTexture;
 

@@ -10,7 +10,7 @@
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
-#include <liboscar/ui/mouse_capturing_camera_v2.h>
+#include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/log_viewer_panel.h>
 #include <liboscar/ui/panels/perf_panel.h>
@@ -52,9 +52,9 @@ namespace
     constexpr auto c_point_light_linears = std::to_array<float>({0.09f, 0.09f, 0.09f, 0.09f});
     constexpr auto c_point_light_quadratics = std::to_array<float>({0.032f, 0.032f, 0.032f, 0.032f});
 
-    MouseCapturingCameraV2 create_camera()
+    MouseCapturingCamera create_camera()
     {
-        MouseCapturingCameraV2 rv;
+        MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
@@ -148,7 +148,6 @@ public:
     void on_draw()
     {
         camera_.on_draw();
-        render_queue_.clear();
 
         // setup per-frame material values
         multiple_lights_material_.set("uViewPos", camera_.position());
@@ -183,6 +182,7 @@ public:
             .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
             .clear_color = {0.1f, 1.0f},
         });
+        render_queue_.clear();
 
         // render auxiliary UI
         ui::begin_panel("controls");
@@ -200,7 +200,7 @@ private:
     Material light_cube_material_ = create_light_cube_material(loader_);
     Mesh mesh_ = BoxGeometry{}.mesh();
 
-    MouseCapturingCameraV2 camera_ = create_camera();
+    MouseCapturingCamera camera_ = create_camera();
     RenderQueue render_queue_;
 
     float material_shininess_ = 64.0f;

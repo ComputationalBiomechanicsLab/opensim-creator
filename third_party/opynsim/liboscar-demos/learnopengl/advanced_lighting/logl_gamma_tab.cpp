@@ -5,6 +5,8 @@
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
@@ -74,7 +76,6 @@ namespace
         camera.set_position({0.0f, 0.0f, 3.0f});
         camera.set_vertical_field_of_view(45_deg);
         camera.set_clipping_planes({0.1f, 100.0f});
-        camera.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return camera;
     }
 
@@ -131,13 +132,14 @@ public:
 private:
     void draw_3d_scene()
     {
-        // clear screen and ensure camera has correct pixel rect
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-
-        // render scene
         material_.set("uViewPos", camera_.position());
-        graphics::draw(plane_mesh_, identity<Transform>(), material_, camera_);
-        camera_.render_to_main_window();
+
+        render_queue_.emplace(plane_mesh_, material_);
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            .clear_color = {0.1f, 1.0f},
+        });
+        render_queue_.clear();
     }
 
     void draw_2d_ui()
@@ -150,6 +152,7 @@ private:
     Material material_ = create_floor_material(App::resource_loader());
     Mesh plane_mesh_ = generate_plane();
     MouseCapturingCamera camera_ = create_scene_camera();
+    RenderQueue render_queue_;
 };
 
 

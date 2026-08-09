@@ -9,7 +9,7 @@
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
-#include <liboscar/ui/mouse_capturing_camera_v2.h>
+#include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/perf_panel.h>
 #include <liboscar/ui/tabs/tab_private.h>
@@ -40,9 +40,9 @@ namespace
     constexpr int c_num_cols = 7;
     constexpr float c_cell_spacing = 2.5f;
 
-    MouseCapturingCameraV2 create_camera()
+    MouseCapturingCamera create_camera()
     {
-        MouseCapturingCameraV2 rv;
+        MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 20.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
@@ -127,7 +127,6 @@ private:
     {
         pbr_material_.set("uCameraWorldPosition", camera_.position());
 
-        render_queue_.clear();
         draw_spheres();
         draw_lights();
 
@@ -135,6 +134,7 @@ private:
             .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
             .clear_color = {0.1f, 1.0f},
         });
+        render_queue_.clear();
     }
 
     void draw_spheres()
@@ -156,7 +156,7 @@ private:
     }
 
     ResourceLoader loader_ = App::resource_loader();
-    MouseCapturingCameraV2 camera_ = create_camera();
+    MouseCapturingCamera camera_ = create_camera();
     RenderQueue render_queue_;
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
     Material pbr_material_ = create_material(loader_);

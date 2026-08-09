@@ -1,7 +1,7 @@
 #include "mandelbrot_tab.h"
 
 #include <liboscar/graphics/geometries/plane_geometry.h>
-#include <liboscar/graphics/camera_v2.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/render_queue.h>
@@ -22,9 +22,9 @@ using namespace osc;
 
 namespace
 {
-    CameraV2 create_identity_camera()
+    Camera create_identity_camera()
     {
-        CameraV2 rv;
+        Camera rv;
         rv.set_view_matrix_override(identity<Matrix4x4>());
         rv.set_projection_matrix_override(identity<Matrix4x4>());
         return rv;
@@ -53,11 +53,11 @@ public:
         material_.set("uOffset", Vector2{});
         material_.set("uNumIterations", num_iterations_);
 
-        render_queue_.clear();
         render_queue_.emplace(quad_mesh_, identity<Transform>(), material_);
         graphics::render_to_main_window(render_queue_, camera_, {
             .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
         });
+        render_queue_.clear();
     }
 
 private:
@@ -81,7 +81,7 @@ private:
         loader_.slurp("oscar_demos/shaders/Mandelbrot.vert"),
         loader_.slurp("oscar_demos/shaders/Mandelbrot.frag"),
     }};
-    CameraV2 camera_ = create_identity_camera();
+    Camera camera_ = create_identity_camera();
     RenderQueue render_queue_;
 };
 

@@ -52,16 +52,17 @@ namespace
             target_texture_.reformat({
                 .pixel_dimensions = osc::App::get().main_window_pixel_dimensions(),
                 .device_pixel_ratio = osc::App::get().main_window_device_pixel_ratio(),
-                .anti_aliasing_level = osc::App::get().anti_aliasing_level()
+                .anti_aliasing_level = osc::App::get().anti_aliasing_level(),
             });
 
             update_torus_if_params_changed();
             const auto seconds_since_startup = osc::App::get().frame_delta_since_startup().count();
             const osc::Transform transform = {
-                .rotation = osc::angle_axis(osc::Radians{seconds_since_startup}, osc::CoordinateDirection::y())
+                .rotation = osc::angle_axis(osc::Radians{seconds_since_startup}, osc::CoordinateDirection::y()),
             };
-            osc::graphics::draw(mesh_, transform, material_, camera_);
-            camera_.render_to(target_texture_);
+            render_queue_.emplace(mesh_, transform, material_);
+            osc::graphics::render_to(target_texture_, render_queue_, camera_);
+            render_queue_.clear();
             osc::graphics::blit_to_main_window(target_texture_);
 
             ui::begin_panel("window");
@@ -95,6 +96,7 @@ namespace
             .specular_color = 0.5f * torus_color_,
         }};
         osc::Camera camera_;
+        osc::RenderQueue render_queue_;
         osc::RenderTexture target_texture_;
     };
 }

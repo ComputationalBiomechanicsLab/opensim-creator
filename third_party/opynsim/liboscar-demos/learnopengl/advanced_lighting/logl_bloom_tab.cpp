@@ -1,10 +1,13 @@
 #include "logl_bloom_tab.h"
 
 #include <liboscar/formats/image.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/material_property_block.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/render_target.h>
 #include <liboscar/graphics/render_target_color_attachment.h>
 #include <liboscar/graphics/render_target_depth_stencil_attachment.h>
@@ -103,7 +106,6 @@ namespace
         MouseCapturingCamera camera;
         camera.set_position({0.0f, 0.5f, 5.0f});
         camera.set_clipping_planes({0.1f, 100.0f});
-        camera.set_background_color(Color::black());
         return camera;
     }
 }
@@ -180,12 +182,12 @@ private:
 
     void render_scene_mrt()
     {
-        draw_scene_cubes_to_camera();
-        draw_lightboxes_to_camera();
-        flush_camera_render_queue_to_mrt();
+        draw_scene_cubes();
+        draw_light_boxes();
+        flush_render_queue_to_mrt();
     }
 
-    void draw_scene_cubes_to_camera()
+    void draw_scene_cubes()
     {
         scene_material_.set("uViewWorldPos", camera_.position());
 
@@ -198,11 +200,10 @@ private:
             MaterialPropertyBlock floor_props;
             floor_props.set("uDiffuseTexture", wood_texture_);
 
-            graphics::draw(
+            render_queue_.emplace(
                 cube_mesh_,
                 floor_transform,
                 scene_material_,
-                camera_,
                 floor_props
             );
         }
@@ -210,17 +211,16 @@ private:
         MaterialPropertyBlock cube_props;
         cube_props.set("uDiffuseTexture", container_texture_);
         for (const auto& cube_transform : create_cube_transforms()) {
-            graphics::draw(
+            render_queue_.emplace(
                 cube_mesh_,
                 cube_transform,
                 scene_material_,
-                camera_,
                 cube_props
             );
         }
     }
 
-    void draw_lightboxes_to_camera()
+    void draw_light_boxes()
     {
         const auto& scene_light_colors = get_scene_light_colors();
 
@@ -232,17 +232,16 @@ private:
             MaterialPropertyBlock light_props;
             light_props.set("uLightColor", scene_light_colors[i]);
 
-            graphics::draw(
+            render_queue_.emplace(
                 cube_mesh_,
                 light_transform,
                 lightbox_material_,
-                camera_,
                 light_props
             );
         }
     }
 
-    void flush_camera_render_queue_to_mrt()
+    void flush_render_queue_to_mrt()
     {
         const RenderTarget mrt{
             RenderTargetColorAttachment{
@@ -263,7 +262,10 @@ private:
                 RenderBufferStoreAction::DontCare,
             },
         };
-        camera_.render_to(mrt);
+        graphics::render_to(mrt, render_queue_, camera_, {
+            .clear_color = Color::black(),
+        });
+        render_queue_.clear();
     }
 
     void render_blurred_brightness()
@@ -273,12 +275,12 @@ private:
         bool horizontal = false;
         for (RenderTexture& ping_pong_buffer : ping_pong_blur_output_buffers_) {
             blur_material_.set("uHorizontal", horizontal);
-            Camera camera;
-            graphics::draw(quad_mesh_, identity<Transform>(), blur_material_, camera);
-            camera.render_to(ping_pong_buffer);
+            render_queue_.emplace(quad_mesh_, blur_material_);
+            graphics::render_to(ping_pong_buffer, render_queue_, Camera{});
+            render_queue_.clear();
             blur_material_.unset("uInputImage");
 
-            horizontal = !horizontal;
+            horizontal = not horizontal;
         }
     }
 
@@ -289,10 +291,11 @@ private:
         final_compositing_material_.set("uBloom", true);
         final_compositing_material_.set("uExposure", 1.0f);
 
-        Camera camera;
-        graphics::draw(quad_mesh_, identity<Transform>(), final_compositing_material_, camera);
-        camera.set_pixel_rect(viewport_screen_space_rect);
-        camera.render_to_main_window();
+        render_queue_.emplace(quad_mesh_, final_compositing_material_);
+        graphics::render_to_main_window(render_queue_, Camera{}, {
+            .viewport_rect = viewport_screen_space_rect,
+        });
+        render_queue_.clear();
 
         final_compositing_material_.unset("uBloomBlur");
         final_compositing_material_.unset("uHDRSceneRender");
@@ -358,6 +361,7 @@ private:
     std::array<RenderTexture, 2> ping_pong_blur_output_buffers_;
 
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
+    RenderQueue render_queue_;
 };
 
 

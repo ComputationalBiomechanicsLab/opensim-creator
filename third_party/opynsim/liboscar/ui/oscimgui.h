@@ -31,7 +31,7 @@
 #include <utility>
 
 namespace osc { class App; }
-namespace osc { class CameraV2; }
+namespace osc { class Camera; }
 namespace osc { class Event; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { class RenderTexture; }
@@ -651,7 +651,7 @@ namespace osc::ui
     );
 
     void update_camera_from_all_inputs(
-        CameraV2&,
+        Camera&,
         EulerAngles&
     );
 

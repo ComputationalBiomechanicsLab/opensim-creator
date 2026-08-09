@@ -3,7 +3,7 @@
 #include <liboscar/formats/image.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>
-#include <liboscar/graphics/camera_v2.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/render_pass_config.h>
@@ -15,7 +15,7 @@
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
-#include <liboscar/ui/mouse_capturing_camera_v2.h>
+#include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
 
@@ -45,9 +45,9 @@ namespace
     constexpr int c_num_cols = 7;
     constexpr float c_cell_spacing = 2.5f;
 
-    MouseCapturingCameraV2 create_camera()
+    MouseCapturingCamera create_camera()
     {
-        MouseCapturingCameraV2 rv;
+        MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 20.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
@@ -81,7 +81,7 @@ namespace
         material.set("uEquirectangularMap", hdr_texture);
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vector3{}));
 
-        CameraV2 camera;
+        Camera camera;
         RenderQueue render_queue;
         render_queue.emplace(
             BoxGeometry{{.dimensions = Vector3{2.0f}}},
@@ -112,7 +112,7 @@ namespace
         material.set("uEnvironmentMap", skybox);
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
 
-        CameraV2 camera;
+        Camera camera;
         RenderQueue render_queue;
         render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
         graphics::render_to(irradiance_cubemap, render_queue, camera);
@@ -175,7 +175,6 @@ private:
         pbr_material_.set_array("uLightColors", c_light_radiances);
         pbr_material_.set("uIrradianceMap", irradiance_map_);
 
-        render_queue_.clear();
         draw_spheres();
         draw_lights();
 
@@ -183,6 +182,7 @@ private:
             .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
             .clear_color = {0.1f, 1.0f},
         });
+        render_queue_.clear();
     }
 
     void draw_spheres()
@@ -218,12 +218,12 @@ private:
         background_material_.set("uEnvironmentMap", projected_map_);
         background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
 
-        render_queue_.clear();
         render_queue_.emplace(cube_mesh_, identity<Transform>(), background_material_);
         graphics::render_to_main_window(render_queue_, camera_, {
             .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
             .clear_flags = ClearFlag::None,
         });
+        render_queue_.clear();
     }
 
     void draw_2d_ui()
@@ -250,7 +250,7 @@ private:
     Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
     Material pbr_material_ = create_material(loader_);
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
-    MouseCapturingCameraV2 camera_ = create_camera();
+    MouseCapturingCamera camera_ = create_camera();
     RenderQueue render_queue_;
 };
 

@@ -5,6 +5,8 @@
 #include <liboscar/graphics/geometries/plane_geometry.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
 #include <liboscar/ui/mouse_capturing_camera.h>
@@ -94,25 +96,25 @@ public:
     {
         camera_.on_draw();
 
-        // clear screen and ensure camera has correct pixel rect
-        App::upd().main_window_clear(Color::dark_grey());
-
         // draw normal-mapped quad
         {
             parallax_mapping_material_.set("uLightWorldPos", light_transform_.translation);
             parallax_mapping_material_.set("uViewWorldPos", camera_.position());
             parallax_mapping_material_.set("uEnableMapping", parallax_mapping_enabled_);
-            graphics::draw(quad_mesh_, quad_transform_, parallax_mapping_material_, camera_);
+            render_queue_.emplace(quad_mesh_, quad_transform_, parallax_mapping_material_);
         }
 
         // draw light source cube
         {
             light_cube_material_.set("uLightColor", Color::white());
-            graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
+            render_queue_.emplace(cube_mesh_, light_transform_, light_cube_material_);
         }
 
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-        camera_.render_to_main_window();
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            .clear_color = Color::darkest_grey(),
+        });
+        render_queue_.clear();
 
         ui::begin_panel("controls");
         ui::draw_checkbox("normal mapping", &parallax_mapping_enabled_);
@@ -130,6 +132,7 @@ private:
 
     // scene state
     MouseCapturingCamera camera_ = create_camera();
+    RenderQueue render_queue_;
     Transform quad_transform_;
     Transform light_transform_ = {
         .scale = Vector3{0.2f},

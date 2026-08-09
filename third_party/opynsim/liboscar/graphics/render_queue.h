@@ -38,6 +38,12 @@ namespace osc
 
         handle_type emplace(
             const Mesh& mesh,
+            const Material& material)
+        {
+            return emplace(mesh, identity<Matrix4x4>(), material);
+        }
+        handle_type emplace(
+            const Mesh& mesh,
             const Transform& transform,
             const Material& material)
         {

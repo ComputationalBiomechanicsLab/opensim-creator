@@ -4,6 +4,8 @@
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
@@ -86,7 +88,6 @@ namespace
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
-        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 }
@@ -124,31 +125,44 @@ public:
     {
         camera_.on_draw();
 
-        // clear screen and ensure camera has correct pixel rect
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-
         // cubes
         {
             opaque_material_.set("uTexture", marble_texture_);
-            graphics::draw(cube_mesh_, {.translation = {-1.0f, 0.0f, -1.0f}}, opaque_material_, camera_);
-            graphics::draw(cube_mesh_, {.translation = { 1.0f, 0.0f, -1.0f}}, opaque_material_, camera_);
+            render_queue_.emplace(
+                cube_mesh_,
+                {.translation = {-1.0f, 0.0f, -1.0f}},
+                opaque_material_
+            );
+            render_queue_.emplace(
+                cube_mesh_,
+                {.translation = { 1.0f, 0.0f, -1.0f}},
+                opaque_material_
+            );
         }
 
         // floor
         {
             opaque_material_.set("uTexture", metal_texture_);
-            graphics::draw(plane_mesh_, identity<Transform>(), opaque_material_, camera_);
+            render_queue_.emplace(plane_mesh_, opaque_material_);
         }
 
         // windows
         {
             blending_material_.set("uTexture", window_texture_);
             for (const Vector3& window_position : c_window_positions) {
-                graphics::draw(transparent_mesh_, {.translation = window_position}, blending_material_, camera_);
+                render_queue_.emplace(
+                    transparent_mesh_,
+                    {.translation = window_position},
+                    blending_material_
+                );
             }
         }
 
-        camera_.render_to_main_window();
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            .clear_color = {0.1f, 1.0f},
+        });
+        render_queue_.clear();
 
         // auxiliary UI
         log_viewer_.on_draw();
@@ -166,6 +180,7 @@ private:
     Mesh plane_mesh_ = generate_plane();
     Mesh transparent_mesh_ = generate_transparent();
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
+    RenderQueue render_queue_;
     Texture2D marble_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/marble.jpg"),
         ColorSpace::sRGB

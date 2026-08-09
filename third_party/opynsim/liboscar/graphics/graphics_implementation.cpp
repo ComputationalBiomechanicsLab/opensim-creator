@@ -1,6 +1,5 @@
 #include <liboscar/graphics/anti_aliasing_level.h>
 #include <liboscar/graphics/camera.h>
-#include <liboscar/graphics/camera_v2.h>
 #include <liboscar/graphics/camera_projection.h>
 #include <liboscar/graphics/clear_flags.h>
 #include <liboscar/graphics/color.h>
@@ -5160,162 +5159,9 @@ namespace
     static_assert(c_camera_projection_strings.size() == num_options<CameraProjection>());
 }
 
-class osc::Camera::Impl final {
-public:
-
-    void reset()
-    {
-        // keep the render queue memory allocation
-        auto tmp_queue{std::move(render_queue_)};
-        tmp_queue.clear();
-
-        *this = Impl{};
-        this->render_queue_ = std::move(tmp_queue);
-    }
-
-    Color background_color() const
-    {
-        return render_pass_config_.clear_color;
-    }
-
-    void set_background_color(const Color& color)
-    {
-        render_pass_config_.clear_color = color;
-    }
-
-    ClearFlags clear_flags() const
-    {
-        return render_pass_config_.clear_flags;
-    }
-
-    void set_clear_flags(ClearFlags flags)
-    {
-        render_pass_config_.clear_flags = flags;
-    }
-
-    std::optional<Rect> pixel_rect() const
-    {
-        return render_pass_config_.viewport_rect;
-    }
-
-    void set_pixel_rect(std::optional<Rect> maybe_pixel_rect)
-    {
-        render_pass_config_.viewport_rect = maybe_pixel_rect;
-    }
-
-    std::optional<Rect> scissor_rect() const
-    {
-        return render_pass_config_.scissor_rect;
-    }
-
-    void set_scissor_rect(std::optional<Rect> maybe_scissor_rect)
-    {
-        render_pass_config_.scissor_rect = maybe_scissor_rect;
-    }
-
-    RenderQueue& upd_render_queue() { return render_queue_; }
-
-    friend bool operator==(const Impl&, const Impl&) = default;
-
-    RenderPassConfig render_pass_config_;
-    RenderQueue render_queue_;
-};
-
 std::ostream& osc::operator<<(std::ostream& o, CameraProjection camera_projection)
 {
     return o << c_camera_projection_strings.at(to_index(camera_projection));
-}
-
-osc::Camera::Camera() :
-    impl_{make_cowv<Impl>()}
-{
-    set_clipping_planes({1.0f, -1.0f});  // Legacy (V1) behavior.
-}
-
-void osc::Camera::reset()
-{
-    CameraV2::reset();
-    impl_.upd()->reset();
-    set_clipping_planes({1.0f, -1.0f});  // Legacy (V1) behavior.
-}
-
-Color osc::Camera::background_color() const
-{
-    return impl_->background_color();
-}
-
-void osc::Camera::set_background_color(const Color& color)
-{
-    impl_.upd()->set_background_color(color);
-}
-
-ClearFlags osc::Camera::clear_flags() const
-{
-    return impl_->clear_flags();
-}
-
-void osc::Camera::set_clear_flags(ClearFlags clear_flags)
-{
-    impl_.upd()->set_clear_flags(clear_flags);
-}
-
-std::optional<Rect> osc::Camera::pixel_rect() const
-{
-    return impl_->pixel_rect();
-}
-
-void osc::Camera::set_pixel_rect(std::optional<Rect> maybe_pixel_rect)
-{
-    impl_.upd()->set_pixel_rect(maybe_pixel_rect);
-}
-
-std::optional<Rect> osc::Camera::scissor_rect() const
-{
-    return impl_->scissor_rect();
-}
-
-void osc::Camera::set_scissor_rect(std::optional<Rect> maybe_scissor_rect)
-{
-    impl_.upd()->set_scissor_rect(maybe_scissor_rect);
-}
-
-RenderQueue& osc::Camera::upd_render_queue()
-{
-    return impl_.upd()->upd_render_queue();
-}
-
-void osc::Camera::render_to_main_window()
-{
-    graphics::render_to_main_window(impl_->render_queue_, *this, impl_->render_pass_config_);
-    impl_.upd()->render_queue_.clear();
-}
-
-void osc::Camera::render_to(RenderTexture& render_texture)
-{
-    graphics::render_to(render_texture, impl_->render_queue_, *this, impl_->render_pass_config_);
-    impl_.upd()->render_queue_.clear();
-}
-
-void osc::Camera::render_to(const RenderTarget& render_target)
-{
-    graphics::render_to(render_target, impl_->render_queue_, *this, impl_->render_pass_config_);
-    impl_.upd()->render_queue_.clear();
-}
-
-void osc::Camera::render_to(SharedDepthStencilRenderBuffer& shared_depth_stencil_buffer)
-{
-    graphics::render_to(shared_depth_stencil_buffer, impl_->render_queue_, *this, impl_->render_pass_config_);
-    impl_.upd()->render_queue_.clear();
-}
-
-std::ostream& osc::operator<<(std::ostream& o, const Camera& camera)
-{
-    return o << "Camera(position = " << camera.position() << ", direction = " << camera.direction() << ", projection = " << camera.projection() << ')';
-}
-
-bool osc::operator==(const Camera& lhs, const Camera& rhs)
-{
-    return static_cast<const CameraV2&>(lhs) == static_cast<const CameraV2&>(rhs) and (lhs.impl_ == rhs.impl_ or *lhs.impl_ == *rhs.impl_);
 }
 
 namespace
@@ -5899,22 +5745,13 @@ namespace osc
 
         static void render(
             const RenderQueue& render_queue,
-            const CameraV2& camera,
+            const Camera& camera,
             const RenderPassConfig& rp_config,
             const RenderTarget* maybe_custom_render_target = nullptr
         );
 
 
         // public (forwarded) API
-
-        static void draw(const Mesh&, const Transform&, const Material&, Camera&);
-        static void draw(const Mesh&, const Transform&, const Material&, Camera&, const MaterialPropertyBlock&);
-        static void draw(const Mesh&, const Transform&, const Material&, Camera&, size_t submesh_index);
-        static void draw(const Mesh&, const Transform&, const Material&, Camera&, const MaterialPropertyBlock&, size_t submesh_index);
-        static void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&);
-        static void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, const MaterialPropertyBlock&);
-        static void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, size_t submesh_index);
-        static void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, const MaterialPropertyBlock&, size_t submesh_index);
 
         static void blit(
             const Texture2D&,
@@ -6032,42 +5869,9 @@ std::string osc::GraphicsContext::backend_shading_language_version_string() cons
     return g_graphics_context_impl->backend_shading_language_version_string();
 }
 
-void osc::graphics::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera)
-{
-    GraphicsBackend::draw(mesh, transform, material, camera);
-}
-void osc::graphics::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block)
-{
-    GraphicsBackend::draw(mesh, transform, material, camera, material_prop_block);
-}
-void osc::graphics::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, size_t submesh_index)
-{
-    GraphicsBackend::draw(mesh, transform, material, camera, submesh_index);
-}
-void osc::graphics::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block, size_t submesh_index)
-{
-    GraphicsBackend::draw(mesh, transform, material, camera, material_prop_block, submesh_index);
-}
-void osc::graphics::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera)
-{
-    GraphicsBackend::draw(mesh, transform, material, camera);
-}
-void osc::graphics::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block)
-{
-    GraphicsBackend::draw(mesh, transform, material, camera, material_prop_block);
-}
-void osc::graphics::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, size_t submesh_index)
-{
-    GraphicsBackend::draw(mesh, transform, material, camera, submesh_index);
-}
-void osc::graphics::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block, size_t submesh_index)
-{
-    GraphicsBackend::draw(mesh, transform, material, camera, material_prop_block, submesh_index);
-}
-
 void osc::graphics::render_to_main_window(
     const RenderQueue& render_queue,
-    const CameraV2& camera,
+    const Camera& camera,
     const RenderPassConfig& render_pass_config)
 {
     GraphicsBackend::render(render_queue, camera, render_pass_config);
@@ -6076,7 +5880,7 @@ void osc::graphics::render_to_main_window(
 void osc::graphics::render_to(
     RenderTexture& render_texture,
     const RenderQueue& render_queue,
-    const CameraV2& camera,
+    const Camera& camera,
     const RenderPassConfig& render_pass_config)
 {
     static_assert(ClearFlag::All == ClearFlags{ClearFlag::SolidColor, ClearFlag::Depth});
@@ -6130,7 +5934,7 @@ void osc::graphics::render_to(
 void osc::graphics::render_to(
     const RenderTarget& render_target,
     const RenderQueue& render_queue,
-    const CameraV2& camera_v2,
+    const Camera& camera_v2,
     const RenderPassConfig& render_pass_config)
 {
     GraphicsBackend::render(render_queue, camera_v2, render_pass_config, &render_target);
@@ -6139,7 +5943,7 @@ void osc::graphics::render_to(
 void osc::graphics::render_to(
     SharedDepthStencilRenderBuffer& shared_depth_stencil_render_buffer,
     const RenderQueue& render_queue,
-    const CameraV2& camera_v2,
+    const Camera& camera_v2,
     const RenderPassConfig& render_pass_config)
 {
     static_assert(ClearFlag::All == ClearFlags{ClearFlag::SolidColor, ClearFlag::Depth});
@@ -7103,7 +6907,7 @@ void osc::GraphicsBackend::resolve_render_buffers(
 
 void osc::GraphicsBackend::render(
     const RenderQueue& render_queue,
-    const CameraV2& camera,
+    const Camera& camera,
     const RenderPassConfig& rp_config,
     const RenderTarget* maybe_custom_render_target)
 {
@@ -7147,65 +6951,23 @@ void osc::GraphicsBackend::render(
     );
 }
 
-void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera)
-{
-    camera.upd_render_queue().emplace(mesh, transform, material);
-}
-void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block)
-{
-    camera.upd_render_queue().emplace(mesh, transform, material, material_prop_block);
-}
-void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, size_t submesh_index)
-{
-    if (submesh_index >= mesh.num_submesh_descriptors()) {
-        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
-    }
-    camera.upd_render_queue().emplace(mesh, transform, material, submesh_index);
-}
-void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block, size_t submesh_index)
-{
-    if (submesh_index >= mesh.num_submesh_descriptors()) {
-        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
-    }
-    camera.upd_render_queue().emplace(mesh, transform, material, material_prop_block, submesh_index);
-}
-void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera)
-{
-    camera.upd_render_queue().emplace(mesh, transform, material);
-}
-void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block)
-{
-    camera.upd_render_queue().emplace(mesh, transform, material, material_prop_block);
-}
-void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, size_t submesh_index)
-{
-    if (submesh_index >= mesh.num_submesh_descriptors()) {
-        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
-    }
-    camera.upd_render_queue().emplace(mesh, transform, material, submesh_index);
-}
-void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block, size_t submesh_index)
-{
-    if (submesh_index >= mesh.num_submesh_descriptors()) {
-        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
-    }
-    camera.upd_render_queue().emplace(mesh, transform, material, material_prop_block, submesh_index);
-}
-
 void osc::GraphicsBackend::blit(
     const Texture2D& source,
     RenderTexture& destination)
 {
     Camera camera;
-    camera.set_background_color(Color::clear());
     camera.set_projection_matrix_override(identity<Matrix4x4>());
     camera.set_view_matrix_override(identity<Matrix4x4>());
 
     Material material = g_graphics_context_impl->quad_material();
     material.set("uTexture", source);
 
-    graphics::draw(g_graphics_context_impl->quad_mesh(), Transform{}, material, camera);
-    camera.render_to(destination);
+    RenderQueue render_queue;
+    render_queue.emplace(g_graphics_context_impl->quad_mesh(), material);
+
+    graphics::render_to(destination, render_queue, camera, {
+        .clear_color = Color::clear(),
+    });
 }
 
 void osc::GraphicsBackend::blit_to_main_window(
@@ -7226,17 +6988,19 @@ void osc::GraphicsBackend::blit_to_main_window(
     OSC_ASSERT(source.impl_->has_been_rendered_to() && "the input texture has not been rendered to");
 
     Camera camera;
-    camera.set_background_color(Color::clear());
-    camera.set_pixel_rect(destination_screen_rect);
     camera.set_projection_matrix_override(identity<Matrix4x4>());
     camera.set_view_matrix_override(identity<Matrix4x4>());
-    camera.set_clear_flags(ClearFlag::None);
 
     Material material_copy{material};
     material_copy.set("uTexture", source);
-    graphics::draw(g_graphics_context_impl->quad_mesh(), Transform{}, material_copy, camera);
-    camera.render_to_main_window();
-    material_copy.unset("uTexture");
+
+    RenderQueue render_queue;
+    render_queue.emplace(g_graphics_context_impl->quad_mesh(), material_copy);
+
+    graphics::render_to_main_window(render_queue, camera, {
+        .viewport_rect = destination_screen_rect,
+        .clear_flags = ClearFlag::None,
+    });
 }
 
 void osc::GraphicsBackend::blit_to_main_window(
@@ -7246,17 +7010,19 @@ void osc::GraphicsBackend::blit_to_main_window(
     OSC_ASSERT(g_graphics_context_impl);
 
     Camera camera;
-    camera.set_background_color(Color::clear());
-    camera.set_pixel_rect(rect);
     camera.set_projection_matrix_override(identity<Matrix4x4>());
     camera.set_view_matrix_override(identity<Matrix4x4>());
-    camera.set_clear_flags(ClearFlag::None);
 
     Material material_copy{g_graphics_context_impl->quad_material()};
     material_copy.set("uTexture", source);
-    graphics::draw(g_graphics_context_impl->quad_mesh(), Transform{}, material_copy, camera);
-    camera.render_to_main_window();
-    material_copy.unset("uTexture");
+
+    RenderQueue render_queue;
+    render_queue.emplace(g_graphics_context_impl->quad_mesh(), material_copy);
+
+    graphics::render_to_main_window(render_queue, camera, {
+        .viewport_rect = rect,
+        .clear_flags = ClearFlag::None,
+    });
 }
 
 void osc::GraphicsBackend::copy_texture(

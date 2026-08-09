@@ -1,12 +1,13 @@
 #include "logl_framebuffers_tab.h"
 
 #include <liboscar/formats/image.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/render_texture.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
-#include <liboscar/graphics/geometries/plane_geometry.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
@@ -54,14 +55,6 @@ namespace
         rv.set_clipping_planes({0.1f, 100.0f});
         return rv;
     }
-
-    Camera create_screen_camera()
-    {
-        Camera rv;
-        rv.set_view_matrix_override(identity<Matrix4x4>());
-        rv.set_projection_matrix_override(identity<Matrix4x4>());
-        return rv;
-    }
 }
 
 class osc::LOGLFramebuffersTab::Impl final : public TabPrivate {
@@ -75,23 +68,23 @@ public:
     void on_mount()
     {
         App::upd().make_main_loop_polling();
-        scene_camera_.on_mount();
+        camera_.on_mount();
     }
 
     void on_unmount()
     {
-        scene_camera_.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
     bool on_event(Event& e)
     {
-        return scene_camera_.on_event(e);
+        return camera_.on_event(e);
     }
 
     void on_draw()
     {
-        scene_camera_.on_draw();
+        camera_.on_draw();
 
         // setup render texture
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
@@ -106,14 +99,15 @@ public:
         {
             // cubes
             scene_render_material_.set("uTexture1", container_texture_);
-            graphics::draw(cube_mesh_, {.translation = {-1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
-            graphics::draw(cube_mesh_, {.translation = { 1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
+            render_queue_.emplace(cube_mesh_, {.translation = {-1.0f, 0.0f, -1.0f}}, scene_render_material_);
+            render_queue_.emplace(cube_mesh_, {.translation = { 1.0f, 0.0f, -1.0f}}, scene_render_material_);
 
             // floor
             scene_render_material_.set("uTexture1", metal_texture_);
-            graphics::draw(plane_mesh_, identity<Transform>(), scene_render_material_, scene_camera_);
+            render_queue_.emplace(plane_mesh_, scene_render_material_);
         }
-        scene_camera_.render_to(render_texture_);
+        graphics::render_to(render_texture_, render_queue_, camera_);
+        render_queue_.clear();
 
         // render via a effect sampler
         graphics::blit_to_main_window(render_texture_, screen_material_, workspace_screen_space_rect);
@@ -131,7 +125,8 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.frag"),
     }};
 
-    MouseCapturingCamera scene_camera_ = create_scene_camera();
+    MouseCapturingCamera camera_ = create_scene_camera();
+    RenderQueue render_queue_;
 
     Texture2D container_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/container.jpg"),
@@ -144,10 +139,8 @@ private:
 
     Mesh cube_mesh_ = BoxGeometry{}.mesh();
     Mesh plane_mesh_ = generate_plane();
-    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
 
     RenderTexture render_texture_;
-    Camera screen_camera_ = create_screen_camera();
     Material screen_material_{Shader{
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.vert"),
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),

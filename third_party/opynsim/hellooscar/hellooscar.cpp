@@ -38,14 +38,15 @@ namespace
             target_texture_.reformat({
                 .pixel_dimensions = App::get().main_window_pixel_dimensions(),
                 .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
-                .anti_aliasing_level = App::get().anti_aliasing_level()
+                .anti_aliasing_level = App::get().anti_aliasing_level(),
             });
 
             update_torus_if_params_changed();
             const auto seconds_since_startup = App::get().frame_delta_since_startup().count();
             const Transform transform = {.rotation = angle_axis(Radians{seconds_since_startup}, CoordinateDirection::y())};
-            graphics::draw(mesh_, transform, material_, camera_);
-            camera_.render_to(target_texture_);
+            render_queue_.emplace(mesh_, transform, material_);
+            graphics::render_to(target_texture_, render_queue_, camera_);
+            render_queue_.clear();
             graphics::blit_to_main_window(target_texture_);
 
             ui::begin_panel("window");
@@ -78,6 +79,7 @@ namespace
             .specular_color = 0.5f * torus_color_,
         }};
         Camera camera_;
+        RenderQueue render_queue_;
         RenderTexture target_texture_;
     };
 }

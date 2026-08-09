@@ -9,7 +9,7 @@
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
-#include <liboscar/graphics/camera_v2.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/polar_perspective_camera.h>
@@ -27,7 +27,7 @@ osc::Texture2D opyn::render_model_in_state(
     osc::Color background_color,
     bool draw_floor,
     osc::SceneCache* scene_cache,
-    const osc::CameraV2* camera)
+    const osc::Camera* camera)
 {
     OSC_ASSERT_ALWAYS(dimensions.x() > 0 and dimensions.y() > 0 && "The dimensions of a render must be positive integers");
 
@@ -42,7 +42,7 @@ osc::Texture2D opyn::render_model_in_state(
     const auto aspect_ratio = osc::aspect_ratio_of(dimensions);
 
     // Create local camera if caller did not provide one.
-    std::optional<osc::CameraV2> local_camera;
+    std::optional<osc::Camera> local_camera;
     if (not camera) {
         osc::PolarPerspectiveCamera polar_camera;
         polar_camera.phi = {};

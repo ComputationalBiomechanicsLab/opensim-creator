@@ -1,6 +1,6 @@
 #include "hittest_tab.h"
 
-#include <liboscar/graphics/camera_v2.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/geometries/aabb_geometry.h>
 #include <liboscar/graphics/geometries/circle_geometry.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>
@@ -20,7 +20,7 @@
 #include <liboscar/maths/sphere.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
-#include <liboscar/ui/mouse_capturing_camera_v2.h>
+#include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
 
@@ -150,7 +150,6 @@ public:
     void on_draw()
     {
         camera_.on_draw();
-        render_queue_.clear();
 
         // render spheres
         for (const SceneSphere& scene_sphere : scene_spheres_) {
@@ -228,10 +227,11 @@ public:
             .viewport_rect = workspace_screen_space_rect,
             .clear_color = Color::white().with_alpha(0.0f),
         });
+        render_queue_.clear();
     }
 
 private:
-    MouseCapturingCameraV2 camera_;
+    MouseCapturingCamera camera_;
     RenderQueue render_queue_;
     MeshBasicMaterial material_;
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 12, .num_height_segments = 12}};

@@ -8,7 +8,7 @@
 #include <liboscar/maths/transform.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
-#include <liboscar/ui/mouse_capturing_camera_v2.h>
+#include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/tabs/tab_private.h>
 
@@ -19,9 +19,9 @@ using namespace osc;
 
 namespace
 {
-    MouseCapturingCameraV2 create_camera()
+    MouseCapturingCamera create_camera()
     {
-        MouseCapturingCameraV2 rv;
+        MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
@@ -78,7 +78,6 @@ public:
     void on_draw()
     {
         camera_.on_draw();
-        render_queue_.clear();
 
         // draw cube
         lighting_maps_material_.set("uViewPos", camera_.position());
@@ -97,6 +96,7 @@ public:
         graphics::render_to_main_window(render_queue_, camera_, {
             .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
         });
+        render_queue_.clear();
 
         // render 2D UI
         ui::begin_panel("controls");
@@ -116,7 +116,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/LightCube.frag"),
     }};
     Mesh mesh_ = BoxGeometry{}.mesh();
-    MouseCapturingCameraV2 camera_ = create_camera();
+    MouseCapturingCamera camera_ = create_camera();
     RenderQueue render_queue_;
 
     Transform light_transform_ = {

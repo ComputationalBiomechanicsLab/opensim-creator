@@ -5,6 +5,8 @@
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
 #include <liboscar/ui/mouse_capturing_camera.h>
@@ -43,7 +45,6 @@ namespace
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
-        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 }
@@ -83,9 +84,12 @@ public:
 private:
     void draw_scene()
     {
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-        graphics::draw(cube_, identity<Transform>(), material_, camera_);
-        camera_.render_to_main_window();
+        render_queue_.emplace(cube_, material_);
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            .clear_color = {0.1f, 1.0f},
+        });
+        render_queue_.clear();
     }
 
     void draw_2d_ui()
@@ -107,6 +111,7 @@ private:
     Material material_ = generate_uv_testing_texture_mapped_material(loader_);
     Mesh cube_ = generate_cube_like_learnopengl();
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
+    RenderQueue render_queue_;
 };
 
 

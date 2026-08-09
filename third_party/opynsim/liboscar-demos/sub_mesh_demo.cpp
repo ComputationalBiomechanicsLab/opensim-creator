@@ -4,7 +4,7 @@
 #include <liboscar/graphics/geometries/circle_geometry.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>
 #include <liboscar/graphics/materials/mesh_basic_material.h>
-#include <liboscar/graphics/camera_v2.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/render_pass_config.h>
@@ -81,7 +81,6 @@ public:
 
     void on_draw()
     {
-        render_queue_.clear();
         for (size_t sub_mesh_index = 0; sub_mesh_index < mesh_with_sub_meshes_.num_submesh_descriptors(); ++sub_mesh_index) {
             render_queue_.emplace(
                 mesh_with_sub_meshes_,
@@ -94,10 +93,11 @@ public:
             .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
             .clear_color = Color::white(),
         });
+        render_queue_.clear();
     }
 
 private:
-    CameraV2 camera_;
+    Camera camera_;
     RenderQueue render_queue_;
     MeshBasicMaterial material_;
     Mesh mesh_with_sub_meshes_ = generate_mesh_with_sub_meshes();

@@ -2,55 +2,30 @@
 
 #include <liboscar/graphics/blit_flags.h>
 #include <liboscar/graphics/cubemap_face.h>
-#include <liboscar/graphics/material_property_block.h>
 #include <liboscar/graphics/render_pass_config.h>
-#include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/rect.h>
 
 #include <cstddef>
 #include <optional>
 
 namespace osc { class Camera; }
-namespace osc { class CameraV2; }
 namespace osc { class Cubemap; }
 namespace osc { class Material; }
-namespace osc { class Mesh; }
-namespace osc { class Rect; }
 namespace osc { class RenderQueue; }
 namespace osc { class RenderTarget; }
 namespace osc { class RenderTexture; }
+namespace osc { class SharedDepthStencilRenderBuffer; }
 namespace osc { class Texture2D; }
-namespace osc { struct Transform; }
 
 // rendering functions
 //
 // these perform the necessary backend steps to get something useful done
 namespace osc::graphics
 {
-    // Queues the given `Mesh` + `Transform` + `Material` + extras against
-    // the `Camera`.
-    //
-    // Once everything is queued against the `Camera`, the caller should call
-    // `Camera::render()` or `Camera::render_to()` to flush the queue.
-    void draw(const Mesh&, const Transform&, const Material&, Camera&);
-    void draw(const Mesh&, const Transform&, const Material&, Camera&, const MaterialPropertyBlock&);
-    void draw(const Mesh&, const Transform&, const Material&, Camera&, size_t submesh_index);
-    void draw(const Mesh&, const Transform&, const Material&, Camera&, const MaterialPropertyBlock&, size_t submesh_index);
-
-    // Queues the given `Mesh` + `Matrix4x4` + `Material` + extras against
-    // the `Camera`.
-    //
-    // Once everything is queued against the `Camera`, the caller should call
-    // `Camera::render()` or `Camera::render_to()` to flush the queue.
-    void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&);
-    void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, const MaterialPropertyBlock&);
-    void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, size_t submesh_index);
-    void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, const MaterialPropertyBlock&, size_t submesh_index);
-
-    void render_to_main_window(                     const RenderQueue&, const CameraV2&, const RenderPassConfig& = {});
-    void render_to(RenderTexture&,                  const RenderQueue&, const CameraV2&, const RenderPassConfig& = {});
-    void render_to(const RenderTarget&,             const RenderQueue&, const CameraV2&, const RenderPassConfig& = {});
-    void render_to(SharedDepthStencilRenderBuffer&, const RenderQueue&, const CameraV2&, const RenderPassConfig& = {});
+    void render_to_main_window(                     const RenderQueue&, const Camera&, const RenderPassConfig& = {});
+    void render_to(RenderTexture&,                  const RenderQueue&, const Camera&, const RenderPassConfig& = {});
+    void render_to(const RenderTarget&,             const RenderQueue&, const Camera&, const RenderPassConfig& = {});
+    void render_to(SharedDepthStencilRenderBuffer&, const RenderQueue&, const Camera&, const RenderPassConfig& = {});
 
     // Blits the `Texture` to the `RenderTexture`.
     void blit(

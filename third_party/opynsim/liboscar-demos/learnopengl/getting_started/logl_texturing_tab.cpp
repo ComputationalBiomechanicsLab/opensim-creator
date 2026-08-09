@@ -6,6 +6,8 @@
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
 #include <liboscar/ui/oscimgui.h>
@@ -78,10 +80,11 @@ public:
 
     void on_draw()
     {
-        graphics::draw(mesh_, identity<Transform>(), material_, camera_);
-
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-        camera_.render_to_main_window();
+        render_queue_.emplace(mesh_, identity<Transform>(), material_);
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+        });
+        render_queue_.clear();
     }
 
 private:
@@ -89,6 +92,7 @@ private:
     Material material_ = load_textured_material(loader_);
     Mesh mesh_ = generate_textured_quad_mesh();
     Camera camera_ = create_identity_camera();
+    RenderQueue render_queue_;
 };
 
 

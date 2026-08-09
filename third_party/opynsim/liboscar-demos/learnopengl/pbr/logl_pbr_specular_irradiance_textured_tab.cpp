@@ -15,7 +15,7 @@
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/resource_loader.h>
-#include <liboscar/ui/mouse_capturing_camera_v2.h>
+#include <liboscar/ui/mouse_capturing_camera.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/panels/perf_panel.h>
 #include <liboscar/ui/tabs/tab_private.h>
@@ -43,9 +43,9 @@ namespace
         {150.0f, 150.0f, 150.0f},
     });
 
-    MouseCapturingCameraV2 create_camera()
+    MouseCapturingCamera create_camera()
     {
-        MouseCapturingCameraV2 rv;
+        MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 20.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
@@ -79,7 +79,7 @@ namespace
         material.set("uEquirectangularMap", hdr_texture);
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vector3{}));
 
-        CameraV2 camera;
+        Camera camera;
         RenderQueue render_queue;
         render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
         graphics::render_to(cubemap_render_target, render_queue, camera);
@@ -106,7 +106,7 @@ namespace
         material.set("uEnvironmentMap", skybox);
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(captureProjection, Vector3{}));
 
-        CameraV2 camera;
+        Camera camera;
         RenderQueue render_queue;
         render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
         graphics::render_to(irradiance_cubemap, render_queue, camera);
@@ -146,7 +146,7 @@ namespace
         ));
         static_assert(max_mipmap_level == 7);
 
-        CameraV2 camera;
+        Camera camera;
         RenderQueue render_queue;
 
         // render prefilter map such that each supported level of roughness maps into one
@@ -169,7 +169,7 @@ namespace
     Texture2D create_2D_brdf_lookup(ResourceLoader& loader)
     {
         // TODO: `graphics::blit` with material
-        CameraV2 camera;
+        Camera camera;
         camera.set_projection_matrix_override(identity<Matrix4x4>());
         camera.set_view_matrix_override(identity<Matrix4x4>());
 
@@ -277,8 +277,6 @@ private:
     {
         set_common_material_properties();
 
-        render_queue_.clear();
-
         // Add spheres
         Vector3 sphere_pos = {-5.0f, 0.0f, 2.0f};
         for (const IBLSpecularObjectTextures& texture : object_textures_) {
@@ -296,10 +294,10 @@ private:
             );
         }
 
-        // Render
         graphics::render_to(output_render_, render_queue_, camera_, {
             .clear_color = {0.1f, 1.0f},
         });
+        render_queue_.clear();
     }
 
     void set_common_material_properties()
@@ -327,12 +325,12 @@ private:
         background_material_.set("uEnvironmentMap", projected_map_);
         background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
 
-        render_queue_.clear();
         render_queue_.emplace(cube_mesh_, identity<Transform>(), background_material_);
         graphics::render_to(output_render_, render_queue_, camera_, {
             .clear_color = {0.1f, 1.0f},
             .clear_flags = ClearFlag::None,
         });
+        render_queue_.clear();
     }
 
     ResourceLoader loader_ = App::resource_loader();
@@ -360,7 +358,7 @@ private:
     Material pbr_material_ = create_material(loader_);
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
 
-    MouseCapturingCameraV2 camera_ = create_camera();
+    MouseCapturingCamera camera_ = create_camera();
     RenderQueue render_queue_;
 
     PerfPanel perf_panel_{&owner()};

@@ -66,7 +66,6 @@ namespace osc
         class DepthStencilRenderBuffer;
         const DepthStencilRenderBuffer& impl() const { return *impl_; }
     private:
-        friend class Camera;
         friend class GraphicsBackend;
         friend class RenderTexture;
 

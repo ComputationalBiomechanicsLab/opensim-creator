@@ -16,7 +16,7 @@
 #include <span>
 
 namespace osc { class BVH; }
-namespace osc { class CameraV2; }
+namespace osc { class Camera; }
 namespace osc { class Mesh; }
 namespace osc { class Rect; }
 namespace osc { class SceneCache; }
@@ -150,5 +150,5 @@ namespace osc
 
     // returns `FrustumPlanes` that represent the clipping planes of `camera` when rendering to an
     // output that has an aspect ratio of `aspect_ratio`
-    FrustumPlanes calc_frustum_planes(const CameraV2& camera, float aspect_ratio);
+    FrustumPlanes calc_frustum_planes(const Camera& camera, float aspect_ratio);
 }

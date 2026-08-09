@@ -11,7 +11,6 @@
 #include <liboscar/maths/coordinate_direction.h>
 #include <liboscar/maths/disc.h>
 #include <liboscar/maths/easing_functions.h>
-#include <liboscar/maths/euler_perspective_camera.h>
 #include <liboscar/maths/frustum_planes.h>
 #include <liboscar/maths/line_segment.h>
 #include <liboscar/maths/math_helpers.h>
@@ -531,37 +530,6 @@ std::ostream& osc::operator<<(std::ostream& out, const Disc& disc)
 {
     return out << "Disc(origin = " << disc.origin << ", normal = " << disc.normal << ", radius = " << disc.radius << ')';
 }
-
-
-Vector3 osc::EulerPerspectiveCamera::front() const
-{
-    return normalize(Vector3{
-        cos(yaw) * cos(pitch),
-        sin(pitch),
-        sin(yaw) * cos(pitch),
-    });
-}
-
-Vector3 osc::EulerPerspectiveCamera::up() const
-{
-    return Vector3{0.0f, 1.0f, 0.0f};
-}
-
-Vector3 osc::EulerPerspectiveCamera::right() const
-{
-    return normalize(cross(front(), up()));
-}
-
-Matrix4x4 osc::EulerPerspectiveCamera::view_matrix() const
-{
-    return look_at(origin, origin + front(), up());
-}
-
-Matrix4x4 osc::EulerPerspectiveCamera::projection_matrix(float aspect_ratio) const
-{
-    return perspective(vertical_field_of_view, aspect_ratio, znear, zfar);
-}
-
 
 std::ostream& osc::operator<<(std::ostream& out, const Ray& ray)
 {

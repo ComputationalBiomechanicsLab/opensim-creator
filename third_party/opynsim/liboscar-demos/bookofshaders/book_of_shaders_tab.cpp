@@ -5,6 +5,7 @@
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/material_property_block.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/geometries/plane_geometry.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_clock.h>
@@ -163,14 +164,14 @@ private:
         props_.set_resolution(workspace_dimensions * App::get().main_window_device_pixel_ratio());
         props_.set_mouse_position(ui::get_mouse_ui_position());
 
-        graphics::draw(
+        render_queue_.emplace(
             quad_,
             {.scale = {aspect_ratio_of(workspace_dimensions), 1.0f, 1.0f}},
             materials_.at(current_material_index_),
-            camera_,
             props_
         );
-        camera_.render_to_main_window();
+        graphics::render_to_main_window(render_queue_, camera_);
+        render_queue_.clear();
     }
 
     void draw_2d_ui()
@@ -193,6 +194,7 @@ private:
     size_t current_material_index_ = 0;
     PlaneGeometry quad_;
     Camera camera_;
+    RenderQueue render_queue_;
     BookOfShadersCommonProperties props_;
 };
 

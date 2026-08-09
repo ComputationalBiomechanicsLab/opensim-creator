@@ -5,6 +5,8 @@
 #include <liboscar/graphics/cubemap_face.h>
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
+#include <liboscar/graphics/render_pass_config.h>
+#include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/platform/app.h>
@@ -74,7 +76,6 @@ namespace
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 100.0f});
-        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
@@ -154,9 +155,6 @@ public:
     {
         camera_.on_draw();
 
-        // clear screen and ensure camera has correct pixel rect
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-
         draw_scene_cube();
         draw_skybox();
         draw_2d_ui();
@@ -167,29 +165,29 @@ private:
     {
         cube_properties_.set("uCameraPos", camera_.position());
         cube_properties_.set("uIOR", ior_);
-        graphics::draw(
+        render_queue_.emplace(
             cube_mesh_,
             identity<Transform>(),
             cube_materials_.at(cube_material_index_).material,
-            camera_,
             cube_properties_
         );
-        camera_.render_to_main_window();
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            .clear_color = {0.1f, 1.0f},
+        });
+        render_queue_.clear();
     }
 
     void draw_skybox()
     {
-        camera_.set_clear_flags(ClearFlag::None);
         camera_.set_view_matrix_override(Matrix4x4{Matrix3x3{camera_.view_matrix()}});
-        graphics::draw(
-            skybox_,
-            identity<Transform>(),
-            skybox_material_,
-            camera_
-        );
-        camera_.render_to_main_window();
+        render_queue_.emplace(skybox_, skybox_material_);
+        graphics::render_to_main_window(render_queue_, camera_, {
+            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            .clear_flags = ClearFlag::None,
+        });
+        render_queue_.clear();
         camera_.set_view_matrix_override(std::nullopt);
-        camera_.set_clear_flags(ClearFlag::Default);
     }
 
     void draw_2d_ui()
@@ -228,6 +226,7 @@ private:
     Cubemap cubemap_ = load_cubemap(loader_);
 
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
+    RenderQueue render_queue_;
 };
 
 

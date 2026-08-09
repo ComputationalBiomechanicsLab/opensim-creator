@@ -7,7 +7,7 @@ namespace opyn { class OPynSimApp; }
 namespace opyn { class Model; }
 namespace opyn { class ModelState; }
 namespace osc { class SceneCache; }
-namespace osc { class CameraV2; }
+namespace osc { class Camera; }
 
 namespace opyn
 {
@@ -19,6 +19,6 @@ namespace opyn
         osc::Color background_color,
         bool draw_floor,
         osc::SceneCache* scene_cache,
-        const osc::CameraV2* camera
+        const osc::Camera* camera
     );
 }
