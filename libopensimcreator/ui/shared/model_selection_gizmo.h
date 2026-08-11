@@ -5,8 +5,8 @@
 #include <memory>
 
 namespace opyn { class ModelStatePair; }
+namespace osc { class CameraAPI; }
 namespace osc { class Rect; }
-namespace osc { struct PolarPerspectiveCamera; }
 
 namespace osc
 {
@@ -23,7 +23,7 @@ namespace osc
         bool isOver() const { return m_Gizmo.is_over(); }
 
         bool handleKeyboardInputs() { return m_Gizmo.handle_keyboard_inputs(); }
-        void onDraw(const Rect& screenRect, const PolarPerspectiveCamera&);
+        void onDraw(const Rect& screenRect, const CameraAPI&);
 
         ui::GizmoOperation getOperation() const { return m_Gizmo.operation(); }
         void setOperation(ui::GizmoOperation op) { m_Gizmo.set_operation(op); }

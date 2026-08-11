@@ -6,10 +6,10 @@
 #include <libopynsim/graphics/model_renderer_params.h>
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <liboscar/graphics/anti_aliasing_level.h>
+#include <liboscar/graphics/camera_api.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_helpers.h>
 #include <liboscar/maths/math_helpers.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/ray.h>
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/vector.h>
@@ -106,7 +106,7 @@ std::optional<osc::SceneCollision> opyn::GetClosestCollision(
     const osc::BVH& sceneBVH,
     osc::SceneCache& sceneCache,
     std::span<const osc::SceneDecoration> taggedDrawlist,
-    const osc::PolarPerspectiveCamera& camera,
+    const osc::CameraAPI& camera,
     osc::Vector2 mouseScreenPosition,
     const osc::Rect& viewportScreenRect)
 {

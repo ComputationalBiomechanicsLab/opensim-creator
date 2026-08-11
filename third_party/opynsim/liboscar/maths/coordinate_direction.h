@@ -97,6 +97,13 @@ namespace osc
         {
             return CoordinateDirection{axis_, static_cast<int8_t>(-1 * direction_)};
         }
+
+        // returns the index of the direction (i.e. X == 0, Y == 1, Z == 2,
+        // -X == 3, -Y == 4, -Z == 5).
+        constexpr size_t index() const
+        {
+            return axis_.index() + (direction_ < 0 ? 3 : 0);
+        }
     private:
         friend constexpr CoordinateDirection cross(CoordinateDirection, CoordinateDirection);
 

@@ -1,10 +1,11 @@
 #include "camera_view_axes.h"
 
 #include <liboscar/graphics/color.h>
+#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/maths/circle.h>
+#include <liboscar/maths/coordinate_direction.h>
 #include <liboscar/maths/geometric_functions.h>
 #include <liboscar/maths/math_helpers.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/vector.h>
@@ -46,22 +47,22 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
     // figure out rendering order (back-to-front)
     const Matrix4x4 view_matrix = camera.view_matrix();
-    auto axis_indices = std::to_array<Vector4::size_type>({0, 1, 2});
-    rgs::sort(axis_indices, rgs::less{}, [&view_matrix](auto axis_index)
+    auto axes = std::array{CoordinateDirection::x(), CoordinateDirection::y(), CoordinateDirection::z()};
+    rgs::sort(axes, rgs::less{}, [&view_matrix](auto axis)
     {
-        return (view_matrix * Vector4{}.with_element(axis_index, 1.0f)).z();
+        return transform_vector(view_matrix, axis.direction_vector()).z();
     });
 
     // draw each edge back-to-front
     bool edited = false;
     ui::DrawListView draw_list = ui::get_panel_draw_list();
-    for (auto axis_index : axis_indices) {
+    for (const auto& axis : axes) {
         // calc direction vector in ui space
-        Vector2 view_space_pos = Vector2{view_matrix * Vector4{}.with_element(axis_index, 1.0f)};
+        Vector2 view_space_pos = transform_vector(view_matrix, axis.direction_vector()).xy();
         view_space_pos.y() = -view_space_pos.y();  // y goes down in ui space
 
         Color base_color = {0.15f, 0.15f, 0.15f, 1.0f};
-        base_color[axis_index] = 0.7f;
+        base_color[axis.index()] = 0.7f;
 
         // draw line from origin to end with a labelled (clickable) circle ending
         {
@@ -70,11 +71,11 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
             const Rect circle_bounds = bounding_rect_of(circ);
 
             const auto labels = std::to_array<CStringView>({ "X", "Y", "Z" });
-            const auto id = ui::get_id(labels[axis_index]);
+            const auto id = ui::get_id(labels[axis.index()]);
             ui::set_cursor_ui_position(circle_bounds.ypd_top_left());
             ui::set_next_item_size(circle_bounds);
             if (ui::add_item(circle_bounds, id)) {
-                const Vector2 label_size = ui::calc_text_size(labels[axis_index]);
+                const Vector2 label_size = ui::calc_text_size(labels[axis.index()]);
 
                 const bool hovered = ui::is_item_hoverable(circle_bounds, id);
                 const Color color = hovered ? Color::white() : base_color;
@@ -82,10 +83,10 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
                 draw_list.add_line(origin, end, color, 3.0f);
                 draw_list.add_circle_filled(circ, color);
-                draw_list.add_text(end - 0.5f*label_size, text_color, labels[axis_index]);
+                draw_list.add_text(end - 0.5f*label_size, text_color, labels[axis.index()]);
 
                 if (hovered and ui::is_mouse_clicked(ui::MouseButton::Left, id)) {
-                    focus_along_axis(camera, axis_index);
+                    camera.focus_along(axis);
                     edited = true;
                 }
             }
@@ -98,7 +99,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
             const Rect circle_bounds = bounding_rect_of(circ);
 
             const auto labels = std::to_array<CStringView>({ "-X", "-Y", "-Z" });
-            const auto id = ui::get_id(labels[axis_index]);
+            const auto id = ui::get_id(labels[axis.index()]);
             ui::set_cursor_ui_position(circle_bounds.ypd_top_left());
             ui::set_next_item_size(circle_bounds);
             if (ui::add_item(circle_bounds, id)) {
@@ -108,7 +109,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
                 draw_list.add_circle_filled(circ, color);
 
                 if (hovered and ui::is_mouse_clicked(ui::MouseButton::Left, id)) {
-                    focus_along_axis(camera, axis_index, true);
+                    camera.focus_along(-axis);
                     edited = true;
                 }
             }

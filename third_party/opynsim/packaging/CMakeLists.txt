@@ -50,7 +50,14 @@ if(OPYN_BUILD_PYTHON_BINDINGS)
     else()
         # Windows/Linux/other - get it from Python
         execute_process(
-            COMMAND "${Python_EXECUTABLE}" -c "from packaging.tags import sys_tags; print(next(sys_tags()).platform)"
+            COMMAND "${Python_EXECUTABLE}" -c "
+from packaging.tags import sys_tags
+# Try to find a manylinux tag first if on Linux, otherwise fallback
+try:
+    print(next(t for t in sys_tags() if 'manylinux' in t.platform).platform)
+except StopIteration:
+    print(next(sys_tags()).platform)
+"
             OUTPUT_VARIABLE _opyn_python_platform_tag
             OUTPUT_STRIP_TRAILING_WHITESPACE
             ERROR_VARIABLE PY_ERR

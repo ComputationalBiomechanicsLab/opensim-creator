@@ -5,10 +5,10 @@
 #include <libopynsim/documents/model/model_state_pair.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
+#include <liboscar/graphics/camera_api.h>
 #include <liboscar/maths/euler_angles.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/matrix4x4.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/quaternion.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
@@ -696,7 +696,7 @@ namespace
     void DrawGizmoOverlayInner(
         ui::Gizmo& gizmo,
         const Rect& screenRect,
-        const PolarPerspectiveCamera& camera,
+        const CameraAPI& camera,
         ISelectionManipulator& manipulator)
     {
 
@@ -749,7 +749,7 @@ namespace
     bool TryManipulateComponentWithManipulator(
         ui::Gizmo& gizmo,
         const Rect& screenRect,
-        const PolarPerspectiveCamera& camera,
+        const CameraAPI& camera,
         const std::shared_ptr<opyn::ModelStatePair>& model,
         const OpenSim::Component& selected)
     {
@@ -771,7 +771,7 @@ namespace
     void TryManipulateComponentWithMatchingManipulator(
         ui::Gizmo& gizmo,
         const Rect& screenRect,
-        const PolarPerspectiveCamera& camera,
+        const CameraAPI& camera,
         const std::shared_ptr<opyn::ModelStatePair>& model,
         const OpenSim::Component& selected,
         Typelist<ConcreteManipulator...>)
@@ -797,7 +797,7 @@ osc::ModelSelectionGizmo::~ModelSelectionGizmo() noexcept = default;
 
 void osc::ModelSelectionGizmo::onDraw(
     const Rect& screenRect,
-    const PolarPerspectiveCamera& camera)
+    const CameraAPI& camera)
 {
     if (m_Model->isReadonly()) {
         return;  // cannot manipulate a readonly model (#936)

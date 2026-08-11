@@ -13,14 +13,14 @@
 
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <liboscar/formats/svg.h>
-#include <liboscar/graphics/color.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/texture_filter_mode.h>
 #include <liboscar/maths/math_helpers.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/vector.h>
@@ -57,13 +57,14 @@ namespace
         return rv;
     }
 
-    SceneRendererParams GetSplashScreenDefaultRenderParams(const PolarPerspectiveCamera& camera)
+    SceneRendererParams GetSplashScreenDefaultRenderParams(const CameraAPI& camera)
     {
+        const auto clipping_planes = camera.clipping_planes();
         SceneRendererParams rv;
         rv.draw_rims = false;
         rv.view_matrix = camera.view_matrix();
-        rv.near_clipping_plane = camera.znear;
-        rv.far_clipping_plane = camera.zfar;
+        rv.near_clipping_plane = clipping_planes.znear;
+        rv.far_clipping_plane = clipping_planes.zfar;
         rv.viewer_position = camera.position();
         rv.light_direction = {-0.34f, -0.25f, 0.05f};
         rv.light_color = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f, 1.0f};

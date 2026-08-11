@@ -1227,17 +1227,20 @@ bool osc::DrawCameraControlButtons(
 
     bool edited = false;
     if (zoomOutButton.on_draw()) {
-        zoom_out(params.camera);
+        params.camera.zoom_out();
         edited = true;
     }
     ui::same_line();
     if (zoomInButton.on_draw()) {
-        zoom_in(params.camera);
+        params.camera.zoom_in();
         edited = true;
     }
     ui::same_line();
     if (autoFocusButton.on_draw() && maybeSceneAABB) {
-        auto_focus(params.camera, *maybeSceneAABB, aspect_ratio_of(viewerScreenRect));
+        params.camera.focus_on(
+            *maybeSceneAABB,
+            aspect_ratio_of(viewerScreenRect)
+        );
         edited = true;
     }
 

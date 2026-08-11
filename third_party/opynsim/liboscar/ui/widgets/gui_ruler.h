@@ -5,15 +5,15 @@
 
 #include <optional>
 
+namespace osc { class CameraAPI; }
 namespace osc { class Rect; }
-namespace osc { struct PolarPerspectiveCamera; }
 
 namespace osc
 {
     class GuiRuler final {
     public:
         void on_draw(
-            const PolarPerspectiveCamera&,
+            const CameraAPI&,
             const Rect& render_rect,
             std::optional<SceneCollision>
         );

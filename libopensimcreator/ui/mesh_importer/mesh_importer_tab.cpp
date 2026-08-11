@@ -1880,9 +1880,11 @@ private:
 
         if (ui::draw_button(MSMICONS_EXPAND_ARROWS_ALT))
         {
-            if (const std::optional<AABB> sceneAABB = calcSceneAABB())
-            {
-                auto_focus(m_Shared->updCamera(), *sceneAABB, aspect_ratio_of(m_Shared->get3DSceneDims()));
+            if (const std::optional<AABB> sceneAABB = calcSceneAABB()) {
+                m_Shared->updCamera().focus_on(
+                    *sceneAABB,
+                    aspect_ratio_of(m_Shared->get3DSceneDims())
+                );
             }
         }
         ui::draw_tooltip_if_item_hovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");

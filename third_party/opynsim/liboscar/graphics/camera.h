@@ -13,8 +13,9 @@
 
 namespace osc
 {
-    /// Represents a camera at a `position` in world space, pointing toward `direction`
-    /// and oriented such that it is `up`.
+    /// Represents a camera at `position` in world space, pointing in
+    /// `direction`, or oriented such that the top of its viewing plane
+    /// points `up`.
     class Camera {
     public:
         Camera();

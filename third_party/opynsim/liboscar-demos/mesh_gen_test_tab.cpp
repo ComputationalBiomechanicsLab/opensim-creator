@@ -1,6 +1,7 @@
 #include "mesh_gen_test_tab.h"
 
 #include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/graphics/geometries/dodecahedron_geometry.h>
 #include <liboscar/graphics/geometries/icosahedron_geometry.h>
@@ -12,8 +13,8 @@
 #include <liboscar/graphics/geometries/torus_knot_geometry.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
+#include <liboscar/graphics/scene/scene_helpers.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>

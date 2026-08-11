@@ -10,12 +10,12 @@
 
 #include <libopynsim/graphics/custom_rendering_options.h>
 #include <libopynsim/graphics/overlay_decoration_options.h>
-#include <liboscar/graphics/color.h>
-#include <liboscar/graphics/material.h>
 #include <liboscar/graphics/materials/mesh_basic_material.h>
 #include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/material.h>
+#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/maths/aabb.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/widget.h>
@@ -297,7 +297,7 @@ namespace osc
         bool m_OnlyLinkRotation = false;
 
         // shared linked camera
-        PolarPerspectiveCamera m_LinkedCameraBase = create_camera_focused_on(m_UndoableTPSDocument->scratch().sourceMesh.bounds().value_or(AABB{}));
+        PolarPerspectiveCamera m_LinkedCameraBase = PolarPerspectiveCamera::focused_on(m_UndoableTPSDocument->scratch().sourceMesh.bounds().value_or(AABB{}));
 
         // shared scene cache, to minimize rendering effort when redrawing
         std::shared_ptr<SceneCache> m_SceneCache;

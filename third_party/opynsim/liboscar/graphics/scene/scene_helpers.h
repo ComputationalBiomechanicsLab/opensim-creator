@@ -17,12 +17,12 @@
 
 namespace osc { class BVH; }
 namespace osc { class Camera; }
+namespace osc { class CameraAPI; }
 namespace osc { class Mesh; }
 namespace osc { class Rect; }
 namespace osc { class SceneCache; }
 namespace osc { struct AABB; }
 namespace osc { struct LineSegment; }
-namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Ray; }
 namespace osc { struct Transform; }
 
@@ -130,7 +130,7 @@ namespace osc
     // returns closest ray-triangle collision in world space for a given mouse position
     // within the given render rectangle
     std::optional<RayCollision> get_closest_world_space_ray_triangle_collision(
-        const PolarPerspectiveCamera&,
+        const CameraAPI&,
         const Mesh&,
         const BVH& triangle_bvh,
         const Rect& screen_render_rect,
@@ -139,7 +139,7 @@ namespace osc
 
     // returns scene rendering parameters for an generic panel
     SceneRendererParams calc_standard_dark_scene_render_params(
-        const PolarPerspectiveCamera&,
+        const CameraAPI&,
         AntiAliasingLevel,
         Vector2 dimensions,
         float device_pixel_ratio
@@ -151,4 +151,8 @@ namespace osc
     // returns `FrustumPlanes` that represent the clipping planes of `camera` when rendering to an
     // output that has an aspect ratio of `aspect_ratio`
     FrustumPlanes calc_frustum_planes(const Camera& camera, float aspect_ratio);
+
+    // Returns a vector that points in a direction that nicely lights
+    // the scene with a directional light from the perspective of `camera`.
+    Vector3 recommended_light_direction(const CameraAPI& camera);
 }

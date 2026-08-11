@@ -7,12 +7,12 @@
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_shared_state.h>
 
 #include <libopynsim/documents/landmarks/landmark_csv_flags.h>
-#include <liboscar/graphics/render_texture.h>
 #include <liboscar/graphics/scene/cached_scene_renderer.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
-#include <liboscar/maths/polar_perspective_camera.h>
+#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/render_texture.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/ui/oscimgui.h>
@@ -180,10 +180,8 @@ namespace osc
         // draws a button that auto-fits the camera to the 3D scene
         void drawAutoFitCameraButton()
         {
-            if (ui::draw_button(MSMICONS_EXPAND_ARROWS_ALT))
-            {
-                auto_focus(
-                    m_Camera,
+            if (ui::draw_button(MSMICONS_EXPAND_ARROWS_ALT)) {
+                m_Camera.focus_on(
                     m_State->getResultMesh().bounds().value_or(AABB{}),
                     aspect_ratio_of(m_LastTextureHittestResult.item_ui_rect)
                 );
@@ -326,7 +324,7 @@ namespace osc
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
-        PolarPerspectiveCamera m_Camera = create_camera_focused_on(m_State->getResultMesh().bounds().value_or(AABB{}));
+        PolarPerspectiveCamera m_Camera = PolarPerspectiveCamera::focused_on(m_State->getResultMesh().bounds().value_or(AABB{}));
         CachedSceneRenderer m_CachedRenderer{
             *App::singleton<SceneCache>(App::resource_loader()),
         };

@@ -1,22 +1,19 @@
 #include "gui_ruler.h"
 
+#include <liboscar/graphics/camera_api.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/scene/scene_collision.h>
 #include <liboscar/maths/math_helpers.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/utilities/c_string_view.h>
 
-#include <iomanip>
 #include <optional>
-#include <sstream>
 #include <string>
-#include <utility>
 
 void osc::GuiRuler::on_draw(
-    const PolarPerspectiveCamera& camera,
+    const CameraAPI& camera,
     const Rect& render_rect,
     std::optional<SceneCollision> maybe_mouseover)
 {

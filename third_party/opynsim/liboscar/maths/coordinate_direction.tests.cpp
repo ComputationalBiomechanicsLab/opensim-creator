@@ -275,3 +275,13 @@ TEST(CoordinateDirection, direction_vector_returns_expected_results)
     ASSERT_EQ(CoordinateDirection::minus_y().direction_vector(), Vector3(0.0f, -1.0f, 0.0f));
     ASSERT_EQ(CoordinateDirection::minus_z().direction_vector(), Vector3(0.0f, 0.0f, -1.0f));
 }
+ TEST(CoordinateDirection, index_returns_expected_results)
+{
+    static_assert(CoordinateDirection::x().index() == 0);
+    static_assert(CoordinateDirection::y().index() == 1);
+    static_assert(CoordinateDirection::z().index() == 2);
+
+    static_assert(CoordinateDirection::minus_x().index() == 3);
+    static_assert(CoordinateDirection::minus_y().index() == 4);
+    static_assert(CoordinateDirection::minus_z().index() == 5);
+}

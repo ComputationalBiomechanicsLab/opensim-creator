@@ -8,15 +8,14 @@
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <libopynsim/graphics/open_sim_graphics_helpers.h>
 #include <liboscar/graphics/graphics.h>
+#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_helpers.h>
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/angle.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/rect.h>
-#include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
@@ -87,7 +86,7 @@ public:
         }
         if (std::exchange(m_FirstFrame, false)) {
             if (const std::optional<AABB> sceneAABB = bounding_aabb_of(m_Decorations, &SceneDecoration::world_space_bounds)) {
-                auto_focus(m_ModelRendererParams.camera, *sceneAABB);
+                m_ModelRendererParams.camera.focus_on(*sceneAABB);
             }
         }
 

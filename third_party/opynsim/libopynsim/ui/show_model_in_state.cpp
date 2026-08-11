@@ -1,6 +1,5 @@
 #include "show_model_in_state.h"
 
-#include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <libopynsim/platform/opynsim_app.h>
 #include <libopynsim/ui/ui_callbacks.h>
 #include <libopynsim/model.h>
@@ -12,9 +11,9 @@
 #include <liboscar/graphics/scene/scene_renderer_params.h>
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/graphics.h>
+#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/aabb_functions.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/widget.h>
 #include <liboscar/ui/oscimgui.h>
@@ -65,7 +64,7 @@ namespace
             // Handle initial autofocus
             if (std::exchange(fit_camera_on_next_frame_, false)) {
                 if (const auto aabb = osc::bounding_aabb_of(decorations_, &osc::SceneDecoration::world_space_bounds)) {
-                    osc::auto_focus(camera, *aabb, osc::aspect_ratio_of(osc::App::get().main_window_dimensions()));
+                    camera.focus_on(*aabb, osc::aspect_ratio_of(osc::App::get().main_window_dimensions()));
                 }
             }
 

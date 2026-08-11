@@ -18,8 +18,6 @@
 
 #include <libopynsim/documents/file_filters.h>
 #include <libopynsim/graphics/simbody_mesh_loader.h>
-#include <liboscar/graphics/color.h>
-#include <liboscar/graphics/material.h>
 #include <liboscar/graphics/geometries/cone_geometry.h>
 #include <liboscar/graphics/geometries/cylinder_geometry.h>
 #include <liboscar/graphics/geometries/sphere_geometry.h>
@@ -30,9 +28,11 @@
 #include <liboscar/graphics/scene/scene_helpers.h>
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/material.h>
+#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/collision_tests.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/quaternion_functions.h>
 #include <liboscar/maths/ray.h>
 #include <liboscar/maths/ray_collision.h>

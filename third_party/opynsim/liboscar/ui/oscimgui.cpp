@@ -8,6 +8,7 @@
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/graphics/render_pass_config.h>
 #include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/render_texture.h>
@@ -24,12 +25,12 @@
 #include <liboscar/maths/closed_interval.h>
 #include <liboscar/maths/collision_tests.h>
 #include <liboscar/maths/common_functions.h>
+#include <liboscar/maths/coordinate_direction.h>
 #include <liboscar/maths/euler_angles.h>
 #include <liboscar/maths/geometric_functions.h>
 #include <liboscar/maths/matrix4x4.h>
 #include <liboscar/maths/matrix_functions.h>
 #include <liboscar/maths/math_helpers.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/quaternion.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
@@ -2917,26 +2918,25 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
 
     if (ui::is_key_released(Key::X)) {
         if (ctrl_or_super_down) {
-            focus_along_minus_x(camera);
+            camera.focus_along(CoordinateDirection::minus_x());
             return true;
         }
         else {
-            focus_along_x(camera);
+            camera.focus_along(CoordinateDirection::x());
             return true;
         }
     }
     else if (ui::is_key_pressed(Key::Y)) {
         // Ctrl+Y already does something?
         if (not ctrl_or_super_down) {
-            focus_along_y(camera);
+            camera.focus_along(CoordinateDirection::y());
             return true;
         }
     }
     else if (ui::is_key_pressed(Key::F)) {
         if (ctrl_or_super_down) {
             if (maybe_scene_world_space_aabb) {
-                auto_focus(
-                    camera,
+                camera.focus_on(
                     *maybe_scene_world_space_aabb,
                     aspect_ratio_of(viewport_rect)
                 );
@@ -2944,14 +2944,13 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
             }
         }
         else {
-            reset(camera);
+            camera.reset();
             return true;
         }
     }
     else if (ctrl_or_super_down and ui::is_key_pressed(Key::_8)) {
         if (maybe_scene_world_space_aabb) {
-            auto_focus(
-                camera,
+            camera.focus_on(
                 *maybe_scene_world_space_aabb,
                 aspect_ratio_of(viewport_rect)
             );

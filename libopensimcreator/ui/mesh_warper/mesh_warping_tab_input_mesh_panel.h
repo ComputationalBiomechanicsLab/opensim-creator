@@ -10,18 +10,17 @@
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_panel.h>
 #include <libopensimcreator/ui/mesh_warper/mesh_warping_tab_shared_state.h>
 
-#include <libopynsim/documents/landmarks/named_landmark.h>
-#include <liboscar/graphics/color.h>
 #include <liboscar/graphics/geometries/solid_geometries.h>
-#include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/scene/cached_scene_renderer.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_helpers.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/graphics/color.h>
+#include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/maths/collision_tests.h>
 #include <liboscar/maths/math_helpers.h>
-#include <liboscar/maths/polar_perspective_camera.h>
 #include <liboscar/maths/ray.h>
 #include <liboscar/maths/ray_collision.h>
 #include <liboscar/maths/rect.h>
@@ -607,7 +606,7 @@ namespace osc
             if (ui::draw_button(MSMICONS_EXPAND_ARROWS_ALT))
             {
                 if (const auto bounds = m_State->getScratchMesh(m_DocumentIdentifier).bounds()) {
-                    auto_focus(m_Camera, *bounds, aspect_ratio_of(m_LastTextureHittestResult.item_ui_rect));
+                    m_Camera.focus_on(*bounds, aspect_ratio_of(m_LastTextureHittestResult.item_ui_rect));
                     m_State->setLinkedBaseCamera(m_Camera);
                 }
             }
@@ -636,7 +635,7 @@ namespace osc
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
         MiDocumentInputIdentifier m_DocumentIdentifier;
-        PolarPerspectiveCamera m_Camera = create_camera_focused_on(m_State->getScratchMesh(m_DocumentIdentifier).bounds().value_or(AABB{}));
+        PolarPerspectiveCamera m_Camera = PolarPerspectiveCamera::focused_on(m_State->getScratchMesh(m_DocumentIdentifier).bounds().value_or(AABB{}));
         CachedSceneRenderer m_CachedRenderer{
             *App::singleton<SceneCache>(App::resource_loader()),
         };
