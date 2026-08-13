@@ -301,10 +301,10 @@ namespace
                         const auto worldY      = to<Vector3>(t.shiftFrameStationToBase(SimTK::Vec3(0.0,   scale, 0.0  )));
                         const auto worldZ      = to<Vector3>(t.shiftFrameStationToBase(SimTK::Vec3(0.0,   0.0,   scale)));
 
-                        origin = camera.project_onto_viewport(worldOrigin, viewportUiRect);
-                        x      = camera.project_onto_viewport(worldX, viewportUiRect);
-                        y      = camera.project_onto_viewport(worldY, viewportUiRect);
-                        z      = camera.project_onto_viewport(worldZ, viewportUiRect);
+                        origin = camera.world_to_ui(worldOrigin, viewportUiRect);
+                        x      = camera.world_to_ui(worldX, viewportUiRect);
+                        y      = camera.world_to_ui(worldY, viewportUiRect);
+                        z      = camera.world_to_ui(worldZ, viewportUiRect);
                     }
 
                     Vector2 origin, x, y, z;

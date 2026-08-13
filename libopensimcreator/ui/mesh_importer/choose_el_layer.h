@@ -301,7 +301,7 @@ namespace osc
             }
 
             const Vector2 padding = Vector2{10.0f, 10.0f};
-            const Vector2 pos = m_Shared->get3DSceneRect().ypd_top_left() + padding;
+            const Vector2 pos = m_Shared->get3DSceneUiRect().ypd_top_left() + padding;
             ui::get_panel_draw_list().add_text(pos, Color::white(), m_Options.header);
         }
 
@@ -313,7 +313,7 @@ namespace osc
 
             const CStringView text = MSMICONS_ARROW_LEFT " Cancel (ESC)";
             const Vector2 margin = {25.0f, 35.0f};
-            const Vector2 buttonTopLeft = m_Shared->get3DSceneRect().ypd_bottom_right() - (ui::calc_button_size(text) + margin);
+            const Vector2 buttonTopLeft = m_Shared->get3DSceneUiRect().ypd_bottom_right() - (ui::calc_button_size(text) + margin);
 
             ui::set_cursor_ui_position(buttonTopLeft);
             if (ui::draw_button(text))

@@ -9,6 +9,8 @@
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/quaternion.h>
 #include <liboscar/maths/ray.h>
+#include <liboscar/maths/rect.h>
+#include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/utilities/enum_helpers.h>
 
@@ -78,6 +80,9 @@ public:
         const auto up      = cross(backward, right);
         rotation_ = quaternion_from_xyz(right, up, backward);
     }
+
+    Vector3 forward() const { return direction(); }
+    void set_forward(const Vector3f& direction) { set_direction(direction); }
 
     Vector3 up() const             { return rotation_ * Vector3{0.0f, 1.0f, 0.0f}; }
     void set_up(const Vector3& up)
@@ -170,6 +175,26 @@ public:
         return inverse(view_projection_matrix(aspect_ratio));
     }
 
+    Vector2 world_to_ui(const Vector3& world_position, const Rect& ui_rect) const
+    {
+        return project_onto_viewport_rect(
+            world_position,
+            view_matrix(),
+            projection_matrix(aspect_ratio_of(ui_rect)),
+            ui_rect
+        );
+    }
+
+    float view_volume_height_at_depth(float depth) const
+    {
+        static_assert(num_options<CameraProjection>() == 2);
+        if (projection_ == CameraProjection::Orthographic) {
+            return orthographic_size_;
+        }
+        // Else: perspective projection
+        return 2.0f * depth * tan(0.5f * vertical_field_of_view_);
+    }
+
 private:
     // Transform
     Vector3 position_;
@@ -218,6 +243,9 @@ void osc::Camera::set_rotation(const Quaternion& rotation) { impl_.upd()->set_ro
 Vector3 osc::Camera::direction() const                    { return impl_->direction(); }
 void osc::Camera::set_direction(const Vector3& direction) { impl_.upd()->set_direction(direction); }
 
+Vector3 osc::Camera::forward() const                    { return impl_->forward(); }
+void osc::Camera::set_forward(const Vector3& direction) { impl_.upd()->set_forward(direction); }
+
 Vector3 osc::Camera::up() const             { return impl_->up(); }
 void osc::Camera::set_up(const Vector3& up) { impl_.upd()->set_up(up); }
 
@@ -234,3 +262,7 @@ void osc::Camera::set_projection_matrix_override(std::optional<Matrix4x4> overri
 
 Matrix4x4 osc::Camera::view_projection_matrix(float aspect_ratio) const         { return impl_->view_projection_matrix(aspect_ratio); }
 Matrix4x4 osc::Camera::inverse_view_projection_matrix(float aspect_ratio) const { return impl_->inverse_view_projection_matrix(aspect_ratio); }
+
+Vector2 osc::Camera::world_to_ui(const Vector3& world_position, const Rect& ui_rect) const { return impl_->world_to_ui(world_position, ui_rect); }
+
+float osc::Camera::view_volume_height_at_depth(float depth) const { return impl_->view_volume_height_at_depth(depth); }

@@ -11,10 +11,12 @@
 
 #include <optional>
 
+namespace osc { class Rect; }
+
 namespace osc
 {
     /// Represents a camera at `position` in world space, pointing in
-    /// `direction`, or oriented such that the top of its viewing plane
+    /// `direction`, and oriented such that the top of its viewing plane
     /// points `up`.
     class Camera {
     public:
@@ -80,6 +82,16 @@ namespace osc
         Vector3 direction() const;
         void set_direction(const Vector3&);
 
+        // Returns the forward-facing unit vector of this `Camera` in world space.
+        Vector3 forward() const;
+
+        // Sets the forward vector of this camera to `direction`.
+        //
+        // The implementation always internally normalizes `direction` and may
+        // store it differently. Therefore, it is not guaranteed that `forward()`
+        // returns `direction`.
+        void set_forward(const Vector3& direction);
+
         // get/set the upwards direction of this camera (normalized by the implementation).
         Vector3 up() const;
         void set_up(const Vector3&);
@@ -137,6 +149,16 @@ namespace osc
         // returns the equivalent of `inverse(view_projection_matrix(aspect_ratio))`
         Matrix4x4 inverse_view_projection_matrix(float aspect_ratio) const;
 
+        // Returns a point in ui space where this `Camera` would project
+        // `world_position` (in world space) into `ui_rect` (in ui space).
+        //
+        // If the projection results in a negative `w` term (e.g. the point lies
+        // beind the camera) then the returned point will contain NaNs.
+        Vector2 world_to_ui(const Vector3& world_position, const Rect& ui_rect) const;
+
+        // Returns the view volume's vertical extent in world units at a given depth
+        // from the camera origin.
+        float view_volume_height_at_depth(float depth) const;
     private:
         friend bool operator==(const Camera&, const Camera&);
         class Impl;

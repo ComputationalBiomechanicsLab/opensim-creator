@@ -343,9 +343,9 @@ namespace osc
         // UI OVERLAY STUFF
         //
 
-        Vector2 worldPosToScreenPos(const Vector3& worldPos) const
+        Vector2 worldPosToUiPos(const Vector3& worldPos) const
         {
-            return getCamera().project_onto_viewport(worldPos, get3DSceneRect());
+            return getCamera().world_to_ui(worldPos, get3DSceneUiRect());
         }
 
         void drawConnectionLine(
@@ -354,7 +354,7 @@ namespace osc
             const Vector3& child) const
         {
             // the line
-            ui::get_panel_draw_list().add_line(worldPosToScreenPos(parent), worldPosToScreenPos(child), color, c_ConnectionLineWidth);
+            ui::get_panel_draw_list().add_line(worldPosToUiPos(parent), worldPosToUiPos(child), color, c_ConnectionLineWidth);
 
             // the triangle
             drawConnectionLineTriangleAtMidpoint(color, parent, child);
@@ -483,7 +483,7 @@ namespace osc
             return m_IsRenderHovered;
         }
 
-        const Rect& get3DSceneRect() const
+        const Rect& get3DSceneUiRect() const
         {
             return m_3DSceneRect;
         }
@@ -610,7 +610,7 @@ namespace osc
         {
             auto cache = App::singleton<SceneCache>(App::resource_loader());
 
-            const Rect sceneRect = get3DSceneRect();
+            const Rect sceneRect = get3DSceneUiRect();
             const Vector2 mouseUiPosition = ui::get_mouse_ui_position();
 
             if (!is_intersecting(sceneRect, mouseUiPosition))
@@ -619,10 +619,7 @@ namespace osc
                 return MeshImporterHover{};
             }
 
-            const Vector2 sceneDims = sceneRect.dimensions();
-            const Vector2 relMousePos = mouseUiPosition - sceneRect.ypd_top_left();
-
-            const Ray ray = getCamera().unproject_topleft_position_to_world_ray(relMousePos, sceneDims);
+            const Ray ray = getCamera().ui_to_world(mouseUiPosition, sceneRect);
             const bool hittestMeshes = isMeshesInteractable();
             const bool hittestBodies = isBodiesInteractable();
             const bool hittestJointCenters = isJointCentersInteractable();
@@ -962,8 +959,8 @@ namespace osc
             constexpr float triangleWidth = 6.0f * c_ConnectionLineWidth;
             constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
 
-            const Vector2 parentScr = worldPosToScreenPos(parent);
-            const Vector2 childScr = worldPosToScreenPos(child);
+            const Vector2 parentScr = worldPosToUiPos(parent);
+            const Vector2 childScr = worldPosToUiPos(child);
             const Vector2 child2ParentScr = parentScr - childScr;
 
             if (dot(child2ParentScr, child2ParentScr) < triangleWidthSquared) {
@@ -971,7 +968,7 @@ namespace osc
             }
 
             const Vector3 mp = midpoint(parent, child);
-            const Vector2 midpointScr = worldPosToScreenPos(mp);
+            const Vector2 midpointScr = worldPosToUiPos(mp);
             const Vector2 directionScr = normalize(child2ParentScr);
             const Vector2 directionNormalScr = {-directionScr.y(), directionScr.x()};
 

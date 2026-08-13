@@ -75,7 +75,7 @@ void osc::GuiRuler::on_draw(
         }
     }
     else if (state_ == State::WaitingForSecondPoint) {
-        const Vector2 start_ui_pos = camera.project_onto_viewport(start_world_pos_, render_rect);
+        const Vector2 start_ui_pos = camera.world_to_ui(start_world_pos_, render_rect);
 
         if (maybe_mouseover) {
             // user is moused over something, so draw a line + circle between the two hitlocs

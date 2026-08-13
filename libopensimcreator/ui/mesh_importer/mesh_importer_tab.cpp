@@ -827,7 +827,7 @@ private:
         {
             return true;
         }
-        else if (ui::update_polar_camera_from_keyboard_inputs(m_Shared->updCamera(), m_Shared->get3DSceneRect(), calcSceneAABB()))
+        else if (ui::update_polar_camera_from_keyboard_inputs(m_Shared->updCamera(), m_Shared->get3DSceneUiRect(), calcSceneAABB()))
         {
             return true;
         }
@@ -1855,12 +1855,12 @@ private:
             CameraViewAxes axes;
 
             const Vector2 windowPadding = ui::get_style_panel_padding();
-            const Vector2 axesTopLeft = m_Shared->get3DSceneRect().ypd_bottom_left() + Vector2{windowPadding.x(), -windowPadding.y()} - Vector2{0.0f, axes.dimensions().y()};
+            const Vector2 axesTopLeft = m_Shared->get3DSceneUiRect().ypd_bottom_left() + Vector2{windowPadding.x(), -windowPadding.y()} - Vector2{0.0f, axes.dimensions().y()};
             ui::set_cursor_ui_position(axesTopLeft);
             axes.draw(m_Shared->updCamera());
         }
 
-        ui::set_cursor_ui_position(m_Shared->get3DSceneRect().ypd_bottom_left() + Vector2{100.0f, -55.0f});
+        ui::set_cursor_ui_position(m_Shared->get3DSceneUiRect().ypd_bottom_left() + Vector2{100.0f, -55.0f});
 
         if (ui::draw_button(MSMICONS_SEARCH_MINUS))
         {
@@ -1953,7 +1953,7 @@ private:
 
         const Vector2 mainButtonDims = ui::calc_button_size(mainButtonText);
         const Vector2 settingButtonDims = ui::calc_button_size(settingButtonText);
-        const Vector2 viewportBottomRight = m_Shared->get3DSceneRect().ypd_bottom_right();
+        const Vector2 viewportBottomRight = m_Shared->get3DSceneUiRect().ypd_bottom_right();
 
         const Vector2 buttonTopLeft =
         {
@@ -2074,7 +2074,7 @@ private:
 
         // else: is using OR nselected > 0 (so draw it)
 
-        Rect sceneRect = m_Shared->get3DSceneRect();
+        Rect sceneRect = m_Shared->get3DSceneUiRect();
 
         const auto userManipulation = m_Gizmo.draw(
             m_GizmoModelMatrix,
@@ -2344,7 +2344,7 @@ private:
             // outside of the panel
             ui::open_popup("##visualizermodalpopup");
             ui::set_next_panel_size(m_Shared->get3DSceneDims());
-            ui::set_next_panel_ui_position(m_Shared->get3DSceneRect().ypd_top_left());
+            ui::set_next_panel_ui_position(m_Shared->get3DSceneUiRect().ypd_top_left());
             ui::push_style_var(ui::StyleVar::PanelPadding, {0.0f, 0.0f});
 
             const ui::PanelFlags modalFlags = {

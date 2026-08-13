@@ -62,11 +62,9 @@ namespace osc
         {
             // compute top-level UI variables (render rect, mouse position, etc.)
             const Rect contentRect = ui::get_content_region_available_ui_rect();
-            const Vector2 contentRectDims = contentRect.dimensions();
-            const Vector2 mousePos = ui::get_mouse_ui_position();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
-            const Ray cameraRay = m_Camera.unproject_topleft_position_to_world_ray(mousePos - contentRect.ypd_top_left(), contentRectDims);
+            const Ray cameraRay = m_Camera.ui_to_world(ui::get_mouse_ui_position(), contentRect);
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
             const Mesh& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
@@ -99,7 +97,7 @@ namespace osc
             }
 
             // render 3D: draw the scene into the content rect and 2D-hittest it
-            RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
+            RenderTexture& renderTexture = renderScene(contentRect.dimensions(), meshCollision, landmarkCollision);
             ui::draw_image(renderTexture);
             m_LastTextureHittestResult = ui::hittest_last_drawn_item();
 

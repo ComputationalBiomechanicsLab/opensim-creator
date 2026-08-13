@@ -2902,7 +2902,8 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
     }
 
     if (modified) {
-        camera.rescale_znear_and_zfar_based_on_radius();
+        camera.znear = 0.1f * camera.radius;
+        camera.zfar = 10.0f * camera.radius;
     }
 
     return modified;

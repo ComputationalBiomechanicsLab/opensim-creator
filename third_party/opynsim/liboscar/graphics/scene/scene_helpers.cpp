@@ -310,9 +310,9 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
     const Rect& screen_render_rect,
     Vector2 mouse_screen_position)
 {
-    const Ray world_ray = camera.unproject_topleft_position_to_world_ray(
-        mouse_screen_position - screen_render_rect.ypd_top_left(),
-        screen_render_rect.dimensions()
+    const Ray world_ray = camera.ui_to_world(
+        mouse_screen_position,
+        screen_render_rect
     );
 
     return get_closest_world_space_ray_triangle_collision(

@@ -79,15 +79,6 @@ void osc::PolarPerspectiveCamera::drag(Vector2 delta)
     phi += 360_deg * delta.y();
 }
 
-void osc::PolarPerspectiveCamera::rescale_znear_and_zfar_based_on_radius()
-{
-    // znear and zfar are only really dictated by the camera's radius, because
-    // the radius is effectively the distance from the camera's focal point
-
-    znear = 0.1f * radius;
-    zfar = 10.0f * radius;
-}
-
 Matrix4x4 osc::PolarPerspectiveCamera::view_matrix() const
 {
     // camera: at a fixed position pointing at a fixed origin. The "camera"
@@ -129,25 +120,25 @@ CameraClippingPlanes osc::PolarPerspectiveCamera::clipping_planes() const
     return {znear, zfar};
 }
 
-Vector2 osc::PolarPerspectiveCamera::project_onto_viewport(
-    const Vector3& world_space_position,
-    const Rect& viewport_rect) const
+Vector2 osc::PolarPerspectiveCamera::world_to_ui(
+    const Vector3& world_position,
+    const Rect& ui_rect) const
 {
     return osc::project_onto_viewport_rect(
-        world_space_position,
+        world_position,
         view_matrix(),
-        projection_matrix(aspect_ratio_of(viewport_rect)),
-        viewport_rect
+        projection_matrix(aspect_ratio_of(ui_rect)),
+        ui_rect
     );
 }
 
-Ray osc::PolarPerspectiveCamera::unproject_topleft_position_to_world_ray(Vector2 position, Vector2 dimensions) const
+Ray osc::PolarPerspectiveCamera::ui_to_world(const Vector2& ui_position, const Rect& ui_rect) const
 {
     return perspective_unproject_topleft_normalized_pos_to_world(
-        position / dimensions,
+        (ui_position - ui_rect.ypd_top_left()) / ui_rect.dimensions(),
         this->position(),
         view_matrix(),
-        projection_matrix(aspect_ratio_of(dimensions))
+        projection_matrix(aspect_ratio_of(ui_rect))
     );
 }
 
@@ -185,5 +176,6 @@ void osc::PolarPerspectiveCamera::focus_on(
     // more common use-case (e.g. for new users and users making human-sized models)
     focus_point = -bounding_sphere.origin;
     radius = max(bounding_sphere.radius / tan(smallest_fov/2.0), 1.0f);
-    rescale_znear_and_zfar_based_on_radius();
+    znear = 0.1f * radius;
+    zfar = 10.0f * radius;
 }

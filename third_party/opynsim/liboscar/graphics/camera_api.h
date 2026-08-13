@@ -39,14 +39,14 @@ namespace osc
         virtual Matrix4x4 view_matrix() const = 0;
         virtual Matrix4x4 projection_matrix(float aspect_ratio) const = 0;
 
-        virtual Vector2 project_onto_viewport(
-            const Vector3& world_space_position,
-            const Rect& viewport_rect
+        virtual Vector2 world_to_ui(
+            const Vector3& world_position,
+            const Rect& ui_rect
         ) const = 0;
 
-        virtual Ray unproject_topleft_position_to_world_ray(
-            Vector2 position,
-            Vector2 dimensions
+        virtual Ray ui_to_world(
+            const Vector2& ui_position,
+            const Rect& ui_rect
         ) const = 0;
     };
 }

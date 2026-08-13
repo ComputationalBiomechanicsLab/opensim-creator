@@ -156,7 +156,7 @@ namespace osc
             }
 
             Vector3 clickedWorldPos = m_MaybeFirstLocation ? *m_MaybeFirstLocation : *m_MaybeSecondLocation;
-            Vector2 clickedScrPos = m_Shared->worldPosToScreenPos(clickedWorldPos);
+            Vector2 clickedScrPos = m_Shared->worldPosToUiPos(clickedWorldPos);
 
             auto color = Color::black();
 
@@ -167,7 +167,7 @@ namespace osc
                 return;
             }
 
-            Vector2 hoverScrPos = m_Shared->worldPosToScreenPos(m_MaybeCurrentHover.Pos);
+            Vector2 hoverScrPos = m_Shared->worldPosToUiPos(m_MaybeCurrentHover.Pos);
 
             dl.add_circle_filled({hoverScrPos, 5.0f}, color);
             dl.add_line(clickedScrPos, hoverScrPos, color, 5.0f);
@@ -182,7 +182,7 @@ namespace osc
             }
 
             const Vector2 padding{10.0f, 10.0f};
-            const Vector2 position = m_Shared->get3DSceneRect().ypd_top_left() + padding;
+            const Vector2 position = m_Shared->get3DSceneUiRect().ypd_top_left() + padding;
             ui::get_panel_draw_list().add_text(position, Color::white(), m_Options.header);
         }
 
@@ -194,7 +194,7 @@ namespace osc
 
             const CStringView text = MSMICONS_ARROW_LEFT " Cancel (ESC)";
             const Vector2 margin = {25.0f, 35.0f};
-            const Vector2 buttonTopLeft = m_Shared->get3DSceneRect().ypd_bottom_right() - (ui::calc_button_size(text) + margin);
+            const Vector2 buttonTopLeft = m_Shared->get3DSceneUiRect().ypd_bottom_right() - (ui::calc_button_size(text) + margin);
 
             ui::set_cursor_ui_position(buttonTopLeft);
             if (ui::draw_button(text))
