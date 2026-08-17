@@ -5,7 +5,7 @@
 #include <liboscar/graphics/materials/mesh_basic_material.h>
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/graphics.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/graphics/render_pass_config.h>
 #include <liboscar/graphics/render_queue.h>
 #include <liboscar/maths/matrix4x4.h>
@@ -33,9 +33,18 @@ public:
 
     void on_draw()
     {
-        const Matrix4x4 view_matrix = scene_camera_.view_matrix();
+        const OrbitCameraController camera_controller{
+            .radius = 5.0f,
+            .theta = 0_rad,
+            .phi = 1_rad,
+        };
+        Camera camera;
+        camera_controller.update_camera(camera);
+        camera.set_vertical_field_of_view(35_deg);
+
+        const Matrix4x4 view_matrix = camera.view_matrix();
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
-        const Matrix4x4 projection_matrix = scene_camera_.projection_matrix(aspect_ratio_of(workspace_screen_space_rect));
+        const Matrix4x4 projection_matrix = camera.projection_matrix(aspect_ratio_of(workspace_screen_space_rect));
 
         // Render 3D scene: a grid floor and a cube that has a different color per face
         {
@@ -61,9 +70,6 @@ public:
                 MeshBasicMaterial::PropertyBlock{Color::white().with_alpha(0.1f)}
             );
 
-            Camera camera;
-            camera.set_view_matrix_override(view_matrix);
-            camera.set_projection_matrix_override(projection_matrix);
             graphics::render_to_main_window(render_queue_, camera, {
                 .viewport_rect = workspace_screen_space_rect,
             });
@@ -132,16 +138,6 @@ public:
     }
 
 private:
-    PolarPerspectiveCamera scene_camera_ = []()
-    {
-        PolarPerspectiveCamera rv;
-        rv.focus_point = {0.0f, 0.0f, 0.0f};
-        rv.phi = 1_rad;
-        rv.theta = 0_rad;
-        rv.radius = 5.0f;
-        return rv;
-    }();
-
     ui::Gizmo gizmo_;
     Matrix4x4 model_matrix_ = identity<Matrix4x4>();
     GridGeometry grid_{{.size = 20.0f, .num_divisions = 100}};

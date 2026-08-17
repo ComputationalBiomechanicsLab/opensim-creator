@@ -8,6 +8,7 @@
 #include <liboscar/maths/constants.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/matrix_functions.h>
+#include <liboscar/maths/ray.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/tests/test_helpers.h>
@@ -510,6 +511,94 @@ TEST(Camera, world_to_ui_returns_center_point_when_given_point_along_principal_r
     const Vector2 got = camera.world_to_ui({25.0f, 25.0f, 24.0f}, ui_rect);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(ui_rect.origin(), got, 0.0001f))) << got;
+}
+
+TEST(Camera, ui_to_world_returns_orthogonal_ray_direction_in_orthographic_camera)
+{
+    Camera camera;
+    camera.set_projection(CameraProjection::Orthographic);
+    camera.set_orthographic_size(1.0f);
+    camera.set_position({});
+    camera.set_forward({0.0f, 0.0f, -1.0f});
+    camera.set_up({0.0f, 1.0f, 0.0f});
+
+    const Rect ui_rect = Rect::from_corners({}, {64.0f, 64.0f});
+
+    // All rays should be parallel with the camera's direction
+    // when given an orthographic camera.
+    for (size_t x = 0; x < 8; ++x) {
+        for (size_t y = 0; y < 8; ++y) {
+            const Vector2f p{x, y};
+            const Ray ray = camera.ui_to_world(p, ui_rect);
+            ASSERT_EQ(ray.direction, Vector3(0.0f, 0.0f, -1.0f));
+        }
+    }
+}
+
+TEST(Camera, ui_to_world_returns_projected_out_ray_for_projection_camera)
+{
+    Camera camera;
+    camera.set_projection(CameraProjection::Perspective);
+    camera.set_vertical_field_of_view(45_deg);
+    camera.set_clipping_planes({0.0000001f, 10.0f});
+    camera.set_position({});
+    camera.set_forward({0.0f, 0.0f, -1.0f});
+    camera.set_up({0.0f, 1.0f, 0.0f});
+
+    const Rect ui_rect = Rect::from_corners({}, {64.0f, 64.0f});
+
+    // The point going through the middle should be aligned with
+    // the principal ray of the camera (it may have a different origin)
+    {
+        const Ray center_ray = camera.ui_to_world({32.0f, 32.0f}, ui_rect);
+        ASSERT_TRUE(is_colinear_and_codirectional(center_ray, camera.principal_ray()));
+    }
+
+    // The point going through the top-middle of the UI rectangle should produce
+    // a `Ray` that is aligned with a ray computed from simple triangle geometry:
+    //
+    //      c  <--- RAY SHOULD SHOOT HERE
+    // up  /|
+    // ^  / |
+    // | /  |  h = znear * tan(vfov/2)
+    // |/   |
+    // a----b  a->b direction of observation until znear is hit)
+    {
+        const float znear = camera.near_clipping_plane();
+        const Radians vfov = camera.vertical_field_of_view();
+        const Vector3 a = camera.position();
+        const Vector3 b = a + znear*camera.direction();
+        const float h = znear * tan(0.5f*vfov);
+        const Vector3 c = b + h*camera.up();
+        const Ray expected{camera.position(), normalize(c)};
+        const Ray got = camera.ui_to_world({32.0f, 0.0f}, ui_rect);
+        ASSERT_TRUE(is_colinear_and_codirectional(expected, got)) << "expected = " << expected << "got = " << got;
+    }
+
+    // The point going through the bottom-middle of the UI rectangle should produce
+    // a `Ray` that is aligned with a ray computed from simple triangle geometry:
+    //
+    // up
+    // ^
+    // |
+    // |
+    // a----b  a->b direction of observation until znear is hit)
+    //  \   |
+    //   \  |  h = znear * tan(vfov/2)
+    //    \ |
+    //     \|
+    //      c  <--- RAY SHOULD SHOOT HERE
+    {
+        const float znear = camera.near_clipping_plane();
+        const Radians vfov = camera.vertical_field_of_view();
+        const Vector3 a = camera.position();
+        const Vector3 b = a + znear*camera.direction();
+        const float h = znear * tan(0.5f*vfov);
+        const Vector3 c = b + h*-camera.up(); // (go down)
+        const Ray expected{camera.position(), normalize(c)};
+        const Ray got = camera.ui_to_world({32.0f, 64.0f}, ui_rect);
+        ASSERT_TRUE(is_colinear_and_codirectional(expected, got)) << "expected = " << expected << "got = " << got;
+    }
 }
 
 TEST(Camera, view_volume_height_at_depth_returns_orthographic_height_for_any_depth)

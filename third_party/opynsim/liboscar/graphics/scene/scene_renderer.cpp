@@ -12,7 +12,7 @@
 #include <liboscar/graphics/materials/mesh_depth_writing_material.h>
 #include <liboscar/graphics/materials/mesh_normal_vectors_material.h>
 #include <liboscar/graphics/mesh.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/graphics/render_pass_config.h>
 #include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/render_target.h>
@@ -64,16 +64,6 @@ namespace
         Matrix4x4 lightspace_matrix;
     };
 
-    struct PolarAngles final {
-        Radians theta;
-        Radians phi;
-    };
-
-    struct ShadowCameraMatrices final {
-        Matrix4x4 view_matrix;
-        Matrix4x4 projection_matrix;
-    };
-
     Transform calc_floor_transform(Vector3 floor_origin, float fixup_scale_factor)
     {
         // note: this should be the same as `osc::draw_grid`
@@ -84,52 +74,22 @@ namespace
         };
     }
 
-    PolarAngles calc_polar_angles(const Vector3& direction_from_origin)
-    {
-        // X is left-to-right
-        // Y is bottom-to-top
-        // Z is near-to-far
-        //
-        // combinations:
-        //
-        // | theta |   phi  | X  | Y  | Z  |
-        // | ----- | ------ | -- | -- | -- |
-        // |     0 |      0 |  0 |  0 | 1  |
-        // |  pi/2 |      0 |  1 |  0 |  0 |
-        // |     0 |   pi/2 |  0 |  1 |  0 |
-
-        return {
-            .theta = osc::atan2(direction_from_origin.x(), direction_from_origin.z()),
-            .phi = osc::asin(direction_from_origin.y()),
-        };
-    }
-
-    ShadowCameraMatrices calc_shadow_camera_matrices(
+    Camera make_shadow_camera(
         const AABB& shadowcasters_aabb,
         const Vector3& light_direction)
     {
         const Sphere shadowcasters_sphere = bounding_sphere_of(shadowcasters_aabb);
-        const PolarAngles camera_polar_angles = calc_polar_angles(-light_direction);
-
-        // pump sphere+polar information into a polar camera in order to
-        // calculate the renderer's view/projection matrices
-        PolarPerspectiveCamera camera;
-        camera.focus_point = -shadowcasters_sphere.origin;
-        camera.phi = camera_polar_angles.phi;
-        camera.theta = camera_polar_angles.theta;
-        camera.radius = shadowcasters_sphere.radius;
-
-        const Matrix4x4 view_matrix = camera.view_matrix();
-        const Matrix4x4 projection_matrix = ortho(
-            -shadowcasters_sphere.radius,
-            shadowcasters_sphere.radius,
-            -shadowcasters_sphere.radius,
-            shadowcasters_sphere.radius,
-            0.0f,
-            2.0f*shadowcasters_sphere.radius
-        );
-
-        return ShadowCameraMatrices{view_matrix, projection_matrix};
+        OrbitCameraController camera_controller{
+            .focus_point = shadowcasters_sphere.origin,
+            .radius = shadowcasters_sphere.radius,
+        };
+        camera_controller.focus_along(light_direction);
+        Camera camera;
+        camera_controller.update_camera(camera);
+        camera.set_projection(CameraProjection::Orthographic);
+        camera.set_orthographic_size(2.0f*shadowcasters_sphere.radius);
+        camera.set_clipping_planes({0.0f, 2.0f*shadowcasters_sphere.radius});
+        return camera;
     }
 
     // compute the world space bounds union of all rim-highlighted geometry
@@ -1036,10 +996,9 @@ private:
         }
 
         // compute camera matrices for the orthogonal (direction) camera used for lighting
-        const ShadowCameraMatrices matrices = calc_shadow_camera_matrices(*shadowcaster_aabbs, params.light_direction);
-
-        camera_.set_view_matrix_override(matrices.view_matrix);
-        camera_.set_projection_matrix_override(matrices.projection_matrix);
+        const Camera camera = make_shadow_camera(*shadowcaster_aabbs, params.light_direction);
+        const Matrix4x4 view_matrix = camera.view_matrix();
+        const Matrix4x4 projection_matrix = camera.projection_matrix(1.0f);  // square shadowmap
         graphics::render_to(
             RenderTarget{
                 RenderTargetDepthStencilAttachment{
@@ -1047,13 +1006,13 @@ private:
                 },
             },
             render_queue_,
-            camera_
+            camera
         );
         render_queue_.clear();
 
         return Shadows{
             .shadow_map = shadow_map_render_buffer_ ,
-            .lightspace_matrix = matrices.projection_matrix * matrices.view_matrix,
+            .lightspace_matrix = projection_matrix * view_matrix,
         };
     }
 

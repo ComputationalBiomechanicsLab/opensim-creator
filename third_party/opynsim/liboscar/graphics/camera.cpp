@@ -185,6 +185,23 @@ public:
         );
     }
 
+    Ray ui_to_world(const Vector2& ui_position, const Rect& ui_rect) const
+    {
+        const Vector2 normalized_tl_pos = (ui_position - ui_rect.ypd_top_left()) / ui_rect.dimensions();
+        const Vector3 origin = topleft_normalized_point_to_world_znear(
+            normalized_tl_pos,
+            view_matrix(),
+            projection_matrix(aspect_ratio_of(ui_rect))
+        );
+
+        static_assert(num_options<CameraProjection>() == 2);
+        if (projection() == CameraProjection::Orthographic) {
+            return Ray{origin, direction()};
+        } else {
+            return Ray{origin, normalize(origin - position())};
+        }
+    }
+
     float view_volume_height_at_depth(float depth) const
     {
         static_assert(num_options<CameraProjection>() == 2);
@@ -264,5 +281,6 @@ Matrix4x4 osc::Camera::view_projection_matrix(float aspect_ratio) const         
 Matrix4x4 osc::Camera::inverse_view_projection_matrix(float aspect_ratio) const { return impl_->inverse_view_projection_matrix(aspect_ratio); }
 
 Vector2 osc::Camera::world_to_ui(const Vector3& world_position, const Rect& ui_rect) const { return impl_->world_to_ui(world_position, ui_rect); }
+Ray osc::Camera::ui_to_world(const Vector2& ui_position, const Rect& ui_rect) const { return impl_->ui_to_world(ui_position, ui_rect); }
 
 float osc::Camera::view_volume_height_at_depth(float depth) const { return impl_->view_volume_height_at_depth(depth); }

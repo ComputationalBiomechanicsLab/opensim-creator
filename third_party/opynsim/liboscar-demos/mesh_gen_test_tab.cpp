@@ -1,7 +1,8 @@
 #include "mesh_gen_test_tab.h"
 
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/mesh.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/graphics/geometries/box_geometry.h>
 #include <liboscar/graphics/geometries/dodecahedron_geometry.h>
 #include <liboscar/graphics/geometries/icosahedron_geometry.h>
@@ -15,6 +16,7 @@
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_helpers.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/maths/angle.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
@@ -29,6 +31,7 @@
 #include <vector>
 
 using namespace osc;
+using namespace osc::literals;
 
 namespace
 {
@@ -78,7 +81,9 @@ public:
     explicit Impl(MeshGenTestTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
     {
-        camera_.radius = 5.0f;
+        camera_.set_vertical_field_of_view(35_deg);
+        camera_controller_.radius = 5.0f;
+        camera_controller_.update_camera(camera_);
     }
 
     void on_draw()
@@ -86,7 +91,14 @@ public:
         ui::enable_dockspace_over_main_window();
 
         if (viewer_.is_hovered()) {
-            ui::update_polar_camera_from_mouse_inputs(camera_, App::get().main_window_dimensions());
+            const bool modified = ui::update_orbit_controller_from_mouse_inputs(
+                camera_controller_,
+                ui::get_main_window_workspace_dimensions(),
+                camera_
+            );
+            if (modified) {
+                camera_controller_.update_camera(camera_);
+            }
         }
 
         if (ui::begin_panel("viewer")) {
@@ -108,8 +120,8 @@ public:
             render_params_.projection_matrix = camera_.projection_matrix(aspect_ratio_of(render_params_.dimensions));
             render_params_.view_matrix = camera_.view_matrix();
             render_params_.viewer_position = camera_.position();
-            render_params_.near_clipping_plane = camera_.znear;
-            render_params_.far_clipping_plane = camera_.zfar;
+            render_params_.near_clipping_plane = camera_.near_clipping_plane();
+            render_params_.far_clipping_plane = camera_.far_clipping_plane();
             render_params_.draw_floor = false;
             render_params_.draw_mesh_normals = true;
 
@@ -121,7 +133,9 @@ public:
 
             // Draw camera manipulator
             ui::set_cursor_ui_position(viewport_ui_rect.ypd_top_right() - Vector2{camera_axes_ui_.dimensions().x(), 0.0f});
-            camera_axes_ui_.draw(camera_);
+            if (camera_axes_ui_.draw(camera_controller_, camera_)) {
+                camera_controller_.update_camera(camera_);
+            }
         }
         ui::end_panel();
     }
@@ -133,7 +147,8 @@ private:
     bool draw_wireframe_ = false;
     SceneViewer viewer_{scene_cache_};
     SceneRendererParams render_params_;
-    PolarPerspectiveCamera camera_;
+    Camera camera_;
+    OrbitCameraController camera_controller_;
     CameraViewAxes camera_axes_ui_;
 };
 

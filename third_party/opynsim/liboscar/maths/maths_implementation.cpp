@@ -763,9 +763,8 @@ Vector4 osc::topleft_normalized_point_to_ndc_cube(Vector2 normalized_point)
     return {topleft_normalized_point_to_ndc(normalized_point), -1.0f, 1.0f};
 }
 
-Ray osc::perspective_unproject_topleft_normalized_pos_to_world(
+Vector3 osc::topleft_normalized_point_to_world_znear(
     Vector2 normalized_point,
-    Vector3 camera_world_space_origin,
     const Matrix4x4& camera_view_matrix,
     const Matrix4x4& camera_proj_matrix)
 {
@@ -776,7 +775,21 @@ Ray osc::perspective_unproject_topleft_normalized_pos_to_world(
     ray_origin_view /= ray_origin_view.w();  // perspective divide
 
     // position of mouse in world space
-    const Vector3 ray_origin_world{inverse(camera_view_matrix) * ray_origin_view};
+    return inverse(camera_view_matrix) * ray_origin_view;
+}
+
+Ray osc::perspective_unproject_topleft_normalized_pos_to_world(
+    Vector2 normalized_point,
+    Vector3 camera_world_space_origin,
+    const Matrix4x4& camera_view_matrix,
+    const Matrix4x4& camera_proj_matrix)
+{
+    // position of mouse in world space
+    const Vector3 ray_origin_world = topleft_normalized_point_to_world_znear(
+        normalized_point,
+        camera_view_matrix,
+        camera_proj_matrix
+    );
 
     // direction vector from camera position to mouse position (i.e. the projection)
     const Vector3 ray_direction_world = normalize(ray_origin_world - camera_world_space_origin);

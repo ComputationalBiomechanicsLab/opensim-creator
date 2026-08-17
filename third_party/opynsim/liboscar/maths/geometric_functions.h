@@ -1,5 +1,7 @@
 #pragma once
 
+#include <liboscar/maths/constants.h>
+#include <liboscar/maths/common_functions.h>
 #include <liboscar/maths/vector.h>
 
 #include <cmath>
@@ -96,5 +98,28 @@ namespace osc
     constexpr T area_of(const Vector<T, 2>& v)
     {
         return v.x() * v.y();
+    }
+
+    // Returns true if unit vectors `a` and `b` are parallel within `tolerance`.
+    // The sign of the direction is ignored.
+    template<std::floating_point T, size_t N>
+    requires (N > 1)
+    bool is_parallel(
+        const Vector<T, N>& a,
+        const Vector<T, N>& b,
+        T tolerance = epsilon_v<T>)
+    {
+        return equal_within_absdiff(abs(dot(a, b)), T(1), tolerance);
+    }
+
+    // Returns true if unit vectors `a` and `b` are codirectional within `tolerance`.
+    template<std::floating_point T, size_t N>
+    requires (N > 1)
+    bool is_codirectional(
+        const Vector<T, N>& a,
+        const Vector<T, N>& b,
+        T tolerance = epsilon_v<T>)
+    {
+        return equal_within_absdiff(dot(a, b), T(1), tolerance);
     }
 }

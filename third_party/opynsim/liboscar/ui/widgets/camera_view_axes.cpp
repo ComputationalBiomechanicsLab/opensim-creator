@@ -1,6 +1,8 @@
 #include "camera_view_axes.h"
 
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/maths/circle.h>
 #include <liboscar/maths/coordinate_direction.h>
@@ -117,4 +119,24 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     }
 
     return edited;
+}
+
+bool osc::CameraViewAxes::draw(OrbitCameraController& camera_controller, const Camera& camera)
+{
+    PolarPerspectiveCamera tmp;
+    tmp.theta = camera_controller.theta;
+    tmp.phi = camera_controller.phi;
+    tmp.radius = camera_controller.radius;
+    tmp.focus_point = -camera_controller.focus_point;
+    tmp.vertical_field_of_view = camera.vertical_field_of_view();
+    tmp.znear = camera.near_clipping_plane();
+    tmp.zfar = camera.far_clipping_plane();
+    if (draw(tmp)) {
+        camera_controller.theta = tmp.theta;
+        camera_controller.phi = tmp.phi;
+        camera_controller.radius = tmp.radius;
+        camera_controller.focus_point = tmp.focus_point;
+        return true;
+    }
+    return false;
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <liboscar/graphics/camera_api.h>
 #include <liboscar/graphics/camera_clipping_planes.h>
 #include <liboscar/graphics/camera_projection.h>
 #include <liboscar/maths/angle.h>
@@ -18,7 +19,7 @@ namespace osc
     /// Represents a camera at `position` in world space, pointing in
     /// `direction`, and oriented such that the top of its viewing plane
     /// points `up`.
-    class Camera {
+    class Camera : public CameraAPI {
     public:
         Camera();
 
@@ -55,7 +56,7 @@ namespace osc
 
         // get/set the distance, in world space units, between both the camera and the nearest
         // clipping plane, and the camera and the farthest clipping plane
-        CameraClippingPlanes clipping_planes() const;
+        CameraClippingPlanes clipping_planes() const override;
         void set_clipping_planes(CameraClippingPlanes);
 
         // get/set the distance, in world space units, between the camera and the nearest
@@ -69,7 +70,7 @@ namespace osc
         void set_far_clipping_plane(float);
 
         // get/set the world space position of this `Camera`
-        Vector3 position() const;
+        Vector3 position() const override;
         void set_position(const Vector3&);
 
         // get/set the world space orientation of this `Camera` (normalized by
@@ -83,7 +84,7 @@ namespace osc
         void set_direction(const Vector3&);
 
         // Returns the forward-facing unit vector of this `Camera` in world space.
-        Vector3 forward() const;
+        Vector3 forward() const override;
 
         // Sets the forward vector of this camera to `direction`.
         //
@@ -107,7 +108,7 @@ namespace osc
         //
         // world space and view space operate with the same units-of-measure, handedness, etc.
         // but view space places the camera at `(0, 0, 0)`
-        Matrix4x4 view_matrix() const;
+        Matrix4x4 view_matrix() const override;
 
         // returns the equivalent of `inverse(view_matrix())`, i.e. a matrix that transforms
         // view space points into world space points.
@@ -139,7 +140,7 @@ namespace osc
         // The Z component of things that land within the NDC cube are written to the depth buffer
         // if the `Material` that's being drawn enables this behavior (and there's a depth buffer
         // attached to the render target).
-        Matrix4x4 projection_matrix(float aspect_ratio) const;
+        Matrix4x4 projection_matrix(float aspect_ratio) const override;
         std::optional<Matrix4x4> projection_matrix_override() const;
         void set_projection_matrix_override(std::optional<Matrix4x4>);
 
@@ -154,7 +155,12 @@ namespace osc
         //
         // If the projection results in a negative `w` term (e.g. the point lies
         // beind the camera) then the returned point will contain NaNs.
-        Vector2 world_to_ui(const Vector3& world_position, const Rect& ui_rect) const;
+        Vector2 world_to_ui(const Vector3& world_position, const Rect& ui_rect) const override;
+
+        // Returns a `Ray` in world space that represents where `ui_position` (in
+        // ui space, Z unknown) would shoot along the view space's Z axis, assuming
+        // `ui_rect` represents the ui space viewport that this camera projects to.
+        Ray ui_to_world(const Vector2& ui_position, const Rect& ui_rect) const override;
 
         // Returns the view volume's vertical extent in world units at a given depth
         // from the camera origin.

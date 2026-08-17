@@ -58,6 +58,19 @@ namespace osc
     // - output point will have a `z` of `-1.0f` (i.e. nearest depth)
     Vector4 topleft_normalized_point_to_ndc_cube(Vector2 normalized_point);
 
+    // Returns a point in world space converted from a point defined in a normalized
+    // y-points-down space.
+    //
+    // - input point should have origin in top-left, Y goes down
+    // - input point should have normalized range: (0, 0) is top-left, (+1, +1) is bottom-right
+    // - `camera_view_matrix` transforms points from world space to view space
+    // - `camera_proj_matrix` transforms points from view space to world space
+    Vector3 topleft_normalized_point_to_world_znear(
+        Vector2 normalized_point,
+        const Matrix4x4& camera_view_matrix,
+        const Matrix4x4& camera_proj_matrix
+    );
+
     // "un-project" a point defined in a normalized y-points-down space into world
     // space, assuming a perspective projection
     //

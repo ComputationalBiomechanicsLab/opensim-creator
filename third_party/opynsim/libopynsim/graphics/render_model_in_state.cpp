@@ -11,13 +11,15 @@
 #include <liboscar/graphics/scene/scene_renderer_params.h>
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/graphics.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/utilities/assertions.h>
 
 #include <optional>
 #include <utility>
 #include <vector>
+
+using namespace osc::literals;
 
 osc::Texture2D opyn::render_model_in_state(
     OPynSimApp&,
@@ -44,18 +46,19 @@ osc::Texture2D opyn::render_model_in_state(
     // Create local camera if caller did not provide one.
     std::optional<osc::Camera> local_camera;
     if (not camera) {
-        osc::PolarPerspectiveCamera polar_camera;
-        polar_camera.phi = {};
-        polar_camera.theta = {};
+        auto& lc = local_camera.emplace();
+        lc.set_vertical_field_of_view(35_deg);
 
         // Handle auto-framing
+        osc::OrbitCameraController camera_controller{
+            .theta = {},
+            .phi = {},
+        };
         if (const auto aabb = osc::bounding_aabb_of(decorations, &osc::SceneDecoration::world_space_bounds)) {
-            polar_camera.focus_on(*aabb, aspect_ratio);
+            camera_controller.focus_on(*aabb, lc, aspect_ratio);
         }
+        camera_controller.update_camera(lc);
 
-        auto& lc = local_camera.emplace();
-        lc.set_view_matrix_override(polar_camera.view_matrix());
-        lc.set_projection_matrix_override(polar_camera.projection_matrix(aspect_ratio));
         camera = &lc;
     }
 

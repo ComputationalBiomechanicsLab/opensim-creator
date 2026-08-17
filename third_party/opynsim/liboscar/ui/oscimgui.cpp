@@ -8,6 +8,7 @@
 #include <liboscar/graphics/graphics.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/graphics/render_pass_config.h>
 #include <liboscar/graphics/render_queue.h>
@@ -2904,6 +2905,67 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
     if (modified) {
         camera.znear = 0.1f * camera.radius;
         camera.zfar = 10.0f * camera.radius;
+    }
+
+    return modified;
+}
+
+bool osc::ui::update_orbit_controller_from_mouse_inputs(
+    OrbitCameraController& orbit_controller,
+    Vector2 viewport_dimensions,
+    const Camera& associated_camera)
+{
+    bool modified = false;
+
+    // handle mousewheel scrolling
+    if (const float wheel = ImGui::GetIO().MouseWheel; wheel != 0.0f) {
+        orbit_controller.radius *= (1.0f - 0.2f*wheel);
+        modified = true;
+    }
+
+    // these camera controls try to be the union of other GUIs (e.g. Blender)
+    //
+    // left drag: drags/orbits camera
+    // left drag + L/R SHIFT: pans camera (CUSTOM behavior: can be handy on laptops where right-click + drag sucks)
+    // left drag + L/R CTRL: zoom camera (CUSTOM behavior: can be handy on laptops where right-click + drag sucks)
+    // middle drag: drags/orbits camera (Blender behavior)
+    // middle drag + L/R SHIFT: pans camera (Blender behavior)
+    // middle drag + L/R CTRL: zooms camera (Blender behavior)
+    // right drag: pans camera
+    //
+    // the reason it's like this is to please legacy users from a variety of
+    // other GUIs and users who use modelling software like Blender (which is
+    // more popular among newer users looking to make new models)
+
+    const float aspect_ratio = aspect_ratio_of(viewport_dimensions);
+
+    const bool left_dragging = ui::is_mouse_dragging(MouseButton::Left);
+    const bool middle_dragging = ui::is_mouse_dragging(MouseButton::Middle);
+    const Vector2 delta = get_backend_data().mouse_delta_this_frame; // Track actual physical movement of the mouse (relevant in relative mode).
+
+    if (delta != Vector2{} and (left_dragging or middle_dragging)) {
+        if (is_ctrl_down()) {
+            orbit_controller.pan(aspect_ratio, delta/viewport_dimensions, associated_camera);
+            modified = true;
+        }
+        else if (is_ctrl_or_super_down()) {
+            orbit_controller.radius *= 1.0f + 4.0f*delta.y()/viewport_dimensions.y();
+            modified = true;
+        }
+        else {
+            orbit_controller.drag(delta/viewport_dimensions);
+            modified = true;
+        }
+    }
+    else if (ui::is_mouse_dragging(MouseButton::Right)) {
+        if (is_alt_down()) {
+            orbit_controller.radius *= 1.0f + 4.0f*delta.y()/viewport_dimensions.y();
+            modified = true;
+        }
+        else {
+            orbit_controller.pan(aspect_ratio, delta/viewport_dimensions, associated_camera);
+            modified = true;
+        }
     }
 
     return modified;

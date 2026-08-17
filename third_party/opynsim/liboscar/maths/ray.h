@@ -1,5 +1,6 @@
 #pragma once
 
+#include <liboscar/maths/constants.h>
 #include <liboscar/maths/vector.h>
 
 #include <iosfwd>
@@ -18,4 +19,13 @@ namespace osc
     };
 
     std::ostream& operator<<(std::ostream&, const Ray&);
+
+    // Returns `true` if `a` and `b` lie on the same mathematical line
+    // and point in the same direction to within some (dot-product-defined)
+    // tolerance.
+    bool is_colinear_and_codirectional(
+        const Ray& a,
+        const Ray& b,
+        float tolerance = epsilon_v<float>
+    );
 }
