@@ -3087,6 +3087,125 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
     return false;
 }
 
+bool osc::ui::update_orbit_controller_from_keyboard_inputs(
+    OrbitCameraController& orbit_controller,
+    const Camera& associated_camera,
+    const Rect& viewport_rect,
+    std::optional<AABB> maybe_scene_world_space_aabb)
+{
+    const bool shift_down = is_shift_down();
+    const bool ctrl_or_super_down = is_ctrl_or_super_down();
+
+    if (ui::is_key_released(Key::X)) {
+        if (ctrl_or_super_down) {
+            orbit_controller.focus_along(CoordinateDirection::minus_x());
+            return true;
+        }
+        else {
+            orbit_controller.focus_along(CoordinateDirection::x());
+            return true;
+        }
+    }
+    else if (ui::is_key_pressed(Key::Y)) {
+        // Ctrl+Y already does something?
+        if (not ctrl_or_super_down) {
+            orbit_controller.focus_along(CoordinateDirection::y());
+            return true;
+        }
+    }
+    else if (ui::is_key_pressed(Key::F)) {
+        if (ctrl_or_super_down) {
+            if (maybe_scene_world_space_aabb) {
+                orbit_controller.focus_on(
+                    *maybe_scene_world_space_aabb,
+                    associated_camera,
+                    aspect_ratio_of(viewport_rect)
+                );
+                return true;
+            }
+        }
+        else {
+            orbit_controller.reset();
+            return true;
+        }
+    }
+    else if (ctrl_or_super_down and ui::is_key_pressed(Key::_8)) {
+        if (maybe_scene_world_space_aabb) {
+            orbit_controller.focus_on(
+                *maybe_scene_world_space_aabb,
+                associated_camera,
+                aspect_ratio_of(viewport_rect)
+            );
+            return true;
+        }
+    }
+    else if (ui::is_key_down(Key::UpArrow)) {
+        if (ctrl_or_super_down) {
+            // pan
+            orbit_controller.pan(aspect_ratio_of(viewport_rect), {0.0f, -0.1f}, associated_camera);
+        }
+        else if (shift_down) {
+            orbit_controller.phi -= 90_deg;  // rotate in 90-deg increments
+        }
+        else {
+            orbit_controller.phi -= 10_deg;  // rotate in 10-deg increments
+        }
+        return true;
+    }
+    else if (ui::is_key_down(Key::DownArrow)) {
+        if (ctrl_or_super_down) {
+            // pan
+            orbit_controller.pan(aspect_ratio_of(viewport_rect), {0.0f, +0.1f}, associated_camera);
+        }
+        else if (shift_down) {
+            // rotate in 90-deg increments
+            orbit_controller.phi += 90_deg;
+        }
+        else {
+            // rotate in 10-deg increments
+            orbit_controller.phi += 10_deg;
+        }
+        return true;
+    }
+    else if (ui::is_key_down(Key::LeftArrow)) {
+        if (ctrl_or_super_down) {
+            // pan
+            orbit_controller.pan(aspect_ratio_of(viewport_rect), {-0.1f, 0.0f}, associated_camera);
+        }
+        else if (shift_down) {
+            // rotate in 90-deg increments
+            orbit_controller.theta += 90_deg;
+        }
+        else {
+            // rotate in 10-deg increments
+            orbit_controller.theta += 10_deg;
+        }
+        return true;
+    }
+    else if (ui::is_key_down(Key::RightArrow)) {
+        if (ctrl_or_super_down) {
+            // pan
+            orbit_controller.pan(aspect_ratio_of(viewport_rect), {+0.1f, 0.0f}, associated_camera);
+        }
+        else if (shift_down) {
+            orbit_controller.theta -= 90_deg;  // rotate in 90-deg increments
+        }
+        else {
+            orbit_controller.theta -= 10_deg;  // rotate in 10-deg increments
+        }
+        return true;
+    }
+    else if (ui::is_key_down(Key::Minus)) {
+        orbit_controller.radius *= 1.1f;
+        return true;
+    }
+    else if (ui::is_key_down(Key::Equals)) {
+        orbit_controller.radius *= 0.9f;
+        return true;
+    }
+    return false;
+}
+
 bool osc::ui::update_polar_camera_from_all_inputs(
     PolarPerspectiveCamera& camera,
     const Rect& viewport_rect,
@@ -3101,6 +3220,35 @@ bool osc::ui::update_polar_camera_from_all_inputs(
 
     const bool keyboard_handled = not io.WantCaptureKeyboard ?
         update_polar_camera_from_keyboard_inputs(camera, viewport_rect, maybe_scene_world_space_aabb) :
+        false;
+
+    return mouse_handled or keyboard_handled;
+}
+
+bool osc::ui::update_orbit_controller_from_all_inputs(
+    OrbitCameraController& orbit_controller,
+    const Camera& associated_camera,
+    const Rect& viewport_rect,
+    std::optional<AABB> maybe_scene_world_space_aabb)
+{
+
+    const ImGuiIO& io = ImGui::GetIO();
+
+    // we don't check `io.WantCaptureMouse` because clicking/dragging on an `ImGui::Image`
+    // is classed as a mouse interaction
+    const bool mouse_handled =
+        update_orbit_controller_from_mouse_inputs(
+            orbit_controller,
+            viewport_rect.dimensions(),
+            associated_camera
+        );
+
+    const bool keyboard_handled = not io.WantCaptureKeyboard ?
+        update_orbit_controller_from_keyboard_inputs(
+            orbit_controller,
+            associated_camera,
+            viewport_rect,
+            maybe_scene_world_space_aabb) :
         false;
 
     return mouse_handled or keyboard_handled;

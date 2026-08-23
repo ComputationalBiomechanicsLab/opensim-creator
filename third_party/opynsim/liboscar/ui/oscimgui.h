@@ -644,9 +644,25 @@ namespace osc::ui
         std::optional<AABB> maybe_scene_world_space_aabb
     );
 
+    // updates an orbit controller from UI keyboard input state
+    bool update_orbit_controller_from_keyboard_inputs(
+        OrbitCameraController&,
+        const Camera& associated_camera,
+        const Rect& viewport_rect,
+        std::optional<AABB> maybe_scene_world_space_aabb
+    );
+
     // updates a polar camera's rotation, position, etc. from UI input state (all)
     bool update_polar_camera_from_all_inputs(
         PolarPerspectiveCamera&,
+        const Rect& viewport_rect,
+        std::optional<AABB> maybe_scene_world_space_aabb
+    );
+
+    // updates an orbit controller from UI input state (all)
+    bool update_orbit_controller_from_all_inputs(
+        OrbitCameraController&,
+        const Camera& associated_camera,
         const Rect& viewport_rect,
         std::optional<AABB> maybe_scene_world_space_aabb
     );

@@ -11,6 +11,9 @@ build*/
 # editor: Neovim (`clangd` may create this)
 .cache/
 
+# editor: Neovim (`cmake-tools` may symlink this)
+compile_commands.json
+
 # editor: QtCreator
 *.autosave
 CMakeLists.txt.user

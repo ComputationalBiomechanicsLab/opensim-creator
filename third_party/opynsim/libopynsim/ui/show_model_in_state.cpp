@@ -11,7 +11,7 @@
 #include <liboscar/graphics/scene/scene_renderer_params.h>
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/graphics.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/vector.h>
@@ -24,6 +24,7 @@
 #include <vector>
 
 using namespace opyn;
+using namespace osc::literals;
 
 namespace
 {
@@ -44,7 +45,10 @@ namespace
             background_color_{background_color},
             fit_camera_on_next_frame_{true},
             draw_floor_{draw_floor}
-        {}
+        {
+            camera.set_vertical_field_of_view(35_deg);
+            camera_controller.update_camera(camera);
+        }
     private:
         bool impl_on_event(osc::Event& e) override
         {
@@ -64,16 +68,22 @@ namespace
             // Handle initial autofocus
             if (std::exchange(fit_camera_on_next_frame_, false)) {
                 if (const auto aabb = osc::bounding_aabb_of(decorations_, &osc::SceneDecoration::world_space_bounds)) {
-                    camera.focus_on(*aabb, osc::aspect_ratio_of(osc::App::get().main_window_dimensions()));
+                    camera_controller.focus_on(
+                        *aabb,
+                        camera,
+                        osc::aspect_ratio_of(osc::App::get().main_window_dimensions())
+                    );
                 }
             }
 
             // Update the scene camera state based on the user's inputs.
-            osc::ui::update_polar_camera_from_all_inputs(
+            osc::ui::update_orbit_controller_from_all_inputs(
+                camera_controller,
                 camera,
                 osc::Rect::from_origin_and_dimensions({}, osc::App::get().main_window_dimensions()),
                 std::nullopt
             );
+            camera_controller.update_camera(camera);
 
             const osc::Vector2 dimensions = osc::App::get().main_window_dimensions();
 
@@ -98,7 +108,8 @@ namespace
         osc::SceneCache* scene_cache_;
         osc::SceneRenderer scene_renderer_{*scene_cache_};
         std::vector<osc::SceneDecoration> decorations_;
-        osc::PolarPerspectiveCamera camera;
+        osc::Camera camera;
+        osc::OrbitCameraController camera_controller;
         osc::Color background_color_ = osc::Color::white();
         bool fit_camera_on_next_frame_ = false;
         bool draw_floor_ = true;
