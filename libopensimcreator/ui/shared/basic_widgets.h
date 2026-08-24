@@ -29,12 +29,12 @@ namespace opyn { class OutputExtractor; }
 namespace opyn { class OverlayDecorationOptions; }
 namespace opyn { struct ModelRendererParams; }
 namespace osc { class IconCache; }
-namespace osc { class OrbitCameraController; }
 namespace osc { class ParamBlock; }
 namespace osc { class Rect; }
 namespace osc { class SimulationModelStatePair; }
 namespace osc { class UndoableModelStatePair; }
 namespace osc { class Widget; }
+namespace osc { struct OrbitCameraController; }
 namespace osc { struct SceneDecoration; }
 
 namespace osc
