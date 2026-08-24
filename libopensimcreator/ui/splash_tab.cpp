@@ -16,8 +16,9 @@
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/graphics/texture2d.h>
 #include <liboscar/graphics/texture_filter_mode.h>
 #include <liboscar/maths/math_helpers.h>
@@ -48,12 +49,12 @@ using namespace osc;
 
 namespace
 {
-    PolarPerspectiveCamera GetSplashScreenDefaultPolarCamera()
+    Camera GetSplashScreenDefaultCamera()
     {
-        PolarPerspectiveCamera rv;
-        rv.phi = 30_deg;
-        rv.radius = 10.0f;
-        rv.theta = 45_deg;
+        Camera rv;
+        rv.set_vertical_field_of_view(35_deg);
+        OrbitCameraController controller{.radius = 10.0f, .theta = 45_deg, .phi = 30_deg};
+        controller.update_camera(rv);
         return rv;
     }
 
@@ -392,7 +393,7 @@ private:
     }
 
     // for rendering the 3D scene
-    PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
+    Camera m_Camera = GetSplashScreenDefaultCamera();
     SceneRenderer m_SceneRenderer{
         *App::singleton<SceneCache>(App::resource_loader()),
     };
