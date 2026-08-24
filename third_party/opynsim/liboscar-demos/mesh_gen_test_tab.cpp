@@ -93,8 +93,8 @@ public:
         if (viewer_.is_hovered()) {
             const bool modified = ui::update_orbit_controller_from_mouse_inputs(
                 camera_controller_,
-                ui::get_main_window_workspace_dimensions(),
-                camera_
+                camera_,
+                ui::get_main_window_workspace_dimensions()
             );
             if (modified) {
                 camera_controller_.update_camera(camera_);

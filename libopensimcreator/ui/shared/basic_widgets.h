@@ -29,12 +29,12 @@ namespace opyn { class OutputExtractor; }
 namespace opyn { class OverlayDecorationOptions; }
 namespace opyn { struct ModelRendererParams; }
 namespace osc { class IconCache; }
+namespace osc { class OrbitCameraController; }
 namespace osc { class ParamBlock; }
 namespace osc { class Rect; }
 namespace osc { class SimulationModelStatePair; }
 namespace osc { class UndoableModelStatePair; }
 namespace osc { class Widget; }
-namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct SceneDecoration; }
 
 namespace osc
@@ -230,7 +230,12 @@ namespace osc
     bool DrawRenderingOptionsEditor(opyn::CustomRenderingOptions&);
     bool DrawOverlayOptionsEditor(opyn::OverlayDecorationOptions&);
     bool DrawCustomDecorationOptionCheckboxes(opyn::OpenSimDecorationOptions&);
-    bool DrawAdvancedParamsEditor(opyn::ModelRendererParams&, std::span<const SceneDecoration>);
+    bool DrawOrbitCameraControllerEditor(OrbitCameraController&);
+    bool DrawAdvancedParamsEditor(
+        opyn::ModelRendererParams&,
+        OrbitCameraController&,
+        std::span<const SceneDecoration>
+    );
     bool DrawVisualAidsContextMenuContent(opyn::ModelRendererParams&);
     bool DrawViewerTopButtonRow(
         opyn::ModelRendererParams&,
@@ -240,6 +245,7 @@ namespace osc
     );
     bool DrawCameraControlButtons(
         opyn::ModelRendererParams&,
+        OrbitCameraController&,
         std::span<const SceneDecoration>,
         const Rect&,
         const std::optional<AABB>& maybeSceneAABB,
@@ -248,6 +254,7 @@ namespace osc
     );
     bool DrawViewerImGuiOverlays(
         opyn::ModelRendererParams&,
+        OrbitCameraController&,
         std::span<const SceneDecoration>,
         std::optional<AABB>,
         const Rect&,

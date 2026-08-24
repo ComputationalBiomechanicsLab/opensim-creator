@@ -1,5 +1,6 @@
 #include "graphics.h"
 
+#include <liboscar/graphics/geometries/plane_geometry.h>
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/mesh.h>
@@ -154,6 +155,38 @@ namespace
             Color0Out.a = clamp(Color0Out.a, 0.0, 1.0);
         }
     )";
+
+    constexpr std::string_view c_textured_material_vertex_src = R"(
+        #version 330 core
+
+        uniform mat4 uModelMat;
+        uniform mat4 uViewProjMat;
+
+        layout (location = 0) in vec3 aPos;
+        layout (location = 1) in vec2 aTexCoord;
+
+        out vec2 TexCoord;
+
+        void main()
+        {
+            gl_Position = uViewProjMat * uModelMat * vec4(aPos, 1.0);
+            TexCoord = aTexCoord;
+        }
+    )";
+
+    constexpr std::string_view c_textured_material_fragment_src = R"(
+        #version 330 core
+
+        uniform sampler2D uTextureSampler;
+
+        in vec2 TexCoord;
+        out vec4 FragColor;
+
+        void main()
+        {
+            FragColor = texture(uTextureSampler, TexCoord);
+        }
+    )";
 }
 
 TEST_F(Graphics, rendering_does_not_throw_with_standard_args)
@@ -188,4 +221,43 @@ TEST_F(Graphics, graphics_draw_does_not_throw_if_given_in_bounds_sub_mesh_index)
     RenderQueue render_queue;
     render_queue.emplace(mesh, transform, material, 0);
     graphics::render_to_main_window(render_queue, camera);
+}
+
+TEST_F(Graphics, graphics_render_blank_render_queue_to_render_texture_yields_sampleable_render_texture)
+{
+    // First pass: render an empty `RenderQueue` with a purple clear color.
+    //
+    // It should still render something (the clear color) to the `RenderTexture`.
+    RenderTexture render_texture{{.pixel_dimensions = {1, 1}}};
+    const RenderQueue empty_render_queue;
+    graphics::render_to(render_texture, empty_render_queue, Camera{}, {
+        .clear_color = Color::purple(),
+    });
+
+    // Second pass: sample the output of the first pass.
+    //
+    // Look directly at a quad that is textured with the output of the first pass.
+    Material textured_material{Shader{c_textured_material_vertex_src, c_textured_material_fragment_src}};
+    textured_material.set("uTextureSampler", render_texture);
+    const PlaneGeometry quad{{.dimensions = {2.0f, 2.0f}, .num_segments = {1, 1}}};
+    RenderTexture final_output{{.pixel_dimensions = {1, 1}}};
+    RenderQueue render_queue;
+    render_queue.emplace(quad, textured_material);
+    Camera camera;
+    camera.set_projection(CameraProjection::Orthographic);
+    camera.set_orthographic_size(1.0f);
+    camera.set_position({0.0f, 0.0f, 1.0f});
+    camera.set_forward({0.0f, 0.0f, -1.0f});
+    camera.set_up({0.0f, 1.0f, 0.0f});
+    graphics::render_to(final_output, render_queue, camera);
+
+    // Test: ensure the second pass produces the purple color from the first pass.
+    Texture2D cpu_texture{{1,1}};
+    graphics::copy_texture(final_output, cpu_texture);
+    const auto pixels = cpu_texture.pixels();
+    ASSERT_EQ(pixels.size(), 1);
+    ASSERT_NEAR(pixels.front().r, Color::purple().r, 1.0f/255.0f);
+    ASSERT_NEAR(pixels.front().g, Color::purple().g, 1.0f/255.0f);
+    ASSERT_NEAR(pixels.front().b, Color::purple().b, 1.0f/255.0f);
+    ASSERT_NEAR(pixels.front().a, Color::purple().a, 1.0f/255.0f);
 }

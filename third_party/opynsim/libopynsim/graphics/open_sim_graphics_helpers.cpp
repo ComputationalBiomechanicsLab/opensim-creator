@@ -64,8 +64,8 @@ osc::SceneRendererParams opyn::CalcSceneRendererParams(
     renderParams.renderingOptions.applyTo(rv);
     rv.view_matrix = renderParams.camera.view_matrix();
     rv.projection_matrix = renderParams.camera.projection_matrix(aspect_ratio_of(viewportDims));
-    rv.near_clipping_plane = renderParams.camera.znear;
-    rv.far_clipping_plane = renderParams.camera.zfar;
+    rv.near_clipping_plane = renderParams.camera.near_clipping_plane();
+    rv.far_clipping_plane = renderParams.camera.far_clipping_plane();
     rv.viewer_position = renderParams.camera.position();
     rv.fixup_scale_factor = fixupScaleFactor;
     rv.light_color = renderParams.lightColor;

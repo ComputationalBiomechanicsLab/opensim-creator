@@ -8,7 +8,7 @@
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <libopynsim/graphics/open_sim_graphics_helpers.h>
 #include <liboscar/graphics/graphics.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_helpers.h>
 #include <liboscar/graphics/scene/scene_renderer.h>
@@ -16,6 +16,7 @@
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/rect.h>
+#include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
 #include <liboscar/platform/app_settings.h>
@@ -74,23 +75,26 @@ public:
     {
         const auto dt = App::get().frame_delta_since_last_frame();
         if (not m_Paused) {
-            m_ModelRendererParams.camera.theta = mod(m_ModelRendererParams.camera.theta + 90_deg*dt.count(), 360_deg);
+            m_OrbitCameraController.theta = mod(m_OrbitCameraController.theta + 90_deg*dt.count(), 360_deg);
+            m_OrbitCameraController.update_camera(m_ModelRendererParams.camera);
             m_FrameTimeAccumulator.accumulate(dt);
         }
     }
 
     void on_draw()
     {
+        const Rect workspaceScreenRect = ui::get_main_window_workspace_screen_space_rect();
+
         if (m_RegenerateDecorationsEachFrame) {
             generateDecorations();
         }
         if (std::exchange(m_FirstFrame, false)) {
             if (const std::optional<AABB> sceneAABB = bounding_aabb_of(m_Decorations, &SceneDecoration::world_space_bounds)) {
-                m_ModelRendererParams.camera.focus_on(*sceneAABB);
+                m_OrbitCameraController.focus_on(*sceneAABB, m_ModelRendererParams.camera, aspect_ratio_of(workspaceScreenRect));
+                m_OrbitCameraController.update_camera(m_ModelRendererParams.camera);
             }
         }
 
-        const Rect workspaceScreenRect = ui::get_main_window_workspace_screen_space_rect();
         const SceneRendererParams params = calcParams(workspaceScreenRect);
         m_Renderer.render(m_Decorations, params);
         RenderTexture& sceneTexture = m_Renderer.upd_render_texture();
@@ -140,6 +144,7 @@ private:
     SceneCache m_SceneCache{App::resource_loader()};
     SceneRenderer m_Renderer{m_SceneCache};
     opyn::ModelRendererParams m_ModelRendererParams;
+    OrbitCameraController m_OrbitCameraController;
     std::vector<SceneDecoration> m_Decorations;
 
     UndoableModelStatePair m_Model = []()

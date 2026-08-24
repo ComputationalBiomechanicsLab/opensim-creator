@@ -2912,8 +2912,8 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
 
 bool osc::ui::update_orbit_controller_from_mouse_inputs(
     OrbitCameraController& orbit_controller,
-    Vector2 viewport_dimensions,
-    const Camera& associated_camera)
+    const Camera& associated_camera,
+    Vector2 viewport_dimensions)
 {
     bool modified = false;
 
@@ -3239,8 +3239,8 @@ bool osc::ui::update_orbit_controller_from_all_inputs(
     const bool mouse_handled =
         update_orbit_controller_from_mouse_inputs(
             orbit_controller,
-            viewport_rect.dimensions(),
-            associated_camera
+            associated_camera,
+            viewport_rect.dimensions()
         );
 
     const bool keyboard_handled = not io.WantCaptureKeyboard ?

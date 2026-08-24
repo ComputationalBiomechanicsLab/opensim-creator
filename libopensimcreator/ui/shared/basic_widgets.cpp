@@ -27,6 +27,7 @@
 #include <liboscar/formats/stl.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/mesh.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/maths/math_helpers.h>
@@ -1093,8 +1094,22 @@ bool osc::DrawCustomDecorationOptionCheckboxes(opyn::OpenSimDecorationOptions& o
     return edited;
 }
 
+bool osc::DrawOrbitCameraControllerEditor(
+    OrbitCameraController& orbitCameraController)
+{
+    bool edited = false;
+    edited = ui::draw_float_meters_slider("pan_x", orbitCameraController.focus_point.x(), -100.0f, 100.0f) || edited;
+    edited = ui::draw_float_meters_slider("pan_y", orbitCameraController.focus_point.y(), -100.0f, 100.0f) || edited;
+    edited = ui::draw_float_meters_slider("pan_z", orbitCameraController.focus_point.z(), -100.0f, 100.0f) || edited;
+    edited = ui::draw_float_meters_slider("radius", orbitCameraController.radius, 0.0f, 10.0f) || edited;
+    edited = ui::draw_angle_slider("theta", orbitCameraController.theta, 0_deg, 360_deg) || edited;
+    edited = ui::draw_angle_slider("phi", orbitCameraController.phi, 0_deg, 360_deg) || edited;
+    return edited;
+}
+
 bool osc::DrawAdvancedParamsEditor(
     opyn::ModelRendererParams& params,
+    OrbitCameraController& orbitCameraController,
     std::span<const SceneDecoration> drawlist)
 {
     bool edited = false;
@@ -1108,16 +1123,24 @@ bool osc::DrawAdvancedParamsEditor(
     ui::draw_vertical_spacer(10.0f/15.0f);
     ui::draw_text("advanced camera properties:");
     ui::draw_separator();
-    edited = ui::draw_float_meters_slider("radius", params.camera.radius, 0.0f, 10.0f) || edited;
-    edited = ui::draw_angle_slider("theta", params.camera.theta, 0_deg, 360_deg) || edited;
-    edited = ui::draw_angle_slider("phi", params.camera.phi, 0_deg, 360_deg) || edited;
-    edited = ui::draw_angle_slider("vertial FoV", params.camera.vertical_field_of_view, 0_deg, 360_deg) || edited;
-    edited = ui::draw_float_meters_input("znear", params.camera.znear) || edited;
-    edited = ui::draw_float_meters_input("zfar", params.camera.zfar) || edited;
+
+    if (DrawOrbitCameraControllerEditor(orbitCameraController)) {
+        orbitCameraController.update_camera(params.camera);
+        edited = true;
+    }
     ui::start_new_line();
-    edited = ui::draw_float_meters_slider("pan_x", params.camera.focus_point.x(), -100.0f, 100.0f) || edited;
-    edited = ui::draw_float_meters_slider("pan_y", params.camera.focus_point.y(), -100.0f, 100.0f) || edited;
-    edited = ui::draw_float_meters_slider("pan_z", params.camera.focus_point.z(), -100.0f, 100.0f) || edited;
+    if (auto fov = params.camera.vertical_field_of_view(); ui::draw_angle_slider("vertial FoV", fov, 0_deg, 360_deg)) {
+        params.camera.set_vertical_field_of_view(fov);
+        edited = true;
+    }
+    if (auto znear = params.camera.near_clipping_plane(); ui::draw_float_meters_input("znear", znear)) {
+        params.camera.set_near_clipping_plane(znear);
+        edited = true;
+    }
+    if (auto zfar = params.camera.far_clipping_plane(); ui::draw_float_meters_input("zfar", zfar)) {
+        params.camera.set_far_clipping_plane(zfar);
+        edited = true;
+    }
 
     ui::draw_vertical_spacer(10.0f/15.0f);
     ui::draw_text("advanced scene properties:");
@@ -1188,6 +1211,7 @@ bool osc::DrawViewerTopButtonRow(
 
 bool osc::DrawCameraControlButtons(
     opyn::ModelRendererParams& params,
+    OrbitCameraController& orbitCameraController,
     std::span<const SceneDecoration> drawlist,
     const Rect& viewerScreenRect,
     const std::optional<AABB>& maybeSceneAABB,
@@ -1213,7 +1237,7 @@ bool osc::DrawCameraControlButtons(
         iconCache.find_or_throw("gear"),
         "Scene Settings",
         "Change advanced scene settings",
-        [&params, drawlist]() { return DrawAdvancedParamsEditor(params, drawlist); },
+        [&params, &orbitCameraController, drawlist]() { return DrawAdvancedParamsEditor(params, orbitCameraController, drawlist); },
     };
 
     auto c = ui::get_style_color(ui::ColorVar::Button);
@@ -1227,20 +1251,24 @@ bool osc::DrawCameraControlButtons(
 
     bool edited = false;
     if (zoomOutButton.on_draw()) {
-        params.camera.zoom_out();
+        orbitCameraController.zoom_out();
+        orbitCameraController.update_camera(params.camera);
         edited = true;
     }
     ui::same_line();
     if (zoomInButton.on_draw()) {
-        params.camera.zoom_in();
+        orbitCameraController.zoom_in();
+        orbitCameraController.update_camera(params.camera);
         edited = true;
     }
     ui::same_line();
     if (autoFocusButton.on_draw() && maybeSceneAABB) {
-        params.camera.focus_on(
+        orbitCameraController.focus_on(
             *maybeSceneAABB,
+            params.camera,
             aspect_ratio_of(viewerScreenRect)
         );
+        orbitCameraController.update_camera(params.camera);
         edited = true;
     }
 
@@ -1263,6 +1291,7 @@ bool osc::DrawCameraControlButtons(
 
 bool osc::DrawViewerImGuiOverlays(
     opyn::ModelRendererParams& params,
+    OrbitCameraController& orbitCameraController,
     std::span<const SceneDecoration> drawlist,
     std::optional<AABB> maybeSceneAABB,
     const Rect& renderRect,
@@ -1287,12 +1316,16 @@ bool osc::DrawViewerImGuiOverlays(
 
     // draw the bottom overlays
     ui::set_cursor_ui_position(axesTopLeft);
-    edited = axes.draw(params.camera) || edited;
+    if (axes.draw(orbitCameraController, params.camera)) {
+        orbitCameraController.update_camera(params.camera);
+        edited = true;
+    }
 
     const Vector2 cameraButtonsTopLeft = axesTopLeft + Vector2{0.0f, axesDims.y()};
     ui::set_cursor_ui_position(cameraButtonsTopLeft);
     edited = DrawCameraControlButtons(
         params,
+        orbitCameraController,
         drawlist,
         renderRect,
         maybeSceneAABB,

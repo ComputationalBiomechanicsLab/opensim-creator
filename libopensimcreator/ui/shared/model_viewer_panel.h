@@ -11,9 +11,9 @@
 #include <string_view>
 
 namespace opyn { class ModelStatePair; }
+namespace osc { class Camera; }
 namespace osc { class ModelViewerPanelLayer; }
 namespace osc { class ModelViewerPanelParameters; }
-namespace osc { struct PolarPerspectiveCamera; }
 
 namespace osc
 {
@@ -32,8 +32,11 @@ namespace osc
         ModelViewerPanelLayer& pushLayer(std::unique_ptr<ModelViewerPanelLayer>);
         void focusOn(const Vector3&);
         std::optional<Rect> getScreenRect() const;
-        const PolarPerspectiveCamera& getCamera() const;
-        void setCamera(const PolarPerspectiveCamera&);
+        const Camera& getCamera() const;
+        Camera& updCamera();
+        const OrbitCameraController& getOrbitCameraController() const;
+        OrbitCameraController& updOrbitCameraController();
+
         void setModelState(const std::shared_ptr<opyn::ModelStatePair>&);
 
     protected:

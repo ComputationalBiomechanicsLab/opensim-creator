@@ -27,6 +27,7 @@
 #include <libopynsim/utilities/simbody_x_oscar.h>
 #include <libopynsim/tps3d.h>
 #include <liboscar/formats/obj.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/transform_functions.h>
 #include <liboscar/platform/app.h>
@@ -262,13 +263,39 @@ namespace
         }
 
         // camera stuff
-        bool isCameraLinked() const { return m_LinkCameras; }
-        void setCameraLinked(bool v) { m_LinkCameras = v; }
-        bool isOnlyCameraRotationLinked() const { return m_OnlyLinkRotation; }
-        void setOnlyCameraRotationLinked(bool v) { m_OnlyLinkRotation = v; }
-        const PolarPerspectiveCamera& getLinkedCamera() const { return m_LinkedCamera; }
-        void setLinkedCamera(const PolarPerspectiveCamera& camera) { m_LinkedCamera = camera; }
+        bool isCameraControllerLinked() const { return m_LinkCameras; }
+        void setCameraControllerLinked(bool v) { m_LinkCameras = v; }
+        bool isOnlyCameraControllerRotationLinked() const { return m_OnlyLinkRotation; }
+        void setOnlyCameraControllerRotationLinked(bool v) { m_OnlyLinkRotation = v; }
 
+        bool updateLocalControllerIfLinked(OrbitCameraController& cameraController)
+        {
+            if (not isCameraControllerLinked()) {
+                return false;
+            }
+
+            if (isOnlyCameraControllerRotationLinked()) {
+                cameraController.theta = m_CameraController.theta;
+                cameraController.phi = m_CameraController.phi;
+            }
+            else {
+                cameraController = m_CameraController;
+            }
+            return true;
+        }
+        void updateSharedControllerIfLinked(const OrbitCameraController& downstreamController)
+        {
+            if (not isCameraControllerLinked()) {
+                return;
+            }
+            if (isOnlyCameraControllerRotationLinked()) {
+                m_CameraController.phi = downstreamController.phi;
+                m_CameraController.theta = downstreamController.theta;
+            }
+            else {
+                m_CameraController = downstreamController;
+            }
+        }
 
         // undo/redo stuff
         std::shared_ptr<UndoRedoBase> getUndoRedoPtr() { return m_ScalingState; }
@@ -466,7 +493,7 @@ namespace
         std::vector<std::function<void(ModelWarperV3UIState&)>> m_DeferredActions;
         bool m_LinkCameras = true;
         bool m_OnlyLinkRotation = false;
-        PolarPerspectiveCamera m_LinkedCamera;
+        OrbitCameraController m_CameraController;
 
         std::optional<std::filesystem::path> m_MaybeCustomWarpedGeometryDirectory;
         bool m_BakeStationDefinedFrames = false;
@@ -499,33 +526,16 @@ namespace
     private:
         void impl_draw_content() final
         {
-            if (m_State->isCameraLinked()) {
-                if (m_State->isOnlyCameraRotationLinked()) {
-                    auto camera = getCamera();
-                    camera.phi = m_State->getLinkedCamera().phi;
-                    camera.theta = m_State->getLinkedCamera().theta;
-                    setCamera(camera);
-                }
-                else {
-                    setCamera(m_State->getLinkedCamera());
-                }
+            // if linked, read linked camera controller into local camera
+            if (m_State->updateLocalControllerIfLinked(updOrbitCameraController())) {
+                getOrbitCameraController().update_camera(updCamera());
             }
 
             setModelState(m_State->sourceModel());
             ModelViewerPanel::impl_draw_content();
 
-            // draw may have updated the camera, so flash is back
-            if (m_State->isCameraLinked()) {
-                if (m_State->isOnlyCameraRotationLinked()) {
-                    auto camera = m_State->getLinkedCamera();
-                    camera.phi = getCamera().phi;
-                    camera.theta = getCamera().theta;
-                    m_State->setLinkedCamera(camera);
-                }
-                else {
-                    m_State->setLinkedCamera(getCamera());
-                }
-            }
+            // if linked, local controller may have been updated, push update to linked controller
+            m_State->updateSharedControllerIfLinked(getOrbitCameraController());
         }
 
         std::shared_ptr<ModelWarperV3UIState> m_State;
@@ -555,34 +565,16 @@ namespace
 
         void draw_scaled_model_visualization(const std::shared_ptr<ModelStatePair>& scaledModel)
         {
-            // handle camera linking
-            if (m_State->isCameraLinked()) {
-                if (m_State->isOnlyCameraRotationLinked()) {
-                    auto camera = getCamera();
-                    camera.phi = m_State->getLinkedCamera().phi;
-                    camera.theta = m_State->getLinkedCamera().theta;
-                    setCamera(camera);
-                }
-                else {
-                    setCamera(m_State->getLinkedCamera());
-                }
+            // if linked, read linked camera controller into local camera
+            if (m_State->updateLocalControllerIfLinked(updOrbitCameraController())) {
+                getOrbitCameraController().update_camera(updCamera());
             }
 
             setModelState(scaledModel);
             ModelViewerPanel::impl_draw_content();
 
-            // draw may have updated the camera, so flash is back
-            if (m_State->isCameraLinked()) {
-                if (m_State->isOnlyCameraRotationLinked()) {
-                    auto camera = m_State->getLinkedCamera();
-                    camera.phi = getCamera().phi;
-                    camera.theta = getCamera().theta;
-                    m_State->setLinkedCamera(camera);
-                }
-                else {
-                    m_State->setLinkedCamera(getCamera());
-                }
-            }
+            // if linked, local controller may have been updated, push update to linked controller
+            m_State->updateSharedControllerIfLinked(getOrbitCameraController());
         }
 
         void draw_validation_error_message(std::span<const ScalingDocumentValidationMessage> messages)
@@ -783,13 +775,13 @@ namespace
 
             ui::push_id(id++);
             ui::same_line();
-            if (bool v = m_State->isCameraLinked(); ui::draw_checkbox("link cameras", &v)) {
-                m_State->setCameraLinked(v);
+            if (bool v = m_State->isCameraControllerLinked(); ui::draw_checkbox("link cameras", &v)) {
+                m_State->setCameraControllerLinked(v);
             }
 
             ui::same_line();
-            if (bool v = m_State->isOnlyCameraRotationLinked(); ui::draw_checkbox("only link rotation", &v)) {
-                m_State->setOnlyCameraRotationLinked(v);
+            if (bool v = m_State->isOnlyCameraControllerRotationLinked(); ui::draw_checkbox("only link rotation", &v)) {
+                m_State->setOnlyCameraControllerRotationLinked(v);
             }
             ui::pop_id();
         }

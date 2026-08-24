@@ -135,7 +135,7 @@ bool osc::CameraViewAxes::draw(OrbitCameraController& camera_controller, const C
         camera_controller.theta = tmp.theta;
         camera_controller.phi = tmp.phi;
         camera_controller.radius = tmp.radius;
-        camera_controller.focus_point = tmp.focus_point;
+        camera_controller.focus_point = -tmp.focus_point;
         return true;
     }
     return false;

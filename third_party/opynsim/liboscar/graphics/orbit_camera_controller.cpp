@@ -61,7 +61,7 @@ void osc::OrbitCameraController::pan(
     const Matrix4x4 rotation_phi = rotate(identity<Matrix4x4>(), phi, phi_axis);
 
     const Vector4 panning_axes = rotation_phi * rotation_theta * default_panning_axis;
-    focus_point += Vector3{panning_axes};
+    focus_point -= Vector3{panning_axes};
 }
 
 void osc::OrbitCameraController::drag(Vector2 normalized_delta)

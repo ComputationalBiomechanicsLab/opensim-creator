@@ -3,7 +3,7 @@
 #include <libopynsim/graphics/custom_rendering_options.h>
 #include <libopynsim/graphics/open_sim_decoration_options.h>
 #include <libopynsim/graphics/overlay_decoration_options.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/maths/vector.h>
 
@@ -22,7 +22,7 @@ namespace opyn
         osc::Color lightColor;
         osc::Color backgroundColor;
         osc::Vector3 floorLocation;
-        osc::PolarPerspectiveCamera camera;
+        osc::Camera camera;
     };
 
     void UpdModelRendererParamsFrom(

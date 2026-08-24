@@ -72,7 +72,7 @@ namespace
             ModelViewerPanelState& state) final
         {
             m_Ruler.on_draw(
-                params.getRenderParams().camera,
+                params.getCamera(),
                 state.viewportUiRect,
                 state.maybeBaseLayerHittest
             );
@@ -137,6 +137,7 @@ namespace
 
             const bool edited = DrawViewerImGuiOverlays(
                 params.updRenderParams(),
+                params.updOrbitCameraController(),
                 state.getDrawlist(),
                 state.maybeSceneVisibleAABB,
                 state.viewportUiRect,
@@ -159,7 +160,7 @@ namespace
             }
 
             // draw gizmo manipulators over the top
-            m_Gizmo.onDraw(state.viewportUiRect, params.getRenderParams().camera);
+            m_Gizmo.onDraw(state.viewportUiRect, params.getCamera());
         }
 
         bool implShouldClose() const final
@@ -289,12 +290,13 @@ namespace
                     ProjectedPoints() = default;
 
                     explicit ProjectedPoints(
-                        const PolarPerspectiveCamera& camera,
+                        const Camera& camera,
+                        float focalDistance,
                         const Rect& viewportUiRect,
                         const SimTK::Transform& t)
                     {
                         const float viewportFillPercentage = c_FrameLegProjectionInScreenSpace / viewportUiRect.height();
-                        const float scale = viewportFillPercentage * camera.frustum_height_at_depth(camera.radius);
+                        const float scale = viewportFillPercentage * camera.view_volume_height_at_depth(focalDistance);
 
                         const auto worldOrigin = to<Vector3>(t.shiftFrameStationToBase(SimTK::Vec3(0.0,   0.0,   0.0  )));
                         const auto worldX      = to<Vector3>(t.shiftFrameStationToBase(SimTK::Vec3(scale, 0.0,   0.0  )));
@@ -312,14 +314,15 @@ namespace
 
                 auto dl = ui::get_panel_draw_list();
                 const auto& viewportUiRect = state.viewportUiRect;
-                const auto& camera = params.getRenderParams().camera;
+                const auto& camera = params.getCamera();
+                const float focalDistance = params.getOrbitCameraController().radius;
 
                 // Draw lines along the sample points, so users can see
                 // the "rail" of the coordinate.
                 {
-                    ProjectedPoints previous{camera, viewportUiRect, cache.sampledTransforms[0]};
+                    ProjectedPoints previous{camera, focalDistance, viewportUiRect, cache.sampledTransforms[0]};
                     for (size_t i = 1; i < cache.sampledTransforms.size(); ++i) {
-                        ProjectedPoints current{camera, viewportUiRect, cache.sampledTransforms[i]};
+                        ProjectedPoints current{camera, focalDistance, viewportUiRect, cache.sampledTransforms[i]};
 
                         dl.add_line(previous.x, current.x, Color::red()  .with_alpha(c_CoordinateAxisAlpha), c_OverlayThickness);
                         dl.add_line(previous.y, current.y, Color::green().with_alpha(c_CoordinateAxisAlpha), c_OverlayThickness);
@@ -359,21 +362,21 @@ namespace
                     // Min caps
                     drawCaps(
                         dl,
-                        ProjectedPoints{camera, viewportUiRect, cache.sampledTransforms[0]},
-                        ProjectedPoints{camera, viewportUiRect, cache.sampledTransforms[1]}
+                        ProjectedPoints{camera, focalDistance, viewportUiRect, cache.sampledTransforms[0]},
+                        ProjectedPoints{camera, focalDistance, viewportUiRect, cache.sampledTransforms[1]}
                     );
 
                     // Max caps
                     drawCaps(
                         dl,
-                        ProjectedPoints(camera, viewportUiRect, cache.sampledTransforms.back()),
-                        ProjectedPoints(camera, viewportUiRect, *(cache.sampledTransforms.rbegin()+1))
+                        ProjectedPoints(camera, focalDistance, viewportUiRect, cache.sampledTransforms.back()),
+                        ProjectedPoints(camera, focalDistance, viewportUiRect, *(cache.sampledTransforms.rbegin()+1))
                     );
                 }
 
                 // Draw a frame-like core representing the coordinate's current state.
                 {
-                    const ProjectedPoints pp{camera, viewportUiRect, cache.currentTransform};
+                    const ProjectedPoints pp{camera, focalDistance, viewportUiRect, cache.currentTransform};
 
                     // Legs
                     dl.add_line(pp.origin, pp.x, Color::red(),   c_OverlayThickness);
@@ -411,18 +414,22 @@ namespace
         void implOnNewFrame() final
         {
             m_IsHandlingMouseInputs = false;
-
         }
 
         bool implHandleKeyboardInputs(
             ModelViewerPanelParameters& params,
             ModelViewerPanelState& state) final
         {
-            return ui::update_polar_camera_from_keyboard_inputs(
-                params.updRenderParams().camera,
+            const bool controllerUpdated = ui::update_orbit_controller_from_keyboard_inputs(
+                params.updOrbitCameraController(),
+                params.getCamera(),
                 state.viewportUiRect,
                 state.maybeSceneVisibleAABB
             );
+            if (controllerUpdated) {
+                params.getOrbitCameraController().update_camera(params.updCamera());
+            }
+            return controllerUpdated;
         }
 
         bool implHandleMouseInputs(
@@ -432,10 +439,14 @@ namespace
             m_IsHandlingMouseInputs = true;
 
             // try updating the camera (mouse panning, etc.)
-            bool rv = ui::update_polar_camera_from_mouse_inputs(
-                params.updRenderParams().camera,
+            bool rv = ui::update_orbit_controller_from_mouse_inputs(
+                params.updOrbitCameraController(),
+                params.getCamera(),
                 state.viewportUiRect.dimensions()
             );
+            if (rv) {
+                params.getOrbitCameraController().update_camera(params.updCamera());
+            }
 
             if (ui::is_mouse_dragging_with_any_button_down())
             {
@@ -556,7 +567,8 @@ public:
 
     void focusOn(const Vector3& position)
     {
-        m_Parameters.updRenderParams().camera.focus_point = -position;
+        m_Parameters.updOrbitCameraController().focus_point = position;
+        m_Parameters.getOrbitCameraController().update_camera(m_Parameters.updCamera());
     }
 
     std::optional<Rect> getScreenRect() const
@@ -564,15 +576,11 @@ public:
         return m_State.viewportUiRect;
     }
 
-    const PolarPerspectiveCamera& getCamera() const
-    {
-        return m_Parameters.getRenderParams().camera;
-    }
+    const Camera& getCamera() const { return m_Parameters.getCamera(); }
+    Camera& updCamera() { return m_Parameters.updCamera(); }
 
-    void setCamera(const PolarPerspectiveCamera& camera)
-    {
-        m_Parameters.updRenderParams().camera = camera;
-    }
+    const OrbitCameraController& getOrbitCameraController() const { return m_Parameters.getOrbitCameraController(); }
+    OrbitCameraController& updOrbitCameraController() { return m_Parameters.updOrbitCameraController(); }
 
     void setModelState(const std::shared_ptr<opyn::ModelStatePair>& newModelState)
     {
@@ -591,13 +599,19 @@ public:
         m_State.isRightClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ui::MouseButton::Right);
 
         // if necessary, auto-focus the camera on the first frame
-        if (m_IsFirstFrame)
-        {
-            m_State.updRenderer().autoFocusCamera(
+        if (m_IsFirstFrame) {
+            const auto bounds = m_State.updRenderer().visibleBounds(
                 *m_Parameters.getModelSharedPtr(),
-                m_Parameters.updRenderParams(),
-                aspect_ratio_of(m_State.viewportUiRect)
+                m_Parameters.getRenderParams()
             );
+            if (bounds) {
+                m_Parameters.updOrbitCameraController().focus_on(
+                    *bounds,
+                    m_Parameters.getCamera(),
+                    aspect_ratio_of(m_State.viewportUiRect)
+                );
+                m_Parameters.getOrbitCameraController().update_camera(m_Parameters.updCamera());
+            }
             m_IsFirstFrame = false;
         }
 
@@ -781,8 +795,10 @@ ModelViewerPanelLayer& osc::ModelViewerPanel::pushLayer(std::unique_ptr<ModelVie
 }
 void osc::ModelViewerPanel::focusOn(const Vector3& position) { private_data().focusOn(position); }
 std::optional<Rect> osc::ModelViewerPanel::getScreenRect() const { return private_data().getScreenRect(); }
-const PolarPerspectiveCamera& osc::ModelViewerPanel::getCamera() const { return private_data().getCamera(); }
-void osc::ModelViewerPanel::setCamera(const PolarPerspectiveCamera& camera) { private_data().setCamera(camera); }
+const Camera& osc::ModelViewerPanel::getCamera() const { return private_data().getCamera(); }
+Camera& osc::ModelViewerPanel::updCamera() { return private_data().updCamera(); }
+const OrbitCameraController& osc::ModelViewerPanel::getOrbitCameraController() const { return private_data().getOrbitCameraController(); }
+OrbitCameraController& osc::ModelViewerPanel::updOrbitCameraController() { return private_data().updOrbitCameraController(); }
 void osc::ModelViewerPanel::setModelState(const std::shared_ptr<opyn::ModelStatePair>& newModelState) { private_data().setModelState(newModelState); }
 void osc::ModelViewerPanel::impl_draw_content() { private_data().draw_content(); }
 void osc::ModelViewerPanel::impl_before_imgui_begin() { ui::push_style_var(ui::StyleVar::PanelPadding, {0.0f, 0.0f}); }

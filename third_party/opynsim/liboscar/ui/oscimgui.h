@@ -996,8 +996,8 @@ namespace osc::ui
     // pixel dimensions.
     bool update_orbit_controller_from_mouse_inputs(
         OrbitCameraController&,
-        Vector2 viewport_dimensions,
-        const Camera& associated_camera
+        const Camera& associated_camera,
+        Vector2 viewport_dimensions
     );
 
     // an operation that a ui `Gizmo` shall perform

@@ -4,8 +4,10 @@
 #include <libopynsim/graphics/open_sim_decoration_options.h>
 #include <libopynsim/graphics/overlay_decoration_options.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
+#include <liboscar/maths/angle.h>
 #include <liboscar/platform/app_settings.h>
 #include <liboscar/utilities/algorithms.h>
 #include <liboscar/utilities/conversion.h>
@@ -16,6 +18,7 @@
 #include <unordered_map>
 
 using namespace opyn;
+using namespace osc::literals;
 
 namespace
 {
@@ -64,9 +67,12 @@ namespace
 opyn::ModelRendererParams::ModelRendererParams() :
     lightColor{osc::SceneRendererParams::default_light_color()},
     backgroundColor{osc::SceneRendererParams::default_background_color()},
-    floorLocation{osc::SceneRendererParams::default_floor_position()},
-    camera{osc::PolarPerspectiveCamera::with_radius(5.0f)}
-{}
+    floorLocation{osc::SceneRendererParams::default_floor_position()}
+{
+    camera.set_vertical_field_of_view(35_deg);
+    auto controller = osc::OrbitCameraController{.radius = 5.0f};
+    controller.update_camera(camera);
+}
 
 void opyn::UpdModelRendererParamsFrom(
     const osc::AppSettings& settings,

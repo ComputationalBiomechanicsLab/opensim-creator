@@ -142,21 +142,30 @@ public:
         ModelViewerPanelParameters& params,
         ModelViewerPanelState& state) const
     {
-        return ui::update_polar_camera_from_keyboard_inputs(
-            params.updRenderParams().camera,
+        const bool controllerUpdated = ui::update_orbit_controller_from_keyboard_inputs(
+            params.updOrbitCameraController(),
+            params.getCamera(),
             state.viewportUiRect,
             m_Decorations.bvh.bounds()
         );
+        if (controllerUpdated) {
+            params.getOrbitCameraController().update_camera(params.updCamera());
+        }
+        return controllerUpdated;
     }
 
     bool handleMouseInputs(
         ModelViewerPanelParameters& params,
         ModelViewerPanelState& state)
     {
-        bool rv = ui::update_polar_camera_from_mouse_inputs(
-            params.updRenderParams().camera,
+        bool rv = ui::update_orbit_controller_from_mouse_inputs(
+            params.updOrbitCameraController(),
+            params.getCamera(),
             state.viewportUiRect.dimensions()
         );
+        if (rv) {
+            params.getOrbitCameraController().update_camera(params.updCamera());
+        }
 
         if (ui::is_mouse_dragging_with_any_button_down())
         {

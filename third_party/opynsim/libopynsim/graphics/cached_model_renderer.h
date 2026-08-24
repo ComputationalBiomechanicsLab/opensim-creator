@@ -28,12 +28,6 @@ namespace opyn
         CachedModelRenderer& operator=(CachedModelRenderer&&) noexcept;
         ~CachedModelRenderer() noexcept;
 
-        void autoFocusCamera(
-            const ModelStatePair&,
-            ModelRendererParams&,
-            float aspectRatio
-        );
-
         osc::RenderTexture& onDraw(
             const ModelStatePair&,
             const ModelRendererParams&,
@@ -58,6 +52,9 @@ namespace opyn
         // This is useful if (e.g.) you want to ensure a scene camera only tries to scope the visible
         // parts of a scene (#1029).
         std::optional<osc::AABB> visibleBounds() const;
+
+        // Updates the internal decoration cache and returns `visibleBounds()`.
+        std::optional<osc::AABB> visibleBounds(const ModelStatePair&, const ModelRendererParams&);
 
         std::optional<osc::SceneCollision> getClosestCollision(
             const ModelRendererParams&,

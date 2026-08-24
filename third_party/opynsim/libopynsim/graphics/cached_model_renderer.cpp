@@ -142,17 +142,6 @@ public:
         m_Renderer{*cache}
     {}
 
-    void autoFocusCamera(
-        const ModelStatePair& modelState,
-        ModelRendererParams& params,
-        float aspectRatio)
-    {
-        m_DecorationCache.update(modelState, params);
-        if (const std::optional<osc::AABB> aabb = m_DecorationCache.getVisibleAABB()) {
-            params.camera.focus_on(*aabb, aspectRatio);
-        }
-    }
-
     osc::RenderTexture& onDraw(
         const ModelStatePair& modelState,
         const ModelRendererParams& renderParams,
@@ -203,6 +192,14 @@ public:
         return m_DecorationCache.getVisibleAABB();
     }
 
+    std::optional<osc::AABB> visibleBounds(
+        const ModelStatePair& modelState,
+        const ModelRendererParams& params)
+    {
+        m_DecorationCache.update(modelState, params);
+        return m_DecorationCache.getVisibleAABB();
+    }
+
     std::optional<osc::SceneCollision> getClosestCollision(
         const ModelRendererParams& params,
         osc::Vector2 mouseScreenPosition,
@@ -248,14 +245,6 @@ osc::RenderTexture& opyn::CachedModelRenderer::onDraw(
     );
 }
 
-void opyn::CachedModelRenderer::autoFocusCamera(
-    const ModelStatePair& modelState,
-    ModelRendererParams& renderParams,
-    float aspectRatio)
-{
-    m_Impl->autoFocusCamera(modelState, renderParams, aspectRatio);
-}
-
 osc::RenderTexture& opyn::CachedModelRenderer::updRenderTexture()
 {
     return m_Impl->updRenderTexture();
@@ -274,6 +263,13 @@ std::optional<osc::AABB> opyn::CachedModelRenderer::bounds() const
 std::optional<osc::AABB> opyn::CachedModelRenderer::visibleBounds() const
 {
     return m_Impl->visibleBounds();
+}
+
+std::optional<osc::AABB> opyn::CachedModelRenderer::visibleBounds(
+    const ModelStatePair& modelState,
+    const ModelRendererParams& renderParams)
+{
+    return m_Impl->visibleBounds(modelState, renderParams);
 }
 
 std::optional<osc::SceneCollision> opyn::CachedModelRenderer::getClosestCollision(

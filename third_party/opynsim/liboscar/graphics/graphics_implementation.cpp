@@ -6916,9 +6916,9 @@ void osc::GraphicsBackend::render(
     if (maybe_custom_render_target) {
         maybe_custom_render_target->validate_or_throw();
     }
-    if (render_queue.empty()) {
-        return;  // Nothing to render.
-    }
+
+    // DO NOT DO THIS - clearing the target is still a side-effect, even if the queue is empty.
+    // if (render_queue.empty()) return;
 
     // Setup top-level pipeline state and calculate output aspect ratio.
     const float output_aspect_ratio = setup_top_level_pipeline_state(
