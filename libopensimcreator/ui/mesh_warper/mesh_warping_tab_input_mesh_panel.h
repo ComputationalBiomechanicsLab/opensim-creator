@@ -16,9 +16,10 @@
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_helpers.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/mesh.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/maths/collision_tests.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/ray.h>
@@ -55,6 +56,9 @@ namespace osc
             m_State{std::move(state_)},
             m_DocumentIdentifier{documentIdentifier_}
         {
+            m_Camera.set_vertical_field_of_view(Degrees{35.0f});
+            m_CameraController.focus_on(m_State->getScratchMesh(m_DocumentIdentifier).bounds().value_or(AABB{}), m_Camera);
+            m_CameraController.update_camera(m_Camera);
         }
     private:
         // draws all of the panel's content
@@ -112,13 +116,16 @@ namespace osc
         void updateCamera()
         {
             // if the cameras are linked together, ensure this camera is updated from the linked camera
-            m_State->updateOneCameraFromLinkedBase(m_Camera);
+            if (m_State->updateLocalCameraControllerFromLinkedBase(m_CameraController)) {
+                m_CameraController.update_camera(m_Camera);
+            }
 
             // if the user interacts with the render, update the camera as necessary
             if (m_LastTextureHittestResult.is_hovered and
-                ui::update_polar_camera_from_mouse_inputs(m_Camera, m_LastTextureHittestResult.item_ui_rect.dimensions())) {
+                ui::update_orbit_controller_from_mouse_inputs(m_CameraController, m_Camera, m_LastTextureHittestResult.item_ui_rect.dimensions())) {
 
-                m_State->setLinkedBaseCamera(m_Camera);
+                m_CameraController.update_camera(m_Camera);
+                m_State->setLinkedCameraController(m_CameraController);
             }
         }
 
@@ -408,8 +415,9 @@ namespace osc
             // event: if the user is hovering the mesh and they press F then they would like to
             // focus the camera on that point
             if (meshCollision and ui::any_of_keys_pressed({Key::F})) {
-                m_Camera.focus_point = -meshCollision->position;
-                m_State->setLinkedBaseCamera(m_Camera);
+                m_CameraController.focus_point = meshCollision->position;
+                m_CameraController.update_camera(m_Camera);
+                m_State->setLinkedCameraController(m_CameraController);
             }
         }
 
@@ -604,8 +612,9 @@ namespace osc
             if (ui::draw_button(MSMICONS_EXPAND_ARROWS_ALT))
             {
                 if (const auto bounds = m_State->getScratchMesh(m_DocumentIdentifier).bounds()) {
-                    m_Camera.focus_on(*bounds, aspect_ratio_of(m_LastTextureHittestResult.item_ui_rect));
-                    m_State->setLinkedBaseCamera(m_Camera);
+                    m_CameraController.focus_on(*bounds, m_Camera, aspect_ratio_of(m_LastTextureHittestResult.item_ui_rect));
+                    m_CameraController.update_camera(m_Camera);
+                    m_State->setLinkedCameraController(m_CameraController);
                 }
             }
             ui::draw_tooltip_if_item_hovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
@@ -633,7 +642,8 @@ namespace osc
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
         MiDocumentInputIdentifier m_DocumentIdentifier;
-        PolarPerspectiveCamera m_Camera = PolarPerspectiveCamera::focused_on(m_State->getScratchMesh(m_DocumentIdentifier).bounds().value_or(AABB{}));
+        Camera m_Camera;
+        OrbitCameraController m_CameraController;
         CachedSceneRenderer m_CachedRenderer{
             *App::singleton<SceneCache>(App::resource_loader()),
         };

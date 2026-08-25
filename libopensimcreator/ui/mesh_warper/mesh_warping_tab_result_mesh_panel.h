@@ -11,7 +11,8 @@
 #include <liboscar/graphics/scene/scene_cache.h>
 #include <liboscar/graphics/scene/scene_decoration.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/graphics/render_texture.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
@@ -36,7 +37,14 @@ namespace osc
 
             MeshWarpingTabPanel{parent, panelName_},
             m_State{std::move(state_)}
-        {}
+        {
+            m_Camera.set_vertical_field_of_view(Degrees{35.0f});
+            m_CameraController.focus_on(
+                m_State->getResultMesh().bounds().value_or(AABB{}),
+                m_Camera
+            );
+            m_CameraController.update_camera(m_Camera);
+        }
     private:
         void impl_draw_content() final
         {
@@ -56,14 +64,17 @@ namespace osc
         void updateCamera()
         {
             // if cameras are linked together, ensure all cameras match the "base" camera
-            m_State->updateOneCameraFromLinkedBase(m_Camera);
+            if (m_State->updateLocalCameraControllerFromLinkedBase(m_CameraController)) {
+                m_CameraController.update_camera(m_Camera);
+            }
 
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.is_hovered)
             {
-                if (ui::update_polar_camera_from_mouse_inputs(m_Camera, m_LastTextureHittestResult.item_ui_rect.dimensions()))
+                if (ui::update_orbit_controller_from_mouse_inputs(m_CameraController, m_Camera, m_LastTextureHittestResult.item_ui_rect.dimensions()))
                 {
-                    m_State->setLinkedBaseCamera(m_Camera);  // reflects latest modification
+                    m_CameraController.update_camera(m_Camera);
+                    m_State->setLinkedCameraController(m_CameraController);  // reflects latest modification
                 }
             }
         }
@@ -181,11 +192,13 @@ namespace osc
         void drawAutoFitCameraButton()
         {
             if (ui::draw_button(MSMICONS_EXPAND_ARROWS_ALT)) {
-                m_Camera.focus_on(
+                m_CameraController.focus_on(
                     m_State->getResultMesh().bounds().value_or(AABB{}),
+                    m_Camera,
                     aspect_ratio_of(m_LastTextureHittestResult.item_ui_rect)
                 );
-                m_State->setLinkedBaseCamera(m_Camera);
+                m_CameraController.update_camera(m_Camera);
+                m_State->setLinkedCameraController(m_CameraController);
             }
             ui::draw_tooltip_if_item_hovered(
                 "Autoscale Scene",
@@ -324,7 +337,8 @@ namespace osc
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
-        PolarPerspectiveCamera m_Camera = PolarPerspectiveCamera::focused_on(m_State->getResultMesh().bounds().value_or(AABB{}));
+        Camera m_Camera;
+        OrbitCameraController m_CameraController;
         CachedSceneRenderer m_CachedRenderer{
             *App::singleton<SceneCache>(App::resource_loader()),
         };

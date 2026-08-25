@@ -12,9 +12,10 @@
 #include <libopynsim/graphics/overlay_decoration_options.h>
 #include <liboscar/graphics/materials/mesh_basic_material.h>
 #include <liboscar/graphics/scene/scene_cache.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/material.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>
@@ -245,29 +246,27 @@ namespace osc
         Color getUnpairedLandmarkColor() const { return Color::red(); }
         Color getNonParticipatingLandmarkColor() const { return Color::purple(); }
 
-        const PolarPerspectiveCamera& getLinkedBaseCamera() const { return m_LinkedCameraBase; }
+        const OrbitCameraController& getLinkedCameraController() const { return m_LinkedCameraController; }
+        void setLinkedCameraController(const OrbitCameraController& newController) { m_LinkedCameraController = newController; }
         bool isCamerasLinked() const { return m_LinkCameras; }
         void setCamerasLinked(bool v) { m_LinkCameras = v; }
         bool isOnlyCameraRotationLinked() const { return m_OnlyLinkRotation; }
         void setOnlyCameraRotationLinked(bool v) { m_OnlyLinkRotation = v; }
-        bool updateOneCameraFromLinkedBase(PolarPerspectiveCamera& camera)
+        bool updateLocalCameraControllerFromLinkedBase(OrbitCameraController& controller)
         {
-            // if the cameras are linked together, ensure this camera is updated from the linked camera
-            if (isCamerasLinked() and camera != getLinkedBaseCamera()) {
+            // If the controllers are linked together, ensure the caller's is
+            // updated from the linked camera this shared state holds.
+            if (isCamerasLinked() and controller != m_LinkedCameraController) {
                 if (isOnlyCameraRotationLinked()) {
-                    camera.phi = m_LinkedCameraBase.phi;
-                    camera.theta = m_LinkedCameraBase.theta;
+                    controller.phi = m_LinkedCameraController.phi;
+                    controller.theta = m_LinkedCameraController.theta;
                 }
                 else {
-                    camera = m_LinkedCameraBase;
+                    controller = m_LinkedCameraController;
                 }
                 return true;
             }
             return false;
-        }
-        void setLinkedBaseCamera(const PolarPerspectiveCamera& newCamera)
-        {
-            m_LinkedCameraBase = newCamera;
         }
 
         const opyn::CustomRenderingOptions& getCustomRenderingOptions() const { return m_CustomRenderingOptions; }
@@ -297,7 +296,12 @@ namespace osc
         bool m_OnlyLinkRotation = false;
 
         // shared linked camera
-        PolarPerspectiveCamera m_LinkedCameraBase = PolarPerspectiveCamera::focused_on(m_UndoableTPSDocument->scratch().sourceMesh.bounds().value_or(AABB{}));
+        OrbitCameraController m_LinkedCameraController = [this]
+        {
+            Camera camera;
+            camera.set_vertical_field_of_view(Degrees{35.0f});
+            return OrbitCameraController::focused_on(m_UndoableTPSDocument->scratch().sourceMesh.bounds().value_or(AABB{}), camera);
+        }();
 
         // shared scene cache, to minimize rendering effort when redrawing
         std::shared_ptr<SceneCache> m_SceneCache;
