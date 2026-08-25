@@ -225,7 +225,14 @@ namespace osc
 
             if (isRenderHovered)
             {
-                ui::update_polar_camera_from_mouse_inputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
+                const bool controllerUpdated = ui::update_orbit_controller_from_mouse_inputs(
+                    m_Shared->updCameraController(),
+                    m_Shared->getCamera(),
+                    m_Shared->get3DSceneDims()
+                );
+                if (controllerUpdated) {
+                    m_Shared->getCameraController().update_camera(m_Shared->updCamera());
+                }
             }
         }
 

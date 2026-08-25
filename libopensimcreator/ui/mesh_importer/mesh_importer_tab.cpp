@@ -200,7 +200,14 @@ public:
 
         if (!m_Maybe3DViewerModal && m_Shared->isRenderHovered() && !m_Gizmo.is_using())
         {
-            ui::update_polar_camera_from_mouse_inputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
+            const bool controllerUpdated = ui::update_orbit_controller_from_mouse_inputs(
+                m_Shared->updCameraController(),
+                m_Shared->getCamera(),
+                m_Shared->get3DSceneDims()
+            );
+            if (controllerUpdated) {
+                m_Shared->getCameraController().update_camera(m_Shared->updCamera());
+            }
         }
 
         // draw history panel (if enabled)
@@ -827,8 +834,9 @@ private:
         {
             return true;
         }
-        else if (ui::update_polar_camera_from_keyboard_inputs(m_Shared->updCamera(), m_Shared->get3DSceneUiRect(), calcSceneAABB()))
+        else if (ui::update_orbit_controller_from_keyboard_inputs(m_Shared->updCameraController(), m_Shared->getCamera(), m_Shared->get3DSceneUiRect(), calcSceneAABB()))
         {
+            m_Shared->getCameraController().update_camera(m_Shared->updCamera());
             return true;
         }
         else
@@ -1857,14 +1865,17 @@ private:
             const Vector2 windowPadding = ui::get_style_panel_padding();
             const Vector2 axesTopLeft = m_Shared->get3DSceneUiRect().ypd_bottom_left() + Vector2{windowPadding.x(), -windowPadding.y()} - Vector2{0.0f, axes.dimensions().y()};
             ui::set_cursor_ui_position(axesTopLeft);
-            axes.draw(m_Shared->updCamera());
+            if (axes.draw(m_Shared->updCameraController(), m_Shared->getCamera())) {
+                m_Shared->getCameraController().update_camera(m_Shared->updCamera());
+            }
         }
 
         ui::set_cursor_ui_position(m_Shared->get3DSceneUiRect().ypd_bottom_left() + Vector2{100.0f, -55.0f});
 
         if (ui::draw_button(MSMICONS_SEARCH_MINUS))
         {
-            m_Shared->updCamera().radius *= 1.2f;
+            m_Shared->updCameraController().radius *= 1.2f;
+            m_Shared->getCameraController().update_camera(m_Shared->updCamera());
         }
         ui::draw_tooltip_if_item_hovered("Zoom Out");
 
@@ -1872,7 +1883,8 @@ private:
 
         if (ui::draw_button(MSMICONS_SEARCH_PLUS))
         {
-            m_Shared->updCamera().radius *= 0.8f;
+            m_Shared->updCameraController().radius *= 0.8f;
+            m_Shared->getCameraController().update_camera(m_Shared->updCamera());
         }
         ui::draw_tooltip_if_item_hovered("Zoom In");
 
@@ -1881,10 +1893,12 @@ private:
         if (ui::draw_button(MSMICONS_EXPAND_ARROWS_ALT))
         {
             if (const std::optional<AABB> sceneAABB = calcSceneAABB()) {
-                m_Shared->updCamera().focus_on(
+                m_Shared->updCameraController().focus_on(
                     *sceneAABB,
+                    m_Shared->getCamera(),
                     aspect_ratio_of(m_Shared->get3DSceneDims())
                 );
+                m_Shared->getCameraController().update_camera(m_Shared->updCamera());
             }
         }
         ui::draw_tooltip_if_item_hovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
@@ -1893,13 +1907,15 @@ private:
 
         if (ui::draw_button("X"))
         {
-            m_Shared->updCamera().theta = 90_deg;
-            m_Shared->updCamera().phi = 0_deg;
+            m_Shared->updCameraController().theta = 90_deg;
+            m_Shared->updCameraController().phi = 0_deg;
+            m_Shared->getCameraController().update_camera(m_Shared->updCamera());
         }
         if (ui::is_item_clicked(ui::MouseButton::Right))
         {
-            m_Shared->updCamera().theta = -90_deg;
-            m_Shared->updCamera().phi = 0_deg;
+            m_Shared->updCameraController().theta = -90_deg;
+            m_Shared->updCameraController().phi = 0_deg;
+            m_Shared->getCameraController().update_camera(m_Shared->updCamera());
         }
         ui::draw_tooltip_if_item_hovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
 
@@ -1907,13 +1923,15 @@ private:
 
         if (ui::draw_button("Y"))
         {
-            m_Shared->updCamera().theta = 0_deg;
-            m_Shared->updCamera().phi = 90_deg;
+            m_Shared->updCameraController().theta = 0_deg;
+            m_Shared->updCameraController().phi = 90_deg;
+            m_Shared->getCameraController().update_camera(m_Shared->updCamera());
         }
         if (ui::is_item_clicked(ui::MouseButton::Right))
         {
-            m_Shared->updCamera().theta = 0_deg;
-            m_Shared->updCamera().phi = -90_deg;
+            m_Shared->updCameraController().theta = 0_deg;
+            m_Shared->updCameraController().phi = -90_deg;
+            m_Shared->getCameraController().update_camera(m_Shared->updCamera());
         }
         ui::draw_tooltip_if_item_hovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
 
@@ -1921,13 +1939,15 @@ private:
 
         if (ui::draw_button("Z"))
         {
-            m_Shared->updCamera().theta = 0_deg;
-            m_Shared->updCamera().phi = 0_deg;
+            m_Shared->updCameraController().theta = 0_deg;
+            m_Shared->updCameraController().phi = 0_deg;
+            m_Shared->getCameraController().update_camera(m_Shared->updCamera());
         }
         if (ui::is_item_clicked(ui::MouseButton::Right))
         {
-            m_Shared->updCamera().theta = 180_deg;
-            m_Shared->updCamera().phi = 0_deg;
+            m_Shared->updCameraController().theta = 180_deg;
+            m_Shared->updCameraController().phi = 0_deg;
+            m_Shared->getCameraController().update_camera(m_Shared->updCamera());
         }
         ui::draw_tooltip_if_item_hovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");
 

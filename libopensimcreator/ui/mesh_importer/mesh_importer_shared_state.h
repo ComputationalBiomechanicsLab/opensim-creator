@@ -29,8 +29,9 @@
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
 #include <liboscar/graphics/color.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/material.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
+#include <liboscar/graphics/orbit_camera_controller.h>
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/collision_tests.h>
 #include <liboscar/maths/quaternion_functions.h>
@@ -446,12 +447,12 @@ namespace osc
             p.anti_aliasing_level = app.anti_aliasing_level();
             p.draw_rims = true;
             p.draw_floor = false;
-            p.near_clipping_plane = m_3DSceneCamera.znear;
-            p.far_clipping_plane = m_3DSceneCamera.zfar;
-            p.view_matrix = m_3DSceneCamera.view_matrix();
-            p.projection_matrix = m_3DSceneCamera.projection_matrix(aspect_ratio_of(p.dimensions));
-            p.viewer_position = m_3DSceneCamera.position();
-            p.light_direction = recommended_light_direction(m_3DSceneCamera);
+            p.near_clipping_plane = m_Camera.near_clipping_plane();
+            p.far_clipping_plane = m_Camera.far_clipping_plane();
+            p.view_matrix = m_Camera.view_matrix();
+            p.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(p.dimensions));
+            p.viewer_position = m_Camera.position();
+            p.light_direction = recommended_light_direction(m_Camera);
             p.light_color = Color::white();
             p.ambient_strength *= 1.5f;
             p.background_color = getColorSceneBackground();
@@ -493,24 +494,36 @@ namespace osc
             return m_3DSceneRect.dimensions();
         }
 
-        const PolarPerspectiveCamera& getCamera() const
+        const Camera& getCamera() const
         {
-            return m_3DSceneCamera;
+            return m_Camera;
         }
 
-        PolarPerspectiveCamera& updCamera()
+        Camera& updCamera()
         {
-            return m_3DSceneCamera;
+            return m_Camera;
+        }
+
+        const OrbitCameraController& getCameraController()
+        {
+            return m_CameraController;
+        }
+
+        OrbitCameraController& updCameraController()
+        {
+            return m_CameraController;
         }
 
         void resetCamera()
         {
-            m_3DSceneCamera = CreateDefaultCamera();
+            m_CameraController = CreateDefaultCameraController();
+            m_CameraController.update_camera(m_Camera);
         }
 
         void focusCameraOn(const Vector3& focusPoint)
         {
-            m_3DSceneCamera.focus_point = -focusPoint;
+            m_CameraController.focus_point = focusPoint;
+            m_CameraController.update_camera(m_Camera);
         }
 
         std::span<const Color> colors() const
@@ -1408,10 +1421,11 @@ namespace osc
             };
         }
 
-        // returns a camera that is in the initial position the camera should be in for this screen
-        PolarPerspectiveCamera CreateDefaultCamera() const
+        // returns a camera controller that is in the initial position the camera
+        // should be in for the mesh importer ui
+        OrbitCameraController CreateDefaultCameraController() const
         {
-            PolarPerspectiveCamera rv;
+            OrbitCameraController rv;
             rv.phi = 45_deg;
             rv.theta = 45_deg;
             rv.radius = 2.5f;
@@ -1445,8 +1459,17 @@ namespace osc
         // material used to draw the floor grid
         MeshBasicMaterial m_FloorMaterial;
 
+        // main 3D scene camera controller
+        OrbitCameraController m_CameraController = CreateDefaultCameraController();
+
         // main 3D scene camera
-        PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();
+        Camera m_Camera = [this]
+        {
+            Camera rv;
+            rv.set_vertical_field_of_view(Degrees{35.0f});
+            m_CameraController.update_camera(rv);
+            return rv;
+        }();
 
         // screen space rect where the 3D scene is currently being drawn to
         Rect m_3DSceneRect = {};
