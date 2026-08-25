@@ -3,7 +3,6 @@
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/orbit_camera_controller.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/maths/circle.h>
 #include <liboscar/maths/coordinate_direction.h>
 #include <liboscar/maths/geometric_functions.h>
@@ -37,7 +36,7 @@ Vector2 osc::CameraViewAxes::dimensions() const
     return AxesMetrics{}.dimensions;
 }
 
-bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
+bool osc::CameraViewAxes::draw(OrbitCameraController& camera_controller, const Camera& camera)
 {
     // calculate widget metrics
     const auto metrics = AxesMetrics{};
@@ -88,7 +87,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
                 draw_list.add_text(end - 0.5f*label_size, text_color, labels[axis.index()]);
 
                 if (hovered and ui::is_mouse_clicked(ui::MouseButton::Left, id)) {
-                    camera.focus_along(axis);
+                    camera_controller.focus_along(axis);
                     edited = true;
                 }
             }
@@ -111,7 +110,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
                 draw_list.add_circle_filled(circ, color);
 
                 if (hovered and ui::is_mouse_clicked(ui::MouseButton::Left, id)) {
-                    camera.focus_along(-axis);
+                    camera_controller.focus_along(-axis);
                     edited = true;
                 }
             }
@@ -119,24 +118,4 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     }
 
     return edited;
-}
-
-bool osc::CameraViewAxes::draw(OrbitCameraController& camera_controller, const Camera& camera)
-{
-    PolarPerspectiveCamera tmp;
-    tmp.theta = camera_controller.theta;
-    tmp.phi = camera_controller.phi;
-    tmp.radius = camera_controller.radius;
-    tmp.focus_point = -camera_controller.focus_point;
-    tmp.vertical_field_of_view = camera.vertical_field_of_view();
-    tmp.znear = camera.near_clipping_plane();
-    tmp.zfar = camera.far_clipping_plane();
-    if (draw(tmp)) {
-        camera_controller.theta = tmp.theta;
-        camera_controller.phi = tmp.phi;
-        camera_controller.radius = tmp.radius;
-        camera_controller.focus_point = -tmp.focus_point;
-        return true;
-    }
-    return false;
 }

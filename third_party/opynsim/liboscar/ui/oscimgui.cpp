@@ -9,7 +9,6 @@
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/orbit_camera_controller.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/graphics/render_pass_config.h>
 #include <liboscar/graphics/render_queue.h>
 #include <liboscar/graphics/render_texture.h>
@@ -2845,71 +2844,6 @@ void osc::ui::apply_dark_theme()
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4{0.0f, 0.0f, 0.0f, 0.0f};
 }
 
-bool osc::ui::update_polar_camera_from_mouse_inputs(
-    PolarPerspectiveCamera& camera,
-    Vector2 viewport_dimensions)
-{
-    bool modified = false;
-
-    // handle mousewheel scrolling
-    if (const float wheel = ImGui::GetIO().MouseWheel; wheel != 0.0f) {
-        camera.radius *= (1.0f - 0.2f*wheel);
-        modified = true;
-    }
-
-    // these camera controls try to be the union of other GUIs (e.g. Blender)
-    //
-    // left drag: drags/orbits camera
-    // left drag + L/R SHIFT: pans camera (CUSTOM behavior: can be handy on laptops where right-click + drag sucks)
-    // left drag + L/R CTRL: zoom camera (CUSTOM behavior: can be handy on laptops where right-click + drag sucks)
-    // middle drag: drags/orbits camera (Blender behavior)
-    // middle drag + L/R SHIFT: pans camera (Blender behavior)
-    // middle drag + L/R CTRL: zooms camera (Blender behavior)
-    // right drag: pans camera
-    //
-    // the reason it's like this is to please legacy users from a variety of
-    // other GUIs and users who use modelling software like Blender (which is
-    // more popular among newer users looking to make new models)
-
-    const float aspect_ratio = aspect_ratio_of(viewport_dimensions);
-
-    const bool left_dragging = ui::is_mouse_dragging(MouseButton::Left);
-    const bool middle_dragging = ui::is_mouse_dragging(MouseButton::Middle);
-    const Vector2 delta = get_backend_data().mouse_delta_this_frame; // Track actual physical movement of the mouse (relevant in relative mode).
-
-    if (delta != Vector2{} and (left_dragging or middle_dragging)) {
-        if (is_ctrl_down()) {
-            camera.pan(aspect_ratio, delta/viewport_dimensions);
-            modified = true;
-        }
-        else if (is_ctrl_or_super_down()) {
-            camera.radius *= 1.0f + 4.0f*delta.y()/viewport_dimensions.y();
-            modified = true;
-        }
-        else {
-            camera.drag(delta/viewport_dimensions);
-            modified = true;
-        }
-    }
-    else if (ui::is_mouse_dragging(MouseButton::Right)) {
-        if (is_alt_down()) {
-            camera.radius *= 1.0f + 4.0f*delta.y()/viewport_dimensions.y();
-            modified = true;
-        }
-        else {
-            camera.pan(aspect_ratio, delta/viewport_dimensions);
-            modified = true;
-        }
-    }
-
-    if (modified) {
-        camera.znear = 0.1f * camera.radius;
-        camera.zfar = 10.0f * camera.radius;
-    }
-
-    return modified;
-}
-
 bool osc::ui::update_orbit_controller_from_mouse_inputs(
     OrbitCameraController& orbit_controller,
     const Camera& associated_camera,
@@ -2969,122 +2903,6 @@ bool osc::ui::update_orbit_controller_from_mouse_inputs(
     }
 
     return modified;
-}
-
-bool osc::ui::update_polar_camera_from_keyboard_inputs(
-    PolarPerspectiveCamera& camera,
-    const Rect& viewport_rect,
-    std::optional<AABB> maybe_scene_world_space_aabb)
-{
-    const bool shift_down = is_shift_down();
-    const bool ctrl_or_super_down = is_ctrl_or_super_down();
-
-    if (ui::is_key_released(Key::X)) {
-        if (ctrl_or_super_down) {
-            camera.focus_along(CoordinateDirection::minus_x());
-            return true;
-        }
-        else {
-            camera.focus_along(CoordinateDirection::x());
-            return true;
-        }
-    }
-    else if (ui::is_key_pressed(Key::Y)) {
-        // Ctrl+Y already does something?
-        if (not ctrl_or_super_down) {
-            camera.focus_along(CoordinateDirection::y());
-            return true;
-        }
-    }
-    else if (ui::is_key_pressed(Key::F)) {
-        if (ctrl_or_super_down) {
-            if (maybe_scene_world_space_aabb) {
-                camera.focus_on(
-                    *maybe_scene_world_space_aabb,
-                    aspect_ratio_of(viewport_rect)
-                );
-                return true;
-            }
-        }
-        else {
-            camera.reset();
-            return true;
-        }
-    }
-    else if (ctrl_or_super_down and ui::is_key_pressed(Key::_8)) {
-        if (maybe_scene_world_space_aabb) {
-            camera.focus_on(
-                *maybe_scene_world_space_aabb,
-                aspect_ratio_of(viewport_rect)
-            );
-            return true;
-        }
-    }
-    else if (ui::is_key_down(Key::UpArrow)) {
-        if (ctrl_or_super_down) {
-            // pan
-            camera.pan(aspect_ratio_of(viewport_rect), {0.0f, -0.1f});
-        }
-        else if (shift_down) {
-            camera.phi -= 90_deg;  // rotate in 90-deg increments
-        }
-        else {
-            camera.phi -= 10_deg;  // rotate in 10-deg increments
-        }
-        return true;
-    }
-    else if (ui::is_key_down(Key::DownArrow)) {
-        if (ctrl_or_super_down) {
-            // pan
-            camera.pan(aspect_ratio_of(viewport_rect), {0.0f, +0.1f});
-        }
-        else if (shift_down) {
-            // rotate in 90-deg increments
-            camera.phi += 90_deg;
-        }
-        else {
-            // rotate in 10-deg increments
-            camera.phi += 10_deg;
-        }
-        return true;
-    }
-    else if (ui::is_key_down(Key::LeftArrow)) {
-        if (ctrl_or_super_down) {
-            // pan
-            camera.pan(aspect_ratio_of(viewport_rect), {-0.1f, 0.0f});
-        }
-        else if (shift_down) {
-            // rotate in 90-deg increments
-            camera.theta += 90_deg;
-        }
-        else {
-            // rotate in 10-deg increments
-            camera.theta += 10_deg;
-        }
-        return true;
-    }
-    else if (ui::is_key_down(Key::RightArrow)) {
-        if (ctrl_or_super_down) {
-            // pan
-            camera.pan(aspect_ratio_of(viewport_rect), {+0.1f, 0.0f});
-        }
-        else if (shift_down) {
-            camera.theta -= 90_deg;  // rotate in 90-deg increments
-        }
-        else {
-            camera.theta -= 10_deg;  // rotate in 10-deg increments
-        }
-        return true;
-    }
-    else if (ui::is_key_down(Key::Minus)) {
-        camera.radius *= 1.1f;
-        return true;
-    }
-    else if (ui::is_key_down(Key::Equals)) {
-        camera.radius *= 0.9f;
-        return true;
-    }
-    return false;
 }
 
 bool osc::ui::update_orbit_controller_from_keyboard_inputs(
@@ -3204,25 +3022,6 @@ bool osc::ui::update_orbit_controller_from_keyboard_inputs(
         return true;
     }
     return false;
-}
-
-bool osc::ui::update_polar_camera_from_all_inputs(
-    PolarPerspectiveCamera& camera,
-    const Rect& viewport_rect,
-    std::optional<AABB> maybe_scene_world_space_aabb)
-{
-    const ImGuiIO& io = ImGui::GetIO();
-
-    // we don't check `io.WantCaptureMouse` because clicking/dragging on an `ImGui::Image`
-    // is classed as a mouse interaction
-    const bool mouse_handled =
-        update_polar_camera_from_mouse_inputs(camera, viewport_rect.dimensions());
-
-    const bool keyboard_handled = not io.WantCaptureKeyboard ?
-        update_polar_camera_from_keyboard_inputs(camera, viewport_rect, maybe_scene_world_space_aabb) :
-        false;
-
-    return mouse_handled or keyboard_handled;
 }
 
 bool osc::ui::update_orbit_controller_from_all_inputs(

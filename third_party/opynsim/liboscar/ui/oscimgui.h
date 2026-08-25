@@ -33,7 +33,6 @@
 namespace osc { class App; }
 namespace osc { class Camera; }
 namespace osc { class Event; }
-namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct OrbitCameraController; }
 namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
@@ -637,24 +636,10 @@ namespace osc::ui
     // applies "dark" theme to current UI context
     void apply_dark_theme();
 
-    // updates a polar camera's rotation, position, etc. from UI keyboard input state
-    bool update_polar_camera_from_keyboard_inputs(
-        PolarPerspectiveCamera&,
-        const Rect& viewport_rect,
-        std::optional<AABB> maybe_scene_world_space_aabb
-    );
-
     // updates an orbit controller from UI keyboard input state
     bool update_orbit_controller_from_keyboard_inputs(
         OrbitCameraController&,
         const Camera& associated_camera,
-        const Rect& viewport_rect,
-        std::optional<AABB> maybe_scene_world_space_aabb
-    );
-
-    // updates a polar camera's rotation, position, etc. from UI input state (all)
-    bool update_polar_camera_from_all_inputs(
-        PolarPerspectiveCamera&,
         const Rect& viewport_rect,
         std::optional<AABB> maybe_scene_world_space_aabb
     );
@@ -982,13 +967,6 @@ namespace osc::ui
         float max,
         CStringView format = "%.3f",
         SliderFlags = {}
-    );
-
-    // updates a polar camera's rotation, position, etc. from UI mouse input state, assuming
-    // the viewport it's connected to has the given device-independent pixel dimensions.
-    bool update_polar_camera_from_mouse_inputs(
-        PolarPerspectiveCamera&,
-        Vector2 viewport_dimensions
     );
 
     // updates an `OrbitController`'s rotation, position, etc. from UI mouse input

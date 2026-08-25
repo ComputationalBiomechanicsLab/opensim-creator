@@ -12,7 +12,6 @@
 #include <liboscar/graphics/scene/scene_renderer.h>
 #include <liboscar/graphics/scene/scene_renderer_params.h>
 #include <liboscar/graphics/anti_aliasing_level.h>
-#include <liboscar/graphics/polar_perspective_camera.h>
 #include <liboscar/maths/aabb.h>
 #include <liboscar/maths/aabb_functions.h>
 #include <liboscar/maths/bvh.h>
