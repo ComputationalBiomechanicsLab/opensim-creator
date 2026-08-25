@@ -5,7 +5,6 @@
 #include <liboscar/graphics/scene/scene_renderer_params.h>
 #include <liboscar/graphics/anti_aliasing_level.h>
 #include <liboscar/graphics/camera.h>
-#include <liboscar/graphics/camera_api.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/mesh.h>
 #include <liboscar/graphics/mesh_indices_view.h>
@@ -304,7 +303,7 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
 }
 
 std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
-    const CameraAPI& camera,
+    const Camera& camera,
     const Mesh& mesh,
     const BVH& triangle_bvh,
     const Rect& screen_render_rect,
@@ -324,7 +323,7 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
 }
 
 SceneRendererParams osc::calc_standard_dark_scene_render_params(
-    const CameraAPI& camera,
+    const Camera& camera,
     AntiAliasingLevel aa_level,
     Vector2 dimensions,
     float device_pixel_ratio)
@@ -392,7 +391,7 @@ FrustumPlanes osc::calc_frustum_planes(const Camera& camera, float aspect_ratio)
     };
 }
 
-Vector3 osc::recommended_light_direction(const CameraAPI& camera)
+Vector3 osc::recommended_light_direction(const Camera& camera)
 {
     // The light's azimuth should track with the camera with a fixed
     // offset angle, so that the scene is always illuminated from the

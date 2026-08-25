@@ -15,7 +15,7 @@ namespace opyn { struct ModelRendererParams; }
 namespace opyn { class ModelStatePair; }
 namespace opyn { class OpenSimDecorationOptions; }
 namespace osc { class BVH; }
-namespace osc { class CameraAPI; }
+namespace osc { class Camera; }
 namespace osc { class SceneCache; }
 namespace osc { struct SceneDecoration; }
 
@@ -40,7 +40,7 @@ namespace opyn
         const osc::BVH& sceneBVH,
         osc::SceneCache&,
         std::span<const osc::SceneDecoration> taggedDrawlist,
-        const osc::CameraAPI&,
+        const osc::Camera&,
         osc::Vector2 mouseScreenPosition,
         const osc::Rect& viewportScreenRect
     );

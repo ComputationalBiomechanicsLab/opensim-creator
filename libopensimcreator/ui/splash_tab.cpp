@@ -58,7 +58,7 @@ namespace
         return rv;
     }
 
-    SceneRendererParams GetSplashScreenDefaultRenderParams(const CameraAPI& camera)
+    SceneRendererParams GetSplashScreenDefaultRenderParams(const Camera& camera)
     {
         const auto clipping_planes = camera.clipping_planes();
         SceneRendererParams rv;

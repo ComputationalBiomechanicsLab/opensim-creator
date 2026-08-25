@@ -1,6 +1,6 @@
 #include "gui_ruler.h"
 
-#include <liboscar/graphics/camera_api.h>
+#include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/color.h>
 #include <liboscar/graphics/scene/scene_collision.h>
 #include <liboscar/maths/math_helpers.h>
@@ -13,7 +13,7 @@
 #include <string>
 
 void osc::GuiRuler::on_draw(
-    const CameraAPI& camera,
+    const Camera& camera,
     const Rect& render_rect,
     std::optional<SceneCollision> maybe_mouseover)
 {

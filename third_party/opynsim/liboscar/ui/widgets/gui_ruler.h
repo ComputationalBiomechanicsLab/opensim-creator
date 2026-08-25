@@ -5,7 +5,7 @@
 
 #include <optional>
 
-namespace osc { class CameraAPI; }
+namespace osc { class Camera; }
 namespace osc { class Rect; }
 
 namespace osc
@@ -13,7 +13,7 @@ namespace osc
     class GuiRuler final {
     public:
         void on_draw(
-            const CameraAPI&,
+            const Camera&,
             const Rect& render_rect,
             std::optional<SceneCollision>
         );
