@@ -20,6 +20,8 @@
 #include <liboscar/maths/ray.h>
 #include <liboscar/maths/rect_functions.h>
 #include <liboscar/maths/tetrahedron.h>
+#include <liboscar/maths/sphere.h>
+#include <liboscar/maths/sphere_functions.h>
 #include <liboscar/maths/triangle.h>
 #include <liboscar/maths/triangle_functions.h>
 #include <liboscar/utilities/algorithms.h>

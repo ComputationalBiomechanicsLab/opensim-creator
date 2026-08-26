@@ -3,8 +3,10 @@
 #include <liboscar/graphics/camera.h>
 #include <liboscar/graphics/camera_projection.h>
 #include <liboscar/maths/aabb_functions.h>
-#include <liboscar/maths/sphere.h>
 #include <liboscar/maths/math_helpers.h>
+#include <liboscar/maths/matrix_functions.h>
+#include <liboscar/maths/sphere.h>
+#include <liboscar/maths/sphere_functions.h>
 
 using namespace osc;
 using namespace osc::literals;

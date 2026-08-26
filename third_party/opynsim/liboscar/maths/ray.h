@@ -5,6 +5,9 @@
 
 #include <iosfwd>
 
+namespace osc { template<typename T, size_t C, size_t R> struct Matrix; }
+namespace osc { struct Transform; }
+
 namespace osc
 {
     // an infinitely long object with no width with an origin position and direction in 3D space
@@ -28,4 +31,10 @@ namespace osc
         const Ray& b,
         float tolerance = epsilon_v<float>
     );
+
+    // returns a `Ray` that has been transformed by the matrix.
+    Ray transform_ray(const Ray&, const Matrix<float, 4, 4>&);
+
+    // returns a `Ray` that has been transformed by the inverse of the supplied `Transform`
+    Ray inverse_transform_ray(const Ray&, const Transform&);
 }

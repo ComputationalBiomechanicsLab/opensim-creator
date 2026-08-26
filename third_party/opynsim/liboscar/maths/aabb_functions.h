@@ -14,6 +14,8 @@
 #include <optional>
 #include <ranges>
 
+namespace osc { struct Sphere; }
+
 namespace osc
 {
     // returns the average centroid of `aabb`
@@ -189,6 +191,9 @@ namespace osc
 
         return rv;
     }
+
+    // returns an `AABB` that tightly bounds the `Sphere`
+    AABB bounding_aabb_of(const Sphere&);
 
     // returns a `Rect` in normalized device coordinate-like (NDC-like) space that loosely
     // bounds the world-space-located `aabb`

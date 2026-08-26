@@ -6,6 +6,7 @@
 #include <liboscar/maths/geometric_functions.h>
 #include <liboscar/maths/math_helpers.h>
 #include <liboscar/maths/sphere.h>
+#include <liboscar/maths/sphere_functions.h>
 #include <liboscar/maths/tetrahedron.h>
 #include <liboscar/maths/triangle.h>
 #include <liboscar/maths/vector.h>

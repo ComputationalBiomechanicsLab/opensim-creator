@@ -1,6 +1,5 @@
 #pragma once
 
-#include <liboscar/maths/aabb.h>
 #include <liboscar/maths/angle.h>
 #include <liboscar/maths/euler_angles.h>
 #include <liboscar/maths/matrix3x3.h>
@@ -8,14 +7,11 @@
 #include <liboscar/maths/quaternion.h>
 #include <liboscar/maths/ray.h>
 #include <liboscar/maths/rect.h>
-#include <liboscar/maths/sphere.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/transform_functions.h>
 #include <liboscar/maths/vector.h>
 
 #include <array>
-#include <optional>
-#include <span>
 
 namespace osc { struct Circle; }
 namespace osc { struct Disc; }
@@ -27,6 +23,8 @@ namespace osc { struct Tetrahedron; }
 //               osc struct
 namespace osc
 {
+    // ----- Visualization helpers -----
+
     // computes horizontal FoV for a given vertical FoV + aspect ratio
     Radians vertical_to_horizontal_field_of_view(Radians vertical_field_of_view, float aspect_ratio);
 
@@ -100,27 +98,13 @@ namespace osc
         const Rect& viewport_rect
     );
 
-
-    // ----- `Sphere` helpers -----
-
-    // returns a `Sphere` that loosely bounds the given `Vector3`s
-    std::optional<Sphere> bounding_sphere_of(std::span<const Vector3>);
-
-    // returns a `Sphere` that loosely bounds the given `AABB`
-    Sphere bounding_sphere_of(const AABB&);
-
-    // returns an `AABB` that tightly bounds the `Sphere`
-    AABB bounding_aabb_of(const Sphere&);
-
-
-    // ----- `Ray` helpers -----
-
-    // returns a `Ray` that has been transformed by the `Mat4`
-    Ray transform_ray(const Ray&, const Matrix4x4&);
-
-    // returns a `Ray` that has been transformed by the inverse of the supplied `Transform`
-    Ray inverse_transform_ray(const Ray&, const Transform&);
-
+    // returns arrays that transforms cube faces from world space to projection
+    // space such that the observer is looking at each face of the cube from
+    // the center of the cube
+    std::array<Matrix4x4, 6> calc_cubemap_view_proj_matrices(
+        const Matrix4x4& projection_matrix,
+        Vector3 cube_center
+    );
 
     // ----- `Disc` helpers -----
 
@@ -144,21 +128,8 @@ namespace osc
 
     // ----- Vector/Matrix helpers -----
 
-    // returns a transform matrix that rotates `dir1` to point in the same direction as `dir2`
-    Matrix4x4 matrix4x4_transform_between_directions(const Vector3& dir1, const Vector3& dir2);
-
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     EulerAngles extract_eulers_xyz(const Quaternion&);
-
-    inline Vector3 transform_point(const Matrix4x4& mat, const Vector3& point)
-    {
-        return Vector3{mat * Vector4{point, 1.0f}};
-    }
-
-    inline Vector3 transform_vector(const Matrix4x4& mat, const Vector3& vector)
-    {
-        return Vector3{mat * Vector4{vector, 0.0f}};
-    }
 
     // returns a `Quaternion` equivalent to the given euler angles
     Quaternion to_world_space_rotation_quaternion(const EulerAngles&);
@@ -172,12 +143,4 @@ namespace osc
 
     // returns the volume of a given tetrahedron, defined as 4 points in space
     float volume_of(const Tetrahedron&);
-
-    // returns arrays that transforms cube faces from world space to projection
-    // space such that the observer is looking at each face of the cube from
-    // the center of the cube
-    std::array<Matrix4x4, 6> calc_cubemap_view_proj_matrices(
-        const Matrix4x4& projection_matrix,
-        Vector3 cube_center
-    );
 }

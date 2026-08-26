@@ -536,6 +536,19 @@ namespace osc
     {
         return m.data()->data();
     }
+
+    inline Vector3 transform_point(const Matrix4x4& mat, const Vector3& point)
+    {
+        return Vector3{mat * Vector4{point, 1.0f}};
+    }
+
+    inline Vector3 transform_vector(const Matrix4x4& mat, const Vector3& vector)
+    {
+        return Vector3{mat * Vector4{vector, 0.0f}};
+    }
+
+    // returns a transform matrix that rotates `dir1` to point in the same direction as `dir2`
+    Matrix4x4 matrix4x4_transform_between_directions(const Vector3& dir1, const Vector3& dir2);
 }
 
 template<typename T, size_t C, size_t R>

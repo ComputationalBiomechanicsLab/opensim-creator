@@ -141,7 +141,7 @@ namespace osc
         return x ? bounding_interval_of(*x, y) : y;
     }
 
-    // Returns `clamp(v, interval.lower, interval.upper`.
+    // Returns `clamp(v, interval.lower, interval.upper)`.
     template<typename T>
     constexpr const T& clamp(const T& v, const ClosedInterval<T>& interval)
     {

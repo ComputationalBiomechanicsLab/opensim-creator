@@ -26,6 +26,7 @@
 #include <liboscar/maths/ray_collision.h>
 #include <liboscar/maths/rect.h>
 #include <liboscar/maths/rect_functions.h>
+#include <liboscar/maths/sphere.h>
 #include <liboscar/maths/transform.h>
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/app.h>

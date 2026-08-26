@@ -46,7 +46,7 @@ namespace osc
     //
     // think of it as a `std::hash` that's used specifically in situations where
     // specializing `std::hash` might be a bad idea (e.g. on `std` library types
-    // templated on other `std` library types, where there's a nonzero chance the
+    // templated on other `std` library types.
     template<typename Key>
     struct Hasher;
 
