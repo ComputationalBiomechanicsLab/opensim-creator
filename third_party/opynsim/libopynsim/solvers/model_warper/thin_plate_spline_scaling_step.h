@@ -6,6 +6,7 @@
 #include <libopynsim/solvers/model_warper/scaling_step_validation_message.h>
 #include <libopynsim/solvers/model_warper/scaling_step_validation_state.h>
 #include <libopynsim/solvers/model_warper/thin_plate_spline_common_inputs.h>
+#include <libopynsim/utilities/open_sim_helpers.h>
 
 #include <liboscar/utilities/assertions.h>
 #include <OpenSim/Simulation/Model/Frame.h>

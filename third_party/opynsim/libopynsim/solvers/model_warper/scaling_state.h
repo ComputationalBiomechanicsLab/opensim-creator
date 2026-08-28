@@ -162,16 +162,7 @@ namespace opyn
         }
         void loadScalingDocument(const std::filesystem::path& path)
         {
-            const auto ptr = std::shared_ptr<OpenSim::Object>{OpenSim::Object::makeObjectFromFile(path.string())};
-            if (auto downcasted = std::dynamic_pointer_cast<ModelWarperV3Document>(ptr)) {
-                scalingDocument = std::move(downcasted);
-                scalingDocument->finalizeConnections(*scalingDocument);
-                scalingDocument->finalizeFromProperties();
-            }
-            else {
-                auto msg = std::format("{}: is a valid object file, but doesn't contain a ModelWarperV3Document", path.string());
-                throw std::runtime_error{std::move(msg)};
-            }
+            scalingDocument = std::make_shared<ModelWarperV3Document>(path);
         }
         std::optional<std::filesystem::path> scalingDocumentFilesystemLocation() const
         {

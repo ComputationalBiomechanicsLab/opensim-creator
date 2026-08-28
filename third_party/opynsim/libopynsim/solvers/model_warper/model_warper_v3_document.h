@@ -27,9 +27,19 @@ namespace opyn
 
         OpenSim_DECLARE_LIST_PROPERTY(scaling_parameter_overrides, ScalingParameterOverride, "A sequence of `ScalingParameterOverride`s that should be used in place of the default values used by the `ScalingStep`s.");
     public:
-        ModelWarperV3Document()
+        explicit ModelWarperV3Document()
         {
-            constructProperty_scaling_parameter_overrides();
+            constructProperties();
+        }
+
+        /// Constructs a `ModelWarperV3Document` by loading its contents from `source`.
+        explicit ModelWarperV3Document(const std::filesystem::path& source) :
+            Component{source.string(), false}  // Associate `Component` with `source`.
+        {
+            constructProperties();
+            updateFromXMLDocument();
+            finalizeConnections(*this);
+            finalizeFromProperties();
         }
 
         bool hasScalingSteps() const
@@ -129,6 +139,11 @@ namespace opyn
         }
 
     private:
+        void constructProperties()
+        {
+            constructProperty_scaling_parameter_overrides();
+        }
+
         void mutateScalingParammeterOverridesWithNewOverride(const std::string& scalingParamName, ScalingParameterValue newValue)
         {
             // First, try to find an existing override with the same name and overwrite it
