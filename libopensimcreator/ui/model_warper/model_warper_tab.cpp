@@ -971,15 +971,6 @@ public:
     explicit Impl(Tab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
     {
-        // Ensure `ModelWarperV3Document` can be loaded from the filesystem via OpenSim.
-        [[maybe_unused]] static const bool s_TypesRegistered = []<typename... TScalingStep>(Typelist<TScalingStep...>)
-        {
-            OpenSim::Object::registerType(ScalingParameterOverride{});
-            (OpenSim::Object::registerType(TScalingStep{}), ...);
-            OpenSim::Object::registerType(ModelWarperV3Document{});
-            return true;
-        }(AllScalingStepTypes{});
-
         m_PanelManager->register_toggleable_panel("Control Panel", [state = m_State](Widget* parent, std::string_view panelName)
         {
             return std::make_shared<ModelWarperV3ControlPanel>(parent, panelName, state);

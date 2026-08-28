@@ -38,7 +38,7 @@ namespace opyn
 
     // Returns a list of `ScalingStep` prototypes, so that downstream code is able to present
     // them as available options etc.
-    const auto& getScalingStepPrototypes()
+    inline const auto& getScalingStepPrototypes()
     {
         static const auto s_ScalingStepPrototypes = []<typename... TScalingStep>(osc::Typelist<TScalingStep...>)
         {

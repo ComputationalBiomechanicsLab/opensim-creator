@@ -1,6 +1,9 @@
 #include "opynsim.h"
 
 #include <libopynsim/graphics/simbody_mesh_loader.h>
+#include <libopynsim/solvers/model_warper/all_scaling_step_types.h>
+#include <libopynsim/solvers/model_warper/scaling_parameter_override.h>
+#include <libopynsim/solvers/model_warper/model_warper_v3_document.h>
 #include <libopynsim/data_frame.h>
 #include <libopynsim/model_specification.h>
 
@@ -9,6 +12,7 @@
 #include <OpenSim/Common/FileAdapter.h>
 #include <OpenSim/Common/DataTable.h>
 #include <OpenSim/Common/LogSink.h>
+#include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/RegisterTypes_osimCommon.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.h>
@@ -23,6 +27,7 @@
 #include <liboscar/utilities/conversion.h>
 #include <liboscar/utilities/exception_helpers.h>
 #include <liboscar/utilities/string_helpers.h>
+#include <liboscar/utilities/typelist.h>
 
 #if defined(WIN32)
 #include <Windows.h>  // `GetEnvironmentVariableA` / `SetEnvironmentVariableA`
@@ -194,6 +199,18 @@ namespace
         std::locale::global(std::locale{locale});
     }
 
+    // Registers custom types from the model warper.
+    void register_model_warper_types()
+    {
+        []<typename... TScalingStep>(osc::Typelist<TScalingStep...>)
+        {
+            OpenSim::Object::registerType(ScalingParameterOverride{});
+            (OpenSim::Object::registerType(TScalingStep{}), ...);
+            OpenSim::Object::registerType(ModelWarperV3Document{});
+            return true;
+        }(AllScalingStepTypes{});
+    }
+
     // Globally adds all known components to OpenSim's global
     // component registry in `OpenSim::Object`, so that OpenSim
     // is capable of loading all components via XML files.
@@ -206,6 +223,7 @@ namespace
         RegisterTypes_osimExampleComponents();
         OpenSim::Object::registerType(OpenSim::Smith2018ArticularContactForce());
         OpenSim::Object::registerType(OpenSim::Smith2018ContactMesh());
+        register_model_warper_types();
     }
 
     // Globally ensures that OpenSim's log is initialized exactly once to
