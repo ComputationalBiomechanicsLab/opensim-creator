@@ -23,6 +23,7 @@ namespace opyn
             return it->second;
         }
 
+        size_t size() const { return m_Values.size(); }
         auto begin() const { return m_Values.begin(); }
         auto end() const { return m_Values.end(); }
 

@@ -1142,4 +1142,8 @@ namespace opyn
         const SimTK::State& state,
         double newMass
     );
+
+    // Bakes any `StationDefinedFrame`s in `model` to legacy-compatible
+    // `PhysicalOffsetFrame`s.
+    void BakeStationDefinedFrames(OpenSim::Model&);
 }

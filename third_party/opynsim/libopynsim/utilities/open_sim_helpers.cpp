@@ -51,6 +51,7 @@
 #include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/Model/ProbeSet.h>
 #include <OpenSim/Simulation/Model/Station.h>
+#include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
@@ -1969,4 +1970,52 @@ void opyn::ScaleModelMassPreserveMassDistribution(
     for (OpenSim::Body& body : model.updComponentList<OpenSim::Body>()) {
         body.scaleMass(factor);
     }
+}
+
+void opyn::BakeStationDefinedFrames(OpenSim::Model& model)
+{
+    // Mutate the model by adding equivalent `PhysicalOffsetFrame`s to the
+    // model, reattaching stuff to it, and then deleting the `StationDefinedFrame`.
+    //
+    // TODO:
+    // - Create `PhysicalOffsetFrame` with a transform equivalent to the `StationDefinedFrame`
+    // - Copy over anything that the `StationDefinedFrame` owns (e.g. component list, AttachedGeometry)
+    // - Delete the `StationDefinedFrame` from the model.
+    // - Add the `PhysicalOffsetFrame` into the model in the exact same location + name, so that
+    //   all sockets, associations, etc. work as expected
+
+    std::vector<OpenSim::StationDefinedFrame*> sdfsToDelete;
+    std::vector<OpenSim::PhysicalOffsetFrame*> pofsToRename;
+    for (auto& sdf : model.updComponentList<OpenSim::StationDefinedFrame>()) {
+
+        // Create a new `PhysicalOffsetFrame`
+        auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+
+        // Copy/calculate properties for the `PhysicalOffsetFrame`
+        pof->setName(sdf.getName() + "_tmp");
+        const SimTK::Transform xform = sdf.findTransformInBaseFrame();
+        pof->set_translation(xform.p());
+        pof->set_orientation(xform.R().convertRotationToBodyFixedXYZ());
+        pof->updProperty_attached_geometry().assign(sdf.getProperty_attached_geometry());
+        pof->updProperty_WrapObjectSet().assign(sdf.getProperty_WrapObjectSet());
+        pof->updSocket("parent").setConnecteePath(sdf.findBaseFrame().getAbsolutePathString());
+        pof->updPropertyByName("components").assign(sdf.getPropertyByName("components"));
+
+        // Add it into the model
+        auto& pofPtr = *pof;
+        model.updComponent(sdf.getAbsolutePath().getParentPath()).addComponent(pof.release());
+        pofPtr.finalizeConnections(model);
+        // Reassign anything pointing to the SDF to instead point to the POF
+        RecursivelyReassignAllSockets(model,sdf, pofPtr);
+        sdfsToDelete.push_back(&sdf);
+        pofsToRename.push_back(&pofPtr);
+    }
+    for (size_t i = 0; i < sdfsToDelete.size(); ++i) {
+        std::string name = sdfsToDelete[i]->getName();
+        TryDeleteComponentFromModel(model, *sdfsToDelete[i]);
+        pofsToRename[i]->setName(name);
+    }
+    FinalizeConnections(model);
+    InitializeModel(model);
+    InitializeState(model);
 }

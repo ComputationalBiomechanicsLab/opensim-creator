@@ -206,7 +206,7 @@ namespace opyn
             const ScalingParameters scalingParams = getEffectiveScalingParameters();
 
             // Apply each scaling step to the scaled model
-            for (auto& step : scalingDocument->updComponentList<ScalingStep>()) {
+            for (const auto& step : scalingDocument->getComponentList<ScalingStep>()) {
                 step.applyScalingStep(scalingCache, scalingParams, *sourceModel, resultModel);
             }
 

@@ -30,6 +30,8 @@ namespace opyn
         explicit ModelWarperV3Document()
         {
             constructProperties();
+            finalizeFromProperties();
+            finalizeConnections(*this);
         }
 
         /// Constructs a `ModelWarperV3Document` by loading its contents from `source`.
@@ -38,8 +40,8 @@ namespace opyn
         {
             constructProperties();
             updateFromXMLDocument();
-            finalizeConnections(*this);
             finalizeFromProperties();
+            finalizeConnections(*this);
         }
 
         bool hasScalingSteps() const
@@ -49,6 +51,15 @@ namespace opyn
             }
             const auto lst = getComponentList<ScalingStep>();
             return lst.begin() != lst.end();
+        }
+
+        size_t getNumScalingSteps() const
+        {
+            if (getNumImmediateSubcomponents() == 0) {
+                return 0;
+            }
+            const auto lst = getComponentList<ScalingStep>();
+            return std::distance(lst.begin(), lst.end());
         }
 
         auto iterateScalingSteps() const
@@ -95,9 +106,17 @@ namespace opyn
             return false;
         }
 
+        size_t getNumScalingParameters() const
+        {
+            return getEffectiveScalingParameters().size();
+        }
+
         ScalingParameters getEffectiveScalingParameters() const
         {
             ScalingParameters rv;
+            if (getNumImmediateSubcomponents() == 0) {
+                return rv;
+            }
 
             // Get/merge values from the scaling steps
             for (const ScalingStep& step : iterateScalingSteps()) {
