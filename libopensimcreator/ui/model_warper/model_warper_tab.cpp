@@ -469,6 +469,7 @@ namespace
         void updateScaledModel()
         {
             try {
+                m_ScalingCache.clear();  // Prevents over-caching
                 auto scaledModel = m_ScalingState->scratch().tryGenerateScaledModel(m_ScalingCache);
                 if (not scaledModel) {
                     return;

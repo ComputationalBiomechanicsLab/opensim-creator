@@ -1,7 +1,7 @@
 #include "tps3d.h"
 
-#include <opynsim/_core/nanobind_x_mdspan.h>
-#include <opynsim/_core/nanobind_x_simbody.h>
+#include <opynsim/_core/utilities/nanobind_x_mdspan.h>
+#include <opynsim/_core/utilities/nanobind_x_simbody.h>
 
 #include <SimTKcommon/SmallMatrix.h>
 #include <libopynsim/shims/cpp23/mdspan.h>

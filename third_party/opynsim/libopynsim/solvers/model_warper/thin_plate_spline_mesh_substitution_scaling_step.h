@@ -8,6 +8,7 @@
 #include <libopynsim/utilities/open_sim_helpers.h>
 
 #include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/filesystem_helpers.h>
 
 #include <filesystem>
 #include <format>
@@ -54,7 +55,7 @@ namespace opyn
             if (get_destination_mesh_file().empty()) {
                 messages.emplace_back(ScalingStepValidationState::Error, "`destination_mesh_file` is empty.");
             }
-            else if (const auto destinationMeshPath = modelFilesystemLocation->parent_path() / get_destination_mesh_file();
+            else if (const auto destinationMeshPath = modelFilesystemLocation->parent_path() / osc::read_windows_or_unix_path_string(get_destination_mesh_file());
                 not std::filesystem::exists(destinationMeshPath)) {
 
                 messages.emplace_back(
@@ -89,7 +90,7 @@ namespace opyn
             OSC_ASSERT_ALWAYS(modelFilesystemLocation && "The source model has no filesystem location");
 
             OSC_ASSERT_ALWAYS(not get_destination_mesh_file().empty());
-            const std::filesystem::path destinationMeshPath = modelFilesystemLocation->parent_path() / get_destination_mesh_file();
+            const std::filesystem::path destinationMeshPath = modelFilesystemLocation->parent_path() / osc::read_windows_or_unix_path_string(get_destination_mesh_file());
 
             OSC_ASSERT_ALWAYS(not get_source_mesh_component_path().empty());
             const auto* sourceMesh = FindComponent<OpenSim::Geometry>(resultModel, get_source_mesh_component_path());

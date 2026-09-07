@@ -213,23 +213,6 @@ public:
     }
 };
 
-class ComponentIsRootWithNoSubcomponents : public Exception {
-public:
-    ComponentIsRootWithNoSubcomponents(const std::string& file,
-        size_t line,
-        const std::string& methodName,
-        const std::string& thisName,
-        const std::string& componentConcreteClassName) :
-        Exception(file, line, methodName) {
-        std::string msg = "Component '" + thisName + "' of type " +
-            componentConcreteClassName + " is the root but has no " +
-            "subcomponents listed.\n" +
-            "Verify that finalizeFromProperties() was called on this "
-            "Component to identify its subcomponents.";
-        addMessage(msg);
-    }
-};
-
 class ComponentAlreadyPartOfOwnershipTree : public Exception {
 public:
     ComponentAlreadyPartOfOwnershipTree(const std::string& file,
@@ -3042,9 +3025,6 @@ protected:
     otherwise it will not be included in the tree and will not be found for
     iteration or for connection. The implementation populates the _nextComponent
     ReferencePtr with a pointer to the next Component in tree pre-order traversal.
-
-    @throws ComponentIsRootWithNoSubcomponents if the Component is the root and
-            yet has no subcomponents.
     */
     void initComponentTreeTraversal(const Component &root) const;
 

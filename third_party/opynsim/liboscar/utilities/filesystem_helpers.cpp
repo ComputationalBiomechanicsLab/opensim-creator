@@ -84,3 +84,12 @@ bool osc::is_subpath(const std::filesystem::path& dir, const std::filesystem::pa
 {
     return rgs::mismatch(dir, path).in1 == dir.end();
 }
+
+std::filesystem::path osc::read_windows_or_unix_path_string(const std::string& s)
+{
+    std::string copy{s};
+    rgs::replace(copy, '\\', '/');
+    return std::filesystem::path{copy};
+
+}
+

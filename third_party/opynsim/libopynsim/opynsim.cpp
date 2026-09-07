@@ -440,7 +440,7 @@ bool opyn::init()
 
 ModelSpecification opyn::read_osim(const std::filesystem::path& source)
 {
-    return ModelSpecification::from_osim_file(source);
+    return ModelSpecification::from_osim(source);
 }
 
 DataFrame opyn::read_sto(const std::filesystem::path& source)

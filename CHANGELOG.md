@@ -14,6 +14,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The `Output Watches` panel now has copy buttons next to the output name/value, which
   copy them to the clipboard. Useful when writing OPynSim scripts (for `double` outputs,
   the output name in OpenSim Creator should hopefully match the name used by OPynSim).
+- The model warper now caches TPS warps more aggressively, improving model warping
+  performance in bigger pipelines containing many TPS warps.
 
 ## [0.8.0] - 2026/07/10
 

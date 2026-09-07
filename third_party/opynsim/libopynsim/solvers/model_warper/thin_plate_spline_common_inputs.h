@@ -1,6 +1,9 @@
 #pragma once
 
+#include <liboscar/utilities/hash_helpers.h>
+
 #include <filesystem>
+#include <functional>
 #include <utility>
 
 namespace opyn
@@ -25,6 +28,8 @@ namespace opyn
             warpingPenalty{warpingPenalty_}
         {}
 
+        friend bool operator==(const ThinPlateSplineCommonInputs&, const ThinPlateSplineCommonInputs&) = default;
+
         std::filesystem::path sourceLandmarksPath;
         std::filesystem::path destinationLandmarksPath;
         double sourceLandmarksPrescale;
@@ -37,3 +42,22 @@ namespace opyn
         double warpingPenalty = 0.0;
     };
 }
+
+template<>
+struct std::hash<opyn::ThinPlateSplineCommonInputs> final {
+    size_t operator()(const opyn::ThinPlateSplineCommonInputs& inputs) const noexcept
+    {
+        return osc::hash_of(
+            inputs.sourceLandmarksPath,
+            inputs.destinationLandmarksPath,
+            inputs.sourceLandmarksPrescale,
+            inputs.destinationLandmarksPrescale,
+            inputs.applyAffineRotation,
+            inputs.applyAffineScale,
+            inputs.applyAffineRotation,
+            inputs.applyNonAffineWarp,
+            inputs.blendingFactor,
+            inputs.warpingPenalty
+        );
+    }
+};

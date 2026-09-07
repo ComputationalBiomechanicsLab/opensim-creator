@@ -1,0 +1,64 @@
+Removes a check from OpenSim where it will refuse to perform a
+tree traversal (getComponentList) when the `OpenSim::Component`
+has no subcomponents.
+
+The reason it's removed is because it's nonsense: if a `Component`
+*has* a sequence of items then `N == 0` should also be permitted
+for traversal.
+
+---
+
+diff --git a/OpenSim/Common/Component.cpp b/OpenSim/Common/Component.cpp
+index 65b15d703..aa9e35e15 100644
+--- a/OpenSim/Common/Component.cpp
++++ b/OpenSim/Common/Component.cpp
+@@ -2060,11 +2060,6 @@ void Component::initComponentTreeTraversal(const Component &root) const {
+             OPENSIM_THROW(ComponentIsAnOrphan, getName(),
+                 getConcreteClassName());
+         }
+-        // if the root (have no owner) and have no components
+-        else if (!(nmsc + npsc + nasc)) {
+-            OPENSIM_THROW(ComponentIsRootWithNoSubcomponents,
+-                getName(), getConcreteClassName());
+-        }
+     }
+ 
+     const Component* last = nullptr;
+diff --git a/OpenSim/Common/Component.h b/OpenSim/Common/Component.h
+index 0f4840195..2489b9d5b 100644
+--- a/OpenSim/Common/Component.h
++++ b/OpenSim/Common/Component.h
+@@ -213,23 +213,6 @@ public:
+     }
+ };
+ 
+-class ComponentIsRootWithNoSubcomponents : public Exception {
+-public:
+-    ComponentIsRootWithNoSubcomponents(const std::string& file,
+-        size_t line,
+-        const std::string& methodName,
+-        const std::string& thisName,
+-        const std::string& componentConcreteClassName) :
+-        Exception(file, line, methodName) {
+-        std::string msg = "Component '" + thisName + "' of type " +
+-            componentConcreteClassName + " is the root but has no " +
+-            "subcomponents listed.\n" +
+-            "Verify that finalizeFromProperties() was called on this "
+-            "Component to identify its subcomponents.";
+-        addMessage(msg);
+-    }
+-};
+-
+ class ComponentAlreadyPartOfOwnershipTree : public Exception {
+ public:
+     ComponentAlreadyPartOfOwnershipTree(const std::string& file,
+@@ -3042,9 +3025,6 @@ protected:
+     otherwise it will not be included in the tree and will not be found for
+     iteration or for connection. The implementation populates the _nextComponent
+     ReferencePtr with a pointer to the next Component in tree pre-order traversal.
+-
+-    @throws ComponentIsRootWithNoSubcomponents if the Component is the root and
+-            yet has no subcomponents.
+     */
+     void initComponentTreeTraversal(const Component &root) const;
+ 

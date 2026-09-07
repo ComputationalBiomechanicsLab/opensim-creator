@@ -13,15 +13,12 @@
 #include <libopynsim/model_state.h>
 #include <libopynsim/model_state_stage.h>
 
-#include <liboscar/formats/obj.h>
 #include <liboscar/utilities/copy_on_upd_shared_value.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Geometry.h>
 
 #include <cstddef>
 #include <filesystem>
 #include <format>
-#include <fstream>
 #include <iterator>
 #include <stdexcept>
 #include <utility>
@@ -56,11 +53,7 @@ public:
     size_t num_scaling_steps() const { return warping_document_.getNumScalingSteps(); }
     size_t num_scaling_parameters() const { return warping_document_.getNumScalingParameters(); }
 
-    void warp_to_osim_file(
-        const ModelSpecification& model_specification,
-        const std::filesystem::path& osim_output_path,
-        const std::filesystem::path& warped_geometry_directory,
-        bool bake_station_defined_frames) const
+    ModelSpecification warp(const ModelSpecification& model_specification) const
     {
         ScalingCache scaling_cache;
         Model model = model_specification.compile();
@@ -73,86 +66,10 @@ public:
             throw std::runtime_error{create_validation_issues_error_message(validation_issues)};
         }
 
-        // Perform the model warp.
-        OpenSim::Model warped_model = warp_model(scaling_cache, msp);
-        warped_model.setInputFileName(osim_output_path.string());
-
-        // Apply any specific/hacky fixups (e.g. flushing in-memory meshes to disk) to the warped model.
-        apply_fixups_to_model(
-            msp.getModel(),
-            warped_model,
-            osim_output_path,
-            warped_geometry_directory,
-            bake_station_defined_frames
-        );
-
-        // Write the model to the final output path
-        // TODO: might require calling `setInputFileName` first.
-        warped_model.print(osim_output_path.string());
+        // Perform OpenSim model warp and pack it into a `ModelSpecification`.
+        return ModelSpecification{warp_model(scaling_cache, msp)};
     }
 private:
-    /// Applies fixups to `model` in-place.
-    ///
-    /// Fixups are usually hacky/custom steps that don't fit the `ScalingStep`
-    /// architecture but are necessary to deliver a compatible/working
-    /// `OpenSim::Model` result.
-    void apply_fixups_to_model(
-        const OpenSim::Model& source_model,
-        OpenSim::Model& warped_model,
-        const std::filesystem::path& osim_output_path,
-        const std::filesystem::path& warped_geometry_directory,
-        bool bake_station_defined_frames) const
-    {
-        flush_in_memory_meshes_to_disk(source_model, warped_model, osim_output_path, warped_geometry_directory);
-        if (bake_station_defined_frames) {
-            BakeStationDefinedFrames(warped_model);
-        }
-    }
-
-    void flush_in_memory_meshes_to_disk(
-        const OpenSim::Model& source_model,
-        OpenSim::Model& warped_model,
-        const std::filesystem::path& osim_output_path,
-        const std::filesystem::path& warped_geometry_directory) const
-    {
-        auto in_memory_meshes = warped_model.getComponentList<InMemoryMesh>();
-        if (in_memory_meshes.begin() == in_memory_meshes.end()) {
-            return;  // Model contains no `InMemoryMesh`es.
-        }
-
-        // `warped_geometry_directory` is what's written _in_ the osim, but its location
-        // on-disk depends on the disk location of the osim.
-        const std::filesystem::path& property_path = warped_geometry_directory;
-        const std::filesystem::path on_disk_dir = osim_output_path.parent_path() / warped_geometry_directory;
-
-        // Ensure the output directory exists.
-        if (not std::filesystem::exists(on_disk_dir)) {
-            std::filesystem::create_directories(on_disk_dir);
-        }
-
-        // Flush each `InMemoryMesh` to disk (opensim-creator#1003).
-        for (const InMemoryMesh& in_memory_mesh : in_memory_meshes) {
-            // Compute warped mesh filename and path.
-            const auto& input_mesh = source_model.getComponent<OpenSim::Mesh>(in_memory_mesh.getAbsolutePath());
-            auto warped_mesh_filename = std::filesystem::path{input_mesh.get_mesh_file()}.filename();
-            warped_mesh_filename.replace_extension(".obj");
-            const auto warped_mesh_abs_path = std::filesystem::weakly_canonical(on_disk_dir / warped_mesh_filename);
-
-            // Write in-memory warped mesh data to disk as an OBJ file.
-            {
-                std::ofstream obj_stream{warped_mesh_abs_path, std::ios::trunc};
-                obj_stream.exceptions(std::ios::badbit | std::ios::failbit);
-                osc::OBJ::write(obj_stream, in_memory_mesh.getOscMesh(), osc::OBJMetadata{"osc-model-warper"});
-            }
-
-            // Replace `InMemoryMesh` with a standard `OpenSim::Mesh`.
-            auto& mutable_in_memory_mesh = warped_model.updComponent<InMemoryMesh>(in_memory_mesh.getAbsolutePath());
-            auto opensim_mesh = std::make_unique<OpenSim::Mesh>();
-            opensim_mesh->set_mesh_file(property_path.string());
-            OverwriteGeometry(warped_model, mutable_in_memory_mesh, std::move(opensim_mesh));
-        }
-    }
-
     /// Returns a warped version of `source_model` - assumes there are no validation issues.
     OpenSim::Model warp_model(ScalingCache& scaling_cache, const ModelStatePair& msp) const
     {
@@ -172,10 +89,6 @@ private:
         for (const auto& scaling_step : warping_document_.getComponentList<ScalingStep>()) {
             scaling_step.applyScalingStep(scaling_cache, scaling_parameters, msp.getModel(), rv);
         }
-
-        // Ensure the modified model is initialized before returning.
-        InitializeModel(rv);
-        InitializeState(rv);
 
         return rv;
     }
@@ -213,7 +126,7 @@ private:
                 continue;  // Only enabled `ScalingStep`s are validated.
             }
 
-            const auto messages = scaling_step.validate(scaling_cache, scaling_params, msp);
+            auto messages = scaling_step.validate(scaling_cache, scaling_params, msp);
             rv.reserve(rv.size() + messages.size());
             for (auto& message : messages) {
                 rv.push_back(ScalingDocumentValidationMessage{
@@ -235,25 +148,21 @@ private:
     ModelWarperV3Document warping_document_;
 };
 
+ModelWarper opyn::ModelWarper::from_xml(const std::filesystem::path& source)
+{
+    return ModelWarper{osc::make_cowv<Impl>(source)};
+}
+
 opyn::ModelWarper::ModelWarper() :
     impl_{osc::make_cowv<Impl>()}
 {}
-opyn::ModelWarper::ModelWarper(const std::filesystem::path& source) :
-    impl_{osc::make_cowv<Impl>(source)}
+opyn::ModelWarper::ModelWarper(osc::CopyOnUpdSharedValue<Impl> impl) :
+    impl_{std::move(impl)}
 {}
 
 size_t opyn::ModelWarper::num_scaling_steps() const      { return impl_->num_scaling_steps(); }
 size_t opyn::ModelWarper::num_scaling_parameters() const { return impl_->num_scaling_parameters(); }
-void opyn::ModelWarper::warp_to_osim_file(
-    const ModelSpecification& model_specification,
-    const std::filesystem::path& osim_output_path,
-    const std::filesystem::path& warped_geometry_directory,
-    bool bake_station_defined_frames) const
+ModelSpecification opyn::ModelWarper::warp(const ModelSpecification& model_specification) const
 {
-    impl_->warp_to_osim_file(
-        model_specification,
-        osim_output_path,
-        warped_geometry_directory,
-        bake_station_defined_frames
-    );
+    return impl_->warp(model_specification);
 }

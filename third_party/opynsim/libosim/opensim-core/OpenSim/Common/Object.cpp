@@ -1669,13 +1669,15 @@ void Object::setDocument(XMLDocument* doc)
 }
 
 std::string Object::dump() const {
+    XMLDocument newDoc;
+    if (_document) {
+        newDoc.copyDefaultObjects(*_document);
+    }
+    newDoc.setIndentString("\t");  // To match `print()` when printing to a file.
+    SimTK::Xml::Element e = newDoc.getRootElement();
+    updateXMLNode(e);
     SimTK::String outString;
-    XMLDocument doc;
-    Object::setSerializeAllDefaults(true);
-    SimTK::Xml::Element elem = doc.getRootElement();
-    updateXMLNode(elem);
-    Object::setSerializeAllDefaults(false);
-    doc.getRootElement().node_begin()->writeToString(outString);
+    newDoc.writeToString(outString);
     return outString;
 }
 

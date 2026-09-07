@@ -21,6 +21,7 @@
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <memory>
+#include <unordered_map>
 #include <utility>
 
 namespace opyn
@@ -129,6 +130,8 @@ namespace opyn
             const auto translation = osc::to<SimTK::Vec3>(coefficients.a1);
             return SimTK::Transform{rotation, translation};
         }
+
+        void clear() { m_CoefficientCache.clear(); }
     private:
         struct Transforms final {
             osc::Matrix4x4 localToLandmarks;
@@ -163,6 +166,11 @@ namespace opyn
 
         const TPSCoefficients3D<float>& lookupTPSCoefficients(const ThinPlateSplineCommonInputs& tpsInputs)
         {
+            const auto [cacheEntry, inserted] = m_CoefficientCache.try_emplace(tpsInputs);
+            if (not inserted) {
+                return cacheEntry->second;
+            }
+
             // Read source+destination landmark files into independent collections
             const auto sourceLandmarks = ReadLandmarksFromCSVIntoVectorOrThrow(tpsInputs.sourceLandmarksPath);
             const auto destinationLandmarks = ReadLandmarksFromCSVIntoVectorOrThrow(tpsInputs.destinationLandmarksPath);
@@ -188,11 +196,11 @@ namespace opyn
             inputs.warping_penalty = static_cast<float>(tpsInputs.warpingPenalty);
 
             // Solve the coefficients
-            m_CoefficientsTODO = opyn::tps3d_solve_coefficients(inputs);
+            cacheEntry->second = opyn::tps3d_solve_coefficients(inputs);
 
-            return m_CoefficientsTODO;
+            return cacheEntry->second;
         }
 
-        TPSCoefficients3D<float> m_CoefficientsTODO;
+        std::unordered_map<ThinPlateSplineCommonInputs, TPSCoefficients3D<float>> m_CoefficientCache;
     };
 }

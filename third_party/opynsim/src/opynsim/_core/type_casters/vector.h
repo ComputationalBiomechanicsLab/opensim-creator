@@ -1,6 +1,6 @@
 #pragma once
 
-#include <src/opynsim/_core/nb_helpers.h>
+#include <opynsim/_core/utilities/nb_helpers.h>
 
 #include <liboscar/maths/vector.h>
 #include <nanobind/nanobind.h>

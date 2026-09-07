@@ -9,6 +9,7 @@
 #include <libopynsim/utilities/open_sim_helpers.h>
 
 #include <liboscar/utilities/assertions.h>
+#include <liboscar/utilities/filesystem_helpers.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -86,7 +87,7 @@ namespace opyn
             if (get_source_landmarks_file().empty()) {
                 messages.emplace_back(ScalingStepValidationState::Error, "`source_landmarks_file` is empty.");
             }
-            else if (const auto sourceLandmarksPath = modelFilesystemLocation->parent_path() / get_source_landmarks_file();
+            else if (const auto sourceLandmarksPath = modelFilesystemLocation->parent_path() / osc::read_windows_or_unix_path_string(get_source_landmarks_file());
                 not std::filesystem::exists(sourceLandmarksPath)) {
 
                 messages.emplace_back(
@@ -99,7 +100,7 @@ namespace opyn
             if (get_destination_landmarks_file().empty()) {
                 messages.emplace_back(ScalingStepValidationState::Error, "`destination_landmarks_file` is empty.");
             }
-            else if (const auto destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
+            else if (const auto destinationLandmarksPath = modelFilesystemLocation->parent_path() / osc::read_windows_or_unix_path_string(get_destination_landmarks_file());
                 not std::filesystem::exists(destinationLandmarksPath)) {
 
                 messages.emplace_back(
@@ -132,10 +133,10 @@ namespace opyn
             OSC_ASSERT_ALWAYS(modelFilesystemLocation && "The source model has no filesystem location");
 
             OSC_ASSERT_ALWAYS(not get_source_landmarks_file().empty());
-            const std::filesystem::path sourceLandmarksPath = modelFilesystemLocation->parent_path() / get_source_landmarks_file();
+            const std::filesystem::path sourceLandmarksPath = modelFilesystemLocation->parent_path() / osc::read_windows_or_unix_path_string(get_source_landmarks_file());
 
             OSC_ASSERT_ALWAYS(not get_destination_landmarks_file().empty());
-            const std::filesystem::path destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
+            const std::filesystem::path destinationLandmarksPath = modelFilesystemLocation->parent_path() / osc::read_windows_or_unix_path_string(get_destination_landmarks_file());
 
             OSC_ASSERT_ALWAYS(not get_landmarks_frame().empty());
 

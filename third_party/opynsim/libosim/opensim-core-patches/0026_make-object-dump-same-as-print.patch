@@ -1,0 +1,33 @@
+This patch makes `OpenSim::Object::dump` emit the same string that calling
+`OpenSim::Object::print` writes so that, in OPynSim, `ModelSpecification.to_osim`
+always writes the same output (e.g. so the user can write their string to a file
+separately).
+
+---
+
+diff --git a/OpenSim/Common/Object.cpp b/OpenSim/Common/Object.cpp
+index 1172fa4de..0ff9e2847 100644
+--- a/OpenSim/Common/Object.cpp
++++ b/OpenSim/Common/Object.cpp
+@@ -1669,13 +1669,15 @@ void Object::setDocument(XMLDocument* doc)
+ }
+ 
+ std::string Object::dump() const {
++    XMLDocument newDoc;
++    if (_document) {
++        newDoc.copyDefaultObjects(*_document);
++    }
++    newDoc.setIndentString("\t");  // To match `print()` when printing to a file.
++    SimTK::Xml::Element e = newDoc.getRootElement();
++    updateXMLNode(e);
+     SimTK::String outString;
+-    XMLDocument doc;
+-    Object::setSerializeAllDefaults(true);
+-    SimTK::Xml::Element elem = doc.getRootElement();
+-    updateXMLNode(elem);
+-    Object::setSerializeAllDefaults(false);
+-    doc.getRootElement().node_begin()->writeToString(outString);
++    newDoc.writeToString(outString);
+     return outString;
+ }
+ 

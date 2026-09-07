@@ -1984,6 +1984,7 @@ void opyn::BakeStationDefinedFrames(OpenSim::Model& model)
     // - Add the `PhysicalOffsetFrame` into the model in the exact same location + name, so that
     //   all sockets, associations, etc. work as expected
 
+    model.finalizeConnections();
     std::vector<OpenSim::StationDefinedFrame*> sdfsToDelete;
     std::vector<OpenSim::PhysicalOffsetFrame*> pofsToRename;
     for (auto& sdf : model.updComponentList<OpenSim::StationDefinedFrame>()) {

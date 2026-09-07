@@ -2060,11 +2060,6 @@ void Component::initComponentTreeTraversal(const Component &root) const {
             OPENSIM_THROW(ComponentIsAnOrphan, getName(),
                 getConcreteClassName());
         }
-        // if the root (have no owner) and have no components
-        else if (!(nmsc + npsc + nasc)) {
-            OPENSIM_THROW(ComponentIsRootWithNoSubcomponents,
-                getName(), getConcreteClassName());
-        }
     }
 
     const Component* last = nullptr;

@@ -41,4 +41,9 @@ namespace osc
 
     // returns true if `path` is within `dir` (non-recursive)
     bool is_subpath(const std::filesystem::path& dir, const std::filesystem::path& path);
+
+    // returns a filesystem path that's normalized by replacing any backward slashes (Windows)
+    // with forward slashes (Unix). I.e. ignore escaping. This is usually necessary when
+    // users mis-encoded their paths with backward slashes.
+    std::filesystem::path read_windows_or_unix_path_string(const std::string&);
 }

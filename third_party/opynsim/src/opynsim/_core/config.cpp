@@ -184,13 +184,13 @@ void opyn::init_config_submodule(nanobind::module_& config_module)
             Returns a copy of the current global search paths used to resolve filesystem resources,
             ordered from highest to lowest priority.
 
-            When OPynSim resolves a relative ``path``, it uses a context-dependent ``base_path``
+            When OPynSim resolves a relative ``resource_path``, it uses a context-dependent ``base_path``
             (e.g., the directory containing the current model file) and probes locations in this order:
 
-            1. If ``path`` is absolute: Probes only ``path``
-            2. If ``path`` is relative: For each ``entry`` in ``get_search_path()``, probe ``(base_path / entry / path)``.
+            1. If ``resource_path`` is absolute: Probes only ``resource_path``
+            2. If ``resource_path`` is relative: For each ``entry`` in ``get_search_path()``, probe ``(base_path / entry / resource_path)``.
 
-            Notably, if an ``entry`` is absolute, ``(base_path / entry / path) == (entry / path)``, so
+            Notably, if an ``entry`` is absolute, ``(base_path / entry / resource_path) == (entry / resource_path)``, so
             the ``base_path`` is ignored for that entry.
 
             When a resource cannot be found via probing, the consequences are context-dependent. For example, a
