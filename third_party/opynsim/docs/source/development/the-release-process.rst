@@ -49,7 +49,7 @@ websites like GitHub.
     - [ ] Upload wheels to PyPi
       - [ ] Set `TWINE_USERNAME` and `TWINE_PASSWORD` (stored on developer's keychain)
       - [ ] Run `./scripts/deploy_pypi.py WHEEL_FILES` (or similar)
-    - [ ] Update Zenodo with the release (https://zenodo.org/records/21373996):
+    - [ ] Update Zenodo with the release (https://doi.org/10.5281/zenodo.21373995):
       - [ ] This should happen automatically, because Zenodo is linked to @adamkewley, which
             and has linked/mirrored organizational OAuth access for OPynSim setup at the
             user-level.

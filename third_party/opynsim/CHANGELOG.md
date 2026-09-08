@@ -6,6 +6,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release] - YYYY/MM/DD
 
+
+## 0.0.8 - 2026/09/08
+
+0.0.8 is a pre-alpha development release that adds model warping support
+to the Python API (see API documentation for `opynsim.solvers.ModelWarper`.
+
 - OpenSim's `Tools/` are no longer part of the build (unused)
 - The `graphics.Camera` class now auto-normalizes the `direction` and
   `up` properties when they are set from Python code.

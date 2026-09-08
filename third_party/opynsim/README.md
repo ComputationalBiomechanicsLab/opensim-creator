@@ -35,7 +35,7 @@ a proposal, cite its NWO grant DOI: https://doi.org/10.61686/KYYRQ22856.
 If you want to cite a specific version of OPynSim (e.g., for reproducibility, open science), then
 additionally cite the unique Zenodo DOI corresponding to that version, for example:
 
-> Adam Kewley. (2026). opynsim/opynsim: 0.0.7: Pre-Alpha Development Release (Version v0.0.7) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.21373996
+> Adam Kewley. (2026). opynsim/opynsim: 0.0.8: Pre-Alpha Development Release (Version v0.0.8) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.22661149
 
 ## ❤️ Acknowledgements
 
