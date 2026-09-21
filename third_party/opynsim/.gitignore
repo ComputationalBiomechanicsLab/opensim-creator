@@ -1,4 +1,4 @@
-# setup: bundled stuff
+# setup: project-specific development environment
 .venv/
 
 # build: artifacts/side-effects
@@ -42,5 +42,5 @@ out/
 # editor: Visual Studio Code
 .vscode/
 
-# editor: CLion
+# editor: CLion/PyCharm
 .idea/

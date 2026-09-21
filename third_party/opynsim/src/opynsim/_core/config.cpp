@@ -105,13 +105,13 @@ namespace
         // as Python (warning).
         opyn::set_log_level(osc::LogLevel::warn);
 
-        // Create an `oscar` (C++) log sink that sink its messages via the Python
+        // Create an `oscar` (C++) log sink that sinks its messages via the Python
         // `logging` API, so that Python developers can handle the messages after
         // they come through the pipe (e.g. so that Python code can separately
         // filter via a root logger, or designate a logging file.
         auto sink = std::make_shared<PythonLoggingSink>();
 
-        // Make the Python log sink the only (and default)sink of the top-level
+        // Make the Python log sink the only (and default) sink of the top-level
         // default logger.
         auto global_logger = osc::global_default_logger();
         global_logger->sinks().clear();

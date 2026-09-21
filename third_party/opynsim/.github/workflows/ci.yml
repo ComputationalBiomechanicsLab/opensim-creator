@@ -90,4 +90,3 @@ jobs:
           name: opynsim-linux-amd64-wheel
           path: build/Release-Linux-amd64/*manylinux_2_28_x86_64.whl
           if-no-files-found: error
-

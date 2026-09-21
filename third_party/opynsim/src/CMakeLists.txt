@@ -196,3 +196,31 @@ if(TRUE)
         )
     endif()
 endif()
+
+# Development
+#
+# Development-specific nice-to-haves.
+if(TRUE)
+    # Find site-packages path for the current active Python interpreter.
+    execute_process(
+        COMMAND ${Python_EXECUTABLE} -c "import site; print(site.getsitepackages()[0])"
+        OUTPUT_VARIABLE PYTHON_SITE_PACKAGES
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    # Custom Target: links built `opynsim` to the currently-selected Python
+    # environment. Temporarily handy when writing Python scripts/tests and
+    # completion is desired.
+    add_custom_target(opynsim_site_packages_link
+        COMMAND ${CMAKE_COMMAND} -E echo "${CMAKE_CURRENT_BINARY_DIR}" > "${PYTHON_SITE_PACKAGES}/opynsim.pth"
+        COMMENT "Linking `opynsim` build directory (${CMAKE_CURRENT_BINARY_DIR}) to ${PYTHON_SITE_PACKAGES}"
+        VERBATIM
+    )
+
+    # Custom Target: undoes `opynsim_site_packages_link`
+    add_custom_target(opynsim_site_packages_unlink
+        COMMAND ${CMAKE_COMMAND} -E rm "${PYTHON_SITE_PACKAGES}/opynsim.pth"
+        COMMENT "Unlinking `opynsim` build directory (${CMAKE_CURRENT_BINARY_DIR}) from ${PYTHON_SITE_PACKAGES}"
+        VERBATIM
+    )
+endif()
