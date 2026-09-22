@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release] - YYYY/MM/DD
 
+- Moved `opynsim.ForwardDynamicSolver` to `opynsim.solvers.ForwardDynamicsSolver`.
+
 
 ## 0.0.8 - 2026/09/08
 

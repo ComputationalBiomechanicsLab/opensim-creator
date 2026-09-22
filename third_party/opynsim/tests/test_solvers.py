@@ -1,5 +1,6 @@
 import opynsim as opyn
-from opynsim.solvers import ModelWarper
+import opynsim.examples
+from opynsim.solvers import ModelWarper, ForwardDynamicsSolver
 
 from pathlib import Path
 import inspect
@@ -55,3 +56,17 @@ def test_model_warper_can_warp_an_example():
 
     # ... And then it should be serialize-able
     assert "<Mesh" in warped_model_specification.to_osim()
+
+def test_forward_dynamics_solver_works_on_basic_example():
+    import numpy as np
+
+    model = opynsim.examples.pendulum_model()
+    state = model.initial_state()
+    solver = ForwardDynamicsSolver(model, state)
+    emitted_states = []
+    for t in np.linspace(0, 1, 11):
+        emitted_states.append(solver.integrate_to(t, realized_to=opynsim.STAGE_ACCELERATION))
+
+    for i in range(0, 11):
+        assert emitted_states[i].time  == (i * 0.1)
+        assert emitted_states[i].stage >= opynsim.STAGE_ACCELERATION

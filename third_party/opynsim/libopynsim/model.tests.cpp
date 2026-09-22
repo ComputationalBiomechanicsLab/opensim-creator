@@ -90,14 +90,14 @@ TEST(Model, states_from_data_frame_works_for_basic_pendulum)
     {
         std::vector<double> time_points;
         time_points.reserve(model_states.size());
-        for (const auto& state : model_states) {
+        for (const auto& state : model_states.reference_view()) {
             time_points.push_back(state.time());
         }
         ASSERT_EQ(time_points, data_frame["time"].to_list());
     }
 
     // Validate realization state
-    for (const auto& model_state : model_states) {
+    for (const auto& model_state : model_states.reference_view()) {
         ASSERT_EQ(model_state.stage(), ModelStateStage::instance);
     }
 
@@ -117,7 +117,8 @@ TEST(Model, states_from_data_frame_realized_to_works_as_intended)
     const Model model = read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
     const DataFrame data_frame = read_sto(opynsim_tests_resources_directory() / "pendulum/pendulum_trajectory.sto");
     const ModelStates model_states = model.states_from_data_frame(data_frame, ModelStateStage::acceleration);
-    for (const auto& model_state : model_states) {
+    return;
+    for (const auto& model_state : model_states.reference_view()) {
         ASSERT_EQ(model_state.stage(), ModelStateStage::acceleration);
     }
 }

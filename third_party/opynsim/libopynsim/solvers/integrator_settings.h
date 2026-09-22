@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/integrator_method.h>
+#include <libopynsim/solvers/integrator_method.h>
 
 #include <cstddef>
 

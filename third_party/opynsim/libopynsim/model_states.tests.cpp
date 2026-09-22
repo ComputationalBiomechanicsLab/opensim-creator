@@ -43,12 +43,13 @@ TEST(ModelStates, handle_at_throws_if_given_out_of_bounds_index)
     ASSERT_THROW({ model_states.handle_at(1); }, std::out_of_range);
 }
 
-TEST(ModelStates, begin_dereferences_first_handle)
+TEST(ModelStates, reference_view_begin_dereferences_first_handle)
 {
     ModelStates model_states;
     const auto handle1 = std::make_shared<ModelState>();
     model_states.handle_push_back(handle1);
-    const auto it = model_states.begin();
+    const auto view = model_states.reference_view();
+    const auto it = view.begin();
     const ModelState& state = *it;
 
     ASSERT_EQ(&state, handle1.get());

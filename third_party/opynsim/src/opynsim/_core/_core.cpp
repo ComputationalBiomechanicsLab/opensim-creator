@@ -1225,65 +1225,6 @@ namespace {
         )");
         m.def("read_jpg", opyn::read_jpg, nb::arg("source"), "An alias for :func:`read_jpeg`");
     }
-
-    void def_integrator_settings(nb::module_& m)
-    {
-        nb::class_<IntegratorSettings> cls(m, "IntegratorSettings", R"(
-            Settings for a forward integrator (e.g. as used by :class:`ForwardDynamicsSolver`).
-
-            **Note**: Modifying integrator settings can have a large effect on its performance
-            and behavior. When tweaking the settings, it is recommended to re-validate outcomes.
-        )");
-        cls.def(nb::init<>{});
-    }
-
-    void def_forward_dynamics_solver(nb::module_& m)
-    {
-        nb::class_<ForwardDynamicsSolver> cls(
-            m,
-            "ForwardDynamicsSolver",
-            R"(
-                A solver that integrates the forward dynamics of a :class:`Model`
-                + :class:`ModelState` pair.
-
-                The solver stores a :class:`ModelState` that it integrates forward
-                in time to a caller-specified timepoint (see :meth:`integrate_to`).
-            )"
-        );
-        cls.def(
-            nb::init<Model, ModelState, std::optional<IntegratorSettings>>{},
-            nb::arg("model"),
-            nb::arg("model_state"),
-            nb::arg("integrator_settings") = std::nullopt,
-            R"(
-                Constructs a :class:`ForwardDynamicsSolver` of ``model`` in ``model_state``.
-
-                Args:
-                    model (Model): The model that is being integrated.
-                    model_state (ModelState): The state of ``model`` that the solver begins integration from.
-                    integrator_settings (IntegratorSettings): The integrator settings of the solvers's integrator.
-            )"
-        );
-        cls.def(
-            "integrate_to",
-            &ForwardDynamicsSolver::integrate_to,
-            nb::arg("time"),
-            nb::arg("realized_to") = ModelStateStage::report,
-            R"(
-                Forward-integrates the solvers's :class:`ModelState` to ``time``.
-
-                Args:
-                    time (float): The endpoint that the integrator should integrate towards. Must be
-                        greater than or equal to the solver's current time.
-                    realized_to (ModelStateStage): The stage at which the returned :class:`ModelState`
-                        should be realized to by the solver.
-
-                Returns:
-                    A copy of the solver's :class:`ModelState` representing the model's state
-                    at ``time`` realized to ``realized_to``.
-            )"
-        );
-    }
 }
 
 opyn::OPynSimApp& opyn::get_lazy_loaded_opynsim_app()
@@ -1304,6 +1245,16 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
     // Install an exit handler that cleans up any lazy-loaded application state
     // when the Python interpreter shuts down
     nb::module_::import_("atexit").attr("register")(nb::cpp_function(&destroy_lazy_loaded_opynsim_app));
+
+    // Initialize top-level functions/classes
+    def_symbol(_core_module);
+    def_model_specification(_core_module);
+    def_model_state_stage(_core_module);
+    def_model(_core_module);
+    def_model_state(_core_module);
+    def_model_states(_core_module);
+    def_dataframe(_core_module);
+    def_read_functions(_core_module);
 
     // Initialize `config` submodule (also initializes the `opynsim` C++ API, logging, etc.).
     {
@@ -1340,16 +1291,4 @@ NB_MODULE(_core, _core_module)  // NOLINT(cppcoreguidelines-avoid-non-const-glob
         auto solvers_submodule = _core_module.def_submodule("solvers");
         init_solvers_submodule(solvers_submodule);
     }
-
-    // Initialize top-level functions/classes
-    def_symbol(_core_module);
-    def_model_specification(_core_module);
-    def_model_state_stage(_core_module);
-    def_model(_core_module);
-    def_model_state(_core_module);
-    def_model_states(_core_module);
-    def_dataframe(_core_module);
-    def_read_functions(_core_module);
-    def_integrator_settings(_core_module);
-    def_forward_dynamics_solver(_core_module);
 }

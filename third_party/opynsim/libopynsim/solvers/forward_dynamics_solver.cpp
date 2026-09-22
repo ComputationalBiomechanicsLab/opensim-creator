@@ -1,6 +1,7 @@
 #include "forward_dynamics_solver.h"
 
-#include <libopynsim/integrator_settings.h>
+#include <libopynsim/solvers/integrator_method.h>
+#include <libopynsim/solvers/integrator_settings.h>
 #include <libopynsim/model.h>
 #include <libopynsim/model_state.h>
 

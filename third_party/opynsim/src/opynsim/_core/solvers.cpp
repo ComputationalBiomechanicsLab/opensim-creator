@@ -1,9 +1,17 @@
 #include "solvers.h"
 
+#include <libopynsim/solvers/forward_dynamics_solver.h>
+#include <libopynsim/solvers/integrator_settings.h>
 #include <libopynsim/solvers/model_warper.h>
+#include <libopynsim/model.h>
 #include <libopynsim/model_specification.h>
+#include <libopynsim/model_state.h>
+#include <libopynsim/model_state_stage.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/filesystem.h>
+#include <nanobind/stl/optional.h>
+
+#include <optional>
 
 namespace nb = nanobind;
 using namespace opyn;
@@ -52,9 +60,70 @@ namespace
                     warping pipeline.
         )");
     }
+
+    void def_integrator_settings(nb::module_& m)
+    {
+        nb::class_<IntegratorSettings> cls(m, "IntegratorSettings", R"(
+            Settings for a forward integrator (e.g. as used by :class:`ForwardDynamicsSolver`).
+
+            **Note**: Modifying integrator settings can have a large effect on its performance
+            and behavior. When tweaking the settings, it is recommended to re-validate outcomes.
+        )");
+        cls.def(nb::init<>{});
+    }
+
+    void def_forward_dynamics_solver(nb::module_& m)
+    {
+        nb::class_<ForwardDynamicsSolver> cls(
+            m,
+            "ForwardDynamicsSolver",
+            R"(
+                A solver that integrates the forward dynamics of a :class:`Model`
+                + :class:`ModelState` pair.
+
+                The solver stores a :class:`ModelState` that it integrates forward
+                in time to a caller-specified timepoint (see :meth:`integrate_to`).
+            )"
+        );
+        cls.def(
+            nb::init<Model, ModelState, std::optional<IntegratorSettings>>{},
+            nb::arg("model"),
+            nb::arg("model_state"),
+            nb::arg("integrator_settings") = std::nullopt,
+            R"(
+                Constructs a :class:`ForwardDynamicsSolver` of ``model`` in ``model_state``.
+
+                Args:
+                    model (Model): The model that is being integrated.
+                    model_state (ModelState): The state of ``model`` that the solver begins integration from.
+                    integrator_settings (IntegratorSettings): The integrator settings of the solvers's integrator.
+            )"
+        );
+        cls.def(
+            "integrate_to",
+            &ForwardDynamicsSolver::integrate_to,
+            nb::arg("time"),
+            nb::arg("realized_to") = ModelStateStage::report,
+            R"(
+                Forward-integrates the solvers's :class:`ModelState` to ``time``.
+
+                Args:
+                    time (float): The endpoint that the integrator should integrate towards. Must be
+                        greater than or equal to the solver's current time.
+                    realized_to (ModelStateStage): The stage at which the returned :class:`ModelState`
+                        should be realized to by the solver.
+
+                Returns:
+                    A copy of the solver's :class:`ModelState` representing the model's state
+                    at ``time`` realized to ``realized_to``.
+            )"
+        );
+    }
 }
 
 void opyn::init_solvers_submodule(nanobind::module_& solvers_module)
 {
     def_model_warper(solvers_module);
+    def_integrator_settings(solvers_module);
+    def_forward_dynamics_solver(solvers_module);
 }

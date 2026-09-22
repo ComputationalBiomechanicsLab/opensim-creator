@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopynsim/integrator_settings.h>
+#include <libopynsim/solvers/integrator_settings.h>
 #include <libopynsim/model_state.h>
 #include <libopynsim/model.h>
 
