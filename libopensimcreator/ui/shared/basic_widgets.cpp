@@ -19,9 +19,9 @@
 #include <libopynsim/graphics/muscle_sizing_style.h>
 #include <libopynsim/graphics/open_sim_decoration_generator.h>
 #include <libopynsim/graphics/open_sim_decoration_options.h>
+#include <libopynsim/solvers/integrator_method.h>
 #include <libopynsim/utilities/open_sim_helpers.h>
 #include <libopynsim/utilities/simbody_x_oscar.h>
-#include <libopynsim/integrator_method.h>
 #include <liboscar/formats/dae.h>
 #include <liboscar/formats/obj.h>
 #include <liboscar/formats/stl.h>

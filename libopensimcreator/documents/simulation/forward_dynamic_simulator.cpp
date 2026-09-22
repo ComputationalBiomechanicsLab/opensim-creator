@@ -9,7 +9,7 @@
 #include <libopynsim/documents/output_extractors/output_extractor.h>
 #include <libopynsim/documents/output_extractors/integrator_output_extractor.h>
 #include <libopynsim/documents/output_extractors/multi_body_system_output_extractor.h>
-#include <libopynsim/integrator_method.h>
+#include <libopynsim/solvers/integrator_method.h>
 #include <liboscar/platform/log.h>
 #include <liboscar/shims/cpp20/stop_token.h>
 #include <liboscar/shims/cpp20/thread.h>

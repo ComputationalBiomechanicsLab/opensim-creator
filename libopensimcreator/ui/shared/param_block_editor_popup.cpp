@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/documents/param_block.h>
 
-#include <libopynsim/integrator_method.h>
+#include <libopynsim/solvers/integrator_method.h>
 #include <liboscar/ui/oscimgui.h>
 #include <liboscar/ui/popups/popup.h>
 #include <liboscar/ui/popups/popup_private.h>

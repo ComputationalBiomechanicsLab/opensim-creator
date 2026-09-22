@@ -3,7 +3,7 @@
 #include <libopensimcreator/documents/simulation/simulation_clock.h>
 #include <libopensimcreator/documents/param_block.h>
 
-#include <libopynsim/integrator_method.h>
+#include <libopynsim/solvers/integrator_method.h>
 
 namespace osc
 {
