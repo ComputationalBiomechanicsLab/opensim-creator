@@ -212,17 +212,11 @@ namespace
 
     CStringView opengl_string_to_cstringview(const GLubyte* string_ptr)
     {
-        using value_type = CStringView::value_type;
-
-        static_assert(sizeof(GLubyte) == sizeof(value_type));
-        static_assert(alignof(GLubyte) == alignof(value_type));
-        static_assert(std::is_same_v<value_type, char>, "therefore, the cast below should be ok");
-        if (string_ptr) {
-            return CStringView{std::launder(reinterpret_cast<const char*>(string_ptr))};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-        }
-        else {
-            return CStringView{};
-        }
+        static_assert(sizeof(GLubyte) == sizeof(CStringView::value_type));
+        static_assert(alignof(GLubyte) == alignof(CStringView::value_type));
+        return string_ptr ?
+            CStringView{reinterpret_cast<const char*>(string_ptr)} :
+            CStringView{};
     }
 
     CStringView opengl_get_cstringview(GLenum name)
@@ -3657,7 +3651,10 @@ namespace
     template<VertexBufferComponent EncodedValue, typename DecodedValue>
     DecodedValue decode(const std::byte* b)
     {
-        const EncodedValue& encoded_value = *std::launder(reinterpret_cast<const EncodedValue*>(b));
+        static_assert(std::is_trivially_copyable_v<EncodedValue>);
+
+        EncodedValue encoded_value;
+        std::memcpy(&encoded_value, b, sizeof(encoded_value));
         return to<DecodedValue>(encoded_value);
     }
 
@@ -3668,8 +3665,10 @@ namespace
     template<typename DecodedValue, VertexBufferComponent EncodedValue>
     void encode(std::byte* p, DecodedValue v)
     {
-        EncodedValue& encoded_value = *std::launder(reinterpret_cast<EncodedValue*>(p));
-        encoded_value = to<EncodedValue>(v);
+        static_assert(std::is_trivially_copyable_v<EncodedValue>);
+
+        const auto encoded_value = to<EncodedValue>(v);
+        std::memcpy(p, &encoded_value, sizeof(encoded_value));
     }
 
     // mid-level multi-component decode/encode functions
@@ -7205,7 +7204,4 @@ void osc::GraphicsBackend::copy_texture(
             GL_LINEAR  // the two texture may have different pixel dimensions (avoid GL_NEAREST)
         );
     }
-
-    // TODO: should be copied into CPU memory if mip==0? (won't store mipmaps in the CPU but
-    // maybe it makes sense to store the mip==0 in CPU?)
 }

@@ -22,9 +22,85 @@ using namespace osc;
 using namespace osc::literals;
 using namespace osc::tests;
 
+TEST(Camera, look_at_returns_camera_that_points_towards_target)
+{
+    const Vector3 position = {-1.0f, -3.0f, -5.0f};
+    const Vector3 target   = { 1.0f,  1.0f,  1.0f};
+    const Vector3 up       = { 0.0f,  1.0f,  0.0f};
+
+    const auto camera = Camera::look_at(position, target, up);
+
+    ASSERT_EQ(camera.position(), position);
+    ASSERT_TRUE(all_of(equal_within_absdiff(camera.direction(), normalize(target - position), 0.00001f)));
+}
+
+TEST(Camera, look_at_normalizes_up)
+{
+    const Vector3 position = { 1.0f,  0.0f,  0.0f};
+    const Vector3 target   = { 0.0f,  0.0f,  0.0f};
+    const Vector3 up       = { 0.0f,  1.0f,  1.0f};  // not normalized
+
+    const auto camera = Camera::look_at(position, target, up);
+
+    ASSERT_TRUE(all_of(equal_within_absdiff(camera.up(), normalize(up), 0.00001f)));
+}
+
+TEST(Camera, look_at_falls_back_when_up_is_parallel_to_target)
+{
+    const Vector3 position = { 7.0f, 0.0f,  2.0f};
+    const Vector3 target   = { 0.0f, 0.0f,  0.0f};
+    const Vector3 up       = 0.3f * position;  // parallel to (target - position)
+
+    const auto camera = Camera::look_at(position, target, up);
+
+    ASSERT_EQ(camera.up(), Vector3(0.0f, 1.0f, 0.0f));
+}
+
 TEST(Camera, can_default_construct)
 {
     const Camera camera;  // should compile + run
+}
+
+TEST(Camera, constructing_from_position_direction_up_is_equivalent_to_calling_setters)
+{
+    const Vector3 position = {1.0f, 2.0f, 3.0f};
+    const Vector3 direction = {1.0f, 0.0f, 0.0f};
+    const Vector3 up = {0.0f, 0.0f, 1.0f};
+
+    const Camera directly_constructed{position, direction, up};
+    const Camera from_setters = [&]
+    {
+        Camera rv;
+        rv.set_position(position);
+        rv.set_direction(direction);
+        rv.set_up(up);
+        return rv;
+    }();
+
+    ASSERT_EQ(directly_constructed, from_setters);
+}
+
+TEST(Camera, constructing_from_position_direction_up_normalizes_direction_vector)
+{
+    const Vector3 position = {1.0f, 2.0f, 3.0f};
+    const Vector3 unnormalized_direction = {1.0f, 1.0f, 0.0f};
+    const Vector3 up = {0.0f, 0.0f, 1.0f};
+
+    const Camera camera{position, unnormalized_direction, up};
+
+    ASSERT_TRUE(all_of(equal_within_absdiff(camera.direction(), normalize(unnormalized_direction), 0.00001f)));
+}
+
+TEST(Camera, constructing_from_position_direction_up_falls_back_when_direction_and_up_are_colinear)
+{
+    const Vector3 position  = { 1.0f, 2.0f, 3.0f};
+    const Vector3 direction = { 1.0f, 0.0f, 0.0f};
+    const Vector3 up        = {-2.0f, 0.0f, 0.0f};  // uh oh: co-linear with `direction`.
+
+    const Camera camera{position, direction, up};
+
+    ASSERT_TRUE(all_of(equal_within_absdiff(camera.direction(), direction, 0.000001f))) << "`direction` should be mostly as-provided";
+    ASSERT_EQ(camera.up(), Vector3(0.0f, 1.0f, 0.0f)) << "`up` should have used a fallback";
 }
 
 TEST(Camera, can_copy_construct)

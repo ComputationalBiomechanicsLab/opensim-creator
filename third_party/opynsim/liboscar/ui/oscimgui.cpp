@@ -1296,7 +1296,7 @@ namespace
     constexpr auto c_combo_lut = std::to_array<std::pair<PhysicalKeyModifier, std::string_view>>({
         {PhysicalKeyModifier::Shift, "Shift "},
         {PhysicalKeyModifier::Ctrl, "Ctrl "},
-        {PhysicalKeyModifier::Meta, "Command "},  // TODO
+        {PhysicalKeyModifier::Meta, "Command "},
         {PhysicalKeyModifier::Alt, "Alt "},
     });
 

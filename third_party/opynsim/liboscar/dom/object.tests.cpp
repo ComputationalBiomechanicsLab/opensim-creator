@@ -649,8 +649,6 @@ TEST(Object, SetPropertyValueWithValidArgumentsMakesGetPropertyValueReturnNewVal
     ASSERT_EQ(a.property_value_or_throw("a"), newValue);
 }
 
-// TODO: with implCustomPropertyGetter:
-//
 // - property_value returns getter value if non-nullptr
 // - property_value_or_throw returns getter value if non-nullptr
 // - property_value returns "normal" value if nullptr

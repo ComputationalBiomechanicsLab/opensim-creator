@@ -333,13 +333,13 @@ public:
                 if (const auto it = data_frame.find("time"); it != data_frame.end()) {
                     state.setTime((*it)[row]);                                     // Set state's time (if `data_frame` has it).
                 }
-                SimTK::Vector values = model_.getStateVariableValues(state);       // Copy initial state variables TODO: establish what should be assembled/equilibrated etc.
+                SimTK::Vector values = model_.getStateVariableValues(state);       // Copy initial state variables
                 for (const auto& [column_index, sv_index] : column_index_to_sv_index) {
                     values[sv_index] = data_frame[column_index][row];              // Map `data_frame` values into values vector
                 }
                 model_.setStateVariableValues(state, values);                      // Write values vector into the state
 
-                //const_cast<OpenSim::Model&>(model_).assemble(state);  // TODO
+                //model_.assemble(state);  // TODO
                 //model_.equilibrateMuscles(state);  // TODO
                 model_.getSystem().realize(state, to_simbody_stage(realized_to));  // Realize state to caller-specified stage
 

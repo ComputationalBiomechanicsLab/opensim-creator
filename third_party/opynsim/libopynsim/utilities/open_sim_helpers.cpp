@@ -443,7 +443,6 @@ bool opyn::IsInclusiveChildOf(const OpenSim::Component* parent, const OpenSim::C
 
 const OpenSim::Component* opyn::IsInclusiveChildOf(std::span<const OpenSim::Component*> parents, const OpenSim::Component* c)
 {
-    // TODO: this method signature makes no sense and should be refactored
     for (; c; c = GetOwner(*c)) {
         if (auto it = rgs::find(parents, c); it != parents.end()) {
             return *it;
@@ -1708,7 +1707,7 @@ void opyn::OverwriteGeometry(
     OSC_ASSERT_ALWAYS(TryDeleteComponentFromModel(model, oldGeometry) && "cannot delete old mesh from model during warping");
     InitializeModel(model);
     InitializeState(model);
-    // TODO/HACK: prefer `<attachedGeometry>` block when overwriting meshes defined
+    // HACK: prefer `<attachedGeometry>` block when overwriting meshes defined
     // in frames, because we don't have a way to delete things from the generic
     // component list (yet) opensim-creator/#1003.
     if (auto* fr = dynamic_cast<OpenSim::Frame*>(owner)) {
@@ -1804,7 +1803,7 @@ std::optional<ComponentSpatialRepresentation> opyn::TryGetSpatialRepresentation(
 bool opyn::IsValidOpenSimComponentNameCharacter(char c)
 {
     return
-        std::isalpha(static_cast<uint8_t>(c)) != 0 ||
+        std::isalpha(static_cast<unsigned char>(c)) != 0 ||
         ('0' <= c && c <= '9') ||
         (c == '-' || c == '_');
 }
@@ -1976,13 +1975,6 @@ void opyn::BakeStationDefinedFrames(OpenSim::Model& model)
 {
     // Mutate the model by adding equivalent `PhysicalOffsetFrame`s to the
     // model, reattaching stuff to it, and then deleting the `StationDefinedFrame`.
-    //
-    // TODO:
-    // - Create `PhysicalOffsetFrame` with a transform equivalent to the `StationDefinedFrame`
-    // - Copy over anything that the `StationDefinedFrame` owns (e.g. component list, AttachedGeometry)
-    // - Delete the `StationDefinedFrame` from the model.
-    // - Add the `PhysicalOffsetFrame` into the model in the exact same location + name, so that
-    //   all sockets, associations, etc. work as expected
 
     model.finalizeConnections();
     std::vector<OpenSim::StationDefinedFrame*> sdfsToDelete;

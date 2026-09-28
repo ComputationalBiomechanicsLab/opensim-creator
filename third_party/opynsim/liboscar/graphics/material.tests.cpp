@@ -846,8 +846,6 @@ TEST_F(MaterialTest, MaterialOutputStringContainsUsefulInformation)
     const std::string str{ss.str()};
 
     ASSERT_TRUE(contains_case_insensitive(str, "Material"));
-
-    // TODO: should print more useful info, such as number of props etc.
 }
 
 TEST_F(MaterialTest, MaterialSetFloatAndThenSetVector3CausesGetFloatToReturnEmpty)

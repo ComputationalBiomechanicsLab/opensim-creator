@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <bit>
 #include <compare>
 #include <type_traits>
 
@@ -98,7 +99,7 @@ TEST(CopyOnUpdSharedValue, can_construct_overaligned)
     ASSERT_EQ((*cow).value, 123);
 
     // Check the alignment of the underlying pointer
-    ASSERT_EQ(reinterpret_cast<uintptr_t>(cow.get()) % alignof(OveralignedStruct), 0u) << "Underlying storage must respect overalignment";
+    ASSERT_EQ(std::bit_cast<uintptr_t>(cow.get()) % alignof(OveralignedStruct), 0u) << "Underlying storage must respect overalignment";
 }
 
 TEST(CopyOnUpdSharedValue, can_copy_construct_overaligned)
@@ -119,7 +120,7 @@ TEST(CopyOnUpdSharedValue, copy_assignment_works_as_expected_with_overaligned)
     ASSERT_EQ(cow1.get(), cow2.get());
     ASSERT_EQ(cow2->value, 10);
 
-    ASSERT_EQ(reinterpret_cast<uintptr_t>(cow2.get()) % alignof(OveralignedStruct), 0u);
+    ASSERT_EQ(std::bit_cast<uintptr_t>(cow2.get()) % alignof(OveralignedStruct), 0u);
 }
 
 TEST(CopyOnUpdSharedValue, upd_correctly_triggers_a_copy_and_copy_is_overaligned)
@@ -131,7 +132,7 @@ TEST(CopyOnUpdSharedValue, upd_correctly_triggers_a_copy_and_copy_is_overaligned
 
     ASSERT_NE(cow1, cow2);
     ASSERT_EQ(upd_ptr->value, 5);
-    ASSERT_EQ(reinterpret_cast<uintptr_t>(upd_ptr) % alignof(OveralignedStruct), 0u) << "upd copy should also be overaligned";
+    ASSERT_EQ(std::bit_cast<uintptr_t>(upd_ptr) % alignof(OveralignedStruct), 0u) << "upd copy should also be overaligned";
 
     upd_ptr->value = 42;
     ASSERT_EQ(cow2->value, 42);
@@ -149,8 +150,8 @@ TEST(CopyOnUpdSharedValue, swap_works_with_overaligned_data)
     ASSERT_EQ(cow1->value, 2);
     ASSERT_EQ(cow2->value, 1);
 
-    ASSERT_EQ(reinterpret_cast<uintptr_t>(cow1.get()) % alignof(OveralignedStruct), 0u);
-    ASSERT_EQ(reinterpret_cast<uintptr_t>(cow2.get()) % alignof(OveralignedStruct), 0u);
+    ASSERT_EQ(std::bit_cast<uintptr_t>(cow1.get()) % alignof(OveralignedStruct), 0u);
+    ASSERT_EQ(std::bit_cast<uintptr_t>(cow2.get()) % alignof(OveralignedStruct), 0u);
 }
 
 TEST(CopyOnUpdSharedValue, equality_compares_pointer_equivalence)
@@ -163,8 +164,8 @@ TEST(CopyOnUpdSharedValue, equality_compares_pointer_equivalence)
     ASSERT_NE(cow1, cow3);
     ASSERT_EQ((cow1 <=> cow2), std::strong_ordering::equal);
 
-    ASSERT_EQ(reinterpret_cast<uintptr_t>(cow1.get()) % alignof(OveralignedStruct), 0u);
-    ASSERT_EQ(reinterpret_cast<uintptr_t>(cow3.get()) % alignof(OveralignedStruct), 0u);
+    ASSERT_EQ(std::bit_cast<uintptr_t>(cow1.get()) % alignof(OveralignedStruct), 0u);
+    ASSERT_EQ(std::bit_cast<uintptr_t>(cow3.get()) % alignof(OveralignedStruct), 0u);
 }
 
 TEST(CopyOnUpdSharedValue, use_count_behaves_as_expected)

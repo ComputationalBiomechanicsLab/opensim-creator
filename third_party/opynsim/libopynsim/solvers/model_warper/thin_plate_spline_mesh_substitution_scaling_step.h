@@ -97,10 +97,6 @@ namespace opyn
             OSC_ASSERT_ALWAYS((dynamic_cast<const OpenSim::Mesh*>(sourceMesh) or dynamic_cast<const InMemoryMesh*>(sourceMesh)) && "'source_mesh_component_path' exists in the model but isn't mesh-like");
             OSC_ASSERT_ALWAYS(sourceMesh && "could not find `source_mesh_component_path` in the model");
 
-            // TODO: everything below is a hack because manipulating models
-            // via OpenSim is like pulling teeth, underwater, from a shark,
-            // with rabies, using your bare hands.
-
             const SimTK::Transform t = cache.lookupTPSAffineTransformWithoutScaling(commonParams.tpsInputs);
             const SimTK::Vec3 newScaleFactors =
                 (commonParams.tpsInputs.destinationLandmarksPrescale/commonParams.tpsInputs.sourceLandmarksPrescale) * sourceMesh->get_scale_factors();

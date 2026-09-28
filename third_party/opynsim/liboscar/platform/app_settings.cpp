@@ -215,10 +215,10 @@ R"(# configuration options
                     break;
                 }
                 else if (const auto* int_value = node.as_integer()) {
-                    out.set_value(key_prefix + std::string{k.str()}, scope, Variant{static_cast<int>(**int_value)});  // TODO: 64-bit int support
+                    out.set_value(key_prefix + std::string{k.str()}, scope, Variant{static_cast<int>(**int_value)});
                 }
                 else if (const auto* float_value = node.as_floating_point()) {
-                    out.set_value(key_prefix + std::string{k.str()}, scope, Variant{static_cast<float>(**float_value)});  // TODO: 64-bit float support
+                    out.set_value(key_prefix + std::string{k.str()}, scope, Variant{static_cast<float>(**float_value)});
                 }
                 else if (const auto* string_value = node.as_string()) {
                     out.set_value(key_prefix + std::string{k.str()}, scope, Variant{**string_value});
@@ -308,7 +308,7 @@ R"(# configuration options
         std::string_view key,
         const Variant& value)
     {
-        static_assert(num_options<VariantType>() == 10);  // TODO: support more of them
+        static_assert(num_options<VariantType>() == 10);
 
         switch (value.type()) {
         case VariantType::None:

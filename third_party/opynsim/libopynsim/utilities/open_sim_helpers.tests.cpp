@@ -89,7 +89,7 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
     }
 
     for (const OpenSim::ComponentPath& p : allJointPaths) {
-        const auto& joint = model.getModel().getComponent<OpenSim::Joint>(p);
+        auto& joint = model.updComponent<OpenSim::Joint>(p);
 
         std::string msg = "changed " + joint.getAbsolutePathString();
 
@@ -116,7 +116,7 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 
         // update model
         try {
-            const_cast<OpenSim::JointSet&>(*jointSet).set(jointIdx, replacement.release());
+            model.updComponent<OpenSim::JointSet>(jointSet->getAbsolutePath()).set(jointIdx, replacement.release());
             InitializeModel(model);
             InitializeState(model);
         }

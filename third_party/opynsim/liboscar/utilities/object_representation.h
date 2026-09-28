@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <ranges>
 #include <span>
+#include <type_traits>
 
 namespace osc
 {
