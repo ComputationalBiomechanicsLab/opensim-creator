@@ -21,15 +21,15 @@ TEST(InMemoryMesh, DefaultConstructedEmitsABlankMesh)
     InitializeModel(model);
     SimTK::State& state = InitializeState(model);
 
-    int nEmitted = 0;
-    osc::SceneDecoration latestDecoration;
-    mesh.generateCustomDecorations(state, [&nEmitted, &latestDecoration](osc::SceneDecoration&& decoration)
+    int num_decorations_emitted = 0;
+    osc::SceneDecoration last_decoration;
+    mesh.generateCustomDecorations(state, [&num_decorations_emitted, &last_decoration](osc::SceneDecoration&& decoration)
     {
-        ++nEmitted;
-        latestDecoration = std::move(decoration);
+        ++num_decorations_emitted;
+        last_decoration = std::move(decoration);
     });
 
-    ASSERT_EQ(nEmitted, 1);
-    ASSERT_EQ(latestDecoration.mesh.num_vertices(), 0);
-    ASSERT_EQ(latestDecoration.mesh.num_indices(), 0);
+    ASSERT_EQ(num_decorations_emitted, 1);
+    ASSERT_EQ(last_decoration.mesh.num_vertices(), 0);
+    ASSERT_EQ(last_decoration.mesh.num_indices(), 0);
 }

@@ -26,29 +26,29 @@ namespace opyn
             std::string_view description,
             ExtractorFn extractor) :
 
-            m_Name{name},
-            m_Description{description},
-            m_Extractor{extractor}
+            name_{name},
+            description_{description},
+            extractor_{extractor}
         {}
 
-        osc::UID getAuxiliaryDataID() const { return m_AuxiliaryDataID; }
-        ExtractorFn getExtractorFunction() const { return m_Extractor; }
+        osc::UID auxiliary_data_id() const { return auxiliary_data_id_; }
+        ExtractorFn extractor_function() const { return extractor_; }
 
     private:
-        osc::CStringView implGetName() const final { return m_Name; }
-        osc::CStringView implGetDescription() const final { return m_Description; }
-        OutputExtractorDataType implGetOutputType() const override { return OutputExtractorDataType::Float; }
-        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
-        size_t implGetHash() const final;
-        bool implEquals(const OutputExtractor&) const final;
+        osc::CStringView impl_name() const final { return name_; }
+        osc::CStringView impl_description() const final { return description_; }
+        OutputExtractorDataType impl_output_type() const override { return OutputExtractorDataType::Float; }
+        OutputValueExtractor impl_output_value_extractor(const OpenSim::Component&) const final;
+        size_t impl_hash() const final;
+        bool impl_equals(const OutputExtractor&) const final;
 
-        osc::UID m_AuxiliaryDataID;
-        std::string m_Name;
-        std::string m_Description;
-        ExtractorFn m_Extractor;
+        osc::UID auxiliary_data_id_;
+        std::string name_;
+        std::string description_;
+        ExtractorFn extractor_;
     };
 
-    int GetNumIntegratorOutputExtractors();
-    const IntegratorOutputExtractor& GetIntegratorOutputExtractor(int idx);
-    SharedOutputExtractor GetIntegratorOutputExtractorDynamic(int idx);
+    int num_integrator_output_extractors();
+    const IntegratorOutputExtractor& integrator_output_extractor(int idx);
+    SharedOutputExtractor integrator_output_extractor_dynamic(int idx);
 }

@@ -17,7 +17,7 @@ using namespace opyn;
 
 namespace
 {
-    std::vector<SharedOutputExtractor> ConstructIntegratorOutputExtractors()
+    std::vector<SharedOutputExtractor> construct_integrator_output_extractors()
     {
         std::vector<SharedOutputExtractor> rv;
         rv.emplace_back(IntegratorOutputExtractor{
@@ -103,57 +103,55 @@ namespace
         return rv;
     }
 
-    const std::vector<SharedOutputExtractor>& GetAllIntegratorOutputExtractors()
+    const std::vector<SharedOutputExtractor>& get_all_integrator_output_extractors()
     {
-        static const std::vector<SharedOutputExtractor> s_IntegratorOutputs = ConstructIntegratorOutputExtractors();
-        return s_IntegratorOutputs;
+        static const std::vector<SharedOutputExtractor> s_integrator_outputs = construct_integrator_output_extractors();
+        return s_integrator_outputs;
     }
 }
 
-OutputValueExtractor opyn::IntegratorOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
+OutputValueExtractor opyn::IntegratorOutputExtractor::impl_output_value_extractor(const OpenSim::Component&) const
 {
-    return OutputValueExtractor{[id = m_AuxiliaryDataID](const StateViewWithMetadata& state)
+    return OutputValueExtractor{[id = auxiliary_data_id_](const StateViewWithMetadata& state)
     {
         return osc::Variant{state.getAuxiliaryValue(id).value_or(osc::quiet_nan_v<float>)};
     }};
 }
 
-size_t opyn::IntegratorOutputExtractor::implGetHash() const
+size_t opyn::IntegratorOutputExtractor::impl_hash() const
 {
-    return osc::hash_of(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
+    return osc::hash_of(auxiliary_data_id_, name_, description_, extractor_);
 }
 
-bool opyn::IntegratorOutputExtractor::implEquals(const OutputExtractor& other) const
+bool opyn::IntegratorOutputExtractor::impl_equals(const OutputExtractor& other) const
 {
-    if (this == &other)
-    {
+    if (this == &other) {
         return true;
     }
 
-    const auto* const otherT = dynamic_cast<const IntegratorOutputExtractor*>(&other);
-    if (!otherT)
-    {
+    const auto* const other_t = dynamic_cast<const IntegratorOutputExtractor*>(&other);
+    if (not other_t) {
         return false;
     }
 
     return
-        m_AuxiliaryDataID == otherT->m_AuxiliaryDataID &&
-        m_Name == otherT->m_Name &&
-        m_Description == otherT->m_Description &&
-        m_Extractor == otherT->m_Extractor;
+        auxiliary_data_id_ == other_t->auxiliary_data_id_ &&
+        name_ == other_t->name_ &&
+        description_ == other_t->description_ &&
+        extractor_ == other_t->extractor_;
 }
 
-int opyn::GetNumIntegratorOutputExtractors()
+int opyn::num_integrator_output_extractors()
 {
-    return static_cast<int>(GetAllIntegratorOutputExtractors().size());
+    return static_cast<int>(get_all_integrator_output_extractors().size());
 }
 
-const IntegratorOutputExtractor& opyn::GetIntegratorOutputExtractor(int idx)
+const IntegratorOutputExtractor& opyn::integrator_output_extractor(int idx)
 {
-    return dynamic_cast<const IntegratorOutputExtractor&>(GetAllIntegratorOutputExtractors().at(static_cast<size_t>(idx)).getInner());
+    return dynamic_cast<const IntegratorOutputExtractor&>(get_all_integrator_output_extractors().at(static_cast<size_t>(idx)).inner());
 }
 
-SharedOutputExtractor opyn::GetIntegratorOutputExtractorDynamic(int idx)
+SharedOutputExtractor opyn::integrator_output_extractor_dynamic(int idx)
 {
-    return GetAllIntegratorOutputExtractors().at(static_cast<size_t>(idx));
+    return get_all_integrator_output_extractors().at(static_cast<size_t>(idx));
 }

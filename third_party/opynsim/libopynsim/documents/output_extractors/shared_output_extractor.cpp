@@ -8,7 +8,7 @@ using namespace opyn;
 
 std::ostream& opyn::operator<<(std::ostream& o, const SharedOutputExtractor& out)
 {
-    return o << "SharedOutputExtractor(name = " << out.getName() << ')';
+    return o << "SharedOutputExtractor(name = " << out.name() << ')';
 }
 
 std::string opyn::to_string(const SharedOutputExtractor& out)

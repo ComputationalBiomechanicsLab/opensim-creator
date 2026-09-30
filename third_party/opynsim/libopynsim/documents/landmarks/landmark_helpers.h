@@ -19,36 +19,36 @@ namespace opyn { class MaybeNamedLandmarkPair; }
 namespace opyn
 {
     struct CSVParseWarning final {
-        size_t lineNumber;
+        size_t line_number;
         std::string message;
     };
 
     std::string to_string(const CSVParseWarning&);
 
-    void ReadLandmarksFromCSV(
+    void read_landmarks_from_csv(
         std::istream&,
-        const std::function<void(Landmark&&)>& landmarkConsumer,
-        const std::function<void(CSVParseWarning)>& warningConsumer = [](auto){}
+        const std::function<void(Landmark&&)>& landmark_consumer,
+        const std::function<void(CSVParseWarning)>& warning_consumer = [](auto){}
     );
 
-    std::vector<Landmark> ReadLandmarksFromCSVIntoVectorOrThrow(
+    std::vector<Landmark> read_landmarks_from_csv_into_vector_or_throw(
         const std::filesystem::path&
     );
 
-    void WriteLandmarksToCSV(
+    void write_landmarks_to_csv(
         std::ostream&,
-        const std::function<std::optional<Landmark>()>& landmarkProducer,
+        const std::function<std::optional<Landmark>()>& landmark_producer,
         LandmarkCSVFlags = LandmarkCSVFlags::None
     );
 
     // generates names for any unnamed landmarks and ensures that the names are
     // unique amongst all supplied landmarks (both named and unnamed)
-    std::vector<NamedLandmark> GenerateNames(
+    std::vector<NamedLandmark> generate_names(
         std::span<const Landmark>,
         std::string_view prefix = "unnamed_"
     );
 
-    void TryPairingLandmarks(
+    void try_pairing_landmarks(
         std::vector<Landmark>,
         std::vector<Landmark>,
         const std::function<void(const MaybeNamedLandmarkPair&)>& consumer

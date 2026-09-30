@@ -18,7 +18,7 @@ namespace opyn
     public:
         explicit ForceRecordOutputExtractor(
             const OpenSim::Force&,
-            int recordIndex
+            int record_index
         );
         ForceRecordOutputExtractor(const ForceRecordOutputExtractor&);
         ForceRecordOutputExtractor(ForceRecordOutputExtractor&&) noexcept;
@@ -27,14 +27,14 @@ namespace opyn
         ~ForceRecordOutputExtractor() noexcept override;
 
     private:
-        osc::CStringView implGetName() const final;
-        osc::CStringView implGetDescription() const final;
-        OutputExtractorDataType implGetOutputType() const final;
-        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
-        size_t implGetHash() const final;
-        bool implEquals(const OutputExtractor&) const final;
+        osc::CStringView impl_name() const final;
+        osc::CStringView impl_description() const final;
+        OutputExtractorDataType impl_output_type() const final;
+        OutputValueExtractor impl_output_value_extractor(const OpenSim::Component&) const final;
+        size_t impl_hash() const final;
+        bool impl_equals(const OutputExtractor&) const final;
 
         class Impl;
-        osc::ClonePtr<Impl> m_Impl;
+        osc::ClonePtr<Impl> impl_;
     };
 }

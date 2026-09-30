@@ -17,38 +17,37 @@ namespace opyn
     class MaybeNamedLandmarkPair final {
     public:
         MaybeNamedLandmarkPair(
-            std::string name_,
-            std::optional<osc::Vector3> maybeSourcePosition,
-            std::optional<osc::Vector3> maybeDestinationPosition) :
+            std::string name,
+            std::optional<osc::Vector3> maybe_source_position,
+            std::optional<osc::Vector3> maybe_destination_position) :
 
-            m_Name{std::move(name_)},
-            m_MaybeSourcePosition{maybeSourcePosition},
-            m_MaybeDestinationPosition{maybeDestinationPosition}
+            name_{std::move(name)},
+            maybe_source_position_{maybe_source_position},
+            maybe_destination_position_{maybe_destination_position}
         {}
 
-        osc::CStringView name() const { return m_Name; }
-        osc::CStringView getName() const { return name(); }
+        osc::CStringView name() const { return name_; }
 
         template<std::convertible_to<std::string_view> StringLike>
-        void setName(StringLike&& newName) { m_Name = std::forward<StringLike>(newName); }
+        void set_name(StringLike&& new_name) { name_ = std::forward<StringLike>(new_name); }
 
-        bool hasSource() const { return m_MaybeSourcePosition.has_value(); }
-        bool hasDestination() const { return m_MaybeDestinationPosition.has_value(); }
-        bool isFullyPaired() const { return hasSource() && hasDestination(); }
-        std::optional<opyn::LandmarkPair3D<float>> tryGetPairedLocations() const
+        bool has_source() const { return maybe_source_position_.has_value(); }
+        bool has_destination() const { return maybe_destination_position_.has_value(); }
+        bool is_fully_paired() const { return has_source() && has_destination(); }
+        std::optional<opyn::LandmarkPair3D<float>> try_get_paired_locations() const
         {
-            if (m_MaybeSourcePosition && m_MaybeDestinationPosition) {
-                return opyn::LandmarkPair3D<float>{osc::to<SimTK::fVec3>(*m_MaybeSourcePosition), osc::to<SimTK::fVec3>(*m_MaybeDestinationPosition)};
+            if (maybe_source_position_ && maybe_destination_position_) {
+                return opyn::LandmarkPair3D<float>{osc::to<SimTK::fVec3>(*maybe_source_position_), osc::to<SimTK::fVec3>(*maybe_destination_position_)};
             }
             else {
                 return std::nullopt;
             }
         }
 
-        void setDestination(std::optional<osc::Vector3> p) { m_MaybeDestinationPosition = p; }
+        void set_destination(std::optional<osc::Vector3> p) { maybe_destination_position_ = p; }
     private:
-        std::string m_Name;
-        std::optional<osc::Vector3> m_MaybeSourcePosition;
-        std::optional<osc::Vector3> m_MaybeDestinationPosition;
+        std::string name_;
+        std::optional<osc::Vector3> maybe_source_position_;
+        std::optional<osc::Vector3> maybe_destination_position_;
     };
 }

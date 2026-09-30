@@ -172,15 +172,15 @@ namespace opyn
             }
 
             // Read source+destination landmark files into independent collections
-            const auto sourceLandmarks = ReadLandmarksFromCSVIntoVectorOrThrow(tpsInputs.sourceLandmarksPath);
-            const auto destinationLandmarks = ReadLandmarksFromCSVIntoVectorOrThrow(tpsInputs.destinationLandmarksPath);
+            const auto sourceLandmarks = read_landmarks_from_csv_into_vector_or_throw(tpsInputs.sourceLandmarksPath);
+            const auto destinationLandmarks = read_landmarks_from_csv_into_vector_or_throw(tpsInputs.destinationLandmarksPath);
 
             // Pair the source+destination landmarks together into a TPS coefficient solver's inputs
             TPSCoefficientSolverInputs3D<float> inputs;
             inputs.landmarks.reserve(osc::max(sourceLandmarks.size(), destinationLandmarks.size()));
-            TryPairingLandmarks(sourceLandmarks, destinationLandmarks, [&inputs, &tpsInputs](const MaybeNamedLandmarkPair& p)
+            try_pairing_landmarks(sourceLandmarks, destinationLandmarks, [&inputs, &tpsInputs](const MaybeNamedLandmarkPair& p)
             {
-                if (auto landmark3d = p.tryGetPairedLocations()) {
+                if (auto landmark3d = p.try_get_paired_locations()) {
                     landmark3d->source = tpsInputs.sourceLandmarksPrescale * landmark3d->source;
                     landmark3d->destination = tpsInputs.destinationLandmarksPrescale * landmark3d->destination;
                     inputs.landmarks.push_back(*landmark3d);

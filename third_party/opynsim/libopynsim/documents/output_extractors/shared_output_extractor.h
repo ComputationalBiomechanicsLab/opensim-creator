@@ -12,7 +12,6 @@
 #include <iosfwd>
 #include <memory>
 #include <ranges>
-#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -29,23 +28,23 @@ namespace opyn
     public:
         template<typename ConcreteOutputExtractor>
         explicit SharedOutputExtractor(ConcreteOutputExtractor&& output) :
-            m_Output{std::make_shared<ConcreteOutputExtractor>(std::forward<ConcreteOutputExtractor>(output))}
+            output_{std::make_shared<ConcreteOutputExtractor>(std::forward<ConcreteOutputExtractor>(output))}
         {}
 
-        osc::CStringView getName() const { return m_Output->getName(); }
-        osc::CStringView getDescription() const { return m_Output->getDescription(); }
-        OutputExtractorDataType getOutputType() const { return m_Output->getOutputType(); }
+        osc::CStringView name() const { return output_->name(); }
+        osc::CStringView description() const { return output_->description(); }
+        OutputExtractorDataType output_type() const { return output_->output_type(); }
 
-        OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
+        OutputValueExtractor output_value_extractor(const OpenSim::Component& component) const
         {
-            return m_Output->getOutputValueExtractor(component);
+            return output_->output_value_extractor(component);
         }
 
         template<typename T>
         requires std::constructible_from<T, osc::Variant&&>
-        T getValue(const OpenSim::Component& component, const StateViewWithMetadata& state) const
+        T value(const OpenSim::Component& component, const StateViewWithMetadata& state) const
         {
-            return m_Output->getValue<T>(component, state);
+            return output_->value<T>(component, state);
         }
 
         template<typename T, std::ranges::forward_range R>
@@ -53,12 +52,12 @@ namespace opyn
             std::constructible_from<T, osc::Variant&&> and
             std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
         )
-        void getValues(
+        void values(
             const OpenSim::Component& component,
             const R& states,
             const std::function<void(T)>& consumer) const
         {
-            return m_Output->getValues<T>(component, states, consumer);
+            return output_->values<T>(component, states, consumer);
         }
 
         template<typename T, std::ranges::forward_range R>
@@ -66,26 +65,23 @@ namespace opyn
             std::constructible_from<T, osc::Variant&&> and
             std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
         )
-        std::vector<T> slurpValues(const OpenSim::Component& component, const R& states) const
+        std::vector<T> slurp_values(const OpenSim::Component& component, const R& states) const
         {
-            return m_Output->slurpValues<T>(component, states);
+            return output_->slurp_values<T>(component, states);
         }
 
-        size_t getHash() const { return m_Output->getHash(); }
-
-        bool equals(const OutputExtractor& other) const { return m_Output->equals(other); }
-        operator const OutputExtractor& () const { return *m_Output; }
-        const OutputExtractor& getInner() const { return *m_Output; }
+        operator const OutputExtractor& () const { return *output_; }
+        const OutputExtractor& inner() const { return *output_; }
 
         friend bool operator==(const SharedOutputExtractor& lhs, const SharedOutputExtractor& rhs)
         {
-            return *lhs.m_Output == *rhs.m_Output;
+            return *lhs.output_ == *rhs.output_;
         }
     private:
         friend std::string to_string(const SharedOutputExtractor&);
         friend struct std::hash<SharedOutputExtractor>;
 
-        std::shared_ptr<const OutputExtractor> m_Output;
+        std::shared_ptr<const OutputExtractor> output_;
     };
 
     template<std::derived_from<OutputExtractor> ConcreteOutputExtractor, typename... Args>
@@ -103,6 +99,6 @@ template<>
 struct std::hash<opyn::SharedOutputExtractor> final {
     size_t operator()(const opyn::SharedOutputExtractor& o) const
     {
-        return o.m_Output->getHash();
+        return o.output_->hash();
     }
 };

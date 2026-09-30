@@ -22,7 +22,7 @@ namespace
     bool IsAnyOutputExportableToCSV(const Environment& env)
     {
         for (int i = 0; i < env.getNumUserOutputExtractors(); ++i) {
-            if (is_numeric(env.getUserOutputExtractor(i).getOutputType())) {
+            if (is_numeric(env.getUserOutputExtractor(i).output_type())) {
                 return true;
             }
         }

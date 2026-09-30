@@ -13,7 +13,7 @@ using namespace opyn;
 
 namespace
 {
-    std::vector<SharedOutputExtractor> ConstructMultiBodySystemOutputExtractors()
+    std::vector<SharedOutputExtractor> construct_multi_body_system_output_extractors()
     {
         std::vector<SharedOutputExtractor> rv;
 
@@ -41,57 +41,55 @@ namespace
         return rv;
     }
 
-    const std::vector<SharedOutputExtractor>& GetAllMultiBodySystemOutputExtractors()
+    const std::vector<SharedOutputExtractor>& get_all_multi_body_system_output_extractors()
     {
-        static const std::vector<SharedOutputExtractor> s_Outputs = ConstructMultiBodySystemOutputExtractors();
-        return s_Outputs;
+        static const std::vector<SharedOutputExtractor> s_outputs = construct_multi_body_system_output_extractors();
+        return s_outputs;
     }
 }
 
-OutputValueExtractor opyn::MultiBodySystemOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
+OutputValueExtractor opyn::MultiBodySystemOutputExtractor::impl_output_value_extractor(const OpenSim::Component&) const
 {
-    return OutputValueExtractor{[id = m_AuxiliaryDataID](const StateViewWithMetadata& state)
+    return OutputValueExtractor{[id = auxiliary_data_id_](const StateViewWithMetadata& state)
     {
         return osc::Variant{state.getAuxiliaryValue(id).value_or(osc::quiet_nan_v<float>)};
     }};
 }
 
-size_t opyn::MultiBodySystemOutputExtractor::implGetHash() const
+size_t opyn::MultiBodySystemOutputExtractor::impl_hash() const
 {
-    return hash_of(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
+    return hash_of(auxiliary_data_id_, name_, description_, extractor_);
 }
 
-bool opyn::MultiBodySystemOutputExtractor::implEquals(const OutputExtractor& other) const
+bool opyn::MultiBodySystemOutputExtractor::impl_equals(const OutputExtractor& other) const
 {
-    if (&other == this)
-    {
+    if (&other == this) {
         return true;
     }
 
-    const auto* const otherT = dynamic_cast<const MultiBodySystemOutputExtractor*>(&other);
-    if (!otherT)
-    {
+    const auto* const other_t = dynamic_cast<const MultiBodySystemOutputExtractor*>(&other);
+    if (not other_t) {
         return false;
     }
 
     return
-        m_AuxiliaryDataID == otherT->m_AuxiliaryDataID &&
-        m_Name == otherT->m_Name &&
-        m_Description == otherT->m_Description &&
-        m_Extractor == otherT->m_Extractor;
+        auxiliary_data_id_ == other_t->auxiliary_data_id_ &&
+        name_ == other_t->name_ &&
+        description_ == other_t->description_ &&
+        extractor_ == other_t->extractor_;
 }
 
-int opyn::GetNumMultiBodySystemOutputExtractors()
+int opyn::num_multi_body_system_output_extractors()
 {
-    return static_cast<int>(GetAllMultiBodySystemOutputExtractors().size());
+    return static_cast<int>(get_all_multi_body_system_output_extractors().size());
 }
 
-const MultiBodySystemOutputExtractor& opyn::GetMultiBodySystemOutputExtractor(int idx)
+const MultiBodySystemOutputExtractor& opyn::multi_body_system_output_extractor(int idx)
 {
-    return dynamic_cast<const MultiBodySystemOutputExtractor&>(GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx)).getInner());
+    return dynamic_cast<const MultiBodySystemOutputExtractor&>(get_all_multi_body_system_output_extractors().at(static_cast<size_t>(idx)).inner());
 }
 
-SharedOutputExtractor opyn::GetMultiBodySystemOutputExtractorDynamic(int idx)
+SharedOutputExtractor opyn::multi_body_system_output_extractor_dynamic(int idx)
 {
-    return GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx));
+    return get_all_multi_body_system_output_extractors().at(static_cast<size_t>(idx));
 }

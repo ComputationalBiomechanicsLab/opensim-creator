@@ -24,20 +24,20 @@ using namespace opyn;
 // other helpers
 namespace
 {
-    std::string GenerateComponentOutputLabel(
+    std::string generate_component_output_label(
         const OpenSim::ComponentPath& cp,
-        const std::string& outputName,
+        const std::string& output_name,
         ComponentOutputSubfield subfield)
     {
-        const auto label = GetOutputSubfieldLabel(subfield);
+        const auto label = get_output_subfield_label(subfield);
         return std::format("{}[{}{}]",
             cp.toString(),
-            outputName,
+            output_name,
             label ? std::format(".{}", *label) : ""
         );
     }
 
-    OutputValueExtractor MakeNullExtractor(OutputExtractorDataType type)
+    OutputValueExtractor make_null_extractor(OutputExtractorDataType type)
     {
         static_assert(osc::num_options<OutputExtractorDataType>() == 3);
         switch (type) {
@@ -53,41 +53,41 @@ public:
     Impl(const OpenSim::AbstractOutput& ao,
          ComponentOutputSubfield subfield) :
 
-        m_ComponentAbsPath{GetAbsolutePath(GetOwnerOrThrow(ao))},
-        m_OutputName{ao.getName()},
-        m_Label{GenerateComponentOutputLabel(m_ComponentAbsPath, m_OutputName, subfield)},
-        m_OutputTypeid{&typeid(ao)},
-        m_ExtractorFunc{GetExtractorFuncOrNull(ao, subfield)}
+        component_abs_path_{GetAbsolutePath(GetOwnerOrThrow(ao))},
+        output_name_{ao.getName()},
+        label_{generate_component_output_label(component_abs_path_, output_name_, subfield)},
+        output_type_id_{&typeid(ao)},
+        extractor_func_{get_extractor_func_or_null(ao, subfield)}
     {}
 
     friend bool operator==(const Impl&, const Impl&) = default;
 
     std::unique_ptr<Impl> clone() const { return std::make_unique<Impl>(*this); }
 
-    const OpenSim::ComponentPath& getComponentAbsPath() const { return m_ComponentAbsPath; }
+    const OpenSim::ComponentPath& component_abs_path() const { return component_abs_path_; }
 
-    osc::CStringView getName() const { return m_Label; }
-    osc::CStringView getDescription() const { return {}; }
+    osc::CStringView name() const { return label_; }
+    osc::CStringView description() const { return {}; }
 
-    OutputExtractorDataType getOutputType() const
+    OutputExtractorDataType output_type() const
     {
-        return m_ExtractorFunc ? OutputExtractorDataType::Float : OutputExtractorDataType::String;
+        return extractor_func_ ? OutputExtractorDataType::Float : OutputExtractorDataType::String;
     }
 
-    OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
+    OutputValueExtractor output_value_extractor(const OpenSim::Component& component) const
     {
-        const OutputExtractorDataType datatype = getOutputType();
-        const OpenSim::AbstractOutput* const ao = FindOutput(component, m_ComponentAbsPath, m_OutputName);
+        const OutputExtractorDataType datatype = output_type();
+        const OpenSim::AbstractOutput* const ao = FindOutput(component, component_abs_path_, output_name_);
 
         if (not ao) {
-            return MakeNullExtractor(datatype);  // cannot find output
+            return make_null_extractor(datatype);  // cannot find output
         }
-        if (typeid(*ao) != *m_OutputTypeid) {
-            return MakeNullExtractor(datatype);  // output has changed
+        if (typeid(*ao) != *output_type_id_) {
+            return make_null_extractor(datatype);  // output has changed
         }
 
         if (datatype == OutputExtractorDataType::Float) {
-            return OutputValueExtractor{[func = m_ExtractorFunc, ao](const StateViewWithMetadata& state)
+            return OutputValueExtractor{[func = extractor_func_, ao](const StateViewWithMetadata& state)
             {
                 return osc::Variant{static_cast<float>(func(*ao, state.getState()))};
             }};
@@ -100,39 +100,39 @@ public:
         }
     }
 
-    size_t getHash() const
+    size_t hash() const
     {
-        return osc::hash_of(m_ComponentAbsPath.toString(), m_OutputName, m_Label, m_OutputTypeid, m_ExtractorFunc);
+        return osc::hash_of(component_abs_path_.toString(), output_name_, label_, output_type_id_, extractor_func_);
     }
 
     bool equals(const OutputExtractor& other)
     {
-        const auto* const otherT = dynamic_cast<const ComponentOutputExtractor*>(&other);
-        if (!otherT) {
+        const auto* const other_t = dynamic_cast<const ComponentOutputExtractor*>(&other);
+        if (not other_t) {
             return false;
         }
 
-        const ComponentOutputExtractor::Impl* const otherImpl = otherT->m_Impl.get();
-        if (otherImpl == this) {
+        const ComponentOutputExtractor::Impl* const other_impl = other_t->impl_.get();
+        if (other_impl == this) {
             return true;
         }
 
-        return *otherImpl == *this;
+        return *other_impl == *this;
     }
 
 private:
-    OpenSim::ComponentPath m_ComponentAbsPath;
-    std::string m_OutputName;
-    std::string m_Label;
-    const std::type_info* m_OutputTypeid;
-    SubfieldExtractorFunc m_ExtractorFunc;
+    OpenSim::ComponentPath component_abs_path_;
+    std::string output_name_;
+    std::string label_;
+    const std::type_info* output_type_id_;
+    SubfieldExtractorFunc extractor_func_;
 };
 
 opyn::ComponentOutputExtractor::ComponentOutputExtractor(
     const OpenSim::AbstractOutput& ao,
     ComponentOutputSubfield subfield) :
 
-    m_Impl{std::make_unique<Impl>(ao, subfield)}
+    impl_{std::make_unique<Impl>(ao, subfield)}
 {}
 opyn::ComponentOutputExtractor::ComponentOutputExtractor(const ComponentOutputExtractor&) = default;
 opyn::ComponentOutputExtractor::ComponentOutputExtractor(ComponentOutputExtractor&&) noexcept = default;
@@ -140,37 +140,37 @@ ComponentOutputExtractor& opyn::ComponentOutputExtractor::operator=(const Compon
 ComponentOutputExtractor& opyn::ComponentOutputExtractor::operator=(ComponentOutputExtractor&&) noexcept = default;
 opyn::ComponentOutputExtractor::~ComponentOutputExtractor() noexcept = default;
 
-const OpenSim::ComponentPath& opyn::ComponentOutputExtractor::getComponentAbsPath() const
+const OpenSim::ComponentPath& opyn::ComponentOutputExtractor::component_abs_path() const
 {
-    return m_Impl->getComponentAbsPath();
+    return impl_->component_abs_path();
 }
 
-osc::CStringView opyn::ComponentOutputExtractor::implGetName() const
+osc::CStringView opyn::ComponentOutputExtractor::impl_name() const
 {
-    return m_Impl->getName();
+    return impl_->name();
 }
 
-osc::CStringView opyn::ComponentOutputExtractor::implGetDescription() const
+osc::CStringView opyn::ComponentOutputExtractor::impl_description() const
 {
-    return m_Impl->getDescription();
+    return impl_->description();
 }
 
-OutputExtractorDataType opyn::ComponentOutputExtractor::implGetOutputType() const
+OutputExtractorDataType opyn::ComponentOutputExtractor::impl_output_type() const
 {
-    return m_Impl->getOutputType();
+    return impl_->output_type();
 }
 
-OutputValueExtractor opyn::ComponentOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const
+OutputValueExtractor opyn::ComponentOutputExtractor::impl_output_value_extractor(const OpenSim::Component& component) const
 {
-    return m_Impl->getOutputValueExtractor(component);
+    return impl_->output_value_extractor(component);
 }
 
-std::size_t opyn::ComponentOutputExtractor::implGetHash() const
+std::size_t opyn::ComponentOutputExtractor::impl_hash() const
 {
-    return m_Impl->getHash();
+    return impl_->hash();
 }
 
-bool opyn::ComponentOutputExtractor::implEquals(const OutputExtractor& other) const
+bool opyn::ComponentOutputExtractor::impl_equals(const OutputExtractor& other) const
 {
-    return m_Impl->equals(other);
+    return impl_->equals(other);
 }

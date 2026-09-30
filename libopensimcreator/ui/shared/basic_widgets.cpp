@@ -103,16 +103,16 @@ namespace
         const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
     {
         bool outputAdded = false;
-        opyn::ComponentOutputSubfields supportedSubfields = opyn::GetSupportedSubfields(o);
+        opyn::ComponentOutputSubfields supportedSubfields = opyn::get_supported_subfields(o);
 
         // can plot suboutputs
         if (ui::begin_menu(("  " + o.getName())))
         {
-            for (opyn::ComponentOutputSubfield f : opyn::GetAllSupportedOutputSubfields())
+            for (opyn::ComponentOutputSubfield f : opyn::get_all_supported_output_subfields())
             {
                 if (f & supportedSubfields)
                 {
-                    if (auto label = GetOutputSubfieldLabel(f); label && ui::draw_menu_item(*label))
+                    if (auto label = opyn::get_output_subfield_label(f); label && ui::draw_menu_item(*label))
                     {
                         onUserSelection(opyn::SharedOutputExtractor{opyn::ComponentOutputExtractor{o, f}});
                         outputAdded = true;
@@ -397,7 +397,7 @@ bool osc::DrawRequestOutputMenuOrMenuItem(
     const OpenSim::AbstractOutput& o,
     const std::function<void(opyn::SharedOutputExtractor)>& onUserSelection)
 {
-    if (opyn::GetSupportedSubfields(o) == opyn::ComponentOutputSubfield::None)
+    if (opyn::get_supported_subfields(o) == opyn::ComponentOutputSubfield::None)
     {
         return DrawOutputWithNoSubfieldsMenuItem(o, onUserSelection);
     }
@@ -486,11 +486,11 @@ void osc::DrawOutputNameColumn(
 {
     if (centered)
     {
-        ui::draw_text_centered(output.getName());
+        ui::draw_text_centered(output.name());
     }
     else
     {
-        ui::draw_text(output.getName());
+        ui::draw_text(output.name());
     }
 
     // if it's specifically a component ouptut, then hover/clicking the text should
@@ -503,19 +503,18 @@ void osc::DrawOutputNameColumn(
     {
         if (ui::is_item_hovered())
         {
-            maybeActiveSate->setHovered(opyn::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
+            maybeActiveSate->setHovered(opyn::FindComponent(maybeActiveSate->getModel(), co->component_abs_path()));
         }
 
         if (ui::is_item_clicked(ui::MouseButton::Left))
         {
-            maybeActiveSate->setSelected(opyn::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
+            maybeActiveSate->setSelected(opyn::FindComponent(maybeActiveSate->getModel(), co->component_abs_path()));
         }
     }
 
-    if (!output.getDescription().empty())
-    {
+    if (not output.description().empty()) {
         ui::same_line();
-        ui::draw_help_marker(output.getName(), output.getDescription());
+        ui::draw_help_marker(output.name(), output.description());
     }
 }
 

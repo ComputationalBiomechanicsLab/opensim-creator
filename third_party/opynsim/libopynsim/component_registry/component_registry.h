@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <stdexcept>
 #include <string_view>
-#include <type_traits>
 #include <utility>
 
 namespace opyn
@@ -56,7 +55,7 @@ namespace opyn
 
         const_reference entry_with_classname(std::string_view class_name) const
         {
-            auto i = IndexOf(*this, class_name);
+            auto i = index_of(*this, class_name);
             if (not i) {
                 throw std::out_of_range{"attempted to get an element from a component registry that does not exist"};
             }

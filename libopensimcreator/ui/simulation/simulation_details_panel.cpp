@@ -83,7 +83,7 @@ private:
         ui::same_line();
         ui::draw_help_marker("Various statistics collected when the simulation was ran");
         ui::next_column();
-        if (rgs::any_of(outputs, opyn::is_numeric, &opyn::SharedOutputExtractor::getOutputType)) {
+        if (rgs::any_of(outputs, opyn::is_numeric, &opyn::SharedOutputExtractor::output_type)) {
 
             ui::draw_button(MSMICONS_SAVE " Save All " MSMICONS_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft)) {

@@ -29,16 +29,16 @@ namespace opyn
             return OutputValueExtractor{osc::Variant{std::forward<T>(value)}};
         }
 
-        explicit OutputValueExtractor(std::function<osc::Variant(const StateViewWithMetadata&)> callback_) :
-            m_Callback{std::move(callback_)}
+        explicit OutputValueExtractor(std::function<osc::Variant(const StateViewWithMetadata&)> callback) :
+            callback_{std::move(callback)}
         {}
 
-        osc::Variant operator()(const StateViewWithMetadata& state) const { return m_Callback(state); }
+        osc::Variant operator()(const StateViewWithMetadata& state) const { return callback_(state); }
     private:
         explicit OutputValueExtractor(osc::Variant value) :
-            m_Callback{[v = std::move(value)](const StateViewWithMetadata&) { return v; }}
+            callback_{[v = std::move(value)](const StateViewWithMetadata&) { return v; }}
         {}
 
-        std::function<osc::Variant(const StateViewWithMetadata&)> m_Callback;
+        std::function<osc::Variant(const StateViewWithMetadata&)> callback_;
     };
 }

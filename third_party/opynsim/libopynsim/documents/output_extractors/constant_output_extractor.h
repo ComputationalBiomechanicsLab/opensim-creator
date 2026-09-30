@@ -17,28 +17,28 @@ namespace opyn
     class ConstantOutputExtractor final : public OutputExtractor {
     public:
         ConstantOutputExtractor(std::string_view name, float value) :
-            m_Name{name},
-            m_Value{value},
-            m_Type{OutputExtractorDataType::Float}
+            name_{name},
+            value_{value},
+            type_{OutputExtractorDataType::Float}
         {}
 
         ConstantOutputExtractor(std::string_view name, osc::Vector2 value) :
-            m_Name{name},
-            m_Value{value},
-            m_Type{OutputExtractorDataType::Vector2}
+            name_{name},
+            value_{value},
+            type_{OutputExtractorDataType::Vector2}
         {}
 
         friend bool operator==(const ConstantOutputExtractor&, const ConstantOutputExtractor&) = default;
     private:
-        osc::CStringView implGetName() const override { return m_Name; }
-        osc::CStringView implGetDescription() const override { return {}; }
-        OutputExtractorDataType implGetOutputType() const override { return m_Type; }
-        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const override;
-        size_t implGetHash() const override;
-        bool implEquals(const OutputExtractor&) const override;
+        osc::CStringView impl_name() const override { return name_; }
+        osc::CStringView impl_description() const override { return {}; }
+        OutputExtractorDataType impl_output_type() const override { return type_; }
+        OutputValueExtractor impl_output_value_extractor(const OpenSim::Component&) const override;
+        size_t impl_hash() const override;
+        bool impl_equals(const OutputExtractor&) const override;
 
-        std::string m_Name;
-        osc::Variant m_Value;
-        OutputExtractorDataType m_Type;
+        std::string name_;
+        osc::Variant value_;
+        OutputExtractorDataType type_;
     };
 }

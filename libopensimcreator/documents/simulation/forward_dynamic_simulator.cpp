@@ -101,22 +101,22 @@ namespace
         {}
 
     private:
-        CStringView implGetName() const final
+        CStringView impl_name() const final
         {
             return m_Name;
         }
 
-        CStringView implGetDescription() const final
+        CStringView impl_description() const final
         {
             return m_Description;
         }
 
-        opyn::OutputExtractorDataType implGetOutputType() const final
+        opyn::OutputExtractorDataType impl_output_type() const final
         {
             return opyn::OutputExtractorDataType::Float;
         }
 
-        opyn::OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final
+        opyn::OutputValueExtractor impl_output_value_extractor(const OpenSim::Component&) const final
         {
             return opyn::OutputValueExtractor{[id = m_UID](const opyn::StateViewWithMetadata& state)
             {
@@ -124,12 +124,12 @@ namespace
             }};
         }
 
-        std::size_t implGetHash() const final
+        std::size_t impl_hash() const final
         {
             return hash_of(m_Name, m_Description, m_UID);
         }
 
-        bool implEquals(const OutputExtractor& other) const final
+        bool impl_equals(const OutputExtractor& other) const final
         {
             if (&other == this)
             {
@@ -156,7 +156,7 @@ namespace
     std::vector<opyn::SharedOutputExtractor> CreateSimulatorOutputExtractors()
     {
         std::vector<opyn::SharedOutputExtractor> rv;
-        rv.reserve(2uz + opyn::GetNumIntegratorOutputExtractors() + opyn::GetNumMultiBodySystemOutputExtractors());
+        rv.reserve(2uz + opyn::num_integrator_output_extractors() + opyn::num_multi_body_system_output_extractors());
 
         {
             const opyn::SharedOutputExtractor out{AuxiliaryVariableOutputExtractor{
@@ -174,14 +174,14 @@ namespace
             rv.push_back(out2);
         }
 
-        for (int i = 0, len = opyn::GetNumIntegratorOutputExtractors(); i < len; ++i)
+        for (int i = 0, len = opyn::num_integrator_output_extractors(); i < len; ++i)
         {
-            rv.push_back(opyn::GetIntegratorOutputExtractorDynamic(i));
+            rv.push_back(opyn::integrator_output_extractor_dynamic(i));
         }
 
-        for (int i = 0, len = opyn::GetNumMultiBodySystemOutputExtractors(); i < len; ++i)
+        for (int i = 0, len = opyn::num_multi_body_system_output_extractors(); i < len; ++i)
         {
-            rv.push_back(opyn::GetMultiBodySystemOutputExtractorDynamic(i));
+            rv.push_back(opyn::multi_body_system_output_extractor_dynamic(i));
         }
 
         return rv;
@@ -251,23 +251,23 @@ namespace
 
         // populate integrator outputs
         {
-            const int numOutputs = opyn::GetNumIntegratorOutputExtractors();
+            const int numOutputs = opyn::num_integrator_output_extractors();
             auxValues.reserve(auxValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
-                const opyn::IntegratorOutputExtractor& o = opyn::GetIntegratorOutputExtractor(i);
-                auxValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(integrator));
+                const opyn::IntegratorOutputExtractor& o = opyn::integrator_output_extractor(i);
+                auxValues.emplace(o.auxiliary_data_id(), o.extractor_function()(integrator));
             }
         }
 
         // populate mbs outputs
         {
-            const int numOutputs = opyn::GetNumMultiBodySystemOutputExtractors();
+            const int numOutputs = opyn::num_multi_body_system_output_extractors();
             auxValues.reserve(auxValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
-                const opyn::MultiBodySystemOutputExtractor& o = opyn::GetMultiBodySystemOutputExtractor(i);
-                auxValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(sys));
+                const opyn::MultiBodySystemOutputExtractor& o = opyn::multi_body_system_output_extractor(i);
+                auxValues.emplace(o.auxiliary_data_id(), o.extractor_function()(sys));
             }
         }
 

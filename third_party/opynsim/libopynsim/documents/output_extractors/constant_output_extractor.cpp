@@ -7,20 +7,20 @@
 
 #include <cstddef>
 
-opyn::OutputValueExtractor opyn::ConstantOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
+opyn::OutputValueExtractor opyn::ConstantOutputExtractor::impl_output_value_extractor(const OpenSim::Component&) const
 {
-    return opyn::OutputValueExtractor{[value = this->m_Value](const opyn::StateViewWithMetadata&)
+    return opyn::OutputValueExtractor{[value = this->value_](const opyn::StateViewWithMetadata&)
     {
         return value;
     }};
 }
 
-size_t opyn::ConstantOutputExtractor::implGetHash() const
+size_t opyn::ConstantOutputExtractor::impl_hash() const
 {
-    return hash_of(m_Name, m_Value);
+    return hash_of(name_, value_);
 }
 
-bool opyn::ConstantOutputExtractor::implEquals(const OutputExtractor& other) const
+bool opyn::ConstantOutputExtractor::impl_equals(const OutputExtractor& other) const
 {
     return osc::is_eq_downcasted<ConstantOutputExtractor>(*this, other);
 }

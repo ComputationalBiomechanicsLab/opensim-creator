@@ -22,6 +22,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 
+#include <array>
 #include <cstddef>
 #include <optional>
 #include <utility>
@@ -34,8 +35,8 @@ namespace
     // a single instance of a joint to test
     struct TestCase {
         std::string name;
-        std::optional<size_t> maybeIndex;
-        std::vector<osc::CStringView> expectedNames;
+        std::optional<size_t> maybe_index;
+        std::vector<osc::CStringView> expected_names;
 
         template<typename T, typename... Names>
         static TestCase create(Names... names)
@@ -44,18 +45,18 @@ namespace
             return TestCase
             {
                 typeid(T).name(),
-                IndexOf<T>(GetComponentRegistry<OpenSim::Joint>()),
+                index_of<T>(get_component_registry<OpenSim::Joint>()),
                 {std::forward<Names>(names)...},
             };
         }
     };
 }
 
-TEST(ComponentRegistry, CoordsHaveExpectedNames)
+TEST(ComponentRegistry, coords_have_expected_names)
 {
     opyn::init();
 
-    // ensure the typeregistry sets the default OpenSim coordinate names to something
+    // ensure the type registry sets the default OpenSim coordinate names to something
     // easier to work with
     //
     // the documentation/screenshots etc. assume that coordinates end up with with these
@@ -63,8 +64,7 @@ TEST(ComponentRegistry, CoordsHaveExpectedNames)
     // a problem w.r.t. UX, docs, etc.
 
     // all of the test cases
-    std::vector<TestCase> testCases =
-    {
+    std::array test_cases = {
         TestCase::create<OpenSim::BallJoint>("rx", "ry", "rz"),
         TestCase::create<OpenSim::EllipsoidJoint>("rx", "ry", "rz"),
         TestCase::create<OpenSim::FreeJoint>("rx", "ry", "rz", "tx", "ty", "tz"),
@@ -77,28 +77,25 @@ TEST(ComponentRegistry, CoordsHaveExpectedNames)
     };
 
     // go through each test case and ensure the names match
-    for (const TestCase& tc : testCases)
-    {
-        ASSERT_TRUE(tc.maybeIndex) << tc.name << " does not exist in the registry(it should)";
+    for (const TestCase& tc : test_cases) {
+        ASSERT_TRUE(tc.maybe_index) << tc.name << " does not exist in the registry(it should)";
 
-        const auto& proto = GetComponentRegistry<OpenSim::Joint>()[*tc.maybeIndex].prototype();
-        const auto& coordProp = proto.getProperty_coordinates();
+        const auto& proto = get_component_registry<OpenSim::Joint>()[*tc.maybe_index].prototype();
+        const auto& coord_prop = proto.getProperty_coordinates();
 
-        ASSERT_EQ(coordProp.size(), tc.expectedNames.size()) << tc.name <<  " has different number of coords from expected";
+        ASSERT_EQ(coord_prop.size(), tc.expected_names.size()) << tc.name <<  " has different number of coords from expected";
 
-        for (int i = 0; i < coordProp.size(); ++i)
-        {
-            ASSERT_EQ(coordProp.getValue(i).getName(), tc.expectedNames[i]) << tc.name << " coordinate " << i << " has different name from expected";
+        for (int i = 0; i < coord_prop.size(); ++i) {
+            ASSERT_EQ(coord_prop.getValue(i).getName(), tc.expected_names[i]) << tc.name << " coordinate " << i << " has different name from expected";
         }
     }
 }
 
 // #298: try adding every available joint type into a blank OpenSim model to ensure
 //       that all joint types can be added without an exception/segfault
-TEST(JointRegistry, CanAddAnyJointWithoutAnExceptionOrSegfault)
+TEST(JointRegistry, can_add_any_joint_without_an_exception_or_segfault)
 {
-    for (const auto& entry : GetComponentRegistry<OpenSim::Joint>())
-    {
+    for (const auto& entry : get_component_registry<OpenSim::Joint>()) {
         // create a blank model
         OpenSim::Model model;
 
@@ -126,9 +123,9 @@ TEST(JointRegistry, CanAddAnyJointWithoutAnExceptionOrSegfault)
 
 // #298: try converting between every available joint type in an existing model to
 //       ensure there's no faults
-TEST(JointRegistry, CanConvertBetweenAnyJointWithoutAnExceptionOrSegfault)
+TEST(JointRegistry, can_convert_between_any_joint_without_an_exception_or_segfault)
 {
-    const auto& entries = GetComponentRegistry<OpenSim::Joint>();
+    const auto& entries = get_component_registry<OpenSim::Joint>();
 
     for (size_t i = 0; i < entries.size(); ++i) {
         for (size_t j = 0; j < entries.size(); ++j) {
@@ -147,10 +144,10 @@ TEST(JointRegistry, CanConvertBetweenAnyJointWithoutAnExceptionOrSegfault)
             InitializeState(model);
 
             // then switch the joint over
-            auto newJoint = entries[j].instantiate();
-            CopyCommonJointProperties(joint, *newJoint);
-            auto& jointSet = UpdOwnerOrThrow<OpenSim::JointSet>(model, joint);
-            Assign(jointSet, joint, std::move(newJoint));
+            auto new_joint = entries[j].instantiate();
+            CopyCommonJointProperties(joint, *new_joint);
+            auto& joint_set = UpdOwnerOrThrow<OpenSim::JointSet>(model, joint);
+            Assign(joint_set, joint, std::move(new_joint));
 
             FinalizeConnections(model);
             InitializeModel(model);
@@ -161,10 +158,9 @@ TEST(JointRegistry, CanConvertBetweenAnyJointWithoutAnExceptionOrSegfault)
 
 // #298: try adding every available contact geometry type into a blank OpenSim model
 //       to ensure that all contact geometries can be added without an exception/segfault
-TEST(ContactGeometryRegistry, CanAddAnyContactGeometryWithoutAnExceptionOrSegfault)
+TEST(ContactGeometryRegistry, can_add_any_contact_geometry_without_an_exception_or_segfault)
 {
-    for (const auto& entry : GetComponentRegistry<OpenSim::ContactGeometry>())
-    {
+    for (const auto& entry : get_component_registry<OpenSim::ContactGeometry>()) {
         // create a blank model
         OpenSim::Model model;
 
@@ -188,10 +184,9 @@ TEST(ContactGeometryRegistry, CanAddAnyContactGeometryWithoutAnExceptionOrSegfau
 //
 // (throwing is permitted, because constraints typically rely on
 //  other stuff, e.g. coordinates, existing in the model)
-TEST(ConstraintRegistry, CanAddAnyConstraintWithoutASegfault)
+TEST(ConstraintRegistry, can_add_any_constraint_without_a_segfault)
 {
-    for (const auto& entry : GetComponentRegistry<OpenSim::Constraint>())
-    {
+    for (const auto& entry : get_component_registry<OpenSim::Constraint>()) {
         // create a blank model
         OpenSim::Model model;
 
@@ -202,8 +197,7 @@ TEST(ConstraintRegistry, CanAddAnyConstraintWithoutASegfault)
         model.addConstraint(constraint.release());
 
         // initialize the model+system+state
-        try
-        {
+        try {
             model.finalizeFromProperties();
             model.buildSystem();
         }
@@ -220,10 +214,9 @@ TEST(ConstraintRegistry, CanAddAnyConstraintWithoutASegfault)
 //
 // (throwing is permitted, because forces typically rely on
 //  other stuff, e.g. coordinates, existing in the model)
-TEST(ForceRegistry, CanAddAnyForceWithoutASegfault)
+TEST(ForceRegistry, can_add_any_force_without_a_segfault)
 {
-    for (const auto& entry : GetComponentRegistry<OpenSim::Force>())
-    {
+    for (const auto& entry : get_component_registry<OpenSim::Force>()) {
         // create a blank model
         OpenSim::Model model;
 
@@ -231,8 +224,7 @@ TEST(ForceRegistry, CanAddAnyForceWithoutASegfault)
         auto force = entry.instantiate();
 
         // initialize the model+system+state
-        try
-        {
+        try {
             model.addForce(force.release());  // finalizes, so can throw
             model.finalizeFromProperties();
             model.buildSystem();
@@ -247,10 +239,9 @@ TEST(ForceRegistry, CanAddAnyForceWithoutASegfault)
 
 // #298: try adding every available controller to a blank OpenSim model
 //       to ensure that all of them can be added without a segfault
-TEST(ControllerRegistry, CanAddAnyControllerWithoutASegfault)
+TEST(ControllerRegistry, can_add_any_controller_without_a_segfault)
 {
-    for (const auto& entry : GetComponentRegistry<OpenSim::Controller>())
-    {
+    for (const auto& entry : get_component_registry<OpenSim::Controller>()) {
         // create a blank model
         OpenSim::Model model;
 
@@ -261,8 +252,7 @@ TEST(ControllerRegistry, CanAddAnyControllerWithoutASegfault)
         model.addController(controller.release());
 
         // initialize the model+system+state
-        try
-        {
+        try {
             model.finalizeFromProperties();
             model.buildSystem();
         }
@@ -276,10 +266,9 @@ TEST(ControllerRegistry, CanAddAnyControllerWithoutASegfault)
 
 // #298: try adding every available probe type to a blank OpenSim model
 //       to ensure that all of them can be added without a segfault
-TEST(ProbeRegistry, CanAddAnyProbeWithoutASegfault)
+TEST(ProbeRegistry, can_add_any_probe_without_a_segfault)
 {
-    for (const auto& entry : GetComponentRegistry<OpenSim::Probe>())
-    {
+    for (const auto& entry : get_component_registry<OpenSim::Probe>()) {
         // create a blank model
         OpenSim::Model model;
 
@@ -301,18 +290,16 @@ TEST(ProbeRegistry, CanAddAnyProbeWithoutASegfault)
 //       cannot be cleanly assigned to a known registry type) to a blank OpenSim
 //       model to ensure that all ungrouped components can be added without a
 //       segfault
-TEST(UngroupedRegistry, CanAddAnyUngroupedComponentWithoutASegfault)
+TEST(UngroupedRegistry, can_add_any_ungrouped_component_without_a_segfault)
 {
-    for (const auto& entry : GetComponentRegistry<OpenSim::Component>())
-    {
+    for (const auto& entry : get_component_registry<OpenSim::Component>()) {
         // create a blank model
         OpenSim::Model model;
 
         // default-construct the component
         auto component = entry.instantiate();
 
-        try
-        {
+        try {
             model.addComponent(component.release());
             model.finalizeFromProperties();
             model.buildSystem();
@@ -325,9 +312,9 @@ TEST(UngroupedRegistry, CanAddAnyUngroupedComponentWithoutASegfault)
     }
 }
 
-TEST(WrapObjectRegistry, CanInstantiateAllAvailableWrapObjectsWithoutIssue)
+TEST(WrapObjectRegistry, can_instantiate_all_available_wrap_objects_without_issue)
 {
-    for (const auto& entry : GetComponentRegistry<OpenSim::WrapObject>()) {
+    for (const auto& entry : get_component_registry<OpenSim::WrapObject>()) {
         ASSERT_FALSE(entry.name().empty());
         ASSERT_NO_THROW({ entry.instantiate(); });
     }

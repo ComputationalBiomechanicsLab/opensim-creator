@@ -82,7 +82,7 @@ namespace
         const opyn::SharedOutputExtractor& oneDimensionalOutputExtractor)
     {
         static_assert(num_options<opyn::OutputExtractorDataType>() == 3);
-        OSC_ASSERT(oneDimensionalOutputExtractor.getOutputType() == opyn::OutputExtractorDataType::Float);
+        OSC_ASSERT(oneDimensionalOutputExtractor.output_type() == opyn::OutputExtractorDataType::Float);
 
         // HACK: pre-acquire the environment, because `*simulation.getModel()` acquires the model
         //       mutex for the entire duration of the `ForEachComponentInclusive`, and acquiring
@@ -100,7 +100,7 @@ namespace
             std::vector<std::reference_wrapper<const OpenSim::AbstractOutput>> extractableOutputs;
             extractableOutputs.reserve(numOutputs);  // upper bound
             for (const auto& [name, output] : component.getOutputs()) {
-                if (opyn::ProducesExtractableNumericValues(*output)) {
+                if (opyn::produces_extractable_numeric_values(*output)) {
                     extractableOutputs.push_back(*output);
                 }
             }
@@ -144,7 +144,7 @@ namespace
             return;  // menu not open
         }
 
-        const opyn::OutputExtractorDataType dataType = output.getOutputType();
+        const opyn::OutputExtractorDataType dataType = output.output_type();
 
         if (dataType == opyn::OutputExtractorDataType::Float) {
             DrawExportToCSVMenuItems(api, output);
@@ -178,7 +178,7 @@ public:
         static_assert(num_options<opyn::OutputExtractorDataType>() == 3);
 
         const ptrdiff_t nReports = m_API->updSimulation().getNumReports();
-        opyn::OutputExtractorDataType outputType = m_OutputExtractor.getOutputType();
+        opyn::OutputExtractorDataType outputType = m_OutputExtractor.output_type();
 
         if (nReports <= 0) {
             ui::draw_text("no data (yet)");
@@ -200,7 +200,7 @@ public:
 private:
     void drawFloatOutputUI()
     {
-        OSC_ASSERT(m_OutputExtractor.getOutputType() == opyn::OutputExtractorDataType::Float && "should've been checked before calling this function");
+        OSC_ASSERT(m_OutputExtractor.output_type() == opyn::OutputExtractorDataType::Float && "should've been checked before calling this function");
 
         AbstractSimulation& sim = m_API->updSimulation();
 
@@ -215,7 +215,7 @@ private:
         {
             OSC_PERF("collect output data");
             const std::vector<SimulationReport> reports = sim.getAllSimulationReports();
-            buf = m_OutputExtractor.slurpValues<float>(*sim.getModel(), reports);
+            buf = m_OutputExtractor.slurp_values<float>(*sim.getModel(), reports);
         }
 
         // setup drawing area for drawing
@@ -324,13 +324,13 @@ private:
         const ptrdiff_t nReports = m_API->updSimulation().getNumReports();
         const SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
 
-        ui::draw_text_centered(m_OutputExtractor.getValue<std::string>(*sim.getModel(), r));
+        ui::draw_text_centered(m_OutputExtractor.value<std::string>(*sim.getModel(), r));
         TryDrawOutputContextMenuForLastItem(*m_API, sim, m_OutputExtractor);
     }
 
     void drawVector2OutputUI()
     {
-        OSC_ASSERT(m_OutputExtractor.getOutputType() == opyn::OutputExtractorDataType::Vector2);
+        OSC_ASSERT(m_OutputExtractor.output_type() == opyn::OutputExtractorDataType::Vector2);
 
         AbstractSimulation& sim = m_API->updSimulation();
 
@@ -345,7 +345,7 @@ private:
         {
             OSC_PERF("collect output data");
             std::vector<SimulationReport> reports = sim.getAllSimulationReports();
-            buf = m_OutputExtractor.slurpValues<Vector2>(*sim.getModel(), reports);
+            buf = m_OutputExtractor.slurp_values<Vector2>(*sim.getModel(), reports);
         }
 
         // setup drawing area for drawing
@@ -377,7 +377,7 @@ private:
                 // overlays
                 {
                     SimulationReport currentReport = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-                    Vector2d currentVal = m_OutputExtractor.getValue<Vector2>(*sim.getModel(), currentReport);
+                    Vector2d currentVal = m_OutputExtractor.value<Vector2>(*sim.getModel(), currentReport);
                     // ensure the annotation doesn't occlude the line too heavily
                     auto annotationColor = ui::get_style_color(ui::ColorVar::PopupBg).with_alpha(0.5f);
                     plot::draw_annotation(currentVal, annotationColor, {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x(), currentVal.y());

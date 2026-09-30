@@ -12,19 +12,19 @@ namespace opyn
     class ComponentRegistryEntryBase {
     public:
         ComponentRegistryEntryBase(
-            std::string_view name_,
-            std::string_view description_,
+            std::string_view name,
+            std::string_view description,
             std::shared_ptr<const OpenSim::Component>
         );
 
-        osc::CStringView name() const { return m_Name; }
-        osc::CStringView description() const { return m_Description; }
-        const OpenSim::Component& prototype() const { return *m_Prototype; }
+        osc::CStringView name() const { return name_; }
+        osc::CStringView description() const { return description_; }
+        const OpenSim::Component& prototype() const { return *prototype_; }
         std::unique_ptr<OpenSim::Component> instantiate() const;
 
     private:
-        std::string m_Name;
-        std::string m_Description;
-        std::shared_ptr<const OpenSim::Component> m_Prototype;
+        std::string name_;
+        std::string description_;
+        std::shared_ptr<const OpenSim::Component> prototype_;
     };
 }

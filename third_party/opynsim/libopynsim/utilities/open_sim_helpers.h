@@ -948,7 +948,7 @@ namespace opyn
         std::derived_from<OpenSim::Object> T,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
-    std::optional<size_t> IndexOf(const OpenSim::Set<T, C>& set, const T& el)
+    std::optional<size_t> index_of(const OpenSim::Set<T, C>& set, const T& el)
     {
         for (size_t i = 0; i < size(set); ++i) {
             if (&At(set, i) == &el) {
@@ -991,7 +991,7 @@ namespace opyn
     >
     U& Assign(OpenSim::Set<T, C>& set, T& oldElement, std::unique_ptr<U> newElement)
     {
-        auto idx = IndexOf(set, oldElement);
+        auto idx = index_of(set, oldElement);
         if (not idx) {
             throw std::runtime_error{"cannot find the requested element in the set"};
         }

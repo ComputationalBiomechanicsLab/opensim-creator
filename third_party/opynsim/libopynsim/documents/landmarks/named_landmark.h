@@ -18,7 +18,7 @@ namespace opyn
         friend bool operator==(const NamedLandmark&, const NamedLandmark&) = default;
         friend bool operator==(const Landmark& lhs, const NamedLandmark& rhs)
         {
-            return lhs.maybeName == rhs.name && lhs.position == rhs.position;
+            return lhs.maybe_name == rhs.name && lhs.position == rhs.position;
         }
     };
 }

@@ -86,16 +86,16 @@ public:
 
                 // Column: output name
                 ui::table_set_column_index(column++);
-                ui::draw_text(o.getName());
+                ui::draw_text(o.name());
                 ui::same_line();
                 if (ui::draw_button(MSMICONS_COPY)) {
-                    set_clipboard_text(o.getName());
+                    set_clipboard_text(o.name());
                 }
                 ui::draw_tooltip_if_item_hovered("Copy output name to clipboard");
 
                 // Column: output value
                 ui::table_set_column_index(column++);
-                const auto value_text = o.getValue<std::string>(m_Model->getModel(), m_CachedReport.simulationReport);
+                const auto value_text = o.value<std::string>(m_Model->getModel(), m_CachedReport.simulationReport);
                 ui::draw_text(value_text);
                 ui::same_line();
                 if (ui::draw_button(MSMICONS_COPY)) {

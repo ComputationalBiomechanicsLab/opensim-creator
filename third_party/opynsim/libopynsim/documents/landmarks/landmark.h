@@ -9,7 +9,7 @@ namespace opyn
 {
     struct Landmark final {
         // If available, the name of this landmark.
-        std::optional<std::string> maybeName;
+        std::optional<std::string> maybe_name;
 
         // The position of the landmark in its caller-specified coordinate system.
         osc::Vector3 position;

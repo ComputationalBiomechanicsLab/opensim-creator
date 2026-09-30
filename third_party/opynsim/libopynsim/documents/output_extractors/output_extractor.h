@@ -11,7 +11,6 @@
 #include <cstddef>
 #include <functional>
 #include <ranges>
-#include <string>
 #include <vector>
 
 namespace OpenSim { class Component; }
@@ -36,34 +35,34 @@ namespace opyn
     public:
         virtual ~OutputExtractor() noexcept = default;
 
-        osc::CStringView getName() const { return implGetName(); }
-        osc::CStringView getDescription() const { return implGetDescription(); }
+        osc::CStringView name() const { return impl_name(); }
+        osc::CStringView description() const { return impl_description(); }
 
-        OutputExtractorDataType getOutputType() const { return implGetOutputType(); }
-        OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
+        OutputExtractorDataType output_type() const { return impl_output_type(); }
+        OutputValueExtractor output_value_extractor(const OpenSim::Component& component) const
         {
-            return implGetOutputValueExtractor(component);
+            return impl_output_value_extractor(component);
         }
 
         template<typename T>
         requires std::constructible_from<T, osc::Variant&&>
-        T getValue(const OpenSim::Component& component, const opyn::StateViewWithMetadata& state) const
+        T value(const OpenSim::Component& component, const StateViewWithMetadata& state) const
         {
-            return to<T>(getOutputValueExtractor(component)(state));
+            return to<T>(output_value_extractor(component)(state));
         }
 
         template<typename T, std::ranges::forward_range R, std::invocable<T> Consumer>
         requires (
             std::constructible_from<T, osc::Variant&&> and
-            std::convertible_to<std::ranges::range_value_t<R>, const opyn::StateViewWithMetadata&>
+            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
         )
-        void getValues(
+        void values(
             const OpenSim::Component& component,
             const R& states,
             Consumer&& consumer) const
         {
-            const opyn::OutputValueExtractor extractor = getOutputValueExtractor(component);
-            for (const opyn::StateViewWithMetadata& state : states) {
+            const OutputValueExtractor extractor = output_value_extractor(component);
+            for (const StateViewWithMetadata& state : states) {
                 consumer(to<T>(extractor(state)));
             }
         }
@@ -71,31 +70,31 @@ namespace opyn
         template<typename T, std::ranges::forward_range R>
         requires (
             std::constructible_from<T, osc::Variant&&> and
-            std::convertible_to<std::ranges::range_value_t<R>, const opyn::StateViewWithMetadata&>
+            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
         )
-        std::vector<T> slurpValues(const OpenSim::Component& component, const R& states) const
+        std::vector<T> slurp_values(const OpenSim::Component& component, const R& states) const
         {
             std::vector<T> rv;
             if constexpr (std::ranges::sized_range<R>) {
                 rv.reserve(std::ranges::size(states));
             }
-            getValues<T>(component, states, [&rv](T value) { rv.push_back(std::move(value)); });
+            values<T>(component, states, [&rv](T value) { rv.push_back(std::move(value)); });
             return rv;
         }
 
-        size_t getHash() const { return implGetHash(); }
-        bool equals(const OutputExtractor& other) const { return implEquals(other); }
+        size_t hash() const { return impl_hash(); }
+        bool equals(const OutputExtractor& other) const { return impl_equals(other); }
 
         friend bool operator==(const OutputExtractor& lhs, const OutputExtractor& rhs)
         {
             return lhs.equals(rhs);
         }
     private:
-        virtual osc::CStringView implGetName() const = 0;
-        virtual osc::CStringView implGetDescription() const = 0;
-        virtual OutputExtractorDataType implGetOutputType() const = 0;
-        virtual OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const = 0;
-        virtual size_t implGetHash() const = 0;
-        virtual bool implEquals(const OutputExtractor&) const = 0;
+        virtual osc::CStringView impl_name() const = 0;
+        virtual osc::CStringView impl_description() const = 0;
+        virtual OutputExtractorDataType impl_output_type() const = 0;
+        virtual OutputValueExtractor impl_output_value_extractor(const OpenSim::Component&) const = 0;
+        virtual size_t impl_hash() const = 0;
+        virtual bool impl_equals(const OutputExtractor&) const = 0;
     };
 }

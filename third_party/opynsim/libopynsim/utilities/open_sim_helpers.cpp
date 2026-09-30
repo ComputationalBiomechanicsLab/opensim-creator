@@ -1153,7 +1153,7 @@ std::optional<size_t> opyn::FindJointInParentJointSet(const OpenSim::Joint& join
         return std::nullopt;
     }
 
-    return IndexOf(*parentJointSet, joint);
+    return index_of(*parentJointSet, joint);
 }
 
 std::string opyn::GetDisplayName(const OpenSim::Geometry& g)

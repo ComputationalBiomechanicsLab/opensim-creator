@@ -6,20 +6,20 @@
 #include <optional>
 #include <typeinfo>
 
-std::optional<size_t> opyn::IndexOf(
+std::optional<size_t> opyn::index_of(
     const ComponentRegistryBase& registry,
-    std::string_view componentClassName)
+    std::string_view class_name)
 {
     for (size_t i = 0; i < registry.size(); ++i) {
         const OpenSim::Component& prototype = registry[i].prototype();
-        if (prototype.getConcreteClassName() == componentClassName) {
+        if (prototype.getConcreteClassName() == class_name) {
             return i;
         }
     }
     return std::nullopt;
 }
 
-std::optional<size_t> opyn::IndexOf(
+std::optional<size_t> opyn::index_of(
     const ComponentRegistryBase& registry,
     const OpenSim::Component& component)
 {

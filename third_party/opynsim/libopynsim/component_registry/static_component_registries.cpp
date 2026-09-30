@@ -58,7 +58,7 @@ namespace
 {
     // helper: construct a prototype joint and assign its coordinate names
     template<std::derived_from<OpenSim::Joint> TJoint>
-    std::shared_ptr<TJoint> JointWithCoords(std::initializer_list<osc::CStringView> names)
+    std::shared_ptr<TJoint> joint_with_coords(std::initializer_list<osc::CStringView> names)
     {
         std::shared_ptr<TJoint> j = std::make_shared<TJoint>();
         int i = 0;
@@ -77,7 +77,7 @@ namespace
     // these are components that are only available in OpenSim Creator: either because they're
     // custom (as in, they are in OSC's source tree), or because OpenSim hasn't released a
     // version that includes the component
-    std::vector<std::shared_ptr<const OpenSim::Component>> CreateCustomComponentList()
+    std::vector<std::shared_ptr<const OpenSim::Component>> create_custom_component_list()
     {
         return {
             std::make_shared<OpenSim::StationDefinedFrame>(),
@@ -86,16 +86,16 @@ namespace
     }
 
     // returns a cached version of the custom component lookup
-    const std::vector<std::shared_ptr<const OpenSim::Component>>& GetCustomComponentList()
+    const std::vector<std::shared_ptr<const OpenSim::Component>>& get_custom_component_list()
     {
-        static const std::vector<std::shared_ptr<const OpenSim::Component>> s_CustomComponentLUT = CreateCustomComponentList();
-        return s_CustomComponentLUT;
+        static const std::vector<std::shared_ptr<const OpenSim::Component>> s_custom_component_lut = create_custom_component_list();
+        return s_custom_component_lut;
     }
 
     // creates a lookup for user-facing description strings
     //
     // these are shwon to the user as in-UI documentation
-    std::unordered_map<osc::CStringView, osc::CStringView> CreateComponentDescriptionLookup()
+    std::unordered_map<osc::CStringView, osc::CStringView> create_component_description_lookup()
     {
         return
         {
@@ -303,10 +303,10 @@ namespace
     }
 
     // returns a cached version of the description lookup
-    const std::unordered_map<osc::CStringView, osc::CStringView>& GetComponentDescriptionLookup()
+    const std::unordered_map<osc::CStringView, osc::CStringView>& get_component_description_lookup()
     {
-        static const std::unordered_map<osc::CStringView, osc::CStringView> s_Lut = CreateComponentDescriptionLookup();
-        return s_Lut;
+        static const std::unordered_map<osc::CStringView, osc::CStringView> s_lut = create_component_description_lookup();
+        return s_lut;
     }
 
     // creates a list of classes that shouldn't be presented to the user. Usual reasons:
@@ -314,7 +314,7 @@ namespace
     // - the component has a bug/design deficiency that makes the UI fail when automating adding it
     // - the component is a custom component that shouldn't be presented alongside the list of official
     //   OpenSim components
-    std::unordered_set<std::string> CreateComponentBlacklist()
+    std::unordered_set<std::string> create_component_blacklist()
     {
         std::unordered_set<std::string> rv
         {
@@ -370,22 +370,22 @@ namespace
 
         // also, ensure all custom components are blacklisted (they should only appear
         // in the explicitly-labelled custom components section)
-        for (const auto& customComponent : GetCustomComponentList()) {
-            rv.emplace(customComponent->getConcreteClassName());
+        for (const auto& custom_component : get_custom_component_list()) {
+            rv.emplace(custom_component->getConcreteClassName());
         }
         return rv;
     }
 
     // cached version of the above
-    const std::unordered_set<std::string>& GetComponentBlacklist()
+    const std::unordered_set<std::string>& get_component_blacklist()
     {
-        static const std::unordered_set<std::string> s_Blacklist = CreateComponentBlacklist();
-        return s_Blacklist;
+        static const std::unordered_set<std::string> s_blacklist = create_component_blacklist();
+        return s_blacklist;
     }
 
     // helper: add elements that derive from type T
     template<std::derived_from<OpenSim::Object> T>
-    void AddRegisteredElementsOfType(std::unordered_set<std::string>& out)
+    void add_registered_elements_of_type(std::unordered_set<std::string>& out)
     {
         OpenSim::ArrayPtrs<T> ptrs;
         opyn::init();  // ensure OpenSim::Object registry is populated
@@ -399,83 +399,83 @@ namespace
 
     // create a set that contains all the components that are already assigned to
     // a "group" in OSC
-    std::unordered_set<std::string> CreateSetOfAllGroupedElements()
+    std::unordered_set<std::string> create_set_of_all_grouped_elements()
     {
         std::unordered_set<std::string> rv;
-        AddRegisteredElementsOfType<OpenSim::Joint>(rv);
-        AddRegisteredElementsOfType<OpenSim::ContactGeometry>(rv);
-        AddRegisteredElementsOfType<OpenSim::Constraint>(rv);
-        AddRegisteredElementsOfType<OpenSim::Force>(rv);
-        AddRegisteredElementsOfType<OpenSim::Controller>(rv);
-        AddRegisteredElementsOfType<OpenSim::Probe>(rv);
+        add_registered_elements_of_type<OpenSim::Joint>(rv);
+        add_registered_elements_of_type<OpenSim::ContactGeometry>(rv);
+        add_registered_elements_of_type<OpenSim::Constraint>(rv);
+        add_registered_elements_of_type<OpenSim::Force>(rv);
+        add_registered_elements_of_type<OpenSim::Controller>(rv);
+        add_registered_elements_of_type<OpenSim::Probe>(rv);
         return rv;
     }
 
     // cached version of the above
-    const std::unordered_set<std::string>& GetSetOfAllGroupedElements()
+    const std::unordered_set<std::string>& get_set_of_all_grouped_elements()
     {
-        static const std::unordered_set<std::string> s_GroupedEls = CreateSetOfAllGroupedElements();
-        return s_GroupedEls;
+        static const std::unordered_set<std::string> s_grouped_els = create_set_of_all_grouped_elements();
+        return s_grouped_els;
     }
 
     // create a lookup of pre-initialized prototype components
-    std::unordered_map<osc::CStringView, std::shared_ptr<const OpenSim::Component>> CreatePrototypeLut()
+    std::unordered_map<osc::CStringView, std::shared_ptr<const OpenSim::Component>> create_prototype_lut()
     {
         return
         {
             {
                 "BallJoint",
-                JointWithCoords<OpenSim::BallJoint>({"rx", "ry", "rz"}),
+                joint_with_coords<OpenSim::BallJoint>({"rx", "ry", "rz"}),
             },
             {
                 "EllipsoidJoint",
-                []()
+                []
                 {
-                    auto joint = JointWithCoords<OpenSim::EllipsoidJoint>({"rx", "ry", "rz"});
+                    auto joint = joint_with_coords<OpenSim::EllipsoidJoint>({"rx", "ry", "rz"});
                     joint->updProperty_radii_x_y_z() = {1.0, 1.0, 1.0};
                     return joint;
                 }(),
             },
             {
                 "FreeJoint",
-                JointWithCoords<OpenSim::FreeJoint>({"rx", "ry", "rz", "tx", "ty", "tz"}),
+                joint_with_coords<OpenSim::FreeJoint>({"rx", "ry", "rz", "tx", "ty", "tz"}),
             },
             {
                 "GimbalJoint",
-                JointWithCoords<OpenSim::GimbalJoint>({"rx", "ry", "rz"}),
+                joint_with_coords<OpenSim::GimbalJoint>({"rx", "ry", "rz"}),
             },
             {
                 "PinJoint",
-                JointWithCoords<OpenSim::PinJoint>({"rz"}),
+                joint_with_coords<OpenSim::PinJoint>({"rz"}),
             },
             {
                 "PlanarJoint",
-                JointWithCoords<OpenSim::PlanarJoint>({"rz", "tx", "ty"}),
+                joint_with_coords<OpenSim::PlanarJoint>({"rz", "tx", "ty"}),
             },
             {
                 "ScapulothoracicJoint",
-                []()
+                []
                 {
-                    auto joint = JointWithCoords<OpenSim::ScapulothoracicJoint>({"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"});
+                    auto joint = joint_with_coords<OpenSim::ScapulothoracicJoint>({"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"});
                     joint->updProperty_thoracic_ellipsoid_radii_x_y_z() = {1.0, 1.0, 1.0};
                     return joint;
                 }(),
             },
             {
                 "SliderJoint",
-                JointWithCoords<OpenSim::SliderJoint>({"tx"}),
+                joint_with_coords<OpenSim::SliderJoint>({"tx"}),
             },
             {
                 "UniversalJoint",
-                JointWithCoords<OpenSim::UniversalJoint>({"rx", "ry"}),
+                joint_with_coords<OpenSim::UniversalJoint>({"rx", "ry"}),
             },
             {
                 "WeldJoint",
-                JointWithCoords<OpenSim::WeldJoint>({}),
+                joint_with_coords<OpenSim::WeldJoint>({}),
             },
             {
                 "HuntCrossleyForce",
-                []()
+                []
                 {
                     auto hcf = std::make_shared<OpenSim::HuntCrossleyForce>();
                     hcf->setStiffness(100000000.0);
@@ -488,7 +488,7 @@ namespace
             },
             {
                 "PathSpring",
-                []()
+                []
                 {
                     auto ps = std::make_shared<OpenSim::PathSpring>();
                     ps->setRestingLength(1.0);
@@ -499,7 +499,7 @@ namespace
             },
             {
                 "ContactSphere",
-                []()
+                []
                 {
                     auto cs = std::make_shared<OpenSim::ContactSphere>();
                     cs->setRadius(1.0);
@@ -508,7 +508,7 @@ namespace
             },
             {
                 "ConstantDistanceConstraint",
-                []()
+                []
                 {
                     auto cdc = std::make_shared<OpenSim::ConstantDistanceConstraint>();
                     cdc->setConstantDistance(1.0);
@@ -519,7 +519,7 @@ namespace
             // set SpringGeneralizedForce's `coordinate` property to prevent an OpenSim 4.4 segfault (#524, #689)
             {
                 "SpringGeneralizedForce",
-                []()
+                []
                 {
                     auto c = std::make_shared<OpenSim::SpringGeneralizedForce>();
                     c->set_coordinate(std::string{});
@@ -530,7 +530,7 @@ namespace
             // set `CoordinateCouplerConstraint`s `coupled_coordinates_function` property to prevent an OpenSim 4.4 segfault (#515, #689)
             {
                 "CoordinateCouplerConstraint",
-                []()
+                []
                 {
                     auto c = std::make_shared<OpenSim::CoordinateCouplerConstraint>();
 
@@ -546,7 +546,7 @@ namespace
             // set `ActivationCoordinateActuator`s `coordinate` property to prevent an OpenSim 4.4 segfault (#517, #689)
             {
                 "ActivationCoordinateActuator",
-                []()
+                []
                 {
                     auto c = std::make_shared<OpenSim::ActivationCoordinateActuator>();
                     c->set_coordinate(std::string{});
@@ -557,7 +557,7 @@ namespace
             // set `ExpressionBasedPointToPointForce` body properties to prevent an OpenSim 4.4 segfault (#520, #689)
             {
                 "ExpressionBasedPointToPointForce",
-                []()
+                []
                 {
                     auto c = std::make_shared<OpenSim::ExpressionBasedPointToPointForce>();
                     c->set_body1(std::string{});
@@ -569,7 +569,7 @@ namespace
             // set `PointToPointActuator`s body properties to prevent an OpenSim 4.4 segfault (#523, #689)
             {
                 "PointToPointActuator",
-                []()
+                []
                 {
                     auto c = std::make_shared<OpenSim::PointToPointActuator>();
                     c->set_bodyA(std::string{});
@@ -582,37 +582,37 @@ namespace
             //         so that OpenSim doesn't segfault when switching joint types (#298)
             {
                 "CustomJoint",
-                []()
+                []
                 {
-                    const OpenSim::Coordinate independentCoord{"rx", OpenSim::Coordinate::MotionType::Rotational, 0.0, -3*osc::pi_v<double>, +3*osc::pi_v<double>};
+                    const OpenSim::Coordinate independent_coord{"rx", OpenSim::Coordinate::MotionType::Rotational, 0.0, -3*osc::pi_v<double>, +3*osc::pi_v<double>};
 
-                    OpenSim::Array<std::string> independentCoordNames;
-                    independentCoordNames.append(independentCoord.getName());
+                    OpenSim::Array<std::string> independent_coord_names;
+                    independent_coord_names.append(independent_coord.getName());
 
-                    OpenSim::TransformAxis zRotationAxisTransform(independentCoordNames, {0.0, 0.0, 1.0});
-                    zRotationAxisTransform.setFunction(std::make_unique<OpenSim::LinearFunction>(1.0, 0.0).release());
+                    OpenSim::TransformAxis z_rotation_axis_transform(independent_coord_names, {0.0, 0.0, 1.0});
+                    z_rotation_axis_transform.setFunction(std::make_unique<OpenSim::LinearFunction>(1.0, 0.0).release());
 
-                    OpenSim::SpatialTransform spatialTransform;
-                    spatialTransform.set_rotation3(zRotationAxisTransform);
+                    OpenSim::SpatialTransform spatial_transform;
+                    spatial_transform.set_rotation3(z_rotation_axis_transform);
 
-                    auto customJoint = std::make_shared<OpenSim::CustomJoint>();
-                    customJoint->set_SpatialTransform(spatialTransform);
-                    customJoint->append_coordinates(independentCoord);
+                    auto custom_joint = std::make_shared<OpenSim::CustomJoint>();
+                    custom_joint->set_SpatialTransform(spatial_transform);
+                    custom_joint->append_coordinates(independent_coord);
 
-                    return customJoint;
+                    return custom_joint;
                 }()
             }
         };
     }
 
-    const std::unordered_map<osc::CStringView, std::shared_ptr<const OpenSim::Component>>& GetPrototypeLut()
+    const std::unordered_map<osc::CStringView, std::shared_ptr<const OpenSim::Component>>& get_prototype_lut()
     {
-        static const std::unordered_map<osc::CStringView, std::shared_ptr<const OpenSim::Component>> s_Lut = CreatePrototypeLut();
-        return s_Lut;
+        static const std::unordered_map<osc::CStringView, std::shared_ptr<const OpenSim::Component>> s_lut = create_prototype_lut();
+        return s_lut;
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    std::vector<std::shared_ptr<const T>> CreatePrototypeLutT(bool useBlacklist = true)
+    std::vector<std::shared_ptr<const T>> create_prototype_lut(bool use_blacklist = true)
     {
         OpenSim::ArrayPtrs<T> ptrs;
         opyn::init(); // ensure OpenSim::Object registry is populated
@@ -621,19 +621,19 @@ namespace
         std::vector<std::shared_ptr<const T>> rv;
         rv.reserve(ptrs.size());
 
-        const auto& protoLut = GetPrototypeLut();
-        const auto& blacklistLut = GetComponentBlacklist();
+        const auto& proto_lut = get_prototype_lut();
+        const auto& blacklist_lut = get_component_blacklist();
 
         for (int i = 0; i < ptrs.size(); ++i)
         {
             const T& v = *ptrs[i];
             const std::string& name = v.getConcreteClassName();
-            if (useBlacklist && blacklistLut.contains(name))
+            if (use_blacklist && blacklist_lut.contains(name))
             {
                 continue;  // it's a blacklisted component, hide it in the UI
             }
 
-            if (auto it = protoLut.find(name); it != protoLut.end())
+            if (auto it = proto_lut.find(name); it != proto_lut.end())
             {
                 // it has already been manually created in the prototype LUT - use that
                 const std::shared_ptr<const T> p = std::dynamic_pointer_cast<const T>(it->second);
@@ -656,10 +656,10 @@ namespace
         return rv;
     }
 
-    std::vector<std::shared_ptr<const OpenSim::Component>> CreateOtherComponentLut()
+    std::vector<std::shared_ptr<const OpenSim::Component>> create_other_component_lut()
     {
-        const std::unordered_set<std::string>& grouped = GetSetOfAllGroupedElements();
-        const std::unordered_set<std::string>& blacklisted = GetComponentBlacklist();
+        const std::unordered_set<std::string>& grouped = get_set_of_all_grouped_elements();
+        const std::unordered_set<std::string>& blacklisted = get_component_blacklist();
 
         OpenSim::ArrayPtrs<OpenSim::ModelComponent> ptrs;
         opyn::init();  // ensure OpenSim::Object registry is populated
@@ -693,60 +693,60 @@ namespace
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    ComponentRegistry<T> CreateRegistryFromLUT(
+    ComponentRegistry<T> create_registry_from_lut(
         std::string_view name,
         std::string_view description,
-        const std::vector<std::shared_ptr<const T>>& protoLut)
+        const std::vector<std::shared_ptr<const T>>& proto_lut)
     {
         ComponentRegistry<T> rv{name, description};
 
         // populate entries
-        const auto& lut = GetComponentDescriptionLookup();
-        for (const std::shared_ptr<const T>& el : protoLut)
+        const auto& lut = get_component_description_lookup();
+        for (const std::shared_ptr<const T>& el : proto_lut)
         {
-            const std::string elName = el->getConcreteClassName();
-            std::string elDescription;
-            if (auto it = lut.find(elName); it != lut.end())
+            const std::string el_name = el->getConcreteClassName();
+            std::string el_description;
+            if (auto it = lut.find(el_name); it != lut.end())
             {
-                elDescription = it->second;
+                el_description = it->second;
             }
 
-            rv.emplace_back(elName, elDescription, el);
+            rv.emplace_back(el_name, el_description, el);
         }
 
         return rv;
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    ComponentRegistry<T> CreateRegistry(
+    ComponentRegistry<T> create_registry(
         std::string_view name,
         std::string_view description,
-        bool useBlacklist = true)
+        bool use_blacklist = true)
     {
-        return CreateRegistryFromLUT<T>(name, description, CreatePrototypeLutT<T>(useBlacklist));
+        return create_registry_from_lut<T>(name, description, create_prototype_lut<T>(use_blacklist));
     }
 
-    ComponentRegistry<OpenSim::Component> CreateOtherComponentRegistry(
+    ComponentRegistry<OpenSim::Component> create_other_component_registry(
         std::string_view name,
         std::string_view description)
     {
-        return CreateRegistryFromLUT<OpenSim::Component>(name, description, CreateOtherComponentLut());
+        return create_registry_from_lut<OpenSim::Component>(name, description, create_other_component_lut());
     }
 
-    ComponentRegistry<OpenSim::Component> CreateCustomComponentRegistry(
+    ComponentRegistry<OpenSim::Component> create_custom_component_registry(
         std::string_view name,
         std::string_view description)
     {
-        return CreateRegistryFromLUT<OpenSim::Component>(name, description, CreateCustomComponentList());
+        return create_registry_from_lut<OpenSim::Component>(name, description, create_custom_component_list());
     }
 
-    ComponentRegistry<OpenSim::Component> CreateAllComponentRegistry(
+    ComponentRegistry<OpenSim::Component> create_all_component_registry(
         std::string_view name,
         std::string_view description,
-        bool useBlacklist = true)
+        bool use_blacklist = true)
     {
-        auto rv = CreateRegistry<OpenSim::Component>(name, description, useBlacklist);
-        for (const auto& entry : CreateCustomComponentRegistry(name, description)) {
+        auto rv = create_registry<OpenSim::Component>(name, description, use_blacklist);
+        for (const auto& entry : create_custom_component_registry(name, description)) {
             rv.emplace_back(entry);
         }
         return rv;
@@ -754,100 +754,100 @@ namespace
 }
 
 template<>
-const ComponentRegistry<OpenSim::Joint>& opyn::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Joint>& opyn::get_component_registry()
 {
-    static const auto s_StaticReg = CreateRegistry<OpenSim::Joint>(
+    static const auto s_static_reg = create_registry<OpenSim::Joint>(
         "Joint",
         "An OpenSim::Joint is a OpenSim::ModelComponent which connects two PhysicalFrames together and specifies their relative permissible motion as described in internal coordinates."
     );
-    return s_StaticReg;
+    return s_static_reg;
 }
 
 template<>
-const ComponentRegistry<OpenSim::ContactGeometry>& opyn::GetComponentRegistry()
+const ComponentRegistry<OpenSim::ContactGeometry>& opyn::get_component_registry()
 {
-    static const auto s_StaticReg = CreateRegistry<OpenSim::ContactGeometry>(
+    static const auto s_static_reg = create_registry<OpenSim::ContactGeometry>(
         "Contact Geometry",
         "Add a geometry with a physical shape that participates in contact modeling. The geometry is attached to an OpenSim::PhysicalFrame in the model (e.g. a body) and and moves with that frame."
     );
-    return s_StaticReg;
+    return s_static_reg;
 }
 
 template<>
-const ComponentRegistry<OpenSim::Constraint>& opyn::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Constraint>& opyn::get_component_registry()
 {
-    static const auto s_StaticReg = CreateRegistry<OpenSim::Constraint>(
+    static const auto s_static_reg = create_registry<OpenSim::Constraint>(
         "Constraint",
         "A constraint typically constrains the motion of physical frame(s) in the model some way. For example, an OpenSim::ConstantDistanceConstraint constrains the system to *have* to keep two frames at some constant distance from eachover."
     );
-    return s_StaticReg;
+    return s_static_reg;
 }
 
 template<>
-const ComponentRegistry<OpenSim::Force>& opyn::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Force>& opyn::get_component_registry()
 {
-    static const auto s_StaticReg = CreateRegistry<OpenSim::Force>(
+    static const auto s_static_reg = create_registry<OpenSim::Force>(
         "Force",
         "During a simulation, the force is applied to bodies or generalized coordinates in the model. Muscles are specialized `OpenSim::Force`s with biomech-focused features."
     );
-    return s_StaticReg;
+    return s_static_reg;
 }
 
 template<>
-const ComponentRegistry<OpenSim::Controller>& opyn::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Controller>& opyn::get_component_registry()
 {
-    static const auto s_StaticReg = CreateRegistry<OpenSim::Controller>(
+    static const auto s_static_reg = create_registry<OpenSim::Controller>(
         "Controller",
         "A controller computes and sets the values of the controls for the actuators under its control."
     );
-    return s_StaticReg;
+    return s_static_reg;
 }
 
 template<>
-const ComponentRegistry<OpenSim::Probe>& opyn::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Probe>& opyn::get_component_registry()
 {
-    static const auto s_StaticReg = CreateRegistry<OpenSim::Probe>(
+    static const auto s_static_reg = create_registry<OpenSim::Probe>(
         "Probe",
         "This class represents a Probe which is designed to query a Vector of model values given system state. This model quantity is specified as a SimTK::Vector by the pure virtual method computeProbeInputs(), which must be specified for each child Probe.  In addition, the Probe model component interface allows <I> operations </I> to be performed on this value (specified by the property: probe_operation), and then have this result scaled (by the scalar property: 'scale_factor'). A controller computes and sets the values of the controls for the actuators under its control."
     );
-    return s_StaticReg;
+    return s_static_reg;
 }
 
 template<>
-const ComponentRegistry<OpenSim::WrapObject>& opyn::GetComponentRegistry()
+const ComponentRegistry<OpenSim::WrapObject>& opyn::get_component_registry()
 {
-    static const auto s_StaticReg = CreateRegistry<OpenSim::WrapObject>(
+    static const auto s_static_reg = create_registry<OpenSim::WrapObject>(
         "WrapObject",
         "An abstract class that specifies the interface for a wrapping object.",
         false
     );
-    return s_StaticReg;
+    return s_static_reg;
 }
 
 template<>
-const ComponentRegistry<OpenSim::Component>& opyn::GetComponentRegistry()
+const ComponentRegistry<OpenSim::Component>& opyn::get_component_registry()
 {
-    static const auto s_StaticReg = CreateOtherComponentRegistry(
+    static const auto s_static_reg = create_other_component_registry(
         "Component",
         "These are all the components that OpenSim Creator knows about, but can't put into an existing category (e.g. Force)"
     );
-    return s_StaticReg;
+    return s_static_reg;
 }
 
-const ComponentRegistry<OpenSim::Component>& opyn::GetCustomComponentRegistry()
+const ComponentRegistry<OpenSim::Component>& opyn::get_opynsim_component_registry()
 {
-    static const auto s_StaticReg = CreateCustomComponentRegistry(
+    static const auto s_static_reg = create_custom_component_registry(
         "Experimental Components",
         "Components that are either specific to OSC, or not-yet-released in official OpenSim.\n\nBEWARE: using these will result in a non-standard osim file. You should only use them if you know what you're doing (or, at least, if you know how to convert them into a form that is compatible with OpenSim later)."
     );
-    return s_StaticReg;
+    return s_static_reg;
 }
 
-const ComponentRegistry<OpenSim::Component>& opyn::GetAllRegisteredComponents()
+const ComponentRegistry<OpenSim::Component>& opyn::get_all_registered_components()
 {
-    static const auto s_StaticReg = CreateAllComponentRegistry(
+    static const auto s_static_reg = create_all_component_registry(
         "All Components",
         "These are all the components that OpenSim Creator knows about"
     );
-    return s_StaticReg;
+    return s_static_reg;
 }

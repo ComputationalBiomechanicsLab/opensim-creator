@@ -21,12 +21,12 @@ void osc::WriteOutputsAsCSV(
     out << "time";
     for (const opyn::SharedOutputExtractor& o : outputs) {
         static_assert(num_options<opyn::OutputExtractorDataType>() == 3);
-        if (o.getOutputType() == opyn::OutputExtractorDataType::Vector2) {
-            out << ',' << o.getName() << "/0";
-            out << ',' << o.getName() << "/1";
+        if (o.output_type() == opyn::OutputExtractorDataType::Vector2) {
+            out << ',' << o.name() << "/0";
+            out << ',' << o.name() << "/1";
         }
         else {
-            out << ',' << o.getName();
+            out << ',' << o.name();
         }
     }
     out << '\n';
@@ -36,12 +36,12 @@ void osc::WriteOutputsAsCSV(
         out << report.getState().getTime();  // time column
         for (const opyn::SharedOutputExtractor& o : outputs) {
             static_assert(num_options<opyn::OutputExtractorDataType>() == 3);
-            if (o.getOutputType() == opyn::OutputExtractorDataType::Vector2) {
-                const auto v = o.getValue<Vector2>(root, report);
+            if (o.output_type() == opyn::OutputExtractorDataType::Vector2) {
+                const auto v = o.value<Vector2>(root, report);
                 out << ',' << v.x() << ',' << v.y();
             }
             else {
-                out << ',' << o.getValue<float>(root, report);
+                out << ',' << o.value<float>(root, report);
             }
         }
         out << '\n';

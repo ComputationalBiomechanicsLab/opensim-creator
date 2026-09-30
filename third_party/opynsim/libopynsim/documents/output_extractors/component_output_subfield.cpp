@@ -14,7 +14,7 @@ using namespace opyn;
 // constants
 namespace
 {
-    constexpr std::array<ComponentOutputSubfield, osc::num_flags<ComponentOutputSubfield>()> c_OutputSubfieldsLut = std::to_array(
+    constexpr std::array<ComponentOutputSubfield, osc::num_flags<ComponentOutputSubfield>()> output_subfields_lut = std::to_array(
     {
         ComponentOutputSubfield::X,
         ComponentOutputSubfield::Y,
@@ -131,7 +131,7 @@ namespace
 
     // type-erased version of one of the above
     template<std::derived_from<OpenSim::AbstractOutput> OutputType>
-    double extractTypeErased(const OpenSim::AbstractOutput& o, const SimTK::State& s)
+    double extract_type_erased(const OpenSim::AbstractOutput& o, const SimTK::State& s)
     {
         return extract<>(dynamic_cast<const OutputType&>(o), s);
     }
@@ -141,13 +141,13 @@ namespace
         ComponentOutputSubfield sf,
         std::derived_from<OpenSim::AbstractOutput> OutputType
     >
-    double extractTypeErased(const OpenSim::AbstractOutput& o, const SimTK::State& s)
+    double extract_type_erased(const OpenSim::AbstractOutput& o, const SimTK::State& s)
     {
         return extract<sf>(dynamic_cast<const OutputType&>(o), s);
     }
 }
 
-std::optional<osc::CStringView> opyn::GetOutputSubfieldLabel(ComponentOutputSubfield subfield)
+std::optional<osc::CStringView> opyn::get_output_subfield_label(ComponentOutputSubfield subfield)
 {
     static_assert(osc::num_flags<ComponentOutputSubfield>() == 8);
 
@@ -164,12 +164,12 @@ std::optional<osc::CStringView> opyn::GetOutputSubfieldLabel(ComponentOutputSubf
     }
 }
 
-std::span<const ComponentOutputSubfield> opyn::GetAllSupportedOutputSubfields()
+std::span<const ComponentOutputSubfield> opyn::get_all_supported_output_subfields()
 {
-    return c_OutputSubfieldsLut;
+    return output_subfields_lut;
 }
 
-bool opyn::ProducesExtractableNumericValues(const OpenSim::AbstractOutput& ao)
+bool opyn::produces_extractable_numeric_values(const OpenSim::AbstractOutput& ao)
 {
     if (dynamic_cast<const OpenSim::Output<double>*>(&ao)) {
         return true;
@@ -182,7 +182,7 @@ bool opyn::ProducesExtractableNumericValues(const OpenSim::AbstractOutput& ao)
     return false;
 }
 
-ComponentOutputSubfields opyn::GetSupportedSubfields(const OpenSim::AbstractOutput& ao)
+ComponentOutputSubfields opyn::get_supported_subfields(const OpenSim::AbstractOutput& ao)
 {
     if (dynamic_cast<const OpenSim::Output<SimTK::Vec3>*>(&ao)) {
         return {
@@ -209,23 +209,23 @@ ComponentOutputSubfields opyn::GetSupportedSubfields(const OpenSim::AbstractOutp
     }
 }
 
-SubfieldExtractorFunc opyn::GetExtractorFuncOrNull(
+SubfieldExtractorFunc opyn::get_extractor_func_or_null(
     const OpenSim::AbstractOutput& ao,
     ComponentOutputSubfield subfield)
 {
     if (dynamic_cast<const OpenSim::Output<double>*>(&ao)) {
-        return extractTypeErased<OpenSim::Output<double>>;
+        return extract_type_erased<OpenSim::Output<double>>;
     }
     else if (dynamic_cast<const OpenSim::Output<SimTK::Vec3>*>(&ao)) {
         switch (subfield) {
         case ComponentOutputSubfield::X:
-            return extractTypeErased<ComponentOutputSubfield::X, OpenSim::Output<SimTK::Vec3>>;
+            return extract_type_erased<ComponentOutputSubfield::X, OpenSim::Output<SimTK::Vec3>>;
         case ComponentOutputSubfield::Y:
-            return extractTypeErased<ComponentOutputSubfield::Y, OpenSim::Output<SimTK::Vec3>>;
+            return extract_type_erased<ComponentOutputSubfield::Y, OpenSim::Output<SimTK::Vec3>>;
         case ComponentOutputSubfield::Z:
-            return extractTypeErased<ComponentOutputSubfield::Z, OpenSim::Output<SimTK::Vec3>>;
+            return extract_type_erased<ComponentOutputSubfield::Z, OpenSim::Output<SimTK::Vec3>>;
         case ComponentOutputSubfield::Magnitude:
-            return extractTypeErased<ComponentOutputSubfield::Magnitude, OpenSim::Output<SimTK::Vec3>>;
+            return extract_type_erased<ComponentOutputSubfield::Magnitude, OpenSim::Output<SimTK::Vec3>>;
         default:
             return nullptr;
         }
@@ -233,21 +233,21 @@ SubfieldExtractorFunc opyn::GetExtractorFuncOrNull(
     else if (dynamic_cast<const OpenSim::Output<SimTK::SpatialVec>*>(&ao)) {
         switch (subfield) {
         case ComponentOutputSubfield::X:
-            return extractTypeErased<ComponentOutputSubfield::X, OpenSim::Output<SimTK::SpatialVec>>;
+            return extract_type_erased<ComponentOutputSubfield::X, OpenSim::Output<SimTK::SpatialVec>>;
         case ComponentOutputSubfield::Y:
-            return extractTypeErased<ComponentOutputSubfield::Y, OpenSim::Output<SimTK::SpatialVec>>;
+            return extract_type_erased<ComponentOutputSubfield::Y, OpenSim::Output<SimTK::SpatialVec>>;
         case ComponentOutputSubfield::Z:
-            return extractTypeErased<ComponentOutputSubfield::Z, OpenSim::Output<SimTK::SpatialVec>>;
+            return extract_type_erased<ComponentOutputSubfield::Z, OpenSim::Output<SimTK::SpatialVec>>;
         case ComponentOutputSubfield::Magnitude:
-            return extractTypeErased<ComponentOutputSubfield::Magnitude, OpenSim::Output<SimTK::SpatialVec>>;
+            return extract_type_erased<ComponentOutputSubfield::Magnitude, OpenSim::Output<SimTK::SpatialVec>>;
         case ComponentOutputSubfield::RX:
-            return extractTypeErased<ComponentOutputSubfield::RX, OpenSim::Output<SimTK::SpatialVec>>;
+            return extract_type_erased<ComponentOutputSubfield::RX, OpenSim::Output<SimTK::SpatialVec>>;
         case ComponentOutputSubfield::RY:
-            return extractTypeErased<ComponentOutputSubfield::RY, OpenSim::Output<SimTK::SpatialVec>>;
+            return extract_type_erased<ComponentOutputSubfield::RY, OpenSim::Output<SimTK::SpatialVec>>;
         case ComponentOutputSubfield::RZ:
-            return extractTypeErased<ComponentOutputSubfield::RZ, OpenSim::Output<SimTK::SpatialVec>>;
+            return extract_type_erased<ComponentOutputSubfield::RZ, OpenSim::Output<SimTK::SpatialVec>>;
         case ComponentOutputSubfield::RMagnitude:
-            return extractTypeErased<ComponentOutputSubfield::RMagnitude, OpenSim::Output<SimTK::SpatialVec>>;
+            return extract_type_erased<ComponentOutputSubfield::RMagnitude, OpenSim::Output<SimTK::SpatialVec>>;
         default:
             return nullptr;
         }
