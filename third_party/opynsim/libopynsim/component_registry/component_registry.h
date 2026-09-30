@@ -46,6 +46,23 @@ namespace opyn
             return static_cast<const_reference>(base[pos]);
         }
 
+        const_reference at(size_t i) const
+        {
+            if (i >= size()) {
+                throw std::out_of_range{"attempted to access an out-of-bounds registry entry"};
+            }
+            return (*this)[i];
+        }
+
+        const_reference entry_with_classname(std::string_view class_name) const
+        {
+            auto i = IndexOf(*this, class_name);
+            if (not i) {
+                throw std::out_of_range{"attempted to get an element from a component registry that does not exist"};
+            }
+            return (*this)[*i];
+        }
+
         template<typename... Args>
         requires std::constructible_from<value_type, Args&&...>
         const_reference emplace_back(Args&&... args)
@@ -54,35 +71,4 @@ namespace opyn
             return static_cast<reference>(erased);
         }
     };
-
-    template<typename T>
-    const ComponentRegistryEntry<T>& At(const ComponentRegistry<T>& registry, size_t i)
-    {
-        if (i >= registry.size()) {
-            throw std::out_of_range{"attempted to access an out-of-bounds registry entry"};
-        }
-        return registry[i];
-    }
-
-    template<typename T>
-    const ComponentRegistryEntry<T>& Get(ComponentRegistry<T> const& registry, const T& el)
-    {
-        if (auto i = IndexOf(registry, el)) {
-            return registry[*i];
-        }
-        else {
-            throw std::out_of_range{"attempted to get an element from the registry that does not exist"};
-        }
-    }
-
-    template<typename T>
-    const ComponentRegistryEntry<T>& Get(const ComponentRegistry<T>& registry, std::string_view componentClassName)
-    {
-        if (auto i = IndexOf(registry, componentClassName)) {
-            return registry[*i];
-        }
-        else {
-            throw std::out_of_range{"attempted to get an element from a component registry that does not exist"};
-        }
-    }
 }

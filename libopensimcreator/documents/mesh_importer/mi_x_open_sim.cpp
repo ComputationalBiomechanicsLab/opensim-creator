@@ -299,7 +299,7 @@ namespace
         childPOF->set_orientation(to<SimTK::Vec3>(extract_eulers_xyz(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
-        auto jointUniqPtr = opyn::Get(opyn::GetComponentRegistry<OpenSim::Joint>(), joint.getSpecificTypeName()).instantiate();
+        auto jointUniqPtr = opyn::GetComponentRegistry<OpenSim::Joint>().entry_with_classname(joint.getSpecificTypeName()).instantiate();
 
         // set its name
         const std::string jointName = CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame);

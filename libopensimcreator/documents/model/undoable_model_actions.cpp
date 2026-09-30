@@ -1376,7 +1376,7 @@ bool osc::ActionAddBodyToModel(ModelStatePair& uim, const BodyDetails& details)
     auto body = std::make_unique<OpenSim::Body>(details.bodyName, mass, com, inertia);
 
     // create joint between body and whatever the frame is
-    const OpenSim::Joint& jointProto = At(GetComponentRegistry<OpenSim::Joint>(), details.jointTypeIndex).prototype();
+    const OpenSim::Joint& jointProto = GetComponentRegistry<OpenSim::Joint>().at(details.jointTypeIndex).prototype();
     std::unique_ptr<OpenSim::Joint> joint = MakeJoint(details, *body, jointProto, *parent);
 
     // attach decorative geom
