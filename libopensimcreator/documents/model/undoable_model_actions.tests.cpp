@@ -313,7 +313,7 @@ TEST(OpenSimActions, ActionAddWrapObjectToPhysicalFrameCanAddAllRegisteredWrapOb
     UndoableModelStatePair um;
     const OpenSim::ComponentPath groundPath = um.getModel().getGround().getAbsolutePath();
 
-    for (const auto& entry : opyn::GetComponentRegistry<OpenSim::WrapObject>()) {
+    for (const auto& entry : opyn::get_component_registry<OpenSim::WrapObject>()) {
         ASSERT_TRUE(ActionAddWrapObjectToPhysicalFrame(um, groundPath, entry.instantiate()));
     }
 
@@ -322,7 +322,7 @@ TEST(OpenSimActions, ActionAddWrapObjectToPhysicalFrameCanAddAllRegisteredWrapOb
         ++numWrapsInModel;
     }
 
-    ASSERT_EQ(numWrapsInModel, opyn::GetComponentRegistry<OpenSim::WrapObject>().size());
+    ASSERT_EQ(numWrapsInModel, opyn::get_component_registry<OpenSim::WrapObject>().size());
 }
 
 TEST(OpenSimActions, ActionAddPathWrapToGeometryPathWorksInExampleCase)

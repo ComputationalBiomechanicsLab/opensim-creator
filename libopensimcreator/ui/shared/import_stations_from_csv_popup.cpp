@@ -256,12 +256,12 @@ private:
         }
 
         std::vector<opyn::Landmark> lms;
-        opyn::ReadLandmarksFromCSV(
+        opyn::read_landmarks_from_csv(
             ifs,
             [&lms](opyn::Landmark&& lm) { lms.push_back(std::move(lm)); },
             [this](const opyn::CSVParseWarning& warning) { m_ImportWarnings.push_back(to_string(warning)); }
         );
-        m_ImportedLandmarks = GenerateNames(lms);
+        m_ImportedLandmarks = generate_names(lms);
     }
 
     void actionAttachResultToModelGraph()

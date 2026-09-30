@@ -299,7 +299,7 @@ namespace
         childPOF->set_orientation(to<SimTK::Vec3>(extract_eulers_xyz(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
-        auto jointUniqPtr = opyn::GetComponentRegistry<OpenSim::Joint>().entry_with_classname(joint.getSpecificTypeName()).instantiate();
+        auto jointUniqPtr = opyn::get_component_registry<OpenSim::Joint>().entry_with_classname(joint.getSpecificTypeName()).instantiate();
 
         // set its name
         const std::string jointName = CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame);
@@ -741,10 +741,10 @@ std::unique_ptr<OpenSim::Model> osc::CreateOpenSimModelFromMeshImporterDocument(
 
 Vector3 osc::GetJointAxisLengths(const MiJoint& joint)
 {
-    const auto& registry = opyn::GetComponentRegistry<OpenSim::Joint>();
+    const auto& registry = opyn::get_component_registry<OpenSim::Joint>();
 
     JointDegreesOfFreedom dofs{};
-    if (const auto idx = opyn::IndexOf(registry, joint.getSpecificTypeName())) {
+    if (const auto idx = opyn::index_of(registry, joint.getSpecificTypeName())) {
         dofs = GetDegreesOfFreedom(registry[*idx].prototype());
     }
 

@@ -21,7 +21,7 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
 {
     OpenSimCreatorApp app;
     ui::Context context{app};
-    for (const auto& entry : opyn::GetAllRegisteredComponents()) {
+    for (const auto& entry : opyn::get_all_registered_components()) {
         try {
             context.on_start_new_frame();
             Widget parent;

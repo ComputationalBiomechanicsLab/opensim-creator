@@ -54,12 +54,12 @@ namespace
             return;
         }
 
-        const auto& registry = opyn::GetComponentRegistry<OpenSim::Joint>();
+        const auto& registry = opyn::get_component_registry<OpenSim::Joint>();
 
         std::optional<ptrdiff_t> selectedIdx;
         if (ui::begin_menu("Change Joint Type", model.canUpdModel())) {
             // look the Joint up in the type registry so we know where it should be in the ui::draw_combobox
-            std::optional<size_t> maybeTypeIndex = IndexOf(registry, *joint);
+            std::optional<size_t> maybeTypeIndex = index_of(registry, *joint);
 
             for (ptrdiff_t i = 0; i < std::ssize(registry); ++i) {
                 bool selected = i == maybeTypeIndex;

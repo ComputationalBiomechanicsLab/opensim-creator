@@ -252,9 +252,9 @@ void osc::ActionPromptUserToLoadLandmarksFromCSV(
                 return;  // some kind of error opening the file
             }
 
-            opyn::ReadLandmarksFromCSV(fin, [&doc, which](auto&& landmark)
+            opyn::read_landmarks_from_csv(fin, [&doc, which](auto&& landmark)
             {
-                AddLandmarkToInput(doc->upd_scratch(), which, landmark.position, std::move(landmark.maybeName));
+                AddLandmarkToInput(doc->upd_scratch(), which, landmark.position, std::move(landmark.maybe_name));
             });
 
             doc->commit_scratch("loaded landmarks");
@@ -280,9 +280,9 @@ void osc::ActionPromptUserToLoadNonParticipatingLandmarksFromCSV(const std::shar
                 return;  // some kind of error opening the file
             }
 
-            opyn::ReadLandmarksFromCSV(fin, [&doc](auto&& landmark)
+            opyn::read_landmarks_from_csv(fin, [&doc](auto&& landmark)
             {
-                AddNonParticipatingLandmark(doc->upd_scratch(), landmark.position, std::move(landmark.maybeName));
+                AddNonParticipatingLandmark(doc->upd_scratch(), landmark.position, std::move(landmark.maybe_name));
             });
 
             doc->commit_scratch("added non-participating landmarks");
@@ -320,7 +320,7 @@ void osc::ActionWriteLandmarksAsCSV(
     opyn::LandmarkCSVFlags flags,
     std::ostream& out)
 {
-    opyn::WriteLandmarksToCSV(out, [which, it = pairs.begin(), end = pairs.end()]() mutable -> std::optional<opyn::Landmark>
+    opyn::write_landmarks_to_csv(out, [which, it = pairs.begin(), end = pairs.end()]() mutable -> std::optional<opyn::Landmark>
     {
         while (it != end) {
             const auto& pair = *it++;
@@ -347,7 +347,7 @@ void osc::ActionPromptUserToSaveNonParticipatingLandmarksToCSV(
             return;  // couldn't open file for writing
         }
 
-        opyn::WriteLandmarksToCSV(fout, [it = nplms.begin(), end = nplms.end()]() mutable
+        opyn::write_landmarks_to_csv(fout, [it = nplms.begin(), end = nplms.end()]() mutable
         {
             std::optional<opyn::Landmark> rv;
             if (it != end) {
@@ -466,7 +466,7 @@ void osc::ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(
             return;  // couldn't open file for writing
         }
 
-        opyn::WriteLandmarksToCSV(fout, [&warpedNplms, &nplms, i = 0uz]() mutable
+        opyn::write_landmarks_to_csv(fout, [&warpedNplms, &nplms, i = 0uz]() mutable
         {
             std::optional<opyn::Landmark> rv;
             for (; !rv && i < warpedNplms.size(); ++i) {

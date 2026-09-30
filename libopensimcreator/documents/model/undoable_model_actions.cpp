@@ -1352,7 +1352,7 @@ osc::BodyDetails::BodyDetails() :
     inertia{1.0f, 1.0f, 1.0f},
     mass{1.0f},
     bodyName{"new_body"},
-    jointTypeIndex{IndexOf<OpenSim::WeldJoint>(GetComponentRegistry<OpenSim::Joint>()).value_or(0)},
+    jointTypeIndex{index_of<OpenSim::WeldJoint>(get_component_registry<OpenSim::Joint>()).value_or(0)},
     maybeGeometry{nullptr},
     addOffsetFrames{true}
 {}
@@ -1376,7 +1376,7 @@ bool osc::ActionAddBodyToModel(ModelStatePair& uim, const BodyDetails& details)
     auto body = std::make_unique<OpenSim::Body>(details.bodyName, mass, com, inertia);
 
     // create joint between body and whatever the frame is
-    const OpenSim::Joint& jointProto = GetComponentRegistry<OpenSim::Joint>().at(details.jointTypeIndex).prototype();
+    const OpenSim::Joint& jointProto = get_component_registry<OpenSim::Joint>().at(details.jointTypeIndex).prototype();
     std::unique_ptr<OpenSim::Joint> joint = MakeJoint(details, *body, jointProto, *parent);
 
     // attach decorative geom

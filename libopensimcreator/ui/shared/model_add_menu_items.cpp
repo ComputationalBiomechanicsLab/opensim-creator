@@ -240,7 +240,7 @@ private:
     void drawAddWrapObjectsToPhysicalFrameMenuItems(const OpenSim::ComponentPath& physicalFrameAbsPath)
     {
         // list each available `WrapObject` as something the user can add
-        const auto& registry = opyn::GetComponentRegistry<OpenSim::WrapObject>();
+        const auto& registry = opyn::get_component_registry<OpenSim::WrapObject>();
         for (const auto& entry : registry) {
             ui::push_id(&entry);
             if (ui::draw_menu_item(entry.name(), {}, nullptr, m_Model->canUpdModel())) {
@@ -274,20 +274,20 @@ private:
             }
         }
 
-        renderButton(opyn::GetComponentRegistry<OpenSim::Joint>());
-        renderButton(opyn::GetComponentRegistry<OpenSim::ContactGeometry>());
-        renderButton(opyn::GetComponentRegistry<OpenSim::Constraint>());
-        renderButton(opyn::GetComponentRegistry<OpenSim::Force>());
-        renderButton(opyn::GetComponentRegistry<OpenSim::Controller>());
-        renderButton(opyn::GetComponentRegistry<OpenSim::Probe>());
-        renderButton(opyn::GetComponentRegistry<OpenSim::Component>());
-        renderButton(opyn::GetCustomComponentRegistry());
+        renderButton(opyn::get_component_registry<OpenSim::Joint>());
+        renderButton(opyn::get_component_registry<OpenSim::ContactGeometry>());
+        renderButton(opyn::get_component_registry<OpenSim::Constraint>());
+        renderButton(opyn::get_component_registry<OpenSim::Force>());
+        renderButton(opyn::get_component_registry<OpenSim::Controller>());
+        renderButton(opyn::get_component_registry<OpenSim::Probe>());
+        renderButton(opyn::get_component_registry<OpenSim::Component>());
+        renderButton(opyn::get_opynsim_component_registry());
     }
 
     void drawSearchResultsOrNoResults()
     {
         bool searchResultFount = false;
-        for (const auto& entry : opyn::GetAllRegisteredComponents()) {
+        for (const auto& entry : opyn::get_all_registered_components()) {
             if (contains_case_insensitive(entry.name(), m_SearchString)) {
                 if (ui::draw_menu_item(entry.name())) {
                     actionOpenComponentPopup(entry);
