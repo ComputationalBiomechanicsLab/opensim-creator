@@ -302,7 +302,6 @@ namespace osc
                 ptr->~Storage();
                 ::operator delete(
                     static_cast<void*>(ptr),
-                    storage_allocation_size(ptr->size),
                     std::align_val_t{alignof(Storage)}
                 );
             }

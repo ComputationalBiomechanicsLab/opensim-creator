@@ -24,12 +24,12 @@ namespace opyn
         explicit AnnotatedMotion(const std::filesystem::path& path);
 
         // Returns the number of data series in the motion.
-        size_t getNumDataSeries() const;
+        size_t get_num_data_series() const;
 
         // Returns the time range (first, last) of the loaded motion.
-        osc::ClosedInterval<float> timeRange() const;
+        osc::ClosedInterval<float> time_range() const;
     private:
-        static std::shared_ptr<OpenSim::Storage> loadPathIntoStorage(const std::filesystem::path&);
+        static std::shared_ptr<OpenSim::Storage> load_path_into_storage(const std::filesystem::path&);
         explicit AnnotatedMotion(std::shared_ptr<OpenSim::Storage>);
 
         std::shared_ptr<OpenSim::Storage> m_Storage;

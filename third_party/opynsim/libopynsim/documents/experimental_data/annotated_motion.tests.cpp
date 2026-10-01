@@ -17,9 +17,9 @@ using namespace opyn;
 // loading these kinds of files with similar fallback behavior to OpenSim GUI.
 TEST(AnnotatedMotion, CanLoadTRCFileContainingSuperfluousMarkers)
 {
-    const std::filesystem::path reproFile =
+    const std::filesystem::path repro_file =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "opensim-creator_1068_repro.trc";
 
-    const AnnotatedMotion motion(reproFile);  // shouldn't throw
-    ASSERT_EQ(motion.getNumDataSeries(), 60) << "if this is 63, then maybe you have a problem - or coerced the marker names :-)";
+    const AnnotatedMotion motion(repro_file);  // shouldn't throw
+    ASSERT_EQ(motion.get_num_data_series(), 60) << "if this is 63, then maybe you have a problem - or coerced the marker names :-)";
 }

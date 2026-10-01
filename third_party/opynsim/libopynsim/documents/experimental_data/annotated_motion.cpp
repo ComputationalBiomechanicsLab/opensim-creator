@@ -44,7 +44,7 @@ namespace
             const SimTK::State& state,
             SimTK::Array_<SimTK::DecorativeGeometry>& out) const override
         {
-            ::generateDecorations(state.getTime(), *m_Storage, m_Annotation, out);
+            ::generate_decorations(state.getTime(), *m_Storage, m_Annotation, out);
         }
 
         std::shared_ptr<const OpenSim::Storage> m_Storage;
@@ -53,20 +53,20 @@ namespace
 }
 
 opyn::AnnotatedMotion::AnnotatedMotion(const std::filesystem::path& path) :
-    AnnotatedMotion{loadPathIntoStorage(path)}
+    AnnotatedMotion{load_path_into_storage(path)}
 {
     setName(path.filename().string());
 }
 
-std::shared_ptr<OpenSim::Storage> opyn::AnnotatedMotion::loadPathIntoStorage(const std::filesystem::path& path)
+std::shared_ptr<OpenSim::Storage> opyn::AnnotatedMotion::load_path_into_storage(const std::filesystem::path& path)
 {
     if (path.extension() == ".trc") {
         // use `MarkerData`, same as OpenSim GUI's `FileLoadDataAction.java`
-        OpenSim::MarkerData markerData{path.string()};
-        markerData.convertToUnits(OpenSim::Units::Meters);
+        OpenSim::MarkerData marker_data{path.string()};
+        marker_data.convertToUnits(OpenSim::Units::Meters);
 
         auto storage = std::make_shared<OpenSim::Storage>();
-        markerData.makeRdStorage(*storage);
+        marker_data.makeRdStorage(*storage);
         return storage;
     }
     else {
@@ -104,13 +104,13 @@ opyn::AnnotatedMotion::AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage
     }
 }
 
-size_t opyn::AnnotatedMotion::getNumDataSeries() const
+size_t opyn::AnnotatedMotion::get_num_data_series() const
 {
     const auto lst = getComponentList<DataSeries>();
     return std::distance(lst.begin(), lst.end());
 }
 
-osc::ClosedInterval<float> opyn::AnnotatedMotion::timeRange() const
+osc::ClosedInterval<float> opyn::AnnotatedMotion::time_range() const
 {
     return {
         static_cast<float>(m_Storage->getFirstTime()),

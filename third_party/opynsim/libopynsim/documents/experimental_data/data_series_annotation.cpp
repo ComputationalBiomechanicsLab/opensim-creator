@@ -17,14 +17,14 @@ using namespace opyn;
 
 namespace
 {
-    inline constexpr float c_ForceArrowLengthScale = 0.0025f;
+    inline constexpr float c_force_arrow_length_scale = 0.0025f;
 
     // defines a decoration generator for a particular data point type
     template<DataPointType Type>
-    void generateDecorations(std::span<const double, numElementsIn(Type)>, SimTK::Array_<SimTK::DecorativeGeometry>&);
+    void generate_decorations(std::span<const double, numElementsIn(Type)>, SimTK::Array_<SimTK::DecorativeGeometry>&);
 
     template<>
-    void generateDecorations<DataPointType::Point>(
+    void generate_decorations<DataPointType::Point>(
         std::span<const double, 3> data,
         SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
@@ -39,7 +39,7 @@ namespace
     }
 
     template<>
-    void generateDecorations<DataPointType::ForcePoint>(
+    void generate_decorations<DataPointType::ForcePoint>(
         std::span<const double, 6> data,
         SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
@@ -50,7 +50,7 @@ namespace
 
             SimTK::DecorativeArrow arrow{
                 point,
-                point + c_ForceArrowLengthScale * force,
+                point + c_force_arrow_length_scale * force,
             };
             arrow.setScaleFactors({1, 1, 0.00001});
             arrow.setColor(osc::to<SimTK::Vec3>(osc::Color::orange()));
@@ -61,7 +61,7 @@ namespace
     }
 
     template<>
-    void generateDecorations<DataPointType::BodyForce>(
+    void generate_decorations<DataPointType::BodyForce>(
         std::span<const double, 3> data,
         SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
@@ -80,7 +80,7 @@ namespace
     }
 
     template<>
-    void generateDecorations<DataPointType::Orientation>(
+    void generate_decorations<DataPointType::Orientation>(
         std::span<const double, 4> data,
         SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
@@ -97,42 +97,42 @@ namespace
     }
 }
 
-void opyn::generateDecorations(
+void opyn::generate_decorations(
     double time,
     const OpenSim::Storage& storage,
     const DataSeriesAnnotation& annotation,
     SimTK::Array_<SimTK::DecorativeGeometry>& out)
 {
-    const osc::ClosedInterval<double> storageTimeRange{storage.getFirstTime(), storage.getLastTime()};
-    if (not storageTimeRange.contains(time)) {
+    const osc::ClosedInterval<double> storage_time_range{storage.getFirstTime(), storage.getLastTime()};
+    if (not storage_time_range.contains(time)) {
         return;  // time out of range: generate no decorations
     }
 
-    const auto data = extractDataPoint(time, storage, annotation);
+    const auto data = extract_data_point(time, storage, annotation);
     OSC_ASSERT_ALWAYS(data.size() == numElementsIn(annotation.dataType));
 
     static_assert(osc::num_options<DataPointType>() == 5);
     switch (annotation.dataType) {
-    case DataPointType::Point:       ::generateDecorations<DataPointType::Point>(       std::span<const double, numElementsIn(DataPointType::Point)>{data},       out); break;
-    case DataPointType::ForcePoint:  ::generateDecorations<DataPointType::ForcePoint>(  std::span<const double, numElementsIn(DataPointType::ForcePoint)>{data},  out); break;
-    case DataPointType::BodyForce:   ::generateDecorations<DataPointType::BodyForce>(   std::span<const double, numElementsIn(DataPointType::BodyForce)>{data},   out); break;
-    case DataPointType::Orientation: ::generateDecorations<DataPointType::Orientation>( std::span<const double, numElementsIn(DataPointType::Orientation)>{data}, out); break;
+    case DataPointType::Point:       ::generate_decorations<DataPointType::Point>(       std::span<const double, numElementsIn(DataPointType::Point)>{data},       out); break;
+    case DataPointType::ForcePoint:  ::generate_decorations<DataPointType::ForcePoint>(  std::span<const double, numElementsIn(DataPointType::ForcePoint)>{data},  out); break;
+    case DataPointType::BodyForce:   ::generate_decorations<DataPointType::BodyForce>(   std::span<const double, numElementsIn(DataPointType::BodyForce)>{data},   out); break;
+    case DataPointType::Orientation: ::generate_decorations<DataPointType::Orientation>( std::span<const double, numElementsIn(DataPointType::Orientation)>{data}, out); break;
 
     // case DataPointType::Unknown: break;  // do nothing
     default:                     break;     // do nothing
     }
 }
 
-std::vector<double> opyn::extractDataPoint(
+std::vector<double> opyn::extract_data_point(
     double time,
     const OpenSim::Storage& storage,
     const DataSeriesAnnotation& annotation)
 {
     // lol, `OpenSim::Storage` API, etc.
-    const int aN = annotation.dataColumnOffset + static_cast<int>(numElementsIn(annotation.dataType));
-    std::vector<double> buffer(static_cast<size_t>(aN));
+    const int a_n = annotation.dataColumnOffset + static_cast<int>(numElementsIn(annotation.dataType));
+    std::vector<double> buffer(static_cast<size_t>(a_n));
     double* p = buffer.data();
-    storage.getDataAtTime(time, aN, &p);
+    storage.getDataAtTime(time, a_n, &p);
     buffer.erase(buffer.begin(), buffer.begin() + annotation.dataColumnOffset);
     return buffer;
 }

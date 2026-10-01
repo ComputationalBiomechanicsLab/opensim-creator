@@ -14,16 +14,16 @@ namespace opyn
     // an `OpenSim::Storage` that's backed by an on-disk file.
     class FileBackedStorage final {
     public:
-        explicit FileBackedStorage(const OpenSim::Model&, std::filesystem::path sourceFile);
+        explicit FileBackedStorage(const OpenSim::Model&, std::filesystem::path source_file);
         FileBackedStorage(const FileBackedStorage&);
         FileBackedStorage(FileBackedStorage&&) noexcept;
         FileBackedStorage& operator=(const FileBackedStorage&);
         FileBackedStorage& operator=(FileBackedStorage&&) noexcept;
         ~FileBackedStorage() noexcept;
 
-        void reloadFromDisk(const OpenSim::Model&);
+        void reload_from_disk(const OpenSim::Model&);
 
-        osc::ClosedInterval<float> timeRange() const;
+        osc::ClosedInterval<float> time_range() const;
         const OpenSim::Storage& storage() const { return *m_Storage; }
         const std::unordered_map<int, int>& mapper() const { return m_StorageIndexToModelStateVarIndexMap; }
     private:

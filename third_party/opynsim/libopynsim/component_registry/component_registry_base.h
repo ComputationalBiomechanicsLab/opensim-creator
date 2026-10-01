@@ -62,7 +62,8 @@ namespace opyn
     std::optional<size_t> index_of(const ComponentRegistryBase& registry)
     {
         for (size_t i = 0; i < registry.size(); ++i) {
-            if (typeid(registry[i].prototype()) == typeid(T)) {
+            const OpenSim::Component& prototype = registry[i].prototype();
+            if (typeid(prototype) == typeid(T)) {
                 return i;
             }
         }

@@ -28,9 +28,9 @@ namespace
         requires
             (sizeof...(ColumnHeaderStrings) == numElementsIn(DataType)) and
             (std::constructible_from<osc::CStringView, ColumnHeaderStrings> && ...)
-            static DataSeriesPattern forDatatype(ColumnHeaderStrings&&... headerSuffixes)
+            static DataSeriesPattern for_datatype(ColumnHeaderStrings&&... header_suffixes)
         {
-            return DataSeriesPattern{DataType, std::initializer_list<osc::CStringView>{osc::CStringView{std::forward<ColumnHeaderStrings>(headerSuffixes)}...}};  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+            return DataSeriesPattern{DataType, std::initializer_list<osc::CStringView>{osc::CStringView{std::forward<ColumnHeaderStrings>(header_suffixes)}...}};  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
         }
 
         // Returns the `DataPointType` matched by this pattern.
@@ -53,14 +53,14 @@ namespace
         // If the given `columnHeader` matches a suffix in this pattern, returns a substring view
         // of the provided string view, minus the suffix. Otherwise, returns the provided string
         // view.
-        std::string_view remove_suffix(std::string_view columHeader) const
+        std::string_view remove_suffix(std::string_view colum_header) const
         {
             for (const auto& suffix : m_HeaderSuffixes) {
-                if (columHeader.ends_with(suffix)) {
-                    return columHeader.substr(0, columHeader.size() - suffix.size());
+                if (colum_header.ends_with(suffix)) {
+                    return colum_header.substr(0, colum_header.size() - suffix.size());
                 }
             }
-            return columHeader;  // couldn't remove it
+            return colum_header;  // couldn't remove it
         }
     private:
         DataSeriesPattern(DataPointType type, std::initializer_list<osc::CStringView> header_suffxes) :
@@ -89,17 +89,17 @@ namespace
         }
     private:
         std::vector<DataSeriesPattern> m_Patterns = {
-            DataSeriesPattern::forDatatype<DataPointType::ForcePoint>("_vx", "_vy", "_vz", "_px", "_py", "_pz"),
-            DataSeriesPattern::forDatatype<DataPointType::Point>("_vx", "_vy", "_vz"),
-            DataSeriesPattern::forDatatype<DataPointType::Point>("_tx", "_ty", "_tz"),
-            DataSeriesPattern::forDatatype<DataPointType::Point>("_px", "_py", "_pz"),
-            DataSeriesPattern::forDatatype<DataPointType::Orientation>("_1", "_2", "_3", "_4"),
-            DataSeriesPattern::forDatatype<DataPointType::Point>("_1", "_2", "_3"),
-            DataSeriesPattern::forDatatype<DataPointType::BodyForce>("_fx", "_fy", "_fz"),
+            DataSeriesPattern::for_datatype<DataPointType::ForcePoint>("_vx", "_vy", "_vz", "_px", "_py", "_pz"),
+            DataSeriesPattern::for_datatype<DataPointType::Point>("_vx", "_vy", "_vz"),
+            DataSeriesPattern::for_datatype<DataPointType::Point>("_tx", "_ty", "_tz"),
+            DataSeriesPattern::for_datatype<DataPointType::Point>("_px", "_py", "_pz"),
+            DataSeriesPattern::for_datatype<DataPointType::Orientation>("_1", "_2", "_3", "_4"),
+            DataSeriesPattern::for_datatype<DataPointType::Point>("_1", "_2", "_3"),
+            DataSeriesPattern::for_datatype<DataPointType::BodyForce>("_fx", "_fy", "_fz"),
 
             // extra
-            DataSeriesPattern::forDatatype<DataPointType::Point>("_x", "_y", "_z"),
-            DataSeriesPattern::forDatatype<DataPointType::Point>("x", "y", "z"),
+            DataSeriesPattern::for_datatype<DataPointType::Point>("_x", "_y", "_z"),
+            DataSeriesPattern::for_datatype<DataPointType::Point>("x", "y", "z"),
         };
     };
 }
@@ -113,11 +113,11 @@ StorageSchema opyn::StorageSchema::parse(const OpenSim::Storage& storage)
     int offset = 1;  // offset 0 == "time" (skip it)
 
     while (offset < labels.size()) {
-        const std::span<std::string> remainingLabels{&labels[offset], static_cast<size_t>(labels.size()) - static_cast<size_t>(offset)};
-        if (const DataSeriesPattern* pattern = patterns.try_match(remainingLabels)) {
+        const std::span<std::string> remaining_labels{&labels[offset], static_cast<size_t>(labels.size()) - static_cast<size_t>(offset)};
+        if (const DataSeriesPattern* pattern = patterns.try_match(remaining_labels)) {
             annotations.push_back({
                 .dataColumnOffset = offset-1,  // drop time for this index
-                .label = std::string{pattern->remove_suffix(remainingLabels.front())},
+                .label = std::string{pattern->remove_suffix(remaining_labels.front())},
                 .dataType = pattern->datatype(),
             });
             offset += static_cast<int>(numElementsIn(pattern->datatype()));
@@ -125,7 +125,7 @@ StorageSchema opyn::StorageSchema::parse(const OpenSim::Storage& storage)
         else {
             annotations.push_back({
                 .dataColumnOffset = offset-1,  // drop time for this index
-                .label = remainingLabels.front(),
+                .label = remaining_labels.front(),
                 .dataType = DataPointType::Unknown,
             });
             offset += 1;

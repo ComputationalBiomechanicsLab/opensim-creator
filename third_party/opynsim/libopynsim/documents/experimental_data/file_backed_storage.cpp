@@ -9,8 +9,8 @@
 
 using namespace opyn;
 
-opyn::FileBackedStorage::FileBackedStorage(const OpenSim::Model& model, std::filesystem::path sourceFile) :
-    m_SourceFile{std::move(sourceFile)},
+opyn::FileBackedStorage::FileBackedStorage(const OpenSim::Model& model, std::filesystem::path source_file) :
+    m_SourceFile{std::move(source_file)},
     m_Storage{LoadStorage(model, m_SourceFile)},
     m_StorageIndexToModelStateVarIndexMap{CreateStorageIndexToModelStatevarMappingWithWarnings(model, *m_Storage)}
 {}
@@ -21,12 +21,12 @@ FileBackedStorage& opyn::FileBackedStorage::operator=(const FileBackedStorage&) 
 FileBackedStorage& opyn::FileBackedStorage::operator=(FileBackedStorage&&) noexcept = default;
 opyn::FileBackedStorage::~FileBackedStorage() noexcept = default;
 
-osc::ClosedInterval<float> opyn::FileBackedStorage::timeRange() const
+osc::ClosedInterval<float> opyn::FileBackedStorage::time_range() const
 {
     return {static_cast<float>(m_Storage->getFirstTime()), static_cast<float>(m_Storage->getLastTime())};
 }
 
-void opyn::FileBackedStorage::reloadFromDisk(const OpenSim::Model& model)
+void opyn::FileBackedStorage::reload_from_disk(const OpenSim::Model& model)
 {
     m_Storage = LoadStorage(model, m_SourceFile);
     m_StorageIndexToModelStateVarIndexMap = CreateStorageIndexToModelStatevarMappingWithWarnings(model, *m_Storage);

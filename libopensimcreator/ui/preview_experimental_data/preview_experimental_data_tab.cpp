@@ -108,7 +108,7 @@ namespace
 
             // if applicable, reload associated trajectory
             if (m_AssociatedTrajectory) {
-                m_AssociatedTrajectory->reloadFromDisk(m_Model->getModel());
+                m_AssociatedTrajectory->reload_from_disk(m_Model->getModel());
             }
 
             // reinitialize everything else
@@ -210,14 +210,14 @@ namespace
             if (m_AssociatedTrajectory) {
                 opyn::InitializeModel(m_Model->updModel());
 
-                m_AssociatedTrajectory->reloadFromDisk(m_Model->getModel());
-                dataTimeRange = osc::bounding_interval_of(dataTimeRange, m_AssociatedTrajectory->timeRange());
+                m_AssociatedTrajectory->reload_from_disk(m_Model->getModel());
+                dataTimeRange = osc::bounding_interval_of(dataTimeRange, m_AssociatedTrajectory->time_range());
             }
 
             // (re)load motions
             for (const std::filesystem::path& path : m_AssociatedMotionFiles) {
                 const auto& motion = opyn::AddModelComponent<opyn::AnnotatedMotion>(m_Model->updModel(), path);
-                dataTimeRange = osc::bounding_interval_of(dataTimeRange, motion.timeRange());
+                dataTimeRange = osc::bounding_interval_of(dataTimeRange, motion.time_range());
             }
 
             // (re)load associated XML files (e.g. `ExternalLoads`)
