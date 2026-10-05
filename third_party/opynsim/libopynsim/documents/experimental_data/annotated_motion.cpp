@@ -29,11 +29,11 @@ namespace
             std::shared_ptr<const OpenSim::Storage> storage,
             const DataSeriesAnnotation& annotation) :
 
-            m_Storage{std::move(storage)},
-            m_Annotation{annotation}
+            storage_{std::move(storage)},
+            annotation_{annotation}
         {
             setName(annotation.label);
-            constructProperty_type(std::string{labelFor(annotation.dataType)});
+            constructProperty_type(std::string{label_for(annotation.dataType)});
             constructProperty_column_offset(annotation.dataColumnOffset);
         }
 
@@ -44,11 +44,11 @@ namespace
             const SimTK::State& state,
             SimTK::Array_<SimTK::DecorativeGeometry>& out) const override
         {
-            ::generate_decorations(state.getTime(), *m_Storage, m_Annotation, out);
+            ::generate_decorations(state.getTime(), *storage_, annotation_, out);
         }
 
-        std::shared_ptr<const OpenSim::Storage> m_Storage;
-        DataSeriesAnnotation m_Annotation;
+        std::shared_ptr<const OpenSim::Storage> storage_;
+        DataSeriesAnnotation annotation_;
     };
 }
 

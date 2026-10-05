@@ -12,11 +12,11 @@ namespace opyn
     class ComponentRegistryEntry final : public ComponentRegistryEntryBase {
     public:
         ComponentRegistryEntry(
-            std::string_view name_,
-            std::string_view description_,
-            std::shared_ptr<const T> prototype_) :
+            std::string_view name,
+            std::string_view description,
+            std::shared_ptr<const T> prototype) :
 
-            ComponentRegistryEntryBase{name_, description_, std::move(prototype_)}
+            ComponentRegistryEntryBase{name, description, std::move(prototype)}
         {}
 
         const T& prototype() const

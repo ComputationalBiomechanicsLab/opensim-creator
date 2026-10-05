@@ -23,7 +23,7 @@ TEST(InMemoryMesh, DefaultConstructedEmitsABlankMesh)
 
     int num_decorations_emitted = 0;
     osc::SceneDecoration last_decoration;
-    mesh.generateCustomDecorations(state, [&num_decorations_emitted, &last_decoration](osc::SceneDecoration&& decoration)
+    mesh.generate_custom_decorations(state, [&num_decorations_emitted, &last_decoration](osc::SceneDecoration&& decoration)
     {
         ++num_decorations_emitted;
         last_decoration = std::move(decoration);

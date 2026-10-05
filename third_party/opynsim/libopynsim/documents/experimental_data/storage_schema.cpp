@@ -26,7 +26,7 @@ namespace
         // Returns a `DataSeriesPattern` for the given `DataType`.
         template<DataPointType DataType, typename... ColumnHeaderStrings>
         requires
-            (sizeof...(ColumnHeaderStrings) == numElementsIn(DataType)) and
+            (sizeof...(ColumnHeaderStrings) == num_elements_in(DataType)) and
             (std::constructible_from<osc::CStringView, ColumnHeaderStrings> && ...)
             static DataSeriesPattern for_datatype(ColumnHeaderStrings&&... header_suffixes)
         {
@@ -34,16 +34,16 @@ namespace
         }
 
         // Returns the `DataPointType` matched by this pattern.
-        DataPointType datatype() const { return m_Type; }
+        DataPointType datatype() const { return data_point_type_; }
 
         // Returns `true` if the given column headers match this pattern.
         bool matches(std::span<const std::string> headers) const
         {
-            if (headers.size() < m_HeaderSuffixes.size()) {
+            if (headers.size() < header_suffixes_.size()) {
                 return false;
             }
-            for (size_t i = 0; i < m_HeaderSuffixes.size(); ++i) {
-                if (not headers[i].ends_with(m_HeaderSuffixes[i])) {
+            for (size_t i = 0; i < header_suffixes_.size(); ++i) {
+                if (not headers[i].ends_with(header_suffixes_[i])) {
                     return false;
                 }
             }
@@ -55,7 +55,7 @@ namespace
         // view.
         std::string_view remove_suffix(std::string_view colum_header) const
         {
-            for (const auto& suffix : m_HeaderSuffixes) {
+            for (const auto& suffix : header_suffixes_) {
                 if (colum_header.ends_with(suffix)) {
                     return colum_header.substr(0, colum_header.size() - suffix.size());
                 }
@@ -64,12 +64,12 @@ namespace
         }
     private:
         DataSeriesPattern(DataPointType type, std::initializer_list<osc::CStringView> header_suffxes) :
-            m_Type{type},
-            m_HeaderSuffixes{header_suffxes}
+            data_point_type_{type},
+            header_suffixes_{header_suffxes}
         {}
 
-        DataPointType m_Type;
-        std::vector<osc::CStringView> m_HeaderSuffixes;
+        DataPointType data_point_type_;
+        std::vector<osc::CStringView> header_suffixes_;
     };
 
     // Describes a collection of patterns that _might_ match against the column headers
@@ -84,11 +84,11 @@ namespace
         // returns `nullptr`.
         const DataSeriesPattern* try_match(std::span<const std::string> headers) const
         {
-            const auto it = rgs::find_if(m_Patterns, [&headers](const auto& pattern) { return pattern.matches(headers); });
-            return it != m_Patterns.end() ? &(*it) : nullptr;
+            const auto it = rgs::find_if(patterns_, [&headers](const auto& pattern) { return pattern.matches(headers); });
+            return it != patterns_.end() ? &(*it) : nullptr;
         }
     private:
-        std::vector<DataSeriesPattern> m_Patterns = {
+        std::vector<DataSeriesPattern> patterns_ = {
             DataSeriesPattern::for_datatype<DataPointType::ForcePoint>("_vx", "_vy", "_vz", "_px", "_py", "_pz"),
             DataSeriesPattern::for_datatype<DataPointType::Point>("_vx", "_vy", "_vz"),
             DataSeriesPattern::for_datatype<DataPointType::Point>("_tx", "_ty", "_tz"),
@@ -120,7 +120,7 @@ StorageSchema opyn::StorageSchema::parse(const OpenSim::Storage& storage)
                 .label = std::string{pattern->remove_suffix(remaining_labels.front())},
                 .dataType = pattern->datatype(),
             });
-            offset += static_cast<int>(numElementsIn(pattern->datatype()));
+            offset += static_cast<int>(num_elements_in(pattern->datatype()));
         }
         else {
             annotations.push_back({

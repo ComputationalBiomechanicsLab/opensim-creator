@@ -25,7 +25,7 @@ namespace opyn
 
         const osc::Mesh& getOscMesh() const { return m_OscMesh; }
     private:
-        void implGenerateCustomDecorations(const SimTK::State&, const std::function<void(osc::SceneDecoration&&)>&) const override;
+        void impl_generate_custom_decorations(const SimTK::State&, const std::function<void(osc::SceneDecoration&&)>&) const override;
 
         osc::Mesh m_OscMesh;
     };

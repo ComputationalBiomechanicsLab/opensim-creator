@@ -15,7 +15,7 @@ using namespace opyn;
 //
 // The file loads fine in OpenSim GUI, which means OpenSim Creator must also support
 // loading these kinds of files with similar fallback behavior to OpenSim GUI.
-TEST(AnnotatedMotion, CanLoadTRCFileContainingSuperfluousMarkers)
+TEST(AnnotatedMotion, can_load_trc_file_containing_superfulous_markers)
 {
     const std::filesystem::path repro_file =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "opensim-creator_1068_repro.trc";

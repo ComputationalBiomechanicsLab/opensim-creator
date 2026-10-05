@@ -1467,7 +1467,7 @@ void opyn::GenerateSubcomponentDecorations(
         else if (const auto* const custom = dynamic_cast<const CustomDecorationGenerator*>(&c)) {
             // edge-case: it's a component that has an OSC-specific `CustomDecorationGenerator`
             //            so we can skip the song-and-dance with caches, OpenSim, SimTK, etc.
-            custom->generateCustomDecorations(rendererState.getState(), [&c, &rendererState](SceneDecoration&& dec)
+            custom->generate_custom_decorations(rendererState.getState(), [&c, &rendererState](SceneDecoration&& dec)
             {
                 rendererState.consume(c, std::move(dec));
             });

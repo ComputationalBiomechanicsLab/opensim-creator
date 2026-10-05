@@ -391,8 +391,7 @@ namespace
         opyn::init();  // ensure OpenSim::Object registry is populated
         OpenSim::Object::getRegisteredObjectsOfGivenType<T>(ptrs);
 
-        for (size_t i = 0; i < size(ptrs); ++i)
-        {
+        for (size_t i = 0; i < size(ptrs); ++i) {
             out.insert(At(ptrs, i).getConcreteClassName());
         }
     }
@@ -584,7 +583,13 @@ namespace
                 "CustomJoint",
                 []
                 {
-                    const OpenSim::Coordinate independent_coord{"rx", OpenSim::Coordinate::MotionType::Rotational, 0.0, -3*osc::pi_v<double>, +3*osc::pi_v<double>};
+                    const OpenSim::Coordinate independent_coord{
+                        "rx",
+                        OpenSim::Coordinate::MotionType::Rotational,
+                        0.0,
+                        -3*osc::pi_v<double>,
+                        +3*osc::pi_v<double>
+                    };
 
                     OpenSim::Array<std::string> independent_coord_names;
                     independent_coord_names.append(independent_coord.getName());
@@ -624,17 +629,14 @@ namespace
         const auto& proto_lut = get_prototype_lut();
         const auto& blacklist_lut = get_component_blacklist();
 
-        for (int i = 0; i < ptrs.size(); ++i)
-        {
+        for (int i = 0; i < ptrs.size(); ++i) {
             const T& v = *ptrs[i];
             const std::string& name = v.getConcreteClassName();
-            if (use_blacklist && blacklist_lut.contains(name))
-            {
+            if (use_blacklist && blacklist_lut.contains(name)) {
                 continue;  // it's a blacklisted component, hide it in the UI
             }
 
-            if (auto it = proto_lut.find(name); it != proto_lut.end())
-            {
+            if (auto it = proto_lut.find(name); it != proto_lut.end()) {
                 // it has already been manually created in the prototype LUT - use that
                 const std::shared_ptr<const T> p = std::dynamic_pointer_cast<const T>(it->second);
                 if (p) {
@@ -644,8 +646,7 @@ namespace
                     rv.emplace_back(Clone(v));
                 }
             }
-            else
-            {
+            else {
                 // not in the manual prototype LUT - just take whatever OpenSim has
                 rv.emplace_back(Clone(v));
             }
@@ -667,19 +668,16 @@ namespace
 
         std::vector<std::shared_ptr<const OpenSim::Component>> rv;
 
-        for (int i = 0; i < ptrs.size(); ++i)
-        {
+        for (int i = 0; i < ptrs.size(); ++i) {
             const OpenSim::Component& c = *ptrs[i];
             const std::string& classname = c.getConcreteClassName();
 
-            if (blacklisted.contains(classname))
-            {
+            if (blacklisted.contains(classname)) {
                 // it's blacklisted in the UI
                 continue;
             }
 
-            if (grouped.contains(c.getConcreteClassName()))
-            {
+            if (grouped.contains(c.getConcreteClassName())) {
                 // it's already grouped
                 continue;
             }
@@ -702,12 +700,10 @@ namespace
 
         // populate entries
         const auto& lut = get_component_description_lookup();
-        for (const std::shared_ptr<const T>& el : proto_lut)
-        {
+        for (const std::shared_ptr<const T>& el : proto_lut) {
             const std::string el_name = el->getConcreteClassName();
             std::string el_description;
-            if (auto it = lut.find(el_name); it != lut.end())
-            {
+            if (auto it = lut.find(el_name); it != lut.end()) {
                 el_description = it->second;
             }
 

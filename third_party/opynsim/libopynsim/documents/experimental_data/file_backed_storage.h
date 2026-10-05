@@ -24,11 +24,11 @@ namespace opyn
         void reload_from_disk(const OpenSim::Model&);
 
         osc::ClosedInterval<float> time_range() const;
-        const OpenSim::Storage& storage() const { return *m_Storage; }
-        const std::unordered_map<int, int>& mapper() const { return m_StorageIndexToModelStateVarIndexMap; }
+        const OpenSim::Storage& storage() const { return *storage_; }
+        const std::unordered_map<int, int>& mapper() const { return storage_index_to_model_state_var_index_map_; }
     private:
-        std::filesystem::path m_SourceFile;
-        osc::ClonePtr<OpenSim::Storage> m_Storage;
-        std::unordered_map<int, int> m_StorageIndexToModelStateVarIndexMap;
+        std::filesystem::path source_file_;
+        osc::ClonePtr<OpenSim::Storage> storage_;
+        std::unordered_map<int, int> storage_index_to_model_state_var_index_map_;
     };
 }

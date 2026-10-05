@@ -20,11 +20,8 @@ namespace opyn
         using const_reference = const value_type&;
         using const_iterator = const value_type*;
 
-        explicit ComponentRegistry(
-            std::string_view name_,
-            std::string_view description_) :
-
-            ComponentRegistryBase{name_, description_}
+        explicit ComponentRegistry(std::string_view name, std::string_view description) :
+            ComponentRegistryBase{name, description}
         {}
 
         const_iterator begin() const

@@ -36,14 +36,16 @@ namespace
 
             // ensure target texture matches screen dimensions
             target_texture_.reformat({
-                .pixel_dimensions = App::get().main_window_pixel_dimensions(),
-                .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
+                .pixel_dimensions    = App::get().main_window_pixel_dimensions(),
+                .device_pixel_ratio  = App::get().main_window_device_pixel_ratio(),
                 .anti_aliasing_level = App::get().anti_aliasing_level(),
             });
 
             update_torus_if_params_changed();
             const auto seconds_since_startup = App::get().frame_delta_since_startup().count();
-            const Transform transform = {.rotation = angle_axis(Radians{seconds_since_startup}, CoordinateDirection::y())};
+            const Transform transform = {
+                .rotation = angle_axis(Radians{seconds_since_startup}, CoordinateDirection::y()),
+            };
             render_queue_.emplace(mesh_, transform, material_);
             graphics::render_to(target_texture_, render_queue_, camera_);
             render_queue_.clear();

@@ -62,7 +62,7 @@ namespace opyn
     };
 
     // Returns the number of elements in a given `DataPointType`.
-    constexpr size_t numElementsIn(DataPointType t)
+    constexpr size_t num_elements_in(DataPointType t)
     {
         constexpr auto lut = []<DataPointType... Types>(osc::OptionList<DataPointType, Types...>)
         {
@@ -73,7 +73,7 @@ namespace opyn
     }
 
     // Returns a human-readable label for a given `DataPointType`.
-    constexpr osc::CStringView labelFor(DataPointType t)
+    constexpr osc::CStringView label_for(DataPointType t)
     {
         constexpr auto lut = []<DataPointType... Types>(osc::OptionList<DataPointType, Types...>)
         {

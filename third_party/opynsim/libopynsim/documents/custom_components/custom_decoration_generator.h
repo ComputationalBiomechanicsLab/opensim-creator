@@ -20,14 +20,14 @@ namespace opyn
     public:
         virtual ~CustomDecorationGenerator() noexcept = default;
 
-        void generateCustomDecorations(
+        void generate_custom_decorations(
             const SimTK::State& state,
             const std::function<void(osc::SceneDecoration&&)>& callback) const
         {
-            implGenerateCustomDecorations(state, callback);
+            impl_generate_custom_decorations(state, callback);
         }
     private:
-        virtual void implGenerateCustomDecorations(
+        virtual void impl_generate_custom_decorations(
             const SimTK::State&,
             const std::function<void(osc::SceneDecoration&&)>&
         ) const = 0;

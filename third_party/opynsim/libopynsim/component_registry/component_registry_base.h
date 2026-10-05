@@ -34,12 +34,9 @@ namespace opyn
         const_reference operator[](size_type pos) const { return entries_[pos]; }
 
     protected:
-        explicit ComponentRegistryBase(
-            std::string_view name_,
-            std::string_view description_) :
-
-            name_{name_},
-            description_{description_}
+        explicit ComponentRegistryBase(std::string_view name, std::string_view description) :
+            name_{name},
+            description_{description}
         {}
 
         template<typename... Args>

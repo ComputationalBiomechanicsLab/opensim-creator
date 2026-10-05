@@ -21,7 +21,7 @@ namespace
 
     // defines a decoration generator for a particular data point type
     template<DataPointType Type>
-    void generate_decorations(std::span<const double, numElementsIn(Type)>, SimTK::Array_<SimTK::DecorativeGeometry>&);
+    void generate_decorations(std::span<const double, num_elements_in(Type)>, SimTK::Array_<SimTK::DecorativeGeometry>&);
 
     template<>
     void generate_decorations<DataPointType::Point>(
@@ -109,14 +109,14 @@ void opyn::generate_decorations(
     }
 
     const auto data = extract_data_point(time, storage, annotation);
-    OSC_ASSERT_ALWAYS(data.size() == numElementsIn(annotation.dataType));
+    OSC_ASSERT_ALWAYS(data.size() == num_elements_in(annotation.dataType));
 
     static_assert(osc::num_options<DataPointType>() == 5);
     switch (annotation.dataType) {
-    case DataPointType::Point:       ::generate_decorations<DataPointType::Point>(       std::span<const double, numElementsIn(DataPointType::Point)>{data},       out); break;
-    case DataPointType::ForcePoint:  ::generate_decorations<DataPointType::ForcePoint>(  std::span<const double, numElementsIn(DataPointType::ForcePoint)>{data},  out); break;
-    case DataPointType::BodyForce:   ::generate_decorations<DataPointType::BodyForce>(   std::span<const double, numElementsIn(DataPointType::BodyForce)>{data},   out); break;
-    case DataPointType::Orientation: ::generate_decorations<DataPointType::Orientation>( std::span<const double, numElementsIn(DataPointType::Orientation)>{data}, out); break;
+    case DataPointType::Point:       ::generate_decorations<DataPointType::Point>(       std::span<const double, num_elements_in(DataPointType::Point)>{data},       out); break;
+    case DataPointType::ForcePoint:  ::generate_decorations<DataPointType::ForcePoint>(  std::span<const double, num_elements_in(DataPointType::ForcePoint)>{data},  out); break;
+    case DataPointType::BodyForce:   ::generate_decorations<DataPointType::BodyForce>(   std::span<const double, num_elements_in(DataPointType::BodyForce)>{data},   out); break;
+    case DataPointType::Orientation: ::generate_decorations<DataPointType::Orientation>( std::span<const double, num_elements_in(DataPointType::Orientation)>{data}, out); break;
 
     // case DataPointType::Unknown: break;  // do nothing
     default:                     break;     // do nothing
@@ -129,10 +129,10 @@ std::vector<double> opyn::extract_data_point(
     const DataSeriesAnnotation& annotation)
 {
     // lol, `OpenSim::Storage` API, etc.
-    const int a_n = annotation.dataColumnOffset + static_cast<int>(numElementsIn(annotation.dataType));
-    std::vector<double> buffer(static_cast<size_t>(a_n));
+    const int an = annotation.dataColumnOffset + static_cast<int>(num_elements_in(annotation.dataType));
+    std::vector<double> buffer(static_cast<size_t>(an));
     double* p = buffer.data();
-    storage.getDataAtTime(time, a_n, &p);
+    storage.getDataAtTime(time, an, &p);
     buffer.erase(buffer.begin(), buffer.begin() + annotation.dataColumnOffset);
     return buffer;
 }

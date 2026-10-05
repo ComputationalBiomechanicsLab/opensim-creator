@@ -33,22 +33,21 @@ using namespace opyn;
 namespace
 {
     // a single instance of a joint to test
-    struct TestCase {
-        std::string name;
-        std::optional<size_t> maybe_index;
-        std::vector<osc::CStringView> expected_names;
+    struct TestCase final {
 
         template<typename T, typename... Names>
         static TestCase create(Names... names)
         {
-
-            return TestCase
-            {
+            return TestCase{
                 typeid(T).name(),
                 index_of<T>(get_component_registry<OpenSim::Joint>()),
                 {std::forward<Names>(names)...},
             };
         }
+
+        std::string name;
+        std::optional<size_t> maybe_index;
+        std::vector<osc::CStringView> expected_names;
     };
 }
 

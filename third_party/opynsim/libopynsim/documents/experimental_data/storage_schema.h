@@ -17,12 +17,12 @@ namespace opyn
         // provided `OpenSim::Storage`.
         static StorageSchema parse(const OpenSim::Storage&);
 
-        const std::vector<DataSeriesAnnotation>& annotations() const { return m_Annotations; }
+        const std::vector<DataSeriesAnnotation>& annotations() const { return annotations_; }
     private:
         explicit StorageSchema(std::vector<DataSeriesAnnotation> annotations) :
-            m_Annotations{std::move(annotations)}
+            annotations_{std::move(annotations)}
         {}
 
-        std::vector<DataSeriesAnnotation> m_Annotations;
+        std::vector<DataSeriesAnnotation> annotations_;
     };
 }
