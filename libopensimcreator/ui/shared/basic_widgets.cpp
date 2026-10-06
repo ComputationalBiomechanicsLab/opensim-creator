@@ -1144,9 +1144,9 @@ bool osc::DrawAdvancedParamsEditor(
     ui::draw_vertical_spacer(10.0f/15.0f);
     ui::draw_text("advanced scene properties:");
     ui::draw_separator();
-    edited = ui::draw_rgb_color_editor("light_color", params.lightColor) || edited;
-    edited = ui::draw_rgb_color_editor("background color", params.backgroundColor) || edited;
-    edited = ui::draw_float3_meters_input("floor location", params.floorLocation) || edited;
+    edited = ui::draw_rgb_color_editor("light_color", params.light_color) || edited;
+    edited = ui::draw_rgb_color_editor("background color", params.background_color) || edited;
+    edited = ui::draw_float3_meters_input("floor location", params.floor_location) || edited;
     ui::draw_tooltip_body_only_if_item_hovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
 
     return edited;
@@ -1158,15 +1158,15 @@ bool osc::DrawVisualAidsContextMenuContent(
     bool edited = false;
 
     // generic rendering options
-    edited = DrawRenderingOptionsEditor(params.renderingOptions) || edited;
+    edited = DrawRenderingOptionsEditor(params.rendering_options) || edited;
 
     // overlay options
-    edited = DrawOverlayOptionsEditor(params.overlayOptions) || edited;
+    edited = DrawOverlayOptionsEditor(params.overlay_options) || edited;
 
     // OpenSim-specific extra rendering options
     ui::draw_vertical_spacer(0.25f);
     ui::draw_text_disabled("OpenSim");
-    edited = DrawCustomDecorationOptionCheckboxes(params.decorationOptions) || edited;
+    edited = DrawCustomDecorationOptionCheckboxes(params.decoration_options) || edited;
 
     return edited;
 }
@@ -1184,7 +1184,7 @@ bool osc::DrawViewerTopButtonRow(
         iconCache.find_or_throw("muscle_coloring"),
         "Muscle Styling",
         "Affects how muscles appear in this visualizer panel",
-        [&params]() { return DrawMuscleDecorationOptionsEditor(params.decorationOptions); },
+        [&params]{ return DrawMuscleDecorationOptionsEditor(params.decoration_options); },
     };
     edited = muscleStylingButton.on_draw() || edited;
     ui::same_line();

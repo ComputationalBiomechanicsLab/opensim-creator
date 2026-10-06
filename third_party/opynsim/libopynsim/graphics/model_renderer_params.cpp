@@ -34,13 +34,13 @@ namespace
         };
 
         subPrefix = std::string{prefix} + std::string{"decorations/"};
-        params.decorationOptions.forEachOptionAsAppSettingValue(callback);
+        params.decoration_options.forEachOptionAsAppSettingValue(callback);
         subPrefix = std::string{prefix} + std::string{"overlays/"};
-        params.overlayOptions.forEachOptionAsAppSettingValue(callback);
+        params.overlay_options.forEachOptionAsAppSettingValue(callback);
         subPrefix = std::string{prefix} + std::string{"graphics/"};
-        params.renderingOptions.forEachOptionAsAppSettingValue(callback);
-        rv.insert_or_assign(std::string{prefix} + "light_color", osc::Variant{params.lightColor});
-        rv.insert_or_assign(std::string{prefix} + "background_color", osc::Variant{params.backgroundColor});
+        params.rendering_options.forEachOptionAsAppSettingValue(callback);
+        rv.insert_or_assign(std::string{prefix} + "light_color", osc::Variant{params.light_color});
+        rv.insert_or_assign(std::string{prefix} + "background_color", osc::Variant{params.background_color});
         // TODO: floorLocation
 
         return rv;
@@ -51,23 +51,23 @@ namespace
         const std::unordered_map<std::string, osc::Variant>& values,
         ModelRendererParams& params)
     {
-        params.decorationOptions.tryUpdFromValues(std::string{prefix} + "decorations/", values);
-        params.overlayOptions.tryUpdFromValues(std::string{prefix} + "overlays/", values);
-        params.renderingOptions.tryUpdFromValues(std::string{prefix} + "graphics/", values);
+        params.decoration_options.tryUpdFromValues(std::string{prefix} + "decorations/", values);
+        params.overlay_options.tryUpdFromValues(std::string{prefix} + "overlays/", values);
+        params.rendering_options.tryUpdFromValues(std::string{prefix} + "graphics/", values);
         if (const auto* v = lookup_or_nullptr(values, std::string{prefix} + "light_color")) {
-            params.lightColor = to<osc::Color>(*v);
+            params.light_color = to<osc::Color>(*v);
         }
         if (const auto* v = lookup_or_nullptr(values,std::string{prefix} + "background_color")) {
-            params.backgroundColor = to<osc::Color>(*v);
+            params.background_color = to<osc::Color>(*v);
         }
         // TODO: floorLocation
     }
 }
 
 opyn::ModelRendererParams::ModelRendererParams() :
-    lightColor{osc::SceneRendererParams::default_light_color()},
-    backgroundColor{osc::SceneRendererParams::default_background_color()},
-    floorLocation{osc::SceneRendererParams::default_floor_position()}
+    light_color{osc::SceneRendererParams::default_light_color()},
+    background_color{osc::SceneRendererParams::default_background_color()},
+    floor_location{osc::SceneRendererParams::default_floor_position()}
 {
     camera.set_vertical_field_of_view(35_deg);
     auto controller = osc::OrbitCameraController{.radius = 5.0f};

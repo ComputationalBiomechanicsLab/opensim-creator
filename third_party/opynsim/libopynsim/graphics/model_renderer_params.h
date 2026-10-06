@@ -16,12 +16,12 @@ namespace opyn
     struct ModelRendererParams final {
         ModelRendererParams();
 
-        OpenSimDecorationOptions decorationOptions;
-        OverlayDecorationOptions overlayOptions;
-        CustomRenderingOptions renderingOptions;
-        osc::Color lightColor;
-        osc::Color backgroundColor;
-        osc::Vector3 floorLocation;
+        OpenSimDecorationOptions decoration_options;
+        OverlayDecorationOptions overlay_options;
+        CustomRenderingOptions rendering_options;
+        osc::Color light_color;
+        osc::Color background_color;
+        osc::Vector3 floor_location;
         osc::Camera camera;
     };
 

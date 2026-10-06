@@ -32,7 +32,7 @@ namespace opyn
     struct OpenSimDecorationOptionMetadata final {
         osc::CStringView id;
         osc::CStringView label;
-        std::optional<osc::CStringView> maybeDescription;
+        std::optional<osc::CStringView> maybe_description;
     };
     const OpenSimDecorationOptionMetadata& GetIthOptionMetadata(size_t);
     OpenSimDecorationOptionFlag GetIthOption(size_t);

@@ -131,7 +131,7 @@ private:
         m_Decorations = GenerateModelDecorations(
             m_SceneCache,
             m_Model,
-            m_ModelRendererParams.decorationOptions
+            m_ModelRendererParams.decoration_options
         );
     }
 

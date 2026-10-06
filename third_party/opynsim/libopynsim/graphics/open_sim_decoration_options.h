@@ -86,10 +86,10 @@ namespace opyn
         friend bool operator==(const OpenSimDecorationOptions&, const OpenSimDecorationOptions&) = default;
 
     private:
-        MuscleDecorationStyle m_MuscleDecorationStyle;
-        MuscleColorSource m_MuscleColorSource;
-        MuscleSizingStyle m_MuscleSizingStyle;
-        MuscleColorSourceScaling m_MuscleColourSourceScaling;
-        OpenSimDecorationOptionFlags m_Flags;
+        MuscleDecorationStyle muscle_decoration_style_;
+        MuscleColorSource muscle_color_source_;
+        MuscleSizingStyle muscle_sizing_style_;
+        MuscleColorSourceScaling muscle_colour_source_scaling_;
+        OpenSimDecorationOptionFlags flags_;
     };
 }

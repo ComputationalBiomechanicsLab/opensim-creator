@@ -106,7 +106,7 @@ namespace
             *state.meshCache,
             state.model->getModel(),
             state.model->getState(),
-            state.renderParams.decorationOptions,
+            state.renderParams.decoration_options,
             state.model->getFixupScaleFactor(),
             onModelDecoration
         );
@@ -120,7 +120,7 @@ namespace
 
         GenerateOverlayDecorations(
             *state.meshCache,
-            state.renderParams.overlayOptions,
+            state.renderParams.overlay_options,
             out.bvh,
             state.model->getFixupScaleFactor(),
             onOverlayDecoration

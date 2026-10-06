@@ -18,12 +18,12 @@ size_t opyn::CustomRenderingOptions::getNumOptions() const
 
 bool opyn::CustomRenderingOptions::getOptionValue(ptrdiff_t i) const
 {
-    return m_Flags & CustomRenderingIthOption(i);
+    return flags_ & CustomRenderingIthOption(i);
 }
 
 void opyn::CustomRenderingOptions::setOptionValue(ptrdiff_t i, bool v)
 {
-    SetOption(m_Flags, CustomRenderingIthOption(i), v);
+    SetOption(flags_, CustomRenderingIthOption(i), v);
 }
 
 osc::CStringView opyn::CustomRenderingOptions::getOptionLabel(ptrdiff_t i) const
@@ -33,59 +33,59 @@ osc::CStringView opyn::CustomRenderingOptions::getOptionLabel(ptrdiff_t i) const
 
 bool opyn::CustomRenderingOptions::getDrawFloor() const
 {
-    return m_Flags & CustomRenderingOptionFlags::DrawFloor;
+    return flags_ & CustomRenderingOptionFlags::DrawFloor;
 }
 
 void opyn::CustomRenderingOptions::setDrawFloor(bool v)
 {
-    SetOption(m_Flags, CustomRenderingOptionFlags::DrawFloor, v);
+    SetOption(flags_, CustomRenderingOptionFlags::DrawFloor, v);
 }
 
 bool opyn::CustomRenderingOptions::getDrawMeshNormals() const
 {
-    return m_Flags & CustomRenderingOptionFlags::MeshNormals;
+    return flags_ & CustomRenderingOptionFlags::MeshNormals;
 }
 
 void opyn::CustomRenderingOptions::setDrawMeshNormals(bool v)
 {
-    SetOption(m_Flags, CustomRenderingOptionFlags::MeshNormals, v);
+    SetOption(flags_, CustomRenderingOptionFlags::MeshNormals, v);
 }
 
 bool opyn::CustomRenderingOptions::getDrawShadows() const
 {
-    return m_Flags & CustomRenderingOptionFlags::Shadows;
+    return flags_ & CustomRenderingOptionFlags::Shadows;
 }
 
 void opyn::CustomRenderingOptions::setDrawShadows(bool v)
 {
-    SetOption(m_Flags, CustomRenderingOptionFlags::Shadows, v);
+    SetOption(flags_, CustomRenderingOptionFlags::Shadows, v);
 }
 
 bool opyn::CustomRenderingOptions::getDrawSelectionRims() const
 {
-    return m_Flags & CustomRenderingOptionFlags::DrawSelectionRims;
+    return flags_ & CustomRenderingOptionFlags::DrawSelectionRims;
 }
 
 void opyn::CustomRenderingOptions::setDrawSelectionRims(bool v)
 {
-    SetOption(m_Flags, CustomRenderingOptionFlags::DrawSelectionRims, v);
+    SetOption(flags_, CustomRenderingOptionFlags::DrawSelectionRims, v);
 }
 
 bool opyn::CustomRenderingOptions::getOrderIndependentTransparency() const
 {
-    return m_Flags & CustomRenderingOptionFlags::OrderIndependentTransparency;
+    return flags_ & CustomRenderingOptionFlags::OrderIndependentTransparency;
 }
 
 void opyn::CustomRenderingOptions::setOrderIndependentTransparency(bool v)
 {
-    SetOption(m_Flags, CustomRenderingOptionFlags::OrderIndependentTransparency, v);
+    SetOption(flags_, CustomRenderingOptionFlags::OrderIndependentTransparency, v);
 }
 
 void opyn::CustomRenderingOptions::forEachOptionAsAppSettingValue(
     const std::function<void(std::string_view, const osc::Variant&)>& callback) const
 {
     for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
-        callback(metadata.id, osc::Variant{m_Flags & metadata.value});
+        callback(metadata.id, osc::Variant{flags_ & metadata.value});
     }
 }
 
@@ -97,7 +97,7 @@ void opyn::CustomRenderingOptions::tryUpdFromValues(
 
         const std::string key = std::string{keyPrefix} + metadata.id;
         if (const auto* v = lookup_or_nullptr(lut, key); v and v->type() == osc::VariantType::Bool) {
-            SetOption(m_Flags, metadata.value, to<bool>(*v));
+            SetOption(flags_, metadata.value, to<bool>(*v));
         }
     }
 }

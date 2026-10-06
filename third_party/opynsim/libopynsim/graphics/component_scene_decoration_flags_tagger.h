@@ -11,17 +11,17 @@ namespace opyn
     class ComponentSceneDecorationFlagsTagger final {
     public:
         ComponentSceneDecorationFlagsTagger(
-            const OpenSim::Component* selected_,
-            const OpenSim::Component* hovered_
+            const OpenSim::Component* selected,
+            const OpenSim::Component* hovered
         );
 
         void operator()(const OpenSim::Component&, osc::SceneDecoration&);
     private:
         osc::SceneDecorationFlags computeFlags(const OpenSim::Component&) const;
 
-        const OpenSim::Component* m_Selected;
-        const OpenSim::Component* m_Hovered;
-        const OpenSim::Component* m_LastComponent = nullptr;
-        osc::SceneDecorationFlags m_LastFlags = osc::SceneDecorationFlag::Default;
+        const OpenSim::Component* selected_;
+        const OpenSim::Component* hovered_;
+        const OpenSim::Component* last_component_ = nullptr;
+        osc::SceneDecorationFlags last_flags_ = osc::SceneDecorationFlag::Default;
     };
 }

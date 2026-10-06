@@ -9,10 +9,10 @@ void opyn::ComponentAbsPathDecorationTagger::operator()(
     const OpenSim::Component& component,
     osc::SceneDecoration& decoration)
 {
-    if (&component != m_LastComponent) {
-        m_ID = GetAbsolutePathStringName(component);
-        m_LastComponent = &component;
+    if (&component != last_component_) {
+        id_ = GetAbsolutePathStringName(component);
+        last_component_ = &component;
     }
 
-    decoration.id = m_ID;
+    decoration.id = id_;
 }

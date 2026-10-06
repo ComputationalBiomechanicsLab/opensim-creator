@@ -61,8 +61,8 @@ namespace
 
             const ModelStatePairInfo info{modelState};
             if (info != m_PrevModelStateInfo ||
-                params.decorationOptions != m_PrevDecorationOptions ||
-                params.overlayOptions != m_PrevOverlayOptions)
+                params.decoration_options != m_PrevDecorationOptions ||
+                params.overlay_options != m_PrevOverlayOptions)
             {
                 m_Drawlist.clear();
                 m_BVH.clear();
@@ -79,7 +79,7 @@ namespace
                 GenerateDecorations(
                     *m_MeshCache,
                     modelState,
-                    params.decorationOptions,
+                    params.decoration_options,
                     onComponentDecoration
                 );
                 osc::update_scene_bvh(m_Drawlist, m_BVH);
@@ -90,15 +90,15 @@ namespace
                 };
                 GenerateOverlayDecorations(
                     *m_MeshCache,
-                    params.overlayOptions,
+                    params.overlay_options,
                     m_BVH,
                     modelState.getFixupScaleFactor(),
                     onOverlayDecoration
                 );
 
                 m_PrevModelStateInfo = info;
-                m_PrevDecorationOptions = params.decorationOptions;
-                m_PrevOverlayOptions = params.overlayOptions;
+                m_PrevDecorationOptions = params.decoration_options;
+                m_PrevOverlayOptions = params.overlay_options;
                 return true;   // updated
             }
             else
@@ -222,7 +222,7 @@ private:
 
 
 opyn::CachedModelRenderer::CachedModelRenderer(const std::shared_ptr<osc::SceneCache>& cache) :
-    m_Impl{std::make_unique<Impl>(cache)}
+    impl_{std::make_unique<Impl>(cache)}
 {}
 opyn::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = default;
 opyn::CachedModelRenderer& opyn::CachedModelRenderer::operator=(CachedModelRenderer&&) noexcept = default;
@@ -235,7 +235,7 @@ osc::RenderTexture& opyn::CachedModelRenderer::onDraw(
     float devicePixelRatio,
     osc::AntiAliasingLevel antiAliasingLevel)
 {
-    return m_Impl->onDraw(
+    return impl_->onDraw(
         modelState,
         renderParams,
         dims,
@@ -246,29 +246,29 @@ osc::RenderTexture& opyn::CachedModelRenderer::onDraw(
 
 osc::RenderTexture& opyn::CachedModelRenderer::updRenderTexture()
 {
-    return m_Impl->updRenderTexture();
+    return impl_->updRenderTexture();
 }
 
 std::span<const osc::SceneDecoration> opyn::CachedModelRenderer::getDrawlist() const
 {
-    return m_Impl->getDrawlist();
+    return impl_->getDrawlist();
 }
 
 std::optional<osc::AABB> opyn::CachedModelRenderer::bounds() const
 {
-    return m_Impl->bounds();
+    return impl_->bounds();
 }
 
 std::optional<osc::AABB> opyn::CachedModelRenderer::visibleBounds() const
 {
-    return m_Impl->visibleBounds();
+    return impl_->visibleBounds();
 }
 
 std::optional<osc::AABB> opyn::CachedModelRenderer::visibleBounds(
     const ModelStatePair& modelState,
     const ModelRendererParams& renderParams)
 {
-    return m_Impl->visibleBounds(modelState, renderParams);
+    return impl_->visibleBounds(modelState, renderParams);
 }
 
 std::optional<osc::SceneCollision> opyn::CachedModelRenderer::getClosestCollision(
@@ -276,5 +276,5 @@ std::optional<osc::SceneCollision> opyn::CachedModelRenderer::getClosestCollisio
     osc::Vector2 mouseScreenPosition,
     const osc::Rect& viewportScreenRect) const
 {
-    return m_Impl->getClosestCollision(params, mouseScreenPosition, viewportScreenRect);
+    return impl_->getClosestCollision(params, mouseScreenPosition, viewportScreenRect);
 }

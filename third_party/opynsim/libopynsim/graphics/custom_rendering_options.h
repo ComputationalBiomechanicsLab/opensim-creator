@@ -43,6 +43,6 @@ namespace opyn
         friend bool operator==(const CustomRenderingOptions&, const CustomRenderingOptions&) = default;
 
     private:
-        CustomRenderingOptionFlags m_Flags = CustomRenderingOptionFlags::Default;
+        CustomRenderingOptionFlags flags_ = CustomRenderingOptionFlags::Default;
     };
 }

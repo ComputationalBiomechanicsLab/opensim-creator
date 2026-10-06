@@ -12,7 +12,7 @@ namespace opyn
     public:
         void operator()(const OpenSim::Component&, osc::SceneDecoration&);
     private:
-        const OpenSim::Component* m_LastComponent = nullptr;
-        osc::StringName m_ID;
+        const OpenSim::Component* last_component_ = nullptr;
+        osc::StringName id_;
     };
 }

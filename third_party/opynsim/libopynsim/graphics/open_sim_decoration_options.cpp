@@ -14,51 +14,51 @@ using namespace opyn;
 namespace rgs = std::ranges;
 
 opyn::OpenSimDecorationOptions::OpenSimDecorationOptions() :
-    m_MuscleDecorationStyle{MuscleDecorationStyle::Default},
-    m_MuscleColorSource{MuscleColorSource::Default},
-    m_MuscleSizingStyle{MuscleSizingStyle::Default},
-    m_MuscleColourSourceScaling{MuscleColorSourceScaling::Default},
-    m_Flags{OpenSimDecorationOptionFlag::Default}
+    muscle_decoration_style_{MuscleDecorationStyle::Default},
+    muscle_color_source_{MuscleColorSource::Default},
+    muscle_sizing_style_{MuscleSizingStyle::Default},
+    muscle_colour_source_scaling_{MuscleColorSourceScaling::Default},
+    flags_{OpenSimDecorationOptionFlag::Default}
 {}
 
 MuscleDecorationStyle opyn::OpenSimDecorationOptions::getMuscleDecorationStyle() const
 {
-    return m_MuscleDecorationStyle;
+    return muscle_decoration_style_;
 }
 
 void opyn::OpenSimDecorationOptions::setMuscleDecorationStyle(MuscleDecorationStyle s)
 {
-    m_MuscleDecorationStyle = s;
+    muscle_decoration_style_ = s;
 }
 
 MuscleColorSource opyn::OpenSimDecorationOptions::getMuscleColorSource() const
 {
-    return m_MuscleColorSource;
+    return muscle_color_source_;
 }
 
 void opyn::OpenSimDecorationOptions::setMuscleColorSource(MuscleColorSource s)
 {
-    m_MuscleColorSource = s;
+    muscle_color_source_ = s;
 }
 
 MuscleSizingStyle opyn::OpenSimDecorationOptions::getMuscleSizingStyle() const
 {
-    return m_MuscleSizingStyle;
+    return muscle_sizing_style_;
 }
 
 void opyn::OpenSimDecorationOptions::setMuscleSizingStyle(MuscleSizingStyle s)
 {
-    m_MuscleSizingStyle = s;
+    muscle_sizing_style_ = s;
 }
 
 MuscleColorSourceScaling opyn::OpenSimDecorationOptions::getMuscleColorSourceScaling() const
 {
-    return m_MuscleColourSourceScaling;
+    return muscle_colour_source_scaling_;
 }
 
 void opyn::OpenSimDecorationOptions::setMuscleColorSourceScaling(MuscleColorSourceScaling s)
 {
-    m_MuscleColourSourceScaling = s;
+    muscle_colour_source_scaling_ = s;
 }
 
 size_t opyn::OpenSimDecorationOptions::getNumOptions() const
@@ -68,12 +68,12 @@ size_t opyn::OpenSimDecorationOptions::getNumOptions() const
 
 bool opyn::OpenSimDecorationOptions::getOptionValue(ptrdiff_t i) const
 {
-    return m_Flags.get(GetIthOption(i));
+    return flags_.get(GetIthOption(i));
 }
 
 void opyn::OpenSimDecorationOptions::setOptionValue(ptrdiff_t i, bool v)
 {
-    SetIthOption(m_Flags, i, v);
+    SetIthOption(flags_, i, v);
 }
 
 osc::CStringView opyn::OpenSimDecorationOptions::getOptionLabel(ptrdiff_t i) const
@@ -83,127 +83,127 @@ osc::CStringView opyn::OpenSimDecorationOptions::getOptionLabel(ptrdiff_t i) con
 
 std::optional<osc::CStringView> opyn::OpenSimDecorationOptions::getOptionDescription(ptrdiff_t i) const
 {
-    return GetIthOptionMetadata(i).maybeDescription;
+    return GetIthOptionMetadata(i).maybe_description;
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowScapulo() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowScapulo);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowScapulo);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowScapulo(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowScapulo, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowScapulo, v);
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowEffectiveMuscleLineOfActionForOrigin() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForOrigin);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForOrigin);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowEffectiveMuscleLineOfActionForOrigin(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForOrigin, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForOrigin, v);
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowEffectiveMuscleLineOfActionForInsertion() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForInsertion);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForInsertion);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowEffectiveMuscleLineOfActionForInsertion(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForInsertion, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForInsertion, v);
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowAnatomicalMuscleLineOfActionForOrigin() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForOrigin);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForOrigin);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowAnatomicalMuscleLineOfActionForOrigin(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForOrigin, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForOrigin, v);
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowAnatomicalMuscleLineOfActionForInsertion() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForInsertion);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForInsertion);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowAnatomicalMuscleLineOfActionForInsertion(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForInsertion, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForInsertion, v);
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowCentersOfMass() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowCentersOfMass);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowCentersOfMass);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowCentersOfMass(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowCentersOfMass, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowCentersOfMass, v);
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowPointToPointSprings() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowPointToPointSprings);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowPointToPointSprings);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowPointToPointSprings(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowPointToPointSprings, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowPointToPointSprings, v);
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowContactForces() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowContactForces);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowContactForces);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowContactForces(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowContactForces, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowContactForces, v);
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowForceLinearComponent() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowForceLinearComponent);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowForceLinearComponent);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowForceLinearComponent(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowForceLinearComponent, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowForceLinearComponent, v);
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowForceAngularComponent() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowForceAngularComponent);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowForceAngularComponent);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowForceAngularComponent(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowForceAngularComponent, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowForceAngularComponent, v);
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowPointForces() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowPointForces);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowPointForces);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowPointForces(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowPointForces, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowPointForces, v);
 }
 
 bool opyn::OpenSimDecorationOptions::getShouldShowScholz2015ObstacleContactHints() const
 {
-    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowScholz2015ObstacleContactHints);
+    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowScholz2015ObstacleContactHints);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowScholz2015ObstacleContactHints(bool v)
 {
-    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowScholz2015ObstacleContactHints, v);
+    flags_.set(OpenSimDecorationOptionFlag::ShouldShowScholz2015ObstacleContactHints, v);
 }
 
 void opyn::OpenSimDecorationOptions::setShouldShowEverything(bool v)
@@ -224,13 +224,13 @@ void opyn::OpenSimDecorationOptions::setShouldShowEverything(bool v)
 void opyn::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(
     const std::function<void(std::string_view, const osc::Variant&)>& callback) const
 {
-    callback("muscle_decoration_style", osc::Variant{GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id});
-    callback("muscle_coloring_style",   osc::Variant{GetMuscleColoringStyleMetadata(m_MuscleColorSource).id});
-    callback("muscle_sizing_style",     osc::Variant{GetMuscleSizingStyleMetadata(m_MuscleSizingStyle).id});
-    callback("muscle_color_scaling",    osc::Variant{GetMuscleColorSourceScalingMetadata(m_MuscleColourSourceScaling).id});
+    callback("muscle_decoration_style", osc::Variant{GetMuscleDecorationStyleMetadata(muscle_decoration_style_).id});
+    callback("muscle_coloring_style",   osc::Variant{GetMuscleColoringStyleMetadata(muscle_color_source_).id});
+    callback("muscle_sizing_style",     osc::Variant{GetMuscleSizingStyleMetadata(muscle_sizing_style_).id});
+    callback("muscle_color_scaling",    osc::Variant{GetMuscleColorSourceScalingMetadata(muscle_colour_source_scaling_).id});
     for (size_t i = 0; i < osc::num_flags<OpenSimDecorationOptionFlag>(); ++i) {
         const auto& meta = GetIthOptionMetadata(i);
-        callback(meta.id, osc::Variant{m_Flags.get(GetIthOption(i))});
+        callback(meta.id, osc::Variant{flags_.get(GetIthOption(i))});
     }
 }
 
@@ -255,7 +255,7 @@ void opyn::OpenSimDecorationOptions::tryUpdFromValues(
         const auto metadata = GetAllMuscleDecorationStyleMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
-            m_MuscleDecorationStyle = it->value;
+            muscle_decoration_style_ = it->value;
         }
     }
 
@@ -264,7 +264,7 @@ void opyn::OpenSimDecorationOptions::tryUpdFromValues(
         const auto metadata = GetAllPossibleMuscleColoringSourcesMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
-            m_MuscleColorSource = it->value;
+            muscle_color_source_ = it->value;
         }
     }
 
@@ -273,7 +273,7 @@ void opyn::OpenSimDecorationOptions::tryUpdFromValues(
         const auto metadata = GetAllMuscleSizingStyleMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
-            m_MuscleSizingStyle = it->value;
+            muscle_sizing_style_ = it->value;
         }
     }
 
@@ -282,14 +282,14 @@ void opyn::OpenSimDecorationOptions::tryUpdFromValues(
         const auto metadata = GetAllPossibleMuscleColorSourceScalingMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
-            m_MuscleColourSourceScaling = it->value;
+            muscle_colour_source_scaling_ = it->value;
         }
     }
 
     for (size_t i = 0; i < osc::num_flags<OpenSimDecorationOptionFlag>(); ++i) {
         const auto& metadata = GetIthOptionMetadata(i);
         if (auto* appVal = lookup(metadata.id); appVal and appVal->type() == osc::VariantType::Bool) {
-            m_Flags.set(GetIthOption(i), to<bool>(*appVal));
+            flags_.set(GetIthOption(i), to<bool>(*appVal));
         }
     }
 }

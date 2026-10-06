@@ -43,6 +43,6 @@ namespace opyn
         friend bool operator==(const OverlayDecorationOptions&, const OverlayDecorationOptions&) = default;
 
     private:
-        OverlayDecorationOptionFlags m_Flags = OverlayDecorationOptionFlags::Default;
+        OverlayDecorationOptionFlags flags_ = OverlayDecorationOptionFlags::Default;
     };
 }
