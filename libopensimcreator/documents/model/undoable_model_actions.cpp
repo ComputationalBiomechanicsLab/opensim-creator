@@ -200,11 +200,11 @@ namespace
             return false;  // cannot represent the component spatially
         }
 
-        const SimTK::Transform currentParentToGround = spatialRep->parentToGround;
+        const SimTK::Transform currentParentToGround = spatialRep->parent_to_ground;
         const SimTK::Transform groundToNewConnectee = newFrame->getTransformInGround(state).invert();
         const SimTK::Transform currentParentToNewConnectee = groundToNewConnectee * currentParentToGround;
 
-        if (auto* positionalProp = FindSimplePropertyMut<SimTK::Vec3>(component, spatialRep->locationVec3PropertyName))
+        if (auto* positionalProp = FindSimplePropertyMut<SimTK::Vec3>(component, spatialRep->location_vec3_property_name))
         {
             const SimTK::Vec3 oldPosition = positionalProp->getValue();
             const SimTK::Vec3 newPosition = currentParentToNewConnectee * oldPosition;
@@ -212,11 +212,11 @@ namespace
             positionalProp->setValue(newPosition);  // update property with new position
         }
 
-        if (spatialRep->maybeOrientationVec3EulersPropertyName)
+        if (spatialRep->maybe_orientation_vec3_eulers_property_name)
         {
-            if (auto* orientationalProp = FindSimplePropertyMut<SimTK::Vec3>(component, *spatialRep->maybeOrientationVec3EulersPropertyName))
+            if (auto* orientationalProp = FindSimplePropertyMut<SimTK::Vec3>(component, *spatialRep->maybe_orientation_vec3_eulers_property_name))
             {
-                const SimTK::Rotation currentRotationInGround = spatialRep->parentToGround.R();
+                const SimTK::Rotation currentRotationInGround = spatialRep->parent_to_ground.R();
                 const SimTK::Rotation groundToNewConnecteeRotation = newFrame->getRotationInGround(state).invert();
                 const SimTK::Rotation currentParentRotationToNewConnecteeRotation = groundToNewConnecteeRotation * currentRotationInGround;
 

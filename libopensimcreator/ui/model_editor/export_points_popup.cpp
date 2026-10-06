@@ -88,7 +88,7 @@ namespace
         ui::draw_text_disabled(component.getConcreteClassName());
 
         if (const std::optional<opyn::PointInfo> pointInfo = opyn::TryExtractPointInfo(component, state)) {
-            ui::draw_text_disabled("Expressed In: {}", pointInfo->frameAbsPath.toString());
+            ui::draw_text_disabled("Expressed In: {}", pointInfo->frame_abs_path.toString());
         }
 
         ui::end_tooltip();
@@ -196,7 +196,7 @@ namespace
                 {
                     if (const auto pointInfo = opyn::TryExtractPointInfo(c, state))
                     {
-                        return pointInfo->frameAbsPath == path;
+                        return pointInfo->frame_abs_path == path;
                     }
                     else
                     {
@@ -412,7 +412,7 @@ namespace
         const opyn::PointInfo& pointInfo,
         const SimTK::Transform& ground2otherFrame)
     {
-        const auto* const frame = opyn::FindComponent<OpenSim::Frame>(model, pointInfo.frameAbsPath);
+        const auto* const frame = opyn::FindComponent<OpenSim::Frame>(model, pointInfo.frame_abs_path);
         if (!frame)
         {
             return pointInfo.location;  // cannot find frame (bug?)

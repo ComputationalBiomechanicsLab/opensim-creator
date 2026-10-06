@@ -201,8 +201,8 @@ TEST(tps3d, adjusting_warping_penalty_reduces_point_r2_but_increases_affine_tran
 
     // Generate point pairs and apply the affine transform to destination.
     auto input_points = generate_sphere_to_cube_landmark_pairs();
-    for (auto& [source, dest] : input_points) {
-        dest = actual_transform * dest;
+    for (auto& [source, destination] : input_points) {
+        destination = actual_transform * destination;
     }
 
     const TPSCoefficientSolverInputs3D<double> solver_inputs{input_points};
@@ -244,8 +244,8 @@ TEST(tps3d, setting_warping_penalty_very_high_effectively_yields_an_affine_trans
 
     // Generate point pairs and apply the affine transform to destination.
     auto input_points = generate_sphere_to_cube_landmark_pairs();
-    for (auto& [source, dest] : input_points) {
-        dest = actual_transform * dest;
+    for (auto& [source, destination] : input_points) {
+        destination = actual_transform * destination;
     }
 
     TPSCoefficientSolverInputs3D<double> solver_inputs{input_points};

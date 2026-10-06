@@ -44,7 +44,7 @@ namespace
     {
         // load+condition the underlying `OpenSim::Storage`
         const auto storage = opyn::LoadStorage(model, stoFilePath, opyn::StorageLoadingParameters{
-            .resampleToFrequency = 1.0/100.0,  // resample the state trajectory at 100FPS (#708)
+            .resample_to_frequency = 1.0/100.0,  // resample the state trajectory at 100FPS (#708)
         });
 
         // map column header indices in the `OpenSim::Storage` to the `OpenSim::Model`'s state variables' indices

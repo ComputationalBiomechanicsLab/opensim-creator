@@ -1826,12 +1826,12 @@ std::unique_ptr<OpenSim::Storage> opyn::LoadStorage(
 {
     auto rv = std::make_unique<OpenSim::Storage>(path.string());
 
-    if (params.convertRotationalValuesToRadians and rv->isInDegrees()) {
+    if (params.convert_rotational_values_to_radians and rv->isInDegrees()) {
         model.getSimbodyEngine().convertDegreesToRadians(*rv);
     }
 
-    if (params.resampleToFrequency) {
-        rv->resampleLinear(*params.resampleToFrequency);
+    if (params.resample_to_frequency) {
+        rv->resampleLinear(*params.resample_to_frequency);
     }
 
     return rv;
@@ -1842,11 +1842,11 @@ std::unordered_map<int, int> opyn::CreateStorageIndexToModelStatevarMappingWithW
     const OpenSim::Storage& storage)
 {
     auto mapping = CreateStorageIndexToModelStatevarMapping(model, storage);
-    if (not mapping.stateVariablesMissingInStorage.empty()) {
+    if (not mapping.state_variables_missing_in_storage.empty()) {
         std::stringstream ss;
         ss << "the provided STO file is missing the following columns:\n";
         std::string_view delimiter;
-        for (const std::string& el : mapping.stateVariablesMissingInStorage) {
+        for (const std::string& el : mapping.state_variables_missing_in_storage) {
             ss << delimiter << el;
             delimiter = ", ";
         }
@@ -1854,7 +1854,7 @@ std::unordered_map<int, int> opyn::CreateStorageIndexToModelStatevarMappingWithW
         osc::log_warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
         osc::log_warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
     }
-    return std::move(mapping.storageIndexToModelStatevarIndex);
+    return std::move(mapping.storage_index_to_model_state_var_index);
 }
 
 StorageIndexToModelStateVarMappingResult opyn::CreateStorageIndexToModelStatevarMapping(
@@ -1876,7 +1876,7 @@ StorageIndexToModelStateVarMappingResult opyn::CreateStorageIndexToModelStatevar
     OpenSim::Array<std::string> modelStateVars = model.getStateVariableNames();
 
     StorageIndexToModelStateVarMappingResult rv;
-    rv.storageIndexToModelStatevarIndex.reserve(modelStateVars.size());
+    rv.storage_index_to_model_state_var_index.reserve(modelStateVars.size());
 
     // compute storage-to-model index mapping
     //
@@ -1890,10 +1890,10 @@ StorageIndexToModelStateVarMappingResult opyn::CreateStorageIndexToModelStatevar
         const int valueIndex = storageIndex - 1;  // the column labels include 'time', which isn't in the data elements
 
         if (valueIndex >= 0) {
-            rv.storageIndexToModelStatevarIndex[valueIndex] = modelIndex;
+            rv.storage_index_to_model_state_var_index[valueIndex] = modelIndex;
         }
         else {
-            rv.stateVariablesMissingInStorage.push_back(modelStateVarname);
+            rv.state_variables_missing_in_storage.push_back(modelStateVarname);
         }
     }
 

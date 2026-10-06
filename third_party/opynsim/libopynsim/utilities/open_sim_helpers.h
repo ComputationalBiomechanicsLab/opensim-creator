@@ -556,20 +556,20 @@ namespace opyn
             const OpenSim::Component& target,
             std::string socketName) :
 
-            m_Source{&source},
-            m_Target{&target},
-            m_SocketName{std::move(socketName)}
+            source_{&source},
+            target_{&target},
+            socket_name_{std::move(socketName)}
         {}
 
         friend bool operator==(const ComponentConnectionView&, const ComponentConnectionView&) = default;
 
-        const OpenSim::Component& source() const { return *m_Source; }
-        const OpenSim::Component& target() const { return *m_Target; }
-        osc::CStringView socketName() const { return m_SocketName; }
+        const OpenSim::Component& source() const { return *source_; }
+        const OpenSim::Component& target() const { return *target_; }
+        osc::CStringView socketName() const { return socket_name_; }
     private:
-        const OpenSim::Component* m_Source;
-        const OpenSim::Component* m_Target;
-        std::string m_SocketName;
+        const OpenSim::Component* source_;
+        const OpenSim::Component* target_;
+        std::string socket_name_;
     };
     std::ostream& operator<<(std::ostream&, const ComponentConnectionView&);
 
@@ -808,11 +808,11 @@ namespace opyn
             OpenSim::ComponentPath frameAbsPath_) :
 
             location{location_},
-            frameAbsPath{std::move(frameAbsPath_)}
+            frame_abs_path{std::move(frameAbsPath_)}
         {}
 
         osc::Vector3 location;
-        OpenSim::ComponentPath frameAbsPath;
+        OpenSim::ComponentPath frame_abs_path;
     };
     bool CanExtractPointInfoFrom(const OpenSim::Component&, const SimTK::State&);
     std::optional<PointInfo> TryExtractPointInfo(const OpenSim::Component&, const SimTK::State&);
@@ -1062,9 +1062,9 @@ namespace opyn
     // - TryGetPositionalPropertyName
     // - TryGetOrientationalPropertyName
     struct ComponentSpatialRepresentation final {
-        SimTK::Transform parentToGround;
-        std::string locationVec3PropertyName;
-        std::optional<std::string> maybeOrientationVec3EulersPropertyName;
+        SimTK::Transform parent_to_ground;
+        std::string location_vec3_property_name;
+        std::optional<std::string> maybe_orientation_vec3_eulers_property_name;
     };
 
     // tries to get the "spatial" representation of a component
@@ -1082,8 +1082,8 @@ namespace opyn
     std::string SanitizeToOpenSimComponentName(std::string_view);
 
     struct StorageLoadingParameters final {
-        bool convertRotationalValuesToRadians = true;
-        std::optional<double> resampleToFrequency = std::nullopt;
+        bool convert_rotational_values_to_radians = true;
+        std::optional<double> resample_to_frequency = std::nullopt;
     };
 
     // returns an `OpenSim::Storage` with the given parameters
@@ -1099,8 +1099,8 @@ namespace opyn
     // Represents the result of trying to map columns in an `OpenSim::Storage` to state
     // variables in an `OpenSim::Model`.
     struct StorageIndexToModelStateVarMappingResult final {
-        std::unordered_map<int, int> storageIndexToModelStatevarIndex;
-        std::vector<std::string> stateVariablesMissingInStorage;
+        std::unordered_map<int, int> storage_index_to_model_state_var_index;
+        std::vector<std::string> state_variables_missing_in_storage;
     };
 
     StorageIndexToModelStateVarMappingResult CreateStorageIndexToModelStatevarMapping(
