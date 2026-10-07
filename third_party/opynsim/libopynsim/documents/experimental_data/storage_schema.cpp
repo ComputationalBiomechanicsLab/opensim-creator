@@ -116,17 +116,17 @@ StorageSchema opyn::StorageSchema::parse(const OpenSim::Storage& storage)
         const std::span<std::string> remaining_labels{&labels[offset], static_cast<size_t>(labels.size()) - static_cast<size_t>(offset)};
         if (const DataSeriesPattern* pattern = patterns.try_match(remaining_labels)) {
             annotations.push_back({
-                .dataColumnOffset = offset-1,  // drop time for this index
+                .data_column_offset = offset-1,  // drop time for this index
                 .label = std::string{pattern->remove_suffix(remaining_labels.front())},
-                .dataType = pattern->datatype(),
+                .data_type = pattern->datatype(),
             });
             offset += static_cast<int>(num_elements_in(pattern->datatype()));
         }
         else {
             annotations.push_back({
-                .dataColumnOffset = offset-1,  // drop time for this index
+                .data_column_offset = offset-1,  // drop time for this index
                 .label = remaining_labels.front(),
-                .dataType = DataPointType::Unknown,
+                .data_type = DataPointType::Unknown,
             });
             offset += 1;
         }

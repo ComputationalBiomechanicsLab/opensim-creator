@@ -22,18 +22,18 @@ namespace opyn
 
     public:
         // Returns a reference to the readonly `SimTK::State` this view is viewing.
-        const SimTK::State& getState() const { return implGetState(); }
+        const SimTK::State& state() const { return impl_get_state(); }
 
         // Returns a single auxiliary value (metadata) associated with the state that this
         // view is viewing.
-        std::optional<float> getAuxiliaryValue(osc::UID id) const { return implGetAuxiliaryValue(id); }
+        std::optional<float> get_auxiliary_value(osc::UID id) const { return impl_get_auxiliary_value(id); }
 
     private:
         // Implementors must provide a const accessor to a state
-        virtual const SimTK::State& implGetState() const = 0;
+        virtual const SimTK::State& impl_get_state() const = 0;
 
         // Implementors may provide a way of accessing auxiliary (metadata)
         // associated with the state.
-        virtual std::optional<float> implGetAuxiliaryValue(osc::UID) const { return std::nullopt; }
+        virtual std::optional<float> impl_get_auxiliary_value(osc::UID) const { return std::nullopt; }
     };
 }

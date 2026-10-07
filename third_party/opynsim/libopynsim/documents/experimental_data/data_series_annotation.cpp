@@ -109,10 +109,10 @@ void opyn::generate_decorations(
     }
 
     const auto data = extract_data_point(time, storage, annotation);
-    OSC_ASSERT_ALWAYS(data.size() == num_elements_in(annotation.dataType));
+    OSC_ASSERT_ALWAYS(data.size() == num_elements_in(annotation.data_type));
 
     static_assert(osc::num_options<DataPointType>() == 5);
-    switch (annotation.dataType) {
+    switch (annotation.data_type) {
     case DataPointType::Point:       ::generate_decorations<DataPointType::Point>(       std::span<const double, num_elements_in(DataPointType::Point)>{data},       out); break;
     case DataPointType::ForcePoint:  ::generate_decorations<DataPointType::ForcePoint>(  std::span<const double, num_elements_in(DataPointType::ForcePoint)>{data},  out); break;
     case DataPointType::BodyForce:   ::generate_decorations<DataPointType::BodyForce>(   std::span<const double, num_elements_in(DataPointType::BodyForce)>{data},   out); break;
@@ -129,10 +129,10 @@ std::vector<double> opyn::extract_data_point(
     const DataSeriesAnnotation& annotation)
 {
     // lol, `OpenSim::Storage` API, etc.
-    const int an = annotation.dataColumnOffset + static_cast<int>(num_elements_in(annotation.dataType));
+    const int an = annotation.data_column_offset + static_cast<int>(num_elements_in(annotation.data_type));
     std::vector<double> buffer(static_cast<size_t>(an));
     double* p = buffer.data();
     storage.getDataAtTime(time, an, &p);
-    buffer.erase(buffer.begin(), buffer.begin() + annotation.dataColumnOffset);
+    buffer.erase(buffer.begin(), buffer.begin() + annotation.data_column_offset);
     return buffer;
 }

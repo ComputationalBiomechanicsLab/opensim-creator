@@ -32,6 +32,6 @@ namespace opyn
         static std::shared_ptr<OpenSim::Storage> load_path_into_storage(const std::filesystem::path&);
         explicit AnnotatedMotion(std::shared_ptr<OpenSim::Storage>);
 
-        std::shared_ptr<OpenSim::Storage> m_Storage;
+        std::shared_ptr<OpenSim::Storage> storage_;
     };
 }

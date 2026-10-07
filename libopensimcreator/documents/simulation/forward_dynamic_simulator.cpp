@@ -120,7 +120,7 @@ namespace
         {
             return opyn::OutputValueExtractor{[id = m_UID](const opyn::StateViewWithMetadata& state)
             {
-                return Variant{state.getAuxiliaryValue(id).value_or(-1337.0f)};
+                return Variant{state.get_auxiliary_value(id).value_or(-1337.0f)};
             }};
         }
 

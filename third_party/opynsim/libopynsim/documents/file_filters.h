@@ -6,8 +6,8 @@
 
 namespace opyn
 {
-    std::span<const osc::FileDialogFilter> GetOpenSimXMLFileFilters();
-    std::span<const osc::FileDialogFilter> GetModelFileFilters();
-    std::span<const osc::FileDialogFilter> GetMotionFileFilters();
-    std::span<const osc::FileDialogFilter> GetMotionFileFiltersIncludingTRC();
+    std::span<const osc::FileDialogFilter> get_open_sim_xml_file_filters();
+    std::span<const osc::FileDialogFilter> get_model_file_filters();
+    std::span<const osc::FileDialogFilter> get_motion_file_filters();
+    std::span<const osc::FileDialogFilter> get_motion_file_filters_including_trc();
 }

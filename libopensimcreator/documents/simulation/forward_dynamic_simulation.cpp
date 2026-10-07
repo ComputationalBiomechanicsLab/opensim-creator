@@ -109,7 +109,7 @@ public:
         popReportsHACK();
 
         if (not m_Reports.empty()) {
-            return SimulationClock::start() + SimulationClock::duration{m_Reports.back().getState().getTime()};
+            return SimulationClock::start() + SimulationClock::duration{m_Reports.back().state().getTime()};
         }
         else {
             return getStartTime();
@@ -176,7 +176,7 @@ public:
             const auto guard = m_ModelState.lock();
             const SimTK::State& latestState = m_Reports.empty() ?
                 guard->getState() :
-                m_Reports.back().getState();
+                m_Reports.back().state();
 
             m_Simulation = MakeSimulation(
                 BasicModelStatePairWithSharedEnvironment{guard->getModel(), latestState},

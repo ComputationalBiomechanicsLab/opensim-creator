@@ -351,7 +351,7 @@ namespace
                         }
                         state->actionOpenOsim(response.front());
                     },
-                    GetModelFileFilters()
+                    get_model_file_filters()
                 );
             }
         }
@@ -409,7 +409,7 @@ namespace
                     state->updateScaledModel();
                     state->m_ScalingState->commit_scratch("Loaded scaling document");
                 },
-                GetOpenSimXMLFileFilters()
+                get_open_sim_xml_file_filters()
             );
         }
 

@@ -11,7 +11,7 @@ namespace
     // Represents a view of a blank `SimTK::State` (can be handy for testing).
     class BlankStateView final : public StateViewWithMetadata {
     private:
-        const SimTK::State& implGetState() const final { return m_State; }
+        const SimTK::State& impl_get_state() const final { return m_State; }
         SimTK::State m_State;
     };
 }

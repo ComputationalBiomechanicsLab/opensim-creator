@@ -155,7 +155,7 @@ namespace osc
                         return;  // Error importing the model
                     }
                 },
-                opyn::GetModelFileFilters()
+                opyn::get_model_file_filters()
             );
         }
 

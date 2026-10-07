@@ -39,7 +39,7 @@ public:
 
     const SimTK::State& getState() const
     {
-        return m_SimulationReport.getState();
+        return m_SimulationReport.state();
     }
 
     UID getStateVersion() const

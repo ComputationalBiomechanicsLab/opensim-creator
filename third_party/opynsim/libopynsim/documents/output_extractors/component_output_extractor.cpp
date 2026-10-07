@@ -89,13 +89,13 @@ public:
         if (datatype == OutputExtractorDataType::Float) {
             return OutputValueExtractor{[func = extractor_func_, ao](const StateViewWithMetadata& state)
             {
-                return osc::Variant{static_cast<float>(func(*ao, state.getState()))};
+                return osc::Variant{static_cast<float>(func(*ao, state.state()))};
             }};
         }
         else {
             return OutputValueExtractor{[ao](const StateViewWithMetadata& state)
             {
-                return osc::Variant{ao->getValueAsString(state.getState())};
+                return osc::Variant{ao->getValueAsString(state.state())};
             }};
         }
     }

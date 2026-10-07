@@ -14,9 +14,9 @@ namespace opyn
     // A single data annotation that describes some kind of substructure (series) in
     // columnar data.
     struct DataSeriesAnnotation final {
-        int dataColumnOffset = 0;
+        int data_column_offset = 0;
         std::string label;
-        DataPointType dataType = DataPointType::Unknown;
+        DataPointType data_type = DataPointType::Unknown;
     };
 
     // Returns the elements associated with one datapoint (e.g. [x, y, z])

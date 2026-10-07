@@ -114,7 +114,7 @@ OutputValueExtractor opyn::IntegratorOutputExtractor::impl_output_value_extracto
 {
     return OutputValueExtractor{[id = auxiliary_data_id_](const StateViewWithMetadata& state)
     {
-        return osc::Variant{state.getAuxiliaryValue(id).value_or(osc::quiet_nan_v<float>)};
+        return osc::Variant{state.get_auxiliary_value(id).value_or(osc::quiet_nan_v<float>)};
     }};
 }
 

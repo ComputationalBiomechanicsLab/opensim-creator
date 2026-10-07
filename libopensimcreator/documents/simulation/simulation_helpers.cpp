@@ -33,7 +33,7 @@ void osc::WriteOutputsAsCSV(
 
     // data lines
     for (const SimulationReport& report : reports) {
-        out << report.getState().getTime();  // time column
+        out << report.state().getTime();  // time column
         for (const opyn::SharedOutputExtractor& o : outputs) {
             static_assert(num_options<opyn::OutputExtractorDataType>() == 3);
             if (o.output_type() == opyn::OutputExtractorDataType::Vector2) {

@@ -105,7 +105,7 @@ namespace
                     OpenOsimInLoadingTab(*widget_ptr, path);
                 }
             },
-            GetModelFileFilters(),
+            get_model_file_filters(),
             std::nullopt,  // initial directory
             true  // allow many
         );

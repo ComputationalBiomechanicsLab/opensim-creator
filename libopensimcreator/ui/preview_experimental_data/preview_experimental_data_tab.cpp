@@ -279,7 +279,7 @@ namespace
                                     state->rollbackModel();
                                 }
                             },
-                            opyn::GetModelFileFilters()
+                            opyn::get_model_file_filters()
                         );
                     }
 
@@ -306,7 +306,7 @@ namespace
                                     state->rollbackModel();
                                 }
                             },
-                            opyn::GetMotionFileFilters()
+                            opyn::get_motion_file_filters()
                         );
                     }
                     if (not m_UiState->isModelLoaded()) {
@@ -329,7 +329,7 @@ namespace
                                     state->rollbackModel();
                                 }
                             },
-                            opyn::GetMotionFileFiltersIncludingTRC(),
+                            opyn::get_motion_file_filters_including_trc(),
                             std::nullopt,
                             true
                         );
@@ -355,7 +355,7 @@ namespace
                                 }
 
                             },
-                            opyn::GetOpenSimXMLFileFilters()
+                            opyn::get_open_sim_xml_file_filters()
                         );
                     }
                     if (not m_UiState->isModelLoaded()) {

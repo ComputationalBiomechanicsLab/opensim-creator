@@ -93,7 +93,7 @@ namespace
                     log_error("encountered error while trying to load an STO file against the model: {}", ex.what());
                 }
             },
-            opyn::GetMotionFileFilters()
+            opyn::get_motion_file_filters()
         );
     }
 

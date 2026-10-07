@@ -32,7 +32,7 @@ public:
         if (const auto* force = FindComponent<OpenSim::Force>(root, force_abs_path_)) {
             return OutputValueExtractor{[force, index = record_index_](const StateViewWithMetadata& state)
             {
-                const OpenSim::Array<double> values = force->getRecordValues(state.getState());
+                const OpenSim::Array<double> values = force->getRecordValues(state.state());
                 if (0 <= index and index < values.size()) {
                     return osc::Variant{static_cast<float>(values[index])};
                 }

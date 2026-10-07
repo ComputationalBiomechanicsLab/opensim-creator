@@ -33,8 +33,8 @@ namespace
             annotation_{annotation}
         {
             setName(annotation.label);
-            constructProperty_type(std::string{label_for(annotation.dataType)});
-            constructProperty_column_offset(annotation.dataColumnOffset);
+            constructProperty_type(std::string{label_for(annotation.data_type)});
+            constructProperty_column_offset(annotation.data_column_offset);
         }
 
     private:
@@ -75,11 +75,11 @@ std::shared_ptr<OpenSim::Storage> opyn::AnnotatedMotion::load_path_into_storage(
 }
 
 opyn::AnnotatedMotion::AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage) :
-    m_Storage{std::move(storage)}
+    storage_{std::move(storage)}
 {
-    setName(m_Storage->getName());
+    setName(storage_->getName());
 
-    const auto schema = StorageSchema::parse(*m_Storage);
+    const auto schema = StorageSchema::parse(*storage_);
     for (const auto& annotation : schema.annotations()) {
         // Handle issue #1068
         //
@@ -94,7 +94,7 @@ opyn::AnnotatedMotion::AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage
         // renderable UI tree that the GUI is showing" (in OpenSim GUI:
         // `ExperimentalMarkerNode` and `OpenSimNode`).
         try {
-            auto series = std::make_unique<DataSeries>(m_Storage, annotation);
+            auto series = std::make_unique<DataSeries>(storage_, annotation);
             series->finalizeFromProperties();
             addComponent(series.release());
         }
@@ -113,7 +113,7 @@ size_t opyn::AnnotatedMotion::get_num_data_series() const
 osc::ClosedInterval<float> opyn::AnnotatedMotion::time_range() const
 {
     return {
-        static_cast<float>(m_Storage->getFirstTime()),
-        static_cast<float>(m_Storage->getLastTime()),
+        static_cast<float>(storage_->getFirstTime()),
+        static_cast<float>(storage_->getLastTime()),
     };
 }

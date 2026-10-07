@@ -30,8 +30,8 @@ namespace osc
 
         friend bool operator==(const SimulationReport&, const SimulationReport&) = default;
     private:
-        const SimTK::State& implGetState() const final;
-        std::optional<float> implGetAuxiliaryValue(UID) const final;
+        const SimTK::State& impl_get_state() const final;
+        std::optional<float> impl_get_auxiliary_value(UID) const final;
 
         class Impl;
         std::shared_ptr<Impl> m_Impl;
