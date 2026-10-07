@@ -233,7 +233,7 @@ namespace
                         {
                             std::ofstream objStream{warpedMeshAbsPath, std::ios::trunc};
                             objStream.exceptions(std::ios::badbit | std::ios::failbit);
-                            OBJ::write(objStream, mesh.getOscMesh(), OBJMetadata{"osc-model-warper"});
+                            OBJ::write(objStream, mesh.osc_mesh(), OBJMetadata{"osc-model-warper"});
                         }
 
                         // Overwrite the `InMemoryMesh` in `copy`

@@ -7,12 +7,12 @@
 
 using namespace opyn;
 
-TEST(InMemoryMesh, CanDefaultConstruct)
+TEST(InMemoryMesh, is_default_constructible)
 {
     ASSERT_NO_THROW({ InMemoryMesh instance; });
 }
 
-TEST(InMemoryMesh, DefaultConstructedEmitsABlankMesh)
+TEST(InMemoryMesh, default_constructed_instance_emits_blank_mesh)
 {
     OpenSim::Model model;
     auto& mesh = AddComponent<InMemoryMesh>(model);

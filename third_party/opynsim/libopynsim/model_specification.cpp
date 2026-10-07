@@ -218,7 +218,7 @@ public:
             {
                 std::ofstream obj_stream{filesystem_path, std::ios::trunc};
                 obj_stream.exceptions(std::ios::badbit | std::ios::failbit);
-                osc::OBJ::write(obj_stream, imm.getOscMesh(), osc::OBJMetadata{"osc-model-warper"});
+                osc::OBJ::write(obj_stream, imm.osc_mesh(), osc::OBJMetadata{"osc-model-warper"});
             }
 
             // Replace `InMemoryMesh` with a standard `OpenSim::Mesh`.

@@ -221,12 +221,12 @@ void opyn::try_pairing_landmarks(
     std::vector<Landmark> b,
     const std::function<void(const MaybeNamedLandmarkPair&)>& consumer)
 {
-    size_t nunnamed = 0;
+    size_t num_unnamed = 0;
 
     // handle/pair all elements in `a`
     for (auto& lm : a) {
         const auto it = rgs::find_if(b, std::bind_front(same_name_or_both_unnamed, std::cref(lm)));
-        std::string name = lm.maybe_name ? *std::move(lm.maybe_name) : generate_name(nunnamed++);
+        std::string name = lm.maybe_name ? *std::move(lm.maybe_name) : generate_name(num_unnamed++);
 
         if (it != b.end()) {
             consumer(MaybeNamedLandmarkPair{std::move(name), lm.position, it->position});
@@ -239,7 +239,7 @@ void opyn::try_pairing_landmarks(
 
     // handle remaining (unpaired) elements in `b`
     for (auto& lm : b) {
-        std::string name = lm.maybe_name ? std::move(lm.maybe_name).value() : generate_name(nunnamed++);
+        std::string name = lm.maybe_name ? std::move(lm.maybe_name).value() : generate_name(num_unnamed++);
         consumer(MaybeNamedLandmarkPair{name, std::nullopt, lm.position});
     }
 }
