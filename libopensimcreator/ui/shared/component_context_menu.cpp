@@ -49,7 +49,7 @@ namespace
         opyn::ModelStatePair& model,
         const OpenSim::ComponentPath& jointPath)
     {
-        const auto* joint = opyn::FindComponent<OpenSim::Joint>(model.getModel(), jointPath);
+        const auto* joint = opyn::FindComponent<OpenSim::Joint>(model.get_model(), jointPath);
         if (not joint) {
             return;
         }
@@ -57,7 +57,7 @@ namespace
         const auto& registry = opyn::get_component_registry<OpenSim::Joint>();
 
         std::optional<ptrdiff_t> selectedIdx;
-        if (ui::begin_menu("Change Joint Type", model.canUpdModel())) {
+        if (ui::begin_menu("Change Joint Type", model.can_upd_model())) {
             // look the Joint up in the type registry so we know where it should be in the ui::draw_combobox
             std::optional<size_t> maybeTypeIndex = index_of(registry, *joint);
 
@@ -90,10 +90,10 @@ namespace
         const std::shared_ptr<opyn::ModelStatePair>& modelState,
         const OpenSim::ComponentPath& pfPath)
     {
-        if (const auto* pf = opyn::FindComponent<OpenSim::PhysicalFrame>(modelState->getModel(), pfPath)) {
+        if (const auto* pf = opyn::FindComponent<OpenSim::PhysicalFrame>(modelState->get_model(), pfPath)) {
             DrawCalculateMenu(
-                modelState->getModel(),
-                modelState->getState(),
+                modelState->get_model(),
+                modelState->get_state(),
                 *pf,
                 CalculateMenuFlags::NoCalculatorIcon
             );
@@ -118,8 +118,8 @@ namespace
         const OpenSim::Station& station)
     {
         DrawCalculateMenu(
-            modelState.getModel(),
-            modelState.getState(),
+            modelState.get_model(),
+            modelState.get_state(),
             station,
             CalculateMenuFlags::NoCalculatorIcon
         );
@@ -130,8 +130,8 @@ namespace
         const OpenSim::Marker& marker)
     {
         DrawCalculateMenu(
-            modelState.getModel(),
-            modelState.getState(),
+            modelState.get_model(),
+            modelState.get_state(),
             marker,
             CalculateMenuFlags::NoCalculatorIcon
         );
@@ -139,12 +139,12 @@ namespace
         // Show a specialized `Move To` menu that lets users move the marker to
         // the model's `MarkerSet`, which can be required for backwards compatibility
         // with OpenSim GUI (#1102).
-        if (ui::begin_menu("Move To", not modelState.isReadonly())) {
+        if (ui::begin_menu("Move To", not modelState.is_readonly())) {
 
             // Only enable this option if the marker isn't already part of the model's `MarkerSet`
             // (otherwise, we assume it's remove-able from its current owner).
             const OpenSim::Component* owner = opyn::GetOwner<OpenSim::MarkerSet>(marker);
-            bool disabled = (owner != nullptr) and opyn::GetOwner<OpenSim::Model>(*owner) == &modelState.getModel();
+            bool disabled = (owner != nullptr) and opyn::GetOwner<OpenSim::Model>(*owner) == &modelState.get_model();
 
             if (ui::draw_menu_item("/markerset", std::nullopt, nullptr, not disabled)) {
                 ActionMoveMarkerToModelMarkerSet(modelState, marker);
@@ -162,8 +162,8 @@ namespace
         const OpenSim::Point& point)
     {
         DrawCalculateMenu(
-            modelState.getModel(),
-            modelState.getState(),
+            modelState.get_model(),
+            modelState.get_state(),
             point,
             CalculateMenuFlags::NoCalculatorIcon
         );
@@ -174,8 +174,8 @@ namespace
         const OpenSim::Ellipsoid& ellipsoid)
     {
         DrawCalculateMenu(
-            modelState.getModel(),
-            modelState.getState(),
+            modelState.get_model(),
+            modelState.get_state(),
             ellipsoid,
             CalculateMenuFlags::NoCalculatorIcon
         );
@@ -185,18 +185,18 @@ namespace
         opyn::ModelStatePair& modelState,
         const OpenSim::Mesh& mesh)
     {
-        if (ui::begin_menu("Fit Analytic Geometry", modelState.canUpdModel())) {
+        if (ui::begin_menu("Fit Analytic Geometry", modelState.can_upd_model())) {
             ui::draw_help_marker("Uses shape-fitting algorithms to fit analytic geometry to the points in the given mesh.\n\nThe 'htbad'-suffixed algorithms were adapted (potentially, with bugs - report them) from the MATLAB code in:\n\n        Bishop P., How to build a dinosaur..., doi:10.1017/pab.2020.46");
 
-            if (ui::draw_menu_item("Sphere (htbad)", {}, nullptr, modelState.canUpdModel())) {
+            if (ui::draw_menu_item("Sphere (htbad)", {}, nullptr, modelState.can_upd_model())) {
                 ActionFitSphereToMesh(modelState, mesh);
             }
 
-            if (ui::draw_menu_item("Ellipsoid (htbad)", {}, nullptr, modelState.canUpdModel())) {
+            if (ui::draw_menu_item("Ellipsoid (htbad)", {}, nullptr, modelState.can_upd_model())) {
                 ActionFitEllipsoidToMesh(modelState, mesh);
             }
 
-            if (ui::draw_menu_item("Plane (htbad)", {}, nullptr, modelState.canUpdModel())) {
+            if (ui::draw_menu_item("Plane (htbad)", {}, nullptr, modelState.can_upd_model())) {
                 ActionFitPlaneToMesh(modelState, mesh);
             }
 
@@ -214,8 +214,8 @@ namespace
         const OpenSim::Geometry& geometry)
     {
         DrawCalculateMenu(
-            modelState.getModel(),
-            modelState.getState(),
+            modelState.get_model(),
+            modelState.get_state(),
             geometry,
             CalculateMenuFlags::NoCalculatorIcon
         );
@@ -252,12 +252,12 @@ public:
 
     void draw_content()
     {
-        const OpenSim::Component* c = opyn::FindComponent(m_Model->getModel(), m_Path);
+        const OpenSim::Component* c = opyn::FindComponent(m_Model->get_model(), m_Path);
         if (not c) {
             // draw context menu content that's shown when nothing was right-clicked
             DrawNothingRightClickedContextMenuHeader();
             DrawContextMenuSeparator();
-            if (ui::begin_menu("Add", m_Model->canUpdModel())) {
+            if (ui::begin_menu("Add", m_Model->can_upd_model())) {
                 m_ModelAddMenuItems.setTargetParentComponent({});  // i.e. the target parent component should default to the model
                 m_ModelAddMenuItems.on_draw();
                 ui::end_menu();
@@ -269,7 +269,7 @@ public:
             //
             // it's handy when users have selectively hidden this-or-that, or have hidden everything
             // in the model (#422)
-            if (ui::begin_menu("Display", m_Model->canUpdModel())) {
+            if (ui::begin_menu("Display", m_Model->can_upd_model())) {
                 if (ui::draw_menu_item("Show All")) {
                     ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, opyn::GetRootComponentPath(), true);
                 }
@@ -295,13 +295,13 @@ public:
         DrawRightClickedComponentContextMenuHeader(*c);
         DrawContextMenuSeparator();
 
-        if (ui::begin_menu("Add", m_Model->canUpdModel())) {
+        if (ui::begin_menu("Add", m_Model->can_upd_model())) {
             m_ModelAddMenuItems.setTargetParentComponent(m_Path);
             m_ModelAddMenuItems.on_draw();
             ui::end_menu();
         }
 
-        if (ui::begin_menu("Display", m_Model->canUpdModel())) {
+        if (ui::begin_menu("Display", m_Model->can_upd_model())) {
             drawDisplayMenuContent(*c);
             ui::end_menu();
         }
@@ -377,7 +377,7 @@ public:
 private:
     void drawDisplayMenuContent(const OpenSim::Component& c)
     {
-        const bool isEnabled = m_Model->canUpdModel() and AnyDescendentInclusiveHasAppearanceProperty(c);
+        const bool isEnabled = m_Model->can_upd_model() and AnyDescendentInclusiveHasAppearanceProperty(c);
 
         // togges that are specific to this components (+ its descendants)
 
@@ -411,7 +411,7 @@ private:
             if (ui::draw_menu_item(label, {}, nullptr, isEnabled)) {
                 ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                     *m_Model,
-                    opyn::GetAbsolutePath(m_Model->getModel()),
+                    opyn::GetAbsolutePath(m_Model->get_model()),
                     c.getConcreteClassName(),
                     true
                 );
@@ -425,7 +425,7 @@ private:
             if (ui::draw_menu_item(label, {}, nullptr, isEnabled)) {
                 ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                     *m_Model,
-                    opyn::GetAbsolutePath(m_Model->getModel()),
+                    opyn::GetAbsolutePath(m_Model->get_model()),
                     c.getConcreteClassName(),
                     false
                 );
@@ -440,7 +440,7 @@ private:
 
     void drawSocketMenu(const OpenSim::Component& c)
     {
-        if (ui::begin_menu("Sockets", m_Model->canUpdModel())) {
+        if (ui::begin_menu("Sockets", m_Model->can_upd_model())) {
 
             ui::draw_text_centered("Outbound Sockets");
             ui::draw_separator();
@@ -495,7 +495,7 @@ private:
 
                 ui::table_set_column_index(column++);
                 if (ui::draw_small_button(socket.getConnecteeAsObject().getName())) {
-                    m_Model->setSelected(dynamic_cast<const OpenSim::Component*>(&socket.getConnecteeAsObject()));
+                    m_Model->set_selected(dynamic_cast<const OpenSim::Component*>(&socket.getConnecteeAsObject()));
                     request_close();
                 }
                 if (const auto* connectee = dynamic_cast<const OpenSim::Component*>(&socket.getConnecteeAsObject());
@@ -530,7 +530,7 @@ private:
             [](const OpenSim::Component& c) { return opyn::ShouldShowInUI(c) and dynamic_cast<const OpenSim::FrameGeometry*>(&c) == nullptr; } :
             [](const OpenSim::Component&)   { return true; };
 
-        auto els = opyn::ForEachInboundConnection(&m_Model->getModel(), &c, filter);
+        auto els = opyn::ForEachInboundConnection(&m_Model->get_model(), &c, filter);
         auto it = els.begin();
         const auto end = els.end();
 
@@ -576,7 +576,7 @@ private:
                 // column: Source Component
                 ui::table_set_column_index(column++);
                 if (ui::draw_small_button(view.source().getName())) {
-                    m_Model->setSelected(dynamic_cast<const OpenSim::Component*>(&view.source()));
+                    m_Model->set_selected(dynamic_cast<const OpenSim::Component*>(&view.source()));
                     request_close();
                 }
                 if (ui::is_item_hovered()) {
@@ -614,7 +614,7 @@ private:
             return;
         }
         if (ui::begin_menu("Plot vs. Coordinate")) {
-            for (const OpenSim::Coordinate& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>()) {
+            for (const OpenSim::Coordinate& c : m_Model->get_model().getComponentList<OpenSim::Coordinate>()) {
                 if (ui::draw_menu_item(c.getName())) {
                     App::post_event<AddMusclePlotEvent>(owner(), c, m);
                 }

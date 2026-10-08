@@ -59,7 +59,7 @@ TEST(OpenSimActions, ActionUpdateModelFromBackingFileReturnsFalseIfFileDoesNotEx
     ASSERT_FALSE(ActionUpdateModelFromBackingFile(model));
 
     // ... but if you say it has an invalid backing file path...
-    model.updModel().setInputFileName("doesnt-exist");
+    model.upd_model().setInputFileName("doesnt-exist");
 
     // then it should just return `false`, rather than (e.g.) exploding
     ASSERT_FALSE(ActionUpdateModelFromBackingFile(model));
@@ -91,7 +91,7 @@ TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateF
 
     ObjectPropertyEdit edit
     {
-        undoableModel.updModel().updComponent<OpenSim::Coordinate>("/jointset/joint/rotation").updProperty_range(),
+        undoableModel.upd_model().updComponent<OpenSim::Coordinate>("/jointset/joint/rotation").updProperty_range(),
         [&](OpenSim::AbstractProperty& p)
         {
             p.clear();
@@ -101,8 +101,8 @@ TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateF
     ASSERT_EQ(ActionApplyPropertyEdit(undoableModel, edit), false);
 
     // hacky extra test: you can remove this, it's just reminder code
-    undoableModel.updModel().updComponent<OpenSim::Coordinate>("/jointset/joint/rotation").updProperty_range().clear();
-    ASSERT_ANY_THROW({ opyn::InitializeModel(undoableModel.updModel()); });
+    undoableModel.upd_model().updComponent<OpenSim::Coordinate>("/jointset/joint/rotation").updProperty_range().clear();
+    ASSERT_ANY_THROW({ opyn::InitializeModel(undoableModel.upd_model()); });
 }
 
 // high-level repro for (#773)
@@ -137,17 +137,17 @@ TEST(OpenSimActions, ActionFitSphereToMeshFitsASphereToAMeshInTheModelAndSelects
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "arrow.vtp";
 
     UndoableModelStatePair model;
-    auto& body = opyn::AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0}));
+    auto& body = opyn::AddBody(model.upd_model(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0}));
     body.setMass(1.0);
     auto& mesh = dynamic_cast<OpenSim::Mesh&>(opyn::AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
-    opyn::FinalizeConnections(model.updModel());
-    opyn::InitializeModel(model.updModel());
-    opyn::InitializeState(model.updModel());
+    opyn::FinalizeConnections(model.upd_model());
+    opyn::InitializeModel(model.upd_model());
+    opyn::InitializeState(model.upd_model());
 
     ActionFitSphereToMesh(model, mesh);
-    ASSERT_TRUE(model.getSelected());
-    ASSERT_TRUE(dynamic_cast<const OpenSim::Sphere*>(model.getSelected()));
-    ASSERT_EQ(&dynamic_cast<const OpenSim::Sphere*>(model.getSelected())->getFrame().findBaseFrame(), &body.findBaseFrame());
+    ASSERT_TRUE(model.get_selected());
+    ASSERT_TRUE(dynamic_cast<const OpenSim::Sphere*>(model.get_selected()));
+    ASSERT_EQ(&dynamic_cast<const OpenSim::Sphere*>(model.get_selected())->getFrame().findBaseFrame(), &body.findBaseFrame());
 }
 
 TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
@@ -156,23 +156,23 @@ TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "arrow.vtp";
 
     UndoableModelStatePair model;
-    auto& body = opyn::AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0}));
+    auto& body = opyn::AddBody(model.upd_model(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0}));
     body.setMass(1.0);
     auto& unscaledMesh = dynamic_cast<OpenSim::Mesh&>(opyn::AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
     auto& scaledMesh = dynamic_cast<OpenSim::Mesh&>(opyn::AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
     const double scalar = 0.1;
     scaledMesh.set_scale_factors({scalar, scalar, scalar});
 
-    opyn::FinalizeConnections(model.updModel());
-    opyn::InitializeModel(model.updModel());
-    opyn::InitializeState(model.updModel());
+    opyn::FinalizeConnections(model.upd_model());
+    opyn::InitializeModel(model.upd_model());
+    opyn::InitializeState(model.upd_model());
 
     ActionFitSphereToMesh(model, unscaledMesh);
-    ASSERT_TRUE(dynamic_cast<const OpenSim::Sphere*>(model.getSelected()));
-    const double unscaledRadius = dynamic_cast<const OpenSim::Sphere&>(*model.getSelected()).get_radius();
+    ASSERT_TRUE(dynamic_cast<const OpenSim::Sphere*>(model.get_selected()));
+    const double unscaledRadius = dynamic_cast<const OpenSim::Sphere&>(*model.get_selected()).get_radius();
     ActionFitSphereToMesh(model, scaledMesh);
-    ASSERT_TRUE(dynamic_cast<const OpenSim::Sphere*>(model.getSelected()));
-    const double scaledRadius = dynamic_cast<const OpenSim::Sphere&>(*model.getSelected()).get_radius();
+    ASSERT_TRUE(dynamic_cast<const OpenSim::Sphere*>(model.get_selected()));
+    const double scaledRadius = dynamic_cast<const OpenSim::Sphere&>(*model.get_selected()).get_radius();
 
     ASSERT_TRUE(equal_within_reldiff(scaledRadius, scalar*unscaledRadius, 0.0001));
 }
@@ -180,25 +180,25 @@ TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
 TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInNormalCase)
 {
     UndoableModelStatePair um;
-    auto& body = opyn::AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
-    auto& joint = opyn::AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
+    auto& body = opyn::AddBody(um.upd_model(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
+    auto& joint = opyn::AddJoint<OpenSim::FreeJoint>(um.upd_model(), "jname", um.get_model().getGround(), body);
 
     // this should be ok
-    opyn::FinalizeConnections(um.updModel());
-    opyn::InitializeModel(um.updModel());
-    opyn::InitializeState(um.updModel());
+    opyn::FinalizeConnections(um.upd_model());
+    opyn::InitializeModel(um.upd_model());
+    opyn::InitializeState(um.upd_model());
 
     // the joint is initially directly attached to ground
-    ASSERT_EQ(&joint.getParentFrame(), &um.getModel().getGround());
+    ASSERT_EQ(&joint.getParentFrame(), &um.get_model().getGround());
 
     // and now we ask for a new `PhysicalOffsetFrame` to be injected into the parent, which works
     ASSERT_TRUE(ActionAddParentOffsetFrameToJoint(um, joint.getAbsolutePath()));
 
     // the joint's parent frame is now a `PhysicalOffsetFrame` that's attached to ground
     const OpenSim::PhysicalFrame& parent1 = joint.getParentFrame();
-    ASSERT_NE(&parent1, &um.getModel().getGround());
+    ASSERT_NE(&parent1, &um.get_model().getGround());
     ASSERT_TRUE(dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&parent1));
-    ASSERT_EQ(&dynamic_cast<const OpenSim::PhysicalOffsetFrame&>(parent1).getParentFrame(), &um.getModel().getGround());
+    ASSERT_EQ(&dynamic_cast<const OpenSim::PhysicalOffsetFrame&>(parent1).getParentFrame(), &um.get_model().getGround());
 }
 
 // ensure that the caller can keep asking to add parent offset frames to a joint - even if the
@@ -208,25 +208,25 @@ TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInNormalCase)
 TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInChainedCase)
 {
     UndoableModelStatePair um;
-    auto& body = opyn::AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
-    auto& joint = opyn::AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
+    auto& body = opyn::AddBody(um.upd_model(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
+    auto& joint = opyn::AddJoint<OpenSim::FreeJoint>(um.upd_model(), "jname", um.get_model().getGround(), body);
 
     // this should be ok
-    opyn::FinalizeConnections(um.updModel());
-    opyn::InitializeModel(um.updModel());
-    opyn::InitializeState(um.updModel());
+    opyn::FinalizeConnections(um.upd_model());
+    opyn::InitializeModel(um.upd_model());
+    opyn::InitializeState(um.upd_model());
 
     // the joint is initially directly attached to ground
-    ASSERT_EQ(&joint.getParentFrame(), &um.getModel().getGround());
+    ASSERT_EQ(&joint.getParentFrame(), &um.get_model().getGround());
 
     // and now we ask for a new PhysicalOffsetFrame to be injected into the parent, which should work
     ASSERT_TRUE(ActionAddParentOffsetFrameToJoint(um, joint.getAbsolutePath()));
 
     // the joint's parent frame is now a `PhysicalOffsetFrame` that's attached to ground
     const OpenSim::PhysicalFrame& parent1 = joint.getParentFrame();
-    ASSERT_NE(&parent1, &um.getModel().getGround());
+    ASSERT_NE(&parent1, &um.get_model().getGround());
     ASSERT_TRUE(dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&parent1));
-    ASSERT_EQ(&dynamic_cast<const OpenSim::PhysicalOffsetFrame&>(parent1).getParentFrame(), &um.getModel().getGround());
+    ASSERT_EQ(&dynamic_cast<const OpenSim::PhysicalOffsetFrame&>(parent1).getParentFrame(), &um.get_model().getGround());
 
     // repeating the process creates a chain of `PhysicalOffsetFrame`s
     ASSERT_TRUE(ActionAddParentOffsetFrameToJoint(um, joint.getAbsolutePath()));
@@ -240,13 +240,13 @@ TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInChainedCase)
 TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInNormalCase)
 {
     UndoableModelStatePair um;
-    auto& body = opyn::AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
-    auto& joint = opyn::AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
+    auto& body = opyn::AddBody(um.upd_model(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
+    auto& joint = opyn::AddJoint<OpenSim::FreeJoint>(um.upd_model(), "jname", um.get_model().getGround(), body);
 
     // this should be ok
-    opyn::FinalizeConnections(um.updModel());
-    opyn::InitializeModel(um.updModel());
-    opyn::InitializeState(um.updModel());
+    opyn::FinalizeConnections(um.upd_model());
+    opyn::InitializeModel(um.upd_model());
+    opyn::InitializeState(um.upd_model());
 
     // the joint is initially directly attached to ground
     ASSERT_EQ(&joint.getChildFrame(), &body);
@@ -268,13 +268,13 @@ TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInNormalCase)
 TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInChainedCase)
 {
     UndoableModelStatePair um;
-    auto& body = opyn::AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
-    auto& joint = opyn::AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
+    auto& body = opyn::AddBody(um.upd_model(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
+    auto& joint = opyn::AddJoint<OpenSim::FreeJoint>(um.upd_model(), "jname", um.get_model().getGround(), body);
 
     // this should be ok
-    opyn::FinalizeConnections(um.updModel());
-    opyn::InitializeModel(um.updModel());
-    opyn::InitializeState(um.updModel());
+    opyn::FinalizeConnections(um.upd_model());
+    opyn::InitializeModel(um.upd_model());
+    opyn::InitializeState(um.upd_model());
 
     // the joint is initially directly attached to ground
     ASSERT_EQ(&joint.getChildFrame(), &body);
@@ -304,21 +304,21 @@ TEST(OpenSimActions, ActionAddWrapObjectToPhysicalFrameCanAddWrapCylinderToGroun
     auto wrapCylinder = std::make_unique<OpenSim::WrapCylinder>();
     wrapCylinder->setName("should_be_findable_in_model");
 
-    ASSERT_TRUE(ActionAddWrapObjectToPhysicalFrame(um, um.getModel().getGround().getAbsolutePath(), std::move(wrapCylinder)));
-    ASSERT_TRUE(um.getModel().findComponent("should_be_findable_in_model"));
+    ASSERT_TRUE(ActionAddWrapObjectToPhysicalFrame(um, um.get_model().getGround().getAbsolutePath(), std::move(wrapCylinder)));
+    ASSERT_TRUE(um.get_model().findComponent("should_be_findable_in_model"));
 }
 
 TEST(OpenSimActions, ActionAddWrapObjectToPhysicalFrameCanAddAllRegisteredWrapObjectsToGround)
 {
     UndoableModelStatePair um;
-    const OpenSim::ComponentPath groundPath = um.getModel().getGround().getAbsolutePath();
+    const OpenSim::ComponentPath groundPath = um.get_model().getGround().getAbsolutePath();
 
     for (const auto& entry : opyn::get_component_registry<OpenSim::WrapObject>()) {
         ASSERT_TRUE(ActionAddWrapObjectToPhysicalFrame(um, groundPath, entry.instantiate()));
     }
 
     size_t numWrapsInModel = 0;
-    for ([[maybe_unused]] const auto& wrap : um.getModel().getComponentList<OpenSim::WrapObject>()) {
+    for ([[maybe_unused]] const auto& wrap : um.get_model().getComponentList<OpenSim::WrapObject>()) {
         ++numWrapsInModel;
     }
 
@@ -328,7 +328,7 @@ TEST(OpenSimActions, ActionAddWrapObjectToPhysicalFrameCanAddAllRegisteredWrapOb
 TEST(OpenSimActions, ActionAddPathWrapToGeometryPathWorksInExampleCase)
 {
     UndoableModelStatePair um;
-    OpenSim::Model& model = um.updModel();
+    OpenSim::Model& model = um.upd_model();
 
     auto& pof = opyn::AddModelComponent<OpenSim::PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{SimTK::Vec3{0.0, 1.0, 0.0}});
     auto& body = opyn::AddBody(model, "body", 1.0f, SimTK::Vec3{0.0}, SimTK::Inertia(0.1));
@@ -355,13 +355,13 @@ TEST(OpenSimActions, ActionAddPathWrapToGeometryPathWorksInExampleCase)
 
     ActionAddWrapObjectToGeometryPathWraps(um, path, sphere);
 
-    ASSERT_GT(path.getLength(um.getState()), 1.1)  << "path should start wrapping";
+    ASSERT_GT(path.getLength(um.get_state()), 1.1)  << "path should start wrapping";
 }
 
 TEST(OpenSimActions, ActionRemoveWrapObjectFromGeometryPathWrapsWorksInExampleCase)
 {
     UndoableModelStatePair um;
-    OpenSim::Model& model = um.updModel();
+    OpenSim::Model& model = um.upd_model();
 
     auto& pof = opyn::AddModelComponent<OpenSim::PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{SimTK::Vec3{0.0, 1.0, 0.0}});
     auto& body = opyn::AddBody(model, "body", 1.0f, SimTK::Vec3{0.0}, SimTK::Inertia(0.1));
@@ -377,11 +377,11 @@ TEST(OpenSimActions, ActionRemoveWrapObjectFromGeometryPathWrapsWorksInExampleCa
     opyn::InitializeModel(model);
     opyn::InitializeState(model);
 
-    ASSERT_GT(path.getLength(um.getState()), 1.1)  << "initial state of model includes wrapping";
+    ASSERT_GT(path.getLength(um.get_state()), 1.1)  << "initial state of model includes wrapping";
 
     ActionRemoveWrapObjectFromGeometryPathWraps(um, path, sphere);
 
-    ASSERT_NEAR(path.getLength(um.getState()), 1.0, epsilon_v<double>)  << "should stop wrapping";
+    ASSERT_NEAR(path.getLength(um.get_state()), 1.0, epsilon_v<double>)  << "should stop wrapping";
 }
 
 // related issue: #890
@@ -394,19 +394,19 @@ TEST(OpenSimActions, ActionUpdateModelFromBackingFileShouldRetainSceneScaleFacto
     const std::filesystem::path backingFile = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Blank" / "blank.osim";
 
     UndoableModelStatePair model{backingFile};
-    model.setUpToDateWithFilesystem(model.getLastFilesystemWriteTime() - std::chrono::seconds{1});  // ensure it's invalid
+    model.set_up_to_date_with_filesystem(model.getLastFilesystemWriteTime() - std::chrono::seconds{1});  // ensure it's invalid
 
-    ASSERT_TRUE(opyn::HasInputFileName(model.getModel()));
+    ASSERT_TRUE(opyn::HasInputFileName(model.get_model()));
 
     // set the scale factor to a nonstandard value
-    ASSERT_NE(model.getFixupScaleFactor(), 0.5f);
-    model.setFixupScaleFactor(0.5f);
-    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f);
+    ASSERT_NE(model.get_fixup_scale_factor(), 0.5f);
+    model.set_fixup_scale_factor(0.5f);
+    ASSERT_EQ(model.get_fixup_scale_factor(), 0.5f);
 
     // reload the model from disk
     ASSERT_TRUE(ActionUpdateModelFromBackingFile(model)) << "this should work fine";
 
-    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f) << "the scene scale factor should be retained after a reload";
+    ASSERT_EQ(model.get_fixup_scale_factor(), 0.5f) << "the scene scale factor should be retained after a reload";
 }
 
 // related issue: #887
@@ -415,11 +415,11 @@ TEST(OpenSimActions, ActionUpdateModelFromBackingFileShouldRetainSceneScaleFacto
 TEST(OpenSimActions, ActionToggleForcesTogglesTheForces)
 {
     UndoableModelStatePair model;
-    ASSERT_TRUE(opyn::IsShowingForces(model.getModel()));
+    ASSERT_TRUE(opyn::IsShowingForces(model.get_model()));
     ActionToggleForces(model);
-    ASSERT_FALSE(opyn::IsShowingForces(model.getModel()));
+    ASSERT_FALSE(opyn::IsShowingForces(model.get_model()));
     model.doUndo();
-    ASSERT_TRUE(opyn::IsShowingForces(model.getModel()));
+    ASSERT_TRUE(opyn::IsShowingForces(model.get_model()));
 }
 
 // related issue: #957
@@ -428,10 +428,10 @@ TEST(OpenSimActions, ActionToggleForcesTogglesTheForces)
 TEST(OpenSimActions, ActionZeroAllCoordinatesZeroesAllCoordinatesInAModel)
 {
     UndoableModelStatePair model;
-    auto& body = opyn::AddBody(model.updModel(), "somebody", 1.0, SimTK::Vec3(0.0), SimTK::Inertia{1.0});
-    auto& fj = opyn::AddJoint<OpenSim::FreeJoint>(model.updModel(), "somejoint", model->getGround(), body);
-    model.updModel().finalizeFromProperties();
-    model.updModel().finalizeConnections();
+    auto& body = opyn::AddBody(model.upd_model(), "somebody", 1.0, SimTK::Vec3(0.0), SimTK::Inertia{1.0});
+    auto& fj = opyn::AddJoint<OpenSim::FreeJoint>(model.upd_model(), "somejoint", model->getGround(), body);
+    model.upd_model().finalizeFromProperties();
+    model.upd_model().finalizeConnections();
     fj.updCoordinate(OpenSim::FreeJoint::Coord::TranslationY).set_default_value(1.0);
 
     ASSERT_EQ(fj.getCoordinate(OpenSim::FreeJoint::Coord::TranslationY).get_default_value(), 1.0);
@@ -444,11 +444,11 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesWorksInTrivialCase)
 {
     // Build basic model with SDF
     UndoableModelStatePair model;
-    auto& a = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
-    auto& b = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
-    auto& c = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
+    auto& a = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& b = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& c = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
     auto& sdf = opyn::AddModelComponent<OpenSim::StationDefinedFrame>(
-        model.updModel(),
+        model.upd_model(),
         "sdf",
         SimTK::CoordinateDirection{SimTK::CoordinateAxis::XCoordinateAxis{}},
         SimTK::CoordinateDirection{SimTK::CoordinateAxis::ZCoordinateAxis{}},
@@ -459,8 +459,8 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesWorksInTrivialCase)
     );
 
     // Finalize/initialize the model
-    model.updModel().buildSystem();
-    const SimTK::State& state = model.updModel().initializeState();
+    model.upd_model().buildSystem();
+    const SimTK::State& state = model.upd_model().initializeState();
     const SimTK::Transform sdfTransform = sdf.getTransformInGround(state);
 
     // Ensure `StationDefinedFrame` is actually transforming
@@ -486,7 +486,7 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesWorksInTrivialCase)
     }
 
     // Ensure transform after baking is equivalent to `StationDefinedFrame`'s original transform
-    const SimTK::State& stateAfter = model.updModel().initializeState();
+    const SimTK::State& stateAfter = model.upd_model().initializeState();
     const SimTK::Transform offsetTransform = model->getComponentList<OpenSim::PhysicalOffsetFrame>().begin()->getTransformInGround(stateAfter);
 
     ASSERT_EQ(offsetTransform.p(), sdfTransform.p());
@@ -498,11 +498,11 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesAttachedGeometry)
 {
     // Build basic model with SDF
     UndoableModelStatePair model;
-    auto& a = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
-    auto& b = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
-    auto& c = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
+    auto& a = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& b = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& c = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
     auto& sdf = opyn::AddModelComponent<OpenSim::StationDefinedFrame>(
-        model.updModel(),
+        model.upd_model(),
         "sdf",
         SimTK::CoordinateDirection{SimTK::CoordinateAxis::XCoordinateAxis{}},
         SimTK::CoordinateDirection{SimTK::CoordinateAxis::ZCoordinateAxis{}},
@@ -517,7 +517,7 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesAttachedGeometry)
     sdf.attachGeometry(std::make_unique<OpenSim::Ellipsoid>(1.0, 2.0, 3.0).release());
 
     // Finalize/initialize the model
-    model.updModel().buildSystem();
+    model.upd_model().buildSystem();
 
     // The SDF should still have the geometry attached
     ASSERT_EQ(sdf.getProperty_attached_geometry().size(), 2);
@@ -551,11 +551,11 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesWrapObjects)
 {
     // Build basic model with SDF
     UndoableModelStatePair model;
-    auto& a = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
-    auto& b = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
-    auto& c = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
+    auto& a = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& b = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& c = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
     auto& sdf = opyn::AddModelComponent<OpenSim::StationDefinedFrame>(
-        model.updModel(),
+        model.upd_model(),
         "sdf",
         SimTK::CoordinateDirection{SimTK::CoordinateAxis::XCoordinateAxis{}},
         SimTK::CoordinateDirection{SimTK::CoordinateAxis::ZCoordinateAxis{}},
@@ -570,7 +570,7 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesWrapObjects)
     sdf.addWrapObject(std::make_unique<OpenSim::WrapCylinder>().release());
 
     // Finalize/initialize the model
-    model.updModel().buildSystem();
+    model.upd_model().buildSystem();
 
     // The SDF should still have the wrap objects attached to it
     ASSERT_EQ(sdf.getWrapObjectSet().getSize(), 2);
@@ -598,11 +598,11 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesSubcomponents)
 {
     // Build basic model with SDF
     UndoableModelStatePair model;
-    auto& a = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
-    auto& b = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
-    auto& c = opyn::AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
+    auto& a = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& b = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& c = opyn::AddModelComponent<OpenSim::Station>(model.upd_model(), model.get_model().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
     auto& sdf = opyn::AddModelComponent<OpenSim::StationDefinedFrame>(
-        model.updModel(),
+        model.upd_model(),
         "sdf",
         SimTK::CoordinateDirection{SimTK::CoordinateAxis::XCoordinateAxis{}},
         SimTK::CoordinateDirection{SimTK::CoordinateAxis::ZCoordinateAxis{}},
@@ -624,7 +624,7 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesSubcomponents)
     sdf.addWrapObject(wrapCylinder.release());
 
     // Finalize/initialize the model
-    model.updModel().buildSystem();
+    model.upd_model().buildSystem();
 
     // The SDF should contain the subcomponents
     {
@@ -657,14 +657,14 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesSubcomponents)
 TEST(OpenSimActions, ActionAddPathPointToGeometryPathWorksAsExpected)
 {
     UndoableModelStatePair model;
-    auto& gp = opyn::AddModelComponent<OpenSim::GeometryPath>(model.updModel());
-    gp.appendNewPathPoint("p1", model.getModel().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
-    gp.appendNewPathPoint("p2", model.getModel().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
-    opyn::FinalizeConnections(model.updModel());
-    opyn::InitializeModel(model.updModel());
-    opyn::InitializeState(model.updModel());
+    auto& gp = opyn::AddModelComponent<OpenSim::GeometryPath>(model.upd_model());
+    gp.appendNewPathPoint("p1", model.get_model().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
+    gp.appendNewPathPoint("p2", model.get_model().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    opyn::FinalizeConnections(model.upd_model());
+    opyn::InitializeModel(model.upd_model());
+    opyn::InitializeState(model.upd_model());
     const auto gpPath = gp.getAbsolutePath();
-    const auto groundPath = model.getModel().getGround().getAbsolutePath();
+    const auto groundPath = model.get_model().getGround().getAbsolutePath();
 
     ASSERT_TRUE(ActionAddPathPointToGeometryPath(model, gpPath, groundPath)) << "should work";
     ASSERT_EQ(gp.getPathPointSet().getSize(), 3);
@@ -689,14 +689,14 @@ TEST(OpenSimActions, ActionMoveMarkerToModelMarkerSet_MovesMarker)
     // original pof, with the correct location, etc.
 
     UndoableModelStatePair model;
-    auto& body = opyn::AddBody(model.updModel(), "body", 1.0,  SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    auto& body = opyn::AddBody(model.upd_model(), "body", 1.0,  SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
     const SimTK::Vec3 pofOffset{0.25};
     auto& pof = opyn::AddComponent<OpenSim::PhysicalOffsetFrame>(body, "pof", body, SimTK::Transform{pofOffset});
     const SimTK::Vec3 markerOffset{0.3};
     auto& marker = opyn::AddComponent<OpenSim::Marker>(pof, "marker", pof, markerOffset);
-    opyn::FinalizeConnections(model.updModel());
-    opyn::InitializeModel(model.updModel());
-    const SimTK::State& state = opyn::InitializeState(model.updModel());
+    opyn::FinalizeConnections(model.upd_model());
+    opyn::InitializeModel(model.upd_model());
+    const SimTK::State& state = opyn::InitializeState(model.upd_model());
 
     ASSERT_EQ(marker.getLocationInGround(state), pofOffset + markerOffset);
     ASSERT_EQ(&marker.getParentFrame(), &pof);
@@ -706,7 +706,7 @@ TEST(OpenSimActions, ActionMoveMarkerToModelMarkerSet_MovesMarker)
 
     ASSERT_EQ(marker.getLocationInGround(state), pofOffset + markerOffset);
     ASSERT_EQ(&marker.getParentFrame(), &pof);
-    ASSERT_EQ(&marker.getOwner(), &model.getModel().getMarkerSet());
+    ASSERT_EQ(&marker.getOwner(), &model.get_model().getMarkerSet());
 }
 
 TEST(OpenSimActions, ActionSetCoordinateLockedAndSave_EnsuresValueCanBeEditedAfterwards)
@@ -722,11 +722,11 @@ TEST(OpenSimActions, ActionSetCoordinateLockedAndSave_EnsuresValueCanBeEditedAft
     opyn::init();
 
     UndoableModelStatePair model;
-    auto& body = opyn::AddBody(model.updModel(), "head", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    auto& body = opyn::AddBody(model.upd_model(), "head", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
     auto& pin = opyn::AddJoint<OpenSim::BallJoint>(
-        model.updModel(),
+        model.upd_model(),
         "ball",
-        model.updModel().getGround(),
+        model.upd_model().getGround(),
         SimTK::Vec3{0.0, 1.0, 0.0},
         SimTK::Vec3{0.0},
         body,
@@ -743,13 +743,13 @@ TEST(OpenSimActions, ActionSetCoordinateLockedAndSave_EnsuresValueCanBeEditedAft
     // is detected and then the model assembler is used to track the coordinates
     // after the change to re-enforce the constraint - it's the assembler that's
     // in an invalid state (it thinks the coordinate is still locked).
-    auto& constraint = opyn::AddConstraint<OpenSim::CoordinateCouplerConstraint>(model.updModel());
+    auto& constraint = opyn::AddConstraint<OpenSim::CoordinateCouplerConstraint>(model.upd_model());
     constraint.setFunction(OpenSim::Constant(0.0));
     constraint.setDependentCoordinateName(pin.getCoordinate(OpenSim::BallJoint::Coord::Rotation2Y).getName());
 
-    opyn::FinalizeConnections(model.updModel());
-    opyn::InitializeModel(model.updModel());
-    SimTK::State& state = opyn::InitializeState(model.updModel());
+    opyn::FinalizeConnections(model.upd_model());
+    opyn::InitializeModel(model.upd_model());
+    SimTK::State& state = opyn::InitializeState(model.upd_model());
 
     ASSERT_TRUE(coordinate.getLocked(state));
     ActionSetCoordinateLockedAndSave(model, coordinate, false);  // Unlock coordinate using UI action

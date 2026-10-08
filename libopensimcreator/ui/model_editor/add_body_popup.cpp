@@ -43,7 +43,7 @@ public:
 
     void draw_content()
     {
-        if (m_Model->isReadonly()) {
+        if (m_Model->is_readonly()) {
             ui::draw_text_centered(MSMICONS_LOCK " cannot edit the model - it is locked");
             if (ui::draw_button("cancel")) {
                 request_close();
@@ -51,7 +51,7 @@ public:
             return;
         }
 
-        const OpenSim::Model& model = m_Model->getModel();
+        const OpenSim::Model& model = m_Model->get_model();
 
         const auto* selectedPf = opyn::FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
         if (not selectedPf) {

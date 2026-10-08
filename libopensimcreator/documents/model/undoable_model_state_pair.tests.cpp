@@ -52,8 +52,8 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
             std::vector<SceneDecoration> decorations;
             GenerateModelDecorations(
                 meshCache,
-                p.getModel(),
-                p.getState(),
+                p.get_model(),
+                p.get_state(),
                 decorationOpts,
                 1.0f,  // 1:1 scaling
                 [&decorations](const OpenSim::Component& component, SceneDecoration&& dec)
@@ -94,8 +94,8 @@ TEST(UndoableModelStatePair, canWriteRajagopalModelToDAE)
     std::vector<SceneDecoration> decorations;
     GenerateModelDecorations(
         meshCache,
-        p.getModel(),
-        p.getState(),
+        p.get_model(),
+        p.get_state(),
         decorationOpts,
         1.0f,  // 1:1 scaling
         [&decorations](const OpenSim::Component& component, SceneDecoration&& dec)
@@ -123,24 +123,24 @@ TEST(UndoableModelStatePair, setModelRetainsSceneScaleFactor)
 {
     UndoableModelStatePair model;
 
-    ASSERT_EQ(model.getFixupScaleFactor(), 1.0f);
-    model.setFixupScaleFactor(0.5f);
-    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f);
+    ASSERT_EQ(model.get_fixup_scale_factor(), 1.0f);
+    model.set_fixup_scale_factor(0.5f);
+    ASSERT_EQ(model.get_fixup_scale_factor(), 0.5f);
 
     model.setModel(std::make_unique<OpenSim::Model>());
-    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f);
+    ASSERT_EQ(model.get_fixup_scale_factor(), 0.5f);
 }
 
 TEST(UndoableModelStatePair, resetModelRetainsSceneScaleFactor)
 {
     UndoableModelStatePair model;
 
-    ASSERT_EQ(model.getFixupScaleFactor(), 1.0f);
-    model.setFixupScaleFactor(0.5f);
-    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f);
+    ASSERT_EQ(model.get_fixup_scale_factor(), 1.0f);
+    model.set_fixup_scale_factor(0.5f);
+    ASSERT_EQ(model.get_fixup_scale_factor(), 0.5f);
 
     model.resetModel();
-    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f);
+    ASSERT_EQ(model.get_fixup_scale_factor(), 0.5f);
 }
 
 // This is a repro for #924
@@ -154,7 +154,7 @@ TEST(UndoableModelStatePair, CanCommitWhenModelContainsExternalLoads)
         std::filesystem::weakly_canonical(std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_924_external-loads.xml");
 
     UndoableModelStatePair p{exampleModel};
-    p.updModel().addModelComponent(&dynamic_cast<OpenSim::ExternalLoads&>(*OpenSim::Object::makeObjectFromFile(exampleExternalLoadsFile.string())));
+    p.upd_model().addModelComponent(&dynamic_cast<OpenSim::ExternalLoads&>(*OpenSim::Object::makeObjectFromFile(exampleExternalLoadsFile.string())));
     ASSERT_NO_THROW({ p.commit("this shouldn't throw if `OpenSim::ExternalLoads` is behaving itself"); }) << "this shouldn't throw (see: opensim-core/3926 or opensim-core/3927)";
 }
 

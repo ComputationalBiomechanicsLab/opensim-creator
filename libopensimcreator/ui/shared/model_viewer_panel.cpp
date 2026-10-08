@@ -243,8 +243,8 @@ namespace
                 // Cache key has changed: clear/reset cached stuff.
                 cache.clear();
 
-                if (const auto* coordinate = params.getModelSharedPtr()->getSelectedAs<OpenSim::Coordinate>();
-                    (coordinate != nullptr) and not coordinate->getLocked(params.getModelSharedPtr()->getState())) {
+                if (const auto* coordinate = params.getModelSharedPtr()->get_selected_as<OpenSim::Coordinate>();
+                    (coordinate != nullptr) and not coordinate->getLocked(params.getModelSharedPtr()->get_state())) {
 
                     // If the caller has an `OpenSim::Coordinate` selected, and it isn't
                     // locked, sample `[min, max]` to figure out how the joint transform
@@ -256,8 +256,8 @@ namespace
                         const double samplerStepSize = coordinateRange.step_size(c_NumCoordinateSamplePoints);
 
                         // Save current joint transform (used for showing user current state-of-play).
-                        SimTK::State samplingState{params.getModelSharedPtr()->getState()};
-                        params.getModelSharedPtr()->getModel().realizePosition(samplingState);
+                        SimTK::State samplingState{params.getModelSharedPtr()->get_state()};
+                        params.getModelSharedPtr()->get_model().realizePosition(samplingState);
                         cache.currentTransform = associatedChildFrame.getTransformInGround(samplingState);
 
                         // Sample along the coordinate, caching transforms.
@@ -265,7 +265,7 @@ namespace
                         for (size_t step = 0; step < c_NumCoordinateSamplePoints; ++step) {
                             const double sampledCoordinateValue = coordinateRange.lower + static_cast<double>(step)*samplerStepSize;
                             coordinate->setValue(samplingState, sampledCoordinateValue, false);
-                            params.getModelSharedPtr()->getModel().realizePosition(samplingState);
+                            params.getModelSharedPtr()->get_model().realizePosition(samplingState);
                             cache.sampledTransforms.push_back(associatedChildFrame.getTransformInGround(samplingState));
                         }
                     }
@@ -282,7 +282,7 @@ namespace
 
             // If the user (still) has an `OpenSim::Coordinate` selected, and the cache is
             // populated with enough data, draw the overlay.
-            if (const auto* coordinate = params.getModelSharedPtr()->getSelectedAs<OpenSim::Coordinate>();
+            if (const auto* coordinate = params.getModelSharedPtr()->get_selected_as<OpenSim::Coordinate>();
                 coordinate != nullptr and cache.sampledTransforms.size() >= 2) {
 
                 // Represents points projected from a transform into ui space.
@@ -334,7 +334,7 @@ namespace
 
                 // If the `OpenSim::Coordinate` is clamped, put an endcap on the rail, so that
                 // users can see that a coordinate must stop at the ends.
-                if (coordinate->getClamped(params.getModelSharedPtr()->getState())) {
+                if (coordinate->getClamped(params.getModelSharedPtr()->get_state())) {
 
                     const auto drawCaps = [](ui::DrawListView& dl, const ProjectedPoints& a, const ProjectedPoints& b)
                     {
@@ -450,15 +450,15 @@ namespace
 
             if (ui::is_mouse_dragging_with_any_button_down())
             {
-                params.getModelSharedPtr()->setHovered(nullptr);
+                params.getModelSharedPtr()->set_hovered(nullptr);
             }
-            else if (state.maybeHoveredComponentAbsPath != opyn::GetAbsolutePathOrEmpty(params.getModelSharedPtr()->getHovered()))
+            else if (state.maybeHoveredComponentAbsPath != opyn::GetAbsolutePathOrEmpty(params.getModelSharedPtr()->get_hovered()))
             {
                 // care: this code must check whether the hover != current hover
                 // (even if null), because there might be multiple viewports open
                 // (#582)
-                params.getModelSharedPtr()->setHovered(
-                    opyn::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
+                params.getModelSharedPtr()->set_hovered(
+                    opyn::FindComponent(params.getModelSharedPtr()->get_model(), state.maybeHoveredComponentAbsPath)
                 );
                 rv = true;
             }
@@ -466,8 +466,8 @@ namespace
             // if left-clicked, update top-level model selection
             if (state.isLeftClickReleasedWithoutDragging)
             {
-                params.getModelSharedPtr()->setSelected(
-                    opyn::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
+                params.getModelSharedPtr()->set_selected(
+                    opyn::FindComponent(params.getModelSharedPtr()->get_model(), state.maybeHoveredComponentAbsPath)
                 );
                 rv = true;
             }
@@ -484,7 +484,7 @@ namespace
                 m_IsHandlingMouseInputs &&
                 !ui::is_mouse_dragging_with_any_button_down())
             {
-                if (const OpenSim::Component* c = opyn::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
+                if (const OpenSim::Component* c = opyn::FindComponent(params.getModelSharedPtr()->get_model(), state.maybeHoveredComponentAbsPath))
                 {
                     DrawComponentHoverTooltip(*c);
                 }

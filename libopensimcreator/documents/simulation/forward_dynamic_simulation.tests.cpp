@@ -36,7 +36,7 @@ TEST(ForwardDynamicSimulation, CanInitFromBasicModel)
     ASSERT_FALSE(sim.getOutputExtractors().empty());
     sim.requestStop();
     sim.stop();
-    ASSERT_EQ(modelState.getFixupScaleFactor(), sim.getFixupScaleFactor());
+    ASSERT_EQ(modelState.get_fixup_scale_factor(), sim.getFixupScaleFactor());
     float newSf = sim.getFixupScaleFactor() + 1.0f;
     sim.setFixupScaleFactor(newSf);
     ASSERT_EQ(sim.getFixupScaleFactor(), newSf);

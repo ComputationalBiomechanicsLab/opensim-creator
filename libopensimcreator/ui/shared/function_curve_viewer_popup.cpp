@@ -42,14 +42,14 @@ private:
     class FunctionParameters final {
     public:
         explicit FunctionParameters(const opyn::VersionedComponentAccessor& component) :
-            componentVersion{component.getComponentVersion()}
+            componentVersion{component.get_component_version()}
         {}
 
         friend bool operator==(const FunctionParameters& lhs, const FunctionParameters& rhs) = default;
 
         void setVersionFromComponent(const opyn::VersionedComponentAccessor& component)
         {
-            componentVersion = component.getComponentVersion();
+            componentVersion = component.get_component_version();
         }
 
         ClosedInterval<float> getInputRange() const { return inputRange; }

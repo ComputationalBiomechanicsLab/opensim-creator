@@ -44,7 +44,7 @@ public:
     void draw_content()
     {
         // load coords
-        std::vector<const OpenSim::Coordinate*> coordPtrs = opyn::GetCoordinatesInModel(m_Model->getModel());
+        std::vector<const OpenSim::Coordinate*> coordPtrs = opyn::GetCoordinatesInModel(m_Model->get_model());
 
         // if there's no coordinates in the model, show a warning message and stop drawing
         if (coordPtrs.empty()) {
@@ -105,7 +105,7 @@ public:
 private:
     void drawPoseDropdownButton()
     {
-        if (m_Model->isReadonly()) {
+        if (m_Model->is_readonly()) {
             ui::begin_disabled();
         }
         ui::draw_button("Pose " MSMICONS_CARET_DOWN);
@@ -117,7 +117,7 @@ private:
             }
             ui::end_popup();
         }
-        if (m_Model->isReadonly()) {
+        if (m_Model->is_readonly()) {
             ui::end_disabled();
         }
     }
@@ -142,11 +142,11 @@ private:
     void drawNameCell(const OpenSim::Coordinate& c)
     {
         int stylesPushed = 0;
-        if (&c == m_Model->getHovered()) {
+        if (&c == m_Model->get_hovered()) {
             ui::push_style_color(ui::ColorVar::Text, OSCColors::hovered());
             ++stylesPushed;
         }
-        if (&c == m_Model->getSelected()) {
+        if (&c == m_Model->get_selected()) {
             ui::push_style_color(ui::ColorVar::Text, OSCColors::selected());
             ++stylesPushed;
         }
@@ -155,7 +155,7 @@ private:
         ui::pop_style_color(std::exchange(stylesPushed, 0));
 
         if (ui::is_item_hovered()) {
-            m_Model->setHovered(&c);
+            m_Model->set_hovered(&c);
 
             std::stringstream ss;
             ss << "    motion type = " << opyn::GetMotionTypeDisplayName(c) << '\n';
@@ -165,7 +165,7 @@ private:
         }
 
         if (ui::is_item_clicked(ui::MouseButton::Left)) {
-            m_Model->setSelected(&c);
+            m_Model->set_selected(&c);
         }
         else if (ui::is_item_clicked(ui::MouseButton::Right)) {
             auto popup = std::make_unique<ComponentContextMenu>(
@@ -180,7 +180,7 @@ private:
 
     void drawDataCell(const OpenSim::Coordinate& c)
     {
-        const bool disabled = m_Model->isReadonly();
+        const bool disabled = m_Model->is_readonly();
         if (disabled) {
             ui::begin_disabled();
         }
@@ -198,8 +198,8 @@ private:
         ui::push_style_color(ui::ColorVar::ButtonActive, Color::clear());
         ui::push_style_color(ui::ColorVar::ButtonHovered, Color::clear());
         ui::push_style_var(ui::StyleVar::FramePadding, {0.0f, ui::get_style_frame_padding().y()});
-        if (ui::draw_button(c.getLocked(m_Model->getState()) ? MSMICONS_LOCK : MSMICONS_UNLOCK)) {
-            const bool newValue = !c.getLocked(m_Model->getState());
+        if (ui::draw_button(c.getLocked(m_Model->get_state()) ? MSMICONS_LOCK : MSMICONS_UNLOCK)) {
+            const bool newValue = !c.getLocked(m_Model->get_state());
             ActionSetCoordinateLockedAndSave(*m_Model, c, newValue);
         }
         ui::pop_style_var();
@@ -211,13 +211,13 @@ private:
 
     void drawDataCellCoordinateSlider(const OpenSim::Coordinate& c)
     {
-        const bool coordinateLocked = c.getLocked(m_Model->getState());
+        const bool coordinateLocked = c.getLocked(m_Model->get_state());
 
         ui::set_next_item_width(ui::get_content_region_available().x());
 
         const float minValue = opyn::ConvertCoordValueToDisplayValue(c, c.getRangeMin());
         const float maxValue = opyn::ConvertCoordValueToDisplayValue(c, c.getRangeMax());
-        float displayedValue = opyn::ConvertCoordValueToDisplayValue(c, c.getValue(m_Model->getState()));
+        float displayedValue = opyn::ConvertCoordValueToDisplayValue(c, c.getValue(m_Model->get_state()));
 
         if (coordinateLocked) {
             ui::push_style_var(ui::StyleVar::DisabledAlpha, 0.2f);
@@ -240,7 +240,7 @@ private:
 
     void drawSpeedCell(const OpenSim::Coordinate& c)
     {
-        float displayedSpeed = opyn::ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Model->getState()));
+        float displayedSpeed = opyn::ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Model->get_state()));
 
         ui::set_next_item_width(ui::get_content_region_available().x());
         if (ui::draw_float_meters_input("##coordinatespeededitor", displayedSpeed)) {

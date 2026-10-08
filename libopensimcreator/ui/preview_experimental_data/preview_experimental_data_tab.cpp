@@ -76,14 +76,14 @@ namespace
             // this might not be the case if (e.g.) an edit was made by an action that
             // re-finalizes the model at t=0, so use the version number to track potential
             // situations where that might've happened (#932)
-            if (m_Model->getState().getTime() != m_ScrubTime) {
+            if (m_Model->get_state().getTime() != m_ScrubTime) {
                 setScrubTime(m_ScrubTime);
             }
         }
 
         bool isModelLoaded() const
         {
-            return opyn::HasInputFileName(m_Model->getModel());
+            return opyn::HasInputFileName(m_Model->get_model());
         }
 
         void loadModelFile(const std::filesystem::path& p)
@@ -98,7 +98,7 @@ namespace
             ReinitializationFlags flags = ReinitializationFlag::None)
         {
             // reload/reset model
-            if (opyn::HasInputFileName(m_Model->getModel())) {
+            if (opyn::HasInputFileName(m_Model->get_model())) {
                 SceneCache dummy;
                 ActionReloadOsimFromDisk(*m_Model, dummy);
             }
@@ -108,7 +108,7 @@ namespace
 
             // if applicable, reload associated trajectory
             if (m_AssociatedTrajectory) {
-                m_AssociatedTrajectory->reload_from_disk(m_Model->getModel());
+                m_AssociatedTrajectory->reload_from_disk(m_Model->get_model());
             }
 
             // reinitialize everything else
@@ -117,7 +117,7 @@ namespace
 
         void loadModelTrajectoryFile(const std::filesystem::path& path)
         {
-            m_AssociatedTrajectory = opyn::FileBackedStorage{m_Model->getModel(), path};
+            m_AssociatedTrajectory = opyn::FileBackedStorage{m_Model->get_model(), path};
             reloadAll("loaded trajactory", ReinitializationFlag::RecalculateTimeRange);
             m_TabNameOverride = path.filename().string();
         }
@@ -161,12 +161,12 @@ namespace
 
         void setScrubTime(double newTime)
         {
-            SimTK::State& state = m_Model->updModel().updWorkingState();
+            SimTK::State& state = m_Model->upd_model().updWorkingState();
             state.setTime(newTime);
 
             if (m_AssociatedTrajectory) {
                 opyn::UpdateStateFromStorageTime(
-                    m_Model->updModel(),
+                    m_Model->upd_model(),
                     state,
                     m_AssociatedTrajectory->mapper(),
                     m_AssociatedTrajectory->storage(),
@@ -174,12 +174,12 @@ namespace
                 );
                 // m_Model->updModel().assemble(state);
                 // m_Model->updModel().equilibrateMuscles(state);
-                m_Model->getModel().realizeReport(state);
+                m_Model->get_model().realizeReport(state);
             }
             else {
                 // no associated motion: only change the time part of the state and re-realize
-                m_Model->updModel().equilibrateMuscles(state);
-                m_Model->updModel().realizeDynamics(state);
+                m_Model->upd_model().equilibrateMuscles(state);
+                m_Model->upd_model().realizeDynamics(state);
             }
             m_ScrubTime = static_cast<float>(newTime);
         }
@@ -200,23 +200,23 @@ namespace
 
             // hide forces that are computed from the model, because it's assumed that the
             // user only wants to visualize forces that come from externally-supplied data
-            if (m_Model->getModel().countNumComponents() > 0) {
-                for (auto& force : m_Model->updModel().updComponentList<OpenSim::Force>()) {
+            if (m_Model->get_model().countNumComponents() > 0) {
+                for (auto& force : m_Model->upd_model().updComponentList<OpenSim::Force>()) {
                     force.set_appliesForce(false);
                 }
             }
 
             // (re)load associated trajectory
             if (m_AssociatedTrajectory) {
-                opyn::InitializeModel(m_Model->updModel());
+                opyn::InitializeModel(m_Model->upd_model());
 
-                m_AssociatedTrajectory->reload_from_disk(m_Model->getModel());
+                m_AssociatedTrajectory->reload_from_disk(m_Model->get_model());
                 dataTimeRange = osc::bounding_interval_of(dataTimeRange, m_AssociatedTrajectory->time_range());
             }
 
             // (re)load motions
             for (const std::filesystem::path& path : m_AssociatedMotionFiles) {
-                const auto& motion = opyn::AddModelComponent<opyn::AnnotatedMotion>(m_Model->updModel(), path);
+                const auto& motion = opyn::AddModelComponent<opyn::AnnotatedMotion>(m_Model->upd_model(), path);
                 dataTimeRange = osc::bounding_interval_of(dataTimeRange, motion.time_range());
             }
 
@@ -224,13 +224,13 @@ namespace
             for (const std::filesystem::path& path : m_AssociatedXMLDocuments) {
                 auto ptr = std::unique_ptr<OpenSim::Object>{OpenSim::Object::makeObjectFromFile(path.string())};
                 if (dynamic_cast<OpenSim::ModelComponent*>(ptr.get())) {
-                    m_Model->updModel().addModelComponent(dynamic_cast<OpenSim::ModelComponent*>(ptr.release()));
+                    m_Model->upd_model().addModelComponent(dynamic_cast<OpenSim::ModelComponent*>(ptr.release()));
                 }
             }
 
             // care: state initialization is dependent on `m_AssociatedTrajectory`
-            opyn::InitializeModel(m_Model->updModel());
-            opyn::InitializeState(m_Model->updModel());
+            opyn::InitializeModel(m_Model->upd_model());
+            opyn::InitializeState(m_Model->upd_model());
             m_Model->commit(label);
 
             if (dataTimeRange and (flags & ReinitializationFlag::RecalculateTimeRange)) {

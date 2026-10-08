@@ -68,7 +68,7 @@ namespace
                 }
 
                 try {
-                    std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(model->getModel());
+                    std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(model->get_model());
                     opyn::InitializeModel(*cpy);
                     opyn::InitializeState(*cpy);
 
@@ -83,7 +83,7 @@ namespace
                     auto simulation = std::make_shared<Simulation>(StoFileSimulation{
                         std::move(cpy),
                         response.front(),
-                        model->getFixupScaleFactor(),
+                        model->get_fixup_scale_factor(),
                         std::move(env)
                     });
                     auto tab = std::make_unique<SimulationTab>(parent_ref.get(), simulation);
@@ -232,9 +232,9 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<opyn::ModelStatePair> maybeMod
     ui::draw_separator();
 
     {
-        const bool modelHasBackingFile = maybeModel != nullptr && opyn::HasInputFileName(maybeModel->getModel());
+        const bool modelHasBackingFile = maybeModel != nullptr && opyn::HasInputFileName(maybeModel->get_model());
 
-        if (ui::draw_menu_item(MSMICONS_RECYCLE " Reload", Key::F5, false, undoableModel != nullptr and undoableModel->canUpdModel() and modelHasBackingFile) and undoableModel != nullptr) {
+        if (ui::draw_menu_item(MSMICONS_RECYCLE " Reload", Key::F5, false, undoableModel != nullptr and undoableModel->can_upd_model() and modelHasBackingFile) and undoableModel != nullptr) {
             ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());
         }
         ui::draw_tooltip_if_item_hovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");

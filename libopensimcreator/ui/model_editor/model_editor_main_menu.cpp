@@ -69,8 +69,8 @@ private:
 
             ui::draw_separator();
 
-            if (ui::draw_menu_item("         Deselect", Key::Escape, false, m_Model->getSelected() != nullptr)) {
-                m_Model->clearSelected();
+            if (ui::draw_menu_item("         Deselect", Key::Escape, false, m_Model->get_selected() != nullptr)) {
+                m_Model->clear_selected();
             }
 
             ui::end_menu();
@@ -103,7 +103,7 @@ private:
                 }
             }
 
-            if (ui::draw_menu_item("         Import Points", {}, nullptr, m_Model->canUpdModel())) {
+            if (ui::draw_menu_item("         Import Points", {}, nullptr, m_Model->can_upd_model())) {
                 if (parent()) {
                     auto popup = std::make_unique<ImportStationsFromCSVPopup>(
                         &owner(),
@@ -160,11 +160,11 @@ private:
     void drawMainMenuActionsTab()
     {
         if (ui::begin_menu("Actions")) {
-            if (ui::draw_menu_item("Disable all wrapping surfaces", {}, nullptr, m_Model->canUpdModel())) {
+            if (ui::draw_menu_item("Disable all wrapping surfaces", {}, nullptr, m_Model->can_upd_model())) {
                 ActionDisableAllWrappingSurfaces(*m_Model);
             }
 
-            if (ui::draw_menu_item("Enable all wrapping surfaces", {}, nullptr, m_Model->canUpdModel())) {
+            if (ui::draw_menu_item("Enable all wrapping surfaces", {}, nullptr, m_Model->can_upd_model())) {
                 ActionEnableAllWrappingSurfaces(*m_Model);
             }
 

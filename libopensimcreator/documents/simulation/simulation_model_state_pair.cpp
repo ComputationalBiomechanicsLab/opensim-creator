@@ -156,52 +156,52 @@ void osc::SimulationModelStatePair::setSimulationReport(SimulationReport report)
     m_Impl->setSimulationReport(std::move(report));
 }
 
-const OpenSim::Model& osc::SimulationModelStatePair::implGetModel() const
+const OpenSim::Model& osc::SimulationModelStatePair::impl_get_model() const
 {
     return m_Impl->getModel();
 }
 
-UID osc::SimulationModelStatePair::implGetModelVersion() const
+UID osc::SimulationModelStatePair::impl_get_model_version() const
 {
     return m_Impl->getModelVersion();
 }
 
-const SimTK::State& osc::SimulationModelStatePair::implGetState() const
+const SimTK::State& osc::SimulationModelStatePair::impl_get_state() const
 {
     return m_Impl->getState();
 }
 
-UID osc::SimulationModelStatePair::implGetStateVersion() const
+UID osc::SimulationModelStatePair::impl_get_state_version() const
 {
     return m_Impl->getStateVersion();
 }
 
-const OpenSim::Component* osc::SimulationModelStatePair::implGetSelected() const
+const OpenSim::Component* osc::SimulationModelStatePair::impl_get_selected() const
 {
     return m_Impl->getSelected();
 }
 
-void osc::SimulationModelStatePair::implSetSelected(const OpenSim::Component* c)
+void osc::SimulationModelStatePair::impl_set_selected(const OpenSim::Component* c)
 {
     m_Impl->setSelected(c);
 }
 
-const OpenSim::Component* osc::SimulationModelStatePair::implGetHovered() const
+const OpenSim::Component* osc::SimulationModelStatePair::impl_get_hovered() const
 {
     return m_Impl->getHovered();
 }
 
-void osc::SimulationModelStatePair::implSetHovered(const OpenSim::Component* c)
+void osc::SimulationModelStatePair::impl_set_hovered(const OpenSim::Component* c)
 {
     m_Impl->setHovered(c);
 }
 
-float osc::SimulationModelStatePair::implGetFixupScaleFactor() const
+float osc::SimulationModelStatePair::impl_get_fixup_scale_factor() const
 {
     return m_Impl->getFixupScaleFactor();
 }
 
-void osc::SimulationModelStatePair::implSetFixupScaleFactor(float v)
+void osc::SimulationModelStatePair::impl_set_fixup_scale_factor(float v)
 {
     m_Impl->setFixupScaleFactor(v);
 }

@@ -204,13 +204,13 @@ namespace
 
             std::shared_ptr<ModelStatePair> scaled = std::get<std::shared_ptr<ModelStatePair>>(scalingResult);
 
-            std::unique_ptr<OpenSim::Model> copy = std::make_unique<OpenSim::Model>(scaled->getModel());
+            std::unique_ptr<OpenSim::Model> copy = std::make_unique<OpenSim::Model>(scaled->get_model());
             InitializeModel(*copy);
             InitializeState(*copy);
             {
                 // TODO/FIXME/HACK: this code was thrown together to solve an immediate problem
                 // of being able to export warped models, but it isn't very clean or robust (#1003).
-                auto inMemoryMeshes = scaled->getModel().getComponentList<InMemoryMesh>();
+                auto inMemoryMeshes = scaled->get_model().getComponentList<InMemoryMesh>();
                 if (inMemoryMeshes.begin() != inMemoryMeshes.end()) {
                     const auto warpedGeometryDir = tryGetWarpedGeometryDirectory();
                     if (not warpedGeometryDir) {

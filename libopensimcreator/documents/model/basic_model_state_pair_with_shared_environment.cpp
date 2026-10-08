@@ -21,7 +21,7 @@ public:
     }
 
     explicit Impl(const ModelStatePairWithSharedEnvironment& p) :
-        Impl{p.getModel(), p.getState(), p.getFixupScaleFactor(), p.tryUpdEnvironment()}
+        Impl{p.get_model(), p.get_state(), p.get_fixup_scale_factor(), p.tryUpdEnvironment()}
     {}
 
     explicit Impl(const std::filesystem::path& osimPath) :
@@ -135,22 +135,22 @@ osc::BasicModelStatePairWithSharedEnvironment& osc::BasicModelStatePairWithShare
 osc::BasicModelStatePairWithSharedEnvironment& osc::BasicModelStatePairWithSharedEnvironment::operator=(BasicModelStatePairWithSharedEnvironment&&) noexcept = default;
 osc::BasicModelStatePairWithSharedEnvironment::~BasicModelStatePairWithSharedEnvironment() noexcept = default;
 
-const OpenSim::Model& osc::BasicModelStatePairWithSharedEnvironment::implGetModel() const
+const OpenSim::Model& osc::BasicModelStatePairWithSharedEnvironment::impl_get_model() const
 {
     return m_Impl->getModel();
 }
 
-const SimTK::State& osc::BasicModelStatePairWithSharedEnvironment::implGetState() const
+const SimTK::State& osc::BasicModelStatePairWithSharedEnvironment::impl_get_state() const
 {
     return m_Impl->getState();
 }
 
-float osc::BasicModelStatePairWithSharedEnvironment::implGetFixupScaleFactor() const
+float osc::BasicModelStatePairWithSharedEnvironment::impl_get_fixup_scale_factor() const
 {
     return m_Impl->getFixupScaleFactor();
 }
 
-void osc::BasicModelStatePairWithSharedEnvironment::implSetFixupScaleFactor(float v)
+void osc::BasicModelStatePairWithSharedEnvironment::impl_set_fixup_scale_factor(float v)
 {
     m_Impl->setFixupScaleFactor(v);
 }

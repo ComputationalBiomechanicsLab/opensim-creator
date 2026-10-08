@@ -365,7 +365,7 @@ void osc::DrawSelectOwnerMenu(opyn::ModelStatePair& model, const OpenSim::Compon
 {
     if (ui::begin_menu("Select Owner"))
     {
-        model.setHovered(nullptr);
+        model.set_hovered(nullptr);
 
         for (
             const OpenSim::Component* owner = opyn::GetOwner(selected);
@@ -381,11 +381,11 @@ void osc::DrawSelectOwnerMenu(opyn::ModelStatePair& model, const OpenSim::Compon
 
             if (ui::draw_menu_item(menuLabel))
             {
-                model.setSelected(owner);
+                model.set_selected(owner);
             }
             if (ui::is_item_hovered())
             {
-                model.setHovered(owner);
+                model.set_hovered(owner);
             }
         }
 
@@ -503,12 +503,12 @@ void osc::DrawOutputNameColumn(
     {
         if (ui::is_item_hovered())
         {
-            maybeActiveSate->setHovered(opyn::FindComponent(maybeActiveSate->getModel(), co->component_abs_path()));
+            maybeActiveSate->set_hovered(opyn::FindComponent(maybeActiveSate->get_model(), co->component_abs_path()));
         }
 
         if (ui::is_item_clicked(ui::MouseButton::Left))
         {
-            maybeActiveSate->setSelected(opyn::FindComponent(maybeActiveSate->getModel(), co->component_abs_path()));
+            maybeActiveSate->set_selected(opyn::FindComponent(maybeActiveSate->get_model(), co->component_abs_path()));
         }
     }
 
@@ -1419,7 +1419,7 @@ void osc::DrawSaveModelButton(const std::shared_ptr<opyn::ModelStatePair>& model
 
 void osc::DrawReloadModelButton(UndoableModelStatePair& model)
 {
-    const bool disable = model.isReadonly() or not opyn::HasInputFileName(model.getModel());
+    const bool disable = model.is_readonly() or not opyn::HasInputFileName(model.get_model());
 
     if (disable) {
         ui::begin_disabled();
@@ -1476,15 +1476,15 @@ void osc::DrawUndoAndRedoButtons(opyn::ModelStatePair& model)
 
 void osc::DrawToggleFramesButton(opyn::ModelStatePair& model, IconCache& icons)
 {
-    const Icon& icon = icons.find_or_throw(opyn::IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
+    const Icon& icon = icons.find_or_throw(opyn::IsShowingFrames(model.get_model()) ? "frame_colored" : "frame_bw");
 
-    if (model.isReadonly()) {
+    if (model.is_readonly()) {
         ui::begin_disabled();
     }
     if (ui::draw_image_button("##toggleframes", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
         ActionToggleFrames(model);
     }
-    if (model.isReadonly()) {
+    if (model.is_readonly()) {
         ui::end_disabled();
     }
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Frames", "Toggles whether frames (coordinate systems) within the model should be rendered in the 3D scene.");
@@ -1492,14 +1492,14 @@ void osc::DrawToggleFramesButton(opyn::ModelStatePair& model, IconCache& icons)
 
 void osc::DrawToggleMarkersButton(opyn::ModelStatePair& model, IconCache& icons)
 {
-    const Icon& icon = icons.find_or_throw(opyn::IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
-    if (model.isReadonly()) {
+    const Icon& icon = icons.find_or_throw(opyn::IsShowingMarkers(model.get_model()) ? "marker_colored" : "marker");
+    if (model.is_readonly()) {
         ui::begin_disabled();
     }
     if (ui::draw_image_button("##togglemarkers", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
         ActionToggleMarkers(model);
     }
-    if (model.isReadonly()) {
+    if (model.is_readonly()) {
         ui::end_disabled();
     }
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Markers", "Toggles whether markers should be rendered in the 3D scene");
@@ -1507,14 +1507,14 @@ void osc::DrawToggleMarkersButton(opyn::ModelStatePair& model, IconCache& icons)
 
 void osc::DrawToggleWrapGeometryButton(opyn::ModelStatePair& model, IconCache& icons)
 {
-    const Icon& icon = icons.find_or_throw(opyn::IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
-    if (model.isReadonly()) {
+    const Icon& icon = icons.find_or_throw(opyn::IsShowingWrapGeometry(model.get_model()) ? "wrap_colored" : "wrap");
+    if (model.is_readonly()) {
         ui::begin_disabled();
     }
     if (ui::draw_image_button("##togglewrapgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
         ActionToggleWrapGeometry(model);
     }
-    if (model.isReadonly()) {
+    if (model.is_readonly()) {
         ui::end_disabled();
     }
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Wrap Geometry", "Toggles whether wrap geometry should be rendered in the 3D scene.\n\nNOTE: This is a model-log_level_ property. Individual wrap geometries *within* the model may have their visibility set to 'false', which will cause them to be hidden from the visualizer, even if this is enabled.");
@@ -1522,14 +1522,14 @@ void osc::DrawToggleWrapGeometryButton(opyn::ModelStatePair& model, IconCache& i
 
 void osc::DrawToggleContactGeometryButton(opyn::ModelStatePair& model, IconCache& icons)
 {
-    const Icon& icon = icons.find_or_throw(opyn::IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
-    if (model.isReadonly()) {
+    const Icon& icon = icons.find_or_throw(opyn::IsShowingContactGeometry(model.get_model()) ? "contact_colored" : "contact");
+    if (model.is_readonly()) {
         ui::begin_disabled();
     }
     if (ui::draw_image_button("##togglecontactgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
         ActionToggleContactGeometry(model);
     }
-    if (model.isReadonly()) {
+    if (model.is_readonly()) {
         ui::end_disabled();
     }
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
@@ -1537,14 +1537,14 @@ void osc::DrawToggleContactGeometryButton(opyn::ModelStatePair& model, IconCache
 
 void osc::DrawToggleForcesButton(opyn::ModelStatePair& model, IconCache& icons)
 {
-    const Icon& icon = icons.find_or_throw(opyn::IsShowingForces(model.getModel()) ? "forces_colored" : "forces_bw");
-    if (model.isReadonly()) {
+    const Icon& icon = icons.find_or_throw(opyn::IsShowingForces(model.get_model()) ? "forces_colored" : "forces_bw");
+    if (model.is_readonly()) {
         ui::begin_disabled();
     }
     if (ui::draw_image_button("##toggleforces", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
         ActionToggleForces(model);
     }
-    if (model.isReadonly()) {
+    if (model.is_readonly()) {
         ui::end_disabled();
     }
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Forces", "Toggles whether forces should be rendered in the 3D scene.\n\nNOTE: this is a model-level property that only applies to forces in OpenSim that actually check this flag. OpenSim Creator's visualizers also offer custom overlays for forces, muscles, etc. separately to this mechanism.");
@@ -1571,10 +1571,10 @@ void osc::DrawSceneScaleFactorEditorControls(opyn::ModelStatePair& model)
     ui::same_line();
 
     {
-        float scaleFactor = model.getFixupScaleFactor();
+        float scaleFactor = model.get_fixup_scale_factor();
         ui::set_next_item_width(ui::calc_text_size("0.00000").x());
         if (ui::draw_float_input("##scaleinput", &scaleFactor)) {
-            model.setFixupScaleFactor(scaleFactor);
+            model.set_fixup_scale_factor(scaleFactor);
         }
     }
     ui::pop_style_var();
@@ -1599,14 +1599,14 @@ void osc::DrawMeshExportContextMenuContent(
         const auto onFrameMenuItemClicked = [&model, &mesh](const OpenSim::Frame& frame)
         {
             ActionReexportMeshOBJWithRespectTo(
-                model.getModel(),
-                model.getState(),
+                model.get_model(),
+                model.get_state(),
                 mesh,
                 frame
             );
         };
 
-        DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
+        DrawWithRespectToMenuContainingMenuItemPerFrame(model.get_model(), onFrameMenuItemClicked);
         ui::end_menu();
     }
 
@@ -1614,14 +1614,14 @@ void osc::DrawMeshExportContextMenuContent(
         const auto onFrameMenuItemClicked = [&model, &mesh](const OpenSim::Frame& frame)
         {
             ActionReexportMeshSTLWithRespectTo(
-                model.getModel(),
-                model.getState(),
+                model.get_model(),
+                model.get_state(),
                 mesh,
                 frame
             );
         };
 
-        DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
+        DrawWithRespectToMenuContainingMenuItemPerFrame(model.get_model(), onFrameMenuItemClicked);
         ui::end_menu();
     }
 }

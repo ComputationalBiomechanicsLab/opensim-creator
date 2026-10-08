@@ -38,7 +38,7 @@ public:
 private:
     void drawSelectionBreadcrumbs()
     {
-        const OpenSim::Component* const c = m_Model->getSelected();
+        const OpenSim::Component* const c = m_Model->get_selected();
 
         if (c) {
             const std::vector<const OpenSim::Component*> els = opyn::GetPathElements(*c);
@@ -50,7 +50,7 @@ private:
                 ui::same_line();
                 const std::string label = truncate_with_ellipsis(el.getName(), 15);
                 if (ui::draw_small_button(label)) {
-                    m_Model->setSelected(&el);
+                    m_Model->set_selected(&el);
                 }
                 drawMouseInteractionStuff(el);
                 ui::same_line();
@@ -74,7 +74,7 @@ private:
     void drawMouseInteractionStuff(const OpenSim::Component& c)
     {
         if (ui::is_item_hovered()) {
-            m_Model->setHovered(&c);
+            m_Model->set_hovered(&c);
 
             ui::begin_tooltip();
             ui::draw_text_disabled(c.getConcreteClassName());

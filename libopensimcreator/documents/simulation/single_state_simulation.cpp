@@ -17,7 +17,7 @@ public:
 
     SynchronizedValueGuard<const OpenSim::Model> getModel() const
     {
-        return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePairWithSharedEnvironment& ms) -> const OpenSim::Model& { return ms.getModel(); });
+        return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePairWithSharedEnvironment& ms) -> const OpenSim::Model& { return ms.get_model(); });
     }
 
     ptrdiff_t getNumReports() const
@@ -57,12 +57,12 @@ public:
 
     float getFixupScaleFactor() const
     {
-        return m_ModelState.lock()->getFixupScaleFactor();
+        return m_ModelState.lock()->get_fixup_scale_factor();
     }
 
     void setFixupScaleFactor(float v)
     {
-        m_ModelState.lock()->setFixupScaleFactor(v);
+        m_ModelState.lock()->set_fixup_scale_factor(v);
     }
 
     std::shared_ptr<Environment> implUpdAssociatedEnvironment()

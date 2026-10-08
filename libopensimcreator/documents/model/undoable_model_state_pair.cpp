@@ -74,7 +74,7 @@ namespace
         UiModelStatePair& operator=(UiModelStatePair&&) noexcept = default;
         ~UiModelStatePair() noexcept override = default;
 
-        const OpenSim::Model& implGetModel() const final
+        const OpenSim::Model& impl_get_model() const final
         {
             return *m_Model;
         }
@@ -85,7 +85,7 @@ namespace
             return *m_Model;
         }
 
-        UID implGetModelVersion() const final
+        UID impl_get_model_version() const final
         {
             return m_ModelVersion;
         }
@@ -95,22 +95,22 @@ namespace
             m_ModelVersion = version;
         }
 
-        const SimTK::State& implGetState() const final
+        const SimTK::State& impl_get_state() const final
         {
             return m_Model->getWorkingState();
         }
 
-        UID implGetStateVersion() const final
+        UID impl_get_state_version() const final
         {
             return m_ModelVersion;
         }
 
-        float implGetFixupScaleFactor() const final
+        float impl_get_fixup_scale_factor() const final
         {
             return m_FixupScaleFactor;
         }
 
-        void implSetFixupScaleFactor(float sf) final
+        void impl_set_fixup_scale_factor(float sf) final
         {
             m_FixupScaleFactor = sf;
         }
@@ -125,12 +125,12 @@ namespace
             m_MaybeSelected = p;
         }
 
-        const OpenSim::Component* implGetSelected() const final
+        const OpenSim::Component* impl_get_selected() const final
         {
             return opyn::FindComponent(*m_Model, m_MaybeSelected);
         }
 
-        void implSetSelected(const OpenSim::Component* c) final
+        void impl_set_selected(const OpenSim::Component* c) final
         {
             m_MaybeSelected = opyn::GetAbsolutePathOrEmpty(c);
         }
@@ -145,12 +145,12 @@ namespace
             m_MaybeHovered = p;
         }
 
-        const OpenSim::Component* implGetHovered() const final
+        const OpenSim::Component* impl_get_hovered() const final
         {
             return opyn::FindComponent(*m_Model, m_MaybeHovered);
         }
 
-        void implSetHovered(const OpenSim::Component* c) final
+        void impl_set_hovered(const OpenSim::Component* c) final
         {
             m_MaybeHovered = opyn::GetAbsolutePathOrEmpty(c);
         }
@@ -285,7 +285,7 @@ public:
 
     const OpenSim::Model& getModel() const
     {
-        return m_Scratch.getModel();
+        return m_Scratch.get_model();
     }
 
     OpenSim::Model& updModel()
@@ -297,7 +297,7 @@ public:
     {
         UiModelStatePair p{std::move(newModel)};
         CopySelectedAndHovered(m_Scratch, p);
-        p.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+        p.set_fixup_scale_factor(m_Scratch.get_fixup_scale_factor());
         m_Scratch = std::move(p);
     }
 
@@ -305,7 +305,7 @@ public:
     {
         UiModelStatePair p;
         CopySelectedAndHovered(m_Scratch, p);
-        p.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+        p.set_fixup_scale_factor(m_Scratch.get_fixup_scale_factor());
         m_Scratch = std::move(p);
     }
 
@@ -317,7 +317,7 @@ public:
 
     UID getModelVersion() const
     {
-        return m_Scratch.getModelVersion();
+        return m_Scratch.get_model_version();
     }
 
     void setModelVersion(UID version)
@@ -327,42 +327,42 @@ public:
 
     const SimTK::State& getState() const
     {
-        return m_Scratch.getState();
+        return m_Scratch.get_state();
     }
 
     UID getStateVersion() const
     {
-        return m_Scratch.getStateVersion();
+        return m_Scratch.get_state_version();
     }
 
     float getFixupScaleFactor() const
     {
-        return m_Scratch.getFixupScaleFactor();
+        return m_Scratch.get_fixup_scale_factor();
     }
 
     void setFixupScaleFactor(float v)
     {
-        m_Scratch.setFixupScaleFactor(v);
+        m_Scratch.set_fixup_scale_factor(v);
     }
 
     const OpenSim::Component* getSelected() const
     {
-        return m_Scratch.getSelected();
+        return m_Scratch.get_selected();
     }
 
     void setSelected(const OpenSim::Component* c)
     {
-        m_Scratch.setSelected(c);
+        m_Scratch.set_selected(c);
     }
 
     const OpenSim::Component* getHovered() const
     {
-        return m_Scratch.getHovered();
+        return m_Scratch.get_hovered();
     }
 
     void setHovered(const OpenSim::Component* c)
     {
-        m_Scratch.setHovered(c);
+        m_Scratch.set_hovered(c);
     }
 
     std::shared_ptr<Environment> implUpdAssociatedEnvironment()
@@ -564,7 +564,7 @@ private:
         {
             UiModelStatePair newScratch{std::make_unique<OpenSim::Model>(*c->getModel())};
             CopySelectedAndHovered(m_Scratch, newScratch);
-            newScratch.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+            newScratch.set_fixup_scale_factor(m_Scratch.get_fixup_scale_factor());
             m_Scratch = std::move(newScratch);
         }
     }
@@ -594,7 +594,7 @@ private:
         // - user's scene scale factor should be "sticky" between undo/redo
         UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*parent->getModel())};
         CopySelectedAndHovered(m_Scratch, newModel);
-        newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+        newModel.set_fixup_scale_factor(m_Scratch.get_fixup_scale_factor());
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = parent->getID();
@@ -623,7 +623,7 @@ private:
         // - user's scene scale factor should be "sticky" between undo/redo
         UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*c->getModel())};
         CopySelectedAndHovered(m_Scratch, newModel);
-        newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+        newModel.set_fixup_scale_factor(m_Scratch.get_fixup_scale_factor());
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = c->getID();
@@ -771,67 +771,67 @@ void osc::UndoableModelStatePair::loadModel(const std::filesystem::path& p)
     m_Impl->loadModel(p);
 }
 
-void osc::UndoableModelStatePair::implSetModelVersion(UID version)
+void osc::UndoableModelStatePair::impl_set_model_version(UID version)
 {
     m_Impl->setModelVersion(version);
 }
 
-const OpenSim::Model& osc::UndoableModelStatePair::implGetModel() const
+const OpenSim::Model& osc::UndoableModelStatePair::impl_get_model() const
 {
     return m_Impl->getModel();
 }
 
-const SimTK::State& osc::UndoableModelStatePair::implGetState() const
+const SimTK::State& osc::UndoableModelStatePair::impl_get_state() const
 {
     return m_Impl->getState();
 }
 
-OpenSim::Model& osc::UndoableModelStatePair::implUpdModel()
+OpenSim::Model& osc::UndoableModelStatePair::impl_upd_model()
 {
     return m_Impl->updModel();
 }
 
-void osc::UndoableModelStatePair::implCommit(std::string_view commitMessage)
+void osc::UndoableModelStatePair::impl_commit(std::string_view commitMessage)
 {
     m_Impl->commit(commitMessage);
 }
 
-UID osc::UndoableModelStatePair::implGetModelVersion() const
+UID osc::UndoableModelStatePair::impl_get_model_version() const
 {
     return m_Impl->getModelVersion();
 }
 
-UID osc::UndoableModelStatePair::implGetStateVersion() const
+UID osc::UndoableModelStatePair::impl_get_state_version() const
 {
     return m_Impl->getStateVersion();
 }
 
-float osc::UndoableModelStatePair::implGetFixupScaleFactor() const
+float osc::UndoableModelStatePair::impl_get_fixup_scale_factor() const
 {
     return m_Impl->getFixupScaleFactor();
 }
 
-void osc::UndoableModelStatePair::implSetFixupScaleFactor(float v)
+void osc::UndoableModelStatePair::impl_set_fixup_scale_factor(float v)
 {
     m_Impl->setFixupScaleFactor(v);
 }
 
-const OpenSim::Component* osc::UndoableModelStatePair::implGetSelected() const
+const OpenSim::Component* osc::UndoableModelStatePair::impl_get_selected() const
 {
     return m_Impl->getSelected();
 }
 
-void osc::UndoableModelStatePair::implSetSelected(const OpenSim::Component* c)
+void osc::UndoableModelStatePair::impl_set_selected(const OpenSim::Component* c)
 {
     m_Impl->setSelected(c);
 }
 
-const OpenSim::Component* osc::UndoableModelStatePair::implGetHovered() const
+const OpenSim::Component* osc::UndoableModelStatePair::impl_get_hovered() const
 {
     return m_Impl->getHovered();
 }
 
-void osc::UndoableModelStatePair::implSetHovered(const OpenSim::Component* c)
+void osc::UndoableModelStatePair::impl_set_hovered(const OpenSim::Component* c)
 {
     m_Impl->setHovered(c);
 }
@@ -841,7 +841,7 @@ std::shared_ptr<Environment> osc::UndoableModelStatePair::implUpdAssociatedEnvir
     return m_Impl->implUpdAssociatedEnvironment();
 }
 
-void osc::UndoableModelStatePair::implSetUpToDateWithFilesystem(std::filesystem::file_time_type t)
+void osc::UndoableModelStatePair::impl_set_up_to_date_with_filesystem(std::filesystem::file_time_type t)
 {
     m_Impl->setUpToDateWithFilesystem(t);
 }

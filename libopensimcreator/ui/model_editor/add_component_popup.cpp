@@ -107,7 +107,7 @@ public:
 private:
     std::unique_ptr<OpenSim::Component> tryCreateComponentFromState()
     {
-        const OpenSim::Model& model = m_Model->getModel();
+        const OpenSim::Model& model = m_Model->get_model();
 
         if (m_Name.empty()) {
             return nullptr;
@@ -167,7 +167,7 @@ private:
 
     bool isAbleToAddComponentFromCurrentState() const
     {
-        const OpenSim::Model& model = m_Model->getModel();
+        const OpenSim::Model& model = m_Model->get_model();
 
         const bool hasName = !m_Name.empty();
         const bool allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, std::bind_front(opyn::ContainsComponent, std::cref(model)));
@@ -199,7 +199,7 @@ private:
     {
         auto maybeUpdater = m_PrototypePropertiesEditor.onDraw();
         if (maybeUpdater) {
-            OpenSim::AbstractProperty* prop = opyn::FindPropertyMut(*m_Proto, maybeUpdater->getPropertyName());
+            OpenSim::AbstractProperty* prop = opyn::FindPropertyMut(*m_Proto, maybeUpdater->get_property_name());
             if (prop) {
                 maybeUpdater->apply(*prop);
             }
@@ -248,7 +248,7 @@ private:
 
         // iterate through potential connectees in model and print connect-able options
         int innerID = 0;
-        for (const OpenSim::Component& c : m_Model->getModel().getComponentList()) {
+        for (const OpenSim::Component& c : m_Model->get_model().getComponentList()) {
             if (not opyn::IsAbleToConnectTo(socket, c)) {
                 continue;  // can't connect to it
             }
@@ -287,7 +287,7 @@ private:
 
     void drawPathPointEditorChoices()
     {
-        const OpenSim::Model& model = m_Model->getModel();
+        const OpenSim::Model& model = m_Model->get_model();
 
         // show list of choices
         ui::begin_child_panel("##pf_ppchoices", {ui::get_content_region_available().x(), 128.0f});
@@ -353,7 +353,7 @@ private:
 
     void drawPathPointEditorAlreadyChosenPoints()
     {
-        const OpenSim::Model& model = m_Model->getModel();
+        const OpenSim::Model& model = m_Model->get_model();
 
         ui::begin_child_panel("##pf_pathpoints", {ui::get_content_region_available().x(), 128.0f});
 

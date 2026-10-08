@@ -27,7 +27,7 @@ namespace
 {
     void DrawActionsMenu(Widget& parent, const std::shared_ptr<opyn::ModelStatePair>& model)
     {
-        const OpenSim::Component* const selection = model->getSelected();
+        const OpenSim::Component* const selection = model->get_selected();
         if (not selection) {
             return;
         }
@@ -55,19 +55,19 @@ namespace
 
         void onDraw()
         {
-            const OpenSim::Component* const selected = m_Model->getSelected();
+            const OpenSim::Component* const selected = m_Model->get_selected();
             if (not selected) {
                 return;  // don't do anything if nothing is selected
             }
 
             // update cached edits if model/selection changes
-            if (m_Model->getModelVersion() != m_LastModelVersion or selected != m_LastSelected) {
+            if (m_Model->get_model_version() != m_LastModelVersion or selected != m_LastSelected) {
                 m_EditedName = selected->getName();
-                m_LastModelVersion = m_Model->getModelVersion();
+                m_LastModelVersion = m_Model->get_model_version();
                 m_LastSelected = selected;
             }
 
-            const bool disabled = m_Model->isReadonly();
+            const bool disabled = m_Model->is_readonly();
             if (disabled) {
                 ui::begin_disabled();
             }
@@ -115,17 +115,17 @@ public:
 
         PanelPrivate{owner, parent, panelName},
         m_Model{std::move(model)},
-        m_SelectionPropertiesEditor{&owner, m_Model, [model = m_Model](){ return model->getSelected(); }}
+        m_SelectionPropertiesEditor{&owner, m_Model, [model = m_Model](){ return model->get_selected(); }}
     {}
 
     void draw_content()
     {
-        if (not m_Model->getSelected()) {
+        if (not m_Model->get_selected()) {
             ui::draw_text_disabled_and_panel_centered("(nothing selected)");
             return;
         }
 
-        ui::push_id(m_Model->getSelected());
+        ui::push_id(m_Model->get_selected());
         const ScopeExit g{[]{ ui::pop_id(); }};
 
         // draw an actions row with a button that opens the context menu
@@ -135,7 +135,7 @@ public:
 
         m_NameEditor.onDraw();
 
-        if (not m_Model->getSelected()) {
+        if (not m_Model->get_selected()) {
             return;
         }
 

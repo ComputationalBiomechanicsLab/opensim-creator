@@ -22,9 +22,9 @@ public:
 
     Impl(const opyn::ModelStatePair& msp, std::string_view message, UID parent) :
         m_MaybeParentID{parent},
-        m_Model{std::make_unique<OpenSim::Model>(msp.getModel())},
-        m_ModelVersion{msp.getModelVersion()},
-        m_FixupScaleFactor{msp.getFixupScaleFactor()},
+        m_Model{std::make_unique<OpenSim::Model>(msp.get_model())},
+        m_ModelVersion{msp.get_model_version()},
+        m_FixupScaleFactor{msp.get_fixup_scale_factor()},
         m_CommitMessage{message}
     {
         opyn::InitializeModel(*m_Model);

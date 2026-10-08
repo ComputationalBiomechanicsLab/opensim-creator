@@ -390,7 +390,7 @@ namespace
 
         const OpenSim::Component& getRootComponent() const
         {
-            return m_Args.component->getComponent();
+            return m_Args.component->get_component();
         }
 
         std::shared_ptr<const opyn::VersionedComponentAccessor> tryGetComponentSharedPtr() const
@@ -401,7 +401,7 @@ namespace
         const SimTK::State* tryGetState() const
         {
             if (auto* msp = dynamic_cast<const opyn::ModelStatePair*>(m_Args.component.get())) {
-                return &msp->getState();
+                return &msp->get_state();
             }
             else {
                 return nullptr;
@@ -1362,8 +1362,8 @@ namespace
                     auto* downcasted = dynamic_cast<OpenSim::Property<OpenSim::HuntCrossleyForce::ContactParametersSet>*>(&p);
                     if (downcasted and not opyn::empty(downcasted->getValue())) {
                         OpenSim::HuntCrossleyForce::ContactParameters& contactParams = opyn::At(downcasted->updValue(), 0);
-                        if (params.hasProperty(resp->getPropertyName())) {
-                            OpenSim::AbstractProperty& childP = contactParams.updPropertyByName(resp->getPropertyName());
+                        if (params.hasProperty(resp->get_property_name())) {
+                            OpenSim::AbstractProperty& childP = contactParams.updPropertyByName(resp->get_property_name());
                             resp->apply(childP);
                         }
                     }
@@ -1410,7 +1410,7 @@ namespace
             ui::next_column();
 
             if (auto rv = std::exchange(*m_ReturnValueHolder, std::nullopt)) {
-                return rv->getUpdater();
+                return rv->get_updater();
             }
             else {
                 return std::nullopt;
@@ -1664,7 +1664,7 @@ public:
 
     std::optional<ObjectPropertyEdit> onDraw()
     {
-        const bool disabled = m_TargetComponent->isReadonly();
+        const bool disabled = m_TargetComponent->is_readonly();
         if (disabled) {
             ui::begin_disabled();
         }

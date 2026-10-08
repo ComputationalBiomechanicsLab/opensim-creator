@@ -56,7 +56,7 @@ public:
     {
         ui::push_id(this);
 
-        const bool disabled = m_Model->isReadonly();
+        const bool disabled = m_Model->is_readonly();
         if (disabled) {
             ui::begin_disabled();
         }
@@ -83,7 +83,7 @@ public:
 private:
     void drawTargetComponentSpecializedAdders()
     {
-        const OpenSim::Component* component = opyn::FindComponent(m_Model->getModel(), m_MaybeTargetParentComponent);
+        const OpenSim::Component* component = opyn::FindComponent(m_Model->get_model(), m_MaybeTargetParentComponent);
         if (not component) {
             return;
         }
@@ -112,11 +112,11 @@ private:
 
     void drawSpecializedContextualActions(const OpenSim::Joint& joint)
     {
-        if (ui::draw_menu_item("Parent Offset Frame", {}, nullptr, m_Model->canUpdModel())) {
+        if (ui::draw_menu_item("Parent Offset Frame", {}, nullptr, m_Model->can_upd_model())) {
             ActionAddParentOffsetFrameToJoint(*m_Model, joint.getAbsolutePath());
         }
 
-        if (ui::draw_menu_item("Child Offset Frame", {}, nullptr, m_Model->canUpdModel())) {
+        if (ui::draw_menu_item("Child Offset Frame", {}, nullptr, m_Model->can_upd_model())) {
             ActionAddChildOffsetFrameToJoint(*m_Model, joint.getAbsolutePath());
         }
     }
@@ -130,7 +130,7 @@ private:
             return;  // cannot edit: has more than one HuntCrossleyForce::Parameter
         }
 
-        if (ui::draw_menu_item("Associated Contact Geometry", {}, nullptr, m_Model->canUpdModel())) {
+        if (ui::draw_menu_item("Associated Contact Geometry", {}, nullptr, m_Model->can_upd_model())) {
             const auto onSelection = [model = m_Model, path = hcf.getAbsolutePath()](const OpenSim::ComponentPath& geomPath)
             {
                 ActionAssignContactGeometryToHCF(*model, path, geomPath);
@@ -151,7 +151,7 @@ private:
             return;  // required in order to open a popup
         }
 
-        if (ui::draw_menu_item("Path Point", {}, nullptr, m_Model->canUpdModel())) {
+        if (ui::draw_menu_item("Path Point", {}, nullptr, m_Model->can_upd_model())) {
             auto onSelection = [model = m_Model, path = pa.getAbsolutePath()](const OpenSim::ComponentPath& pfPath)
             {
                 ActionAddPathPointToPathActuator(*model, path, pfPath);
@@ -162,7 +162,7 @@ private:
         ui::draw_tooltip_if_item_hovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::GeometryPath");
 
         if (const auto* gp = dynamic_cast<const OpenSim::GeometryPath*>(&pa.getPath())) {
-            if (ui::begin_menu("Path Wrap", m_Model->canUpdModel())) {
+            if (ui::begin_menu("Path Wrap", m_Model->can_upd_model())) {
                 drawPathWrapToggleMenuItems(*gp);
                 ui::end_menu();
             }
@@ -171,11 +171,11 @@ private:
 
     void drawSpecializedContextualActions(const OpenSim::GeometryPath& geometryPath)
     {
-        if (ui::begin_menu("Path Wrap", m_Model->canUpdModel())) {
+        if (ui::begin_menu("Path Wrap", m_Model->can_upd_model())) {
             drawPathWrapToggleMenuItems(geometryPath);
             ui::end_menu();
         }
-        if (ui::draw_menu_item("Path Point", {}, nullptr, m_Model->canUpdModel())) {
+        if (ui::draw_menu_item("Path Point", {}, nullptr, m_Model->can_upd_model())) {
             auto onSelection = [model = m_Model, path = geometryPath.getAbsolutePath()](const OpenSim::ComponentPath& pfPath)
             {
                 ActionAddPathPointToGeometryPath(*model, path, pfPath);
@@ -188,7 +188,7 @@ private:
 
     void drawSpecializedContextualActions(const OpenSim::PhysicalFrame& frame)
     {
-        if (ui::draw_menu_item("Geometry", {}, nullptr, m_Model->canUpdModel() and parent() != nullptr)) {
+        if (ui::draw_menu_item("Geometry", {}, nullptr, m_Model->can_upd_model() and parent() != nullptr)) {
             const std::function<void(std::unique_ptr<OpenSim::Geometry>)> callback = [
                 model = m_Model,
                 path = frame.getAbsolutePath(),
@@ -206,12 +206,12 @@ private:
         }
         ui::draw_tooltip_if_item_hovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the navigator and pressing DELETE");
 
-        if (ui::draw_menu_item("Offset Frame", {}, nullptr, m_Model->canUpdModel())) {
+        if (ui::draw_menu_item("Offset Frame", {}, nullptr, m_Model->can_upd_model())) {
             ActionAddOffsetFrameToPhysicalFrame(*m_Model, frame.getAbsolutePath());
         }
         ui::draw_tooltip_if_item_hovered("Add Offset Frame", "Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
 
-        if (ui::begin_menu("Wrap Object", m_Model->canUpdModel())) {
+        if (ui::begin_menu("Wrap Object", m_Model->can_upd_model())) {
             drawAddWrapObjectsToPhysicalFrameMenuItems(frame.getAbsolutePath());
             ui::end_menu();
         }
@@ -220,12 +220,12 @@ private:
     void drawPathWrapToggleMenuItems(const OpenSim::GeometryPath& gp)
     {
         const auto wraps = opyn::GetAllWrapObjectsReferencedBy(gp);
-        for (const auto& wo : m_Model->getModel().getComponentList<OpenSim::WrapObject>()) {
+        for (const auto& wo : m_Model->get_model().getComponentList<OpenSim::WrapObject>()) {
             const bool enabled = cpp23::contains(wraps, &wo);
 
             ui::push_id(&wo);
             bool selected = enabled;
-            if (ui::draw_menu_item(wo.getName(), {}, &selected, m_Model->canUpdModel())) {
+            if (ui::draw_menu_item(wo.getName(), {}, &selected, m_Model->can_upd_model())) {
                 if (enabled) {
                     ActionRemoveWrapObjectFromGeometryPathWraps(*m_Model, gp, wo);
                 }
@@ -243,7 +243,7 @@ private:
         const auto& registry = opyn::get_component_registry<OpenSim::WrapObject>();
         for (const auto& entry : registry) {
             ui::push_id(&entry);
-            if (ui::draw_menu_item(entry.name(), {}, nullptr, m_Model->canUpdModel())) {
+            if (ui::draw_menu_item(entry.name(), {}, nullptr, m_Model->can_upd_model())) {
                 ActionAddWrapObjectToPhysicalFrame(
                     *m_Model,
                     physicalFrameAbsPath,
@@ -259,7 +259,7 @@ private:
         // action: add body
         {
             // draw button
-            if (ui::draw_menu_item("Body", {}, nullptr, m_Model->canUpdModel())) {
+            if (ui::draw_menu_item("Body", {}, nullptr, m_Model->can_upd_model())) {
                 if (parent()) {
                     auto popup = std::make_unique<AddBodyPopup>(&owner(), "add body", m_Model);
                     App::post_event<OpenPopupEvent>(owner(), std::move(popup));
@@ -306,7 +306,7 @@ private:
 
     void renderButton(const opyn::ComponentRegistryBase& registry)
     {
-        if (ui::begin_menu(registry.name(), m_Model->canUpdModel())) {
+        if (ui::begin_menu(registry.name(), m_Model->can_upd_model())) {
             for (const auto& entry : registry) {
                 if (ui::draw_menu_item(entry.name())) {
                     actionOpenComponentPopup(entry);

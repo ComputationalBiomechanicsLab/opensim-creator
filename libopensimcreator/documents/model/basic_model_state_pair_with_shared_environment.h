@@ -35,11 +35,11 @@ namespace osc
         ~BasicModelStatePairWithSharedEnvironment() noexcept override;
 
     private:
-        const OpenSim::Model& implGetModel() const final;
-        const SimTK::State& implGetState() const final;
+        const OpenSim::Model& impl_get_model() const final;
+        const SimTK::State& impl_get_state() const final;
 
-        float implGetFixupScaleFactor() const final;
-        void implSetFixupScaleFactor(float) final;
+        float impl_get_fixup_scale_factor() const final;
+        void impl_set_fixup_scale_factor(float) final;
 
         std::shared_ptr<Environment> implUpdAssociatedEnvironment() const final;
 

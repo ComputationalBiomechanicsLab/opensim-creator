@@ -66,7 +66,7 @@ public:
             ui::draw_separator();
             ui::draw_text("Associate landmarks with a frame in the model");
             if (ui::begin_combobox("Model frame", m_TargetComponentAbsPath)) {
-                for (const auto& frame : m_MaybeAssociatedModel->getModel().getComponentList<OpenSim::PhysicalFrame>()) {
+                for (const auto& frame : m_MaybeAssociatedModel->get_model().getComponentList<OpenSim::PhysicalFrame>()) {
                     const std::string absPath = frame.getAbsolutePathString();
                     if (ui::draw_selectable(absPath, absPath == m_TargetComponentAbsPath)) {
                         m_TargetComponentAbsPath = absPath;

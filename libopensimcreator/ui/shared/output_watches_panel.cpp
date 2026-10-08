@@ -28,16 +28,16 @@ namespace
 
     void UpdateCachedSimulationReportIfNecessary(const opyn::ModelStatePair& src, CachedSimulationReport& cache)
     {
-        const UID modelVersion = src.getModelVersion();
-        const UID stateVersion = src.getStateVersion();
+        const UID modelVersion = src.get_model_version();
+        const UID stateVersion = src.get_state_version();
 
         if (cache.sourceModelVersion == modelVersion and
             cache.sourceStateVersion == stateVersion) {
             return;  // it's already up-to-date
         }
 
-        SimTK::State s = src.getState();
-        src.getModel().realizeReport(s);
+        SimTK::State s = src.get_state();
+        src.get_model().realizeReport(s);
 
         cache.simulationReport = SimulationReport{std::move(s)};
         cache.sourceModelVersion = modelVersion;
@@ -95,7 +95,7 @@ public:
 
                 // Column: output value
                 ui::table_set_column_index(column++);
-                const auto value_text = o.value<std::string>(m_Model->getModel(), m_CachedReport.simulationReport);
+                const auto value_text = o.value<std::string>(m_Model->get_model(), m_CachedReport.simulationReport);
                 ui::draw_text(value_text);
                 ui::same_line();
                 if (ui::draw_button(MSMICONS_COPY)) {

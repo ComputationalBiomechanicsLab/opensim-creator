@@ -109,10 +109,10 @@ public:
 
         // propagate any UI-initated changes
         if (response.type == ResponseType::SelectionChanged) {
-            m_Model->setSelected(response.ptr);
+            m_Model->set_selected(response.ptr);
         }
         else if (response.type == ResponseType::HoverChanged) {
-            m_Model->setHovered(response.ptr);
+            m_Model->set_hovered(response.ptr);
         }
     }
 
@@ -154,9 +154,9 @@ private:
         const bool hasSearch = not m_CurrentSearch.empty();
         const float unindentPerLevel = ui::get_tree_node_to_label_spacing() - 15.0f;
 
-        const OpenSim::Component* root = &m_Model->getModel();
-        const OpenSim::Component* selected = m_Model->getSelected();
-        const OpenSim::Component* hovered = m_Model->getHovered();
+        const OpenSim::Component* root = &m_Model->get_model();
+        const OpenSim::Component* selected = m_Model->get_selected();
+        const OpenSim::Component* hovered = m_Model->get_hovered();
 
         OpenSim::ComponentPath selectedPath = opyn::GetAbsolutePathOrEmpty(selected);
 

@@ -130,7 +130,7 @@ public:
 
         PopupPrivate{owner, parent, popupName},
         m_Model{std::move(model)},
-        m_Params{m_Model->getModelVersion(), std::string{componentAbsPath}, std::string{socketName}}
+        m_Params{m_Model->get_model_version(), std::string{componentAbsPath}, std::string{socketName}}
     {}
 
     void draw_content()
@@ -139,14 +139,14 @@ public:
         //
         // we cache the list because searching+filtering all possible connectees is
         // very slow in OpenSim (#384)
-        m_EditedParams.modelVersion = m_Model->getModelVersion();
+        m_EditedParams.modelVersion = m_Model->get_model_version();
         if (m_EditedParams != m_Params) {
-            m_Options = GenerateSelectionOptions(m_Model->getModel(), m_EditedParams);
+            m_Options = GenerateSelectionOptions(m_Model->get_model(), m_EditedParams);
             m_Params = m_EditedParams;
         }
 
         // check: ensure the "from" side of the socket still exists
-        const OpenSim::Component* component = opyn::FindComponent(m_Model->getModel(), m_Params.componentPath);
+        const OpenSim::Component* component = opyn::FindComponent(m_Model->get_model(), m_Params.componentPath);
         if (not component) {
             request_close();
             return;
@@ -198,7 +198,7 @@ public:
                 SocketReassignmentFlags::TryReexpressComponentInNewConnectee :
                 SocketReassignmentFlags::None;
 
-            const OpenSim::Component* selected = opyn::FindComponent(m_Model->getModel(), *m_UserSelectionAbsPath);
+            const OpenSim::Component* selected = opyn::FindComponent(m_Model->get_model(), *m_UserSelectionAbsPath);
 
             if (selected && ActionReassignComponentSocket(*m_Model, m_Params.componentPath, m_Params.socketName, *selected, flags, m_Error))
             {
@@ -256,7 +256,7 @@ private:
         }
 
         const auto componentSpatialRepresentation =
-            opyn::TryGetSpatialRepresentation(component, m_Model->getState());
+            opyn::TryGetSpatialRepresentation(component, m_Model->get_state());
         if (not componentSpatialRepresentation) {
             bool v = false;  // always `false`
             ui::begin_disabled();
@@ -274,7 +274,7 @@ private:
     std::shared_ptr<opyn::ModelStatePair> m_Model;
     PopupParams m_Params;
     PopupParams m_EditedParams = m_Params;
-    std::vector<ConnecteeOption> m_Options = GenerateSelectionOptions(m_Model->getModel(), m_EditedParams);
+    std::vector<ConnecteeOption> m_Options = GenerateSelectionOptions(m_Model->get_model(), m_EditedParams);
     std::optional<OpenSim::ComponentPath> m_UserSelectionAbsPath;
     std::string m_Error;
     bool m_TryReexpressInDifferentFrame = false;

@@ -76,30 +76,30 @@ namespace osc
         void loadModel(const std::filesystem::path&);
 
     private:
-        const OpenSim::Model& implGetModel() const final;
-        const SimTK::State& implGetState() const final;
+        const OpenSim::Model& impl_get_model() const final;
+        const SimTK::State& impl_get_state() const final;
 
-        bool implCanUpdModel() const final { return true; }
-        OpenSim::Model& implUpdModel() final;
+        bool impl_can_upd_model() const final { return true; }
+        OpenSim::Model& impl_upd_model() final;
 
-        void implCommit(std::string_view) final;
+        void impl_commit(std::string_view) final;
 
-        UID implGetModelVersion() const final;
-        void implSetModelVersion(UID) final;
-        UID implGetStateVersion() const final;
+        UID impl_get_model_version() const final;
+        void impl_set_model_version(UID) final;
+        UID impl_get_state_version() const final;
 
-        float implGetFixupScaleFactor() const final;
-        void implSetFixupScaleFactor(float) final;
+        float impl_get_fixup_scale_factor() const final;
+        void impl_set_fixup_scale_factor(float) final;
 
-        const OpenSim::Component* implGetSelected() const final;
-        void implSetSelected(const OpenSim::Component* c) final;
+        const OpenSim::Component* impl_get_selected() const final;
+        void impl_set_selected(const OpenSim::Component* c) final;
 
-        const OpenSim::Component* implGetHovered() const final;
-        void implSetHovered(const OpenSim::Component* c) final;
+        const OpenSim::Component* impl_get_hovered() const final;
+        void impl_set_hovered(const OpenSim::Component* c) final;
 
         std::shared_ptr<Environment> implUpdAssociatedEnvironment() const final;
 
-        void implSetUpToDateWithFilesystem(std::filesystem::file_time_type) final;
+        void impl_set_up_to_date_with_filesystem(std::filesystem::file_time_type) final;
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

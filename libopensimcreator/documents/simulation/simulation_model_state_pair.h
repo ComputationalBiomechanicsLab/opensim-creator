@@ -33,20 +33,20 @@ namespace osc
         void setSimulationReport(SimulationReport);
 
     private:
-        const OpenSim::Model& implGetModel() const final;
-        UID implGetModelVersion() const final;
+        const OpenSim::Model& impl_get_model() const final;
+        UID impl_get_model_version() const final;
 
-        const SimTK::State& implGetState() const final;
-        UID implGetStateVersion() const final;
+        const SimTK::State& impl_get_state() const final;
+        UID impl_get_state_version() const final;
 
-        const OpenSim::Component* implGetSelected() const final;
-        void implSetSelected(const OpenSim::Component*) final;
+        const OpenSim::Component* impl_get_selected() const final;
+        void impl_set_selected(const OpenSim::Component*) final;
 
-        const OpenSim::Component* implGetHovered() const final;
-        void implSetHovered(const OpenSim::Component*) final;
+        const OpenSim::Component* impl_get_hovered() const final;
+        void impl_set_hovered(const OpenSim::Component*) final;
 
-        float implGetFixupScaleFactor() const final;
-        void implSetFixupScaleFactor(float) final;
+        float impl_get_fixup_scale_factor() const final;
+        void impl_set_fixup_scale_factor(float) final;
 
         std::shared_ptr<Environment> implUpdAssociatedEnvironment() const final;
 

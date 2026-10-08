@@ -550,8 +550,8 @@ public:
 
     void draw_content()
     {
-        const OpenSim::Model& model = m_Model->getModel();
-        const SimTK::State& state = m_Model->getState();
+        const OpenSim::Model& model = m_Model->get_model();
+        const SimTK::State& state = m_Model->get_state();
 
         DrawExportPointsPopupDescriptionSection();
         ui::draw_vertical_spacer(0.5f);
@@ -581,8 +581,8 @@ private:
         if (ui::draw_button(MSMICONS_UPLOAD " Export to CSV"))
         {
             ActionPromptUserForSaveLocationAndExportPoints(
-                m_Model->getModel(),
-                m_Model->getState(),
+                m_Model->get_model(),
+                m_Model->get_state(),
                 m_PointSelectorState.selectedPointAbsPaths,
                 m_FrameSelectorState.maybeSelectedFrameAbsPath,
                 m_OutputFormatState.exportPointNamesAsAbsPaths

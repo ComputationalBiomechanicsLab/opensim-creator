@@ -1511,7 +1511,7 @@ namespace
         }
 
     protected:
-        bool isModelLocked() const { return m_Shared->getModel().isReadonly(); }
+        bool isModelLocked() const { return m_Shared->getModel().is_readonly(); }
         const SharedStateData& getShared() const { return *m_Shared; }
         SharedStateData& updShared() { return *m_Shared; }
 
@@ -1651,8 +1651,8 @@ namespace
             ui::set_next_item_width(muscleNameWidth);
             if (ui::begin_combobox("##musclename", muscleName, ui::ComboFlag::NoArrowButton))
             {
-                const auto* current = opyn::FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
-                for (const OpenSim::Muscle& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>())
+                const auto* current = opyn::FindComponent<OpenSim::Muscle>(getShared().getModel().get_model(), getShared().getPlotParams().getMusclePath());
+                for (const OpenSim::Muscle& musc : getShared().getModel().get_model().getComponentList<OpenSim::Muscle>())
                 {
                     bool selected = &musc == current;
                     if (ui::draw_selectable(musc.getName(), &selected))
@@ -1687,8 +1687,8 @@ namespace
             ui::set_next_item_width(coordNameWidth);
             if (ui::begin_combobox("##coordname", coordName, ui::ComboFlag::NoArrowButton))
             {
-                const auto* current = opyn::FindComponent<OpenSim::Coordinate>(getShared().getModel().getModel(), getShared().getPlotParams().getCoordinatePath());
-                for (const OpenSim::Coordinate& c : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>())
+                const auto* current = opyn::FindComponent<OpenSim::Coordinate>(getShared().getModel().get_model(), getShared().getPlotParams().getCoordinatePath());
+                for (const OpenSim::Coordinate& c : getShared().getModel().get_model().getComponentList<OpenSim::Coordinate>())
                 {
                     bool selected = &c == current;
                     if (ui::draw_selectable(c.getName(), &selected))
@@ -1832,7 +1832,7 @@ namespace
             const OpenSim::Coordinate& coord,
             std::optional<float> maybeMouseX)
         {
-            const double coordinateXInDegrees = opyn::ConvertCoordValueToDisplayValue(coord, coord.getValue(getShared().getModel().getState()));
+            const double coordinateXInDegrees = opyn::ConvertCoordValueToDisplayValue(coord, coord.getValue(getShared().getModel().get_state()));
 
             // draw vertical drop line where the coordinate's value currently is
             {
@@ -2105,7 +2105,7 @@ namespace
         // tries to duplicate the current plot (settings etc.) into a new plot panel
         void actionDuplicateCurrentPlotIntoNewPanel(const OpenSim::Coordinate& coord)
         {
-            const auto* musc = opyn::FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
+            const auto* musc = opyn::FindComponent<OpenSim::Muscle>(getShared().getModel().get_model(), getShared().getPlotParams().getMusclePath());
             if (musc) {
                 App::post_event<AddMusclePlotEvent>(updShared().getParentWidget(), coord, *musc);
             }
@@ -2147,7 +2147,7 @@ namespace
             std::unique_ptr<MusclePlotState> rv;
 
             std::vector<const OpenSim::Coordinate*> coordinates;
-            for (const OpenSim::Coordinate& coord : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>()) {
+            for (const OpenSim::Coordinate& coord : getShared().getModel().get_model().getComponentList<OpenSim::Coordinate>()) {
                 coordinates.push_back(&coord);
             }
             rgs::sort(coordinates, rgs::less{}, [](const auto* ptr) { return ptr->getName(); });
@@ -2183,7 +2183,7 @@ namespace
             std::unique_ptr<MusclePlotState> rv;
 
             std::vector<const OpenSim::Muscle*> muscles;
-            for (const OpenSim::Muscle& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>()) {
+            for (const OpenSim::Muscle& musc : getShared().getModel().get_model().getComponentList<OpenSim::Muscle>()) {
                 muscles.push_back(&musc);
             }
             rgs::sort(muscles, rgs::less{}, [](const auto* ptr) { return ptr->getName(); });

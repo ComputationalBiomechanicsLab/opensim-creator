@@ -79,7 +79,7 @@ public:
         float fixupScaleFactor) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>(std::move(model_))}
     {
-        m_Model->setFixupScaleFactor(fixupScaleFactor);
+        m_Model->set_fixup_scale_factor(fixupScaleFactor);
     }
 
     explicit Impl(
@@ -193,7 +193,7 @@ public:
     void on_mount()
     {
         App::upd().make_main_loop_waiting();
-        App::upd().set_main_window_subtitle(opyn::RecommendedDocumentName(m_Model->getModel()));
+        App::upd().set_main_window_subtitle(opyn::RecommendedDocumentName(m_Model->get_model()));
         set_name(computeTabName());
         m_PopupManager.on_mount();
         m_PanelManager->on_mount();
@@ -279,7 +279,7 @@ public:
         // If the user has defined auto-reload behavior, obey it. Otherwise, default-enable
         // auto-reloading (#1000)
         if (App::settings().find_value<bool>("model_editor/monitor_osim_changes").value_or(true)) {
-            if (m_FileChangePoller.change_detected(m_Model->getModel().getInputFileName())) {
+            if (m_FileChangePoller.change_detected(m_Model->get_model().getInputFileName())) {
                 ActionUpdateModelFromBackingFile(*m_Model);
             }
         }
@@ -316,7 +316,7 @@ public:
         }
 
         // always re-update this, in case the model's document name changed
-        App::upd().set_main_window_subtitle(opyn::RecommendedDocumentName(m_Model->getModel()));
+        App::upd().set_main_window_subtitle(opyn::RecommendedDocumentName(m_Model->get_model()));
     }
 
     void tryRecoveringFromException(const std::exception& ex)
@@ -389,7 +389,7 @@ private:
     {
         std::stringstream ss;
         ss << MSMICONS_EDIT << " ";
-        ss << opyn::RecommendedDocumentName(m_Model->getModel());
+        ss << opyn::RecommendedDocumentName(m_Model->get_model());
         return std::move(ss).str();
     }
 
@@ -426,7 +426,7 @@ private:
             return true;
         }
         else if (e.combination() == Key::Escape) {
-            m_Model->clearSelected();
+            m_Model->clear_selected();
             return true;
         }
         else {
@@ -440,7 +440,7 @@ private:
     // polls changes to a file
     FileChangePoller m_FileChangePoller{
         std::chrono::milliseconds{1000},  // polling rate
-        m_Model->getModel().getInputFileName(),
+        m_Model->get_model().getInputFileName(),
     };
 
     // manager for toggleable and spawnable UI panels

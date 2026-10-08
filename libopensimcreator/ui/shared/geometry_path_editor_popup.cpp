@@ -302,7 +302,7 @@ private:
         ui::set_next_item_width(width);
         if (ui::begin_combobox("##framesel", label))
         {
-            for (const OpenSim::Frame& frame : m_TargetComponent->getComponent().getComponentList<OpenSim::Frame>())
+            for (const OpenSim::Frame& frame : m_TargetComponent->get_component().getComponentList<OpenSim::Frame>())
             {
                 const std::string absPath = frame.getAbsolutePathString();
                 if (ui::draw_selectable(absPath))

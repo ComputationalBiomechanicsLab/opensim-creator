@@ -17,15 +17,15 @@ TEST(BasicModelStatePairWithSharedEnvironment, WhenConstructedFromFilepathLoadsT
     const std::filesystem::path modelPath = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models/Arm26/arm26.osim";
 
     BasicModelStatePairWithSharedEnvironment p{modelPath};
-    ASSERT_GE(p.getState().getSystemStage(), SimTK::Stage::Dynamics);
+    ASSERT_GE(p.get_state().getSystemStage(), SimTK::Stage::Dynamics);
 }
 
 TEST(BasicModelStatePairWithSharedEnvironment, HasAFullyRealizedStateWhenCopied)
 {
     BasicModelStatePairWithSharedEnvironment p;
-    ASSERT_EQ(p.getState().getSystemStage(), SimTK::Stage::Dynamics);
+    ASSERT_EQ(p.get_state().getSystemStage(), SimTK::Stage::Dynamics);
     const BasicModelStatePairWithSharedEnvironment copy{p};  // NOLINT(performance-unnecessary-copy-initialization)
-    ASSERT_EQ(copy.getState(). getSystemStage(), SimTK::Stage::Dynamics);
+    ASSERT_EQ(copy.get_state(). getSystemStage(), SimTK::Stage::Dynamics);
 }
 
 TEST(BasicModelStatePairWithSharedEnvironment, CanGenerateDecorationsFromCopy)

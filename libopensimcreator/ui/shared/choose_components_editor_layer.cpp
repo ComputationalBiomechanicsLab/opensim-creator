@@ -104,10 +104,10 @@ namespace
 
         GenerateModelDecorations(
             *state.meshCache,
-            state.model->getModel(),
-            state.model->getState(),
+            state.model->get_model(),
+            state.model->get_state(),
             state.renderParams.decoration_options,
-            state.model->getFixupScaleFactor(),
+            state.model->get_fixup_scale_factor(),
             onModelDecoration
         );
 
@@ -122,7 +122,7 @@ namespace
             *state.meshCache,
             state.renderParams.overlay_options,
             out.bvh,
-            state.model->getFixupScaleFactor(),
+            state.model->get_fixup_scale_factor(),
             onOverlayDecoration
         );
     }
@@ -202,7 +202,7 @@ public:
             panelState.viewportUiRect.dimensions(),
             App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
             App::get().anti_aliasing_level(),
-            m_State.model->getFixupScaleFactor()
+            m_State.model->get_fixup_scale_factor()
         );
 
         // render to a texture (no caching)
@@ -236,7 +236,7 @@ public:
         }
 
         // show tooltip
-        if (const OpenSim::Component* c = opyn::FindComponent(m_State.model->getModel(), m_State.hoveredComponent))
+        if (const OpenSim::Component* c = opyn::FindComponent(m_State.model->get_model(), m_State.hoveredComponent))
         {
             DrawComponentHoverTooltip(*c);
         }
@@ -283,7 +283,7 @@ public:
     bool tryToggleHover()
     {
         const auto& absPath = m_State.hoveredComponent;
-        const OpenSim::Component* component = opyn::FindComponent(m_State.model->getModel(), absPath);
+        const OpenSim::Component* component = opyn::FindComponent(m_State.model->get_model(), absPath);
 
         if (!component)
         {

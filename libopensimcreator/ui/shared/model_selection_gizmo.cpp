@@ -106,22 +106,22 @@ namespace
             m_ComponentAbsPath{component.getAbsolutePath()}
         {
             OSC_ASSERT(m_Model != nullptr);
-            OSC_ASSERT(opyn::FindComponent<AssociatedComponent>(m_Model->getModel(), m_ComponentAbsPath));
+            OSC_ASSERT(opyn::FindComponent<AssociatedComponent>(m_Model->get_model(), m_ComponentAbsPath));
         }
 
         const AssociatedComponent* findSelection() const
         {
-            return opyn::FindComponent<AssociatedComponent>(m_Model->getModel(), m_ComponentAbsPath);
+            return opyn::FindComponent<AssociatedComponent>(m_Model->get_model(), m_ComponentAbsPath);
         }
 
         const OpenSim::Model& getModel() const
         {
-            return m_Model->getModel();
+            return m_Model->get_model();
         }
 
         const SimTK::State& getState() const
         {
-            return m_Model->getState();
+            return m_Model->get_state();
         }
 
         opyn::ModelStatePair& getUndoableModel()
@@ -799,11 +799,11 @@ void osc::ModelSelectionGizmo::onDraw(
     const Rect& screenRect,
     const Camera& camera)
 {
-    if (m_Model->isReadonly()) {
+    if (m_Model->is_readonly()) {
         return;  // cannot manipulate a readonly model (#936)
     }
 
-    const OpenSim::Component* selected = m_Model->getSelected();
+    const OpenSim::Component* selected = m_Model->get_selected();
     if (not selected) {
         return;
     }

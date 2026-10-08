@@ -73,7 +73,7 @@ public:
 
     SynchronizedValueGuard<const OpenSim::Model> getModel() const
     {
-        return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePairWithSharedEnvironment& p) -> decltype(auto) { return p.getModel(); });
+        return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePairWithSharedEnvironment& p) -> decltype(auto) { return p.get_model(); });
     }
 
     ptrdiff_t getNumReports() const
@@ -101,7 +101,7 @@ public:
 
     SimulationClock::time_point getStartTime() const
     {
-        return SimulationClock::start() + SimulationClock::duration{m_ModelState.lock()->getState().getTime()};
+        return SimulationClock::start() + SimulationClock::duration{m_ModelState.lock()->get_state().getTime()};
     }
 
     SimulationClock::time_point getCurTime() const
@@ -175,11 +175,11 @@ public:
         {
             const auto guard = m_ModelState.lock();
             const SimTK::State& latestState = m_Reports.empty() ?
-                guard->getState() :
+                guard->get_state() :
                 m_Reports.back().state();
 
             m_Simulation = MakeSimulation(
-                BasicModelStatePairWithSharedEnvironment{guard->getModel(), latestState},
+                BasicModelStatePairWithSharedEnvironment{guard->get_model(), latestState},
                 m_Params,
                 m_ReportQueue
             );
@@ -201,12 +201,12 @@ public:
 
     float getFixupScaleFactor() const
     {
-        return m_ModelState.lock()->getFixupScaleFactor();
+        return m_ModelState.lock()->get_fixup_scale_factor();
     }
 
     void setFixupScaleFactor(float v)
     {
-        m_ModelState.lock()->setFixupScaleFactor(v);
+        m_ModelState.lock()->set_fixup_scale_factor(v);
     }
 
     std::shared_ptr<Environment> implUpdAssociatedEnvironment() const
@@ -256,7 +256,7 @@ private:
         // ensure all reports are realized on the UI model
         auto modelLock = m_ModelState.lock();
         for (auto it = reports.begin() + nReportsBefore; it != reports.end(); ++it) {
-            modelLock->getModel().realizeReport(it->updStateHACK());
+            modelLock->get_model().realizeReport(it->updStateHACK());
         }
     }
 

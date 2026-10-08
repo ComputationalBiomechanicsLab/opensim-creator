@@ -65,8 +65,8 @@ namespace
         {
         }
 
-        const SimTK::MultibodySystem& getMultiBodySystem() const { return m_ModelState.getModel().getMultibodySystem(); }
-        const SimTK::State& getState() const { return m_ModelState.getState(); }
+        const SimTK::MultibodySystem& getMultiBodySystem() const { return m_ModelState.get_model().getMultibodySystem(); }
+        const SimTK::State& getState() const { return m_ModelState.get_state(); }
         const ForwardDynamicSimulatorParams& getParams() const { return m_Params; }
         void emitReport(SimulationReport report) { m_ReportCallback(std::move(report)); }
 
