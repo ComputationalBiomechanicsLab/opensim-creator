@@ -15,7 +15,7 @@ namespace
 {
     // returns the absolute path to the object if it's a components; otherwise, returns
     // an empty string
-    std::string GetAbsPathOrEmptyIfNotAComponent(const OpenSim::Object& obj)
+    std::string get_abs_path_or_empty_if_not_a_component(const OpenSim::Object& obj)
     {
         if (const auto* c = dynamic_cast<const OpenSim::Component*>(&obj)) {
             return opyn::get_absolute_path_string(*c);
@@ -38,7 +38,7 @@ osc::ObjectPropertyEdit::ObjectPropertyEdit(
     const OpenSim::AbstractProperty& prop,
     std::function<void(OpenSim::AbstractProperty&)> updater) :
 
-    component_abs_path_{GetAbsPathOrEmptyIfNotAComponent(obj)},
+    component_abs_path_{get_abs_path_or_empty_if_not_a_component(obj)},
     property_name_{prop.getName()},
     updater_{std::move(updater)}
 {}

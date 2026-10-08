@@ -32,8 +32,8 @@ namespace opyn
             const ModelStatePair&,
             const ModelRendererParams&,
             osc::Vector2 dims,
-            float devicePixelRatio,
-            osc::AntiAliasingLevel antiAliasingLevel
+            float device_pixel_ratio,
+            osc::AntiAliasingLevel anti_aliasing_level
         );
         osc::RenderTexture& upd_render_texture();
 
@@ -58,8 +58,8 @@ namespace opyn
 
         std::optional<osc::SceneCollision> get_closest_collision(
             const ModelRendererParams&,
-            osc::Vector2 mouseScreenPosition,
-            const osc::Rect& viewportScreenRect
+            osc::Vector2 mouse_screen_position,
+            const osc::Rect& viewport_screen_rect
         ) const;
 
     private:

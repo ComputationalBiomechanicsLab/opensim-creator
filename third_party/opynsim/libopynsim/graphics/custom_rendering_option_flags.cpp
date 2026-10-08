@@ -7,7 +7,7 @@ using namespace opyn;
 
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<CustomRenderingOptionFlagsMetadata>(
+    constexpr auto c_metadata = std::to_array<CustomRenderingOptionFlagsMetadata>(
     {
         CustomRenderingOptionFlagsMetadata
         {
@@ -44,5 +44,5 @@ namespace
 
 std::span<const CustomRenderingOptionFlagsMetadata> opyn::get_all_custom_rendering_option_flags_metadata()
 {
-    return c_Metadata;
+    return c_metadata;
 }

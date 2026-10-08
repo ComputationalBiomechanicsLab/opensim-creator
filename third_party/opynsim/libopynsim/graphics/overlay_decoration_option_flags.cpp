@@ -7,7 +7,7 @@ using namespace opyn;
 
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<OverlayDecorationOptionFlagsMetadata>(
+    constexpr auto c_metadata = std::to_array<OverlayDecorationOptionFlagsMetadata>(
     {
         OverlayDecorationOptionFlagsMetadata
         {
@@ -68,5 +68,5 @@ osc::CStringView opyn::get_label(OverlayDecorationOptionGroup g)
 
 std::span<const OverlayDecorationOptionFlagsMetadata> opyn::get_all_overlay_decoration_option_flags_metadata()
 {
-    return c_Metadata;
+    return c_metadata;
 }

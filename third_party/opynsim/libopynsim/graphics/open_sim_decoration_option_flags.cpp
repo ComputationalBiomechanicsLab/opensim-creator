@@ -11,7 +11,7 @@ using namespace opyn;
 
 namespace
 {
-    constexpr auto c_CustomDecorationOptionLabels = std::to_array<OpenSimDecorationOptionMetadata>(
+    constexpr auto c_custom_decoration_option_labels = std::to_array<OpenSimDecorationOptionMetadata>(
     {
         OpenSimDecorationOptionMetadata
         {
@@ -87,13 +87,13 @@ namespace
         },
     });
 
-    static_assert(c_CustomDecorationOptionLabels.size() == osc::num_flags<OpenSimDecorationOptionFlag>());
+    static_assert(c_custom_decoration_option_labels.size() == osc::num_flags<OpenSimDecorationOptionFlag>());
 }
 
 
 const OpenSimDecorationOptionMetadata& opyn::get_ith_option_metadata(size_t i)
 {
-    return c_CustomDecorationOptionLabels.at(i);
+    return c_custom_decoration_option_labels.at(i);
 }
 
 OpenSimDecorationOptionFlag opyn::get_ith_option(size_t i)

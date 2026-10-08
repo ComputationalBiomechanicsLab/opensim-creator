@@ -36,7 +36,7 @@ namespace opyn
         void set_order_independent_transparency(bool);
 
         void for_each_option_as_app_setting_value(const std::function<void(std::string_view, const osc::Variant&)>&) const;
-        void try_upd_from_values(std::string_view keyPrefix, const std::unordered_map<std::string, osc::Variant>&);
+        void try_upd_from_values(std::string_view key_prefix, const std::unordered_map<std::string, osc::Variant>&);
 
         void apply_to(osc::SceneRendererParams&) const;
 

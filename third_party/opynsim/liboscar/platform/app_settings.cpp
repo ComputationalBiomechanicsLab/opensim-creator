@@ -172,12 +172,9 @@ R"(# configuration options
 
         // data that's stored in a stack during configuration traversal
         struct StackElement final {
-            StackElement(
-                std::string_view table_name_,
-                const toml::table& table_) :
-
-                table_name{table_name_},
-                table{&table_}
+            StackElement(std::string_view table_name, const toml::table& table) :
+                table_name{table_name},
+                table{&table}
             {}
 
             std::string_view table_name;
@@ -425,9 +422,9 @@ R"(# configuration options
                 return;
             }
 
-            const toml::table settingsAsToml = to_toml_table(app_settings_lookup_);
+            const toml::table settings_as_toml = to_toml_table(app_settings_lookup_);
             config_stream << c_config_file_header;
-            config_stream << settingsAsToml;
+            config_stream << settings_as_toml;
             config_stream << '\n';
 
             is_dirty_ = false;

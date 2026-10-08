@@ -193,8 +193,8 @@ private:
             pbr_material_.set("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
 
             for (int col = 0; col < c_num_cols; ++col) {
-                const float normalizedCol = static_cast<float>(col) / static_cast<float>(c_num_cols);
-                pbr_material_.set("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
+                const float normalized_color = static_cast<float>(col) / static_cast<float>(c_num_cols);
+                pbr_material_.set("uRoughness", clamp(normalized_color, 0.005f, 1.0f));
 
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;

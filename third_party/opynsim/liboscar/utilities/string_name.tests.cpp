@@ -26,10 +26,10 @@ namespace
     // The reason this code is trying to avoid SSO is to increase the chance that a 3rd-party
     // memory analyzer (e.g. libASAN, valgrind) can spot any issues related to allocating strings
     // in `StringName`'s global string table.
-    constexpr auto c_long_character_data_array_to_avoid_SSO = std::to_array("somequitelongstringthatprobablyneedstobeheapallocatedsothatmemoryanalyzershaveabetterchance");
-    constexpr const char* const c_long_cstring_to_avoid_SSO = c_long_character_data_array_to_avoid_SSO.data();
-    constexpr auto c_another_long_character_data_array_to_avoid_SSO = std::to_array("somedifferencequitelongstringthatprobablyneedstobeheapallocatedbutwhoknows");
-    constexpr const char* const c_another_long_cstring_to_avoid_SSO = c_another_long_character_data_array_to_avoid_SSO.data();
+    constexpr auto c_long_character_data_array_to_avoid_sso = std::to_array("somequitelongstringthatprobablyneedstobeheapallocatedsothatmemoryanalyzershaveabetterchance");
+    constexpr const char* const c_long_cstring_to_avoid_sso = c_long_character_data_array_to_avoid_sso.data();
+    constexpr auto c_another_long_character_data_array_to_avoid_sso = std::to_array("somedifferencequitelongstringthatprobablyneedstobeheapallocatedbutwhoknows");
+    constexpr const char* const c_another_long_cstring_to_avoid_sso = c_another_long_character_data_array_to_avoid_sso.data();
 }
 
 TEST(StringName, can_default_constructs)
@@ -56,7 +56,7 @@ TEST(StringName, can_move_construct)
 TEST(StringName, copy_assigning_default_constructed_over_non_default_makes_lhs_default)
 {
     const StringName a;
-    StringName b{c_long_cstring_to_avoid_SSO};
+    StringName b{c_long_cstring_to_avoid_sso};
     b = a;
     ASSERT_EQ(a, b);
 }
@@ -64,7 +64,7 @@ TEST(StringName, copy_assigning_default_constructed_over_non_default_makes_lhs_d
 TEST(StringName, move_assigning_default_over_non_default_instance_makes_lhs_default)
 {
     StringName a;
-    StringName b{c_long_cstring_to_avoid_SSO};
+    StringName b{c_long_cstring_to_avoid_sso};
     b = std::move(a);  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
     ASSERT_EQ(b, StringName{});
 }
@@ -188,52 +188,52 @@ TEST(StringName, blank_cstring_compares_equal_to_default_constructed_instance)
 
 TEST(StringName, default_constructed_instance_compares_not_equal_to_nonempty_instance)
 {
-    ASSERT_NE(StringName{}, StringName{c_long_cstring_to_avoid_SSO});
+    ASSERT_NE(StringName{}, StringName{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, nonempty_instance_compares_not_equal_to_default_constructed_instance)
 {
-    ASSERT_NE(StringName{c_long_cstring_to_avoid_SSO}, StringName{});
+    ASSERT_NE(StringName{c_long_cstring_to_avoid_sso}, StringName{});
 }
 
 TEST(StringName, default_constructed_instance_compares_not_equal_to_nonempty_string_view)
 {
-    ASSERT_NE(StringName{}, std::string_view{c_long_cstring_to_avoid_SSO});
+    ASSERT_NE(StringName{}, std::string_view{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, nonempty_string_view_compares_not_equal_to_default_constructed_instance)
 {
-    ASSERT_NE(std::string_view{c_long_cstring_to_avoid_SSO}, StringName{});
+    ASSERT_NE(std::string_view{c_long_cstring_to_avoid_sso}, StringName{});
 }
 
 TEST(StringName, default_constructed_compares_not_equal_to_nonempty_string)
 {
-    ASSERT_NE(StringName{}, std::string{c_long_cstring_to_avoid_SSO});
+    ASSERT_NE(StringName{}, std::string{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, nonempty_string_compares_not_equal_to_default_constructed_instance)
 {
-    ASSERT_NE(std::string{c_long_cstring_to_avoid_SSO}, StringName{});
+    ASSERT_NE(std::string{c_long_cstring_to_avoid_sso}, StringName{});
 }
 
 TEST(StringName, default_constructed_instance_compares_not_equal_to_nonempty_cstring)
 {
-    ASSERT_NE(StringName{}, c_long_cstring_to_avoid_SSO);
+    ASSERT_NE(StringName{}, c_long_cstring_to_avoid_sso);
 }
 
 TEST(StringName, nonempty_cstring_compares_not_equal_to_default_constructed_instance)
 {
-    ASSERT_NE(c_long_cstring_to_avoid_SSO, StringName{});
+    ASSERT_NE(c_long_cstring_to_avoid_sso, StringName{});
 }
 
 TEST(StringName, default_constructed_instance_compares_less_than_to_nonempty_instance)
 {
-    ASSERT_LT(StringName{}, StringName{c_long_cstring_to_avoid_SSO});
+    ASSERT_LT(StringName{}, StringName{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, nonempty_instance_compares_greater_than_or_equal_to_default_constructed_instance)
 {
-    ASSERT_GE(StringName{c_long_cstring_to_avoid_SSO}, StringName{});
+    ASSERT_GE(StringName{c_long_cstring_to_avoid_sso}, StringName{});
 }
 
 TEST(StringName, default_constructed_instance_writes_nothing_to_ostream)
@@ -247,7 +247,7 @@ TEST(StringName, default_constructed_instance_can_be_swapped_with_nonempty_insta
 {
     StringName a;
     const StringName copy_of_a{a};
-    StringName b{c_long_cstring_to_avoid_SSO};
+    StringName b{c_long_cstring_to_avoid_sso};
     const StringName copy_of_b{b};
 
     swap(a, b);
@@ -268,12 +268,12 @@ TEST(StringName, default_constructed_std_hash_is_equal_to_hash_of_string_view)
 
 TEST(StringName, can_be_constructed_from_a_string_view)
 {
-    ASSERT_NO_THROW({ StringName(std::string_view(c_long_cstring_to_avoid_SSO)); });
+    ASSERT_NO_THROW({ StringName(std::string_view(c_long_cstring_to_avoid_sso)); });
 }
 
 TEST(StringName, can_be_constructed_from_a_std_string)
 {
-    ASSERT_NO_THROW({ StringName(std::string{c_long_cstring_to_avoid_SSO}); });
+    ASSERT_NO_THROW({ StringName(std::string{c_long_cstring_to_avoid_sso}); });
 }
 
 TEST(StringName, can_be_constructed_from_a_cstring)
@@ -289,16 +289,16 @@ TEST(StringName, can_be_implicitly_constructed_from_a_CStringView)
 
 TEST(StringName, copy_assigning_nonempty_over_a_different_nonempty_makes_lhs_compare_equal_to_rhs)
 {
-    StringName lhs{c_long_cstring_to_avoid_SSO};
-    const StringName rhs{c_another_long_cstring_to_avoid_SSO};
+    StringName lhs{c_long_cstring_to_avoid_sso};
+    const StringName rhs{c_another_long_cstring_to_avoid_sso};
     lhs = rhs;
     ASSERT_EQ(lhs, rhs);
 }
 
 TEST(StringName, move_assigning_nonempty_instance_over_a_different_nonempty_instance_makes_lhs_compare_equal)
 {
-    StringName lhs{c_long_cstring_to_avoid_SSO};
-    StringName rhs{c_another_long_cstring_to_avoid_SSO};
+    StringName lhs{c_long_cstring_to_avoid_sso};
+    StringName rhs{c_another_long_cstring_to_avoid_sso};
     const StringName rhs_copy{rhs};
     lhs = std::move(rhs);  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
     ASSERT_EQ(lhs, rhs_copy);
@@ -364,117 +364,117 @@ TEST(StringName, c_str_returns_NUL_terminated_pointer_to_first_element)
 
 TEST(StringName, implicit_conversion_to_string_view_works_as_expected)
 {
-    const StringName s{c_long_cstring_to_avoid_SSO};
-    ASSERT_EQ(static_cast<std::string_view>(s), std::string_view{c_long_cstring_to_avoid_SSO});
+    const StringName s{c_long_cstring_to_avoid_sso};
+    ASSERT_EQ(static_cast<std::string_view>(s), std::string_view{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, implicit_conversion_to_CStringView_works_as_expected)
 {
-    const StringName string_name{c_long_cstring_to_avoid_SSO};
-    ASSERT_EQ(static_cast<CStringView>(string_name), CStringView{c_long_cstring_to_avoid_SSO});
+    const StringName string_name{c_long_cstring_to_avoid_sso};
+    ASSERT_EQ(static_cast<CStringView>(string_name), CStringView{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, begin_compares_not_equal_to_end_when_nonempty)
 {
-    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    const StringName string_name{c_long_cstring_to_avoid_sso};
     ASSERT_NE(string_name.begin(), string_name.end());
 }
 
 TEST(StringName, cbegin_compares_not_equal_to_cend_when_nonempty)
 {
-    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    const StringName string_name{c_long_cstring_to_avoid_sso};
     ASSERT_NE(string_name.cbegin(), string_name.cend());
 }
 
 TEST(StringName, begin_compares_equal_to_cbegin_when_nonempty)
 {
-    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    const StringName string_name{c_long_cstring_to_avoid_sso};
     ASSERT_EQ(string_name.begin(), string_name.cbegin());
 }
 
 TEST(StringName, end_compares_equal_to_cend_when_nonempty)
 {
-    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    const StringName string_name{c_long_cstring_to_avoid_sso};
     ASSERT_EQ(string_name.end(), string_name.cend());
 }
 
 TEST(StringName, empty_returns_false_when_nonempty)
 {
-    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    const StringName string_name{c_long_cstring_to_avoid_sso};
     ASSERT_FALSE(string_name.empty());
 }
 
 TEST(StringName, size_returns_expected_value_when_nonempty)
 {
-    const StringName string_name{c_long_cstring_to_avoid_SSO};
-    ASSERT_EQ(string_name.size(), c_long_character_data_array_to_avoid_SSO.size()-1);  // minus nul
+    const StringName string_name{c_long_cstring_to_avoid_sso};
+    ASSERT_EQ(string_name.size(), c_long_character_data_array_to_avoid_sso.size()-1);  // minus nul
 }
 
 TEST(StringName, nonempty_StringName_compares_equal_to_another_nonempty_StringName_with_the_same_content)
 {
-    ASSERT_EQ(StringName{c_long_cstring_to_avoid_SSO}, StringName{c_long_cstring_to_avoid_SSO});
+    ASSERT_EQ(StringName{c_long_cstring_to_avoid_sso}, StringName{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, nonempty_compares_equal_to_a_string_view_with_the_same_content)
 {
-    ASSERT_EQ(StringName{c_long_cstring_to_avoid_SSO}, std::string_view{c_long_cstring_to_avoid_SSO});
+    ASSERT_EQ(StringName{c_long_cstring_to_avoid_sso}, std::string_view{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, nonempty_string_view_compares_equal_to_a_StringName_with_the_same_content)
 {
-    ASSERT_EQ(std::string_view{c_long_cstring_to_avoid_SSO}, StringName{c_long_cstring_to_avoid_SSO});
+    ASSERT_EQ(std::string_view{c_long_cstring_to_avoid_sso}, StringName{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, nonempty_StringName_compares_equal_to_cstring_with_the_same_content)
 {
-    ASSERT_EQ(StringName{c_long_cstring_to_avoid_SSO}, c_long_cstring_to_avoid_SSO);
+    ASSERT_EQ(StringName{c_long_cstring_to_avoid_sso}, c_long_cstring_to_avoid_sso);
 }
 
 TEST(StringName, nonempty_cstring_compares_equal_to_StringName_with_the_same_content)
 {
-    ASSERT_EQ(c_long_cstring_to_avoid_SSO, StringName{c_long_cstring_to_avoid_SSO});
+    ASSERT_EQ(c_long_cstring_to_avoid_sso, StringName{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, nonempty_StringName_compares_equal_to_CStringView_with_the_same_content)
 {
-    ASSERT_EQ(StringName{c_long_cstring_to_avoid_SSO}, CStringView{c_long_cstring_to_avoid_SSO});
+    ASSERT_EQ(StringName{c_long_cstring_to_avoid_sso}, CStringView{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, nonempty_CStringView_compares_equal_to_StringName_with_the_same_content)
 {
-    ASSERT_EQ(CStringView{c_long_cstring_to_avoid_SSO}, StringName{c_long_cstring_to_avoid_SSO});
+    ASSERT_EQ(CStringView{c_long_cstring_to_avoid_sso}, StringName{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, compares_not_equal_to_a_StringName_with_different_content)
 {
-    ASSERT_NE(StringName{c_long_cstring_to_avoid_SSO}, StringName{c_another_long_cstring_to_avoid_SSO});
+    ASSERT_NE(StringName{c_long_cstring_to_avoid_sso}, StringName{c_another_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, compares_not_equal_to_StringName_with_different_content_v2)
 {
-    ASSERT_NE(StringName{c_another_long_cstring_to_avoid_SSO}, StringName{c_long_cstring_to_avoid_SSO});
+    ASSERT_NE(StringName{c_another_long_cstring_to_avoid_sso}, StringName{c_long_cstring_to_avoid_sso});
 }
 
 TEST(StringName, can_write_content_to_std_ostream)
 {
     std::stringstream ss;
-    ss << StringName{c_long_cstring_to_avoid_SSO};
-    ASSERT_EQ(ss.str(), c_long_cstring_to_avoid_SSO);
+    ss << StringName{c_long_cstring_to_avoid_sso};
+    ASSERT_EQ(ss.str(), c_long_cstring_to_avoid_sso);
 }
 
 TEST(StringName, std_hash_of_nonempty_StringName_has_same_hash_as_StringName_with_same_content)
 {
-    ASSERT_EQ(std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_SSO}), std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_SSO}));
+    ASSERT_EQ(std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_sso}), std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_sso}));
 }
 
 TEST(StringName, std_hash_of_nonempty_StringName_has_same_hash_as_std_string_with_same_content)
 {
-    ASSERT_EQ(std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_SSO}), std::hash<std::string>{}(std::string{c_long_cstring_to_avoid_SSO}));
+    ASSERT_EQ(std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_sso}), std::hash<std::string>{}(std::string{c_long_cstring_to_avoid_sso}));
 }
 
 TEST(StringName, std_hash_of_nonempty_StringName_has_same_has_as_string_view_with_same_content)
 {
-    ASSERT_EQ(std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_SSO}), std::hash<std::string_view>{}(std::string_view{c_long_cstring_to_avoid_SSO}));
+    ASSERT_EQ(std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_sso}), std::hash<std::string_view>{}(std::string_view{c_long_cstring_to_avoid_sso}));
 }
 
 TEST(StringName, writes_identical_output_to_std_ostream_as_a_std_string_with_the_same_content)

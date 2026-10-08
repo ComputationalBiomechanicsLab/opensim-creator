@@ -11,7 +11,7 @@ using namespace opyn;
 
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<MuscleColorSourceMetadata>({
+    constexpr auto c_metadata = std::to_array<MuscleColorSourceMetadata>({
         MuscleColorSourceMetadata{
             "opensim_appearance",
             "Appearance Property",
@@ -38,12 +38,12 @@ namespace
             MuscleColorSource::FiberLength,
         },
     });
-    static_assert(c_Metadata.size() == osc::num_options<MuscleColorSource>());
+    static_assert(c_metadata.size() == osc::num_options<MuscleColorSource>());
 }
 
 std::span<const MuscleColorSourceMetadata> opyn::get_all_possible_muscle_coloring_sources_metadata()
 {
-    return c_Metadata;
+    return c_metadata;
 }
 
 const MuscleColorSourceMetadata& opyn::get_muscle_coloring_style_metadata(MuscleColorSource s)

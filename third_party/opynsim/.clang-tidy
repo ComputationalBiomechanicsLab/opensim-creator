@@ -67,5 +67,63 @@ CheckOptions:
 #  - key: bugprone-unchecked-optional-access.IgnoreValueCalls
 #    value: true
 
+  # Naming conventions
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+#  - key: readability-identifier-naming.EnumCase
+#    value: CamelCase
+  - key: readability-identifier-naming.UnionCase
+    value: CamelCase
+#  - key: readability-identifier-naming.TypedefCase
+#    value: lower_case
+#  - key: readability-identifier-naming.TypeAliasCase
+#    value: lower_case
+  - key: readability-identifier-naming.TemplateTemplateParameterCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypeTemplateParameterCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+  - key: readability-identifier-naming.StaticFunctionCase
+    value: lower_case
+  - key: readability-identifier-naming.MethodCase
+    value: lower_case
+  - key: readability-identifier-naming.ConversionFunctionCase
+    value: lower_case
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.LocalVariableCase
+    value: lower_case
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.ConstantParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.ClassMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.StructMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberSuffix
+    value: '_'
+  - key: readability-identifier-naming.ProtectedMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.ProtectedMemberSuffix
+    value: '_'
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: lower_case
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: lower_case
+#  - key: readability-identifier-naming.ConstantCase
+#    value: lower_case
+  - key: readability-identifier-naming.StaticConstantCase
+    value: lower_case
+#  - key: readability-identifier-naming.EnumConstantCase
+#    value: lower_case
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+
 WarningsAsErrors: '*'
 

@@ -35,9 +35,9 @@ namespace
     // string manipulation techniques.
     std::string normalize(std::string path)
     {
-        using Iter = typename std::string::iterator;
-        using ConstIter = typename std::string::const_iterator;
-        using Value = typename std::string::value_type;
+        using iterator = typename std::string::iterator;
+        using const_iterator = typename std::string::const_iterator;
+        using value_type = typename std::string::value_type;
 
         // note: this implementation is fairly low-level and involves mutating
         //       `path` quite a bit. The test suite is heavily relied on for
@@ -56,12 +56,12 @@ namespace
             return {};
         }
 
-        const Iter path_begin = path.begin();
-        Iter path_end = path.end();
+        const iterator path_begin = path.begin();
+        iterator path_end = path.end();
 
         // helper: shift `n` chars starting at `new_start+n` such that, after,
         // `new_start..end` is equal to what `new_start+n..end` was before.
-        const auto shift = [&path_end](Iter new_start, size_t n)
+        const auto shift = [&path_end](iterator new_start, size_t n)
         {
             copy(new_start + n, path_end, new_start);
             path_end -= n;
@@ -73,8 +73,8 @@ namespace
         // - The maximum lookahead is 3 characters because the parsing
         //   code below needs to be able to detect the upcoming input
         //   pattern "..[/\0]"
-        struct Lookahead { Value a, b, c; };
-        const auto get_lookahead = [](ConstIter start, ConstIter end)
+        struct Lookahead { value_type a, b, c; };
+        const auto get_lookahead = [](const_iterator start, const_iterator end)
         {
             switch (end - start) {
             case 0:  return Lookahead{c_nul,    c_nul,    c_nul};
@@ -85,7 +85,7 @@ namespace
         };
 
         // remove duplicate adjacent separators
-        for (Iter it = path_begin; it != path_end;) {
+        for (iterator it = path_begin; it != path_end;) {
             const Lookahead l = get_lookahead(it, path_end);
             if (l.a == NodePath::separator and l.b == NodePath::separator) {
                 shift(it, 1);
@@ -96,7 +96,7 @@ namespace
         }
 
         const bool is_absolute = *path_begin == NodePath::separator;
-        Iter cursor = is_absolute ? path_begin + 1 : path_begin;
+        iterator cursor = is_absolute ? path_begin + 1 : path_begin;
 
         // skip/dereference relative elements *at the start of a path*
         {
@@ -143,7 +143,7 @@ namespace
             }
         }
 
-        const Iter content_start = cursor;
+        const iterator content_start = cursor;
 
         // invariants:
         //
@@ -173,12 +173,12 @@ namespace
                 }
 
                 // search backwards for previous separator
-                Iter prev_separator = cursor - 2;
+                iterator prev_separator = cursor - 2;
                 while (prev_separator > content_start and *prev_separator != NodePath::separator) {
                     --prev_separator;
                 }
 
-                const Iter prev_start = prev_separator <= content_start ? content_start : prev_separator + 1;
+                const iterator prev_start = prev_separator <= content_start ? content_start : prev_separator + 1;
                 const size_t num_chars_in_current_el = (l.c == NodePath::separator) ? 3 : 2;
                 const size_t num_chars_in_previous_el = cursor - prev_start;
 
@@ -199,7 +199,7 @@ namespace
         //   string is only a slash. However, the input path wasnt initially an
         //   absolute path, so the output should be "", not "/"
         {
-            const Iter beg = is_absolute ? path_begin + 1 : path_begin;
+            const iterator beg = is_absolute ? path_begin + 1 : path_begin;
             if (path_end - beg > 0 and path_end[-1] == NodePath::separator) {
                 --path_end;
             }

@@ -42,9 +42,7 @@ namespace
     });
 
     struct SceneSphere final {
-        explicit SceneSphere(Vector3 pos_) :
-            pos{pos_}
-        {}
+        explicit SceneSphere(Vector3 pos) : pos{pos} {}
 
         Vector3 pos;
         bool is_hovered = false;

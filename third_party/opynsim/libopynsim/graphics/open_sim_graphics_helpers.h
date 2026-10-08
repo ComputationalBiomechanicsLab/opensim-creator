@@ -23,10 +23,10 @@ namespace opyn
 {
     osc::SceneRendererParams calc_scene_renderer_params(
         const ModelRendererParams&,
-        osc::Vector2 viewportDims,
-        float viewportDevicePixelRatio,
+        osc::Vector2 viewport_dims,
+        float viewport_device_pixel_ratio,
         osc::AntiAliasingLevel,
-        float fixupScaleFactor
+        float fixup_scale_factor
     );
 
     void generate_decorations(
@@ -37,11 +37,11 @@ namespace opyn
     );
 
     std::optional<osc::SceneCollision> get_closest_collision(
-        const osc::BVH& sceneBVH,
+        const osc::BVH& scene_bvh,
         osc::SceneCache&,
-        std::span<const osc::SceneDecoration> taggedDrawlist,
+        std::span<const osc::SceneDecoration> tagged_drawlist,
         const osc::Camera&,
-        osc::Vector2 mouseScreenPosition,
-        const osc::Rect& viewportScreenRect
+        osc::Vector2 mouse_screen_position,
+        const osc::Rect& viewport_screen_rect
     );
 }

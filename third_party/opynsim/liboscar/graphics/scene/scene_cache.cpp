@@ -38,12 +38,9 @@ namespace
 {
     struct TorusParameters final {
 
-        TorusParameters(
-            float tube_center_radius_,
-            float tube_radius_) :
-
-            tube_center_radius{tube_center_radius_},
-            tube_radius{tube_radius_}
+        TorusParameters(float tube_center_radius, float tube_radius) :
+            tube_center_radius{tube_center_radius},
+            tube_radius{tube_radius}
         {}
 
         friend bool operator==(const TorusParameters&, const TorusParameters&) = default;
@@ -56,21 +53,21 @@ namespace
     struct ShaderLookupKey final {
 
         ShaderLookupKey(
-            ResourcePath vertex_shader_path_,
-            ResourcePath fragment_shader_path_) :
+            ResourcePath vertex_shader_path,
+            ResourcePath fragment_shader_path) :
 
-            vertex_shader_path{std::move(vertex_shader_path_)},
-            fragment_shader_path{std::move(fragment_shader_path_)}
+            vertex_shader_path{std::move(vertex_shader_path)},
+            fragment_shader_path{std::move(fragment_shader_path)}
         {}
 
         ShaderLookupKey(
-            ResourcePath vertex_shader_path_,
-            ResourcePath geometry_shader_path_,
-            ResourcePath fragment_shader_path_) :
+            ResourcePath vertex_shader_path,
+            ResourcePath geometry_shader_path,
+            ResourcePath fragment_shader_path) :
 
-            vertex_shader_path{std::move(vertex_shader_path_)},
-            geometry_shader_path{std::move(geometry_shader_path_)},
-            fragment_shader_path{std::move(fragment_shader_path_)}
+            vertex_shader_path{std::move(vertex_shader_path)},
+            geometry_shader_path{std::move(geometry_shader_path)},
+            fragment_shader_path{std::move(fragment_shader_path)}
         {}
 
         friend bool operator==(const ShaderLookupKey&, const ShaderLookupKey&) = default;
@@ -122,18 +119,18 @@ public:
 
     void clear_meshes()
     {
-        mesh_cache.lock()->clear();
-        bvh_cache.lock()->clear();
-        torus_cache.lock()->clear();
+        mesh_cache_.lock()->clear();
+        bvh_cache_.lock()->clear();
+        torus_cache_.lock()->clear();
     }
 
     Mesh get_mesh(
         const std::string& key,
         const std::function<Mesh()>& getter)
     {
-        auto guard = mesh_cache.lock();
+        auto guard = mesh_cache_.lock();
 
-        auto [it, inserted] = guard->try_emplace(key, cube);
+        auto [it, inserted] = guard->try_emplace(key, cube_);
         if (inserted) {
             it->second = getter();
         }
@@ -141,23 +138,23 @@ public:
         return it->second;
     }
 
-    Mesh sphere_mesh() { return sphere; }
-    Mesh circle_mesh() { return circle; }
-    Mesh cylinder_mesh() { return cylinder; }
-    Mesh uncapped_cylinder_mesh() { return uncapped_cylinder; }
-    Mesh brick_mesh() { return cube; }
-    Mesh cone_mesh() { return cone; }
-    Mesh floor_mesh() { return floor; }
-    Mesh grid_mesh() { return grid100x100; }
-    Mesh cube_wireframe_mesh() { return cube_wireframe; }
-    Mesh yline_mesh() { return y_line; }
-    Mesh quad_mesh() { return textured_quad; }
+    Mesh sphere_mesh() { return sphere_; }
+    Mesh circle_mesh() { return circle_; }
+    Mesh cylinder_mesh() { return cylinder_; }
+    Mesh uncapped_cylinder_mesh() { return uncapped_cylinder_; }
+    Mesh brick_mesh() { return cube_; }
+    Mesh cone_mesh() { return cone_; }
+    Mesh floor_mesh() { return floor_; }
+    Mesh grid_mesh() { return grid100x100_; }
+    Mesh cube_wireframe_mesh() { return cube_wireframe_; }
+    Mesh yline_mesh() { return y_line_; }
+    Mesh quad_mesh() { return textured_quad_; }
     Mesh torus_mesh(float tube_center_radius, float tube_radius)
     {
         const TorusParameters key{tube_center_radius, tube_radius};
 
-        auto guard = torus_cache.lock();
-        auto [it, inserted] = guard->try_emplace(key, cube);
+        auto guard = torus_cache_.lock();
+        auto [it, inserted] = guard->try_emplace(key, cube_);
         if (inserted) {
             it->second = TorusGeometry{{
                 .tube_center_radius = key.tube_center_radius,
@@ -174,7 +171,7 @@ public:
 
     const BVH& get_bvh(const Mesh& mesh)
     {
-        auto guard = bvh_cache.lock();
+        auto guard = bvh_cache_.lock();
         auto [it, inserted] = guard->try_emplace(mesh, nullptr);
         if (inserted) {
             it->second = std::make_unique<BVH>(create_triangle_bvh(mesh));
@@ -252,7 +249,7 @@ public:
     }
 
 private:
-    Mesh sphere = SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
+    Mesh sphere_ = SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
     Mesh sphere_octant_ = SphereGeometry{{
         .num_width_segments = 16,
         .num_height_segments = 16,
@@ -261,20 +258,20 @@ private:
         .theta_start = 0_deg,
         .theta_length = 90_deg,
     }};
-    Mesh circle = CircleGeometry{{.radius = 1.0f, .num_segments = 16}};
-    Mesh cylinder = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16}};
-    Mesh uncapped_cylinder = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16, .open_ended = true}};
-    Mesh cube = BoxGeometry{{.dimensions = Vector3{2.0f}}};
-    Mesh cone = ConeGeometry{{.radius = 1.0f, .height = 2.0f, .num_radial_segments = 16}};
-    Mesh floor = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
-    Mesh grid100x100 = GridGeometry{{.num_divisions = 1000}};
-    Mesh cube_wireframe = AABBGeometry{}.mesh();
-    Mesh y_line = generate_y_to_y_line_mesh();
-    Mesh textured_quad = floor;
+    Mesh circle_ = CircleGeometry{{.radius = 1.0f, .num_segments = 16}};
+    Mesh cylinder_ = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16}};
+    Mesh uncapped_cylinder_ = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16, .open_ended = true}};
+    Mesh cube_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
+    Mesh cone_ = ConeGeometry{{.radius = 1.0f, .height = 2.0f, .num_radial_segments = 16}};
+    Mesh floor_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
+    Mesh grid100x100_ = GridGeometry{{.num_divisions = 1000}};
+    Mesh cube_wireframe_ = AABBGeometry{}.mesh();
+    Mesh y_line_ = generate_y_to_y_line_mesh();
+    Mesh textured_quad_ = floor_;
 
-    SynchronizedValue<ankerl::unordered_dense::map<TorusParameters, Mesh>> torus_cache;
-    SynchronizedValue<ankerl::unordered_dense::map<std::string, Mesh>> mesh_cache;
-    SynchronizedValue<ankerl::unordered_dense::map<Mesh, std::unique_ptr<BVH>>> bvh_cache;
+    SynchronizedValue<ankerl::unordered_dense::map<TorusParameters, Mesh>> torus_cache_;
+    SynchronizedValue<ankerl::unordered_dense::map<std::string, Mesh>> mesh_cache_;
+    SynchronizedValue<ankerl::unordered_dense::map<Mesh, std::unique_ptr<BVH>>> bvh_cache_;
 
     // shader stuff
     ResourceLoader resource_loader_;

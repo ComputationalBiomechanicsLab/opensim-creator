@@ -76,8 +76,8 @@ osc::OBJMetadata::OBJMetadata() :
     OBJMetadata{OSC_LIBRARY_NAME}
 {}
 
-osc::OBJMetadata::OBJMetadata(std::string_view authoring_tool_) :
-    authoring_tool{authoring_tool_},
+osc::OBJMetadata::OBJMetadata(std::string_view authoring_tool) :
+    authoring_tool{authoring_tool},
     creation_time{system_calendar_time()}
 {}
 

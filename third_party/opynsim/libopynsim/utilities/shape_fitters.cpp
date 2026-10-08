@@ -198,17 +198,17 @@ namespace
 
     // solve systems of linear equations `Ax = B` for `x`
     SimTK::Vector solve_linear_least_squares(
-        const SimTK::Matrix& A,
-        const SimTK::Vector& B,
+        const SimTK::Matrix& a,
+        const SimTK::Vector& b,
         std::optional<double> rcond = std::nullopt)
     {
-        OSC_ASSERT(A.nrow() == B.nrow());
-        SimTK::Vector result(A.ncol(), 0.0);
+        OSC_ASSERT(a.nrow() == b.nrow());
+        SimTK::Vector result(a.ncol(), 0.0);
         if (rcond) {
-            SimTK::FactorQTZ{A, *rcond}.solve(B, result);
+            SimTK::FactorQTZ{a, *rcond}.solve(b, result);
         }
         else {
-            SimTK::FactorQTZ{A}.solve(B, result);
+            SimTK::FactorQTZ{a}.solve(b, result);
         }
 
         return result;
@@ -222,7 +222,7 @@ namespace
     //
     // - lhs: 3xN matrix (rows are x y z, and columns are each point in `vs`)
     // - rhs: Nx3 matrix (rows are each point in `vs`, columns are x, y, z)
-    SimTK::Mat33 CalcCovarianceMatrix(std::span<const osc::Vector3> vs)
+    SimTK::Mat33 calc_covariance_matrix(std::span<const osc::Vector3> vs)
     {
         SimTK::Mat33 rv;
         for (int row = 0; row < 3; ++row) {
@@ -239,7 +239,7 @@ namespace
 
     // returns `v` projected onto a plane's 2D surface, where the
     // plane's surface has basis vectors `basis1` and `basis2`
-    osc::Vector2 Project3DPointOntoPlane(
+    osc::Vector2 project_3d_point_onto_plane(
         const osc::Vector3& v,
         const osc::Vector3& basis1,
         const osc::Vector3& basis2)
@@ -249,12 +249,12 @@ namespace
 
     // returns `surfacePoint` un-projected from the 2D surface of a plane, where
     // the plane's surface has basis vectors `basis1` and `basis2`
-    osc::Vector3 Unproject2DPlanePointInto3D(
-        osc::Vector2 planeSurfacePoint,
+    osc::Vector3 unproject_2d_plane_point_into_3d(
+        osc::Vector2 plane_surface_point,
         const osc::Vector3& basis1,
         const osc::Vector3& basis2)
     {
-        return planeSurfacePoint.x()*basis1 + planeSurfacePoint.y()*basis2;
+        return plane_surface_point.x()*basis1 + plane_surface_point.y()*basis2;
     }
 
     // part of solving this algebraic form for an ellipsoid:
@@ -262,7 +262,7 @@ namespace
     //     - Ax^2 + By^2 + Cz^2 + 2Dxy + 2Exz + 2Fyz + 2Gx + 2Hy + 2Iz + J = 0
     //
     // see: https://nl.mathworks.com/matlabcentral/fileexchange/24693-ellipsoid-fit
-    std::array<double, 9> SolveEllipsoidAlgebraicForm(std::span<const osc::Vector3> vs)
+    std::array<double, 9> solve_ellipsoid_algebraic_form(std::span<const osc::Vector3> vs)
     {
         // this code is translated like-for-like with the MATLAB version
         // and was checked by comparing debugger output in MATLAB from
@@ -274,25 +274,25 @@ namespace
         // the "How to Build a Dinosaur" version only ever calls `ellipsoid_fit`
         // with `equals` set to `''`, which means "unique fit" (no constraints)
 
-        const int nRows = static_cast<int>(vs.size());
-        const int nCols = 9;
+        const int n_rows = static_cast<int>(vs.size());
+        const int n_cols = 9;
 
-        SimTK::Matrix D(nRows, nCols);
-        SimTK::Vector d2(nRows);
-        for (int row = 0; row < nRows; ++row) {
+        SimTK::Matrix d(n_rows, n_cols);
+        SimTK::Vector d2(n_rows);
+        for (int row = 0; row < n_rows; ++row) {
             const double x = vs[row].x();
             const double y = vs[row].y();
             const double z = vs[row].z();
 
-            D(row, 0) = x*x + y*y - 2.0*z*z;
-            D(row, 1) = x*x + z*z - 2.0*y*y;
-            D(row, 2) = 2.0*x*y;
-            D(row, 3) = 2.0*x*z;
-            D(row, 4) = 2.0*y*z;
-            D(row, 5) = 2.0*x;
-            D(row, 6) = 2.0*y;
-            D(row, 7) = 2.0*z;
-            D(row, 8) = 1.0 + 0.0*x;
+            d(row, 0) = x*x + y*y - 2.0*z*z;
+            d(row, 1) = x*x + z*z - 2.0*y*y;
+            d(row, 2) = 2.0*x*y;
+            d(row, 3) = 2.0*x*z;
+            d(row, 4) = 2.0*y*z;
+            d(row, 5) = 2.0*x;
+            d(row, 6) = 2.0*y;
+            d(row, 7) = 2.0*z;
+            d(row, 8) = 1.0 + 0.0*x;
 
             d2(row) = x*x + y*y + z*z;
         }
@@ -303,13 +303,13 @@ namespace
         //       I'm using a hard-coded rcond here to match MATLAB's error message,
         //       so that I can verify that SimTK's behavior can be modified to yield
         //       identical results to MATLAB
-        constexpr double c_RCondReportedByMatlab = 1.202234e-16;
+        constexpr double c_r_cond_reported_by_matlab = 1.202234e-16;
 
         // solve the normal system of equations
         SimTK::Vector u = solve_linear_least_squares(
-            D.transpose() * D,  // lhs * u = ...
-            D.transpose() * d2, // ... rhs
-            c_RCondReportedByMatlab
+            d.transpose() * d,  // lhs * u = ...
+            d.transpose() * d2, // ... rhs
+            c_r_cond_reported_by_matlab
         );
 
         // repack vector into compile-time-known array
@@ -322,7 +322,7 @@ namespace
     // like-for-like translation from original MATLAB version of the code
     //
     // (I didn't have time to figure out what V is in this context)
-    std::array<double, 10> SolveV(const std::array<double, 9>& u)
+    std::array<double, 10> solve_v(const std::array<double, 9>& u)
     {
         return{
             u[0] + u[1] - 1.0f,
@@ -339,71 +339,71 @@ namespace
     }
 
     // forms the algebraic form of the ellipsoid
-    SimTK::Mat44 CalcA(const std::array<double, 10>& v)
+    SimTK::Mat44 calc_a(const std::array<double, 10>& v)
     {
-        SimTK::Mat44 A;
+        SimTK::Mat44 a;
 
-        A(0, 0) = v[0];
-        A(0, 1) = v[3];
-        A(0, 2) = v[4];
-        A(0, 3) = v[6];
+        a(0, 0) = v[0];
+        a(0, 1) = v[3];
+        a(0, 2) = v[4];
+        a(0, 3) = v[6];
 
-        A(1, 0) = v[3];
-        A(1, 1) = v[1];
-        A(1, 2) = v[5];
-        A(1, 3) = v[7];
+        a(1, 0) = v[3];
+        a(1, 1) = v[1];
+        a(1, 2) = v[5];
+        a(1, 3) = v[7];
 
-        A(2, 0) = v[4];
-        A(2, 1) = v[5];
-        A(2, 2) = v[2];
-        A(2, 3) = v[8];
+        a(2, 0) = v[4];
+        a(2, 1) = v[5];
+        a(2, 2) = v[2];
+        a(2, 3) = v[8];
 
-        A(3, 0) = v[6];
-        A(3, 1) = v[7];
-        A(3, 2) = v[8];
-        A(3, 3) = v[9];
+        a(3, 0) = v[6];
+        a(3, 1) = v[7];
+        a(3, 2) = v[8];
+        a(3, 3) = v[9];
 
-        return A;
+        return a;
     }
 
     // calculates the center of the ellipsoid (see original MATLAB code)
-    SimTK::Vec3 CalcEllipsoidOrigin(
-        const SimTK::Mat44& A,
+    SimTK::Vec3 calc_ellipsoid_origin(
+        const SimTK::Mat44& a,
         const std::array<double, 10>& v)
     {
-        SimTK::Matrix topLeft(3, 3);
-        topLeft(0, 0) = A(0, 0);
-        topLeft(0, 1) = A(0, 1);
-        topLeft(0, 2) = A(0, 2);
-        topLeft(1, 0) = A(1, 0);
-        topLeft(1, 1) = A(1, 1);
-        topLeft(1, 2) = A(1, 2);
-        topLeft(2, 0) = A(2, 0);
-        topLeft(2, 1) = A(2, 1);
-        topLeft(2, 2) = A(2, 2);
+        SimTK::Matrix top_left(3, 3);
+        top_left(0, 0) = a(0, 0);
+        top_left(0, 1) = a(0, 1);
+        top_left(0, 2) = a(0, 2);
+        top_left(1, 0) = a(1, 0);
+        top_left(1, 1) = a(1, 1);
+        top_left(1, 2) = a(1, 2);
+        top_left(2, 0) = a(2, 0);
+        top_left(2, 1) = a(2, 1);
+        top_left(2, 2) = a(2, 2);
 
         SimTK::Vector rhs(3);
         rhs(0) = v[6];
         rhs(1) = v[7];
         rhs(2) = v[8];
-        const SimTK::Vector center = solve_linear_least_squares(-topLeft, rhs);
+        const SimTK::Vector center = solve_linear_least_squares(-top_left, rhs);
 
         // pack return value into a Vec3
         OSC_ASSERT(center.size() == 3);
         return SimTK::Vec3{center(0), center(1), center(2)};
     }
 
-    std::pair<SimTK::Mat33, SimTK::Mat33> SolveEigenProblem(
-        const SimTK::Mat44& A,
+    std::pair<SimTK::Mat33, SimTK::Mat33> solve_eigen_problem(
+        const SimTK::Mat44& a,
         const SimTK::Vec3& center)
     {
-        SimTK::Matrix T = eye(4);
-        T(3, 0) = center[0];
-        T(3, 1) = center[1];
-        T(3, 2) = center[2];
+        SimTK::Matrix t = eye(4);
+        t(3, 0) = center[0];
+        t(3, 1) = center[1];
+        t(3, 2) = center[2];
 
-        const SimTK::Matrix R = T * SimTK::Matrix{A} * T.transpose();
-        return eig_sorted(top_left<3, 3>(R) / -R(3, 3));
+        const SimTK::Matrix r = t * SimTK::Matrix{a} * t.transpose();
+        return eig_sorted(top_left<3, 3>(r) / -r(3, 3));
     }
 }
 
@@ -472,21 +472,21 @@ osc::Sphere opyn::fit_sphere_htbad(const osc::Mesh& mesh)
     }
 
     // create `f` and `A` (explained above)
-    const int numPoints = static_cast<int>(points.size());
-    SimTK::Vector f(numPoints, 0.0);
-    SimTK::Matrix A(numPoints, 4);
-    for (int i = 0; i < numPoints; ++i) {
+    const int num_points = static_cast<int>(points.size());
+    SimTK::Vector f(num_points, 0.0);
+    SimTK::Matrix a(num_points, 4);
+    for (int i = 0; i < num_points; ++i) {
         const osc::Vector3 vert = points[i];
 
         f(i) = osc::dot(vert, vert);  // x^2 + y^2 + z^2
-        A(i, 0) = 2.0f*vert[0];
-        A(i, 1) = 2.0f*vert[1];
-        A(i, 2) = 2.0f*vert[2];
-        A(i, 3) = 1.0f;
+        a(i, 0) = 2.0f*vert[0];
+        a(i, 1) = 2.0f*vert[1];
+        a(i, 2) = 2.0f*vert[2];
+        a(i, 3) = 1.0f;
     }
 
     // solve `f = Ac` for `c`
-    const SimTK::Vector c = solve_linear_least_squares(A, f);
+    const SimTK::Vector c = solve_linear_least_squares(a, f);
     OSC_ASSERT(c.size() == 4);
 
     // unpack `c` into sphere parameters (explained above)
@@ -570,37 +570,36 @@ osc::Plane opyn::fit_plane_htbad(const osc::Mesh& mesh)
     const osc::Vector3 mean = mean_of(vertices);
 
     // shift point cloud such that the centroid is at the origin
-    const std::vector<osc::Vector3> verticesReduced = minus(vertices, mean);
+    const std::vector<osc::Vector3> vertices_reduced = minus(vertices, mean);
 
     // pack the vertices into a covariance matrix, ready for principal component analysis (PCA)
-    const SimTK::Mat33 covarianceMatrix = CalcCovarianceMatrix(verticesReduced);
+    const SimTK::Mat33 covariance_matrix = calc_covariance_matrix(vertices_reduced);
 
     // eigen analysis to yield [N, B1, B2]
-    const SimTK::Mat33 eigenVectors = eig_sorted(covarianceMatrix).first;
-    const auto normal = osc::to<osc::Vector3>(eigenVectors.col(0));
-    const auto basis1 = osc::to<osc::Vector3>(eigenVectors.col(1));
-    const auto basis2 = osc::to<osc::Vector3>(eigenVectors.col(2));
+    const SimTK::Mat33 eigen_vectors = eig_sorted(covariance_matrix).first;
+    const auto normal = osc::to<osc::Vector3>(eigen_vectors.col(0));
+    const auto basis1 = osc::to<osc::Vector3>(eigen_vectors.col(1));
+    const auto basis2 = osc::to<osc::Vector3>(eigen_vectors.col(2));
 
     // project points onto B1 and B2 (plane-space) and calculate the 2D bounding box
     // of them in plane-spae
-    const osc::Rect bounds = bounding_rect_of(verticesReduced, [&basis1, &basis2](const osc::Vector3& v)
+    const osc::Rect bounds = bounding_rect_of(vertices_reduced, [&basis1, &basis2](const osc::Vector3& v)
     {
-        return Project3DPointOntoPlane(v, basis1, basis2);
+        return project_3d_point_onto_plane(v, basis1, basis2);
     });
 
     // calculate the midpoint of those bounds in plane-space
-    const osc::Vector2 boundsMidpointInPlaneSpace = bounds.origin();
+    const osc::Vector2 bounds_midpoint_in_plane_space = bounds.origin();
 
     // un-project the plane-space midpoint back into mesh-space
-    const osc::Vector3 boundsMidPointInReducedSpace = Unproject2DPlanePointInto3D(
-        boundsMidpointInPlaneSpace,
+    const osc::Vector3 bounds_mid_point_in_reduced_space = unproject_2d_plane_point_into_3d(
+        bounds_midpoint_in_plane_space,
         basis1,
         basis2
     );
-    const osc::Vector3 boundsMidPointInMeshSpace = boundsMidPointInReducedSpace + mean;
+    const osc::Vector3 bounds_mid_point_in_mesh_space = bounds_mid_point_in_reduced_space + mean;
 
-    // return normal and boundsMidPointInMeshSpace
-    return osc::Plane{boundsMidPointInMeshSpace, normal};
+    return osc::Plane{bounds_mid_point_in_mesh_space, normal};
 }
 
 osc::Ellipsoid opyn::fit_ellipsoid_htbad(const osc::Mesh& mesh)
@@ -629,17 +628,17 @@ osc::Ellipsoid opyn::fit_ellipsoid_htbad(const osc::Mesh& mesh)
     // but that doesn't mention using eigen analysis, which I imagine Yury is using
     // as a form of PCA?
 
-    const std::vector<osc::Vector3> meshVertices = mesh.indexed_vertices();
-    OSC_ASSERT_ALWAYS(meshVertices.size() >= 9 && "there must be >= 9 indexed vertices in the mesh in order to solve the ellipsoid's algebreic form");
-    const auto u = SolveEllipsoidAlgebraicForm(meshVertices);
-    const auto v = SolveV(u);
-    const auto A = CalcA(v);  // form the algebraic form of the ellipsoid
+    const std::vector<osc::Vector3> mesh_vertices = mesh.indexed_vertices();
+    OSC_ASSERT_ALWAYS(mesh_vertices.size() >= 9 && "there must be >= 9 indexed vertices in the mesh in order to solve the ellipsoid's algebreic form");
+    const auto u = solve_ellipsoid_algebraic_form(mesh_vertices);
+    const auto v = solve_v(u);
+    const auto a = calc_a(v);  // form the algebraic form of the ellipsoid
 
     // solve for ellipsoid origin
-    const auto ellipsoidOrigin = CalcEllipsoidOrigin(A, v);
+    const auto ellipsoid_origin = calc_ellipsoid_origin(a, v);
 
     // use Eigenanalysis to solve for the ellipsoid's radii and frame
-    auto [evecs, evals] = SolveEigenProblem(A, ellipsoidOrigin);
+    auto [evecs, evals] = solve_eigen_problem(a, ellipsoid_origin);
 
     // OpenSimCreator modification (this is slightly different behavior from "How to Build a Dinosaur"'s MATLAB code)
     //
@@ -659,7 +658,7 @@ osc::Ellipsoid opyn::fit_ellipsoid_htbad(const osc::Mesh& mesh)
     right_handify(evecs);
 
     return osc::Ellipsoid{
-        osc::to<osc::Vector3>(ellipsoidOrigin),
+        osc::to<osc::Vector3>(ellipsoid_origin),
         osc::to<osc::Vector3>(SimTK::sqrt(reciprocal_of(diag(evals)))),
         osc::quaternion_cast(osc::to<osc::Matrix3x3>(evecs)),
     };

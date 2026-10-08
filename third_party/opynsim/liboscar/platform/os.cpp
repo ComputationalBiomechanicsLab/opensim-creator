@@ -27,7 +27,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView method_name, const char* p)
+    std::filesystem::path convert_sdl_filepath_to_std_filepath(CStringView method_name, const char* p)
     {
         // nullptr disallowed
         if (p == nullptr) {
@@ -79,7 +79,7 @@ std::tm osc::system_calendar_time()
 
 std::filesystem::path osc::current_executable_directory()
 {
-    return convert_SDL_filepath_to_std_filepath("SDL_GetBasePath", SDL_GetBasePath());
+    return convert_sdl_filepath_to_std_filepath("SDL_GetBasePath", SDL_GetBasePath());
 }
 
 std::filesystem::path osc::user_data_directory(
@@ -93,7 +93,7 @@ std::filesystem::path osc::user_data_directory(
         SDL_GetPrefPath(organization_name_str.c_str(), application_name_str.c_str()),
         SDL_free,
     };
-    return convert_SDL_filepath_to_std_filepath("SDL_GetPrefPath", p.get());
+    return convert_sdl_filepath_to_std_filepath("SDL_GetPrefPath", p.get());
 }
 
 void osc::open_file_in_os_default_application(const std::filesystem::path& fp)

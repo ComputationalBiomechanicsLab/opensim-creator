@@ -29,22 +29,22 @@ namespace rgs = std::ranges;
 
 TEST(fit_sphere_htbad, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 {
-    const osc::Mesh emptyMesh;
-    const osc::Sphere sphereFit = fit_sphere_htbad(emptyMesh);
+    const osc::Mesh empty_mesh;
+    const osc::Sphere sphere_fit = fit_sphere_htbad(empty_mesh);
 
-    ASSERT_FALSE(emptyMesh.has_vertices());
-    ASSERT_EQ(sphereFit.origin, osc::Vector3(0.0f, 0.0f, 0.0f));
-    ASSERT_EQ(sphereFit.radius, 1.0f);
+    ASSERT_FALSE(empty_mesh.has_vertices());
+    ASSERT_EQ(sphere_fit.origin, osc::Vector3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(sphere_fit.radius, 1.0f);
 }
 
 TEST(fit_sphere_htbad, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
 {
     // generate a UV unit sphere
-    const osc::Mesh sphereMesh = osc::SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
-    const osc::Sphere sphereFit = fit_sphere_htbad(sphereMesh);
+    const osc::Mesh sphere_mesh = osc::SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
+    const osc::Sphere sphere_fit = fit_sphere_htbad(sphere_mesh);
 
-    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphereFit.origin, osc::Vector3{}, 0.000001f)));
-    ASSERT_TRUE(osc::equal_within_absdiff(sphereFit.radius, 1.0f, 0.000001f));
+    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphere_fit.origin, osc::Vector3{}, 0.000001f)));
+    ASSERT_TRUE(osc::equal_within_absdiff(sphere_fit.radius, 1.0f, 0.000001f));
 }
 
 TEST(fit_sphere_htbad, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
@@ -55,13 +55,13 @@ TEST(fit_sphere_htbad, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphe
         .translation = {7.0f, 3.0f, 1.5f},
     };
 
-    osc::Mesh sphereMesh = osc::SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
-    sphereMesh.transform_vertices(t);
+    osc::Mesh sphere_mesh = osc::SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
+    sphere_mesh.transform_vertices(t);
 
-    const osc::Sphere sphereFit = fit_sphere_htbad(sphereMesh);
+    const osc::Sphere sphere_fit = fit_sphere_htbad(sphere_mesh);
 
-    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphereFit.origin, t.translation, 0.000001f)));
-    ASSERT_TRUE(osc::equal_within_reldiff(sphereFit.radius, t.scale.x(), 0.000001f));
+    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphere_fit.origin, t.translation, 0.000001f)));
+    ASSERT_TRUE(osc::equal_within_reldiff(sphere_fit.radius, t.scale.x(), 0.000001f));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -85,26 +85,26 @@ TEST(fit_sphere_htbad, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphe
 TEST(fit_sphere_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
     // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr osc::Sphere c_ExpectedSphere{{5.0133f, -27.43f, 164.2998f}, 7.8291f};
+    constexpr osc::Sphere c_expected_sphere{{5.0133f, -27.43f, 164.2998f}, 7.8291f};
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
-    const auto objPath =
+    const auto obj_path =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const osc::Mesh mesh = load_mesh_via_simbody(objPath);
-    const osc::Sphere sphereFit = fit_sphere_htbad(mesh);
+    const osc::Mesh mesh = load_mesh_via_simbody(obj_path);
+    const osc::Sphere sphere_fit = fit_sphere_htbad(mesh);
 
-    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphereFit.origin, c_ExpectedSphere.origin, 0.0001f)));
-    ASSERT_TRUE(osc::equal_within_absdiff(sphereFit.radius, c_ExpectedSphere.radius, 0.0001f));
+    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphere_fit.origin, c_expected_sphere.origin, 0.0001f)));
+    ASSERT_TRUE(osc::equal_within_absdiff(sphere_fit.radius, c_expected_sphere.radius, 0.0001f));
 }
 
 TEST(fit_plane_htbad, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
 {
-    const osc::Mesh emptyMesh;
-    const osc::Plane planeFit = fit_plane_htbad(emptyMesh);
+    const osc::Mesh empty_mesh;
+    const osc::Plane plane_fit = fit_plane_htbad(empty_mesh);
 
-    ASSERT_FALSE(emptyMesh.has_vertices());
-    ASSERT_EQ(planeFit.origin, osc::Vector3(0.0f, 0.0f, 0.0f));
-    ASSERT_EQ(planeFit.normal, osc::Vector3(0.0f, 1.0f, 0.0f));
+    ASSERT_FALSE(empty_mesh.has_vertices());
+    ASSERT_EQ(plane_fit.origin, osc::Vector3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(plane_fit.normal, osc::Vector3(0.0f, 1.0f, 0.0f));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -128,20 +128,20 @@ TEST(fit_plane_htbad, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
 TEST(fit_plane_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
     // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr osc::Plane c_ExpectedPlane =
+    constexpr osc::Plane c_expected_plane =
     {
         {4.6138f, -24.0131f, 163.1295f},
         {0.2131f, 0.94495f, -0.24833f},
     };
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
-    const auto objPath =
+    const auto obj_path =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const osc::Mesh mesh = load_mesh_via_simbody(objPath);
-    const osc::Plane planeFit = fit_plane_htbad(mesh);
+    const osc::Mesh mesh = load_mesh_via_simbody(obj_path);
+    const osc::Plane plane_fit = fit_plane_htbad(mesh);
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(planeFit.origin, c_ExpectedPlane.origin, 0.0001f)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(planeFit.normal, c_ExpectedPlane.normal, 0.0001f)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(plane_fit.origin, c_expected_plane.origin, 0.0001f)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(plane_fit.normal, c_expected_plane.normal, 0.0001f)));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -165,34 +165,34 @@ TEST(fit_plane_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublish
 TEST(fit_ellipsoid_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
     // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr osc::Vector3 c_ExpectedOrigin = {4.41627617443540f, -28.2484366502307f, 165.041246898544f};
-    constexpr osc::Vector3 c_ExpectedRadii = {9.39508101198322f,   8.71324627349633f,  6.71387132216324f};
+    constexpr osc::Vector3 c_expected_origin = {4.41627617443540f, -28.2484366502307f, 165.041246898544f};
+    constexpr osc::Vector3 c_expected_radii = {9.39508101198322f,   8.71324627349633f,  6.71387132216324f};
     // OSC change: the _signs_ of these direction vectors might be different from the MATLAB script because
     // OSC's implementation also gurantees that the vectors are right-handed
-    constexpr auto c_ExpectedRadiiDirections = std::to_array<osc::Vector3>({
+    constexpr auto c_expected_radii_directions = std::to_array<osc::Vector3>({
         osc::Vector3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
         osc::Vector3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},
         osc::Vector3{0.855256483340491f, -0.510429677030215f, -0.0894309371016929f},
     });
-    constexpr float c_MaximumAbsoluteError = 0.0001f;
+    constexpr float c_maximum_absolute_error = 0.0001f;
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
-    const auto objPath =
+    const auto obj_path =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const osc::Mesh mesh = load_mesh_via_simbody(objPath);
+    const osc::Mesh mesh = load_mesh_via_simbody(obj_path);
     const osc::Ellipsoid fit = fit_ellipsoid_htbad(mesh);
     const auto directions = axis_directions_of(fit);
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(fit.origin, c_ExpectedOrigin, c_MaximumAbsoluteError)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(fit.radii,  c_ExpectedRadii, c_MaximumAbsoluteError)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(directions[0], c_ExpectedRadiiDirections[0], c_MaximumAbsoluteError)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(directions[1], c_ExpectedRadiiDirections[1], c_MaximumAbsoluteError)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(directions[2], c_ExpectedRadiiDirections[2], c_MaximumAbsoluteError)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(fit.origin, c_expected_origin, c_maximum_absolute_error)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(fit.radii,  c_expected_radii, c_maximum_absolute_error)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(directions[0], c_expected_radii_directions[0], c_maximum_absolute_error)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(directions[1], c_expected_radii_directions[1], c_maximum_absolute_error)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(directions[2], c_expected_radii_directions[2], c_maximum_absolute_error)));
 }
 
 TEST(fit_ellipsoid_htbad, ThrowsErrorIfGivenLessThan9Points)
 {
-    const auto generateSphericalMeshWithNPoints = [](size_t n)
+    const auto generate_spherical_mesh_with_n_points = [](size_t n)
     {
         osc::Radians theta{0.0f};
         osc::Radians phi{0.0f};
@@ -217,10 +217,10 @@ TEST(fit_ellipsoid_htbad, ThrowsErrorIfGivenLessThan9Points)
 
     for (size_t i = 0; i < 9; ++i)
     {
-        ASSERT_ANY_THROW({ fit_ellipsoid_htbad(generateSphericalMeshWithNPoints(i)); });
+        ASSERT_ANY_THROW({ fit_ellipsoid_htbad(generate_spherical_mesh_with_n_points(i)); });
     }
 
     // shouldn't throw
-    fit_ellipsoid_htbad(generateSphericalMeshWithNPoints(9));
-    fit_ellipsoid_htbad(generateSphericalMeshWithNPoints(10));
+    fit_ellipsoid_htbad(generate_spherical_mesh_with_n_points(9));
+    fit_ellipsoid_htbad(generate_spherical_mesh_with_n_points(10));
 }

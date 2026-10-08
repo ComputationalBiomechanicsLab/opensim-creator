@@ -31,9 +31,9 @@ namespace
 {
     struct DaeGeometry final {
 
-        DaeGeometry(std::string geometry_id_, Mesh mesh_) :
-            geometry_id{std::move(geometry_id_)},
-            mesh{std::move(mesh_)}
+        DaeGeometry(std::string geometry_id, Mesh mesh) :
+            geometry_id{std::move(geometry_id)},
+            mesh{std::move(mesh)}
         {}
 
         std::string geometry_id;
@@ -42,12 +42,9 @@ namespace
 
     struct DaeMaterial final {
 
-        DaeMaterial(
-            std::string material_id_,
-            const Color& color_) :
-
-            material_id{std::move(material_id_)},
-            color{color_}
+        DaeMaterial(std::string material_id, const Color& color) :
+            material_id{std::move(material_id)},
+            color{color}
         {}
 
         std::string material_id;
@@ -57,15 +54,15 @@ namespace
     struct DaeInstance final {
 
         DaeInstance(
-            std::string instance_id_,
-            std::string geometry_id_,
-            std::string material_id_,
-            const Transform& transform_) :
+            std::string instance_id,
+            std::string geometry_id,
+            std::string material_id,
+            const Transform& transform) :
 
-            instance_id{std::move(instance_id_)},
-            geometry_id{std::move(geometry_id_)},
-            material_id{std::move(material_id_)},
-            transform{transform_}
+            instance_id{std::move(instance_id)},
+            geometry_id{std::move(geometry_id)},
+            material_id{std::move(material_id)},
+            transform{transform}
         {}
 
         std::string instance_id;
@@ -417,11 +414,11 @@ osc::DAEMetadata::DAEMetadata() :
 {}
 
 osc::DAEMetadata::DAEMetadata(
-    std::string_view author_,
-    std::string_view authoring_tool_) :
+    std::string_view author,
+    std::string_view authoring_tool) :
 
-    author{author_},
-    authoring_tool{authoring_tool_},
+    author{author},
+    authoring_tool{authoring_tool},
     creation_time{system_calendar_time()},
     modification_time{creation_time}
 {}

@@ -105,9 +105,9 @@ osc::STLMetadata::STLMetadata() :
 {}
 
 osc::STLMetadata::STLMetadata(
-    std::string_view authoring_tool_) :
+    std::string_view authoring_tool) :
 
-    authoring_tool{authoring_tool_},
+    authoring_tool{authoring_tool},
     creation_time{system_calendar_time()}
 {}
 

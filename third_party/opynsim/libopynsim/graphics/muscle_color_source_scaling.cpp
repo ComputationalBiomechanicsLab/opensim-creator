@@ -11,7 +11,7 @@ using namespace opyn;
 
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<MuscleColorSourceScalingMetadata>({
+    constexpr auto c_metadata = std::to_array<MuscleColorSourceScalingMetadata>({
         MuscleColorSourceScalingMetadata{
             "none",
             "None",
@@ -23,17 +23,17 @@ namespace
             MuscleColorSourceScaling::ModelWide,
         },
     });
-    static_assert(c_Metadata.size() == osc::num_options<MuscleColorSourceScaling>());
+    static_assert(c_metadata.size() == osc::num_options<MuscleColorSourceScaling>());
 }
 
 std::span<const MuscleColorSourceScalingMetadata> opyn::get_all_possible_muscle_color_source_scaling_metadata()
 {
-    return c_Metadata;
+    return c_metadata;
 }
 
 const MuscleColorSourceScalingMetadata& opyn::get_muscle_color_source_scaling_metadata(MuscleColorSourceScaling option)
 {
-    return c_Metadata.at(osc::to_index(option));
+    return c_metadata.at(osc::to_index(option));
 }
 
 ptrdiff_t opyn::get_index_of(MuscleColorSourceScaling s)

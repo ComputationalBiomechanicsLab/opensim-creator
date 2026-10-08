@@ -618,8 +618,8 @@ namespace {
                 // `pandas.DataFrame`.
 
                 nb::module_ pd = nb::module_::import_("pandas");
-                nb::object DataFrame = pd.attr("DataFrame");
-                nb::object from_arrow = DataFrame.attr("from_arrow");
+                nb::object df = pd.attr("DataFrame");
+                nb::object from_arrow = df.attr("from_arrow");
                 nb::object data_frame_obj = nb::cast(&data_frame, nb::rv_policy::reference);
                 return from_arrow(data_frame_obj);
             },

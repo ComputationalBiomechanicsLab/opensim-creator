@@ -11,7 +11,7 @@ using namespace opyn;
 
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<MuscleDecorationStyleMetadata>({
+    constexpr auto c_metadata = std::to_array<MuscleDecorationStyleMetadata>({
         MuscleDecorationStyleMetadata{
             "opensim",  // legacy label (naming was changed to "Lines of Action" in #933)
             "Lines of Action",
@@ -28,12 +28,12 @@ namespace
             MuscleDecorationStyle::Hidden,
         },
     });
-    static_assert(c_Metadata.size() == osc::num_options<MuscleDecorationStyle>());
+    static_assert(c_metadata.size() == osc::num_options<MuscleDecorationStyle>());
 }
 
 std::span<const MuscleDecorationStyleMetadata> opyn::get_all_muscle_decoration_style_metadata()
 {
-    return c_Metadata;
+    return c_metadata;
 }
 
 ptrdiff_t opyn::get_index_of(MuscleDecorationStyle s)

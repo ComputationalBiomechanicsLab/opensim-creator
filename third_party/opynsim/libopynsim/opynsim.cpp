@@ -167,7 +167,7 @@ namespace
     // locales. Sometimes it writes numbers according to the user's locale (e.g.
     // comma separator for decimal place) but then reads it according to the
     // general US locale (e.g. the separator is always a period), causing problems.
-    void set_global_locale_to_match_OpenSim()
+    void set_global_locale_to_match_open_sim()
     {
         osc::log_info("setting locale to US (so that numbers are always in the format '0.x')");
         const char* locale = "C";
@@ -427,7 +427,7 @@ bool opyn::init()
         //
         // This is necessary because OpenSim assumes a certain locale (see function
         // impl. for more details)
-        set_global_locale_to_match_OpenSim();
+        set_global_locale_to_match_open_sim();
 
         // Register all OpenSim components with the `OpenSim::Object` registry.
         register_all_components_with_opensim_object_registry();

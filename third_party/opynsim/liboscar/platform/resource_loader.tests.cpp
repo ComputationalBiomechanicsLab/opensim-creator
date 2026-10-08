@@ -24,8 +24,8 @@ namespace
 
     class MockFilesystem : public VirtualFilesystem {
     public:
-        explicit MockFilesystem(std::shared_ptr<MockState> state_) :
-            state_{std::move(state_)}
+        explicit MockFilesystem(std::shared_ptr<MockState> state) :
+            state_{std::move(state)}
         {}
     private:
         bool impl_resource_exists(const ResourcePath& resource_path) final

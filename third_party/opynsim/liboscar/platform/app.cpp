@@ -138,7 +138,7 @@ struct osc::Converter<Uint16, KeyModifiers> final {
     KeyModifiers operator()(Uint16 mod) const
     {
         PhysicalKeyModifiers physical_keymods;
-        for (const auto& [sdl_modifier, physical_keymod] : c_mappings_) {
+        for (const auto& [sdl_modifier, physical_keymod] : c_mappings) {
             if (mod & sdl_modifier) {
                 physical_keymods |= physical_keymod;
             }
@@ -148,7 +148,7 @@ struct osc::Converter<Uint16, KeyModifiers> final {
 private:
     using Mapping = std::pair<SDL_Keymod, PhysicalKeyModifier>;
 
-    static constexpr auto c_mappings_ = std::to_array<Mapping>({
+    static constexpr auto c_mappings = std::to_array<Mapping>({
         {SDL_KMOD_LSHIFT, PhysicalKeyModifier::Shift},
         {SDL_KMOD_RSHIFT, PhysicalKeyModifier::Shift},
         {SDL_KMOD_LALT,   PhysicalKeyModifier::Alt},
@@ -335,8 +335,8 @@ namespace
     //     https://wiki.libsdl.org/SDL_DestroyWindow
     class SDLWindow final {
     public:
-        explicit SDLWindow(SDL_Window* _ptr) :
-            window_handle_{_ptr}
+        explicit SDLWindow(SDL_Window* window_handle) :
+            window_handle_{window_handle}
         {}
         SDLWindow(const SDLWindow&) = delete;
         SDLWindow(SDLWindow&& tmp) noexcept :
@@ -682,12 +682,10 @@ namespace
     // is then tagged with annotations
     struct AnnotatedScreenshotRequest final {
 
-        AnnotatedScreenshotRequest(
-            size_t frame_requested_,
-            std::future<Texture2D> underlying_future_) :
+        AnnotatedScreenshotRequest(size_t frame_requested, std::future<Texture2D> underlying_future) :
 
-            frame_requested{frame_requested_},
-            underlying_future{std::move(underlying_future_)}
+            frame_requested{frame_requested},
+            underlying_future{std::move(underlying_future)}
         {}
 
         // the frame on which the screenshot was requested
@@ -860,10 +858,11 @@ namespace
 
         // Constructs the callback state that's stored in SDL3's dialog system.
         explicit SDL3DialogCallbackState(
-            std::function<void(FileDialogResponse&&)>&& callback_,
-            std::span<const FileDialogFilter> filters_ = {}) :
-            caller_callback{std::move(callback_)},
-            caller_filters(filters_.begin(), filters_.end())
+            std::function<void(FileDialogResponse&&)>&& callback,
+            std::span<const FileDialogFilter> filters = {}) :
+
+            caller_callback{std::move(callback)},
+            caller_filters(filters.begin(), filters.end())
         {
             // The caller's filters are lifetime-controlled (`std::string`s), the SDL
             // filters are not-lifetime-controlled views (`const char*`s). The SDL3

@@ -27,14 +27,14 @@ namespace opyn
 
     void upd_model_renderer_params_from(
         const osc::AppSettings&,
-        std::string_view keyPrefix,
+        std::string_view key_prefix,
         ModelRendererParams& params
     );
 
     void save_model_renderer_params_difference(
         const ModelRendererParams&,
         const ModelRendererParams&,
-        std::string_view settingsKeyPrefix,
+        std::string_view settings_key_prefix,
         osc::AppSettings&
     );
 }

@@ -19,17 +19,17 @@ TEST(ConcatenatingOutputExtractor, hasExpectedOutputsWhenConcatenatingTwoFloatOu
 
     ASSERT_EQ(concat.output_type(), opyn::OutputExtractorDataType::Vector2);
 
-    const BlankComponent unusedRoot;
+    const BlankComponent unused_root;
 
     class BlankStateView final : public opyn::StateViewWithMetadata {
     private:
-        const SimTK::State& impl_get_state() const override { return m_State; }
+        const SimTK::State& impl_get_state() const override { return state_; }
 
-        SimTK::State m_State;
+        SimTK::State state_;
     };
     const BlankStateView state;
 
-    const auto output = concat.value<osc::Vector2>(unusedRoot, state);
+    const auto output = concat.value<osc::Vector2>(unused_root, state);
 
     ASSERT_EQ(output, osc::Vector2(1.0f, 2.0f));
 }

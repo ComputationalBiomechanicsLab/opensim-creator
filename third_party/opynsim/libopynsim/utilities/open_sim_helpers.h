@@ -472,8 +472,8 @@ namespace opyn
 
     // returns a pointer if the given path resolves a component relative to root
     const OpenSim::Component* find_component(const OpenSim::Component& root, const OpenSim::ComponentPath&);
-    const OpenSim::Component* find_component(const OpenSim::Model&, const std::string& absPath);
-    const OpenSim::Component* find_component(const OpenSim::Model&, const osc::StringName& absPath);
+    const OpenSim::Component* find_component(const OpenSim::Model&, const std::string& abs_path);
+    const OpenSim::Component* find_component(const OpenSim::Model&, const osc::StringName& abs_path);
 
     // return non-nullptr if the given path resolves a component of type T relative to root
     template<std::derived_from<OpenSim::Component> T>
@@ -599,14 +599,14 @@ namespace opyn
     // returns non-nullptr if an `AbstractOutput` with the given name is attached to the given component
     const OpenSim::AbstractOutput* find_output(
         const OpenSim::Component&,
-        const std::string& outputName
+        const std::string& output_name
     );
 
     // returns non-nullptr if an `AbstractOutput` with the given name is attached to a component located at the given path relative to the root
     const OpenSim::AbstractOutput* find_output(
         const OpenSim::Component& root,
         const OpenSim::ComponentPath&,
-        const std::string& outputName
+        const std::string& output_name
     );
 
     // returns true if the given model has an input file name (not empty, or "Unassigned")
@@ -796,7 +796,7 @@ namespace opyn
     // helper functions for pulling force vectors out of components in the model
     const OpenSim::PhysicalFrame& get_frame_using_external_force_lookup_heuristic(
         const OpenSim::Model&,
-        const std::string& bodyNameOrPath
+        const std::string& body_name_or_path
     );
 
     // point info
@@ -911,14 +911,14 @@ namespace opyn
         return static_cast<T&>(attach_geometry(frame, std::move(p)));
     }
 
-    // Tries to overwrite `oldGeometry` in the given `model` with `newGeometry`.
+    // Tries to overwrite `old_geometry` in the given `model` with `new_geometry`.
     //
     // This is useful when transforming geometry (e.g. TPS warping) and overwriting it
     // in a model.
     void overwrite_geometry(
         OpenSim::Model&,
-        OpenSim::Geometry& oldGeometry,
-        std::unique_ptr<OpenSim::Geometry> newGeometry
+        OpenSim::Geometry& old_geometry,
+        std::unique_ptr<OpenSim::Geometry> new_geometry
     );
 
     OpenSim::PhysicalOffsetFrame& add_frame(OpenSim::Joint&, std::unique_ptr<OpenSim::PhysicalOffsetFrame>);
@@ -1116,7 +1116,7 @@ namespace opyn
     void update_state_variables_from_storage_row(
         OpenSim::Model&,
         SimTK::State&,
-        const std::unordered_map<int, int>& columnIndexToModelStateVarIndex,
+        const std::unordered_map<int, int>& column_index_to_model_state_var_index,
         const OpenSim::Storage&,
         int row
     );
@@ -1124,7 +1124,7 @@ namespace opyn
     void update_state_from_storage_time(
         OpenSim::Model&,
         SimTK::State&,
-        const std::unordered_map<int, int>& columnIndexToModelStateVarIndex,
+        const std::unordered_map<int, int>& column_index_to_model_state_var_index,
         const OpenSim::Storage&,
         double time
     );
@@ -1132,7 +1132,7 @@ namespace opyn
     std::string write_object_xml_to_string(const OpenSim::Object&);
 
     // Scales the masses of all bodies in `model` such that its total mass
-    // becomes equal to `newMass`, while preserving the relative distribution
+    // becomes equal to `new_mass`, while preserving the relative distribution
     // of masses of the model.
     //
     // Note: this edits the body mass (properties), but doesn't re-initialize
@@ -1140,7 +1140,7 @@ namespace opyn
     void scale_model_mass_preserve_mass_distribution(
         OpenSim::Model& model,
         const SimTK::State& state,
-        double newMass
+        double new_mass
     );
 
     // Bakes any `StationDefinedFrame`s in `model` to legacy-compatible

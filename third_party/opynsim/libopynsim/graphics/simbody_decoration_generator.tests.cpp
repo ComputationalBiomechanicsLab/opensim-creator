@@ -91,16 +91,16 @@ TEST(SimTKDecorationGenerator, UsesColorOverrideWhenEmittingFrames)
     SimTK::State state = sys.realizeTopology();
     sys.realize(state);
 
-    const osc::Color overrideColor = osc::Color::red();
+    const osc::Color override_color = osc::Color::red();
 
     SimTK::DecorativeFrame frame;
     frame.setBodyId(0);
-    frame.setColor(to<SimTK::Vec3>(overrideColor));
+    frame.setColor(to<SimTK::Vec3>(override_color));
 
     generate_decorations(cache, matter, state, frame, 1.0f, [&](const osc::SceneDecoration& dec)
     {
         ASSERT_TRUE(std::holds_alternative<osc::Color>(dec.shading));
-        ASSERT_EQ(std::get<osc::Color>(dec.shading), overrideColor);
+        ASSERT_EQ(std::get<osc::Color>(dec.shading), override_color);
     });
 }
 
@@ -133,10 +133,10 @@ TEST(SimTKDecorationGenerator, Emits111WhenGivenGeometryWithDefaultedScaleFactor
 
     // Explicitly setting an axis to -1 should propagate it, though (ComputationalBiomechanicsLab/opensim-creator#974).
     {
-        SimTK::DecorativeBrick scaledBrick{SimTK::Vec3{0.02, 0.01, 0.005}};
-        scaledBrick.setColor(SimTK::Orange);
-        scaledBrick.setScaleFactors({-1.0, 1.0, 1.0});
-        generate_decorations(cache, matter, state, scaledBrick, 1.0f, [&](const osc::SceneDecoration& dec)
+        SimTK::DecorativeBrick scaled_brick{SimTK::Vec3{0.02, 0.01, 0.005}};
+        scaled_brick.setColor(SimTK::Orange);
+        scaled_brick.setScaleFactors({-1.0, 1.0, 1.0});
+        generate_decorations(cache, matter, state, scaled_brick, 1.0f, [&](const osc::SceneDecoration& dec)
         {
             ASSERT_EQ(dec.transform.scale, osc::Vector3f(-0.02f, 0.01f, 0.005f));
         });

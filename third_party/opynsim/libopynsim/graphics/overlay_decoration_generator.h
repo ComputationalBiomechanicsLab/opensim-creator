@@ -14,8 +14,8 @@ namespace opyn
     void generate_overlay_decorations(
         osc::SceneCache&,
         const OverlayDecorationOptions&,
-        const osc::BVH& sceneBVH,
-        float fixupScaleFactor,
+        const osc::BVH& scene_bvh,
+        float fixup_scale_factor,
         const std::function<void(osc::SceneDecoration&&)>& out
     );
 }

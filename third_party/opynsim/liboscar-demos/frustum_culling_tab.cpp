@@ -46,7 +46,7 @@ namespace
         }
     };
 
-    std::vector<TransformedMesh> generateDecorations()
+    std::vector<TransformedMesh> generate_decorations()
     {
         const auto geometries = std::to_array<Mesh>({
             SphereGeometry{},
@@ -169,7 +169,7 @@ public:
 
 private:
     MouseCapturingCamera camera_;
-    std::vector<TransformedMesh> decorations_ = generateDecorations();
+    std::vector<TransformedMesh> decorations_ = generate_decorations();
     Camera top_down_camera_;
     RenderQueue render_queue_;
     MeshBasicMaterial material_;

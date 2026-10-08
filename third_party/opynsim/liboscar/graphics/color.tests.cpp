@@ -24,7 +24,7 @@ namespace
         Color input;
         ColorHSLA expected_output;
     };
-    constexpr auto c_RGBA_to_HSLA_known_conversion_values = std::to_array<KnownRGBAToHSLAConversions>({
+    constexpr auto c_rgba_to_hsla_known_conversion_values = std::to_array<KnownRGBAToHSLAConversions>({
          // RGBA                     // HSLA
          // r     g     b     a      // h (degrees) s     l     a
         {{  1.0f, 0.0f, 0.0f, 1.0f}, {  0.0f,       1.0f, 0.5f, 1.0f}},  // red
@@ -37,7 +37,7 @@ namespace
         return o << "rgba = " << test_case.input << ", hsla = " << test_case.expected_output;
     }
 
-    constexpr float c_HLSL_conversion_tolerance_per_component = 0.0001f;
+    constexpr float c_hlsl_conversion_tolerance_per_component = 0.0001f;
 }
 
 TEST(Color, default_constructs_to_clear_color)
@@ -429,26 +429,26 @@ TEST(Color, try_parse_html_color_string_parses_LDR_RGBx32_hex_string_to_Color)
 
 TEST(Color, to_ColorHSLA_color_works_as_expected)
 {
-    for (const auto& [rgba, expected] : c_RGBA_to_HSLA_known_conversion_values) {
+    for (const auto& [rgba, expected] : c_rgba_to_hsla_known_conversion_values) {
         const auto got = to<ColorHSLA>(rgba);
-        ASSERT_NEAR(got.hue, expected.hue/360.0f, c_HLSL_conversion_tolerance_per_component);
-        ASSERT_NEAR(got.saturation, expected.saturation, c_HLSL_conversion_tolerance_per_component);
-        ASSERT_NEAR(got.lightness, expected.lightness, c_HLSL_conversion_tolerance_per_component);
-        ASSERT_NEAR(got.alpha, expected.alpha, c_HLSL_conversion_tolerance_per_component);
+        ASSERT_NEAR(got.hue, expected.hue/360.0f, c_hlsl_conversion_tolerance_per_component);
+        ASSERT_NEAR(got.saturation, expected.saturation, c_hlsl_conversion_tolerance_per_component);
+        ASSERT_NEAR(got.lightness, expected.lightness, c_hlsl_conversion_tolerance_per_component);
+        ASSERT_NEAR(got.alpha, expected.alpha, c_hlsl_conversion_tolerance_per_component);
     }
 }
 
 TEST(Color, hsla_color_to_Color_works_as_expected)
 {
-    for (const auto& tc : c_RGBA_to_HSLA_known_conversion_values) {
+    for (const auto& tc : c_rgba_to_hsla_known_conversion_values) {
         auto normalized = tc.expected_output;
         normalized.hue /= 360.0f;
 
         const auto got = to<Color>(normalized);
-        ASSERT_NEAR(got.r, tc.input.r, c_HLSL_conversion_tolerance_per_component) << tc << ", got = " << got;
-        ASSERT_NEAR(got.g, tc.input.g, c_HLSL_conversion_tolerance_per_component) << tc << ", got = " << got;
-        ASSERT_NEAR(got.b, tc.input.b, c_HLSL_conversion_tolerance_per_component) << tc << ", got = " << got;
-        ASSERT_NEAR(got.a, tc.input.a, c_HLSL_conversion_tolerance_per_component) << tc << ", got = " << got;
+        ASSERT_NEAR(got.r, tc.input.r, c_hlsl_conversion_tolerance_per_component) << tc << ", got = " << got;
+        ASSERT_NEAR(got.g, tc.input.g, c_hlsl_conversion_tolerance_per_component) << tc << ", got = " << got;
+        ASSERT_NEAR(got.b, tc.input.b, c_hlsl_conversion_tolerance_per_component) << tc << ", got = " << got;
+        ASSERT_NEAR(got.a, tc.input.a, c_hlsl_conversion_tolerance_per_component) << tc << ", got = " << got;
     }
 }
 

@@ -44,24 +44,24 @@ namespace
         size_t numIndices = 0;
     };
 
-    OutputMeshMetrics CalcMeshMetrics(const SimTK::PolygonalMesh& mesh)
+    OutputMeshMetrics calc_mesh_metrics(const SimTK::PolygonalMesh& mesh)
     {
         OutputMeshMetrics rv;
         rv.numVertices = mesh.getNumVertices();
         for (int i = 0, faces = mesh.getNumFaces(); i < faces; ++i) {
-            const int numFaceVerts = mesh.getNumVerticesForFace(i);
-            if (numFaceVerts < 3) {
+            const int num_face_verts = mesh.getNumVerticesForFace(i);
+            if (num_face_verts < 3) {
                 continue;  // ignore lines/points
             }
-            else if (numFaceVerts == 3) {
+            else if (num_face_verts == 3) {
                 rv.numIndices += 3;
             }
-            else if (numFaceVerts == 4) {
+            else if (num_face_verts == 4) {
                 rv.numIndices += 6;
             }
             else {
                 rv.numVertices += 1;  // triangulation
-                rv.numIndices += static_cast<size_t>(3*(numFaceVerts-2));
+                rv.numIndices += static_cast<size_t>(3*(num_face_verts-2));
             }
         }
         return rv;
@@ -70,7 +70,7 @@ namespace
 
 osc::Mesh opyn::to_osc_mesh(const SimTK::PolygonalMesh& mesh)
 {
-    const auto metrics = CalcMeshMetrics(mesh);
+    const auto metrics = calc_mesh_metrics(mesh);
 
     std::vector<osc::Vector3> vertices;
     vertices.reserve(metrics.numVertices);
@@ -79,7 +79,7 @@ osc::Mesh opyn::to_osc_mesh(const SimTK::PolygonalMesh& mesh)
     indices.reserve(metrics.numIndices);
 
     // helper: validate+push triangle into the index list
-    const auto pushTriangle = [&indices, &vertices](uint32_t a, uint32_t b, uint32_t c)
+    const auto push_triangle = [&indices, &vertices](uint32_t a, uint32_t b, uint32_t c)
     {
         if (a >= vertices.size() || b >= vertices.size() || c >= vertices.size()) {
             return;  // index out-of-bounds
@@ -101,58 +101,58 @@ osc::Mesh opyn::to_osc_mesh(const SimTK::PolygonalMesh& mesh)
     //
     // (pushes injected triangulation vertices to the end - assumes the mesh is optimized later)
     for (int face = 0, faces = mesh.getNumFaces(); face < faces; ++face) {
-        const int numFaceVerts = mesh.getNumVerticesForFace(face);
+        const int num_face_verts = mesh.getNumVerticesForFace(face);
 
-        if (numFaceVerts <= 1) {
+        if (num_face_verts <= 1) {
             // point (ignore)
             continue;
         }
-        if (numFaceVerts == 2) {
+        if (num_face_verts == 2) {
             // line (ignore)
             continue;
         }
-        else if (numFaceVerts == 3) {
+        else if (num_face_verts == 3) {
             // triangle
             const auto a = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
             const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, 1));
             const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, 2));
 
-            pushTriangle(a, b, c);
+            push_triangle(a, b, c);
         }
-        else if (numFaceVerts == 4) {
+        else if (num_face_verts == 4) {
             // quad (emit as two triangles)
             const auto a = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
             const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, 1));
             const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, 2));
             const auto d = static_cast<uint32_t>(mesh.getFaceVertex(face, 3));
 
-            pushTriangle(a, b, c);
-            pushTriangle(a, c, d);
+            push_triangle(a, b, c);
+            push_triangle(a, c, d);
         }
         else {
             // polygon: triangulate each edge with a centroid
 
             // compute+add centroid vertex
             osc::Vector3 centroid_of{};
-            for (int vert = 0; vert < numFaceVerts; ++vert) {
+            for (int vert = 0; vert < num_face_verts; ++vert) {
                 centroid_of += vertices.at(mesh.getFaceVertex(face, vert));
             }
-            centroid_of /= static_cast<float>(numFaceVerts);
-            const auto centroidIdx = static_cast<uint32_t>(vertices.size());
+            centroid_of /= static_cast<float>(num_face_verts);
+            const auto centroid_idx = static_cast<uint32_t>(vertices.size());
             vertices.push_back(centroid_of);
 
             // triangulate polygon loop
-            for (int vert = 0; vert < numFaceVerts-1; ++vert) {
+            for (int vert = 0; vert < num_face_verts-1; ++vert) {
                 const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, vert));
                 const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, vert+1));
 
-                pushTriangle(centroidIdx, b, c);
+                push_triangle(centroid_idx, b, c);
             }
 
             // (complete the loop)
-            const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, numFaceVerts-1));
+            const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, num_face_verts-1));
             const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
-            pushTriangle(centroidIdx, b, c);
+            push_triangle(centroid_idx, b, c);
         }
     }
 
@@ -191,11 +191,11 @@ void opyn::assign_indexed_verts(SimTK::PolygonalMesh& mesh, std::span<const osc:
 
     // assign indices (assumed triangle)
     OSC_ASSERT_ALWAYS(indices.size() % 3 == 0);
-    SimTK::Array_<int> triVerts(3, 0);
+    SimTK::Array_<int> tri_verts(3, 0);
     for (auto it = rgs::begin(indices); it != rgs::end(indices); it += 3) {
-        triVerts[0] = static_cast<int>(it[0]);
-        triVerts[1] = static_cast<int>(it[1]);
-        triVerts[2] = static_cast<int>(it[2]);
-        mesh.addFace(triVerts);
+        tri_verts[0] = static_cast<int>(it[0]);
+        tri_verts[1] = static_cast<int>(it[1]);
+        tri_verts[2] = static_cast<int>(it[2]);
+        mesh.addFace(tri_verts);
     }
 }

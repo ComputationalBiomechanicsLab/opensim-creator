@@ -17,7 +17,7 @@ namespace opyn
         const SimTK::SimbodyMatterSubsystem&,
         const SimTK::State&,
         const SimTK::DecorativeGeometry&,
-        float fixupScaleFactor,
+        float fixup_scale_factor,
         const std::function<void(osc::SceneDecoration&&)>& out
     );
 }

@@ -103,14 +103,14 @@ void opyn::OverlayDecorationOptions::for_each_option_as_app_setting_value(
 }
 
 void opyn::OverlayDecorationOptions::try_upd_from_values(
-    std::string_view keyPrefix,
+    std::string_view key_prefix,
     const std::unordered_map<std::string, osc::Variant>& lut)
 {
     for (size_t i = 0; i < osc::num_flags<OverlayDecorationOptionFlags>(); ++i)
     {
         const auto& metadata = osc::at(get_all_overlay_decoration_option_flags_metadata(), i);
 
-        const std::string key = std::string{keyPrefix}+metadata.id;
+        const std::string key = std::string{key_prefix}+metadata.id;
         if (const auto* v = lookup_or_nullptr(lut, key); v and v->type() == osc::VariantType::Bool) {
             set_option(flags_, metadata.value, to<bool>(*v));
         }

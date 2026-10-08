@@ -160,7 +160,7 @@ namespace
         SDL_GLContext context_handle_;
     };
 
-    inline int GetCurrentOpenGLContextSwapInterval()
+    inline int get_current_open_gl_context_swap_interval()
     {
         int rv = 0;
         SDL_GL_GetSwapInterval(&rv);
@@ -531,14 +531,10 @@ namespace
 
     // parsed-out description of a shader "element" (uniform/attribute)
     struct ShaderElement final {
-        ShaderElement(
-            int32_t location_,
-            ShaderPropertyType shader_type_,
-            int32_t size_) :
-
-            location{location_},
-            shader_type{shader_type_},
-            size{size_}
+        ShaderElement(int32_t location, ShaderPropertyType shader_type, int32_t size) :
+            location{location},
+            shader_type{shader_type},
+            size{size}
         {}
 
         int32_t location;
@@ -699,11 +695,11 @@ namespace
 
     struct InstancingState final {
         InstancingState(
-            gl::ArrayBuffer<float, GL_STREAM_DRAW>& buf_,
-            size_t stride_) :
+            gl::ArrayBuffer<float, GL_STREAM_DRAW>& buffer,
+            size_t stride) :
 
-            buffer{&buf_},
-            stride{stride_}
+            buffer{&buffer},
+            stride{stride}
         {}
 
         gl::ArrayBuffer<float, GL_STREAM_DRAW>* buffer;
@@ -1414,7 +1410,7 @@ public:
 
     // non PIMPL method
 
-    gl::Texture2D& updTexture()
+    gl::Texture2D& upd_texture()
     {
         if (not *maybe_opengl_data_) {
             upload_to_gpu();
@@ -2920,7 +2916,7 @@ namespace
             // TODO: should upload texture ints as a single array call
             for (const Texture2D& texture : textures) {
                 auto& texture_impl = const_cast<Texture2D::Impl&>(texture.impl());
-                const gl::Texture2D& opengl_texture = texture_impl.updTexture();
+                const gl::Texture2D& opengl_texture = texture_impl.upd_texture();
 
                 gl::active_texture(GL_TEXTURE0 + batch_state.texture_slot);
                 gl::bind_texture(opengl_texture);
@@ -5468,13 +5464,13 @@ public:
             }
 
             // always read the vsync state back from SDL
-            vsync_enabled_ = GetCurrentOpenGLContextSwapInterval() != 0;
+            vsync_enabled_ = get_current_open_gl_context_swap_interval() != 0;
         }
         else {
             // try to disable vsync
 
             SDL_GL_SetSwapInterval(0);
-            vsync_enabled_ = GetCurrentOpenGLContextSwapInterval() != 0;
+            vsync_enabled_ = get_current_open_gl_context_swap_interval() != 0;
         }
     }
 
@@ -5612,7 +5608,7 @@ private:
     // maximum number of antiAliasingLevel supported by this hardware's OpenGL MSXAA API
     AntiAliasingLevel max_aa_level_ = get_opengl_max_aa_level(opengl_context_);
 
-    bool vsync_enabled_ = GetCurrentOpenGLContextSwapInterval() != 0;
+    bool vsync_enabled_ = get_current_open_gl_context_swap_interval() != 0;
 
     // true if OpenGL's debug mode is enabled
     bool debug_mode_enabled_ = false;
@@ -6935,7 +6931,7 @@ void osc::GraphicsBackend::render(
     // Copy `RenderQueue` handles so that they can be reordered.
     std::vector<RenderQueue::handle_type> handles_copy = render_queue.handles();
     {
-        const std::optional<gl::FrameBuffer> maybe_tmp_fbo_KEEPALIVE =
+        const std::optional<gl::FrameBuffer> maybe_tmp_fbo_scoped_lifetime =
             bind_and_clear_render_buffers(rp_config, maybe_custom_render_target);
         draw_batched_by_depth_testing(render_pass_state, render_queue, handles_copy);
     }
@@ -7080,7 +7076,7 @@ void osc::GraphicsBackend::copy_texture(
     gl::framebuffer_texture2D(
         GL_DRAW_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
-        destination.impl_.upd()->updTexture(),
+        destination.impl_.upd()->upd_texture(),
         0
     );
     {
@@ -7151,8 +7147,8 @@ void osc::GraphicsBackend::copy_texture(
 
     // blit each face of the source cubemap into the output cubemap
     for (size_t face = 0; face < 6; ++face) {
-        gl::FrameBuffer readFBO;
-        gl::bind_framebuffer(GL_READ_FRAMEBUFFER, readFBO);
+        gl::FrameBuffer read_fbo;
+        gl::bind_framebuffer(GL_READ_FRAMEBUFFER, read_fbo);
         std::visit(Overload  // attach source texture depending on `RenderTexture`'s type
         {
             [](SingleSampledTexture&)

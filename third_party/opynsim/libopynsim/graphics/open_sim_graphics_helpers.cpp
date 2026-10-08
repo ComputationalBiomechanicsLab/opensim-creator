@@ -47,53 +47,53 @@ namespace
 }
 
 osc::SceneRendererParams opyn::calc_scene_renderer_params(
-    const ModelRendererParams& renderParams,
-    osc::Vector2 viewportDims,
-    float viewportDevicePixelRatio,
-    osc::AntiAliasingLevel antiAliasingLevel,
-    float fixupScaleFactor)
+    const ModelRendererParams& render_params,
+    osc::Vector2 viewport_dims,
+    float viewport_device_pixel_ratio,
+    osc::AntiAliasingLevel anti_aliasing_level,
+    float fixup_scale_factor)
 {
     osc::SceneRendererParams rv;
 
-    if (viewportDims.x() >= 1.0f && viewportDims.y() >= 1.0f) {
-        rv.dimensions = viewportDims;
+    if (viewport_dims.x() >= 1.0f && viewport_dims.y() >= 1.0f) {
+        rv.dimensions = viewport_dims;
     }
-    rv.device_pixel_ratio = viewportDevicePixelRatio;
-    rv.anti_aliasing_level = antiAliasingLevel;
-    rv.light_direction = recommended_light_direction(renderParams.camera);
-    renderParams.rendering_options.apply_to(rv);
-    rv.view_matrix = renderParams.camera.view_matrix();
-    rv.projection_matrix = renderParams.camera.projection_matrix(aspect_ratio_of(viewportDims));
-    rv.near_clipping_plane = renderParams.camera.near_clipping_plane();
-    rv.far_clipping_plane = renderParams.camera.far_clipping_plane();
-    rv.viewer_position = renderParams.camera.position();
-    rv.fixup_scale_factor = fixupScaleFactor;
-    rv.light_color = renderParams.light_color;
-    rv.background_color = renderParams.background_color;
-    rv.floor_position = renderParams.floor_location;
+    rv.device_pixel_ratio = viewport_device_pixel_ratio;
+    rv.anti_aliasing_level = anti_aliasing_level;
+    rv.light_direction = recommended_light_direction(render_params.camera);
+    render_params.rendering_options.apply_to(rv);
+    rv.view_matrix = render_params.camera.view_matrix();
+    rv.projection_matrix = render_params.camera.projection_matrix(aspect_ratio_of(viewport_dims));
+    rv.near_clipping_plane = render_params.camera.near_clipping_plane();
+    rv.far_clipping_plane = render_params.camera.far_clipping_plane();
+    rv.viewer_position = render_params.camera.position();
+    rv.fixup_scale_factor = fixup_scale_factor;
+    rv.light_color = render_params.light_color;
+    rv.background_color = render_params.background_color;
+    rv.floor_position = render_params.floor_location;
     return rv;
 }
 
 void opyn::generate_decorations(
-    osc::SceneCache& meshCache,
+    osc::SceneCache& mesh_cache,
     const opyn::ModelStatePair& msp,
     const OpenSimDecorationOptions& options,
     const std::function<void(const OpenSim::Component&, osc::SceneDecoration&&)>& out)
 {
-    ComponentAbsPathDecorationTagger pathTagger{};
-    ComponentSceneDecorationFlagsTagger flagsTagger{msp.get_selected(), msp.get_hovered()};
+    ComponentAbsPathDecorationTagger path_tagger{};
+    ComponentSceneDecorationFlagsTagger flags_tagger{msp.get_selected(), msp.get_hovered()};
 
-    auto callback = [pathTagger, flagsTagger, &out](
+    auto callback = [path_tagger, flags_tagger, &out](
         const OpenSim::Component& component,
         osc::SceneDecoration&& decoration) mutable
     {
-        pathTagger(component, decoration);
-        flagsTagger(component, decoration);
+        path_tagger(component, decoration);
+        flags_tagger(component, decoration);
         out(component, std::move(decoration));
     };
 
     generate_model_decorations(
-        meshCache,
+        mesh_cache,
         msp.get_model(),
         msp.get_state(),
         options,
@@ -103,34 +103,34 @@ void opyn::generate_decorations(
 }
 
 std::optional<osc::SceneCollision> opyn::get_closest_collision(
-    const osc::BVH& sceneBVH,
-    osc::SceneCache& sceneCache,
-    std::span<const osc::SceneDecoration> taggedDrawlist,
+    const osc::BVH& scene_bvh,
+    osc::SceneCache& scene_cache,
+    std::span<const osc::SceneDecoration> tagged_drawlist,
     const osc::Camera& camera,
-    osc::Vector2 mouseScreenPosition,
-    const osc::Rect& viewportScreenRect)
+    osc::Vector2 mouse_screen_position,
+    const osc::Rect& viewport_screen_rect)
 {
     OSC_PERF("osc::GetClosestCollision");
 
     // un-project 2D mouse cursor into 3D scene as a ray
-    const osc::Ray worldSpaceCameraRay = camera.ui_to_world(
-        mouseScreenPosition,
-        viewportScreenRect
+    const osc::Ray world_space_camera_ray = camera.ui_to_world(
+        mouse_screen_position,
+        viewport_screen_rect
     );
 
     // iterate over all collisions along the camera ray and find the best one
     std::optional<osc::SceneCollision> best;
     for_each_ray_collision_with_scene(
-        sceneBVH,
-        sceneCache,
-        taggedDrawlist,
-        worldSpaceCameraRay,
-        [&best](osc::SceneCollision&& sceneCollision)
+        scene_bvh,
+        scene_cache,
+        tagged_drawlist,
+        world_space_camera_ray,
+        [&best](osc::SceneCollision&& scene_collision)
         {
-            if (not sceneCollision.decoration_id.empty()
-                and collision_priority_greater(best, sceneCollision)) {
+            if (not scene_collision.decoration_id.empty()
+                and collision_priority_greater(best, scene_collision)) {
 
-                best = std::move(sceneCollision);
+                best = std::move(scene_collision);
             }
         });
     return best;

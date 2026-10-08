@@ -22,22 +22,22 @@ using namespace osc::literals;
 
 namespace
 {
-    std::unordered_map<std::string, osc::Variant> ToValues(
+    std::unordered_map<std::string, osc::Variant> to_values(
         std::string_view prefix,
         const ModelRendererParams& params)
     {
         std::unordered_map<std::string, osc::Variant> rv;
-        std::string subPrefix;
-        const auto callback = [&subPrefix, &rv](std::string_view subkey, osc::Variant value)
+        std::string sub_prefix;
+        const auto callback = [&sub_prefix, &rv](std::string_view subkey, osc::Variant value)
         {
-            rv.insert_or_assign(subPrefix + std::string{subkey}, std::move(value));
+            rv.insert_or_assign(sub_prefix + std::string{subkey}, std::move(value));
         };
 
-        subPrefix = std::string{prefix} + std::string{"decorations/"};
+        sub_prefix = std::string{prefix} + std::string{"decorations/"};
         params.decoration_options.for_each_option_as_app_setting_value(callback);
-        subPrefix = std::string{prefix} + std::string{"overlays/"};
+        sub_prefix = std::string{prefix} + std::string{"overlays/"};
         params.overlay_options.for_each_option_as_app_setting_value(callback);
-        subPrefix = std::string{prefix} + std::string{"graphics/"};
+        sub_prefix = std::string{prefix} + std::string{"graphics/"};
         params.rendering_options.for_each_option_as_app_setting_value(callback);
         rv.insert_or_assign(std::string{prefix} + "light_color", osc::Variant{params.light_color});
         rv.insert_or_assign(std::string{prefix} + "background_color", osc::Variant{params.background_color});
@@ -46,7 +46,7 @@ namespace
         return rv;
     }
 
-    void UpdFromValues(
+    void upd_from_values(
         std::string_view prefix,
         const std::unordered_map<std::string, osc::Variant>& values,
         ModelRendererParams& params)
@@ -76,31 +76,31 @@ opyn::ModelRendererParams::ModelRendererParams() :
 
 void opyn::upd_model_renderer_params_from(
     const osc::AppSettings& settings,
-    std::string_view keyPrefix,
+    std::string_view key_prefix,
     ModelRendererParams& params)
 {
-    auto values = ToValues(keyPrefix, params);
+    auto values = to_values(key_prefix, params);
     for (auto& [k, v] : values) {
-        if (auto settingValue = settings.find_value(k)) {
-            v = *settingValue;
+        if (auto setting_value = settings.find_value(k)) {
+            v = *setting_value;
         }
     }
-    UpdFromValues(keyPrefix, values, params);
+    upd_from_values(key_prefix, values, params);
 }
 
 void opyn::save_model_renderer_params_difference(
     const ModelRendererParams& a,
     const ModelRendererParams& b,
-    std::string_view settingsKeyPrefix,
+    std::string_view settings_key_prefix,
     osc::AppSettings& settings)
 {
-    const auto aVals = ToValues(settingsKeyPrefix, a);
-    const auto bVals = ToValues(settingsKeyPrefix, b);
+    const auto a_vals = to_values(settings_key_prefix, a);
+    const auto b_vals = to_values(settings_key_prefix, b);
 
-    for (const auto& [aK, aV] : aVals) {
-        if (const auto* bV = lookup_or_nullptr(bVals, aK)) {
-            if (*bV != aV) {
-                settings.set_value(aK, *bV);
+    for (const auto& [aK, aV] : a_vals) {
+        if (const auto* b_v = lookup_or_nullptr(b_vals, aK)) {
+            if (*b_v != aV) {
+                settings.set_value(aK, *b_v);
             }
         }
     }

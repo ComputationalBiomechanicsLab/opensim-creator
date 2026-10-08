@@ -32,7 +32,7 @@ osc::ResourceStream::ResourceStream() :
     handle_{std::make_unique<std::ifstream>()}
 {}
 
-osc::ResourceStream::ResourceStream(const std::filesystem::path& path_) :
-    name_{path_.filename().string()},
-    handle_{open_stream_or_throw(path_)}
+osc::ResourceStream::ResourceStream(const std::filesystem::path& path) :
+    name_{path.filename().string()},
+    handle_{open_stream_or_throw(path)}
 {}

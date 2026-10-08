@@ -10,7 +10,7 @@ using namespace opyn;
 
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<MuscleSizingStyleMetadata>({
+    constexpr auto c_metadata = std::to_array<MuscleSizingStyleMetadata>({
         MuscleSizingStyleMetadata{
             "opensim",  // legacy behavior (changed to 'Fixed' in #933)
             "Fixed",
@@ -23,12 +23,12 @@ namespace
             MuscleSizingStyle::PcsaDerived,
         },
     });
-    static_assert(c_Metadata.size() == osc::num_options<MuscleSizingStyle>());
+    static_assert(c_metadata.size() == osc::num_options<MuscleSizingStyle>());
 }
 
 std::span<const MuscleSizingStyleMetadata> opyn::get_all_muscle_sizing_style_metadata()
 {
-    return c_Metadata;
+    return c_metadata;
 }
 
 const MuscleSizingStyleMetadata& opyn::get_muscle_sizing_style_metadata(MuscleSizingStyle s)

@@ -68,9 +68,9 @@ void main() {
 )";
     };
 
-    class Uniforms_TimeColored final : public BookOfShadersMaterial {
+    class UniformsTimeColored final : public BookOfShadersMaterial {
     public:
-        Uniforms_TimeColored() : BookOfShadersMaterial{"uniforms_time_colored", c_fragment_source} {}
+        UniformsTimeColored() : BookOfShadersMaterial{"uniforms_time_colored", c_fragment_source} {}
     private:
         static constexpr CStringView c_fragment_source = R"(
 #version 330 core
@@ -85,9 +85,9 @@ void main() {
 )";
     };
 
-    class Uniforms_gl_FragCoord final : public BookOfShadersMaterial {
+    class UniformsGlFragCoord final : public BookOfShadersMaterial {
     public:
-        Uniforms_gl_FragCoord() : BookOfShadersMaterial{"uniforms_gl_FragCoord", c_fragment_source} {}
+        UniformsGlFragCoord() : BookOfShadersMaterial{"uniforms_gl_FragCoord", c_fragment_source} {}
     private:
         static constexpr CStringView c_fragment_source = R"(
 #version 330 core
@@ -103,9 +103,9 @@ void main() {
 )";
     };
 
-    class AlgorithmicDrawing_Smoothstep final : public BookOfShadersMaterial {
+    class AlgorithmicDrawingSmoothstep final : public BookOfShadersMaterial {
     public:
-        AlgorithmicDrawing_Smoothstep() : BookOfShadersMaterial{"algorithmic_drawing", c_fragment_source} {}
+        AlgorithmicDrawingSmoothstep() : BookOfShadersMaterial{"algorithmic_drawing", c_fragment_source} {}
     private:
         static constexpr CStringView c_fragment_source = R"(
 #version 330 core
@@ -187,9 +187,9 @@ private:
 
     std::vector<BookOfShadersMaterial> materials_ = {
         HelloWorldMaterial{},
-        Uniforms_TimeColored{},
-        Uniforms_gl_FragCoord{},
-        AlgorithmicDrawing_Smoothstep{},
+        UniformsTimeColored{},
+        UniformsGlFragCoord{},
+        AlgorithmicDrawingSmoothstep{},
     };
     size_t current_material_index_ = 0;
     PlaneGeometry quad_;

@@ -41,13 +41,13 @@ namespace
     }
 
     struct SceneCube final {
-        explicit SceneCube(Transform transform_) :
-            transform{transform_}
+        explicit SceneCube(Transform transform) :
+            transform{transform}
         {}
 
-        SceneCube(Transform transform_, bool invert_normals_) :
-            transform{transform_},
-            invert_normals{invert_normals_}
+        SceneCube(Transform transform, bool invert_normals) :
+            transform{transform},
+            invert_normals{invert_normals}
         {}
 
         Transform transform;
@@ -167,7 +167,7 @@ private:
         Material material = use_soft_shadows_ ? soft_scene_material_ : scene_material_;
 
         // set shared material params
-        material.set("uDiffuseTexture", m_WoodTexture);
+        material.set("uDiffuseTexture", wood_texture_);
         material.set("uLightPos", light_pos_);
         material.set("uViewPos", camera_.position());
         material.set("uFarPlane", 25.0f);
@@ -226,7 +226,7 @@ private:
 
     MouseCapturingCamera camera_ = create_camera();
     RenderQueue render_queue_;
-    Texture2D m_WoodTexture = Image::read_into_texture(
+    Texture2D wood_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB
     );

@@ -96,7 +96,7 @@ namespace
             .color_format = ColorRenderBufferFormat::R16G16B16_SFLOAT,
         }};
 
-        const Matrix4x4 captureProjection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
+        const Matrix4x4 capture_projection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.vert"),
@@ -104,7 +104,7 @@ namespace
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.frag"),
         }};
         material.set("uEnvironmentMap", skybox);
-        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(captureProjection, Vector3{}));
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
 
         Camera camera;
         RenderQueue render_queue;
@@ -166,7 +166,7 @@ namespace
         return rv;
     }
 
-    Texture2D create_2D_brdf_lookup(ResourceLoader& loader)
+    Texture2D create_2d_brdf_lookup(ResourceLoader& loader)
     {
         // TODO: `graphics::blit` with material
         Camera camera;
@@ -346,7 +346,7 @@ private:
     RenderTexture projected_map_ = load_equirectangular_hdr_texture_into_cubemap(loader_);
     RenderTexture irradiance_map_ = create_irradiance_cubemap(loader_, projected_map_);
     Cubemap prefilter_map_ = create_prefiltered_environment_map(loader_, projected_map_);
-    Texture2D brdf_lookup_ = create_2D_brdf_lookup(loader_);
+    Texture2D brdf_lookup_ = create_2d_brdf_lookup(loader_);
     RenderTexture output_render_;
 
     Material background_material_{Shader{

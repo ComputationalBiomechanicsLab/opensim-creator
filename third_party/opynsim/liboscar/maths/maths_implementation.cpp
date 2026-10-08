@@ -652,7 +652,7 @@ namespace
     {
         // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 
-        const Vector3 L = ray.origin - sphere.origin;
+        const Vector3 l = ray.origin - sphere.origin;
 
         // coefficients of the quadratic implicit:
         //
@@ -673,8 +673,8 @@ namespace
         // `t`s that are points on the sphere's surface.
 
         const float a = dot(ray.direction, ray.direction);  // always == 1.0f if d is normalized
-        const float b = 2.0f * dot(ray.direction, L);
-        const float c = dot(L, L) - dot(sphere.radius, sphere.radius);
+        const float b = 2.0f * dot(ray.direction, l);
+        const float c = dot(l, l) - dot(sphere.radius, sphere.radius);
 
         auto [ok, t0, t1] = solve_quadratic(a, b, c);
 
@@ -842,15 +842,15 @@ Vector2 osc::project_onto_viewport_rect(
         return {osc::quiet_nan_v<float>, osc::quiet_nan_v<float>};  // Point was behind the camera (invalid)
     }
 
-    const Vector3 ndc3D = Vector3{clip} / clip.w();  // perspective divide (clip space -> NDC)
+    const Vector3 ndc_3d = Vector3{clip} / clip.w();  // perspective divide (clip space -> NDC)
 
-    Vector2 ndc2D = {ndc3D.x(), -ndc3D.y()};  // [-1, 1], Y points down
-    ndc2D += 1.0f;                            // [0, 2]
-    ndc2D *= 0.5f;                            // [0, 1]
-    ndc2D *= viewport_rect.dimensions();      // [0, w]
-    ndc2D += viewport_rect.min_corner();      // [x, x + w]
+    Vector2 ndc_2d = {ndc_3d.x(), -ndc_3d.y()};  // [-1, 1], Y points down
+    ndc_2d += 1.0f;                            // [0, 2]
+    ndc_2d *= 0.5f;                            // [0, 1]
+    ndc_2d *= viewport_rect.dimensions();      // [0, w]
+    ndc_2d += viewport_rect.min_corner();      // [x, x + w]
 
-    return ndc2D;  // It's the caller's responsibility to check if it's within 2D bounds
+    return ndc_2d;  // It's the caller's responsibility to check if it's within 2D bounds
 }
 
 std::optional<Sphere> osc::bounding_sphere_of(std::span<const Vector3> points)
@@ -1215,14 +1215,14 @@ std::optional<RayCollision> osc::find_collision(const Ray& ray, const Triangle& 
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
 
     // compute triangle normal
-    const Vector3 N = triangle_normal(triangle);
+    const Vector3 n = triangle_normal(triangle);
 
     // compute dot product between normal and ray
-    const float NdotR = dot(N, ray.direction);
+    const float n_dot_r = dot(n, ray.direction);
 
     // if the dot product is small, then the ray is probably very parallel to
     // the triangle (or, perpendicular to the normal) and doesn't intersect
-    if (abs(NdotR) < epsilon_v<float>) {
+    if (abs(n_dot_r) < epsilon_v<float>) {
         return std::nullopt;
     }
 
@@ -1230,7 +1230,7 @@ std::optional<RayCollision> osc::find_collision(const Ray& ray, const Triangle& 
     // - N is a normal to the plane
     // - N.v[0] is the projection of v[0] onto N and indicates how long along N to go to hit some
     //   other point on the plane
-    const float D = dot(N, triangle.p0);
+    const float d = dot(n, triangle.p0);
 
     // ok, that's one side of the equation
     //
@@ -1245,7 +1245,7 @@ std::optional<RayCollision> osc::find_collision(const Ray& ray, const Triangle& 
     //     (D - O.N)/(R.N) = t
     //
     // tah-dah: we have the ray distance
-    const float t = -(dot(N, ray.origin) - D) / NdotR;
+    const float t = -(dot(n, ray.origin) - d) / n_dot_r;
 
     // if triangle plane is behind ray then return early
     if (t < 0.0f) {
@@ -1253,7 +1253,7 @@ std::optional<RayCollision> osc::find_collision(const Ray& ray, const Triangle& 
     }
 
     // intersection point on triangle plane, computed from ray equation
-    const Vector3 P = ray.origin + t*ray.direction;
+    const Vector3 p = ray.origin + t*ray.direction;
 
     // figure out if that point is inside the triangle's bounds using the
     // "inside-outside" test
@@ -1267,7 +1267,7 @@ std::optional<RayCollision> osc::find_collision(const Ray& ray, const Triangle& 
         const Vector3 e = end - start;
 
         // corner[n] to P
-        const Vector3 c = P - start;
+        const Vector3 c = p - start;
 
         // cross product of the above indicates whether the vectors are
         // clockwise or anti-clockwise with respect to each over. It's a
@@ -1277,7 +1277,7 @@ std::optional<RayCollision> osc::find_collision(const Ray& ray, const Triangle& 
 
         // if the dot product of that axis with the normal is <0.0f then
         // the point was "outside"
-        if (dot(ax, N) < 0.0f) {
+        if (dot(ax, n) < 0.0f) {
             return std::nullopt;
         }
     }

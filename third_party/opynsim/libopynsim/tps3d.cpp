@@ -73,9 +73,9 @@ namespace
 
     // this is effectively the "U" term in the TPS algorithm literature
     //
-    // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction3D(pi, p)` here
+    // i.e. U(||pi - p||) in the literature is equivalent to `radial_basis_function_3d(pi, p)` here
     template<std::floating_point T>
-    float RadialBasisFunction3D(const SimTK::Vec<3, T>& controlPoint, const SimTK::Vec<3, T>& p)
+    float radial_basis_function_3d(const SimTK::Vec<3, T>& control_point, const SimTK::Vec<3, T>& p)
     {
         // this implementation uses the U definition from the following (later) source:
         //
@@ -86,7 +86,7 @@ namespace
         // (e.g. the above book) uses U(v) = |v|. The primary author (Gunz) claims that the original
         // basis function is not as good as just using the magnitude?
 
-        return static_cast<float>((controlPoint - p).norm());
+        return static_cast<float>((control_point - p).norm());
     }
 
     template<std::floating_point T>
@@ -120,7 +120,7 @@ namespace
     }
 
     template<std::floating_point T>
-    TPSCoefficients3D<T> TPSCalcCoefficients(
+    TPSCoefficients3D<T> tps_calc_coefficients(
         cpp23::mdspan<const T, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> source_landmarks,
         cpp23::mdspan<const T, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks,
         T warping_penalty)
@@ -177,110 +177,110 @@ namespace
 
         OSC_ASSERT_ALWAYS(source_landmarks.size() == destination_landmarks.size());
 
-        const int numPairs = static_cast<int>(source_landmarks.extent(0));
+        const int num_pairs = static_cast<int>(source_landmarks.extent(0));
 
-        if (numPairs == 0) {
+        if (num_pairs == 0) {
             // edge-case: there are no pairs, so return an identity-like transform
             return TPSCoefficients3D<T>{};
         }
 
         // construct matrix L
-        SimTK::Matrix L(numPairs + 4, numPairs + 4);
+        SimTK::Matrix l(num_pairs + 4, num_pairs + 4);
 
         // populate the K part of matrix L (upper-left)
-        for (int row = 0; row < numPairs; ++row) {
-            for (int col = 0; col < numPairs; ++col) {
+        for (int row = 0; row < num_pairs; ++row) {
+            for (int col = 0; col < num_pairs; ++col) {
                 const SimTK::Vec<3, T> pis = {source_landmarks(row, 0), source_landmarks(row, 1), source_landmarks(row, 2)};
                 const SimTK::Vec<3, T> pj = {source_landmarks(col, 0), source_landmarks(col, 1), source_landmarks(col, 2)};
 
-                L(row, col) = RadialBasisFunction3D(pis, pj);
+                l(row, col) = radial_basis_function_3d(pis, pj);
             }
             // Add the warping penalty term along `K`'s diagonals
-            L(row, row) += warping_penalty;
+            l(row, row) += warping_penalty;
         }
 
         // populate the P part of matrix L (upper-right)
         {
-            const int pStartColumn = numPairs;
+            const int p_start_column = num_pairs;
 
-            for (int row = 0; row < numPairs; ++row) {
-                L(row, pStartColumn)     = 1.0;
-                L(row, pStartColumn + 1) = source_landmarks(row, 0);
-                L(row, pStartColumn + 2) = source_landmarks(row, 1);
-                L(row, pStartColumn + 3) = source_landmarks(row, 2);
+            for (int row = 0; row < num_pairs; ++row) {
+                l(row, p_start_column)     = 1.0;
+                l(row, p_start_column + 1) = source_landmarks(row, 0);
+                l(row, p_start_column + 2) = source_landmarks(row, 1);
+                l(row, p_start_column + 3) = source_landmarks(row, 2);
             }
         }
 
         // populate the PT part of matrix L (bottom-left)
         {
-            const int ptStartRow = numPairs;
+            const int pt_start_row = num_pairs;
 
-            for (int col = 0; col < numPairs; ++col) {
-                L(ptStartRow, col)     = 1.0;
-                L(ptStartRow + 1, col) = source_landmarks(col, 0);
-                L(ptStartRow + 2, col) = source_landmarks(col, 1);
-                L(ptStartRow + 3, col) = source_landmarks(col, 2);
+            for (int col = 0; col < num_pairs; ++col) {
+                l(pt_start_row, col)     = 1.0;
+                l(pt_start_row + 1, col) = source_landmarks(col, 0);
+                l(pt_start_row + 2, col) = source_landmarks(col, 1);
+                l(pt_start_row + 3, col) = source_landmarks(col, 2);
             }
         }
 
         // populate the 0 part of matrix L (bottom-right)
         {
-            const int zeroStartRow = numPairs;
-            const int zeroStartCol = numPairs;
+            const int zero_start_row = num_pairs;
+            const int zero_start_col = num_pairs;
 
             for (int row = 0; row < 4; ++row) {
                 for (int col = 0; col < 4; ++col) {
-                    L(zeroStartRow + row, zeroStartCol + col) = 0.0;
+                    l(zero_start_row + row, zero_start_col + col) = 0.0;
                 }
             }
         }
 
         // construct "result" vectors Vx and Vy (these hold the landmark destinations)
-        SimTK::Vector Vx(numPairs + 4, 0.0);
-        SimTK::Vector Vy(numPairs + 4, 0.0);
-        SimTK::Vector Vz(numPairs + 4, 0.0);
-        for (int row = 0; row < numPairs; ++row) {
-            Vx[row] = destination_landmarks(row, 0);
-            Vy[row] = destination_landmarks(row, 1);
-            Vz[row] = destination_landmarks(row, 2);
+        SimTK::Vector vx(num_pairs + 4, 0.0);
+        SimTK::Vector vy(num_pairs + 4, 0.0);
+        SimTK::Vector vz(num_pairs + 4, 0.0);
+        for (int row = 0; row < num_pairs; ++row) {
+            vx[row] = destination_landmarks(row, 0);
+            vy[row] = destination_landmarks(row, 1);
+            vz[row] = destination_landmarks(row, 2);
         }
 
         // create a linear solver that can be used to solve `L*Cn = Vn` for `Cn` (where `n` is a dimension)
-        const SimTK::FactorQTZ F{L};
+        const SimTK::FactorQTZ f{l};
 
         // solve for each dimension
-        SimTK::Vector Cx(numPairs + 4, 0.0);
-        F.solve(Vx, Cx);
-        SimTK::Vector Cy(numPairs + 4, 0.0);
-        F.solve(Vy, Cy);
-        SimTK::Vector Cz(numPairs + 4, 0.0);
-        F.solve(Vz, Cz);
+        SimTK::Vector cx(num_pairs + 4, 0.0);
+        f.solve(vx, cx);
+        SimTK::Vector cy(num_pairs + 4, 0.0);
+        f.solve(vy, cy);
+        SimTK::Vector cz(num_pairs + 4, 0.0);
+        f.solve(vz, cz);
 
-        // `Cx/Cy/Cz` now contain the solved coefficients (e.g. for X): [w1, w2, ... wx, a0, a1x, a1y a1z]
+        // `cx/cy/cz` now contain the solved coefficients (e.g. for X): [w1, w2, ... wx, a0, a1x, a1y a1z]
         //
         // extract the coefficients into the return value
 
         TPSCoefficients3D<T> rv;
 
         // populate affine a1, a2, a3, and a4 terms
-        rv.a1 = {T(Cx[numPairs]),   T(Cy[numPairs])  , T(Cz[numPairs])  };
-        rv.a2 = {T(Cx[numPairs+1]), T(Cy[numPairs+1]), T(Cz[numPairs+1])};
-        rv.a3 = {T(Cx[numPairs+2]), T(Cy[numPairs+2]), T(Cz[numPairs+2])};
-        rv.a4 = {T(Cx[numPairs+3]), T(Cy[numPairs+3]), T(Cz[numPairs+3])};
+        rv.a1 = {T(cx[num_pairs]),   T(cy[num_pairs])  , T(cz[num_pairs])  };
+        rv.a2 = {T(cx[num_pairs+1]), T(cy[num_pairs+1]), T(cz[num_pairs+1])};
+        rv.a3 = {T(cx[num_pairs+2]), T(cy[num_pairs+2]), T(cz[num_pairs+2])};
+        rv.a4 = {T(cx[num_pairs+3]), T(cy[num_pairs+3]), T(cz[num_pairs+3])};
 
         // populate `wi` coefficients (+ control points, needed at evaluation-time)
-        rv.non_affine_terms.reserve(numPairs);
-        for (int i = 0; i < numPairs; ++i) {
-            const SimTK::Vec<3, T> weight{T(Cx[i]), T(Cy[i]), T(Cz[i])};
-            const SimTK::Vec<3, T> controlPoint{source_landmarks(i, 0), source_landmarks(i, 1), source_landmarks(i, 2)};
-            rv.non_affine_terms.emplace_back(weight, controlPoint);
+        rv.non_affine_terms.reserve(num_pairs);
+        for (int i = 0; i < num_pairs; ++i) {
+            const SimTK::Vec<3, T> weight{T(cx[i]), T(cy[i]), T(cz[i])};
+            const SimTK::Vec<3, T> control_point{source_landmarks(i, 0), source_landmarks(i, 1), source_landmarks(i, 2)};
+            rv.non_affine_terms.emplace_back(weight, control_point);
         }
 
         return rv;
     }
 
     template<std::floating_point T>
-    TPSCoefficients3D<T> TPSCalcCoefficients(const TPSCoefficientSolverInputs3D<T>& inputs)
+    TPSCoefficients3D<T> tps_calc_coefficients(const TPSCoefficientSolverInputs3D<T>& inputs)
     {
         if (inputs.landmarks.empty()) {
             // edge-case: there are no pairs, so return an identity-like transform
@@ -293,7 +293,7 @@ namespace
         const std::array<size_t, 2> strides = {6, 1};
         const cpp23::layout_stride::mapping mapping{shape, strides};
 
-        auto rv = ::TPSCalcCoefficients<T>(
+        auto rv = ::tps_calc_coefficients<T>(
             {&inputs.landmarks.front().source[0], mapping},
             {&inputs.landmarks.front().destination[0], mapping},
             inputs.warping_penalty
@@ -321,7 +321,7 @@ namespace
     }
 
     template<std::floating_point T>
-    SimTK::Vec<3, T> TPSWarpPoint(const TPSCoefficients3D<T>& coefs, const SimTK::Vec<3, T>& p)
+    SimTK::Vec<3, T> tps_warp_point(const TPSCoefficients3D<T>& coefs, const SimTK::Vec<3, T>& p)
     {
         // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
         // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
@@ -332,7 +332,7 @@ namespace
 
         // accumulate non-affine terms (effectively: wi * U(||control_point - p||))
         for (const TPSNonAffineTerm3D<T>& term : coefs.non_affine_terms) {
-            rv += term.weight * RadialBasisFunction3D(term.control_point, p);
+            rv += term.weight * radial_basis_function_3d(term.control_point, p);
         }
 
         return SimTK::Vec<3, T>{rv};
@@ -371,12 +371,12 @@ std::ostream& opyn::operator<<(std::ostream& o, const TPSCoefficients3D<double>&
 
 TPSCoefficients3D<float> opyn::tps3d_solve_coefficients(const TPSCoefficientSolverInputs3D<float>& inputs)
 {
-    return ::TPSCalcCoefficients<float>(inputs);
+    return ::tps_calc_coefficients<float>(inputs);
 }
 
 TPSCoefficients3D<double> opyn::tps3d_solve_coefficients(const TPSCoefficientSolverInputs3D<double>& inputs)
 {
-    return ::TPSCalcCoefficients<double>(inputs);
+    return ::tps_calc_coefficients<double>(inputs);
 }
 
 TPSCoefficients3D<double> opyn::tps3d_solve_coefficients(
@@ -384,21 +384,21 @@ TPSCoefficients3D<double> opyn::tps3d_solve_coefficients(
     cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks,
     double warping_penalty)
 {
-    return ::TPSCalcCoefficients<double>(source_landmarks, destination_landmarks, warping_penalty);
+    return ::tps_calc_coefficients<double>(source_landmarks, destination_landmarks, warping_penalty);
 }
 
 SimTK::Vec<3, float> opyn::tps3d_warp_point(
     const TPSCoefficients3D<float>& coefs,
     const SimTK::Vec<3, float>& p)
 {
-    return ::TPSWarpPoint<float>(coefs, p);
+    return ::tps_warp_point<float>(coefs, p);
 }
 
 SimTK::Vec<3, double> opyn::tps3d_warp_point(
     const TPSCoefficients3D<double>& coefs,
     const SimTK::Vec<3, double>& p)
 {
-    return ::TPSWarpPoint<double>(coefs, p);
+    return ::tps_warp_point<double>(coefs, p);
 }
 
 SimTK::Vec<3, float> opyn::tps3d_warp_point(

@@ -176,7 +176,7 @@ namespace
         return rv;
     }
 
-    Texture2D create_2D_brdf_lookup(ResourceLoader& loader)
+    Texture2D create_2d_brdf_lookup(ResourceLoader& loader)
     {
         RenderTexture render_texture{{
             .pixel_dimensions = {512, 512},
@@ -289,8 +289,8 @@ private:
             pbr_material_.set("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
 
             for (int col = 0; col < c_num_cols; ++col) {
-                const float normalizedCol = static_cast<float>(col) / static_cast<float>(c_num_cols);
-                pbr_material_.set("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
+                const float normalized_color = static_cast<float>(col) / static_cast<float>(c_num_cols);
+                pbr_material_.set("uRoughness", clamp(normalized_color, 0.005f, 1.0f));
 
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
@@ -341,7 +341,7 @@ private:
     RenderTexture projected_map_ = load_equirectangular_hdr_texture_into_cubemap(loader_);
     RenderTexture irradiance_map_ = create_irradiance_cubemap(loader_, projected_map_);
     Cubemap prefilter_map_ = create_prefiltered_environment_map(loader_, projected_map_);
-    Texture2D brdf_lookup_ = create_2D_brdf_lookup(loader_);
+    Texture2D brdf_lookup_ = create_2d_brdf_lookup(loader_);
     RenderTexture output_render_texture_;
 
     Material background_material_{Shader{

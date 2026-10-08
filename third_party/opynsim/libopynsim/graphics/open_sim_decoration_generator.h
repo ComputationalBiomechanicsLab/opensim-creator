@@ -25,7 +25,7 @@ namespace opyn
         const OpenSim::Model&,
         const SimTK::State&,
         const OpenSimDecorationOptions&,
-        float fixupScaleFactor,
+        float fixup_scale_factor,
         const std::function<void(const OpenSim::Component&, osc::SceneDecoration&&)>& out
     );
 
@@ -34,7 +34,7 @@ namespace opyn
         osc::SceneCache&,
         const ModelStatePair&,
         const OpenSimDecorationOptions& = {},
-        float fixupScaleFactor = 1.0f
+        float fixup_scale_factor = 1.0f
     );
 
     // as above, but more convenient to use in simpler use-cases
@@ -43,7 +43,7 @@ namespace opyn
         const OpenSim::Model&,
         const SimTK::State&,
         const OpenSimDecorationOptions& = {},
-        float fixupScaleFactor = 1.0f
+        float fixup_scale_factor = 1.0f
     );
 
     // generates 3D decorations only for `subcomponent` within the given {model, state} pair
@@ -55,9 +55,9 @@ namespace opyn
         const SimTK::State&,
         const OpenSim::Component& subcomponent,
         const OpenSimDecorationOptions&,
-        float fixupScaleFactor,
+        float fixup_scale_factor,
         const std::function<void(const OpenSim::Component&, osc::SceneDecoration&&)>& out,
-        bool inclusiveOfProvidedSubcomponent = true
+        bool inclusive_of_provided_subcomponent = true
     );
 
     // tries to convert the given subcomponent mesh into an OSC mesh via the decoration
@@ -68,7 +68,7 @@ namespace opyn
         const SimTK::State&,
         const OpenSim::Mesh&,
         const OpenSimDecorationOptions&,
-        float fixupScaleFactor
+        float fixup_scale_factor
     );
 
     // as above, but uncached and defaults decoration options and scale factor

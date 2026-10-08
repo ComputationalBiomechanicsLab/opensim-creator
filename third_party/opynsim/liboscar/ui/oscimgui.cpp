@@ -362,32 +362,32 @@ namespace
         requires (std::constructible_from<texture_type, Texture>)
         ImTextureID allocate_imgui_texture(Texture&& texture)
         {
-            return allocate_texture(textures_allocated_by_imgui, std::forward<Texture>(texture));
+            return allocate_texture(textures_allocated_by_imgui_, std::forward<Texture>(texture));
         }
         void deallocate_imgui_texture(ImTextureID id)
         {
-            textures_allocated_by_imgui.erase(UID::from_int_unchecked(id));
+            textures_allocated_by_imgui_.erase(UID::from_int_unchecked(id));
         }
 
         template<typename Texture>
         requires (std::constructible_from<texture_type, Texture>)
         ImTextureID allocate_texture_for_this_frame(Texture&& texture)
         {
-            return allocate_texture(textures_allocated_this_frame, std::forward<Texture>(texture));
+            return allocate_texture(textures_allocated_this_frame_, std::forward<Texture>(texture));
         }
         void clear_textures_allocated_this_frame()
         {
-            textures_allocated_this_frame.clear();
+            textures_allocated_this_frame_.clear();
         }
 
         texture_type* lookup_texture(ImTextureID id)
         {
             static_assert(sizeof(decltype(UID{}.get())) <= sizeof(ImTextureID));
-            if (auto* t = lookup_or_nullptr(textures_allocated_this_frame, UID::from_int_unchecked(id))) {
+            if (auto* t = lookup_or_nullptr(textures_allocated_this_frame_, UID::from_int_unchecked(id))) {
                 return t;
             }
             else {
-                return lookup_or_nullptr(textures_allocated_by_imgui, UID::from_int_unchecked(id));
+                return lookup_or_nullptr(textures_allocated_by_imgui_, UID::from_int_unchecked(id));
             }
         }
     private:
@@ -401,8 +401,8 @@ namespace
             return static_cast<ImTextureID>(id.get());
         }
 
-        ankerl::unordered_dense::map<UID, texture_type> textures_allocated_this_frame;
-        ankerl::unordered_dense::map<UID, texture_type> textures_allocated_by_imgui;
+        ankerl::unordered_dense::map<UID, texture_type> textures_allocated_this_frame_;
+        ankerl::unordered_dense::map<UID, texture_type> textures_allocated_by_imgui_;
     };
 
     // The internal backend data associated with one UI context.
@@ -471,7 +471,7 @@ namespace
     OscarUIBackendData& get_backend_data()
     {
         OscarUIBackendData* bd = try_get_ui_backend_data();
-        IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplOscar_Init()?");
+        IM_ASSERT(bd != nullptr && "Did you call imgui_oscar_platform_init()?");
         return *bd;
     }
 
@@ -485,16 +485,16 @@ namespace
     Matrix4x4 display_projection_matrix(const ImDrawData& draw_data)
     {
         // Our visible imgui space lies from draw_data->DisplayPos (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single viewport apps.
-        const float L = draw_data.DisplayPos.x;
-        const float R = draw_data.DisplayPos.x + draw_data.DisplaySize.x;
-        const float T = draw_data.DisplayPos.y;
-        const float B = draw_data.DisplayPos.y + draw_data.DisplaySize.y;
+        const float left = draw_data.DisplayPos.x;
+        const float right = draw_data.DisplayPos.x + draw_data.DisplaySize.x;
+        const float top = draw_data.DisplayPos.y;
+        const float bottom = draw_data.DisplayPos.y + draw_data.DisplaySize.y;
 
         return {
-            {2.0f/(R-L),  0.0f,         0.0f, 0.0f},
-            {0.0f,        2.0f/(T-B),   0.0f, 0.0f},
-            {0.0f,        0.0f,        -1.0f, 0.0f},
-            {(R+L)/(L-R), (T+B)/(B-T),  0.0f, 1.0f},
+            {2.0f/(right-left),         0.0f,                        0.0f, 0.0f},
+            {0.0f,                      2.0f/(top-bottom),           0.0f, 0.0f},
+            {0.0f,                      0.0f,                       -1.0f, 0.0f},
+            {(right+left)/(left-right), (top+bottom)/(bottom-top),   0.0f, 1.0f},
         };
     }
 
@@ -749,7 +749,7 @@ namespace
         return rgs::min(dimensions);
     }
 
-    ImU32 to_ImU32(const Color& color)
+    ImU32 to_ImU32(const Color& color)  // NOLINT(readability-identifier-naming)
     {
         return ImGui::ColorConvertFloat4ToU32(color);
     }
@@ -984,7 +984,7 @@ namespace
     //       However, even if the native overlay isn't showing it's still __VERY IMPORTANT__ to handle
     //       IME correctly, because ImGui's text input widgets use text input events, rather than key
     //       events, to track user input.
-    void ImGui_ImplOscar_PlatformSetImeData(
+    void imgui_oscar_platform_set_ime_data(
         ImGuiContext*,
         ImGuiViewport* viewport,
         ImGuiPlatformImeData* ime_data)
@@ -1016,7 +1016,7 @@ namespace
     // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
     // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
     // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-    bool ImGui_ImplOscar_ProcessEvent(Event& e)
+    bool imgui_oscar_platform_process_event(Event& e)
     {
         ImGuiIO& io = ImGui::GetIO();
         OscarUIBackendData* bd = try_get_ui_backend_data();
@@ -1141,7 +1141,7 @@ namespace
         }
     }
 
-    void ImGui_ImplOscar_Init(
+    void imgui_oscar_platform_init(
         std::unique_ptr<OscarUIBackendData> context_data,
         WindowID main_window_id)
     {
@@ -1162,7 +1162,7 @@ namespace
         platform_io.Platform_SetClipboardTextFn = ui_set_clipboard_text;
         platform_io.Platform_GetClipboardTextFn = ui_get_clipboard_text;
         platform_io.Platform_ClipboardUserData = nullptr;
-        platform_io.Platform_SetImeDataFn = ImGui_ImplOscar_PlatformSetImeData;
+        platform_io.Platform_SetImeDataFn = imgui_oscar_platform_set_ime_data;
         platform_io.Platform_OpenInShellFn = [](ImGuiContext*, const char* url)
         {
             osc::open_url_in_os_default_web_browser(url);
@@ -1177,7 +1177,7 @@ namespace
         main_viewport->PlatformHandleRaw = nullptr;  // oscar: don't expose underlying OS/App abstraction
     }
 
-    [[nodiscard]] std::unique_ptr<OscarUIBackendData> ImGui_ImplOscar_Shutdown(App* app)
+    [[nodiscard]] std::unique_ptr<OscarUIBackendData> imgui_oscar_platform_shutdown(App* app)
     {
         ImGuiIO& io = ImGui::GetIO();
         OSC_ASSERT_ALWAYS(io.BackendPlatformUserData != nullptr && "No platform backend to shutdown, or already shutdown?");
@@ -1211,7 +1211,7 @@ namespace
         return bd;
     }
 
-    void ImGui_ImplOscar_UpdateMouseCursor(App& app)
+    void imgui_oscar_platform_update_mouse_cursor(App& app)
     {
         const ImGuiIO& io = ImGui::GetIO();
         if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange) {
@@ -1230,7 +1230,7 @@ namespace
         }
     }
 
-    void ImGui_ImplOscar_NewFrame(App& app)
+    void imgui_oscar_platform_new_frame(App& app)
     {
         OscarUIBackendData& bd = get_backend_data();
         ImGuiIO& io = ImGui::GetIO();
@@ -1290,7 +1290,7 @@ namespace
         // of any software constraints.
         bd.mouse_delta_this_frame = std::exchange(bd.mouse_delta_from_events, Vector2{});
 
-        ImGui_ImplOscar_UpdateMouseCursor(app);
+        imgui_oscar_platform_update_mouse_cursor(app);
     }
 
     constexpr auto c_combo_lut = std::to_array<std::pair<PhysicalKeyModifier, std::string_view>>({
@@ -1472,9 +1472,9 @@ struct osc::Converter<ui::GizmoMode, ui::gizmo::detail::Mode> final {
 
 template<>
 struct osc::Converter<ui::TreeNodeFlags, ImGuiTreeNodeFlags> final {
-    ImGuiTreeNodeFlags operator()(ui::TreeNodeFlags flags) const { return c_mappings_(flags); }
+    ImGuiTreeNodeFlags operator()(ui::TreeNodeFlags flags) const { return c_mappings(flags); }
 private:
-    static constexpr FlagMapper<ui::TreeNodeFlag, ImGuiTreeNodeFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::TreeNodeFlag, ImGuiTreeNodeFlags> c_mappings = {
         {ui::TreeNodeFlag::DefaultOpen,      ImGuiTreeNodeFlags_DefaultOpen},
         {ui::TreeNodeFlag::OpenOnArrow,      ImGuiTreeNodeFlags_OpenOnArrow},
         {ui::TreeNodeFlag::Leaf,             ImGuiTreeNodeFlags_Leaf},
@@ -1486,9 +1486,9 @@ private:
 
 template<>
 struct osc::Converter<ui::TabItemFlags, ImGuiTabItemFlags> final {
-    ImGuiTabItemFlags operator()(ui::TabItemFlags flags) const { return c_mappings_(flags); }
+    ImGuiTabItemFlags operator()(ui::TabItemFlags flags) const { return c_mappings(flags); }
 private:
-    static constexpr FlagMapper<ui::TabItemFlag, ImGuiTabItemFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::TabItemFlag, ImGuiTabItemFlags> c_mappings = {
         {ui::TabItemFlag::NoReorder,       ImGuiTabItemFlags_NoReorder},
         {ui::TabItemFlag::NoCloseButton,   ImGuiTabItemFlags_NoCloseButton},
         {ui::TabItemFlag::UnsavedDocument, ImGuiTabItemFlags_UnsavedDocument},
@@ -1516,10 +1516,10 @@ template<>
 struct osc::Converter<ui::SliderFlags, ImGuiSliderFlags> final {
     ImGuiSliderFlags operator()(ui::SliderFlags flags) const
     {
-        return c_mappings_(flags);
+        return c_mappings(flags);
     }
 private:
-    static constexpr FlagMapper<ui::SliderFlag, ImGuiSliderFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::SliderFlag, ImGuiSliderFlags> c_mappings = {
         {ui::SliderFlag::Logarithmic, ImGuiSliderFlags_Logarithmic},
         {ui::SliderFlag::AlwaysClamp, ImGuiSliderFlags_AlwaysClamp},
         {ui::SliderFlag::NoInput,     ImGuiSliderFlags_NoInput},
@@ -1539,10 +1539,10 @@ template<>
 struct osc::Converter<ui::TextInputFlags, ImGuiInputTextFlags> final {
     ImGuiInputTextFlags operator()(ui::TextInputFlags flags) const
     {
-        return c_mappings_(flags);
+        return c_mappings(flags);
     }
 private:
-    static constexpr FlagMapper<ui::TextInputFlag, ImGuiInputTextFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::TextInputFlag, ImGuiInputTextFlags> c_mappings = {
         {ui::TextInputFlag::EnterReturnsTrue, ImGuiInputTextFlags_EnterReturnsTrue},
         {ui::TextInputFlag::ReadOnly,         ImGuiInputTextFlags_ReadOnly},
     };
@@ -1552,10 +1552,10 @@ template<>
 struct osc::Converter<ui::ComboFlags, ImGuiComboFlags> final {
     ImGuiComboFlags operator()(ui::ComboFlags flags) const
     {
-        return c_mappings_(flags);
+        return c_mappings(flags);
     }
 private:
-    static constexpr FlagMapper<ui::ComboFlag, ImGuiComboFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::ComboFlag, ImGuiComboFlags> c_mappings = {
         {ui::ComboFlag::NoArrowButton, ImGuiComboFlags_NoArrowButton},
     };
 };
@@ -1564,10 +1564,10 @@ template<>
 struct osc::Converter<ui::PanelFlags, ImGuiWindowFlags> final {
     ImGuiWindowFlags operator()(ui::PanelFlags flags) const
     {
-        return c_mappings_(flags);
+        return c_mappings(flags);
     }
 private:
-    static constexpr FlagMapper<ui::PanelFlag, ImGuiWindowFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::PanelFlag, ImGuiWindowFlags> c_mappings = {
         {ui::PanelFlag::NoMove                 , ImGuiWindowFlags_NoMove                 },
         {ui::PanelFlag::NoTitleBar             , ImGuiWindowFlags_NoTitleBar             },
         {ui::PanelFlag::NoResize               , ImGuiWindowFlags_NoResize               },
@@ -1591,10 +1591,10 @@ template<>
 struct osc::Converter<ui::ChildPanelFlags, ImGuiChildFlags> final {
     ImGuiChildFlags operator()(ui::ChildPanelFlags flags) const
     {
-        return c_mappings_(flags);
+        return c_mappings(flags);
     }
 private:
-    static constexpr FlagMapper<ui::ChildPanelFlag, ImGuiChildFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::ChildPanelFlag, ImGuiChildFlags> c_mappings = {
         {ui::ChildPanelFlag::Border, ImGuiChildFlags_Borders},
     };
 };
@@ -1618,10 +1618,10 @@ template<>
 struct osc::Converter<ui::HoveredFlags, ImGuiHoveredFlags> final {
     ImGuiHoveredFlags operator()(ui::HoveredFlags flags) const
     {
-        return c_mappings_(flags);
+        return c_mappings(flags);
     }
 private:
-    static constexpr FlagMapper<ui::HoveredFlag, ImGuiHoveredFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::HoveredFlag, ImGuiHoveredFlags> c_mappings = {
         {ui::HoveredFlag::AllowWhenDisabled           , ImGuiHoveredFlags_AllowWhenDisabled           },
         {ui::HoveredFlag::AllowWhenBlockedByPopup     , ImGuiHoveredFlags_AllowWhenBlockedByPopup     },
         {ui::HoveredFlag::AllowWhenBlockedByActiveItem, ImGuiHoveredFlags_AllowWhenBlockedByActiveItem},
@@ -1637,10 +1637,10 @@ template<>
 struct osc::Converter<ui::ItemFlags, ImGuiItemFlags> final {
     ImGuiItemFlags operator()(ui::ItemFlags flags) const
     {
-        return c_mappings_(flags);
+        return c_mappings(flags);
     }
 private:
-    static constexpr FlagMapper<ui::ItemFlag, ImGuiItemFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::ItemFlag, ImGuiItemFlags> c_mappings = {
         {ui::ItemFlag::Disabled , ImGuiItemFlags_Disabled },
         {ui::ItemFlag::Inputable, ImGuiItemFlags_Inputable},
     };
@@ -1650,10 +1650,10 @@ template<>
 struct osc::Converter<ui::PopupFlags, ImGuiPopupFlags> final {
     ImGuiPopupFlags operator()(ui::PopupFlags flags) const
     {
-        return c_mappings_(flags);
+        return c_mappings(flags);
     }
 private:
-    static constexpr FlagMapper<ui::PopupFlag, ImGuiPopupFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::PopupFlag, ImGuiPopupFlags> c_mappings = {
         {ui::PopupFlag::MouseButtonLeft , ImGuiPopupFlags_MouseButtonLeft },
         {ui::PopupFlag::MouseButtonRight, ImGuiPopupFlags_MouseButtonRight},
     };
@@ -1663,10 +1663,10 @@ template<>
 struct osc::Converter<ui::TableFlags, ImGuiTableFlags> final {
     ImGuiTableFlags operator()(ui::TableFlags flags) const
     {
-        return c_mappings_(flags);
+        return c_mappings(flags);
     }
 private:
-    static constexpr FlagMapper<ui::TableFlag, ImGuiTableFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::TableFlag, ImGuiTableFlags> c_mappings = {
         {ui::TableFlag::BordersInner     , ImGuiTableFlags_BordersInner     },
         {ui::TableFlag::BordersInnerV    , ImGuiTableFlags_BordersInnerV    },
         {ui::TableFlag::NoSavedSettings  , ImGuiTableFlags_NoSavedSettings  },
@@ -1684,10 +1684,10 @@ template<>
 struct osc::Converter<ui::ColumnFlags, ImGuiTableColumnFlags> final {
     ImGuiTableColumnFlags operator()(ui::ColumnFlags flags) const
     {
-        return c_mappings_(flags);
+        return c_mappings(flags);
     }
 private:
-    static constexpr FlagMapper<ui::ColumnFlag, ImGuiTableColumnFlags> c_mappings_ = {
+    static constexpr FlagMapper<ui::ColumnFlag, ImGuiTableColumnFlags> c_mappings = {
         {ui::ColumnFlag::NoSort,       ImGuiTableColumnFlags_NoSort},
         {ui::ColumnFlag::WidthStretch, ImGuiTableColumnFlags_WidthStretch},
     };
@@ -1808,7 +1808,7 @@ void osc::ui::Context::reset()
 
 bool osc::ui::Context::on_event(Event& ev)
 {
-    ImGui_ImplOscar_ProcessEvent(ev);
+    imgui_oscar_platform_process_event(ev);
 
     // handle `.WantCaptureKeyboard`
     constexpr auto keyboard_event_types = std::to_array({EventType::KeyDown, EventType::KeyUp});
@@ -1826,7 +1826,7 @@ void osc::ui::Context::on_start_new_frame()
     App& app = App::upd();
 
     graphics_backend_on_start_new_frame();
-    ImGui_ImplOscar_NewFrame(app);
+    imgui_oscar_platform_new_frame(app);
     ImGui::NewFrame();
 
     // extra parts
@@ -1877,7 +1877,7 @@ void osc::ui::Context::init(
         ui::apply_dark_theme();
 
         // init ImGui for oscar
-        ImGui_ImplOscar_Init(
+        imgui_oscar_platform_init(
             std::move(context_data),  // CARE: ImGui owns the oscar context data
             app.main_window_id()
         );
@@ -1891,7 +1891,7 @@ void osc::ui::Context::shutdown(App* app)
 {
     ImPlot::DestroyContext();
 
-    auto bd = ImGui_ImplOscar_Shutdown(app);
+    auto bd = imgui_oscar_platform_shutdown(app);
     ImGui::DestroyContext();
     // `OscarUIBackendData` destroyed here
 }
@@ -3058,7 +3058,7 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
     const Vector3 front = camera.direction();
     const Vector3 up = camera.up();
     const Vector3 right = cross(front, up);
-    const Vector2 mouseDelta = get_backend_data().mouse_delta_this_frame;  // Track actual physical movement of the mouse (relevant in relative mode).
+    const Vector2 mouse_delta = get_backend_data().mouse_delta_this_frame;  // Track actual physical movement of the mouse (relevant in relative mode).
 
     const float speed = 10.0f;
     const float displacement = speed * ImGui::GetIO().DeltaTime;
@@ -3086,9 +3086,9 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
     }
     camera.set_position(pos);
 
-    eulers.x() += sensitivity * -mouseDelta.y();
+    eulers.x() += sensitivity * -mouse_delta.y();
     eulers.x() = clamp(eulers.x(), -90_deg + 0.1_rad, 90_deg - 0.1_rad);
-    eulers.y() += sensitivity * -mouseDelta.x();
+    eulers.y() += sensitivity * -mouse_delta.x();
     eulers.y() = mod(eulers.y(), 360_deg);
 
     camera.set_rotation(to_world_space_rotation_quaternion(eulers));
@@ -4100,7 +4100,7 @@ bool osc::ui::Gizmo::handle_keyboard_inputs()
 // `ui::plot::` helpers
 namespace
 {
-    constexpr ImPlotFlags to_ImPlotFlags(plot::PlotFlags flags)
+    constexpr ImPlotFlags to_ImPlotFlags(plot::PlotFlags flags)  // NOLINT(readability-identifier-naming)
     {
         static_assert(std::to_underlying(plot::PlotFlags::NoTitle) == ImPlotFlags_NoTitle);
         static_assert(std::to_underlying(plot::PlotFlags::NoLegend) == ImPlotFlags_NoLegend);
@@ -4112,7 +4112,7 @@ namespace
         return static_cast<ImPlotFlags>(flags);
     }
 
-    constexpr ImPlotStyleVar to_ImPlotStyleVar(plot::PlotStyleVar var)
+    constexpr ImPlotStyleVar to_ImPlotStyleVar(plot::PlotStyleVar var)  // NOLINT(readability-identifier-naming)
     {
         static_assert(num_options<plot::PlotStyleVar>() == 4);
         switch (var) {
@@ -4124,7 +4124,7 @@ namespace
         }
     }
 
-    constexpr ImPlotCol to_ImPlotCol(plot::PlotColorVar var)
+    constexpr ImPlotCol to_ImPlotCol(plot::PlotColorVar var)  // NOLINT(readability-identifier-naming)
     {
         static_assert(num_options<plot::PlotColorVar>() == 2);
         switch (var) {
@@ -4134,7 +4134,7 @@ namespace
         }
     }
 
-    constexpr ImAxis to_ImAxis(plot::Axis axis)
+    constexpr ImAxis to_ImAxis(plot::Axis axis)  // NOLINT(readability-identifier-naming)
     {
         static_assert(num_options<plot::Axis>() == 2);
         switch (axis) {
@@ -4144,7 +4144,7 @@ namespace
         }
     }
 
-    constexpr ImPlotAxisFlags to_ImPlotAxisFlags(plot::AxisFlags flags)
+    constexpr ImPlotAxisFlags to_ImPlotAxisFlags(plot::AxisFlags flags)  // NOLINT(readability-identifier-naming)
     {
         static_assert(std::to_underlying(plot::AxisFlags::None) == ImPlotAxisFlags_None);
         static_assert(std::to_underlying(plot::AxisFlags::NoLabel) == ImPlotAxisFlags_NoLabel);
@@ -4161,7 +4161,7 @@ namespace
         return static_cast<ImPlotAxisFlags>(flags);
     }
 
-    constexpr ImPlotCond to_ImPlotCond(plot::Condition condition)
+    constexpr ImPlotCond to_ImPlotCond(plot::Condition condition)  // NOLINT(readability-identifier-naming)
     {
         static_assert(num_options<plot::Condition>() == 2);
         switch (condition) {
@@ -4171,7 +4171,7 @@ namespace
         }
     }
 
-    constexpr ImPlotMarker to_ImPlotMarker(plot::MarkerType marker_type)
+    constexpr ImPlotMarker to_ImPlotMarker(plot::MarkerType marker_type)  // NOLINT(readability-identifier-naming)
     {
         static_assert(num_options<plot::MarkerType>() == 2);
         switch (marker_type) {
@@ -4181,7 +4181,7 @@ namespace
         }
     }
 
-    constexpr ImPlotDragToolFlags to_ImPlotDragToolFlags(plot::DragToolFlags flags)
+    constexpr ImPlotDragToolFlags to_ImPlotDragToolFlags(plot::DragToolFlags flags)  // NOLINT(readability-identifier-naming)
     {
         static_assert(std::to_underlying(plot::DragToolFlag::None) == ImPlotDragToolFlags_None);
         static_assert(std::to_underlying(plot::DragToolFlag::NoFit) == ImPlotDragToolFlags_NoFit);
@@ -4190,7 +4190,7 @@ namespace
         return static_cast<ImPlotDragToolFlags>(flags.underlying_value());
     }
 
-    constexpr ImPlotLocation to_ImPlotLocation(plot::Location location)
+    constexpr ImPlotLocation to_ImPlotLocation(plot::Location location)  // NOLINT(readability-identifier-naming)
     {
         static_assert(num_options<plot::Location>() == 9);
         switch (location) {
@@ -4207,7 +4207,7 @@ namespace
         }
     }
 
-    constexpr ImPlotLegendFlags to_ImPlotLegendFlags(plot::LegendFlags flags)
+    constexpr ImPlotLegendFlags to_ImPlotLegendFlags(plot::LegendFlags flags)  // NOLINT(readability-identifier-naming)
     {
         static_assert(std::to_underlying(plot::LegendFlags::None) == ImPlotLegendFlags_None);
         static_assert(std::to_underlying(plot::LegendFlags::Outside) == ImPlotLegendFlags_Outside);

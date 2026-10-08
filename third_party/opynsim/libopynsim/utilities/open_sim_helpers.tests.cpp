@@ -70,45 +70,45 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 {
     opyn::init();  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "Leg39" / "leg39.osim";
+    std::filesystem::path model_path = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "Leg39" / "leg39.osim";
 
-    OpenSim::Model model{modelPath.string()};
+    OpenSim::Model model{model_path.string()};
     initialize_model(model);
     initialize_state(model);
 
     const auto& registry = opyn::get_component_registry<OpenSim::Joint>();
-    auto maybeIdx = index_of<OpenSim::FreeJoint>(registry);
-    ASSERT_TRUE(maybeIdx) << "can't find FreeJoint in type registry?";
-    auto idx = maybeIdx.value();
+    auto maybe_idx = index_of<OpenSim::FreeJoint>(registry);
+    ASSERT_TRUE(maybe_idx) << "can't find FreeJoint in type registry?";
+    auto idx = maybe_idx.value();
 
     // cache joint paths, because we are changing the model during this test and it might
     // invalidate the model's `getComponentList` function
-    std::vector<OpenSim::ComponentPath> allJointPaths;
+    std::vector<OpenSim::ComponentPath> all_joint_paths;
     for (const OpenSim::Joint& joint : model.getModel().getComponentList<OpenSim::Joint>()) {
-        allJointPaths.push_back(joint.getAbsolutePath());
+        all_joint_paths.push_back(joint.getAbsolutePath());
     }
 
-    for (const OpenSim::ComponentPath& p : allJointPaths) {
+    for (const OpenSim::ComponentPath& p : all_joint_paths) {
         auto& joint = model.updComponent<OpenSim::Joint>(p);
 
         std::string msg = "changed " + joint.getAbsolutePathString();
 
         const OpenSim::Component& parent = joint.getOwner();
-        const auto* jointSet = dynamic_cast<const OpenSim::JointSet*>(&parent);
+        const auto* joint_set = dynamic_cast<const OpenSim::JointSet*>(&parent);
 
-        if (not jointSet) {
+        if (not joint_set) {
             continue;  // this joint doesn't count
         }
 
-        int jointIdx = -1;
-        for (int i = 0; i < jointSet->getSize(); ++i) {
-            const OpenSim::Joint* j = &(*jointSet)[i];
+        int joint_idx = -1;
+        for (int i = 0; i < joint_set->getSize(); ++i) {
+            const OpenSim::Joint* j = &(*joint_set)[i];
             if (j == &joint) {
-                jointIdx = i;
+                joint_idx = i;
             }
         }
 
-        ASSERT_NE(jointIdx, -1) << "the joint should exist within its parent set";
+        ASSERT_NE(joint_idx, -1) << "the joint should exist within its parent set";
 
         auto replacement = registry[idx].instantiate();
 
@@ -116,7 +116,7 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 
         // update model
         try {
-            model.updComponent<OpenSim::JointSet>(jointSet->getAbsolutePath()).set(jointIdx, replacement.release());
+            model.updComponent<OpenSim::JointSet>(joint_set->getAbsolutePath()).set(joint_idx, replacement.release());
             initialize_model(model);
             initialize_state(model);
         }
@@ -148,9 +148,9 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
 {
     opyn::init();  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path model_path = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
-    OpenSim::Model m{modelPath.string()};
+    OpenSim::Model m{model_path.string()};
     m.finalizeFromProperties();
     std::string outparam;
     for (const OpenSim::Component& c : m.getComponentList()) {
@@ -165,9 +165,9 @@ TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexM
 {
     opyn::init();  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path model_path = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
-    OpenSim::Model m{modelPath.string()};
+    OpenSim::Model m{model_path.string()};
     m.finalizeFromProperties();
     for (const OpenSim::Component& c : m.getComponentList()) {
         ASSERT_EQ(c.getAbsolutePath(), get_absolute_path(c));
@@ -183,9 +183,9 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReturnsSameResultAsOpenSimVersionForC
 {
     opyn::init();  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path model_path = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
-    OpenSim::Model m{modelPath.string()};
+    OpenSim::Model m{model_path.string()};
     m.finalizeFromProperties();
     for (const OpenSim::Component& c : m.getComponentList()) {
         ASSERT_EQ(c.getAbsolutePath(), get_absolute_path_or_empty(&c));
@@ -198,23 +198,23 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
 {
     opyn::init();  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path model_path = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
-    OpenSim::Model originalModel{modelPath.string()};
-    initialize_model(originalModel);
-    OpenSim::Model modifiedModel{originalModel};
-    initialize_model(modifiedModel);
+    OpenSim::Model original_model{model_path.string()};
+    initialize_model(original_model);
+    OpenSim::Model modified_model{original_model};
+    initialize_model(modified_model);
 
     // iterate over the original (const) model, so that iterator
     // invalidation can't happen
-    for (const OpenSim::Component& c : originalModel.getComponentList()) {
+    for (const OpenSim::Component& c : original_model.getComponentList()) {
         // if the component still exists in the to-be-deleted-from model
         // (it may have been indirectly deleted), then try to delete it
-        if (OpenSim::Component* lookup = find_component_mut(modifiedModel, c.getAbsolutePath())) {
-            if (try_delete_component_from_model(modifiedModel, *lookup)) {
+        if (OpenSim::Component* lookup = find_component_mut(modified_model, c.getAbsolutePath())) {
+            if (try_delete_component_from_model(modified_model, *lookup)) {
                 osc::log_info("deleted {} ({})", c.getName(), c.getConcreteClassName());
-                initialize_model(modifiedModel);
-                initialize_state(modifiedModel);
+                initialize_model(modified_model);
+                initialize_state(modified_model);
             }
         }
     }
@@ -229,9 +229,9 @@ TEST(OpenSimHelpers, InitializeModelAndInitializeStateWorkOnModelWithNotOptimize
 {
     opyn::init();  // for loading the osim
 
-    const std::filesystem::path brokenFilePath =
+    const std::filesystem::path broken_file_path =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "opensim-creator_1070_repro.osim";
-    OpenSim::Model model{brokenFilePath.string()};
+    OpenSim::Model model{broken_file_path.string()};
     initialize_model(model);  // shouldn't throw
 
     // sanity check: the model should throw when equilibrating the muscles
@@ -292,9 +292,9 @@ TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
 // that `OpenSim` doesn't do.
 TEST(OpenSimHelpers, FinalizeConnectionsWithUnusualJointTopologyDoesNotSegfault)
 {
-    const std::filesystem::path brokenFilePath =
+    const std::filesystem::path broken_file_path =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "opensim-creator_773-2_repro.osim";
-    OpenSim::Model model{brokenFilePath.string()};
+    OpenSim::Model model{broken_file_path.string()};
     model.finalizeFromProperties();
 
     for (size_t i = 0; i < 10; ++i) {
@@ -366,18 +366,18 @@ TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
         std::vector<std::string> associatedWrapObjectNames;
     };
 
-    const auto expectedWraps = std::to_array<ExpectedWrap>({
+    const auto expected_wraps = std::to_array<ExpectedWrap>({
         {OpenSim::ComponentPath{"/forceset/psoas_r/path"}, {"PS_at_brim_r"}},
         {OpenSim::ComponentPath{"/forceset/vasmed_l/path"}, {"KnExt_at_fem_l"}},
         {OpenSim::ComponentPath{"/forceset/gaslat_r/path"}, {"GasLat_at_shank_r", "Gastroc_at_condyles_r"}},
     });
 
-    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
-    OpenSim::Model m{modelPath.string()};
+    std::filesystem::path model_path = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    OpenSim::Model m{model_path.string()};
     initialize_model(m);
     initialize_state(m);
 
-    for (const auto& [geomAbsPath, expectedWrapObjectNames] : expectedWraps) {
+    for (const auto& [geomAbsPath, expectedWrapObjectNames] : expected_wraps) {
         const auto* gp = find_component<OpenSim::GeometryPath>(m, geomAbsPath);
         OSC_ASSERT_ALWAYS(gp != nullptr && "maybe the rajagopal model has changed?");
         for (const OpenSim::WrapObject* wo : get_all_wrap_objects_referenced_by(*gp)) {
@@ -420,8 +420,8 @@ TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsUntitledWhenProvidedInMemory
 TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsFilenameIfProvidedLoadedModel)
 {
     opyn::init();
-    std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "Blank" / "blank.osim";
-    OpenSim::Model model{modelPath.string()};
+    std::filesystem::path model_path = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "Blank" / "blank.osim";
+    OpenSim::Model model{model_path.string()};
     ASSERT_EQ(recommended_document_name(model), "blank.osim");
 }
 
@@ -560,19 +560,19 @@ TEST(OpenSimHelpers, ScaleModelMassPreserveMassDistribution_WorksOnBasicExample)
     initialize_model(model);
     SimTK::State state = initialize_state(model);
 
-    const double originalTotalMass = 3.0;
+    const double original_total_mass = 3.0;
     const double tolerance = 0.000001;  // 1 microgram
-    ASSERT_NEAR(model.getTotalMass(state), originalTotalMass, tolerance);
+    ASSERT_NEAR(model.getTotalMass(state), original_total_mass, tolerance);
 
-    const double newTotalMass = 5.0;
-    scale_model_mass_preserve_mass_distribution(model, state, newTotalMass);
+    const double new_total_mass = 5.0;
+    scale_model_mass_preserve_mass_distribution(model, state, new_total_mass);
     initialize_model(model);
     state = initialize_state(model);
 
-    const double massScalingFactor = newTotalMass / originalTotalMass;
+    const double mass_scaling_factor = new_total_mass / original_total_mass;
 
-    ASSERT_NEAR(model.getTotalMass(state), newTotalMass, tolerance);
-    ASSERT_NEAR(body1.getMass(), massScalingFactor * 1.5, tolerance);
-    ASSERT_NEAR(body2a.getMass(), massScalingFactor * 1.0, tolerance);
-    ASSERT_NEAR(body2b.getMass(), massScalingFactor * 0.5, tolerance);
+    ASSERT_NEAR(model.getTotalMass(state), new_total_mass, tolerance);
+    ASSERT_NEAR(body1.getMass(), mass_scaling_factor * 1.5, tolerance);
+    ASSERT_NEAR(body2a.getMass(), mass_scaling_factor * 1.0, tolerance);
+    ASSERT_NEAR(body2b.getMass(), mass_scaling_factor * 0.5, tolerance);
 }
