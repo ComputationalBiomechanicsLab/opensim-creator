@@ -34,57 +34,42 @@ namespace
 
     ParseResult parse_row(size_t line_number, std::span<const std::string> cols)
     {
-        if (cols.empty() || (cols.size() == 1 && osc::strip_whitespace(cols.front()).empty()))
-        {
+        if (cols.empty() or (cols.size() == 1 and osc::strip_whitespace(cols.front()).empty())) {
             return SkipRow{};  // whitespace row, or trailing newline
         }
-        if (cols.size() < 3)
-        {
+        if (cols.size() < 3) {
             return CSVParseWarning{line_number, "too few columns in this row"};
         }
 
         // >=4 columns implies that the first column is a label column
         std::optional<std::string> maybe_name;
         std::span<const std::string> data = cols;
-        if (cols.size() >= 4)
-        {
+        if (cols.size() >= 4) {
             maybe_name = cols.front();
             data = data.subspan(1);
         }
 
         const std::optional<float> x = osc::from_chars_strip_whitespace(data.front());
-        if (!x)
-        {
-            if (line_number == 0)
-            {
+        if (not x) {
+            if (line_number == 0) {
                 return SkipRow{};  // it's probably a header label
-            }
-            else
-            {
+            } else {
                 return CSVParseWarning{line_number, "cannot parse X as a number"};
             }
         }
         const std::optional<float> y = osc::from_chars_strip_whitespace(data[1]);
-        if (!y)
-        {
-            if (line_number == 0)
-            {
+        if (not y) {
+            if (line_number == 0) {
                 return SkipRow{};  // it's probably a header label
-            }
-            else
-            {
+            } else {
                 return CSVParseWarning{line_number, "cannot parse Y as a number"};
             }
         }
         const std::optional<float> z = osc::from_chars_strip_whitespace(data[2]);
-        if (!z)
-        {
-            if (line_number == 0)
-            {
+        if (not z) {
+            if (line_number == 0) {
                 return SkipRow{};
-            }
-            else
-            {
+            } else {
                 return CSVParseWarning{line_number, "cannot parse Z as a number"};
             }
         }
@@ -117,8 +102,7 @@ void opyn::read_landmarks_from_csv(
     std::vector<std::string> cols;
     for (size_t line = 0; osc::CSV::read_row_into_vector(in, cols); ++line)
     {
-        std::visit(osc::Overload
-        {
+        std::visit(osc::Overload{
             [&landmark_consumer](Landmark&& lm) { landmark_consumer(std::move(lm)); },
             [&warning_consumer](CSVParseWarning&& warning) { warning_consumer(std::move(warning)); },
             [](SkipRow) {}
@@ -145,32 +129,24 @@ void opyn::write_landmarks_to_csv(
     LandmarkCSVFlags flags)
 {
     // if applicable, emit header
-    if (!(flags & LandmarkCSVFlags::NoHeader))
-    {
-        if (flags & LandmarkCSVFlags::NoNames)
-        {
+    if (not (flags & LandmarkCSVFlags::NoHeader)) {
+        if (flags & LandmarkCSVFlags::NoNames) {
             osc::CSV::write_row(out, {{"x", "y", "z"}});
-        }
-        else
-        {
+        } else {
             osc::CSV::write_row(out, {{"name", "x", "y", "z"}});
         }
     }
 
     // emit data emitted by the landmark producer (until std::nullopt) as data rows
-    for (auto lm = landmark_producer(); lm; lm = landmark_producer())
-    {
+    for (auto lm = landmark_producer(); lm; lm = landmark_producer()) {
         using std::to_string;
         auto x = lm->position.x();
         auto y = lm->position.y();
         auto z = lm->position.z();
 
-        if (flags & LandmarkCSVFlags::NoNames)
-        {
+        if (flags & LandmarkCSVFlags::NoNames) {
             osc::CSV::write_row(out, {{to_string(x), to_string(y), to_string(z)}});
-        }
-        else
-        {
+        } else {
             osc::CSV::write_row(out, {{lm->maybe_name.value_or("unnamed"), to_string(x), to_string(y), to_string(z)}});
         }
     }
@@ -182,10 +158,8 @@ std::vector<NamedLandmark> opyn::generate_names(
 {
     // collect up all already-named landmarks
     std::unordered_set<std::string_view> supplied_names;
-    for (const auto& lm : lms)
-    {
-        if (lm.maybe_name)
-        {
+    for (const auto& lm : lms) {
+        if (lm.maybe_name) {
             supplied_names.insert(*lm.maybe_name);
         }
     }
@@ -193,15 +167,13 @@ std::vector<NamedLandmark> opyn::generate_names(
     // helper: either get, or generate, a name for the given landmark
     auto get_name = [&prefix, &supplied_names, i = 0](const Landmark& lm) mutable -> std::string
     {
-        if (lm.maybe_name)
-        {
+        if (lm.maybe_name) {
             return *lm.maybe_name;
         }
 
-        auto next_name = [&prefix, &i]() { return std::string{prefix} + std::to_string(i++); };
+        auto next_name = [&prefix, &i] { return std::string{prefix} + std::to_string(i++); };
         std::string name = next_name();
-        while (supplied_names.contains(name))
-        {
+        while (supplied_names.contains(name)) {
             name = next_name();
         }
         return name;
@@ -209,8 +181,7 @@ std::vector<NamedLandmark> opyn::generate_names(
 
     std::vector<NamedLandmark> rv;
     rv.reserve(lms.size());
-    for (const auto& lm : lms)
-    {
+    for (const auto& lm : lms) {
         rv.push_back(NamedLandmark{get_name(lm), lm.position});
     }
     return rv;

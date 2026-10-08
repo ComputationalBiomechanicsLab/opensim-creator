@@ -20,7 +20,7 @@ public:
     }
 
     explicit Impl(const ModelStatePair& p) :
-        Impl{p.getModel(), p.getState(), p.getFixupScaleFactor()}
+        Impl{p.get_model(), p.get_state(), p.get_fixup_scale_factor()}
     {}
 
     explicit Impl(const std::filesystem::path& osimPath) :
@@ -101,22 +101,22 @@ private:
 };
 
 opyn::BasicModelStatePair::BasicModelStatePair() :
-    m_Impl{std::make_unique<Impl>()}
+    impl_{std::make_unique<Impl>()}
 {}
 
 opyn::BasicModelStatePair::BasicModelStatePair(const ModelStatePair& p) :
-    m_Impl{std::make_unique<Impl>(p)}
+    impl_{std::make_unique<Impl>(p)}
 {}
 
 opyn::BasicModelStatePair::BasicModelStatePair(const std::filesystem::path& p) :
-    m_Impl{std::make_unique<Impl>(p)}
+    impl_{std::make_unique<Impl>(p)}
 {}
 opyn::BasicModelStatePair::BasicModelStatePair(OpenSim::Model&& model) :
-    m_Impl{std::make_unique<Impl>(std::move(model))}
+    impl_{std::make_unique<Impl>(std::move(model))}
 {}
 
 opyn::BasicModelStatePair::BasicModelStatePair(const OpenSim::Model& model, const SimTK::State& state) :
-    m_Impl{std::make_unique<Impl>(model, state)}
+    impl_{std::make_unique<Impl>(model, state)}
 {}
 opyn::BasicModelStatePair::BasicModelStatePair(const BasicModelStatePair&) = default;
 opyn::BasicModelStatePair::BasicModelStatePair(BasicModelStatePair&&) noexcept = default;
@@ -124,22 +124,22 @@ opyn::BasicModelStatePair& opyn::BasicModelStatePair::operator=(const BasicModel
 opyn::BasicModelStatePair& opyn::BasicModelStatePair::operator=(BasicModelStatePair&&) noexcept = default;
 opyn::BasicModelStatePair::~BasicModelStatePair() noexcept = default;
 
-const OpenSim::Model& opyn::BasicModelStatePair::implGetModel() const
+const OpenSim::Model& opyn::BasicModelStatePair::impl_get_model() const
 {
-    return m_Impl->getModel();
+    return impl_->getModel();
 }
 
-const SimTK::State& opyn::BasicModelStatePair::implGetState() const
+const SimTK::State& opyn::BasicModelStatePair::impl_get_state() const
 {
-    return m_Impl->getState();
+    return impl_->getState();
 }
 
-float opyn::BasicModelStatePair::implGetFixupScaleFactor() const
+float opyn::BasicModelStatePair::impl_get_fixup_scale_factor() const
 {
-    return m_Impl->getFixupScaleFactor();
+    return impl_->getFixupScaleFactor();
 }
 
-void opyn::BasicModelStatePair::implSetFixupScaleFactor(float v)
+void opyn::BasicModelStatePair::impl_set_fixup_scale_factor(float v)
 {
-    m_Impl->setFixupScaleFactor(v);
+    impl_->setFixupScaleFactor(v);
 }

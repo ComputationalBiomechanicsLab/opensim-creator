@@ -25,17 +25,17 @@ namespace osc
             std::function<void(OpenSim::AbstractProperty&)>
         );
 
-        const std::string& getComponentAbsPath() const;  // empty if it's just a standalone object
-        const std::string& getPropertyName() const;
+        const std::string& get_component_abs_path() const;  // empty if it's just a standalone object
+        const std::string& get_property_name() const;
         void apply(OpenSim::AbstractProperty&);
-        const std::function<void(OpenSim::AbstractProperty&)>& getUpdater() const
+        const std::function<void(OpenSim::AbstractProperty&)>& get_updater() const
         {
-            return m_Updater;
+            return updater_;
         }
 
     private:
-        std::string m_ComponentAbsPath;
-        std::string m_PropertyName;
-        std::function<void(OpenSim::AbstractProperty&)> m_Updater;
+        std::string component_abs_path_;
+        std::string property_name_;
+        std::function<void(OpenSim::AbstractProperty&)> updater_;
     };
 }

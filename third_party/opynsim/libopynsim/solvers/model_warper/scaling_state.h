@@ -98,11 +98,11 @@ namespace opyn
         }
         void applyScalingObjectPropertyEdit(osc::ObjectPropertyEdit edit)
         {
-            OpenSim::Component* component = findScalingComponentMut(edit.getComponentAbsPath());
+            OpenSim::Component* component = findScalingComponentMut(edit.get_component_abs_path());
             if (not component) {
                 return;
             }
-            OpenSim::AbstractProperty* property = FindPropertyMut(*component, edit.getPropertyName());
+            OpenSim::AbstractProperty* property = FindPropertyMut(*component, edit.get_property_name());
             if (not property) {
                 return;
             }
@@ -192,7 +192,7 @@ namespace opyn
             }
 
             // Create an independent copy of the source model, which will be scaled in-place.
-            OpenSim::Model resultModel = sourceModel->getModel();
+            OpenSim::Model resultModel = sourceModel->get_model();
             resultModel.clearConnections();
             InitializeModel(resultModel);
             InitializeState(resultModel);

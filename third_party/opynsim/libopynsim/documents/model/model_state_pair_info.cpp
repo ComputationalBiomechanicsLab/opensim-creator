@@ -8,9 +8,9 @@ using namespace opyn;
 opyn::ModelStatePairInfo::ModelStatePairInfo() = default;
 
 opyn::ModelStatePairInfo::ModelStatePairInfo(const ModelStatePair& msp) :
-    m_ModelVersion{msp.getModelVersion()},
-    m_StateVersion{msp.getStateVersion()},
-    m_Selection{GetAbsolutePathOrEmpty(msp.getSelected())},
-    m_Hover{GetAbsolutePathOrEmpty(msp.getHovered())},
-    m_FixupScaleFactor{msp.getFixupScaleFactor()}
+    model_version_{msp.get_model_version()},
+    state_version_{msp.get_state_version()},
+    selection_{GetAbsolutePathOrEmpty(msp.get_selected())},
+    hover_{GetAbsolutePathOrEmpty(msp.get_hovered())},
+    fixup_scale_factor_{msp.get_fixup_scale_factor()}
 {}

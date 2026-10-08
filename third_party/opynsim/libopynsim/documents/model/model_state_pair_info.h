@@ -15,15 +15,15 @@ namespace opyn
         ModelStatePairInfo();
         explicit ModelStatePairInfo(const opyn::ModelStatePair&);
 
-        float getFixupScaleFactor() const { return m_FixupScaleFactor; }
+        float get_fixup_scale_factor() const { return fixup_scale_factor_; }
 
         friend bool operator==(const ModelStatePairInfo&, const ModelStatePairInfo&) = default;
 
     private:
-        osc::UID m_ModelVersion;
-        osc::UID m_StateVersion;
-        OpenSim::ComponentPath m_Selection;
-        OpenSim::ComponentPath m_Hover;
-        float m_FixupScaleFactor = 1.0f;
+        osc::UID model_version_;
+        osc::UID state_version_;
+        OpenSim::ComponentPath selection_;
+        OpenSim::ComponentPath hover_;
+        float fixup_scale_factor_ = 1.0f;
     };
 }

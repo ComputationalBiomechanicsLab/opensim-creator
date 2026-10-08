@@ -30,29 +30,29 @@ osc::ObjectPropertyEdit::ObjectPropertyEdit(
     const OpenSim::AbstractProperty& prop,
     std::function<void(OpenSim::AbstractProperty&)> updater) :
 
-    m_PropertyName{prop.getName()},
-    m_Updater{std::move(updater)}
+    property_name_{prop.getName()},
+    updater_{std::move(updater)}
 {}
 osc::ObjectPropertyEdit::ObjectPropertyEdit(
     const OpenSim::Object& obj,
     const OpenSim::AbstractProperty& prop,
     std::function<void(OpenSim::AbstractProperty&)> updater) :
 
-    m_ComponentAbsPath{GetAbsPathOrEmptyIfNotAComponent(obj)},
-    m_PropertyName{prop.getName()},
-    m_Updater{std::move(updater)}
+    component_abs_path_{GetAbsPathOrEmptyIfNotAComponent(obj)},
+    property_name_{prop.getName()},
+    updater_{std::move(updater)}
 {}
-const std::string& osc::ObjectPropertyEdit::getComponentAbsPath() const
+const std::string& osc::ObjectPropertyEdit::get_component_abs_path() const
 {
-    return m_ComponentAbsPath;
+    return component_abs_path_;
 }
 
-const std::string& osc::ObjectPropertyEdit::getPropertyName() const
+const std::string& osc::ObjectPropertyEdit::get_property_name() const
 {
-    return m_PropertyName;
+    return property_name_;
 }
 
 void osc::ObjectPropertyEdit::apply(OpenSim::AbstractProperty& prop)
 {
-    m_Updater(prop);
+    updater_(prop);
 }

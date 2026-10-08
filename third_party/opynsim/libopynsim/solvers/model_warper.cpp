@@ -37,8 +37,8 @@ namespace
             model_state_{std::move(model_state)}
         {}
     private:
-        const OpenSim::Model& implGetModel() const override { return model_.open_sim_model(); }
-        const SimTK::State& implGetState()   const override { return model_state_.simbody_state(); }
+        const OpenSim::Model& impl_get_model() const override { return model_.open_sim_model(); }
+        const SimTK::State& impl_get_state()   const override { return model_state_.simbody_state(); }
 
         Model model_;
         ModelState model_state_;
@@ -75,7 +75,7 @@ private:
     {
         OSC_ASSERT(not has_validation_issues(scaling_cache, msp));
 
-        OpenSim::Model rv = msp.getModel();
+        OpenSim::Model rv = msp.get_model();
         rv.clearConnections();
         InitializeModel(rv);
         InitializeState(rv);
@@ -87,7 +87,7 @@ private:
         // Apply each `ScalingStep` one-by-one.
         const ScalingParameters scaling_parameters = warping_document_.getEffectiveScalingParameters();
         for (const auto& scaling_step : warping_document_.getComponentList<ScalingStep>()) {
-            scaling_step.applyScalingStep(scaling_cache, scaling_parameters, msp.getModel(), rv);
+            scaling_step.applyScalingStep(scaling_cache, scaling_parameters, msp.get_model(), rv);
         }
 
         return rv;

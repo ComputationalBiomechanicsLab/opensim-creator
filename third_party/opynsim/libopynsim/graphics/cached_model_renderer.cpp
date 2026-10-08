@@ -92,7 +92,7 @@ namespace
                     *m_MeshCache,
                     params.overlay_options,
                     m_BVH,
-                    modelState.getFixupScaleFactor(),
+                    modelState.get_fixup_scale_factor(),
                     onOverlayDecoration
                 );
 
@@ -156,7 +156,7 @@ public:
             dims,
             devicePixelRatio,
             antiAliasingLevel,
-            modelState.getFixupScaleFactor()
+            modelState.get_fixup_scale_factor()
         );
 
         // if the decorations or rendering params have changed, re-render

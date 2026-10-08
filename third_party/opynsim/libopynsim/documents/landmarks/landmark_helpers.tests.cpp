@@ -43,13 +43,10 @@ namespace
     {
         return [it = vs.begin(), end = vs.end()]() mutable
         {
-            if (it != end)
-            {
+            if (it != end) {
 
                 return std::optional<T>{*it++};
-            }
-            else
-            {
+            } else {
                 return std::optional<T>{};
             }
         };
@@ -113,8 +110,7 @@ TEST(LandmarkHelpers, read_landmarks_from_typical_4_column_csv_works_as_expected
     std::vector<std::string> names;
     read_landmarks_from_csv(input, [&names](auto&& lm)
     {
-        if (lm.maybe_name)
-        {
+        if (lm.maybe_name) {
             names.push_back(std::move(lm.maybe_name).value());
         }
     });

@@ -1402,8 +1402,8 @@ std::vector<SceneDecoration> opyn::GenerateModelDecorations(
 {
     return GenerateModelDecorations(
         cache,
-        modelState.getModel(),
-        modelState.getState(),
+        modelState.get_model(),
+        modelState.get_state(),
         opts,
         fixupScaleFactor
     );

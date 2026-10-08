@@ -81,7 +81,7 @@ void opyn::GenerateDecorations(
     const std::function<void(const OpenSim::Component&, osc::SceneDecoration&&)>& out)
 {
     ComponentAbsPathDecorationTagger pathTagger{};
-    ComponentSceneDecorationFlagsTagger flagsTagger{msp.getSelected(), msp.getHovered()};
+    ComponentSceneDecorationFlagsTagger flagsTagger{msp.get_selected(), msp.get_hovered()};
 
     auto callback = [pathTagger, flagsTagger, &out](
         const OpenSim::Component& component,
@@ -94,10 +94,10 @@ void opyn::GenerateDecorations(
 
     GenerateModelDecorations(
         meshCache,
-        msp.getModel(),
-        msp.getState(),
+        msp.get_model(),
+        msp.get_state(),
         options,
-        msp.getFixupScaleFactor(),
+        msp.get_fixup_scale_factor(),
         callback
     );
 }

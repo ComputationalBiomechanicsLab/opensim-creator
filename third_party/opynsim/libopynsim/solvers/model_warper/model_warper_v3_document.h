@@ -181,17 +181,17 @@ namespace opyn
             updProperty_scaling_parameter_overrides().updValue(idx).set_parameter_value(newValue);
         }
 
-        const OpenSim::Component& implGetComponent() const final
+        const OpenSim::Component& impl_get_component() const final
         {
             return *this;
         }
 
-        bool implCanUpdComponent() const final
+        bool impl_can_upd_component() const final
         {
             return true;
         }
 
-        OpenSim::Component& implUpdComponent() final
+        OpenSim::Component& impl_upd_component() final
         {
             throw std::runtime_error{ "component updating not implemented for this IComponentAccessor" };
         }
