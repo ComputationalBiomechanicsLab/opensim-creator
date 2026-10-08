@@ -35,7 +35,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
     // turn as many decoration options on as possible, so that the code gets tested
     // against them (#661)
     opyn::OpenSimDecorationOptions decorationOpts;
-    decorationOpts.setShouldShowEverything(true);
+    decorationOpts.set_should_show_everything(true);
 
     const std::filesystem::path examplesDir = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models";
     ASSERT_TRUE(std::filesystem::exists(examplesDir) && std::filesystem::is_directory(examplesDir));
@@ -50,7 +50,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 
             // and all can be used to generate 3D scenes
             std::vector<SceneDecoration> decorations;
-            GenerateModelDecorations(
+            generate_model_decorations(
                 meshCache,
                 p.get_model(),
                 p.get_state(),
@@ -88,11 +88,11 @@ TEST(UndoableModelStatePair, canWriteRajagopalModelToDAE)
     // setup rendering state
     SceneCache meshCache;
     opyn::OpenSimDecorationOptions decorationOpts;
-    decorationOpts.setShouldShowEverything(true);
+    decorationOpts.set_should_show_everything(true);
 
     // generate decorations
     std::vector<SceneDecoration> decorations;
-    GenerateModelDecorations(
+    generate_model_decorations(
         meshCache,
         p.get_model(),
         p.get_state(),

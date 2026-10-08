@@ -18,7 +18,7 @@ osc::MeshLoadResponse osc::respondToMeshloadRequest(MeshLoadRequest msg)  // NOL
     {
         try
         {
-            loadedMeshes.push_back(LoadedMesh{path, opyn::LoadMeshViaSimbody(path)});
+            loadedMeshes.push_back(LoadedMesh{path, opyn::load_mesh_via_simbody(path)});
         }
         catch (const std::exception& ex)
         {

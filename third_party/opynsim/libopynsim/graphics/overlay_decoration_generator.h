@@ -11,7 +11,7 @@ namespace opyn
 {
     // generates 3D overlays for the given options and passes them to the
     // output consumer
-    void GenerateOverlayDecorations(
+    void generate_overlay_decorations(
         osc::SceneCache&,
         const OverlayDecorationOptions&,
         const osc::BVH& sceneBVH,

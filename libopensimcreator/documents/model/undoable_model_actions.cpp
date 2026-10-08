@@ -509,7 +509,7 @@ bool osc::ActionCopyModelPathToClipboard(const ModelStatePair& uim)
 
 bool osc::ActionAutoscaleSceneScaleFactor(ModelStatePair& uim)
 {
-    const float sf = GetRecommendedScaleFactor(
+    const float sf = get_recommended_scale_factor(
         *App::singleton<SceneCache>(App::resource_loader()),
         uim.get_model(),
         uim.get_state(),
@@ -2174,7 +2174,7 @@ bool osc::ActionFitSphereToMesh(ModelStatePair& model, const OpenSim::Mesh& open
     // fit a sphere to the mesh
     Sphere sphere;
     try {
-        const Mesh mesh = ToOscMeshBakeScaleFactors(model.get_model(), model.get_state(), openSimMesh);
+        const Mesh mesh = to_osc_mesh_bake_scale_factors(model.get_model(), model.get_state(), openSimMesh);
         sphere = opyn::fit_sphere_htbad(mesh);
     }
     catch (const std::exception&) {
@@ -2237,7 +2237,7 @@ bool osc::ActionFitEllipsoidToMesh(ModelStatePair& model, const OpenSim::Mesh& o
     // fit an ellipsoid to the mesh
     Ellipsoid ellipsoid;
     try {
-        const Mesh mesh = ToOscMeshBakeScaleFactors(model.get_model(), model.get_state(), openSimMesh);
+        const Mesh mesh = to_osc_mesh_bake_scale_factors(model.get_model(), model.get_state(), openSimMesh);
         ellipsoid = opyn::fit_ellipsoid_htbad(mesh);
     }
     catch (const std::exception&) {
@@ -2312,7 +2312,7 @@ bool osc::ActionFitPlaneToMesh(ModelStatePair& model, const OpenSim::Mesh& openS
     // fit a plane to the mesh
     Plane plane;
     try {
-        const Mesh mesh = ToOscMeshBakeScaleFactors(model.get_model(), model.get_state(), openSimMesh);
+        const Mesh mesh = to_osc_mesh_bake_scale_factors(model.get_model(), model.get_state(), openSimMesh);
         plane = opyn::fit_plane_htbad(mesh);
     }
     catch (const std::exception&) {

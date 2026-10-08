@@ -151,7 +151,7 @@ namespace
 
                 const auto& renderParamsAfter = params.getRenderParams();
 
-                SaveModelRendererParamsDifference(
+                save_model_renderer_params_difference(
                     renderParamsBefore,
                     renderParamsAfter,
                     GetSettingsKeyPrefixForPanel(panel_name_),
@@ -533,7 +533,7 @@ public:
         // configuration (e.g. user edits)
         //
         // each panel has its own configuration set (`panels/viewer0,1,2, etc.`)
-        UpdModelRendererParamsFrom(
+        upd_model_renderer_params_from(
             App::settings(),
             GetSettingsKeyPrefixForPanel(panelName_),
             m_Parameters.updRenderParams()
@@ -600,7 +600,7 @@ public:
 
         // if necessary, auto-focus the camera on the first frame
         if (m_IsFirstFrame) {
-            const auto bounds = m_State.updRenderer().visibleBounds(
+            const auto bounds = m_State.updRenderer().visible_bounds(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams()
             );
@@ -630,7 +630,7 @@ public:
 
         // render the 3D scene to a texture and present it via a ui::Image
         {
-            RenderTexture& sceneTexture = m_State.updRenderer().onDraw(
+            RenderTexture& sceneTexture = m_State.updRenderer().on_draw(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams(),
                 m_State.viewportUiRect.dimensions(),
@@ -665,12 +665,12 @@ public:
         }
 
         // update state scene AABB
-        m_State.maybeSceneVisibleAABB = m_State.getRenderer().visibleBounds();
+        m_State.maybeSceneVisibleAABB = m_State.getRenderer().visible_bounds();
 
         // if hovering in 2D, 3D-hittest the scene
         if (m_RenderIsHovered and not (m_State.flags() & ModelViewerPanelFlag::NoHittest))
         {
-            m_State.maybeBaseLayerHittest = m_State.getRenderer().getClosestCollision(
+            m_State.maybeBaseLayerHittest = m_State.getRenderer().get_closest_collision(
                 m_Parameters.getRenderParams(),
                 ui::get_mouse_ui_position(),
                 m_State.viewportUiRect

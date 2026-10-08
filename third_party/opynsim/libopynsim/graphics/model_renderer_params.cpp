@@ -34,11 +34,11 @@ namespace
         };
 
         subPrefix = std::string{prefix} + std::string{"decorations/"};
-        params.decoration_options.forEachOptionAsAppSettingValue(callback);
+        params.decoration_options.for_each_option_as_app_setting_value(callback);
         subPrefix = std::string{prefix} + std::string{"overlays/"};
-        params.overlay_options.forEachOptionAsAppSettingValue(callback);
+        params.overlay_options.for_each_option_as_app_setting_value(callback);
         subPrefix = std::string{prefix} + std::string{"graphics/"};
-        params.rendering_options.forEachOptionAsAppSettingValue(callback);
+        params.rendering_options.for_each_option_as_app_setting_value(callback);
         rv.insert_or_assign(std::string{prefix} + "light_color", osc::Variant{params.light_color});
         rv.insert_or_assign(std::string{prefix} + "background_color", osc::Variant{params.background_color});
         // TODO: floorLocation
@@ -51,9 +51,9 @@ namespace
         const std::unordered_map<std::string, osc::Variant>& values,
         ModelRendererParams& params)
     {
-        params.decoration_options.tryUpdFromValues(std::string{prefix} + "decorations/", values);
-        params.overlay_options.tryUpdFromValues(std::string{prefix} + "overlays/", values);
-        params.rendering_options.tryUpdFromValues(std::string{prefix} + "graphics/", values);
+        params.decoration_options.try_upd_from_values(std::string{prefix} + "decorations/", values);
+        params.overlay_options.try_upd_from_values(std::string{prefix} + "overlays/", values);
+        params.rendering_options.try_upd_from_values(std::string{prefix} + "graphics/", values);
         if (const auto* v = lookup_or_nullptr(values, std::string{prefix} + "light_color")) {
             params.light_color = to<osc::Color>(*v);
         }
@@ -74,7 +74,7 @@ opyn::ModelRendererParams::ModelRendererParams() :
     controller.update_camera(camera);
 }
 
-void opyn::UpdModelRendererParamsFrom(
+void opyn::upd_model_renderer_params_from(
     const osc::AppSettings& settings,
     std::string_view keyPrefix,
     ModelRendererParams& params)
@@ -88,7 +88,7 @@ void opyn::UpdModelRendererParamsFrom(
     UpdFromValues(keyPrefix, values, params);
 }
 
-void opyn::SaveModelRendererParamsDifference(
+void opyn::save_model_renderer_params_difference(
     const ModelRendererParams& a,
     const ModelRendererParams& b,
     std::string_view settingsKeyPrefix,

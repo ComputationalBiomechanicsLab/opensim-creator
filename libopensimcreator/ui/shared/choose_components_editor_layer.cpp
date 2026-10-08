@@ -102,7 +102,7 @@ namespace
             out.decorations.push_back(std::move(decoration));
         };
 
-        GenerateModelDecorations(
+        generate_model_decorations(
             *state.meshCache,
             state.model->get_model(),
             state.model->get_state(),
@@ -118,7 +118,7 @@ namespace
             out.decorations.push_back(std::move(decoration));
         };
 
-        GenerateOverlayDecorations(
+        generate_overlay_decorations(
             *state.meshCache,
             state.renderParams.overlay_options,
             out.bvh,
@@ -197,7 +197,7 @@ public:
 
         // generate decorations + rendering params
         GenerateChooseComponentsDecorations(m_State, m_Decorations);
-        const SceneRendererParams rendererParameters = opyn::CalcSceneRendererParams(
+        const SceneRendererParams rendererParameters = opyn::calc_scene_renderer_params(
             m_State.renderParams,
             panelState.viewportUiRect.dimensions(),
             App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
@@ -217,7 +217,7 @@ public:
         // do hovertest
         if (layerIsHovered)
         {
-            const std::optional<SceneCollision> collision = opyn::GetClosestCollision(
+            const std::optional<SceneCollision> collision = opyn::get_closest_collision(
                 m_Decorations.bvh,
                 *m_State.meshCache,
                 m_Decorations.decorations,

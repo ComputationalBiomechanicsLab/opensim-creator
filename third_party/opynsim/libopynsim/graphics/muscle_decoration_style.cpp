@@ -31,17 +31,17 @@ namespace
     static_assert(c_Metadata.size() == osc::num_options<MuscleDecorationStyle>());
 }
 
-std::span<const MuscleDecorationStyleMetadata> opyn::GetAllMuscleDecorationStyleMetadata()
+std::span<const MuscleDecorationStyleMetadata> opyn::get_all_muscle_decoration_style_metadata()
 {
     return c_Metadata;
 }
 
-ptrdiff_t opyn::GetIndexOf(MuscleDecorationStyle s)
+ptrdiff_t opyn::get_index_of(MuscleDecorationStyle s)
 {
     return static_cast<ptrdiff_t>(s);
 }
 
-const MuscleDecorationStyleMetadata& opyn::GetMuscleDecorationStyleMetadata(MuscleDecorationStyle s)
+const MuscleDecorationStyleMetadata& opyn::get_muscle_decoration_style_metadata(MuscleDecorationStyle s)
 {
-    return GetAllMuscleDecorationStyleMetadata()[GetIndexOf(s)];
+    return get_all_muscle_decoration_style_metadata()[get_index_of(s)];
 }

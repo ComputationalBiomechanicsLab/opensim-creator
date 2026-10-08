@@ -9,110 +9,110 @@
 
 #include <cstddef>
 
-size_t opyn::OverlayDecorationOptions::getNumOptions() const
+size_t opyn::OverlayDecorationOptions::get_num_options() const
 {
     return osc::num_flags<OverlayDecorationOptionFlags>();
 }
 
-bool opyn::OverlayDecorationOptions::getOptionValue(ptrdiff_t i) const
+bool opyn::OverlayDecorationOptions::get_option_value(ptrdiff_t i) const
 {
-    return flags_ & osc::at(GetAllOverlayDecorationOptionFlagsMetadata(), i).value;
+    return flags_ & osc::at(get_all_overlay_decoration_option_flags_metadata(), i).value;
 }
 
-void opyn::OverlayDecorationOptions::setOptionValue(ptrdiff_t i, bool v)
+void opyn::OverlayDecorationOptions::set_option_value(ptrdiff_t i, bool v)
 {
-    SetOption(flags_, IthOption(i), v);
+    set_option(flags_, ith_option(i), v);
 }
 
-osc::CStringView opyn::OverlayDecorationOptions::getOptionLabel(ptrdiff_t i) const
+osc::CStringView opyn::OverlayDecorationOptions::get_option_label(ptrdiff_t i) const
 {
-    return osc::at(GetAllOverlayDecorationOptionFlagsMetadata(), i).label;
+    return osc::at(get_all_overlay_decoration_option_flags_metadata(), i).label;
 }
 
-osc::CStringView opyn::OverlayDecorationOptions::getOptionGroupLabel(ptrdiff_t i) const
+osc::CStringView opyn::OverlayDecorationOptions::get_option_group_label(ptrdiff_t i) const
 {
-    return getLabel(osc::at(GetAllOverlayDecorationOptionFlagsMetadata(), i).group);
+    return get_label(osc::at(get_all_overlay_decoration_option_flags_metadata(), i).group);
 }
 
-bool opyn::OverlayDecorationOptions::getDrawXZGrid() const
+bool opyn::OverlayDecorationOptions::get_draw_xz_grid() const
 {
     return flags_ & OverlayDecorationOptionFlags::DrawXZGrid;
 }
 
-void opyn::OverlayDecorationOptions::setDrawXZGrid(bool v)
+void opyn::OverlayDecorationOptions::set_draw_xz_grid(bool v)
 {
-    SetOption(flags_, OverlayDecorationOptionFlags::DrawXZGrid, v);
+    set_option(flags_, OverlayDecorationOptionFlags::DrawXZGrid, v);
 }
 
-bool opyn::OverlayDecorationOptions::getDrawXYGrid() const
+bool opyn::OverlayDecorationOptions::get_draw_xy_grid() const
 {
     return flags_ & OverlayDecorationOptionFlags::DrawXYGrid;
 }
 
-void opyn::OverlayDecorationOptions::setDrawXYGrid(bool v)
+void opyn::OverlayDecorationOptions::set_draw_xy_grid(bool v)
 {
-    SetOption(flags_, OverlayDecorationOptionFlags::DrawXYGrid, v);
+    set_option(flags_, OverlayDecorationOptionFlags::DrawXYGrid, v);
 }
 
-bool opyn::OverlayDecorationOptions::getDrawYZGrid() const
+bool opyn::OverlayDecorationOptions::get_draw_yz_grid() const
 {
     return flags_ & OverlayDecorationOptionFlags::DrawYZGrid;
 }
 
-void opyn::OverlayDecorationOptions::setDrawYZGrid(bool v)
+void opyn::OverlayDecorationOptions::set_draw_yz_grid(bool v)
 {
-    SetOption(flags_, OverlayDecorationOptionFlags::DrawYZGrid, v);
+    set_option(flags_, OverlayDecorationOptionFlags::DrawYZGrid, v);
 }
 
-bool opyn::OverlayDecorationOptions::getDrawAxisLines() const
+bool opyn::OverlayDecorationOptions::get_draw_axis_lines() const
 {
     return flags_ & OverlayDecorationOptionFlags::DrawAxisLines;
 }
 
-void opyn::OverlayDecorationOptions::setDrawAxisLines(bool v)
+void opyn::OverlayDecorationOptions::set_draw_axis_lines(bool v)
 {
-    SetOption(flags_, OverlayDecorationOptionFlags::DrawAxisLines, v);
+    set_option(flags_, OverlayDecorationOptionFlags::DrawAxisLines, v);
 }
 
-bool opyn::OverlayDecorationOptions::getDrawAABBs() const
+bool opyn::OverlayDecorationOptions::get_draw_aabbs() const
 {
     return flags_ & OverlayDecorationOptionFlags::DrawAABBs;
 }
 
-void opyn::OverlayDecorationOptions::setDrawAABBs(bool v)
+void opyn::OverlayDecorationOptions::set_draw_aabbs(bool v)
 {
-    SetOption(flags_, OverlayDecorationOptionFlags::DrawAABBs, v);
+    set_option(flags_, OverlayDecorationOptionFlags::DrawAABBs, v);
 }
 
-bool opyn::OverlayDecorationOptions::getDrawBVH() const
+bool opyn::OverlayDecorationOptions::get_draw_bvh() const
 {
     return flags_ & OverlayDecorationOptionFlags::DrawBVH;
 }
 
-void opyn::OverlayDecorationOptions::setDrawBVH(bool v)
+void opyn::OverlayDecorationOptions::set_draw_bvh(bool v)
 {
-    SetOption(flags_, OverlayDecorationOptionFlags::DrawBVH, v);
+    set_option(flags_, OverlayDecorationOptionFlags::DrawBVH, v);
 }
 
-void opyn::OverlayDecorationOptions::forEachOptionAsAppSettingValue(
+void opyn::OverlayDecorationOptions::for_each_option_as_app_setting_value(
     const std::function<void(std::string_view, const osc::Variant&)>& callback) const
 {
-    for (const auto& metadata : GetAllOverlayDecorationOptionFlagsMetadata()) {
+    for (const auto& metadata : get_all_overlay_decoration_option_flags_metadata()) {
         callback(metadata.id, osc::Variant{flags_ & metadata.value});
     }
 }
 
-void opyn::OverlayDecorationOptions::tryUpdFromValues(
+void opyn::OverlayDecorationOptions::try_upd_from_values(
     std::string_view keyPrefix,
     const std::unordered_map<std::string, osc::Variant>& lut)
 {
     for (size_t i = 0; i < osc::num_flags<OverlayDecorationOptionFlags>(); ++i)
     {
-        const auto& metadata = osc::at(GetAllOverlayDecorationOptionFlagsMetadata(), i);
+        const auto& metadata = osc::at(get_all_overlay_decoration_option_flags_metadata(), i);
 
         const std::string key = std::string{keyPrefix}+metadata.id;
         if (const auto* v = lookup_or_nullptr(lut, key); v and v->type() == osc::VariantType::Bool) {
-            SetOption(flags_, metadata.value, to<bool>(*v));
+            set_option(flags_, metadata.value, to<bool>(*v));
         }
     }
 }

@@ -21,7 +21,7 @@ namespace opyn
         osc::CStringView label;
         MuscleDecorationStyle value;
     };
-    std::span<const MuscleDecorationStyleMetadata> GetAllMuscleDecorationStyleMetadata();
-    ptrdiff_t GetIndexOf(MuscleDecorationStyle);
-    const MuscleDecorationStyleMetadata& GetMuscleDecorationStyleMetadata(MuscleDecorationStyle);
+    std::span<const MuscleDecorationStyleMetadata> get_all_muscle_decoration_style_metadata();
+    ptrdiff_t get_index_of(MuscleDecorationStyle);
+    const MuscleDecorationStyleMetadata& get_muscle_decoration_style_metadata(MuscleDecorationStyle);
 }

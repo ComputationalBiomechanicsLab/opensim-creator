@@ -205,7 +205,7 @@ private:
 
                 m_OnSelection(onMeshFileChosen(response.front()));
             },
-            opyn::GetSupportedSimTKMeshFormatsAsFilters()
+            opyn::get_supported_sim_tk_mesh_formats_as_filters()
         );
     }
 

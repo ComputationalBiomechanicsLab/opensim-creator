@@ -28,7 +28,7 @@ namespace osc
         });
 
         // add overlay decorations
-        GenerateOverlayDecorations(
+        generate_overlay_decorations(
             sharedState.updSceneCache(),
             sharedState.getOverlayDecorationOptions(),
             BVH{},  // TODO: should have a scene BVH by this point

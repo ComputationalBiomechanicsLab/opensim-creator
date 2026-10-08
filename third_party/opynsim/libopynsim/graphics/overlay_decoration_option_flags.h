@@ -28,7 +28,7 @@ namespace opyn
         return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
     }
 
-    constexpr void SetOption(OverlayDecorationOptionFlags& flags, OverlayDecorationOptionFlags flag, bool v)
+    constexpr void set_option(OverlayDecorationOptionFlags& flags, OverlayDecorationOptionFlags flag, bool v)
     {
         if (v)
         {
@@ -40,7 +40,7 @@ namespace opyn
         }
     }
 
-    constexpr OverlayDecorationOptionFlags IthOption(size_t i)
+    constexpr OverlayDecorationOptionFlags ith_option(size_t i)
     {
         i = i < osc::num_flags<OverlayDecorationOptionFlags>() ? i : 0;
         return static_cast<OverlayDecorationOptionFlags>(1<<i);
@@ -58,6 +58,6 @@ namespace opyn
         OverlayDecorationOptionGroup group;
         OverlayDecorationOptionFlags value;
     };
-    osc::CStringView getLabel(OverlayDecorationOptionGroup);
-    std::span<const OverlayDecorationOptionFlagsMetadata> GetAllOverlayDecorationOptionFlagsMetadata();
+    osc::CStringView get_label(OverlayDecorationOptionGroup);
+    std::span<const OverlayDecorationOptionFlagsMetadata> get_all_overlay_decoration_option_flags_metadata();
 }

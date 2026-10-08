@@ -25,13 +25,13 @@ namespace opyn
         osc::Camera camera;
     };
 
-    void UpdModelRendererParamsFrom(
+    void upd_model_renderer_params_from(
         const osc::AppSettings&,
         std::string_view keyPrefix,
         ModelRendererParams& params
     );
 
-    void SaveModelRendererParamsDifference(
+    void save_model_renderer_params_difference(
         const ModelRendererParams&,
         const ModelRendererParams&,
         std::string_view settingsKeyPrefix,

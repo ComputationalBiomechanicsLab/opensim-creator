@@ -21,7 +21,7 @@ namespace opyn
         MuscleColorSourceScaling value;
     };
 
-    std::span<const MuscleColorSourceScalingMetadata> GetAllPossibleMuscleColorSourceScalingMetadata();
-    const MuscleColorSourceScalingMetadata& GetMuscleColorSourceScalingMetadata(MuscleColorSourceScaling);
-    ptrdiff_t GetIndexOf(MuscleColorSourceScaling);
+    std::span<const MuscleColorSourceScalingMetadata> get_all_possible_muscle_color_source_scaling_metadata();
+    const MuscleColorSourceScalingMetadata& get_muscle_color_source_scaling_metadata(MuscleColorSourceScaling);
+    ptrdiff_t get_index_of(MuscleColorSourceScaling);
 }

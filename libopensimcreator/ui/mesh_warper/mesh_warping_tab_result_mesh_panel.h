@@ -332,7 +332,7 @@ namespace osc
                 dims,
                 App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio()
             );
-            m_State->getCustomRenderingOptions().applyTo(params);
+            m_State->getCustomRenderingOptions().apply_to(params);
             return m_CachedRenderer.render(decorations, params);
         }
 

@@ -17,7 +17,7 @@ namespace opyn
 
         void operator()(const OpenSim::Component&, osc::SceneDecoration&);
     private:
-        osc::SceneDecorationFlags computeFlags(const OpenSim::Component&) const;
+        osc::SceneDecorationFlags compute_flags(const OpenSim::Component&) const;
 
         const OpenSim::Component* selected_;
         const OpenSim::Component* hovered_;

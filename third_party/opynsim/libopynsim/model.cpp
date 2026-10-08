@@ -445,7 +445,7 @@ public:
         const ModelState& model_state,
         const OpenSimDecorationOptions& open_sim_decoration_options) const
     {
-        return GenerateModelDecorations(
+        return generate_model_decorations(
             scene_cache,
             model_,
             model_state.simbody_state(),

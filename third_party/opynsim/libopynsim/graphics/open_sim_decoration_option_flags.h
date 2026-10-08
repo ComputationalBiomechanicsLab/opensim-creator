@@ -34,7 +34,7 @@ namespace opyn
         osc::CStringView label;
         std::optional<osc::CStringView> maybe_description;
     };
-    const OpenSimDecorationOptionMetadata& GetIthOptionMetadata(size_t);
-    OpenSimDecorationOptionFlag GetIthOption(size_t);
-    void SetIthOption(OpenSimDecorationOptionFlags&, size_t, bool);
+    const OpenSimDecorationOptionMetadata& get_ith_option_metadata(size_t);
+    OpenSimDecorationOptionFlag get_ith_option(size_t);
+    void set_ith_option(OpenSimDecorationOptionFlags&, size_t, bool);
 }

@@ -27,7 +27,7 @@ TEST(SimTKDecorationGenerator, PropagatesWireframeShadingFlag)
     sphere.setRepresentation(SimTK::DecorativeGeometry::DrawWireframe);
 
     size_t ncalls = 0;
-    GenerateDecorations(cache, matter, state, sphere, 1.0f, [&ncalls](const osc::SceneDecoration& dec)
+    generate_decorations(cache, matter, state, sphere, 1.0f, [&ncalls](const osc::SceneDecoration& dec)
     {
         ++ncalls;
         ASSERT_TRUE(dec.flags & osc::SceneDecorationFlag::DrawWireframeOverlay);
@@ -51,7 +51,7 @@ TEST(SimTKDecorationGenerator, PropagatesHiddenRepresentation)
     sphere.setRepresentation(SimTK::DecorativeGeometry::Hide);
 
     size_t ncalls = 0;
-    GenerateDecorations(cache, matter, state, sphere, 1.0f, [&ncalls](const osc::SceneDecoration& dec)
+    generate_decorations(cache, matter, state, sphere, 1.0f, [&ncalls](const osc::SceneDecoration& dec)
     {
         ++ncalls;
         ASSERT_TRUE(dec.flags & osc::SceneDecorationFlag::NoDrawInScene);
@@ -76,7 +76,7 @@ TEST(SimTKDecorationGenerator, PropagatesNegativeScaleFactors)
     sphere.setRadius(1.0);
     sphere.setScaleFactors(SimTK::Vec3(1.0, -1.0, 1.0));  // note: negative
 
-    GenerateDecorations(cache, matter, state, sphere, 1.0f, [&](const osc::SceneDecoration& dec)
+    generate_decorations(cache, matter, state, sphere, 1.0f, [&](const osc::SceneDecoration& dec)
     {
         ASSERT_EQ(dec.transform.scale.y(), -1.0f);
     });
@@ -97,7 +97,7 @@ TEST(SimTKDecorationGenerator, UsesColorOverrideWhenEmittingFrames)
     frame.setBodyId(0);
     frame.setColor(to<SimTK::Vec3>(overrideColor));
 
-    GenerateDecorations(cache, matter, state, frame, 1.0f, [&](const osc::SceneDecoration& dec)
+    generate_decorations(cache, matter, state, frame, 1.0f, [&](const osc::SceneDecoration& dec)
     {
         ASSERT_TRUE(std::holds_alternative<osc::Color>(dec.shading));
         ASSERT_EQ(std::get<osc::Color>(dec.shading), overrideColor);
@@ -125,7 +125,7 @@ TEST(SimTKDecorationGenerator, Emits111WhenGivenGeometryWithDefaultedScaleFactor
     {
         SimTK::DecorativeBrick brick{SimTK::Vec3{0.02, 0.01, 0.005}};
         brick.setColor(SimTK::Orange);
-        GenerateDecorations(cache, matter, state, brick, 1.0f, [&](const osc::SceneDecoration& dec)
+        generate_decorations(cache, matter, state, brick, 1.0f, [&](const osc::SceneDecoration& dec)
         {
             ASSERT_EQ(dec.transform.scale, osc::Vector3f(0.02f, 0.01f, 0.005f));
         });
@@ -136,7 +136,7 @@ TEST(SimTKDecorationGenerator, Emits111WhenGivenGeometryWithDefaultedScaleFactor
         SimTK::DecorativeBrick scaledBrick{SimTK::Vec3{0.02, 0.01, 0.005}};
         scaledBrick.setColor(SimTK::Orange);
         scaledBrick.setScaleFactors({-1.0, 1.0, 1.0});
-        GenerateDecorations(cache, matter, state, scaledBrick, 1.0f, [&](const osc::SceneDecoration& dec)
+        generate_decorations(cache, matter, state, scaledBrick, 1.0f, [&](const osc::SceneDecoration& dec)
         {
             ASSERT_EQ(dec.transform.scale, osc::Vector3f(-0.02f, 0.01f, 0.005f));
         });

@@ -20,7 +20,7 @@ namespace opyn
     // generates 3D decorations for the given {model, state} pair and passes
     // each of them, tagged with their associated component, to the output
     // consumer
-    void GenerateModelDecorations(
+    void generate_model_decorations(
         osc::SceneCache&,
         const OpenSim::Model&,
         const SimTK::State&,
@@ -30,7 +30,7 @@ namespace opyn
     );
 
     // as above, but more convenient to use in simple use-cases
-    std::vector<osc::SceneDecoration> GenerateModelDecorations(
+    std::vector<osc::SceneDecoration> generate_model_decorations(
         osc::SceneCache&,
         const ModelStatePair&,
         const OpenSimDecorationOptions& = {},
@@ -38,7 +38,7 @@ namespace opyn
     );
 
     // as above, but more convenient to use in simpler use-cases
-    std::vector<osc::SceneDecoration> GenerateModelDecorations(
+    std::vector<osc::SceneDecoration> generate_model_decorations(
         osc::SceneCache&,
         const OpenSim::Model&,
         const SimTK::State&,
@@ -49,7 +49,7 @@ namespace opyn
     // generates 3D decorations only for `subcomponent` within the given {model, state} pair
     // and passes each of them, tagged with their associated (potentially, sub-subcomponent)
     // component to the output consumer
-    void GenerateSubcomponentDecorations(
+    void generate_subcomponent_decorations(
         osc::SceneCache&,
         const OpenSim::Model&,
         const SimTK::State&,
@@ -62,7 +62,7 @@ namespace opyn
 
     // tries to convert the given subcomponent mesh into an OSC mesh via the decoration
     // generation API, or throws if it fails in some way
-    osc::Mesh ToOscMesh(
+    osc::Mesh to_osc_mesh(
         osc::SceneCache&,
         const OpenSim::Model&,
         const SimTK::State&,
@@ -72,7 +72,7 @@ namespace opyn
     );
 
     // as above, but uncached and defaults decoration options and scale factor
-    osc::Mesh ToOscMesh(
+    osc::Mesh to_osc_mesh(
         const OpenSim::Model&,
         const SimTK::State&,
         const OpenSim::Mesh&
@@ -80,14 +80,14 @@ namespace opyn
 
     // as above, but also bakes the `OpenSim::Mesh`'s `scale_factors` into the mesh's
     // vertex data
-    osc::Mesh ToOscMeshBakeScaleFactors(
+    osc::Mesh to_osc_mesh_bake_scale_factors(
         const OpenSim::Model&,
         const SimTK::State&,
         const OpenSim::Mesh&
     );
 
     // returns the recommended scale factor for the given {model, state} pair
-    float GetRecommendedScaleFactor(
+    float get_recommended_scale_factor(
         osc::SceneCache&,
         const OpenSim::Model&,
         const SimTK::State&,

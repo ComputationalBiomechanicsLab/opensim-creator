@@ -117,7 +117,7 @@ public:
 private:
     SceneRendererParams calcParams(const Rect& workspaceScreenRect) const
     {
-        return opyn::CalcSceneRendererParams(
+        return opyn::calc_scene_renderer_params(
             m_ModelRendererParams,
             workspaceScreenRect.dimensions(),
             App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
@@ -128,7 +128,7 @@ private:
 
     void generateDecorations()
     {
-        m_Decorations = GenerateModelDecorations(
+        m_Decorations = generate_model_decorations(
             m_SceneCache,
             m_Model,
             m_ModelRendererParams.decoration_options

@@ -26,17 +26,17 @@ namespace
     static_assert(c_Metadata.size() == osc::num_options<MuscleSizingStyle>());
 }
 
-std::span<const MuscleSizingStyleMetadata> opyn::GetAllMuscleSizingStyleMetadata()
+std::span<const MuscleSizingStyleMetadata> opyn::get_all_muscle_sizing_style_metadata()
 {
     return c_Metadata;
 }
 
-const MuscleSizingStyleMetadata& opyn::GetMuscleSizingStyleMetadata(MuscleSizingStyle s)
+const MuscleSizingStyleMetadata& opyn::get_muscle_sizing_style_metadata(MuscleSizingStyle s)
 {
-    return GetAllMuscleSizingStyleMetadata()[GetIndexOf(s)];
+    return get_all_muscle_sizing_style_metadata()[get_index_of(s)];
 }
 
-ptrdiff_t opyn::GetIndexOf(MuscleSizingStyle s)
+ptrdiff_t opyn::get_index_of(MuscleSizingStyle s)
 {
     return static_cast<ptrdiff_t>(s);
 }

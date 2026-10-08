@@ -23,7 +23,7 @@ namespace opyn
         osc::CStringView label;
         MuscleColorSource value;
     };
-    std::span<const MuscleColorSourceMetadata> GetAllPossibleMuscleColoringSourcesMetadata();
-    const MuscleColorSourceMetadata& GetMuscleColoringStyleMetadata(MuscleColorSource);
-    ptrdiff_t GetIndexOf(MuscleColorSource);
+    std::span<const MuscleColorSourceMetadata> get_all_possible_muscle_coloring_sources_metadata();
+    const MuscleColorSourceMetadata& get_muscle_coloring_style_metadata(MuscleColorSource);
+    ptrdiff_t get_index_of(MuscleColorSource);
 }

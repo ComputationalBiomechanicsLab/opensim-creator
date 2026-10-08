@@ -42,7 +42,7 @@ namespace
     });
 }
 
-std::span<const CustomRenderingOptionFlagsMetadata> opyn::GetAllCustomRenderingOptionFlagsMetadata()
+std::span<const CustomRenderingOptionFlagsMetadata> opyn::get_all_custom_rendering_option_flags_metadata()
 {
     return c_Metadata;
 }

@@ -54,7 +54,7 @@ namespace
     });
 }
 
-osc::CStringView opyn::getLabel(OverlayDecorationOptionGroup g)
+osc::CStringView opyn::get_label(OverlayDecorationOptionGroup g)
 {
     switch (g)
     {
@@ -66,7 +66,7 @@ osc::CStringView opyn::getLabel(OverlayDecorationOptionGroup g)
     }
 }
 
-std::span<const OverlayDecorationOptionFlagsMetadata> opyn::GetAllOverlayDecorationOptionFlagsMetadata()
+std::span<const OverlayDecorationOptionFlagsMetadata> opyn::get_all_overlay_decoration_option_flags_metadata()
 {
     return c_Metadata;
 }

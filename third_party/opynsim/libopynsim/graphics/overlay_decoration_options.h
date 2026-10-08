@@ -13,32 +13,32 @@ namespace opyn
 {
     class OverlayDecorationOptions final {
     public:
-        size_t getNumOptions() const;
-        bool getOptionValue(ptrdiff_t) const;
-        void setOptionValue(ptrdiff_t, bool);
-        osc::CStringView getOptionLabel(ptrdiff_t) const;
-        osc::CStringView getOptionGroupLabel(ptrdiff_t) const;
+        size_t get_num_options() const;
+        bool get_option_value(ptrdiff_t) const;
+        void set_option_value(ptrdiff_t, bool);
+        osc::CStringView get_option_label(ptrdiff_t) const;
+        osc::CStringView get_option_group_label(ptrdiff_t) const;
 
-        bool getDrawXZGrid() const;
-        void setDrawXZGrid(bool);
+        bool get_draw_xz_grid() const;
+        void set_draw_xz_grid(bool);
 
-        bool getDrawXYGrid() const;
-        void setDrawXYGrid(bool);
+        bool get_draw_xy_grid() const;
+        void set_draw_xy_grid(bool);
 
-        bool getDrawYZGrid() const;
-        void setDrawYZGrid(bool);
+        bool get_draw_yz_grid() const;
+        void set_draw_yz_grid(bool);
 
-        bool getDrawAxisLines() const;
-        void setDrawAxisLines(bool);
+        bool get_draw_axis_lines() const;
+        void set_draw_axis_lines(bool);
 
-        bool getDrawAABBs() const;
-        void setDrawAABBs(bool);
+        bool get_draw_aabbs() const;
+        void set_draw_aabbs(bool);
 
-        bool getDrawBVH() const;
-        void setDrawBVH(bool);
+        bool get_draw_bvh() const;
+        void set_draw_bvh(bool);
 
-        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const osc::Variant&)>&) const;
-        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, osc::Variant>&);
+        void for_each_option_as_app_setting_value(const std::function<void(std::string_view, const osc::Variant&)>&) const;
+        void try_upd_from_values(std::string_view keyPrefix, const std::unordered_map<std::string, osc::Variant>&);
 
         friend bool operator==(const OverlayDecorationOptions&, const OverlayDecorationOptions&) = default;
 

@@ -46,7 +46,7 @@ namespace
     }
 }
 
-osc::SceneRendererParams opyn::CalcSceneRendererParams(
+osc::SceneRendererParams opyn::calc_scene_renderer_params(
     const ModelRendererParams& renderParams,
     osc::Vector2 viewportDims,
     float viewportDevicePixelRatio,
@@ -61,7 +61,7 @@ osc::SceneRendererParams opyn::CalcSceneRendererParams(
     rv.device_pixel_ratio = viewportDevicePixelRatio;
     rv.anti_aliasing_level = antiAliasingLevel;
     rv.light_direction = recommended_light_direction(renderParams.camera);
-    renderParams.rendering_options.applyTo(rv);
+    renderParams.rendering_options.apply_to(rv);
     rv.view_matrix = renderParams.camera.view_matrix();
     rv.projection_matrix = renderParams.camera.projection_matrix(aspect_ratio_of(viewportDims));
     rv.near_clipping_plane = renderParams.camera.near_clipping_plane();
@@ -74,7 +74,7 @@ osc::SceneRendererParams opyn::CalcSceneRendererParams(
     return rv;
 }
 
-void opyn::GenerateDecorations(
+void opyn::generate_decorations(
     osc::SceneCache& meshCache,
     const opyn::ModelStatePair& msp,
     const OpenSimDecorationOptions& options,
@@ -92,7 +92,7 @@ void opyn::GenerateDecorations(
         out(component, std::move(decoration));
     };
 
-    GenerateModelDecorations(
+    generate_model_decorations(
         meshCache,
         msp.get_model(),
         msp.get_state(),
@@ -102,7 +102,7 @@ void opyn::GenerateDecorations(
     );
 }
 
-std::optional<osc::SceneCollision> opyn::GetClosestCollision(
+std::optional<osc::SceneCollision> opyn::get_closest_collision(
     const osc::BVH& sceneBVH,
     osc::SceneCache& sceneCache,
     std::span<const osc::SceneDecoration> taggedDrawlist,

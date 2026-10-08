@@ -51,11 +51,11 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
     SimTK::State& state = model.initializeState();
 
     OpenSimDecorationOptions opts;
-    opts.setMuscleColorSource(MuscleColorSource::AppearanceProperty);
+    opts.set_muscle_color_source(MuscleColorSource::AppearanceProperty);
 
     osc::SceneCache meshCache;
     bool passedTest = false;
-    GenerateModelDecorations(
+    generate_model_decorations(
         meshCache,
         model,
         state,
@@ -104,7 +104,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorScalesFrames)
         osc::SceneCache meshCache;
 
         std::vector<osc::SceneDecoration> rv;
-        GenerateModelDecorations(
+        generate_model_decorations(
             meshCache,
             model,
             state,
@@ -172,7 +172,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
         osc::SceneCache meshCache;
 
         std::vector<osc::SceneDecoration> rv;
-        GenerateModelDecorations(
+        generate_model_decorations(
             meshCache,
             p.first,
             state,
@@ -217,7 +217,7 @@ TEST(OpenSimDecorationGenerator, ToOscMeshWorksAsIntended)
     mesh.setFrame(model.getGround());
     InitializeModel(model);
     InitializeState(model);
-    ASSERT_NO_THROW({ opyn::ToOscMesh(model, model.getWorkingState(), mesh); });
+    ASSERT_NO_THROW({ opyn::to_osc_mesh(model, model.getWorkingState(), mesh); });
 }
 
 // generate decorations should only generate decorations for the provided model's
@@ -235,7 +235,7 @@ TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
     OpenSimDecorationOptions opts;
 
     bool empty = true;
-    GenerateModelDecorations(
+    generate_model_decorations(
         meshCache,
         model,
         model.getWorkingState(),
@@ -264,10 +264,10 @@ TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
     osc::SceneCache meshCache;
 
     OpenSimDecorationOptions opts;
-    opts.setShouldShowContactForces(true);
+    opts.set_should_show_contact_forces(true);
 
     bool empty = true;
-    GenerateModelDecorations(
+    generate_model_decorations(
         meshCache,
         model,
         model.getWorkingState(),
@@ -308,7 +308,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsForLigamentGeneratesLigament
     OpenSimDecorationOptions opts;
 
     size_t numDecorationsTaggedWithLigament = 0;
-    GenerateModelDecorations(
+    generate_model_decorations(
         meshCache,
         model,
         model.getWorkingState(),
@@ -335,12 +335,12 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelAndStateWorksAsExpected
     InitializeState(model);
     osc::SceneCache cache;
     OpenSimDecorationOptions opts;
-    opts.setShouldShowContactForces(true);
+    opts.set_should_show_contact_forces(true);
 
     // emit decorations the hard way into a vector
     ComponentAbsPathDecorationTagger tagger;
     std::vector<osc::SceneDecoration> decorations;
-    GenerateModelDecorations(
+    generate_model_decorations(
         cache,
         model,
         model.getWorkingState(),
@@ -354,7 +354,7 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelAndStateWorksAsExpected
     );
 
     // now do it with the easy override
-    const std::vector<osc::SceneDecoration> easyDecorations = GenerateModelDecorations(cache, model, model.getWorkingState(), opts, 1.0);
+    const std::vector<osc::SceneDecoration> easyDecorations = generate_model_decorations(cache, model, model.getWorkingState(), opts, 1.0);
 
     ASSERT_EQ(decorations, easyDecorations);
 }
@@ -370,12 +370,12 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpecte
     SimTK::State& state = InitializeState(model);
     osc::SceneCache cache;
     OpenSimDecorationOptions opts;
-    opts.setShouldShowContactForces(true);
+    opts.set_should_show_contact_forces(true);
 
     // emit decorations the hard way into a vector
     ComponentAbsPathDecorationTagger tagger;
     std::vector<osc::SceneDecoration> decorations;
-    GenerateModelDecorations(
+    generate_model_decorations(
         cache,
         model,
         state,
@@ -400,7 +400,7 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpecte
     };
 
     // now do it with the easy override
-    const std::vector<osc::SceneDecoration> easyDecorations = GenerateModelDecorations(
+    const std::vector<osc::SceneDecoration> easyDecorations = generate_model_decorations(
         cache,
         ReferenceModelStatePair{model, state},
         opts,
@@ -425,7 +425,7 @@ TEST(GenerateModelDecorations, GeneratesContactGeometrySphereWhenVisibilityFlagI
     const SimTK::State& state = model.initializeState();
 
     osc::SceneCache cache;
-    const auto decorations = GenerateModelDecorations(cache, model, state);
+    const auto decorations = generate_model_decorations(cache, model, state);
     const auto isContactSphereDecoration = [p = sphere->getAbsolutePathString()](const osc::SceneDecoration& dec) { return dec.id == p; };
 
     ASSERT_EQ(rgs::count_if(decorations, isContactSphereDecoration), 1);
@@ -448,7 +448,7 @@ TEST(GenerateModelDecorations, DoesNotGenerateContactGeometrySphereWhenVisibilit
     const SimTK::State& state = model.initializeState();
 
     osc::SceneCache cache;
-    const auto decorations = GenerateModelDecorations(cache, model, state);
+    const auto decorations = generate_model_decorations(cache, model, state);
     const auto isContactSphereDecoration = [p = sphere->getAbsolutePathString()](const osc::SceneDecoration& dec) { return dec.id == p; };
 
     ASSERT_EQ(rgs::count_if(decorations, isContactSphereDecoration), 0);
@@ -490,7 +490,7 @@ TEST(GenerateModelDecorations, FiltersOutCylinderWithNANRadius)
     const SimTK::State& state = model.initializeState();
 
     osc::SceneCache cache;
-    const auto decorations = GenerateModelDecorations(cache, model, state);
+    const auto decorations = generate_model_decorations(cache, model, state);
 
     ASSERT_EQ(decorations.size(), 0);
 }
@@ -537,7 +537,7 @@ TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNRotations)
     const SimTK::State& state = model.initializeState();
 
     osc::SceneCache cache;
-    const auto decorations = GenerateModelDecorations(cache, model, state);
+    const auto decorations = generate_model_decorations(cache, model, state);
 
     ASSERT_EQ(decorations.size(), 0);
 }
@@ -584,7 +584,7 @@ TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNTranslation)
     const SimTK::State& state = model.initializeState();
 
     osc::SceneCache cache;
-    const auto decorations = GenerateModelDecorations(cache, model, state);
+    const auto decorations = generate_model_decorations(cache, model, state);
 
     ASSERT_EQ(decorations.size(), 0);
 }
@@ -611,7 +611,7 @@ TEST(GenerateModelDecorations, RadiusOfContactSphereIsCorrectlyUpdated)
 
     // Before changing radius: it should be as-set
     {
-        const auto decorations = GenerateModelDecorations(cache, model, state);
+        const auto decorations = generate_model_decorations(cache, model, state);
         const float volume = osc::volume_of(bounding_aabb_of(decorations, &osc::SceneDecoration::world_space_bounds).value());
         ASSERT_NEAR(volume, 0.2f*0.2f*0.2f, 0.001f);
     }
@@ -622,7 +622,7 @@ TEST(GenerateModelDecorations, RadiusOfContactSphereIsCorrectlyUpdated)
 
     // After changing radius: should update it
     {
-        const auto decorations = GenerateModelDecorations(cache, model, state);
+        const auto decorations = generate_model_decorations(cache, model, state);
         const float volume = osc::volume_of(bounding_aabb_of(decorations, &osc::SceneDecoration::world_space_bounds).value());
         ASSERT_NEAR(volume, 1.0f*1.0f*1.0f, 0.001f);
     }
@@ -653,13 +653,13 @@ TEST(GenerateModelDecorations, MusclesObeyAppearanceOpacity)
 
     osc::SceneCache sceneCache;
     opyn::OpenSimDecorationOptions options;
-    options.setMuscleColorSource(MuscleColorSource::AppearanceProperty);
+    options.set_muscle_color_source(MuscleColorSource::AppearanceProperty);
 
     static_assert(osc::num_options<MuscleDecorationStyle>() == 3);
     for (const auto& style : {MuscleDecorationStyle::LinesOfAction, MuscleDecorationStyle::FibersAndTendons}) {
-        options.setMuscleDecorationStyle(style);
+        options.set_muscle_decoration_style(style);
 
-        const auto decorations = opyn::GenerateModelDecorations(sceneCache, model, state, options);
+        const auto decorations = opyn::generate_model_decorations(sceneCache, model, state, options);
         for (const auto& decoration : decorations) {
             ASSERT_EQ(std::get<osc::Color>(decoration.shading).a, static_cast<float>(opacity));
         }
@@ -689,13 +689,13 @@ TEST(GenerateModelDecorations, GeometryPathsObeyAppearanceOpacity)
 
     osc::SceneCache sceneCache;
     opyn::OpenSimDecorationOptions options;
-    options.setMuscleColorSource(MuscleColorSource::AppearanceProperty);
+    options.set_muscle_color_source(MuscleColorSource::AppearanceProperty);
 
     static_assert(osc::num_options<MuscleDecorationStyle>() == 3);
     for (const auto& style : {MuscleDecorationStyle::LinesOfAction, MuscleDecorationStyle::FibersAndTendons}) {
-        options.setMuscleDecorationStyle(style);
+        options.set_muscle_decoration_style(style);
 
-        const auto decorations = opyn::GenerateModelDecorations(sceneCache, model, state, options);
+        const auto decorations = opyn::generate_model_decorations(sceneCache, model, state, options);
         for (const auto& decoration : decorations) {
             ASSERT_EQ(std::get<osc::Color>(decoration.shading).a, static_cast<float>(opacity));
         }
@@ -725,13 +725,13 @@ TEST(GenerateModelDecorations, MusclesObeyWireframeRepresentation)
 
     osc::SceneCache sceneCache;
     opyn::OpenSimDecorationOptions options;
-    options.setMuscleColorSource(MuscleColorSource::AppearanceProperty);
+    options.set_muscle_color_source(MuscleColorSource::AppearanceProperty);
 
     static_assert(osc::num_options<MuscleDecorationStyle>() == 3);
     for (const auto& style : {MuscleDecorationStyle::LinesOfAction, MuscleDecorationStyle::FibersAndTendons}) {
-        options.setMuscleDecorationStyle(style);
+        options.set_muscle_decoration_style(style);
 
-        const auto decorations = opyn::GenerateModelDecorations(sceneCache, model, state, options);
+        const auto decorations = opyn::generate_model_decorations(sceneCache, model, state, options);
         for (const auto& decoration : decorations) {
             ASSERT_TRUE(decoration.flags & osc::SceneDecorationFlag::DrawWireframeOverlay);
         }
@@ -758,7 +758,7 @@ TEST(GenerateModelDecorations, IMUsAreEmittedWithCorrectScaleFactors)
 
     osc::SceneCache sceneCache;
 
-    const auto decorations = opyn::GenerateModelDecorations(sceneCache, model, state);
+    const auto decorations = opyn::generate_model_decorations(sceneCache, model, state);
 
     ASSERT_EQ(decorations.size(), 1);
     ASSERT_TRUE(rgs::all_of(decorations.front().transform.scale, [](const float axis) { return axis > 0.0f; }));
@@ -785,7 +785,7 @@ TEST(GenerateModelDecorations, LoadsMeshesFromRelativeDirectories)
         ASSERT_NE(mesh, nullptr);
 
         osc::SceneCache sceneCache;
-        const auto decorations = opyn::GenerateModelDecorations(sceneCache, model, state);
+        const auto decorations = opyn::generate_model_decorations(sceneCache, model, state);
         ASSERT_EQ(decorations.size(), 1);
         ASSERT_EQ(decorations.front().mesh.num_vertices(), 3);
     }

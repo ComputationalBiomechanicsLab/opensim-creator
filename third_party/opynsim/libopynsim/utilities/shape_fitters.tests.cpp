@@ -90,7 +90,7 @@ TEST(fit_sphere_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublis
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const osc::Mesh mesh = LoadMeshViaSimbody(objPath);
+    const osc::Mesh mesh = load_mesh_via_simbody(objPath);
     const osc::Sphere sphereFit = fit_sphere_htbad(mesh);
 
     ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphereFit.origin, c_ExpectedSphere.origin, 0.0001f)));
@@ -137,7 +137,7 @@ TEST(fit_plane_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublish
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const osc::Mesh mesh = LoadMeshViaSimbody(objPath);
+    const osc::Mesh mesh = load_mesh_via_simbody(objPath);
     const osc::Plane planeFit = fit_plane_htbad(mesh);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(planeFit.origin, c_ExpectedPlane.origin, 0.0001f)));
@@ -179,7 +179,7 @@ TEST(fit_ellipsoid_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPub
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     const auto objPath =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    const osc::Mesh mesh = LoadMeshViaSimbody(objPath);
+    const osc::Mesh mesh = load_mesh_via_simbody(objPath);
     const osc::Ellipsoid fit = fit_ellipsoid_htbad(mesh);
     const auto directions = axis_directions_of(fit);
 

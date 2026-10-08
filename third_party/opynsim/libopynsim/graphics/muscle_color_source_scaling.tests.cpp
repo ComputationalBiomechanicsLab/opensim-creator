@@ -10,7 +10,7 @@ using namespace opyn;
 
 TEST(MuscleColorSourceScaling, GetAllPossibleMuscleColorSourceScalingMetadataReturnsExpectedNumberOfEntries)
 {
-    ASSERT_EQ(GetAllPossibleMuscleColorSourceScalingMetadata().size(), osc::num_options<MuscleColorSourceScaling>());
+    ASSERT_EQ(get_all_possible_muscle_color_source_scaling_metadata().size(), osc::num_options<MuscleColorSourceScaling>());
 }
 
 TEST(MuscleColorSourceScaling,  GetMuscleColorSourceScalingMetadataWorksForAllOptions)
@@ -18,7 +18,7 @@ TEST(MuscleColorSourceScaling,  GetMuscleColorSourceScalingMetadataWorksForAllOp
     using underlying = std::underlying_type_t<MuscleColorSourceScaling>;
 
     for (underlying i = 0; i < std::to_underlying(MuscleColorSourceScaling::NUM_OPTIONS); ++i) {
-        ASSERT_NO_THROW({ GetMuscleColorSourceScalingMetadata(static_cast<MuscleColorSourceScaling>(i)); });
+        ASSERT_NO_THROW({ get_muscle_color_source_scaling_metadata(static_cast<MuscleColorSourceScaling>(i)); });
     }
 }
 
@@ -27,6 +27,6 @@ TEST(MuscleColorSourceScaling, GetIndexOfReturnsValidIndices)
     using underlying = std::underlying_type_t<MuscleColorSourceScaling>;
 
     for (underlying i = 0; i < std::to_underlying(MuscleColorSourceScaling::NUM_OPTIONS); ++i) {
-        ASSERT_EQ(GetIndexOf(static_cast<MuscleColorSourceScaling>(i)), i);
+        ASSERT_EQ(get_index_of(static_cast<MuscleColorSourceScaling>(i)), i);
     }
 }

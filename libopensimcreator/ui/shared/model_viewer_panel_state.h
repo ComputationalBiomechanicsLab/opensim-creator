@@ -48,7 +48,7 @@ namespace osc
 
         std::span<const SceneDecoration> getDrawlist() const
         {
-            return m_CachedModelRenderer.getDrawlist();
+            return m_CachedModelRenderer.get_drawlist();
         }
 
         ModelViewerPanelLayer& pushLayer(std::unique_ptr<ModelViewerPanelLayer> layer)

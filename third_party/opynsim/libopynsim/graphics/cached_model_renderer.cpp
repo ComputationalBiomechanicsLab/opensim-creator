@@ -76,7 +76,7 @@ namespace
                     }
                     m_Drawlist.push_back(std::move(dec));
                 };
-                GenerateDecorations(
+                generate_decorations(
                     *m_MeshCache,
                     modelState,
                     params.decoration_options,
@@ -88,7 +88,7 @@ namespace
                 {
                     m_Drawlist.push_back(std::move(dec));
                 };
-                GenerateOverlayDecorations(
+                generate_overlay_decorations(
                     *m_MeshCache,
                     params.overlay_options,
                     m_BVH,
@@ -151,7 +151,7 @@ public:
         OSC_PERF("CachedModelRenderer/on_draw");
 
         // setup render/rasterization parameters
-        const osc::SceneRendererParams rendererParameters = CalcSceneRendererParams(
+        const osc::SceneRendererParams rendererParameters = calc_scene_renderer_params(
             renderParams,
             dims,
             devicePixelRatio,
@@ -204,7 +204,7 @@ public:
         osc::Vector2 mouseScreenPosition,
         const osc::Rect& viewportScreenRect) const
     {
-        return GetClosestCollision(
+        return opyn::get_closest_collision(
             m_DecorationCache.getBVH(),
             m_DecorationCache.updSceneCache(),
             m_DecorationCache.getDrawlist(),
@@ -228,7 +228,7 @@ opyn::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept =
 opyn::CachedModelRenderer& opyn::CachedModelRenderer::operator=(CachedModelRenderer&&) noexcept = default;
 opyn::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 
-osc::RenderTexture& opyn::CachedModelRenderer::onDraw(
+osc::RenderTexture& opyn::CachedModelRenderer::on_draw(
     const ModelStatePair& modelState,
     const ModelRendererParams& renderParams,
     osc::Vector2 dims,
@@ -244,12 +244,12 @@ osc::RenderTexture& opyn::CachedModelRenderer::onDraw(
     );
 }
 
-osc::RenderTexture& opyn::CachedModelRenderer::updRenderTexture()
+osc::RenderTexture& opyn::CachedModelRenderer::upd_render_texture()
 {
     return impl_->updRenderTexture();
 }
 
-std::span<const osc::SceneDecoration> opyn::CachedModelRenderer::getDrawlist() const
+std::span<const osc::SceneDecoration> opyn::CachedModelRenderer::get_drawlist() const
 {
     return impl_->getDrawlist();
 }
@@ -259,19 +259,19 @@ std::optional<osc::AABB> opyn::CachedModelRenderer::bounds() const
     return impl_->bounds();
 }
 
-std::optional<osc::AABB> opyn::CachedModelRenderer::visibleBounds() const
+std::optional<osc::AABB> opyn::CachedModelRenderer::visible_bounds() const
 {
     return impl_->visibleBounds();
 }
 
-std::optional<osc::AABB> opyn::CachedModelRenderer::visibleBounds(
+std::optional<osc::AABB> opyn::CachedModelRenderer::visible_bounds(
     const ModelStatePair& modelState,
     const ModelRendererParams& renderParams)
 {
     return impl_->visibleBounds(modelState, renderParams);
 }
 
-std::optional<osc::SceneCollision> opyn::CachedModelRenderer::getClosestCollision(
+std::optional<osc::SceneCollision> opyn::CachedModelRenderer::get_closest_collision(
     const ModelRendererParams& params,
     osc::Vector2 mouseScreenPosition,
     const osc::Rect& viewportScreenRect) const

@@ -28,16 +28,16 @@ namespace opyn
         CachedModelRenderer& operator=(CachedModelRenderer&&) noexcept;
         ~CachedModelRenderer() noexcept;
 
-        osc::RenderTexture& onDraw(
+        osc::RenderTexture& on_draw(
             const ModelStatePair&,
             const ModelRendererParams&,
             osc::Vector2 dims,
             float devicePixelRatio,
             osc::AntiAliasingLevel antiAliasingLevel
         );
-        osc::RenderTexture& updRenderTexture();
+        osc::RenderTexture& upd_render_texture();
 
-        std::span<const osc::SceneDecoration> getDrawlist() const;
+        std::span<const osc::SceneDecoration> get_drawlist() const;
 
         // Returns an `AABB` that tightly bounds all geometry in the scene, or `std::nullopt`
         // if the scene contains no geometry.
@@ -51,12 +51,12 @@ namespace opyn
         //
         // This is useful if (e.g.) you want to ensure a scene camera only tries to scope the visible
         // parts of a scene (#1029).
-        std::optional<osc::AABB> visibleBounds() const;
+        std::optional<osc::AABB> visible_bounds() const;
 
-        // Updates the internal decoration cache and returns `visibleBounds()`.
-        std::optional<osc::AABB> visibleBounds(const ModelStatePair&, const ModelRendererParams&);
+        // Updates the internal decoration cache and returns `visible_bounds()`.
+        std::optional<osc::AABB> visible_bounds(const ModelStatePair&, const ModelRendererParams&);
 
-        std::optional<osc::SceneCollision> getClosestCollision(
+        std::optional<osc::SceneCollision> get_closest_collision(
             const ModelRendererParams&,
             osc::Vector2 mouseScreenPosition,
             const osc::Rect& viewportScreenRect

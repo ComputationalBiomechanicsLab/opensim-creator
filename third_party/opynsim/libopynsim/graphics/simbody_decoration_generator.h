@@ -12,7 +12,7 @@ namespace opyn
 {
     // generates `SceneDecoration`s for the given `SimTK::DecorativeGeometry`
     // and passes them to the output consumer
-    void GenerateDecorations(
+    void generate_decorations(
         osc::SceneCache&,
         const SimTK::SimbodyMatterSubsystem&,
         const SimTK::State&,

@@ -5,22 +5,22 @@
 
 #include <functional>
 
-void opyn::GenerateOverlayDecorations(
+void opyn::generate_overlay_decorations(
     osc::SceneCache& meshCache,
     const OverlayDecorationOptions& params,
     const osc::BVH& sceneBVH,
     float fixupScaleFactor,
     const std::function<void(osc::SceneDecoration&&)>& out)
 {
-    if (params.getDrawAABBs()) {
+    if (params.get_draw_aabbs()) {
         draw_bvh_leaf_nodes(meshCache, sceneBVH, out);
     }
 
-    if (params.getDrawBVH()) {
+    if (params.get_draw_bvh()) {
         draw_bvh(meshCache, sceneBVH, out);
     }
 
-    if (params.getDrawXZGrid()) {
+    if (params.get_draw_xz_grid()) {
         draw_xz_grid(meshCache, [&out, fixupScaleFactor](osc::SceneDecoration&& dec)
         {
             dec.transform.scale *= fixupScaleFactor;
@@ -28,7 +28,7 @@ void opyn::GenerateOverlayDecorations(
         });
     }
 
-    if (params.getDrawXYGrid()) {
+    if (params.get_draw_xy_grid()) {
         draw_xy_grid(meshCache, [&out, fixupScaleFactor](osc::SceneDecoration&& dec)
         {
             dec.transform.scale *= fixupScaleFactor;
@@ -36,7 +36,7 @@ void opyn::GenerateOverlayDecorations(
         });
     }
 
-    if (params.getDrawYZGrid()) {
+    if (params.get_draw_yz_grid()) {
         draw_yz_grid(meshCache, [&out, fixupScaleFactor](osc::SceneDecoration&& dec)
         {
             dec.transform.scale *= fixupScaleFactor;
@@ -44,7 +44,7 @@ void opyn::GenerateOverlayDecorations(
         });
     }
 
-    if (params.getDrawAxisLines()) {
+    if (params.get_draw_axis_lines()) {
         draw_xz_floor_lines(meshCache, [&out, fixupScaleFactor](osc::SceneDecoration&& dec)
         {
             dec.transform.scale *= fixupScaleFactor;

@@ -193,7 +193,7 @@ namespace
         std::stringstream ss;
         {
             // load raw mesh data into an osc mesh for processing
-            Mesh oscMesh = opyn::ToOscMesh(model, state, openSimMesh);
+            Mesh oscMesh = opyn::to_osc_mesh(model, state, openSimMesh);
 
             // bake transform into mesh data
             oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
@@ -237,7 +237,7 @@ namespace
         std::stringstream ss;
         {
             // load raw mesh data into an osc mesh for processing
-            Mesh oscMesh = opyn::ToOscMesh(model, state, openSimMesh);
+            Mesh oscMesh = opyn::to_osc_mesh(model, state, openSimMesh);
 
             // bake transform into mesh data
             oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
@@ -943,11 +943,11 @@ void osc::DrawCalculateMenu(
 
 bool osc::DrawMuscleRenderingOptionsRadioButtions(opyn::OpenSimDecorationOptions& opts)
 {
-    const opyn::MuscleDecorationStyle currentStyle = opts.getMuscleDecorationStyle();
+    const opyn::MuscleDecorationStyle currentStyle = opts.get_muscle_decoration_style();
     bool edited = false;
-    for (const auto& metadata : opyn::GetAllMuscleDecorationStyleMetadata()) {
+    for (const auto& metadata : opyn::get_all_muscle_decoration_style_metadata()) {
         if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
-            opts.setMuscleDecorationStyle(metadata.value);
+            opts.set_muscle_decoration_style(metadata.value);
             edited = true;
         }
     }
@@ -956,11 +956,11 @@ bool osc::DrawMuscleRenderingOptionsRadioButtions(opyn::OpenSimDecorationOptions
 
 bool osc::DrawMuscleSizingOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
 {
-    const opyn::MuscleSizingStyle currentStyle = opts.getMuscleSizingStyle();
+    const opyn::MuscleSizingStyle currentStyle = opts.get_muscle_sizing_style();
     bool edited = false;
-    for (const auto& metadata : opyn::GetAllMuscleSizingStyleMetadata()) {
+    for (const auto& metadata : opyn::get_all_muscle_sizing_style_metadata()) {
         if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
-            opts.setMuscleSizingStyle(metadata.value);
+            opts.set_muscle_sizing_style(metadata.value);
             edited = true;
         }
     }
@@ -969,11 +969,11 @@ bool osc::DrawMuscleSizingOptionsRadioButtons(opyn::OpenSimDecorationOptions& op
 
 bool osc::DrawMuscleColorSourceOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
 {
-    const opyn::MuscleColorSource currentStyle = opts.getMuscleColorSource();
+    const opyn::MuscleColorSource currentStyle = opts.get_muscle_color_source();
     bool edited = false;
-    for (const auto& metadata : opyn::GetAllPossibleMuscleColoringSourcesMetadata()) {
+    for (const auto& metadata : opyn::get_all_possible_muscle_coloring_sources_metadata()) {
         if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
-            opts.setMuscleColorSource(metadata.value);
+            opts.set_muscle_color_source(metadata.value);
             edited = true;
         }
     }
@@ -982,11 +982,11 @@ bool osc::DrawMuscleColorSourceOptionsRadioButtons(opyn::OpenSimDecorationOption
 
 bool osc::DrawMuscleColorScalingOptionsRadioButtons(opyn::OpenSimDecorationOptions& opts)
 {
-    const opyn::MuscleColorSourceScaling currentStyle = opts.getMuscleColorSourceScaling();
+    const opyn::MuscleColorSourceScaling currentStyle = opts.get_muscle_color_source_scaling();
     bool edited = false;
-    for (const auto& metadata : opyn::GetAllPossibleMuscleColorSourceScalingMetadata()) {
+    for (const auto& metadata : opyn::get_all_possible_muscle_color_source_scaling_metadata()) {
         if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
-            opts.setMuscleColorSourceScaling(metadata.value);
+            opts.set_muscle_color_source_scaling(metadata.value);
             edited = true;
         }
     }
@@ -1028,12 +1028,12 @@ bool osc::DrawRenderingOptionsEditor(opyn::CustomRenderingOptions& opts)
 {
     bool edited = false;
     ui::draw_text_disabled("Rendering");
-    for (size_t i = 0; i < opts.getNumOptions(); ++i)
+    for (size_t i = 0; i < opts.get_num_options(); ++i)
     {
-        bool value = opts.getOptionValue(i);
-        if (ui::draw_checkbox(opts.getOptionLabel(i), &value))
+        bool value = opts.get_option_value(i);
+        if (ui::draw_checkbox(opts.get_option_label(i), &value))
         {
-            opts.setOptionValue(i, value);
+            opts.set_option_value(i, value);
             edited = true;
         }
     }
@@ -1044,10 +1044,10 @@ bool osc::DrawOverlayOptionsEditor(opyn::OverlayDecorationOptions& opts)
 {
     std::optional<CStringView> lastGroupLabel;
     bool edited = false;
-    for (size_t i = 0; i < opts.getNumOptions(); ++i)
+    for (size_t i = 0; i < opts.get_num_options(); ++i)
     {
         // print header, if necessary
-        const CStringView groupLabel = opts.getOptionGroupLabel(i);
+        const CStringView groupLabel = opts.get_option_group_label(i);
         if (groupLabel != lastGroupLabel)
         {
             if (lastGroupLabel)
@@ -1058,10 +1058,10 @@ bool osc::DrawOverlayOptionsEditor(opyn::OverlayDecorationOptions& opts)
             lastGroupLabel = groupLabel;
         }
 
-        bool value = opts.getOptionValue(i);
-        if (ui::draw_checkbox(opts.getOptionLabel(i), &value))
+        bool value = opts.get_option_value(i);
+        if (ui::draw_checkbox(opts.get_option_label(i), &value))
         {
-            opts.setOptionValue(i, value);
+            opts.set_option_value(i, value);
             edited = true;
         }
     }
@@ -1072,17 +1072,17 @@ bool osc::DrawCustomDecorationOptionCheckboxes(opyn::OpenSimDecorationOptions& o
 {
     int imguiID = 0;
     bool edited = false;
-    for (size_t i = 0; i < opts.getNumOptions(); ++i)
+    for (size_t i = 0; i < opts.get_num_options(); ++i)
     {
         ui::push_id(imguiID++);
 
-        bool v = opts.getOptionValue(i);
-        if (ui::draw_checkbox(opts.getOptionLabel(i), &v))
+        bool v = opts.get_option_value(i);
+        if (ui::draw_checkbox(opts.get_option_label(i), &v))
         {
-            opts.setOptionValue(i, v);
+            opts.set_option_value(i, v);
             edited = true;
         }
-        if (std::optional<CStringView> description = opts.getOptionDescription(i))
+        if (std::optional<CStringView> description = opts.get_option_description(i))
         {
             ui::same_line();
             ui::draw_help_marker(*description);

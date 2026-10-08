@@ -557,7 +557,7 @@ namespace
             osc::Mesh meshData;
             try
             {
-                meshData = opyn::LoadMeshViaSimbody(realLocation.string());
+                meshData = opyn::load_mesh_via_simbody(realLocation.string());
             }
             catch (const std::exception& ex)
             {

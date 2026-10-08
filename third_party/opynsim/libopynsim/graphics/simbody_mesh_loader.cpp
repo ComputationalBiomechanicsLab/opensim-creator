@@ -68,7 +68,7 @@ namespace
     }
 }
 
-osc::Mesh opyn::ToOscMesh(const SimTK::PolygonalMesh& mesh)
+osc::Mesh opyn::to_osc_mesh(const SimTK::PolygonalMesh& mesh)
 {
     const auto metrics = CalcMeshMetrics(mesh);
 
@@ -163,24 +163,24 @@ osc::Mesh opyn::ToOscMesh(const SimTK::PolygonalMesh& mesh)
     return rv;
 }
 
-std::span<const std::string_view> opyn::GetSupportedSimTKMeshFormats()
+std::span<const std::string_view> opyn::get_supported_sim_tk_mesh_formats()
 {
     return c_supported_mesh_extensions;
 }
 
-std::span<const osc::FileDialogFilter> opyn::GetSupportedSimTKMeshFormatsAsFilters()
+std::span<const osc::FileDialogFilter> opyn::get_supported_sim_tk_mesh_formats_as_filters()
 {
     return get_file_dialog_filters();
 }
 
-osc::Mesh opyn::LoadMeshViaSimbody(const std::filesystem::path& p)
+osc::Mesh opyn::load_mesh_via_simbody(const std::filesystem::path& p)
 {
     const SimTK::DecorativeMeshFile dmf{p.string()};
     const SimTK::PolygonalMesh& mesh = dmf.getMesh();
-    return ToOscMesh(mesh);
+    return to_osc_mesh(mesh);
 }
 
-void opyn::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<const osc::Vector3> vertices, osc::MeshIndicesView indices)
+void opyn::assign_indexed_verts(SimTK::PolygonalMesh& mesh, std::span<const osc::Vector3> vertices, osc::MeshIndicesView indices)
 {
     mesh.clear();
 

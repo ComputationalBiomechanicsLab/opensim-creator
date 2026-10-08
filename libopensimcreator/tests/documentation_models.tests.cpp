@@ -40,7 +40,7 @@ TEST(DocumentationModels, CanAllBeLoadedAndInitializedWithoutThrowingAnException
         // try to generate 3D decorations from the model, which forces the backend
         // to (e.g.) try and load mesh files, etc.
         std::vector<SceneDecoration> decorations;
-        GenerateModelDecorations(cache, model.get_model(), model.get_state(), options, 1.0f, [&decorations](const OpenSim::Component&, const SceneDecoration& decoration)
+        generate_model_decorations(cache, model.get_model(), model.get_state(), options, 1.0f, [&decorations](const OpenSim::Component&, const SceneDecoration& decoration)
         {
             decorations.push_back(decoration);
         });

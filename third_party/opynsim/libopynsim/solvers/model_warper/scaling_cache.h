@@ -55,7 +55,7 @@ namespace opyn
             );
 
             // Convert the input mesh into an OSC mesh, so that it's suitable for warping.
-            osc::Mesh resultOscMesh = ToOscMesh(
+            osc::Mesh resultOscMesh = to_osc_mesh(
                 resultModel,
                 resultModel.getWorkingState(),
                 resultMesh

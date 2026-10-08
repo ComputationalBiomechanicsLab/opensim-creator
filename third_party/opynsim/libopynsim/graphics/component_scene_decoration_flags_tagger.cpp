@@ -18,14 +18,14 @@ void opyn::ComponentSceneDecorationFlagsTagger::operator()(
 {
     if (&component != last_component_)
     {
-        last_flags_ = computeFlags(component);
+        last_flags_ = compute_flags(component);
         last_component_ = &component;
     }
 
     decoration.flags |= last_flags_;
 }
 
-osc::SceneDecorationFlags opyn::ComponentSceneDecorationFlagsTagger::computeFlags(
+osc::SceneDecorationFlags opyn::ComponentSceneDecorationFlagsTagger::compute_flags(
     const OpenSim::Component& component) const
 {
     osc::SceneDecorationFlags rv = osc::SceneDecorationFlag::Default;

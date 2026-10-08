@@ -13,9 +13,9 @@ using namespace opyn;
 TEST(OpenSimDecorationOptions, RemembersColorScaling)
 {
     OpenSimDecorationOptions opts;
-    opts.setMuscleColorSourceScaling(MuscleColorSourceScaling::ModelWide);
+    opts.set_muscle_color_source_scaling(MuscleColorSourceScaling::ModelWide);
     bool emitted = false;
-    opts.forEachOptionAsAppSettingValue([&emitted](std::string_view k, const osc::Variant& v)
+    opts.for_each_option_as_app_setting_value([&emitted](std::string_view k, const osc::Variant& v)
     {
         // Yep, this is hard-coded: it's just here as a sanity check: change/remove
         // it if it's causing trouble.
@@ -33,7 +33,7 @@ TEST(OpenSimDecorationOptions, ReadsColorScalingFromDict)
     };
 
     OpenSimDecorationOptions opts;
-    ASSERT_NE(opts.getMuscleColorSourceScaling(), MuscleColorSourceScaling::ModelWide);
-    opts.tryUpdFromValues("", lookup);
-    ASSERT_EQ(opts.getMuscleColorSourceScaling(), MuscleColorSourceScaling::ModelWide);
+    ASSERT_NE(opts.get_muscle_color_source_scaling(), MuscleColorSourceScaling::ModelWide);
+    opts.try_upd_from_values("", lookup);
+    ASSERT_EQ(opts.get_muscle_color_source_scaling(), MuscleColorSourceScaling::ModelWide);
 }

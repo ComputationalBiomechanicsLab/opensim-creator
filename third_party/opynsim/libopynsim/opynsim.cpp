@@ -465,17 +465,17 @@ DataFrame opyn::read_csv(const std::filesystem::path& source)
 
 osc::Mesh opyn::read_vtp(const std::filesystem::path& source)
 {
-    return LoadMeshViaSimbody(source);
+    return load_mesh_via_simbody(source);
 }
 
 osc::Mesh opyn::read_obj(const std::filesystem::path& source)
 {
-    return LoadMeshViaSimbody(source);
+    return load_mesh_via_simbody(source);
 }
 
 osc::Mesh opyn::read_stl(const std::filesystem::path& source)
 {
-    return LoadMeshViaSimbody(source);
+    return load_mesh_via_simbody(source);
 }
 
 osc::Texture2D opyn::read_png(const std::filesystem::path& source)

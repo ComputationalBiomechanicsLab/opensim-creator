@@ -47,9 +47,9 @@ namespace osc
             m_SceneCache{std::move(sceneCache_)}
         {
             OSC_ASSERT(m_SceneCache != nullptr);
-            m_OverlayDecorationOptions.setDrawXZGrid(true);
-            m_OverlayDecorationOptions.setDrawAxisLines(true);
-            m_CustomRenderingOptions.setDrawFloor(false);
+            m_OverlayDecorationOptions.set_draw_xz_grid(true);
+            m_OverlayDecorationOptions.set_draw_axis_lines(true);
+            m_CustomRenderingOptions.set_draw_floor(false);
         }
 
         void on_mount()

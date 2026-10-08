@@ -21,7 +21,7 @@ namespace osc { struct SceneDecoration; }
 
 namespace opyn
 {
-    osc::SceneRendererParams CalcSceneRendererParams(
+    osc::SceneRendererParams calc_scene_renderer_params(
         const ModelRendererParams&,
         osc::Vector2 viewportDims,
         float viewportDevicePixelRatio,
@@ -29,14 +29,14 @@ namespace opyn
         float fixupScaleFactor
     );
 
-    void GenerateDecorations(
+    void generate_decorations(
         osc::SceneCache&,
         const ModelStatePair&,
         const OpenSimDecorationOptions&,
         const std::function<void(const OpenSim::Component&, osc::SceneDecoration&&)>& out
     );
 
-    std::optional<osc::SceneCollision> GetClosestCollision(
+    std::optional<osc::SceneCollision> get_closest_collision(
         const osc::BVH& sceneBVH,
         osc::SceneCache&,
         std::span<const osc::SceneDecoration> taggedDrawlist,

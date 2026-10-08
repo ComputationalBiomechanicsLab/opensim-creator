@@ -91,18 +91,18 @@ namespace
 }
 
 
-const OpenSimDecorationOptionMetadata& opyn::GetIthOptionMetadata(size_t i)
+const OpenSimDecorationOptionMetadata& opyn::get_ith_option_metadata(size_t i)
 {
     return c_CustomDecorationOptionLabels.at(i);
 }
 
-OpenSimDecorationOptionFlag opyn::GetIthOption(size_t i)
+OpenSimDecorationOptionFlag opyn::get_ith_option(size_t i)
 {
     auto v = 1u << osc::min(i, osc::num_flags<OpenSimDecorationOptionFlag>()-1);
     return static_cast<OpenSimDecorationOptionFlag>(v);
 }
 
-void opyn::SetIthOption(OpenSimDecorationOptionFlags& flags, size_t i, bool v)
+void opyn::set_ith_option(OpenSimDecorationOptionFlags& flags, size_t i, bool v)
 {
-    flags.set(GetIthOption(i), v);
+    flags.set(get_ith_option(i), v);
 }

@@ -336,7 +336,7 @@ namespace
             // (and, yes, hash isn't equality, but it's closer than relying on memory
             //  addresses)
             const std::string id = std::to_string(hash_of(d.getMesh()));
-            const auto meshLoaderFunc = [&d]() { return ToOscMesh(d.getMesh()); };
+            const auto meshLoaderFunc = [&d]() { return to_osc_mesh(d.getMesh()); };
 
             m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.get_mesh(id, meshLoaderFunc),
@@ -349,7 +349,7 @@ namespace
         void implementMeshFileGeometry(const SimTK::DecorativeMeshFile& d) final
         {
             const std::string& path = d.getMeshFile();
-            const auto meshLoader = [&d](){ return ToOscMesh(d.getMesh()); };
+            const auto meshLoader = [&d](){ return to_osc_mesh(d.getMesh()); };
 
             m_Consumer(osc::SceneDecoration{
                 .mesh = m_MeshCache.get_mesh(path, meshLoader),
@@ -419,7 +419,7 @@ namespace
     };
 }
 
-void opyn::GenerateDecorations(
+void opyn::generate_decorations(
     osc::SceneCache& meshCache,
     const SimTK::SimbodyMatterSubsystem& matter,
     const SimTK::State& state,
