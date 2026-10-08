@@ -40,10 +40,10 @@ namespace opyn
         OpenSim_DECLARE_PROPERTY(warping_penalty, double, "A warping penalty that smooths out the warp. Explained in OPynSim's Thin-Plate Spline documentation.");
 
         struct CommonParameters final {
-            ThinPlateSplineCommonInputs tpsInputs;
-            const OpenSim::Frame* sourceLandmarksFrame = nullptr;
-            const OpenSim::Frame* resultLandmarksFrame = nullptr;
-            bool compensateForFrameChanges = false;
+            ThinPlateSplineCommonInputs tps_inputs;
+            const OpenSim::Frame* source_landmarks_frame = nullptr;
+            const OpenSim::Frame* result_landmarks_frame = nullptr;
+            bool compensate_for_frame_changes = false;
         };
 
     protected:
@@ -62,14 +62,14 @@ namespace opyn
         }
 
         // Overriders should still call this base method.
-        void implForEachScalingParameterDeclaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const override
+        void impl_for_each_scaling_parameter_declaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const override
         {
             callback(ScalingParameterDeclaration{"blending_factor", 1.0});
         }
 
         // Performs validation steps that are common for all TPS scaling steps, so overriders
         // should call this base method.
-        std::vector<ScalingStepValidationMessage> implValidate(
+        std::vector<ScalingStepValidationMessage> impl_validate(
             ScalingCache&,
             const ScalingParameters&,
             const OpenSim::Model& sourceModel) const override
@@ -123,7 +123,7 @@ namespace opyn
 
         // Returns TPS `ScalingStep` parameters that are common for all uses of the TPS
         // algorithm.
-        CommonParameters calcTPSScalingStepCommonParams(
+        CommonParameters calc_tps_scaling_step_common_params(
             const ScalingParameters& parameters,
             const OpenSim::Model& sourceModel,
             const OpenSim::Model& resultModel) const
@@ -150,7 +150,7 @@ namespace opyn
             OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
 
             return CommonParameters{
-                .tpsInputs = ThinPlateSplineCommonInputs{
+                .tps_inputs = ThinPlateSplineCommonInputs{
                     sourceLandmarksPath,
                     destinationLandmarksPath,
                     get_source_landmarks_prescale(),
@@ -158,9 +158,9 @@ namespace opyn
                     *blendingFactor,
                     get_warping_penalty(),
                 },
-                .sourceLandmarksFrame = sourceLandmarksFrame,
-                .resultLandmarksFrame = resultLandmarksFrame,
-                .compensateForFrameChanges = get_compensate_for_frame_changes(),
+                .source_landmarks_frame = sourceLandmarksFrame,
+                .result_landmarks_frame = resultLandmarksFrame,
+                .compensate_for_frame_changes = get_compensate_for_frame_changes(),
             };
         }
     };

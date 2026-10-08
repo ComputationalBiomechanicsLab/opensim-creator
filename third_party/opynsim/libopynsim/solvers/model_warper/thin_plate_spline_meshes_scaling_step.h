@@ -34,13 +34,13 @@ namespace opyn
             constructProperty_meshes();
         }
     private:
-        std::vector<ScalingStepValidationMessage> implValidate(
+        std::vector<ScalingStepValidationMessage> impl_validate(
             ScalingCache& cache,
             const ScalingParameters& params,
             const OpenSim::Model& sourceModel) const final
         {
             // Get base class validation messages.
-            auto messages = ToggleableThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
+            auto messages = ToggleableThinPlateSplineScalingStep::impl_validate(cache, params, sourceModel);
 
             // Ensure at least one mesh is specified.
             if (getProperty_meshes().empty()) {
@@ -61,13 +61,13 @@ namespace opyn
             return messages;
         }
 
-        void implApplyScalingStep(
+        void impl_apply_scaling_step(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
             const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
+            const auto commonParams = calc_tps_scaling_step_common_params(parameters, sourceModel, resultModel);
 
             // Warp each mesh specified by the `meshes` property.
             for (int i = 0; i < getProperty_meshes().size(); ++i) {
@@ -78,15 +78,15 @@ namespace opyn
                 const auto* resultMesh = FindComponent<OpenSim::Mesh>(resultModel, get_meshes(i));
                 OSC_ASSERT_ALWAYS(resultMesh && "could not find a mesh in the model");
 
-                std::unique_ptr<InMemoryMesh> warpedMesh = scalingCache.lookupTPSMeshWarp(
+                std::unique_ptr<InMemoryMesh> warpedMesh = scalingCache.lookup_tps_mesh_warp(
                     sourceModel,
                     resultModel,
                     *sourceMesh,
                     *resultMesh,
-                    *commonParams.sourceLandmarksFrame,
-                    *commonParams.resultLandmarksFrame,
-                    commonParams.tpsInputs,
-                    commonParams.compensateForFrameChanges
+                    *commonParams.source_landmarks_frame,
+                    *commonParams.result_landmarks_frame,
+                    commonParams.tps_inputs,
+                    commonParams.compensate_for_frame_changes
                 );
                 OSC_ASSERT_ALWAYS(warpedMesh && "warping a mesh in the model failed");
 

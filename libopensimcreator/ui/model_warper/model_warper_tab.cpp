@@ -95,23 +95,23 @@ namespace
         // Returns a shared readonly pointer to the top-level model warping document.
         std::shared_ptr<const ModelWarperV3Document> getDocumentPtr() const
         {
-            return m_ScalingState->scratch().getScalingDocumentPtr();
+            return m_ScalingState->scratch().get_scaling_document_ptr();
         }
 
 
         bool hasScalingSteps() const
         {
-            return m_ScalingState->scratch().hasScalingSteps();
+            return m_ScalingState->scratch().has_scaling_steps();
         }
         auto iterateScalingSteps() const
         {
-            return m_ScalingState->scratch().iterateScalingSteps();
+            return m_ScalingState->scratch().iterate_scaling_steps();
         }
         void addScalingStepDeferred(std::unique_ptr<ScalingStep> step)
         {
             m_DeferredActions.emplace_back([s = std::shared_ptr<ScalingStep>{std::move(step)}](ModelWarperV3UIState& state) mutable
             {
-                state.m_ScalingState->upd_scratch().addScalingStep(std::unique_ptr<ScalingStep>{s->clone()});
+                state.m_ScalingState->upd_scratch().add_scaling_step(std::unique_ptr<ScalingStep>{s->clone()});
                 state.m_ScalingState->commit_scratch("Add scaling step");
             });
         }
@@ -119,7 +119,7 @@ namespace
         {
             m_DeferredActions.emplace_back([path = step.getAbsolutePath()](ModelWarperV3UIState& state)
             {
-                if (state.m_ScalingState->upd_scratch().eraseScalingStep(path)) {
+                if (state.m_ScalingState->upd_scratch().erase_scaling_step(path)) {
                     state.m_ScalingState->commit_scratch("Erase scaling step");
                 }
             });
@@ -128,25 +128,25 @@ namespace
         {
             return step.validate(
                 m_ScalingCache,
-                m_ScalingState->scratch().getEffectiveScalingParameters(),
-                m_ScalingState->scratch().getSourceModel()
+                m_ScalingState->scratch().get_effective_scaling_parameters(),
+                m_ScalingState->scratch().get_source_model()
             );
         }
 
 
         bool hasScalingParameters() const
         {
-            return m_ScalingState->scratch().hasScalingParameterDeclarations();
+            return m_ScalingState->scratch().has_scaling_parameter_declarations();
         }
         ScalingParameters getEffectiveScalingParameters() const
         {
-            return m_ScalingState->scratch().getEffectiveScalingParameters();
+            return m_ScalingState->scratch().get_effective_scaling_parameters();
         }
         void setScalingParameterValueDeferred(const std::string& scalingParamName, ScalingParameterValue newValue)
         {
             m_DeferredActions.emplace_back([scalingParamName, newValue](ModelWarperV3UIState& state)
             {
-                if (state.m_ScalingState->upd_scratch().setScalingParameterOverride(scalingParamName, newValue)) {
+                if (state.m_ScalingState->upd_scratch().set_scaling_parameter_override(scalingParamName, newValue)) {
                     state.m_ScalingState->commit_scratch("Set scaling parameter");
                 }
             });
@@ -155,7 +155,7 @@ namespace
 
         std::shared_ptr<ModelStatePair> sourceModel()
         {
-            return m_ScalingState->upd_scratch().getSourceModelPtr();
+            return m_ScalingState->upd_scratch().get_source_model_ptr();
         }
 
 
@@ -170,7 +170,7 @@ namespace
             if (m_ScalingErrorMessage) {
                 return m_ScalingErrorMessage.value();
             }
-            else if (auto validationMessages = m_ScalingState->scratch().getEnabledScalingStepValidationMessages(m_ScalingCache); not validationMessages.empty()) {
+            else if (auto validationMessages = m_ScalingState->scratch().get_enabled_scaling_step_validation_messages(m_ScalingCache); not validationMessages.empty()) {
                 return validationMessages;
             }
             else {
@@ -195,7 +195,7 @@ namespace
                 return;
             }
 
-            const OpenSim::Model& sourceModel = m_ScalingState->scratch().getSourceModel();
+            const OpenSim::Model& sourceModel = m_ScalingState->scratch().get_source_model();
             const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
             if (not modelFilesystemLocation) {
                 log_error("cannot export scaled model: can't figure out where the source model is on-disk");
@@ -308,7 +308,7 @@ namespace
                 return m_MaybeCustomWarpedGeometryDirectory;  // top-prio is user-enacted choice (#1046).
             }
 
-            const OpenSim::Model& sourceModel = m_ScalingState->scratch().getSourceModel();
+            const OpenSim::Model& sourceModel = m_ScalingState->scratch().get_source_model();
             const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
             if (modelFilesystemLocation) {
                 return modelFilesystemLocation->parent_path() / "WarpedGeometry";
@@ -324,7 +324,7 @@ namespace
         // actions
         void actionCreateNewSourceModel()
         {
-            m_ScalingState->upd_scratch().resetSourceModel();
+            m_ScalingState->upd_scratch().reset_source_model();
             updateScaledModel();
             m_ScalingState->commit_scratch("Create new source model");
         }
@@ -376,14 +376,14 @@ namespace
         void actionOpenOsim(const std::filesystem::path& path)
         {
             App::singleton<RecentFiles>()->push_back(path);
-            m_ScalingState->upd_scratch().loadSourceModelFromOsim(path);
+            m_ScalingState->upd_scratch().load_source_model_from_osim(path);
             updateScaledModel();
             m_ScalingState->commit_scratch("Loaded osim file");
         }
 
         void actionCreateNewScalingDocument()
         {
-            m_ScalingState->upd_scratch().resetScalingDocument();
+            m_ScalingState->upd_scratch().reset_scaling_document();
             updateScaledModel();
             m_ScalingState->commit_scratch("Create new scaling document");
         }
@@ -405,7 +405,7 @@ namespace
                         return;  // Error, cancellation, or the user somehow selected >1 file.
                     }
 
-                    state->m_ScalingState->upd_scratch().loadScalingDocument(response.front());
+                    state->m_ScalingState->upd_scratch().load_scaling_document(response.front());
                     state->updateScaledModel();
                     state->m_ScalingState->commit_scratch("Loaded scaling document");
                 },
@@ -415,31 +415,31 @@ namespace
 
         void actionSaveScalingDocument()
         {
-            if (const auto existingPath = m_ScalingState->scratch().scalingDocumentFilesystemLocation()) {
-                m_ScalingState->upd_scratch().getScalingDocumentPtr()->saveTo(*existingPath);
+            if (const auto existingPath = m_ScalingState->scratch().scaling_document_filesystem_location()) {
+                m_ScalingState->upd_scratch().get_scaling_document_ptr()->save_to(*existingPath);
                 return;  // Document saved to existing filesystem location.
             }
 
             // Else: prompt the user to save it
-            App::upd().prompt_user_to_save_file_with_extension_async([doc = m_ScalingState->upd_scratch().getScalingDocumentPtr()](std::optional<std::filesystem::path> p)
+            App::upd().prompt_user_to_save_file_with_extension_async([doc = m_ScalingState->upd_scratch().get_scaling_document_ptr()](std::optional<std::filesystem::path> p)
             {
                 if (not p) {
                     return;  // user cancelled out of the prompt
                 }
-                doc->saveTo(*p);
+                doc->save_to(*p);
             }, "xml");
         }
 
         void actionApplyObjectEditToScalingDocument(const ObjectPropertyEdit& edit)
         {
-            m_ScalingState->upd_scratch().applyScalingObjectPropertyEdit(edit);
+            m_ScalingState->upd_scratch().apply_scaling_object_property_edit(edit);
             updateScaledModel();
             m_ScalingState->commit_scratch("change scaling property");
         }
 
         void actionDisableScalingStep(const OpenSim::ComponentPath& path)
         {
-            m_ScalingState->upd_scratch().disableScalingStep(path);
+            m_ScalingState->upd_scratch().disable_scaling_step(path);
             updateScaledModel();
             m_ScalingState->commit_scratch("disable scaling step");
         }
@@ -470,7 +470,7 @@ namespace
         {
             try {
                 m_ScalingCache.clear();  // Prevents over-caching
-                auto scaledModel = m_ScalingState->scratch().tryGenerateScaledModel(m_ScalingCache);
+                auto scaledModel = m_ScalingState->scratch().try_generate_scaled_model(m_ScalingCache);
                 if (not scaledModel) {
                     return;
                 }
@@ -505,7 +505,7 @@ namespace
 {
     Color ui_color(const ScalingStepValidationMessage& message)
     {
-        switch (message.getState()) {
+        switch (message.get_state()) {
         case ScalingStepValidationState::Warning: return Color::orange();
         case ScalingStepValidationState::Error:   return Color::muted_red();
         default:                                  return Color::muted_red();
@@ -600,13 +600,13 @@ namespace
 
                 ui::push_style_color(ui::ColorVar::Text, ui_color(message.payload));
                 std::stringstream ss;
-                ss << message.sourceScalingStepAbsPath.getComponentName() << ": " << message.payload.getMessage();
+                ss << message.source_scaling_step_abs_path.getComponentName() << ": " << message.payload.get_message();
                 ui::draw_text_bullet_pointed(std::move(ss).str());
                 ui::pop_style_color();
 
                 ui::same_line();
                 if (ui::draw_small_button("Disable Scaling Step")) {
-                    m_State->actionDisableScalingStep(message.sourceScalingStepAbsPath);
+                    m_State->actionDisableScalingStep(message.source_scaling_step_abs_path);
                 }
 
                 ui::pop_id();
@@ -909,11 +909,11 @@ namespace
                     for (const ScalingStepValidationMessage& message : messages) {
                         ui::push_style_color(ui::ColorVar::Text, ui_color(message));
                         ui::draw_bullet_point();
-                        if (const auto propName = message.tryGetPropertyName()) {
-                            ui::draw_text("{}: {}", *propName, message.getMessage());
+                        if (const auto propName = message.try_get_property_name()) {
+                            ui::draw_text("{}: {}", *propName, message.get_message());
                         }
                         else {
-                            ui::draw_text(message.getMessage());
+                            ui::draw_text(message.get_message());
                         }
                         ui::pop_style_color();
                     }
@@ -948,7 +948,7 @@ namespace
         {
             ui::draw_button(MSMICONS_PLUS "Add Scaling Step", {ui::get_content_region_available().x(), ui::calc_button_size("").y()});
             if (ui::begin_popup_context_menu("##AddScalingStepPopupMenu", ui::PopupFlag::MouseButtonLeft)) {
-                for (const auto& ptr : getScalingStepPrototypes()) {
+                for (const auto& ptr : get_scaling_step_prototypes()) {
                     ui::push_id(ptr.get());
                     if (ui::draw_selectable(ptr->label())) {
                         m_State->addScalingStepDeferred(std::unique_ptr<ScalingStep>{ptr->clone()});

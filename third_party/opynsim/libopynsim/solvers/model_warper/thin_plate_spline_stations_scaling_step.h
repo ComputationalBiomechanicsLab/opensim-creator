@@ -33,13 +33,13 @@ namespace opyn
             constructProperty_stations();
         }
     private:
-        std::vector<ScalingStepValidationMessage> implValidate(
+        std::vector<ScalingStepValidationMessage> impl_validate(
             ScalingCache& cache,
             const ScalingParameters& params,
             const OpenSim::Model& sourceModel) const final
         {
             // Get base class validation messages.
-            auto messages = ToggleableThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
+            auto messages = ToggleableThinPlateSplineScalingStep::impl_validate(cache, params, sourceModel);
 
             // Ensure every entry in `stations` can be found in the source model.
             for (int i = 0; i < getProperty_stations().size(); ++i) {
@@ -55,13 +55,13 @@ namespace opyn
             return messages;
         }
 
-        void implApplyScalingStep(
+        void impl_apply_scaling_step(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
             const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
+            const auto commonParams = calc_tps_scaling_step_common_params(parameters, sourceModel, resultModel);
 
             // Warp each station specified by the `stations` property.
             for (int i = 0; i < getProperty_stations().size(); ++i) {
@@ -72,17 +72,17 @@ namespace opyn
                 const auto* resultStation = FindComponent<OpenSim::Station>(resultModel, get_stations(i));
                 OSC_ASSERT_ALWAYS(resultStation && "could not find a station in the model");
 
-                const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
+                const SimTK::Vec3 warpedLocation = scalingCache.lookup_tps_warped_rigid_point(
                     sourceModel,
                     resultModel,
                     sourceStation->get_location(),
                     resultStation->get_location(),
                     sourceStation->getParentFrame(),
                     resultStation->getParentFrame(),
-                    *commonParams.sourceLandmarksFrame,
-                    *commonParams.resultLandmarksFrame,
-                    commonParams.tpsInputs,
-                    commonParams.compensateForFrameChanges
+                    *commonParams.source_landmarks_frame,
+                    *commonParams.result_landmarks_frame,
+                    commonParams.tps_inputs,
+                    commonParams.compensate_for_frame_changes
                 );
 
                 auto* resultStationMut = FindComponentMut<OpenSim::Station>(resultModel, get_stations(i));

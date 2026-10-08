@@ -21,9 +21,9 @@ namespace opyn
             ScalingStepValidationState state,
             std::string message) :
 
-            m_MaybePropertyName{std::move(propertyName)},
-            m_State{state},
-            m_Message{std::move(message)}
+            maybe_property_name_{std::move(propertyName)},
+            state_{state},
+            message_{std::move(message)}
         {}
 
         // Constructs a validation message that's in some (general) way related to
@@ -32,20 +32,20 @@ namespace opyn
             ScalingStepValidationState state,
             std::string message) :
 
-            m_State{state},
-            m_Message{std::move(message)}
+            state_{state},
+            message_{std::move(message)}
         {}
 
-        std::optional<osc::CStringView> tryGetPropertyName() const
+        std::optional<osc::CStringView> try_get_property_name() const
         {
-            return not m_MaybePropertyName.empty() ? std::optional{m_MaybePropertyName} : std::nullopt;
+            return not maybe_property_name_.empty() ? std::optional{maybe_property_name_} : std::nullopt;
         }
-        ScalingStepValidationState getState() const { return m_State; }
-        osc::CStringView getMessage() const { return m_Message; }
+        ScalingStepValidationState get_state() const { return state_; }
+        osc::CStringView get_message() const { return message_; }
 
     private:
-        std::string m_MaybePropertyName;
-        ScalingStepValidationState m_State;
-        std::string m_Message;
+        std::string maybe_property_name_;
+        ScalingStepValidationState state_;
+        std::string message_;
     };
 }

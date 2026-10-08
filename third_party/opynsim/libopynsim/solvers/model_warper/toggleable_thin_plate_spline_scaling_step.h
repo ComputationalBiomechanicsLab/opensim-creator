@@ -29,16 +29,20 @@ namespace opyn
             constructProperty_apply_non_affine_warp(true);
         }
 
-        CommonParameters calcTPSScalingStepCommonParams(
+        CommonParameters calc_tps_scaling_step_common_params(
             const ScalingParameters& parameters,
             const OpenSim::Model& sourceModel,
             const OpenSim::Model& resultModel) const
         {
-            auto rv = ThinPlateSplineScalingStep::calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
-            rv.tpsInputs.applyAffineTranslation = get_apply_affine_translation();
-            rv.tpsInputs.applyAffineScale = get_apply_affine_scale();
-            rv.tpsInputs.applyAffineRotation = get_apply_affine_rotation();
-            rv.tpsInputs.applyNonAffineWarp = get_apply_non_affine_warp();
+            auto rv = ThinPlateSplineScalingStep::calc_tps_scaling_step_common_params(
+                parameters,
+                sourceModel,
+                resultModel
+            );
+            rv.tps_inputs.apply_affine_translation = get_apply_affine_translation();
+            rv.tps_inputs.apply_affine_scale = get_apply_affine_scale();
+            rv.tps_inputs.apply_affine_rotation = get_apply_affine_rotation();
+            rv.tps_inputs.apply_non_affine_warp = get_apply_non_affine_warp();
             return rv;
         }
     };

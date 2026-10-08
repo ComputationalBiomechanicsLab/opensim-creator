@@ -34,13 +34,13 @@ namespace opyn
             constructProperty_bodies();
         }
     private:
-        std::vector<ScalingStepValidationMessage> implValidate(
+        std::vector<ScalingStepValidationMessage> impl_validate(
             ScalingCache& cache,
             const ScalingParameters& params,
             const OpenSim::Model& sourceModel) const final
         {
             // Get base class validation messages.
-            auto messages = ToggleableThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
+            auto messages = ToggleableThinPlateSplineScalingStep::impl_validate(cache, params, sourceModel);
 
             // Ensure every entry in `bodies` can be found in the source model.
             for (int i = 0; i < getProperty_bodies().size(); ++i) {
@@ -55,13 +55,13 @@ namespace opyn
             return messages;
         }
 
-        void implApplyScalingStep(
+        void impl_apply_scaling_step(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
             const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
+            const auto commonParams = calc_tps_scaling_step_common_params(parameters, sourceModel, resultModel);
 
             // Warp each specified center of mass, ensuring that the CoM is correctly
             // transformed into the TPS warp's coordinate system.
@@ -77,17 +77,17 @@ namespace opyn
 
                 // Warp the CoM, while accounting for different frames etc. between the TPS
                 // landmarks and the CoM.
-                const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
+                const SimTK::Vec3 warpedLocation = scalingCache.lookup_tps_warped_rigid_point(
                     sourceModel,
                     resultModel,
                     sourceBody->get_mass_center(),
                     resultBody->get_mass_center(),
                     *sourceBody,
                     *resultBody,
-                    *commonParams.sourceLandmarksFrame,
-                    *commonParams.resultLandmarksFrame,
-                    commonParams.tpsInputs,
-                    commonParams.compensateForFrameChanges
+                    *commonParams.source_landmarks_frame,
+                    *commonParams.result_landmarks_frame,
+                    commonParams.tps_inputs,
+                    commonParams.compensate_for_frame_changes
                 );
 
                 // Update the body with the new CoM

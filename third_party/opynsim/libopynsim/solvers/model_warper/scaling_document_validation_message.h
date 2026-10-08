@@ -10,7 +10,7 @@ namespace opyn
     // but any top-level validation concerns also). In MVC parlance, this is the M - so it shouldn't
     // directly use or refer to the UI.
     struct ScalingDocumentValidationMessage {
-        OpenSim::ComponentPath sourceScalingStepAbsPath;
+        OpenSim::ComponentPath source_scaling_step_abs_path;
         ScalingStepValidationMessage payload;
     };
 }

@@ -32,13 +32,13 @@ namespace opyn
             constructProperty_path_points();
         }
     private:
-        std::vector<ScalingStepValidationMessage> implValidate(
+        std::vector<ScalingStepValidationMessage> impl_validate(
             ScalingCache& cache,
             const ScalingParameters& params,
             const OpenSim::Model& sourceModel) const final
         {
             // Get base class validation messages.
-            auto messages = ToggleableThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
+            auto messages = ToggleableThinPlateSplineScalingStep::impl_validate(cache, params, sourceModel);
 
             // Ensure every entry in `path_points` can be found in the source model.
             for (int i = 0; i < getProperty_path_points().size(); ++i) {
@@ -54,13 +54,13 @@ namespace opyn
             return messages;
         }
 
-        void implApplyScalingStep(
+        void impl_apply_scaling_step(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
             const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
+            const auto commonParams = calc_tps_scaling_step_common_params(parameters, sourceModel, resultModel);
 
             // Warp each path point specified by the `path_points` property.
             for (int i = 0; i < getProperty_path_points().size(); ++i) {
@@ -71,17 +71,17 @@ namespace opyn
                 const auto* resultPathPoint = FindComponent<OpenSim::PathPoint>(resultModel, get_path_points(i));
                 OSC_ASSERT_ALWAYS(resultPathPoint && "could not find a path point in the model");
 
-                const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
+                const SimTK::Vec3 warpedLocation = scalingCache.lookup_tps_warped_rigid_point(
                     sourceModel,
                     resultModel,
                     sourcePathPoint->get_location(),
                     resultPathPoint->get_location(),
                     sourcePathPoint->getParentFrame(),
                     resultPathPoint->getParentFrame(),
-                    *commonParams.sourceLandmarksFrame,
-                    *commonParams.resultLandmarksFrame,
-                    commonParams.tpsInputs,
-                    commonParams.compensateForFrameChanges
+                    *commonParams.source_landmarks_frame,
+                    *commonParams.result_landmarks_frame,
+                    commonParams.tps_inputs,
+                    commonParams.compensate_for_frame_changes
                 );
 
                 auto* resultPathPointMut = FindComponentMut<OpenSim::PathPoint>(resultModel, get_path_points(i));

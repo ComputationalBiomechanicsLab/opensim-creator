@@ -16,27 +16,27 @@ namespace opyn
         template<std::same_as<double> T>
         std::optional<T> lookup(const std::string& key) const
         {
-            const auto it = m_Values.find(key);
-            if (it == m_Values.end()) {
+            const auto it = values_.find(key);
+            if (it == values_.end()) {
                 return std::nullopt;
             }
             return it->second;
         }
 
-        size_t size() const { return m_Values.size(); }
-        auto begin() const { return m_Values.begin(); }
-        auto end() const { return m_Values.end(); }
+        size_t size() const { return values_.size(); }
+        auto begin() const { return values_.begin(); }
+        auto end() const { return values_.end(); }
 
         auto try_emplace(const std::string& name, const ScalingParameterValue& value)
         {
-            return m_Values.try_emplace(name, value);
+            return values_.try_emplace(name, value);
         }
 
         auto insert_or_assign(const std::string& name, const ScalingParameterValue& value)
         {
-            return m_Values.insert_or_assign(name, value);
+            return values_.insert_or_assign(name, value);
         }
     private:
-        std::map<std::string, ScalingParameterValue> m_Values;
+        std::map<std::string, ScalingParameterValue> values_;
     };
 }

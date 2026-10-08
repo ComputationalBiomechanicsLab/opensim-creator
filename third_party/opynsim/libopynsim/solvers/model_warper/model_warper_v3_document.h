@@ -29,7 +29,7 @@ namespace opyn
     public:
         explicit ModelWarperV3Document()
         {
-            constructProperties();
+            construct_properties();
             finalizeFromProperties();
             finalizeConnections(*this);
         }
@@ -38,13 +38,13 @@ namespace opyn
         explicit ModelWarperV3Document(const std::filesystem::path& source) :
             Component{source.string(), false}  // Associate `Component` with `source`.
         {
-            constructProperties();
+            construct_properties();
             updateFromXMLDocument();
             finalizeFromProperties();
             finalizeConnections(*this);
         }
 
-        bool hasScalingSteps() const
+        bool has_scaling_steps() const
         {
             if (getNumImmediateSubcomponents() == 0) {
                 return false;
@@ -53,7 +53,7 @@ namespace opyn
             return lst.begin() != lst.end();
         }
 
-        size_t getNumScalingSteps() const
+        size_t get_num_scaling_steps() const
         {
             if (getNumImmediateSubcomponents() == 0) {
                 return 0;
@@ -62,12 +62,12 @@ namespace opyn
             return std::distance(lst.begin(), lst.end());
         }
 
-        auto iterateScalingSteps() const
+        auto iterate_scaling_steps() const
         {
             return getComponentList<ScalingStep>();
         }
 
-        void addScalingStep(std::unique_ptr<ScalingStep> step)
+        void add_scaling_step(std::unique_ptr<ScalingStep> step)
         {
             addComponent(step.release());
             clearConnections();
@@ -75,7 +75,7 @@ namespace opyn
             finalizeFromProperties();
         }
 
-        bool removeScalingStep(ScalingStep& step)
+        bool remove_scaling_step(ScalingStep& step)
         {
             if (not step.hasOwner()) {
                 return false;
@@ -91,14 +91,14 @@ namespace opyn
             return true;
         }
 
-        bool hasScalingParameters() const
+        bool has_scaling_parameters() const
         {
-            if (not hasScalingSteps()) {
+            if (not has_scaling_steps()) {
                 return false;
             }
-            for (const ScalingStep& step : iterateScalingSteps()) {
+            for (const ScalingStep& step : iterate_scaling_steps()) {
                 bool called = false;
-                step.forEachScalingParameterDeclaration([&called](const ScalingParameterDeclaration&) { called = true; });
+                step.for_each_scaling_parameter_declaration([&called](const ScalingParameterDeclaration&) { called = true; });
                 if (called) {
                     return true;
                 }
@@ -106,12 +106,12 @@ namespace opyn
             return false;
         }
 
-        size_t getNumScalingParameters() const
+        size_t get_num_scaling_parameters() const
         {
-            return getEffectiveScalingParameters().size();
+            return get_effective_scaling_parameters().size();
         }
 
-        ScalingParameters getEffectiveScalingParameters() const
+        ScalingParameters get_effective_scaling_parameters() const
         {
             ScalingParameters rv;
             if (getNumImmediateSubcomponents() == 0) {
@@ -119,8 +119,8 @@ namespace opyn
             }
 
             // Get/merge values from the scaling steps
-            for (const ScalingStep& step : iterateScalingSteps()) {
-                step.forEachScalingParameterDeclaration([&step, &rv](const ScalingParameterDeclaration& decl)
+            for (const ScalingStep& step : iterate_scaling_steps()) {
+                step.for_each_scaling_parameter_declaration([&step, &rv](const ScalingParameterDeclaration& decl)
                 {
                     const auto [it, inserted] = rv.try_emplace(decl.name(), decl.default_value());
                     if (not inserted and it->second != decl.default_value()) {
@@ -145,25 +145,25 @@ namespace opyn
             return rv;
         }
 
-        bool setScalingParameterOverride(const std::string& scalingParamName, ScalingParameterValue newValue)
+        bool set_scaling_parameter_override(const std::string& scalingParamName, ScalingParameterValue newValue)
         {
-            mutateScalingParammeterOverridesWithNewOverride(scalingParamName, newValue);
+            mutate_scaling_parammeter_overrides_with_new_override(scalingParamName, newValue);
             finalizeFromProperties();
             return true;
         }
 
-        void saveTo(const std::filesystem::path& p) const
+        void save_to(const std::filesystem::path& p) const
         {
             print(p.string());
         }
 
     private:
-        void constructProperties()
+        void construct_properties()
         {
             constructProperty_scaling_parameter_overrides();
         }
 
-        void mutateScalingParammeterOverridesWithNewOverride(const std::string& scalingParamName, ScalingParameterValue newValue)
+        void mutate_scaling_parammeter_overrides_with_new_override(const std::string& scalingParamName, ScalingParameterValue newValue)
         {
             // First, try to find an existing override with the same name and overwrite it
             const OpenSim::Property<ScalingParameterOverride>& overrides = getProperty_scaling_parameter_overrides();

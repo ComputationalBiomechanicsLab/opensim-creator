@@ -40,7 +40,7 @@ namespace opyn
         }
 
     private:
-        std::vector<ScalingStepValidationMessage> implValidate(
+        std::vector<ScalingStepValidationMessage> impl_validate(
             ScalingCache&,
             const ScalingParameters& parameters,
             const OpenSim::Model& sourceModel) const final
@@ -64,12 +64,12 @@ namespace opyn
             return messages;
         }
 
-        void implForEachScalingParameterDeclaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const final
+        void impl_for_each_scaling_parameter_declaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const final
         {
             callback(ScalingParameterDeclaration{"blending_factor", 1.0});
         }
 
-        void implApplyScalingStep(
+        void impl_apply_scaling_step(
             ScalingCache&,
             const ScalingParameters& parameters,
             const OpenSim::Model&,

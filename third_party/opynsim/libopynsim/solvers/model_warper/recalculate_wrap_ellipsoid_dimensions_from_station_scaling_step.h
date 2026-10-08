@@ -37,7 +37,7 @@ namespace opyn
             constructProperty_dimensions_scale_factors(SimTK::Vec3{1.0});
         }
     private:
-        std::vector<ScalingStepValidationMessage> implValidate(
+        std::vector<ScalingStepValidationMessage> impl_validate(
             ScalingCache&,
             const ScalingParameters&,
             const OpenSim::Model& model) const final
@@ -65,7 +65,7 @@ namespace opyn
             return messages;
         }
 
-        void implApplyScalingStep(
+        void impl_apply_scaling_step(
             ScalingCache&,
             const ScalingParameters&,
             const OpenSim::Model&,

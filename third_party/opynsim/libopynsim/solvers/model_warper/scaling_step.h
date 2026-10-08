@@ -41,55 +41,55 @@ namespace opyn
         osc::CStringView label() const { return get_label(); }
 
         // Sets this `ScalingStep`'s user-facing label.
-        void setLabel(osc::CStringView newLabel) { set_label(std::string{newLabel}); }
+        void set_label(osc::CStringView newLabel) { set_label(std::string{newLabel}); }
 
         // Calls `callback` with each parameter declaration that this `ScalingStep` accepts
         // at scaling-time.
         //
         // It is expected that higher-level engines provide values that satisfy these
-        // declarations to `applyScalingStep`.
-        void forEachScalingParameterDeclaration(
+        // declarations to `apply_scaling_step`.
+        void for_each_scaling_parameter_declaration(
             const std::function<void(const ScalingParameterDeclaration&)>& callback) const
         {
-            implForEachScalingParameterDeclaration(callback);
+            impl_for_each_scaling_parameter_declaration(callback);
         }
 
         // Returns a sequence of `ScalingStepValidationMessage`, which should be empty,
-        // or non-errors, before higher-level engines call `applyScalingStep` (otherwise,
-        // an exception may be thrown by `applyScalingStep`).
+        // or non-errors, before higher-level engines call `apply_scaling_step` (otherwise,
+        // an exception may be thrown by `apply_scaling_step`).
         std::vector<ScalingStepValidationMessage> validate(
             ScalingCache& scalingCache,
             const ScalingParameters& scalingParameters,
             const OpenSim::Model& sourceModel) const
         {
-            return implValidate(scalingCache, scalingParameters, sourceModel);
+            return impl_validate(scalingCache, scalingParameters, sourceModel);
         }
 
         // Applies this `ScalingStep`'s scaling function in-place to the `resultModel`. The
         // original `sourceModel` is also provided, if relevant.
         //
         // It is expected that `scalingParameters` contains at least the scaling parameter
-        // values that match the declarations emitted by `forEachScalingParameterDeclaration`.
-        void applyScalingStep(
+        // values that match the declarations emitted by `for_each_scaling_parameter_declaration`.
+        void apply_scaling_step(
             ScalingCache& scalingCache,
             const ScalingParameters& scalingParameters,
             const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const
         {
             if (get_enabled()) {
-                implApplyScalingStep(scalingCache, scalingParameters, sourceModel, resultModel);
+                impl_apply_scaling_step(scalingCache, scalingParameters, sourceModel, resultModel);
             }
         }
     private:
         // Implementors should provide the callback with any `ScalingParameterDeclaration`s in order
         // to ensure that the runtime can later provide the `ScalingParameterValue` during model
         // scaling.
-        virtual void implForEachScalingParameterDeclaration(const std::function<void(const ScalingParameterDeclaration&)>&) const
+        virtual void impl_for_each_scaling_parameter_declaration(const std::function<void(const ScalingParameterDeclaration&)>&) const
         {}
 
         // Implementors should return any validation warnings/errors related to this scaling step
         // (e.g. incorrect property value, missing external data, etc.).
-        virtual std::vector<ScalingStepValidationMessage> implValidate(
+        virtual std::vector<ScalingStepValidationMessage> impl_validate(
             ScalingCache&,
             const ScalingParameters&,
             const OpenSim::Model&) const
@@ -100,7 +100,7 @@ namespace opyn
         // Implementors should apply their scaling to the result model (the source model is also
         // available). Any computationally expensive scaling steps should be performed via
         // the `ScalingCache`.
-        virtual void implApplyScalingStep(
+        virtual void impl_apply_scaling_step(
             ScalingCache&,
             const ScalingParameters&,
             const OpenSim::Model&,

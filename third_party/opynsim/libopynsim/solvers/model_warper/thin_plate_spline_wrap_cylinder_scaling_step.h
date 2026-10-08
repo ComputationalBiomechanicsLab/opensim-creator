@@ -62,13 +62,13 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
             constructProperty_surface_projection_theta(0.0);
         }
     private:
-        std::vector<ScalingStepValidationMessage> implValidate(
+        std::vector<ScalingStepValidationMessage> impl_validate(
             ScalingCache& cache,
             const ScalingParameters& params,
             const OpenSim::Model& sourceModel) const final
         {
             // Get base class validation messages.
-            auto messages = ToggleableThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
+            auto messages = ToggleableThinPlateSplineScalingStep::impl_validate(cache, params, sourceModel);
 
             // Ensure every entry in `wrap_cylinders` can be found in the source model.
             for (int i = 0; i < getProperty_wrap_cylinders().size(); ++i) {
@@ -84,14 +84,14 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
             return messages;
         }
 
-        void implApplyScalingStep(
+        void impl_apply_scaling_step(
             ScalingCache& cache,
             const ScalingParameters& parameters,
             const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
             // Lookup/validate warping inputs.
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
+            const auto commonParams = calc_tps_scaling_step_common_params(parameters, sourceModel, resultModel);
 
             // Precalculate the surface point direction vector as "rotate a unit vector pointing
             // along X around the Z axis by theta amount" (see property documentation).
@@ -111,33 +111,33 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                 OSC_ASSERT_ALWAYS(resultWrapCylinder && "could not find a `WrapCylinder` in the model");
 
                 // Calculate the `WrapCylinder`'s new `translation` by warping the origin.
-                const SimTK::Vec3 newOriginPointInParent = cache.lookupTPSWarpedRigidPoint(
+                const SimTK::Vec3 newOriginPointInParent = cache.lookup_tps_warped_rigid_point(
                     sourceModel,
                     resultModel,
                     sourceWrapCylinder->get_translation(),
                     resultWrapCylinder->get_translation(),
                     sourceWrapCylinder->getFrame(),
                     resultWrapCylinder->getFrame(),
-                    *commonParams.sourceLandmarksFrame,
-                    *commonParams.resultLandmarksFrame,
-                    commonParams.tpsInputs,
-                    commonParams.compensateForFrameChanges
+                    *commonParams.source_landmarks_frame,
+                    *commonParams.result_landmarks_frame,
+                    commonParams.tps_inputs,
+                    commonParams.compensate_for_frame_changes
                 );
 
                 // Calculate the `WrapCylinder`'s new projected midline point by warping it.
                 const SimTK::Vec3 sourceMidlinePointInParent = sourceWrapCylinder->getTransform() * midlinePointInCylinderSpace;
                 const SimTK::Vec3 resultMidlinePointInParent = resultWrapCylinder->getTransform() * midlinePointInCylinderSpace;
-                const SimTK::Vec3 newMidlinePointInParent = cache.lookupTPSWarpedRigidPoint(
+                const SimTK::Vec3 newMidlinePointInParent = cache.lookup_tps_warped_rigid_point(
                     sourceModel,
                     resultModel,
                     sourceMidlinePointInParent,
                     resultMidlinePointInParent,
                     sourceWrapCylinder->getFrame(),
                     resultWrapCylinder->getFrame(),
-                    *commonParams.sourceLandmarksFrame,
-                    *commonParams.resultLandmarksFrame,
-                    commonParams.tpsInputs,
-                    commonParams.compensateForFrameChanges
+                    *commonParams.source_landmarks_frame,
+                    *commonParams.result_landmarks_frame,
+                    commonParams.tps_inputs,
+                    commonParams.compensate_for_frame_changes
                 );
 
                 // Calculate the source surface point by projecting the direction onto the `WrapCylinder`'s surface.
@@ -145,17 +145,17 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                 const SimTK::Vec3 resultSurfacePointInCylinderSpace = resultWrapCylinder->get_radius() * surfacePointDirectionInCylinderSpace;
                 const SimTK::Vec3 sourceSurfacePointInParent = sourceWrapCylinder->getTransform() * sourceSurfacePointInCylinderSpace;
                 const SimTK::Vec3 resultSurfacePointInParent = resultWrapCylinder->getTransform() * resultSurfacePointInCylinderSpace;
-                const SimTK::Vec3 newSurfacePointInParent = cache.lookupTPSWarpedRigidPoint(
+                const SimTK::Vec3 newSurfacePointInParent = cache.lookup_tps_warped_rigid_point(
                     sourceModel,
                     resultModel,
                     sourceSurfacePointInParent,
                     resultSurfacePointInParent,
                     sourceWrapCylinder->getFrame(),
                     resultWrapCylinder->getFrame(),
-                    *commonParams.sourceLandmarksFrame,
-                    *commonParams.resultLandmarksFrame,
-                    commonParams.tpsInputs,
-                    commonParams.compensateForFrameChanges
+                    *commonParams.source_landmarks_frame,
+                    *commonParams.result_landmarks_frame,
+                    commonParams.tps_inputs,
+                    commonParams.compensate_for_frame_changes
                 );
 
                 // The `WrapCylinder`'s new Z axis within the parent frame is a unit vector that

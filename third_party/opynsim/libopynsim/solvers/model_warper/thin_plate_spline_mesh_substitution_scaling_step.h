@@ -37,12 +37,12 @@ namespace opyn
             constructProperty_destination_mesh_file("");
         }
 
-        std::vector<ScalingStepValidationMessage> implValidate(
+        std::vector<ScalingStepValidationMessage> impl_validate(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
             const OpenSim::Model& sourceModel) const final
         {
-            auto messages = ThinPlateSplineScalingStep::implValidate(scalingCache, parameters, sourceModel);
+            auto messages = ThinPlateSplineScalingStep::impl_validate(scalingCache, parameters, sourceModel);
 
             // Ensure the model has a filesystem location (prerequisite).
             const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
@@ -76,14 +76,14 @@ namespace opyn
             return messages;
         }
 
-        void implApplyScalingStep(
+        void impl_apply_scaling_step(
             ScalingCache& cache,
             const ScalingParameters& parameters,
             const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
             // Lookup/validate warping inputs.
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
+            const auto commonParams = calc_tps_scaling_step_common_params(parameters, sourceModel, resultModel);
 
             // Lookup/validate warping inputs.
             const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(resultModel);
@@ -97,9 +97,9 @@ namespace opyn
             OSC_ASSERT_ALWAYS((dynamic_cast<const OpenSim::Mesh*>(sourceMesh) or dynamic_cast<const InMemoryMesh*>(sourceMesh)) && "'source_mesh_component_path' exists in the model but isn't mesh-like");
             OSC_ASSERT_ALWAYS(sourceMesh && "could not find `source_mesh_component_path` in the model");
 
-            const SimTK::Transform t = cache.lookupTPSAffineTransformWithoutScaling(commonParams.tpsInputs);
+            const SimTK::Transform t = cache.lookup_tps_affine_transform_without_scaling(commonParams.tps_inputs);
             const SimTK::Vec3 newScaleFactors =
-                (commonParams.tpsInputs.destinationLandmarksPrescale/commonParams.tpsInputs.sourceLandmarksPrescale) * sourceMesh->get_scale_factors();
+                (commonParams.tps_inputs.destination_landmarks_prescale/commonParams.tps_inputs.source_landmarks_prescale) * sourceMesh->get_scale_factors();
 
             // Find existing mesh
             auto* destinationMesh = FindComponentMut<OpenSim::Geometry>(resultModel, get_source_mesh_component_path());

@@ -15,8 +15,8 @@ TEST(ModelWarperV3Document, default_constructs_with_no_scaling_steps_or_paramete
     opyn::init();
 
     ModelWarperV3Document model_warper_v3_document;
-    ASSERT_FALSE(model_warper_v3_document.hasScalingSteps());
-    ASSERT_FALSE(model_warper_v3_document.hasScalingParameters());
+    ASSERT_FALSE(model_warper_v3_document.has_scaling_steps());
+    ASSERT_FALSE(model_warper_v3_document.has_scaling_parameters());
 }
 
 TEST(ModelWarperV3Document, can_load_scaling_document_written_by_opensimcreator)
@@ -30,8 +30,8 @@ TEST(ModelWarperV3Document, can_load_scaling_document_written_by_opensimcreator)
     opyn::init();
 
     ModelWarperV3Document model_warper_v3_document{opynsim_tests_resources_directory() / "Documents/model_warper/scaling-document.xml"};
-    ASSERT_TRUE(model_warper_v3_document.hasScalingSteps());
-    ASSERT_TRUE(model_warper_v3_document.hasScalingParameters());
+    ASSERT_TRUE(model_warper_v3_document.has_scaling_steps());
+    ASSERT_TRUE(model_warper_v3_document.has_scaling_parameters());
     ASSERT_NE(dynamic_cast<const ThinPlateSplineMeshesScalingStep*>(model_warper_v3_document.findComponent("thinplatesplinemeshesscalingstep")), nullptr);
     ASSERT_NE(dynamic_cast<const ThinPlateSplineStationsScalingStep*>(model_warper_v3_document.findComponent("thinplatesplinestationsscalingstep")), nullptr);
 }

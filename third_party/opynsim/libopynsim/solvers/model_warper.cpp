@@ -50,8 +50,8 @@ public:
     Impl() = default;
     explicit Impl(const std::filesystem::path& source) : warping_document_{source} {}
 
-    size_t num_scaling_steps() const { return warping_document_.getNumScalingSteps(); }
-    size_t num_scaling_parameters() const { return warping_document_.getNumScalingParameters(); }
+    size_t num_scaling_steps() const { return warping_document_.get_num_scaling_steps(); }
+    size_t num_scaling_parameters() const { return warping_document_.get_num_scaling_parameters(); }
 
     ModelSpecification warp(const ModelSpecification& model_specification) const
     {
@@ -80,14 +80,14 @@ private:
         InitializeModel(rv);
         InitializeState(rv);
 
-        if (not warping_document_.hasScalingSteps()) {
+        if (not warping_document_.has_scaling_steps()) {
             return rv;  // No `ScalingStep`s, nothing to do.
         }
 
         // Apply each `ScalingStep` one-by-one.
-        const ScalingParameters scaling_parameters = warping_document_.getEffectiveScalingParameters();
+        const ScalingParameters scaling_parameters = warping_document_.get_effective_scaling_parameters();
         for (const auto& scaling_step : warping_document_.getComponentList<ScalingStep>()) {
-            scaling_step.applyScalingStep(scaling_cache, scaling_parameters, msp.get_model(), rv);
+            scaling_step.apply_scaling_step(scaling_cache, scaling_parameters, msp.get_model(), rv);
         }
 
         return rv;
@@ -102,8 +102,8 @@ private:
             std::format_to(
                 std::back_inserter(rv),
                 "- {} ({})",
-                validation_message.payload.getMessage(),
-                validation_message.sourceScalingStepAbsPath.toString()
+                validation_message.payload.get_message(),
+                validation_message.source_scaling_step_abs_path.toString()
             );
         }
         return rv;
@@ -116,11 +116,11 @@ private:
     {
         std::vector<ScalingDocumentValidationMessage> rv;
 
-        if (not warping_document_.hasScalingSteps()) {
+        if (not warping_document_.has_scaling_steps()) {
             return rv;  // No scaling steps, no validation messages.
         }
 
-        const ScalingParameters scaling_params = warping_document_.getEffectiveScalingParameters();
+        const ScalingParameters scaling_params = warping_document_.get_effective_scaling_parameters();
         for (const auto& scaling_step : warping_document_.getComponentList<ScalingStep>()) {
             if (not scaling_step.get_enabled()) {
                 continue;  // Only enabled `ScalingStep`s are validated.
@@ -130,7 +130,7 @@ private:
             rv.reserve(rv.size() + messages.size());
             for (auto& message : messages) {
                 rv.push_back(ScalingDocumentValidationMessage{
-                    .sourceScalingStepAbsPath = scaling_step.getAbsolutePath(),
+                    .source_scaling_step_abs_path = scaling_step.getAbsolutePath(),
                     .payload = std::move(message),
                 });
             }

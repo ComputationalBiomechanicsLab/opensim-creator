@@ -16,14 +16,14 @@ namespace opyn
     class ScalingParameterDeclaration final {
     public:
         explicit ScalingParameterDeclaration(std::string name, ScalingParameterValue defaultValue) :
-            m_Name{std::move(name)},
-            m_DefaultValue{defaultValue}
+            name_{std::move(name)},
+            default_value_{defaultValue}
         {}
 
-        const std::string& name() const { return m_Name; }
-        const ScalingParameterValue& default_value() const { return m_DefaultValue; }
+        const std::string& name() const { return name_; }
+        const ScalingParameterValue& default_value() const { return default_value_; }
     private:
-        std::string m_Name;
-        ScalingParameterValue m_DefaultValue;
+        std::string name_;
+        ScalingParameterValue default_value_;
     };
 }
