@@ -27,7 +27,7 @@ namespace osc
         constexpr Matrix() = default;
 
         explicit constexpr Matrix(T s) :
-            value{
+            value_{
                 column_type{s, T{}, T{}, T{}},
                 column_type{T{}, s, T{}, T{}},
                 column_type{T{}, T{}, s, T{}},
@@ -41,7 +41,7 @@ namespace osc
             const T& x2, const T& y2, const T& z2, const T& w2,
             const T& x3, const T& y3, const T& z3, const T& w3) :
 
-            value{
+            value_{
                 column_type{x0, y0, z0, w0},
                 column_type{x1, y1, z1, w1},
                 column_type{x2, y2, z2, w2},
@@ -55,7 +55,7 @@ namespace osc
             const column_type& v2,
             const column_type& v3) :
 
-            value{v0, v1, v2, v3}
+            value_{v0, v1, v2, v3}
         {}
 
         template<
@@ -69,7 +69,7 @@ namespace osc
             const X2& x2, const Y2& y2, const Z2& z2, const W2& w2,
             const X3& x3, const Y3& y3, const Z3& z3, const W3& w3) :
 
-            value{
+            value_{
                 column_type{x0, y0, z0, w0},
                 column_type{x1, y1, z1, w1},
                 column_type{x2, y2, z2, w2},
@@ -84,7 +84,7 @@ namespace osc
             const Vector<V3, 4>& v3,
             const Vector<V4, 4>& v4) :
 
-            value{
+            value_{
                 column_type{v1},
                 column_type{v2},
                 column_type{v3},
@@ -93,7 +93,7 @@ namespace osc
         {}
 
         constexpr Matrix(const Matrix<T, 3, 3>& m) :
-            value{
+            value_{
                 column_type{m[0], T{}},
                 column_type{m[1], T{}},
                 column_type{m[2], T{}},
@@ -104,16 +104,16 @@ namespace osc
         template<typename U>
         Matrix& operator=(const Matrix<U, 4, 4>& m)
         {
-            this->value[0] = m[0];
-            this->value[1] = m[1];
-            this->value[1] = m[1];
-            this->value[2] = m[2];
+            this->value_[0] = m[0];
+            this->value_[1] = m[1];
+            this->value_[1] = m[1];
+            this->value_[2] = m[2];
             return *this;
         }
 
         constexpr size_type size() const { return 4; }
-        constexpr pointer data() { return value; }
-        constexpr const_pointer data() const { return value; }
+        constexpr pointer data() { return value_; }
+        constexpr const_pointer data() const { return value_; }
         constexpr iterator begin() { return data(); }
         constexpr const_iterator begin() const { return data(); }
         constexpr iterator end() { return data() + size(); }
@@ -126,50 +126,50 @@ namespace osc
         template<typename U>
         Matrix& operator+=(U s)
         {
-            this->value[0] += s;
-            this->value[1] += s;
-            this->value[2] += s;
-            this->value[3] += s;
+            this->value_[0] += s;
+            this->value_[1] += s;
+            this->value_[2] += s;
+            this->value_[3] += s;
             return *this;
         }
 
         template<typename U>
         Matrix& operator+=(const Matrix<U, 4, 4>& m)
         {
-            this->value[0] += m[0];
-            this->value[1] += m[1];
-            this->value[2] += m[2];
-            this->value[3] += m[3];
+            this->value_[0] += m[0];
+            this->value_[1] += m[1];
+            this->value_[2] += m[2];
+            this->value_[3] += m[3];
             return *this;
         }
 
         template<typename U>
         Matrix& operator-=(U s)
         {
-            this->value[0] -= s;
-            this->value[1] -= s;
-            this->value[2] -= s;
-            this->value[3] -= s;
+            this->value_[0] -= s;
+            this->value_[1] -= s;
+            this->value_[2] -= s;
+            this->value_[3] -= s;
             return *this;
         }
 
         template<typename U>
         Matrix& operator-=(const Matrix<U, 4, 4>& m)
         {
-            this->value[0] -= m[0];
-            this->value[1] -= m[1];
-            this->value[2] -= m[2];
-            this->value[3] -= m[3];
+            this->value_[0] -= m[0];
+            this->value_[1] -= m[1];
+            this->value_[2] -= m[2];
+            this->value_[3] -= m[3];
             return *this;
         }
 
         template<typename U>
         Matrix& operator*=(U s)
         {
-            this->value[0] *= s;
-            this->value[1] *= s;
-            this->value[2] *= s;
-            this->value[3] *= s;
+            this->value_[0] *= s;
+            this->value_[1] *= s;
+            this->value_[2] *= s;
+            this->value_[3] *= s;
             return *this;
         }
 
@@ -182,10 +182,10 @@ namespace osc
         template<typename U>
         Matrix& operator/=(U s)
         {
-            this->value[0] /= s;
-            this->value[1] /= s;
-            this->value[2] /= s;
-            this->value[3] /= s;
+            this->value_[0] /= s;
+            this->value_[1] /= s;
+            this->value_[2] /= s;
+            this->value_[3] /= s;
             return *this;
         }
 
@@ -197,19 +197,19 @@ namespace osc
 
         Matrix& operator++()
         {
-            ++this->value[0];
-            ++this->value[1];
-            ++this->value[2];
-            ++this->value[3];
+            ++this->value_[0];
+            ++this->value_[1];
+            ++this->value_[2];
+            ++this->value_[3];
             return *this;
         }
 
         Matrix& operator--()
         {
-            --this->value[0];
-            --this->value[1];
-            --this->value[2];
-            --this->value[3];
+            --this->value_[0];
+            --this->value_[1];
+            --this->value_[2];
+            --this->value_[3];
             return *this;
         }
 
@@ -228,7 +228,7 @@ namespace osc
         }
 
     private:
-        column_type value[4];
+        column_type value_[4];
     };
 
     template<typename T>

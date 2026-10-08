@@ -44,14 +44,14 @@ namespace osc
         using const_reverse_iterator = typename underlying_vector::const_reverse_iterator;
 
         explicit VariableLengthArray(std::pmr::memory_resource* upstream_allocator = std::pmr::new_delete_resource()) :
-            pool{stack_data_.data(), stack_data_.size(), upstream_allocator}
+            pool_{stack_data_.data(), stack_data_.size(), upstream_allocator}
         {
             vector_.reserve(N);  // reserve the stack as one unit of allocation
         }
 
         VariableLengthArray(const VariableLengthArray& other)
             requires std::copy_constructible<T> :
-            pool{stack_data_.data(), stack_data_.size(), other.pool.upstream_resource()}
+            pool_{stack_data_.data(), stack_data_.size(), other.pool_.upstream_resource()}
         {
             vector_.reserve(N);  // reserve the stack as one unit of allocation
             vector_.assign(other.vector_.begin(), other.vector_.end());
@@ -59,7 +59,7 @@ namespace osc
 
         VariableLengthArray(VariableLengthArray&& other) noexcept
             requires std::move_constructible<T> :
-            pool{stack_data_.data(), stack_data_.size(), other.pool.upstream_resource()}
+            pool_{stack_data_.data(), stack_data_.size(), other.pool_.upstream_resource()}
         {
             vector_.reserve(N);  // reserve the stack as one unit of allocation
             vector_.assign(std::make_move_iterator(other.vector_.begin()), std::make_move_iterator(other.vector_.end()));
@@ -69,7 +69,7 @@ namespace osc
             std::initializer_list<T> init,
             std::pmr::memory_resource* upstream_allocator = std::pmr::new_delete_resource())
             requires std::copy_constructible<T> :
-            pool{stack_data_.data(), stack_data_.size(), upstream_allocator}
+            pool_{stack_data_.data(), stack_data_.size(), upstream_allocator}
         {
             vector_.reserve(N);  // reserve the stack as one unit of allocation
             vector_.assign(init.begin(), init.end());
@@ -143,9 +143,9 @@ namespace osc
         alignas(T) std::array<std::byte, N * sizeof(T) + extra_bytes_> stack_data_;
 
         // A memory resource that uses `stack_data_` until `size() > N`, it then uses an upstream resource
-        std::pmr::monotonic_buffer_resource pool{stack_data_.data(), stack_data_.size(), std::pmr::new_delete_resource()};
+        std::pmr::monotonic_buffer_resource pool_{stack_data_.data(), stack_data_.size(), std::pmr::new_delete_resource()};
 
         // A vector that's backed by the above memory resource
-        underlying_vector vector_ = underlying_vector(&pool);
+        underlying_vector vector_ = underlying_vector(&pool_);
     };
 }

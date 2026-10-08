@@ -388,7 +388,7 @@ namespace osc
         // - this behavior makes the implementation simpler, because
         //   you don't have to handle `begin_offset_ == end_offset_` edge
         //   cases and one-past-the end out-of-bounds checks
-        class alignas(T) object_bytes { std::byte data[sizeof(T)]; };
+        class alignas(T) object_bytes { std::byte data_[sizeof(T)]; };
         std::array<object_bytes, N> raw_storage_bytes_{};
 
         // index (`T`-based, not raw byte based) of the first element
