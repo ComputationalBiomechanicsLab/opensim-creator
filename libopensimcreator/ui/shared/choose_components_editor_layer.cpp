@@ -82,7 +82,7 @@ namespace
         const auto onModelDecoration = [&state, &out](const OpenSim::Component& component, SceneDecoration&& decoration)
         {
             // update flags based on path
-            const StringName absPath = opyn::GetAbsolutePathStringName(component);
+            const StringName absPath = opyn::get_absolute_path_string_name(component);
             if (state.popupParams.componentsBeingAssignedTo.contains(absPath) or
                 state.alreadyChosenComponents.contains(absPath)) {
 
@@ -236,7 +236,7 @@ public:
         }
 
         // show tooltip
-        if (const OpenSim::Component* c = opyn::FindComponent(m_State.model->get_model(), m_State.hoveredComponent))
+        if (const OpenSim::Component* c = opyn::find_component(m_State.model->get_model(), m_State.hoveredComponent))
         {
             DrawComponentHoverTooltip(*c);
         }
@@ -283,7 +283,7 @@ public:
     bool tryToggleHover()
     {
         const auto& absPath = m_State.hoveredComponent;
-        const OpenSim::Component* component = opyn::FindComponent(m_State.model->get_model(), absPath);
+        const OpenSim::Component* component = opyn::find_component(m_State.model->get_model(), absPath);
 
         if (!component)
         {

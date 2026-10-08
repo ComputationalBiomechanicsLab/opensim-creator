@@ -31,7 +31,7 @@ osc::MiMesh::MiMesh(
     m_Attachment{attachment},
     m_MeshData{std::move(meshData)},
     m_Path{std::move(path)},
-    m_Name{opyn::SanitizeToOpenSimComponentName(m_Path.filename().replace_extension().string())}
+    m_Name{opyn::sanitize_to_open_sim_component_name(m_Path.filename().replace_extension().string())}
 {}
 
 std::optional<AABB> osc::MiMesh::calcBounds() const
@@ -81,5 +81,5 @@ std::ostream& osc::MiMesh::implWriteToStream(std::ostream& o) const
 
 void osc::MiMesh::implSetLabel(std::string_view sv)
 {
-    m_Name = opyn::SanitizeToOpenSimComponentName(sv);
+    m_Name = opyn::sanitize_to_open_sim_component_name(sv);
 }

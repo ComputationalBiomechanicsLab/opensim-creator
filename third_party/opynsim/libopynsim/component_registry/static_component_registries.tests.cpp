@@ -131,26 +131,26 @@ TEST(JointRegistry, can_convert_between_any_joint_without_an_exception_or_segfau
             // create a model with base joint
             OpenSim::Model model;
 
-            auto& body = AddBody(model, "body", 1.0, SimTK::Vec3{}, SimTK::Inertia(1.0));
+            auto& body = add_body(model, "body", 1.0, SimTK::Vec3{}, SimTK::Inertia(1.0));
             body.setMass(1.0);
 
-            auto& joint = AddJoint(model, entries[i].instantiate());
+            auto& joint = add_joint(model, entries[i].instantiate());
             joint.connectSocket_parent_frame(model.getGround());
             joint.connectSocket_child_frame(body);
 
-            FinalizeConnections(model);
-            InitializeModel(model);
-            InitializeState(model);
+            finalize_connections(model);
+            initialize_model(model);
+            initialize_state(model);
 
             // then switch the joint over
             auto new_joint = entries[j].instantiate();
-            CopyCommonJointProperties(joint, *new_joint);
-            auto& joint_set = UpdOwnerOrThrow<OpenSim::JointSet>(model, joint);
-            Assign(joint_set, joint, std::move(new_joint));
+            copy_common_joint_properties(joint, *new_joint);
+            auto& joint_set = upd_owner_or_throw<OpenSim::JointSet>(model, joint);
+            assign(joint_set, joint, std::move(new_joint));
 
-            FinalizeConnections(model);
-            InitializeModel(model);
-            InitializeState(model);
+            finalize_connections(model);
+            initialize_model(model);
+            initialize_state(model);
         }
     }
 }

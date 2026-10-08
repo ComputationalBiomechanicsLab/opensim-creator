@@ -118,7 +118,7 @@ private:
         }
 
         // clone prototype
-        std::unique_ptr<OpenSim::Component> rv = opyn::Clone(*m_Proto);
+        std::unique_ptr<OpenSim::Component> rv = opyn::clone(*m_Proto);
 
         // set name
         rv->setName(m_Name);
@@ -128,7 +128,7 @@ private:
             const OpenSim::AbstractSocket& socket = *m_ProtoSockets[i];
             const OpenSim::ComponentPath& connecteePath = m_SocketConnecteePaths[i];
 
-            const OpenSim::Component* connectee = opyn::FindComponent(model, connecteePath);
+            const OpenSim::Component* connectee = opyn::find_component(model, connecteePath);
 
             if (not connectee) {
                 return nullptr;  // invalid connectee slipped through
@@ -146,11 +146,11 @@ private:
             for (size_t i = 0; i < m_PathPoints.size(); ++i) {
                 const auto& pp = m_PathPoints[i];
 
-                if (opyn::IsEmpty(pp.actualFrame)) {
+                if (opyn::is_empty(pp.actualFrame)) {
                     return nullptr;  // invalid path slipped through
                 }
 
-                const auto* pof = opyn::FindComponent<OpenSim::PhysicalFrame>(model, pp.actualFrame);
+                const auto* pof = opyn::find_component<OpenSim::PhysicalFrame>(model, pp.actualFrame);
                 if (not pof) {
                     return nullptr;  // invalid path slipped through
                 }
@@ -170,7 +170,7 @@ private:
         const OpenSim::Model& model = m_Model->get_model();
 
         const bool hasName = !m_Name.empty();
-        const bool allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, std::bind_front(opyn::ContainsComponent, std::cref(model)));
+        const bool allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, std::bind_front(opyn::contains_component, std::cref(model)));
         const bool hasEnoughPathPoints =
             dynamic_cast<const OpenSim::PathActuator*>(m_Proto.get()) == nullptr or
             m_PathPoints.size() >= 2;
@@ -199,7 +199,7 @@ private:
     {
         auto maybeUpdater = m_PrototypePropertiesEditor.onDraw();
         if (maybeUpdater) {
-            OpenSim::AbstractProperty* prop = opyn::FindPropertyMut(*m_Proto, maybeUpdater->get_property_name());
+            OpenSim::AbstractProperty* prop = opyn::find_property_mut(*m_Proto, maybeUpdater->get_property_name());
             if (prop) {
                 maybeUpdater->apply(*prop);
             }
@@ -249,11 +249,11 @@ private:
         // iterate through potential connectees in model and print connect-able options
         int innerID = 0;
         for (const OpenSim::Component& c : m_Model->get_model().getComponentList()) {
-            if (not opyn::IsAbleToConnectTo(socket, c)) {
+            if (not opyn::is_able_to_connect_to(socket, c)) {
                 continue;  // can't connect to it
             }
 
-            if (dynamic_cast<const OpenSim::Station*>(&c) and opyn::IsChildOfA<OpenSim::Muscle>(c)) {
+            if (dynamic_cast<const OpenSim::Station*>(&c) and opyn::is_child_of_a<OpenSim::Muscle>(c)) {
                 continue;  // it's a muscle point: don't present it (noisy)
             }
 
@@ -261,7 +261,7 @@ private:
                 continue;  // not part of the user-enacted search set
             }
 
-            const OpenSim::ComponentPath absPath = opyn::GetAbsolutePath(c);
+            const OpenSim::ComponentPath absPath = opyn::get_absolute_path(c);
             const bool selected = absPath == connectee;
 
             ui::push_id(innerID++);
@@ -294,7 +294,7 @@ private:
 
         // choices
         for (const OpenSim::Component& c : model.getComponentList()) {
-            if (cpp23::contains(m_PathPoints, opyn::GetAbsolutePath(c), [](const auto& pp) { return pp.userChoice; })) {
+            if (cpp23::contains(m_PathPoints, opyn::get_absolute_path(c), [](const auto& pp) { return pp.userChoice; })) {
                 continue;  // already selected
             }
 
@@ -340,12 +340,12 @@ private:
 
             if (ui::draw_selectable(c.getName())) {
                 m_PathPoints.emplace_back(
-                    opyn::GetAbsolutePath(*userChoice),
-                    opyn::GetAbsolutePath(*actualFrame),
+                    opyn::get_absolute_path(*userChoice),
+                    opyn::get_absolute_path(*actualFrame),
                     locationInFrame
                 );
             }
-            ui::draw_tooltip_if_item_hovered(c.getName(), (opyn::GetAbsolutePathString(c) + " " + c.getConcreteClassName()));
+            ui::draw_tooltip_if_item_hovered(c.getName(), (opyn::get_absolute_path_string(c) + " " + c.getConcreteClassName()));
         }
 
         ui::end_child_panel();
@@ -396,8 +396,8 @@ private:
 
             ui::draw_text(m_PathPoints[i].userChoice.getComponentName());
             if (ui::is_item_hovered()) {
-                if (const OpenSim::Component* c = opyn::FindComponent(model, m_PathPoints[i].userChoice)) {
-                    ui::draw_tooltip(c->getName(), opyn::GetAbsolutePathString(*c));
+                if (const OpenSim::Component* c = opyn::find_component(model, m_PathPoints[i].userChoice)) {
+                    ui::draw_tooltip(c->getName(), opyn::get_absolute_path_string(*c));
                 }
             }
 
@@ -492,7 +492,7 @@ private:
     std::shared_ptr<OpenSim::Component> m_Proto;  // (may be shared with editor popups etc)
 
     // cached sequence of OpenSim::PhysicalFrame sockets in the prototype
-    std::vector<const OpenSim::AbstractSocket*> m_ProtoSockets{opyn::GetAllSockets(*m_Proto)};
+    std::vector<const OpenSim::AbstractSocket*> m_ProtoSockets{opyn::get_all_sockets(*m_Proto)};
 
     // user-assigned name for the to-be-added component
     std::string m_Name{m_Proto->getConcreteClassName()};

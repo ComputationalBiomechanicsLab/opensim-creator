@@ -71,9 +71,9 @@ namespace
     {
         if (1 <= i && i < opyn::ssize(pps))
         {
-            auto tmp = opyn::Clone(opyn::At(pps, i));
-            opyn::Assign(pps, i, opyn::At(pps, i-1));
-            opyn::Assign(pps, i-1, std::move(tmp));
+            auto tmp = opyn::clone(opyn::at(pps, i));
+            opyn::assign(pps, i, opyn::at(pps, i-1));
+            opyn::assign(pps, i-1, std::move(tmp));
         }
     }
 
@@ -81,9 +81,9 @@ namespace
     {
         if (0 <= i && i < opyn::ssize(pps)-1)
         {
-            auto tmp = opyn::Clone(opyn::At(pps, i));
-            opyn::Assign(pps, i, opyn::At(pps, i+1));
-            opyn::Assign(pps, i+1, std::move(tmp));
+            auto tmp = opyn::clone(opyn::at(pps, i));
+            opyn::assign(pps, i, opyn::at(pps, i+1));
+            opyn::assign(pps, i+1, std::move(tmp));
         }
     }
 
@@ -91,7 +91,7 @@ namespace
     {
         if (0 <= i && i < opyn::ssize(pps))
         {
-            opyn::EraseAt(pps, i);
+            opyn::erase_at(pps, i);
         }
     }
 
@@ -100,19 +100,19 @@ namespace
         ptrdiff_t i,
         const std::string& frameAbsPath)
     {
-        opyn::At(pps, i).updSocket("parent_frame").setConnecteePath(frameAbsPath);
+        opyn::at(pps, i).updSocket("parent_frame").setConnecteePath(frameAbsPath);
     }
 
     void ActionAddNewPathPoint(OpenSim::PathPointSet& pps)
     {
         const std::string frame = opyn::empty(pps) ?
             "/ground" :
-            opyn::At(pps, opyn::size(pps)-1).getSocket("parent_frame").getConnecteePath();
+            opyn::at(pps, opyn::size(pps)-1).getSocket("parent_frame").getConnecteePath();
 
         auto pp = std::make_unique<OpenSim::PathPoint>();
         pp->updSocket("parent_frame").setConnecteePath(frame);
 
-        opyn::Append(pps, std::move(pp));
+        opyn::append(pps, std::move(pp));
     }
 }
 
@@ -255,7 +255,7 @@ private:
 
     void drawIthPathPointTypeCell(const OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        ui::draw_text_disabled(opyn::At(pps, i).getConcreteClassName());
+        ui::draw_text_disabled(opyn::at(pps, i).getConcreteClassName());
     }
 
     // try, because the path point type might not actually have a set location
@@ -263,7 +263,7 @@ private:
     // (e.g. `MovingPathPoint`s)
     void tryDrawIthPathPointLocationEditorCells(OpenSim::PathPointSet& pps, ptrdiff_t i, int& column)
     {
-        OpenSim::AbstractPathPoint& app = opyn::At(pps, i);
+        OpenSim::AbstractPathPoint& app = opyn::at(pps, i);
 
         if (auto* const pp = dynamic_cast<OpenSim::PathPoint*>(&app))
         {
@@ -297,7 +297,7 @@ private:
     {
         const float width = ui::calc_text_size("/bodyset/a_typical_body_name").x();
 
-        const std::string& label = opyn::At(pps, i).getSocket("parent_frame").getConnecteePath();
+        const std::string& label = opyn::at(pps, i).getSocket("parent_frame").getConnecteePath();
 
         ui::set_next_item_width(width);
         if (ui::begin_combobox("##framesel", label))

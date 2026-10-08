@@ -213,10 +213,10 @@ TEST(OpenSimDecorationGenerator, ToOscMeshWorksAsIntended)
     const std::filesystem::path arrowPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "arrow.vtp";
 
     OpenSim::Model model;
-    auto& mesh = AddComponent(model, std::make_unique<OpenSim::Mesh>(arrowPath.string()));
+    auto& mesh = add_component(model, std::make_unique<OpenSim::Mesh>(arrowPath.string()));
     mesh.setFrame(model.getGround());
-    InitializeModel(model);
-    InitializeState(model);
+    initialize_model(model);
+    initialize_state(model);
     ASSERT_NO_THROW({ opyn::to_osc_mesh(model, model.getWorkingState(), mesh); });
 }
 
@@ -229,8 +229,8 @@ TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
 
     const std::filesystem::path tugOfWarPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models/Tug_of_War/Tug_of_War.osim";
     OpenSim::Model model{tugOfWarPath.string()};
-    InitializeModel(model);
-    InitializeState(model);
+    initialize_model(model);
+    initialize_state(model);
     osc::SceneCache meshCache;
     OpenSimDecorationOptions opts;
 
@@ -259,8 +259,8 @@ TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
 
     const std::filesystem::path soccerKickPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models/SoccerKickingModel/SoccerKickingModel.osim";
     OpenSim::Model model{soccerKickPath.string()};
-    InitializeModel(model);
-    InitializeState(model);
+    initialize_model(model);
+    initialize_state(model);
     osc::SceneCache meshCache;
 
     OpenSimDecorationOptions opts;
@@ -288,7 +288,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsForLigamentGeneratesLigament
     OpenSim::Model model;
     auto ligamentptr = std::make_unique<OpenSim::Ligament>();
     ligamentptr->setRestingLength(1.0);  // required in debug mode :(
-    auto& ligament = AddModelComponent(model, std::move(ligamentptr));
+    auto& ligament = add_model_component(model, std::move(ligamentptr));
     auto pp1 = std::make_unique<OpenSim::PathPoint>();
     pp1->setLocation({-1.0, 0.0, 0.0});
     pp1->setParentFrame(model.getGround());
@@ -300,9 +300,9 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsForLigamentGeneratesLigament
     ligament.updPath<OpenSim::GeometryPath>().updPathPointSet().adoptAndAppend(pp1.release());
     ligament.updPath<OpenSim::GeometryPath>().updPathPointSet().adoptAndAppend(pp2.release());
 
-    FinalizeConnections(model);
-    InitializeModel(model);
-    InitializeState(model);
+    finalize_connections(model);
+    initialize_model(model);
+    initialize_state(model);
 
     osc::SceneCache meshCache;
     OpenSimDecorationOptions opts;
@@ -331,8 +331,8 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelAndStateWorksAsExpected
     // setup model + options
     const std::filesystem::path soccerKickPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models/SoccerKickingModel/SoccerKickingModel.osim";
     OpenSim::Model model{soccerKickPath.string()};
-    InitializeModel(model);
-    InitializeState(model);
+    initialize_model(model);
+    initialize_state(model);
     osc::SceneCache cache;
     OpenSimDecorationOptions opts;
     opts.set_should_show_contact_forces(true);
@@ -366,8 +366,8 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpecte
     // setup model + options
     const std::filesystem::path soccerKickPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models/SoccerKickingModel/SoccerKickingModel.osim";
     OpenSim::Model model{soccerKickPath.string()};
-    InitializeModel(model);
-    SimTK::State& state = InitializeState(model);
+    initialize_model(model);
+    SimTK::State& state = initialize_state(model);
     osc::SceneCache cache;
     OpenSimDecorationOptions opts;
     opts.set_should_show_contact_forces(true);
@@ -601,7 +601,7 @@ TEST(GenerateModelDecorations, RadiusOfContactSphereIsCorrectlyUpdated)
     opyn::init();
 
     OpenSim::Model model;
-    auto& sphere = AddComponent<OpenSim::ContactSphere>(model);
+    auto& sphere = add_component<OpenSim::ContactSphere>(model);
     sphere.setRadius(0.1);
     sphere.setFrame(model.getGround());
     model.buildSystem();
@@ -638,7 +638,7 @@ TEST(GenerateModelDecorations, MusclesObeyAppearanceOpacity)
     OpenSim::Model model;
     model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
 
-    auto& musc = AddComponent<OpenSim::Millard2012EquilibriumMuscle>(model);
+    auto& musc = add_component<OpenSim::Millard2012EquilibriumMuscle>(model);
 
     auto& gp = musc.updGeometryPath();
     gp.appendNewPathPoint("p1", model.getGround(), {-1.0, 0.0, 0.0});
@@ -647,9 +647,9 @@ TEST(GenerateModelDecorations, MusclesObeyAppearanceOpacity)
     const double opacity = 0.27;
     gp.upd_Appearance().set_opacity(opacity);
 
-    opyn::FinalizeConnections(model);
-    opyn::InitializeModel(model);
-    const SimTK::State& state = opyn::InitializeState(model);
+    opyn::finalize_connections(model);
+    opyn::initialize_model(model);
+    const SimTK::State& state = opyn::initialize_state(model);
 
     osc::SceneCache sceneCache;
     opyn::OpenSimDecorationOptions options;
@@ -676,16 +676,16 @@ TEST(GenerateModelDecorations, GeometryPathsObeyAppearanceOpacity)
     OpenSim::Model model;
     model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
 
-    auto& gp = opyn::AddComponent<OpenSim::GeometryPath>(model);
+    auto& gp = opyn::add_component<OpenSim::GeometryPath>(model);
     gp.appendNewPathPoint("p1", model.getGround(), {-1.0, 0.0, 0.0});
     gp.appendNewPathPoint("p2", model.getGround(), { 1.0, 0.0, 0.0});
 
     const double opacity = 0.27;
     gp.upd_Appearance().set_opacity(opacity);
 
-    opyn::FinalizeConnections(model);
-    opyn::InitializeModel(model);
-    const SimTK::State& state = opyn::InitializeState(model);
+    opyn::finalize_connections(model);
+    opyn::initialize_model(model);
+    const SimTK::State& state = opyn::initialize_state(model);
 
     osc::SceneCache sceneCache;
     opyn::OpenSimDecorationOptions options;
@@ -711,7 +711,7 @@ TEST(GenerateModelDecorations, MusclesObeyWireframeRepresentation)
     OpenSim::Model model;
     model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
 
-    auto& musc = AddComponent<OpenSim::Millard2012EquilibriumMuscle>(model);
+    auto& musc = add_component<OpenSim::Millard2012EquilibriumMuscle>(model);
 
     auto& gp = musc.updGeometryPath();
     gp.appendNewPathPoint("p1", model.getGround(), {-1.0, 0.0, 0.0});
@@ -719,9 +719,9 @@ TEST(GenerateModelDecorations, MusclesObeyWireframeRepresentation)
 
     gp.upd_Appearance().set_representation(OpenSim::VisualRepresentation::DrawWireframe);
 
-    opyn::FinalizeConnections(model);
-    opyn::InitializeModel(model);
-    const SimTK::State& state = opyn::InitializeState(model);
+    opyn::finalize_connections(model);
+    opyn::initialize_model(model);
+    const SimTK::State& state = opyn::initialize_state(model);
 
     osc::SceneCache sceneCache;
     opyn::OpenSimDecorationOptions options;
@@ -749,12 +749,12 @@ TEST(GenerateModelDecorations, IMUsAreEmittedWithCorrectScaleFactors)
     // Create a model with an IMU.
     OpenSim::Model model;
     model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
-    auto& imu = AddComponent<OpenSim::IMU>(model);
+    auto& imu = add_component<OpenSim::IMU>(model);
     imu.connectSocket_frame(model.getGround());
 
-    opyn::FinalizeConnections(model);
-    opyn::InitializeModel(model);
-    const SimTK::State& state = opyn::InitializeState(model);
+    opyn::finalize_connections(model);
+    opyn::initialize_model(model);
+    const SimTK::State& state = opyn::initialize_state(model);
 
     osc::SceneCache sceneCache;
 
@@ -778,10 +778,10 @@ TEST(GenerateModelDecorations, LoadsMeshesFromRelativeDirectories)
         const std::filesystem::path p = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / dir / "model.osim";
         OpenSim::Model model{p.string()};
         model.upd_ModelVisualPreferences().upd_ModelDisplayHints().upd_show_frames() = false;  // Don't show frames
-        opyn::InitializeModel(model);
-        const SimTK::State& state = opyn::InitializeState(model);
+        opyn::initialize_model(model);
+        const SimTK::State& state = opyn::initialize_state(model);
 
-        const auto* mesh = opyn::FindComponent<OpenSim::Mesh>(model, "/triangle");
+        const auto* mesh = opyn::find_component<OpenSim::Mesh>(model, "/triangle");
         ASSERT_NE(mesh, nullptr);
 
         osc::SceneCache sceneCache;

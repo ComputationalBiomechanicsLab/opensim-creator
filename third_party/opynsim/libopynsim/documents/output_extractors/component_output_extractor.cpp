@@ -53,7 +53,7 @@ public:
     Impl(const OpenSim::AbstractOutput& ao,
          ComponentOutputSubfield subfield) :
 
-        component_abs_path_{GetAbsolutePath(GetOwnerOrThrow(ao))},
+        component_abs_path_{get_absolute_path(get_owner_or_throw(ao))},
         output_name_{ao.getName()},
         label_{generate_component_output_label(component_abs_path_, output_name_, subfield)},
         output_type_id_{&typeid(ao)},
@@ -77,7 +77,7 @@ public:
     OutputValueExtractor output_value_extractor(const OpenSim::Component& component) const
     {
         const OutputExtractorDataType datatype = output_type();
-        const OpenSim::AbstractOutput* const ao = FindOutput(component, component_abs_path_, output_name_);
+        const OpenSim::AbstractOutput* const ao = find_output(component, component_abs_path_, output_name_);
 
         if (not ao) {
             return make_null_extractor(datatype);  // cannot find output

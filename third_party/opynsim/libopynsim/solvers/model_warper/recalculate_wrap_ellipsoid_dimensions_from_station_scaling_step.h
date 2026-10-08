@@ -45,7 +45,7 @@ namespace opyn
             std::vector<ScalingStepValidationMessage> messages;
 
             // Ensure `station_path` exists in the model (and is a `Station`)
-            const auto* station = FindComponent<OpenSim::Station>(model, get_station_path());
+            const auto* station = find_component<OpenSim::Station>(model, get_station_path());
             if (not station) {
                 messages.emplace_back(
                     ScalingStepValidationState::Error,
@@ -54,7 +54,7 @@ namespace opyn
             }
 
             // Ensure `wrap_ellipsoid_path` exists in the model (and is a `WrapEllipsoid`)
-            const auto* wrapEllipsoid = FindComponent<OpenSim::WrapEllipsoid>(model, get_wrap_ellipsoid_path());
+            const auto* wrapEllipsoid = find_component<OpenSim::WrapEllipsoid>(model, get_wrap_ellipsoid_path());
             if (not wrapEllipsoid) {
                 messages.emplace_back(
                     ScalingStepValidationState::Error,
@@ -71,9 +71,9 @@ namespace opyn
             const OpenSim::Model&,
             OpenSim::Model& resultModel) const final
         {
-            const auto* station = FindComponent<OpenSim::Station>(resultModel, get_station_path());
+            const auto* station = find_component<OpenSim::Station>(resultModel, get_station_path());
             OSC_ASSERT_ALWAYS(station && "could not find a station in the model");
-            auto* wrapEllipsoid = FindComponentMut<OpenSim::WrapEllipsoid>(resultModel, get_wrap_ellipsoid_path());
+            auto* wrapEllipsoid = find_component_mut<OpenSim::WrapEllipsoid>(resultModel, get_wrap_ellipsoid_path());
             OSC_ASSERT_ALWAYS(wrapEllipsoid && "could not find a `WrapEllipsoid` in the model");
 
             // Put the station into the `WrapEllipsoid`'s reference frame.
@@ -90,8 +90,8 @@ namespace opyn
 
             // Update the `WrapEllipsoid` accordingly and reinitialize the model.
             wrapEllipsoid->set_dimensions(newEllipsoidDimensions);
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            initialize_model(resultModel);
+            initialize_state(resultModel);
         }
     };
 }

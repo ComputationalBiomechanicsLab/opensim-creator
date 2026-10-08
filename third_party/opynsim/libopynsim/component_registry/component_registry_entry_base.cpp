@@ -21,5 +21,5 @@ opyn::ComponentRegistryEntryBase::ComponentRegistryEntryBase(
 
 std::unique_ptr<OpenSim::Component> opyn::ComponentRegistryEntryBase::instantiate() const
 {
-    return Clone(*prototype_);
+    return clone(*prototype_);
 }

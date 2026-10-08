@@ -44,7 +44,7 @@ namespace opyn
 
             // Ensure every entry in `bodies` can be found in the source model.
             for (int i = 0; i < getProperty_bodies().size(); ++i) {
-                if (not FindComponent<OpenSim::Body>(sourceModel, get_bodies(i))) {
+                if (not find_component<OpenSim::Body>(sourceModel, get_bodies(i))) {
                     messages.emplace_back(
                         ScalingStepValidationState::Error,
                         std::format("{}: Cannot find a Body in 'bodies' in the source model (or it isn't a Body)", get_bodies(i))
@@ -68,11 +68,11 @@ namespace opyn
             for (int i = 0; i < getProperty_bodies().size(); ++i) {
 
                 // Find the CoM in the source model.
-                const auto* sourceBody = FindComponent<OpenSim::Body>(sourceModel, get_bodies(i));
+                const auto* sourceBody = find_component<OpenSim::Body>(sourceModel, get_bodies(i));
                 OSC_ASSERT_ALWAYS(sourceBody && "could not find a body in the source model");
 
                 // Find the CoM in the result model (i.e. the one that's midway through warping).
-                const auto* resultBody = FindComponent<OpenSim::Body>(resultModel, get_bodies(i));
+                const auto* resultBody = find_component<OpenSim::Body>(resultModel, get_bodies(i));
                 OSC_ASSERT_ALWAYS(resultBody && "could not find a body in the result model");
 
                 // Warp the CoM, while accounting for different frames etc. between the TPS
@@ -91,12 +91,12 @@ namespace opyn
                 );
 
                 // Update the body with the new CoM
-                auto* resultBodyMut = FindComponentMut<OpenSim::Body>(resultModel, get_bodies(i));
+                auto* resultBodyMut = find_component_mut<OpenSim::Body>(resultModel, get_bodies(i));
                 OSC_ASSERT_ALWAYS(resultBodyMut  && "could not find a corresponding body in the result model");
                 resultBodyMut->set_mass_center(warpedLocation);
             }
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            initialize_model(resultModel);
+            initialize_state(resultModel);
         }
     };
 }

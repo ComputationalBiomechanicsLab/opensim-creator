@@ -10,7 +10,7 @@ opyn::ModelStatePairInfo::ModelStatePairInfo() = default;
 opyn::ModelStatePairInfo::ModelStatePairInfo(const ModelStatePair& msp) :
     model_version_{msp.get_model_version()},
     state_version_{msp.get_state_version()},
-    selection_{GetAbsolutePathOrEmpty(msp.get_selected())},
-    hover_{GetAbsolutePathOrEmpty(msp.get_hovered())},
+    selection_{get_absolute_path_or_empty(msp.get_selected())},
+    hover_{get_absolute_path_or_empty(msp.get_hovered())},
     fixup_scale_factor_{msp.get_fixup_scale_factor()}
 {}

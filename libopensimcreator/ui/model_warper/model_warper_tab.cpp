@@ -196,7 +196,7 @@ namespace
             }
 
             const OpenSim::Model& sourceModel = m_ScalingState->scratch().get_source_model();
-            const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
+            const auto modelFilesystemLocation = try_find_input_file(sourceModel);
             if (not modelFilesystemLocation) {
                 log_error("cannot export scaled model: can't figure out where the source model is on-disk");
                 return;
@@ -205,8 +205,8 @@ namespace
             std::shared_ptr<ModelStatePair> scaled = std::get<std::shared_ptr<ModelStatePair>>(scalingResult);
 
             std::unique_ptr<OpenSim::Model> copy = std::make_unique<OpenSim::Model>(scaled->get_model());
-            InitializeModel(*copy);
-            InitializeState(*copy);
+            initialize_model(*copy);
+            initialize_state(*copy);
             {
                 // TODO/FIXME/HACK: this code was thrown together to solve an immediate problem
                 // of being able to export warped models, but it isn't very clean or robust (#1003).
@@ -240,7 +240,7 @@ namespace
                         auto& copyMesh = copy->updComponent<InMemoryMesh>(mesh.getAbsolutePath());
                         auto newMesh = std::make_unique<OpenSim::Mesh>();
                         newMesh->set_mesh_file(warpedMeshAbsPath.string());
-                        OverwriteGeometry(*copy, copyMesh, std::move(newMesh));
+                        overwrite_geometry(*copy, copyMesh, std::move(newMesh));
                     }
                 }
             }
@@ -309,7 +309,7 @@ namespace
             }
 
             const OpenSim::Model& sourceModel = m_ScalingState->scratch().get_source_model();
-            const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
+            const auto modelFilesystemLocation = try_find_input_file(sourceModel);
             if (modelFilesystemLocation) {
                 return modelFilesystemLocation->parent_path() / "WarpedGeometry";
             }
@@ -931,7 +931,7 @@ namespace
                     path,
                     this,
                     docPtr,
-                    [docPtr, path] { return FindComponent(*docPtr, path); }
+                    [docPtr, path] { return find_component(*docPtr, path); }
                 );
                 if (inserted) {
                     it->second.insertInBlacklist("components");

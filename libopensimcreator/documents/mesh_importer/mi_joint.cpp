@@ -28,7 +28,7 @@ osc::MiJoint::MiJoint(
 
     m_ID{id},
     m_JointTypeName{std::move(jointTypeName)},
-    m_UserAssignedName{opyn::SanitizeToOpenSimComponentName(userAssignedName)},
+    m_UserAssignedName{opyn::sanitize_to_open_sim_component_name(userAssignedName)},
     m_Parent{parent},
     m_Child{child},
     m_Xform{xform}
@@ -68,5 +68,5 @@ std::ostream& osc::MiJoint::implWriteToStream(std::ostream& o) const
 
 void osc::MiJoint::implSetLabel(std::string_view sv)
 {
-    m_UserAssignedName = opyn::SanitizeToOpenSimComponentName(sv);
+    m_UserAssignedName = opyn::sanitize_to_open_sim_component_name(sv);
 }

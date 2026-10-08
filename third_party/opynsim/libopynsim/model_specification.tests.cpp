@@ -44,14 +44,14 @@ TEST(ModelSpecification, can_construct_from_opensim_model)
     opyn::init();
 
     OpenSim::Model opensim_model;
-    auto& head = AddBody(
+    auto& head = add_body(
         opensim_model,
         "head",
         1.0,
         SimTK::Vec3{0.0},
         SimTK::Inertia{SimTK::Vec3{1.0}}
     );
-    auto& pin = AddJoint<OpenSim::PinJoint>(
+    auto& pin = add_joint<OpenSim::PinJoint>(
         opensim_model,
         "pin",
         opensim_model.getGround(),
@@ -165,10 +165,10 @@ TEST(ModelSpecification, bake_station_defined_frames_performs_conversion)
     opyn::init();
 
     OpenSim::Model model;
-    auto& origin = AddComponent<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{0.0});
-    auto& left   = AddComponent<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
-    auto& up     = AddComponent<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
-    AddComponent<OpenSim::StationDefinedFrame>(
+    auto& origin = add_component<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{0.0});
+    auto& left   = add_component<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& up     = add_component<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    add_component<OpenSim::StationDefinedFrame>(
         model,
         "sdf",
         SimTK::CoordinateAxis::XCoordinateAxis{},
@@ -206,7 +206,7 @@ TEST(ModelSpecification, to_osim_throws_if_specification_contains_in_memory_mesh
     const ModelSpecification model_specification = []
     {
         OpenSim::Model model;
-        auto& in_memory_mesh = AddComponent<InMemoryMesh>(model);
+        auto& in_memory_mesh = add_component<InMemoryMesh>(model);
         in_memory_mesh.setName("some_in_memory_mesh");
         in_memory_mesh.setFrame(model.getGround());
         model.finalizeConnections();
@@ -249,13 +249,13 @@ TEST(ModelSpecification, flush_in_memory_resources_to_flushes_in_memory_meshes_t
     {
         OpenSim::Model model;
 
-        auto& body1 = AddBody(model, "body1", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-        auto& imm1 = AttachGeometry<InMemoryMesh>(body1, second_mesh);
+        auto& body1 = add_body(model, "body1", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+        auto& imm1 = attach_geometry<InMemoryMesh>(body1, second_mesh);
         imm1.setName("in_memory_mesh1");
         imm1.setFrame(model.getGround());
 
-        auto& body2 = AddBody(model, "body2", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-        auto& imm2 = AttachGeometry<InMemoryMesh>(body2, second_mesh);
+        auto& body2 = add_body(model, "body2", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+        auto& imm2 = attach_geometry<InMemoryMesh>(body2, second_mesh);
         imm2.setName("in_memory_mesh2");
         imm2.setFrame(body2);
         model.finalizeConnections();

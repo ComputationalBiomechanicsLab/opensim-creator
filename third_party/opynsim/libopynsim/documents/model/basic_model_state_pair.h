@@ -14,7 +14,7 @@ namespace opyn
     // an `OpenSim::Model` + `SimTK::State` that is a value type, constructed with:
     //
     // - `opyn::Initialize`
-    // - (if creating a new state) `TryEquilibrateMusclesOrLogWarning(model, state)`
+    // - (if creating a new state) `try_equilibrate_muscles_or_log_warning(model, state)`
     // - (if creating a new state) `model.realizeDynamics(State&)` / `model.realizeReport(State&)`
     //
     // this is a *basic* class that only guarantees the model is *initialized* this way. It

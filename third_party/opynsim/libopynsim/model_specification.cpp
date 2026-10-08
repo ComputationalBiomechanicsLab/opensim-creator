@@ -31,19 +31,19 @@ namespace
         auto& model = *rv.upd();
 
         // Setup head body with decorations
-        auto& head = AddBody(model, "head", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-        auto& head_sphere_geom = AttachGeometry<OpenSim::Sphere>(head, 0.05);
+        auto& head = add_body(model, "head", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+        auto& head_sphere_geom = attach_geometry<OpenSim::Sphere>(head, 0.05);
         head_sphere_geom.setName("head_geom");
-        auto& head_rod_pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+        auto& head_rod_pof = add_component<OpenSim::PhysicalOffsetFrame>(
             head,
             "head_rod_offset",
             head,
             SimTK::Transform{SimTK::Vec3{0.0, 0.25, 0.0}}
         );
-        AttachGeometry<OpenSim::Cylinder>(head_rod_pof, 0.005, 0.25);
+        attach_geometry<OpenSim::Cylinder>(head_rod_pof, 0.005, 0.25);
 
         // Attach body to ground with a pin joint
-        auto& pin = AddJoint<OpenSim::PinJoint>(
+        auto& pin = add_joint<OpenSim::PinJoint>(
             model,
             "pin",
             model.getGround(),
@@ -62,17 +62,17 @@ namespace
     {
         auto rv = osc::make_cow<OpenSim::Model>();
         auto& model = *rv.upd();
-        auto& rod1 = AddBody(model, "rod1", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-        auto& rod1_sphere = AttachGeometry<OpenSim::Sphere>(rod1, 0.05);
+        auto& rod1 = add_body(model, "rod1", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+        auto& rod1_sphere = attach_geometry<OpenSim::Sphere>(rod1, 0.05);
         rod1_sphere.setName("rod1_geom_2");
-        auto& rod1_rod_frame = AddComponent<OpenSim::PhysicalOffsetFrame>(
+        auto& rod1_rod_frame = add_component<OpenSim::PhysicalOffsetFrame>(
             rod1,
             "rod1_geom_frame_1",
             rod1,
             SimTK::Transform{SimTK::Vec3{0.0, 0.25, 0.0}}
         );
-        AttachGeometry<OpenSim::Cylinder>(rod1_rod_frame, 0.005, 0.25);
-        auto& pin1 = AddJoint<OpenSim::PinJoint>(
+        attach_geometry<OpenSim::Cylinder>(rod1_rod_frame, 0.005, 0.25);
+        auto& pin1 = add_joint<OpenSim::PinJoint>(
             model,
             "pin1",
             model.getGround(),
@@ -83,17 +83,17 @@ namespace
             SimTK::Vec3{0.0}
         );
         pin1.updCoordinate().set_default_value(0.25*std::numbers::pi_v<double>);
-        auto& rod2 = AddBody(model, "rod2", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-        auto& rod2_sphere = AttachGeometry<OpenSim::Sphere>(rod2, 0.05);
+        auto& rod2 = add_body(model, "rod2", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+        auto& rod2_sphere = attach_geometry<OpenSim::Sphere>(rod2, 0.05);
         rod2_sphere.setName("rod2_geom_2");
-        auto& rod2_rod_frame = AddComponent<OpenSim::PhysicalOffsetFrame>(
+        auto& rod2_rod_frame = add_component<OpenSim::PhysicalOffsetFrame>(
             rod2,
             "rod2_geom_frame_1",
             rod2,
             SimTK::Transform{SimTK::Vec3{0.0, 0.25, 0.0}}
         );
-        AttachGeometry<OpenSim::Cylinder>(rod2_rod_frame, 0.005, 0.25);
-        auto& pin2 = AddJoint<OpenSim::PinJoint>(
+        attach_geometry<OpenSim::Cylinder>(rod2_rod_frame, 0.005, 0.25);
+        auto& pin2 = add_joint<OpenSim::PinJoint>(
             model,
             "pin2",
             rod1,
@@ -123,7 +123,7 @@ public:
     explicit Impl(OpenSim::Model&& opensim_model) :
         model_{osc::make_cow<OpenSim::Model>(std::move(opensim_model))}
     {
-        InitializeModel(*model_.upd());
+        initialize_model(*model_.upd());
     }
     explicit Impl(osc::CopyOnUpdPtr<OpenSim::Model> model) :
         model_{std::move(model)}
@@ -168,7 +168,7 @@ public:
 
     void bake_station_defined_frames()
     {
-        BakeStationDefinedFrames(*model_.upd());
+        opyn::bake_station_defined_frames(*model_.upd());
     }
 
     void flush_in_memory_resources_to(const std::filesystem::path& directory)
@@ -224,11 +224,11 @@ public:
             // Replace `InMemoryMesh` with a standard `OpenSim::Mesh`.
             auto opensim_mesh = std::make_unique<OpenSim::Mesh>();
             opensim_mesh->set_mesh_file(property_path.string());
-            OverwriteGeometry(mutable_model, imm, std::move(opensim_mesh));
+            overwrite_geometry(mutable_model, imm, std::move(opensim_mesh));
         }
 
         // Ensure mutated model is up-to-date etc.
-        InitializeModel(mutable_model);
+        initialize_model(mutable_model);
     }
 
 private:

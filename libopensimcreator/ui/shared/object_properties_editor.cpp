@@ -423,7 +423,7 @@ namespace
             if (not component) {
                 return {};
             }
-            return opyn::GetAbsolutePath(*component);
+            return opyn::get_absolute_path(*component);
         }
 
         Widget* tryGetParentWidget()
@@ -774,7 +774,7 @@ namespace
                 return nullptr;  // the object is not within the tree of the root component (#800)
             }
 
-            const auto positionPropName = opyn::TryGetPositionalPropertyName(*component);
+            const auto positionPropName = opyn::try_get_positional_property_name(*component);
             if (not positionPropName) {
                 return nullptr;  // the component doesn't have a logical positional property that can be edited with the transform
             }
@@ -788,7 +788,7 @@ namespace
                 return nullptr;  // the property this editor is editing isn't a logically positional one
             }
 
-            return opyn::TryGetParentToGroundFrame(*component);
+            return opyn::try_get_parent_to_ground_frame(*component);
         }
 
         // if the Vec3 property has a parent frame, returns a transform that maps the Vec3
@@ -822,7 +822,7 @@ namespace
                 return std::nullopt;
             }
 
-            const auto* frame = opyn::FindComponent<OpenSim::Frame>(getRootComponent(), *m_MaybeUserSelectedFrameAbsPath);
+            const auto* frame = opyn::find_component<OpenSim::Frame>(getRootComponent(), *m_MaybeUserSelectedFrameAbsPath);
             if (not frame) {
                 return std::nullopt;
             }
@@ -926,7 +926,7 @@ namespace
 
                 // draw selectable for each frame in the component tree
                 for (const OpenSim::Frame& frame : getRootComponent().getComponentList<OpenSim::Frame>()) {
-                    const OpenSim::ComponentPath frameAbsPath = opyn::GetAbsolutePath(frame);
+                    const OpenSim::ComponentPath frameAbsPath = opyn::get_absolute_path(frame);
 
                     ui::push_id(imguiID++);
                     bool selected = frameAbsPath == m_MaybeUserSelectedFrameAbsPath;
@@ -1361,7 +1361,7 @@ namespace
                 {
                     auto* downcasted = dynamic_cast<OpenSim::Property<OpenSim::HuntCrossleyForce::ContactParametersSet>*>(&p);
                     if (downcasted and not opyn::empty(downcasted->getValue())) {
-                        OpenSim::HuntCrossleyForce::ContactParameters& contactParams = opyn::At(downcasted->updValue(), 0);
+                        OpenSim::HuntCrossleyForce::ContactParameters& contactParams = opyn::at(downcasted->updValue(), 0);
                         if (params.hasProperty(resp->get_property_name())) {
                             OpenSim::AbstractProperty& childP = contactParams.updPropertyByName(resp->get_property_name());
                             resp->apply(childP);
@@ -1503,7 +1503,7 @@ namespace
                             componentPtr,
                             [component = componentPtr, parentPath = tryGetObjectAbsPath(), propname = prop->getName()]() -> const OpenSim::Function*
                             {
-                                auto* parentComponent = opyn::FindComponent(*component, parentPath);
+                                auto* parentComponent = opyn::find_component(*component, parentPath);
                                 if (not parentComponent) {
                                     return nullptr;
                                 }

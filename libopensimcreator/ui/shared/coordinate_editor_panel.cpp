@@ -44,7 +44,7 @@ public:
     void draw_content()
     {
         // load coords
-        std::vector<const OpenSim::Coordinate*> coordPtrs = opyn::GetCoordinatesInModel(m_Model->get_model());
+        std::vector<const OpenSim::Coordinate*> coordPtrs = opyn::get_coordinates_in_model(m_Model->get_model());
 
         // if there's no coordinates in the model, show a warning message and stop drawing
         if (coordPtrs.empty()) {
@@ -158,8 +158,8 @@ private:
             m_Model->set_hovered(&c);
 
             std::stringstream ss;
-            ss << "    motion type = " << opyn::GetMotionTypeDisplayName(c) << '\n';
-            ss << "    owner = " << opyn::TryGetOwnerName(c).value_or("(no owner)");
+            ss << "    motion type = " << opyn::get_motion_type_display_name(c) << '\n';
+            ss << "    owner = " << opyn::try_get_owner_name(c).value_or("(no owner)");
 
             ui::draw_tooltip(c.getName(), ss.str());
         }
@@ -172,7 +172,7 @@ private:
                 parent(),
                 "##componentcontextmenu",
                 m_Model,
-                opyn::GetAbsolutePath(c)
+                opyn::get_absolute_path(c)
             );
             App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
         }
@@ -215,16 +215,16 @@ private:
 
         ui::set_next_item_width(ui::get_content_region_available().x());
 
-        const float minValue = opyn::ConvertCoordValueToDisplayValue(c, c.getRangeMin());
-        const float maxValue = opyn::ConvertCoordValueToDisplayValue(c, c.getRangeMax());
-        float displayedValue = opyn::ConvertCoordValueToDisplayValue(c, c.getValue(m_Model->get_state()));
+        const float minValue = opyn::convert_coord_value_to_display_value(c, c.getRangeMin());
+        const float maxValue = opyn::convert_coord_value_to_display_value(c, c.getRangeMax());
+        float displayedValue = opyn::convert_coord_value_to_display_value(c, c.getValue(m_Model->get_state()));
 
         if (coordinateLocked) {
             ui::push_style_var(ui::StyleVar::DisabledAlpha, 0.2f);
             ui::begin_disabled();
         }
         if (ui::draw_float_circular_slider("##coordinatevalueeditor", &displayedValue, minValue, maxValue)) {
-            const double storedValue = opyn::ConvertCoordDisplayValueToStorageValue(c, displayedValue);
+            const double storedValue = opyn::convert_coord_display_value_to_storage_value(c, displayedValue);
             ActionSetCoordinateValue(*m_Model, c, storedValue);
         }
         if (coordinateLocked) {
@@ -232,7 +232,7 @@ private:
             ui::pop_style_var();
         }
         if (ui::is_item_deactivated_after_edit()) {
-            const double storedValue = opyn::ConvertCoordDisplayValueToStorageValue(c, displayedValue);
+            const double storedValue = opyn::convert_coord_display_value_to_storage_value(c, displayedValue);
             ActionSetCoordinateValueAndSave(*m_Model, c, storedValue);
         }
         ui::draw_tooltip_body_only_if_item_hovered("Ctrl-click the slider to edit");
@@ -240,16 +240,16 @@ private:
 
     void drawSpeedCell(const OpenSim::Coordinate& c)
     {
-        float displayedSpeed = opyn::ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Model->get_state()));
+        float displayedSpeed = opyn::convert_coord_value_to_display_value(c, c.getSpeedValue(m_Model->get_state()));
 
         ui::set_next_item_width(ui::get_content_region_available().x());
         if (ui::draw_float_meters_input("##coordinatespeededitor", displayedSpeed)) {
-            const double storedSpeed = opyn::ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
+            const double storedSpeed = opyn::convert_coord_display_value_to_storage_value(c, displayedSpeed);
             ActionSetCoordinateSpeed(*m_Model, c, storedSpeed);
         }
 
         if (ui::is_item_deactivated_after_edit()) {
-            const double storedSpeed = opyn::ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
+            const double storedSpeed = opyn::convert_coord_display_value_to_storage_value(c, displayedSpeed);
             ActionSetCoordinateSpeedAndSave(*m_Model, c, storedSpeed);
         }
     }

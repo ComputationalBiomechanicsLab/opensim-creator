@@ -15,11 +15,11 @@ TEST(InMemoryMesh, is_default_constructible)
 TEST(InMemoryMesh, default_constructed_instance_emits_blank_mesh)
 {
     OpenSim::Model model;
-    auto& mesh = AddComponent<InMemoryMesh>(model);
+    auto& mesh = add_component<InMemoryMesh>(model);
     mesh.connectSocket_frame(model.getGround());
-    FinalizeConnections(model);
-    InitializeModel(model);
-    SimTK::State& state = InitializeState(model);
+    finalize_connections(model);
+    initialize_model(model);
+    SimTK::State& state = initialize_state(model);
 
     int num_decorations_emitted = 0;
     osc::SceneDecoration last_decoration;

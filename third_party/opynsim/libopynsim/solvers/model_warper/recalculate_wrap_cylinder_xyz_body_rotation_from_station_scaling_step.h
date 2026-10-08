@@ -46,7 +46,7 @@ namespace opyn
             std::vector<ScalingStepValidationMessage> messages;
 
             // Ensure `station_path` exists in the model (and is a `Station`)
-            const auto* station = FindComponent<OpenSim::Station>(model, get_station_path());
+            const auto* station = find_component<OpenSim::Station>(model, get_station_path());
             if (not station) {
                 messages.emplace_back(
                     ScalingStepValidationState::Error,
@@ -55,7 +55,7 @@ namespace opyn
             }
 
             // Ensure `wrap_cylinder_path` exists in the model (and is a `WrapCylinder`)
-            const auto* wrapCylinder = FindComponent<OpenSim::WrapCylinder>(model, get_wrap_cylinder_path());
+            const auto* wrapCylinder = find_component<OpenSim::WrapCylinder>(model, get_wrap_cylinder_path());
             if (not wrapCylinder) {
                 messages.emplace_back(
                     ScalingStepValidationState::Error,
@@ -75,9 +75,9 @@ namespace opyn
             using std::acos;
             using std::abs;
 
-            const auto* station = FindComponent<OpenSim::Station>(resultModel, get_station_path());
+            const auto* station = find_component<OpenSim::Station>(resultModel, get_station_path());
             OSC_ASSERT_ALWAYS(station && "could not find a station in the model");
-            auto* wrapCylinder = FindComponentMut<OpenSim::WrapCylinder>(resultModel, get_wrap_cylinder_path());
+            auto* wrapCylinder = find_component_mut<OpenSim::WrapCylinder>(resultModel, get_wrap_cylinder_path());
             OSC_ASSERT_ALWAYS(wrapCylinder && "could not find a wrap cylinder in the model");
 
             // Re-express the station in the cylinder's reference frame
@@ -107,8 +107,8 @@ namespace opyn
 
             // Write the new rotation to the `WrapCylinder`'s `xyz_body_rotation` property as Euler angles
             wrapCylinder->set_xyz_body_rotation(newRotation.convertRotationToBodyFixedXYZ());
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            initialize_model(resultModel);
+            initialize_state(resultModel);
         }
     };
 }

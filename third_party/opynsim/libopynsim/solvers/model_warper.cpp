@@ -77,8 +77,8 @@ private:
 
         OpenSim::Model rv = msp.get_model();
         rv.clearConnections();
-        InitializeModel(rv);
-        InitializeState(rv);
+        initialize_model(rv);
+        initialize_state(rv);
 
         if (not warping_document_.has_scaling_steps()) {
             return rv;  // No `ScalingStep`s, nothing to do.

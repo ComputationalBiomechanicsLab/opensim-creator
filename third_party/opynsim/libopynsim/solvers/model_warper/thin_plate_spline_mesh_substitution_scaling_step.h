@@ -45,7 +45,7 @@ namespace opyn
             auto messages = ThinPlateSplineScalingStep::impl_validate(scalingCache, parameters, sourceModel);
 
             // Ensure the model has a filesystem location (prerequisite).
-            const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
+            const auto modelFilesystemLocation = try_find_input_file(sourceModel);
             if (not modelFilesystemLocation) {
                 messages.emplace_back(ScalingStepValidationState::Error, "The source model has no filesystem location.");
                 return messages;
@@ -65,7 +65,7 @@ namespace opyn
             }
 
             // Ensure `source_mesh_component_path` exists in the model
-            const auto* sourceMesh = FindComponent<OpenSim::Mesh>(sourceModel, get_source_mesh_component_path());
+            const auto* sourceMesh = find_component<OpenSim::Mesh>(sourceModel, get_source_mesh_component_path());
             if (not sourceMesh) {
                 messages.emplace_back(
                     ScalingStepValidationState::Error,
@@ -86,14 +86,14 @@ namespace opyn
             const auto commonParams = calc_tps_scaling_step_common_params(parameters, sourceModel, resultModel);
 
             // Lookup/validate warping inputs.
-            const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(resultModel);
+            const std::optional<std::filesystem::path> modelFilesystemLocation = try_find_input_file(resultModel);
             OSC_ASSERT_ALWAYS(modelFilesystemLocation && "The source model has no filesystem location");
 
             OSC_ASSERT_ALWAYS(not get_destination_mesh_file().empty());
             const std::filesystem::path destinationMeshPath = modelFilesystemLocation->parent_path() / osc::read_windows_or_unix_path_string(get_destination_mesh_file());
 
             OSC_ASSERT_ALWAYS(not get_source_mesh_component_path().empty());
-            const auto* sourceMesh = FindComponent<OpenSim::Geometry>(resultModel, get_source_mesh_component_path());
+            const auto* sourceMesh = find_component<OpenSim::Geometry>(resultModel, get_source_mesh_component_path());
             OSC_ASSERT_ALWAYS((dynamic_cast<const OpenSim::Mesh*>(sourceMesh) or dynamic_cast<const InMemoryMesh*>(sourceMesh)) && "'source_mesh_component_path' exists in the model but isn't mesh-like");
             OSC_ASSERT_ALWAYS(sourceMesh && "could not find `source_mesh_component_path` in the model");
 
@@ -102,17 +102,17 @@ namespace opyn
                 (commonParams.tps_inputs.destination_landmarks_prescale/commonParams.tps_inputs.source_landmarks_prescale) * sourceMesh->get_scale_factors();
 
             // Find existing mesh
-            auto* destinationMesh = FindComponentMut<OpenSim::Geometry>(resultModel, get_source_mesh_component_path());
+            auto* destinationMesh = find_component_mut<OpenSim::Geometry>(resultModel, get_source_mesh_component_path());
             OSC_ASSERT_ALWAYS(destinationMesh && "could not find `source_mesh_component_path` in the result model");
             OSC_ASSERT_ALWAYS((dynamic_cast<const OpenSim::Mesh*>(destinationMesh) or dynamic_cast<const InMemoryMesh*>(destinationMesh)) && "'source_mesh_component_path' exists in the model but isn't mesh-like");
             const std::string existingMeshName = destinationMesh->getName();
             // Figure out existing mesh's frame
-            auto* oldParentFrame = FindComponentMut<OpenSim::PhysicalFrame>(resultModel, destinationMesh->getFrame().getAbsolutePath());
+            auto* oldParentFrame = find_component_mut<OpenSim::PhysicalFrame>(resultModel, destinationMesh->getFrame().getAbsolutePath());
             OSC_ASSERT_ALWAYS(oldParentFrame);
             // Delete existing mesh from model
-            OSC_ASSERT_ALWAYS(TryDeleteComponentFromModel(resultModel, *destinationMesh));
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            OSC_ASSERT_ALWAYS(try_delete_component_from_model(resultModel, *destinationMesh));
+            initialize_model(resultModel);
+            initialize_state(resultModel);
 
             // Add new frame + mesh to the model
             auto* newFrame = new OpenSim::PhysicalOffsetFrame{*oldParentFrame, t.invert()};
@@ -126,8 +126,8 @@ namespace opyn
             newMesh->updSocket("frame").setConnecteePath(newFrame->getAbsolutePathString());
             resultModel.addComponent(newMesh.release());
 
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            initialize_model(resultModel);
+            initialize_state(resultModel);
         }
     };
 }

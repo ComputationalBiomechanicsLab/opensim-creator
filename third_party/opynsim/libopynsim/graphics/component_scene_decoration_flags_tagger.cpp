@@ -33,7 +33,7 @@ osc::SceneDecorationFlags opyn::ComponentSceneDecorationFlagsTagger::compute_fla
     // iterate through this component and all of its owners, because
     // selecting/highlighting a parent implies that this component
     // should also be highlighted
-    for (const OpenSim::Component* p = &component; p; p = GetOwner(*p)) {
+    for (const OpenSim::Component* p = &component; p; p = get_owner(*p)) {
         if (p == selected_) {
             rv |= osc::SceneDecorationFlag::RimHighlight0;
         }

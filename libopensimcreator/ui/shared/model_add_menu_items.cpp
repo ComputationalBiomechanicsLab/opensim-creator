@@ -83,7 +83,7 @@ public:
 private:
     void drawTargetComponentSpecializedAdders()
     {
-        const OpenSim::Component* component = opyn::FindComponent(m_Model->get_model(), m_MaybeTargetParentComponent);
+        const OpenSim::Component* component = opyn::find_component(m_Model->get_model(), m_MaybeTargetParentComponent);
         if (not component) {
             return;
         }
@@ -219,7 +219,7 @@ private:
 
     void drawPathWrapToggleMenuItems(const OpenSim::GeometryPath& gp)
     {
-        const auto wraps = opyn::GetAllWrapObjectsReferencedBy(gp);
+        const auto wraps = opyn::get_all_wrap_objects_referenced_by(gp);
         for (const auto& wo : m_Model->get_model().getComponentList<OpenSim::WrapObject>()) {
             const bool enabled = cpp23::contains(wraps, &wo);
 
@@ -333,7 +333,7 @@ private:
 
         std::stringstream label;
         label << "Add " << entry.name();
-        const OpenSim::Component* target = opyn::FindComponent(*m_Model, m_MaybeTargetParentComponent);
+        const OpenSim::Component* target = opyn::find_component(*m_Model, m_MaybeTargetParentComponent);
         if (target) {
             label << " to " << target->getName();
         }

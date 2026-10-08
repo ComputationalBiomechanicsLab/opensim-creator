@@ -73,8 +73,8 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
     std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "Leg39" / "leg39.osim";
 
     OpenSim::Model model{modelPath.string()};
-    InitializeModel(model);
-    InitializeState(model);
+    initialize_model(model);
+    initialize_state(model);
 
     const auto& registry = opyn::get_component_registry<OpenSim::Joint>();
     auto maybeIdx = index_of<OpenSim::FreeJoint>(registry);
@@ -112,13 +112,13 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 
         auto replacement = registry[idx].instantiate();
 
-        CopyCommonJointProperties(joint, *replacement);
+        copy_common_joint_properties(joint, *replacement);
 
         // update model
         try {
             model.updComponent<OpenSim::JointSet>(jointSet->getAbsolutePath()).set(jointIdx, replacement.release());
-            InitializeModel(model);
-            InitializeState(model);
+            initialize_model(model);
+            initialize_state(model);
         }
         catch (const std::exception& ex) {
             osc::log_info("exception thrown: {}", ex.what());
@@ -132,7 +132,7 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 TEST(OpenSimHelpers, GetAbsolutePathStringWorksForModel)
 {
     OpenSim::Model m;
-    const std::string s = GetAbsolutePathString(m);
+    const std::string s = get_absolute_path_string(m);
     ASSERT_EQ(s, "/");
 }
 
@@ -140,7 +140,7 @@ TEST(OpenSimHelpers, GetAbsolutePathStringWithOutparamWorksForModel)
 {
     OpenSim::Model m;
     std::string outparam = "somejunk";
-    GetAbsolutePathString(m, outparam);
+    get_absolute_path_string(m, outparam);
     ASSERT_EQ(outparam, "/");
 }
 
@@ -155,8 +155,8 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
     std::string outparam;
     for (const OpenSim::Component& c : m.getComponentList()) {
         // test both the "pure" and "assigning" versions at the same time
-        GetAbsolutePathString(c, outparam);
-        ASSERT_EQ(c.getAbsolutePathString(), GetAbsolutePathString(c));
+        get_absolute_path_string(c, outparam);
+        ASSERT_EQ(c.getAbsolutePathString(), get_absolute_path_string(c));
         ASSERT_EQ(c.getAbsolutePathString(), outparam);
     }
 }
@@ -170,13 +170,13 @@ TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexM
     OpenSim::Model m{modelPath.string()};
     m.finalizeFromProperties();
     for (const OpenSim::Component& c : m.getComponentList()) {
-        ASSERT_EQ(c.getAbsolutePath(), GetAbsolutePath(c));
+        ASSERT_EQ(c.getAbsolutePath(), get_absolute_path(c));
     }
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReturnsEmptyIfPassedANullptr)
 {
-    ASSERT_EQ(OpenSim::ComponentPath{}, GetAbsolutePathOrEmpty(nullptr));
+    ASSERT_EQ(OpenSim::ComponentPath{}, get_absolute_path_or_empty(nullptr));
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReturnsSameResultAsOpenSimVersionForComplexModel)
@@ -188,7 +188,7 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReturnsSameResultAsOpenSimVersionForC
     OpenSim::Model m{modelPath.string()};
     m.finalizeFromProperties();
     for (const OpenSim::Component& c : m.getComponentList()) {
-        ASSERT_EQ(c.getAbsolutePath(), GetAbsolutePathOrEmpty(&c));
+        ASSERT_EQ(c.getAbsolutePath(), get_absolute_path_or_empty(&c));
     }
 }
 
@@ -201,20 +201,20 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
     std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model originalModel{modelPath.string()};
-    InitializeModel(originalModel);
+    initialize_model(originalModel);
     OpenSim::Model modifiedModel{originalModel};
-    InitializeModel(modifiedModel);
+    initialize_model(modifiedModel);
 
     // iterate over the original (const) model, so that iterator
     // invalidation can't happen
     for (const OpenSim::Component& c : originalModel.getComponentList()) {
         // if the component still exists in the to-be-deleted-from model
         // (it may have been indirectly deleted), then try to delete it
-        if (OpenSim::Component* lookup = FindComponentMut(modifiedModel, c.getAbsolutePath())) {
-            if (TryDeleteComponentFromModel(modifiedModel, *lookup)) {
+        if (OpenSim::Component* lookup = find_component_mut(modifiedModel, c.getAbsolutePath())) {
+            if (try_delete_component_from_model(modifiedModel, *lookup)) {
                 osc::log_info("deleted {} ({})", c.getName(), c.getConcreteClassName());
-                InitializeModel(modifiedModel);
-                InitializeState(modifiedModel);
+                initialize_model(modifiedModel);
+                initialize_state(modifiedModel);
             }
         }
     }
@@ -232,7 +232,7 @@ TEST(OpenSimHelpers, InitializeModelAndInitializeStateWorkOnModelWithNotOptimize
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "opensim-creator_1070_repro.osim";
     OpenSim::Model model{brokenFilePath.string()};
-    InitializeModel(model);  // shouldn't throw
+    initialize_model(model);  // shouldn't throw
 
     // sanity check: the model should throw when equilibrating the muscles
     {
@@ -240,7 +240,7 @@ TEST(OpenSimHelpers, InitializeModelAndInitializeStateWorkOnModelWithNotOptimize
         ASSERT_ANY_THROW({ model.equilibrateMuscles(state); }) << "the user-provided osim file should contain a defect that prevents equilibration";
     }
 
-    InitializeState(model);  // shouldn't throw
+    initialize_state(model);  // shouldn't throw
 }
 
 // useful, because it enables adding geometry etc. into the component set that the user can
@@ -248,14 +248,14 @@ TEST(OpenSimHelpers, InitializeModelAndInitializeStateWorkOnModelWithNotOptimize
 TEST(OpenSimHelpers, CanDeleteAnOffsetFrameFromAModelsComponentSet)
 {
     OpenSim::Model model;
-    auto& pof = AddModelComponent(model, std::make_unique<OpenSim::PhysicalOffsetFrame>());
+    auto& pof = add_model_component(model, std::make_unique<OpenSim::PhysicalOffsetFrame>());
     pof.setParentFrame(model.getGround());
-    FinalizeConnections(model);
-    InitializeModel(model);
-    InitializeState(model);
+    finalize_connections(model);
+    initialize_model(model);
+    initialize_state(model);
 
     ASSERT_EQ(model.get_ComponentSet().getSize(), 1);
-    ASSERT_TRUE(TryDeleteComponentFromModel(model, pof));
+    ASSERT_TRUE(try_delete_component_from_model(model, pof));
     ASSERT_EQ(model.get_ComponentSet().getSize(), 0);
 }
 
@@ -267,7 +267,7 @@ TEST(OpenSimHelpers, AddModelComponentReturnsProvidedPointer)
     p->setParentFrame(m.getGround());
 
     const OpenSim::PhysicalOffsetFrame* expected = p.get();
-    ASSERT_EQ(&AddModelComponent(m, std::move(p)), expected);
+    ASSERT_EQ(&add_model_component(m, std::move(p)), expected);
 }
 
 TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
@@ -277,8 +277,8 @@ TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
     auto p = std::make_unique<OpenSim::PhysicalOffsetFrame>();
     p->setParentFrame(m.getGround());
 
-    OpenSim::PhysicalOffsetFrame& s = AddModelComponent(m, std::move(p));
-    FinalizeConnections(m);
+    OpenSim::PhysicalOffsetFrame& s = add_model_component(m, std::move(p));
+    finalize_connections(m);
 
     ASSERT_EQ(m.get_ComponentSet().getSize(), 1);
     ASSERT_EQ(dynamic_cast<const OpenSim::Component*>(&m.get_ComponentSet()[0]), dynamic_cast<const OpenSim::Component*>(&s));
@@ -288,8 +288,8 @@ TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
 //
 // the bug is fundamentally because `Component::finalizeConnections` messes
 // around with stale pointers to deleted slave components. This mid-level
-// test is here in case OSC is doing some kind of magic in `FinalizeConnections`
-// that `OpenSim` doesn't do
+// test is here in case OSC is doing some kind of magic in `finalize_connections`
+// that `OpenSim` doesn't do.
 TEST(OpenSimHelpers, FinalizeConnectionsWithUnusualJointTopologyDoesNotSegfault)
 {
     const std::filesystem::path brokenFilePath =
@@ -298,7 +298,7 @@ TEST(OpenSimHelpers, FinalizeConnectionsWithUnusualJointTopologyDoesNotSegfault)
     model.finalizeFromProperties();
 
     for (size_t i = 0; i < 10; ++i) {
-        FinalizeConnections(model);
+        finalize_connections(model);
     }
 }
 
@@ -307,7 +307,7 @@ TEST(OpenSimHelpers, ForEachIsNotCalledOnRootComponent)
     Root root;
     root.finalizeFromProperties();
     size_t n = 0;
-    ForEachComponent(root, [&n](const OpenSim::Component&){ ++n; });
+    for_each_component(root, [&n](const OpenSim::Component&){ ++n; });
     ASSERT_EQ(n, 2);
 }
 
@@ -315,16 +315,16 @@ TEST(OpenSimHelpers, GetNumChildrenReturnsExpectedNumber)
 {
     Root root;
     root.finalizeFromProperties();
-    ASSERT_EQ(GetNumChildren(root), 2);
+    ASSERT_EQ(get_num_children(root), 2);
 }
 
 TEST(OpenSimHelpers, TypedGetNumChildrenOnlyCountsChildrenWithGivenType)
 {
     Root root;
     root.finalizeFromProperties();
-    ASSERT_EQ(GetNumChildren<Child1>(root), 1);
-    ASSERT_EQ(GetNumChildren<Child2>(root), 1);
-    ASSERT_EQ(GetNumChildren<InnerParent>(root), 2);
+    ASSERT_EQ(get_num_children<Child1>(root), 1);
+    ASSERT_EQ(get_num_children<Child2>(root), 1);
+    ASSERT_EQ(get_num_children<InnerParent>(root), 2);
 }
 
 TEST(OpenSimHelpers, WriteComponentTopologyGraphAsDotViz)
@@ -332,7 +332,7 @@ TEST(OpenSimHelpers, WriteComponentTopologyGraphAsDotViz)
     Root root;
     root.finalizeConnections(root);
     std::stringstream ss;
-    WriteComponentTopologyGraphAsDotViz(root, ss);
+    write_component_topology_graph_as_dot_viz(root, ss);
 
     const std::string rv = ss.str();
     ASSERT_TRUE(rv.contains("digraph Component"));
@@ -349,7 +349,7 @@ TEST(OpenSimHelpers, WriteModelMultibodySystemGraphAsDotViz)
     model.buildSystem();
 
     std::stringstream ss;
-    WriteModelMultibodySystemGraphAsDotViz(model, ss);
+    write_model_multibody_system_graph_as_dot_viz(model, ss);
 
     const std::string rv = ss.str();
     ASSERT_FALSE(rv.empty());
@@ -374,13 +374,13 @@ TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
 
     std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
     OpenSim::Model m{modelPath.string()};
-    InitializeModel(m);
-    InitializeState(m);
+    initialize_model(m);
+    initialize_state(m);
 
     for (const auto& [geomAbsPath, expectedWrapObjectNames] : expectedWraps) {
-        const auto* gp = FindComponent<OpenSim::GeometryPath>(m, geomAbsPath);
+        const auto* gp = find_component<OpenSim::GeometryPath>(m, geomAbsPath);
         OSC_ASSERT_ALWAYS(gp != nullptr && "maybe the rajagopal model has changed?");
-        for (const OpenSim::WrapObject* wo : GetAllWrapObjectsReferencedBy(*gp)) {
+        for (const OpenSim::WrapObject* wo : get_all_wrap_objects_referenced_by(*gp)) {
             ASSERT_TRUE(osc::cpp23::contains(expectedWrapObjectNames, wo->getName()));
         }
     }
@@ -396,7 +396,7 @@ TEST(OpenSimHelpers, IsAllElementsUniqueReturnsTrueForUniqueCase)
     els.append(4);
     els.append(-2);
 
-    ASSERT_TRUE(IsAllElementsUnique(els));
+    ASSERT_TRUE(is_all_elements_unique(els));
 }
 
 TEST(OpenSimHelpers, IsAllElementsUniqueReturnsFalseForNotUniqueCase)
@@ -409,12 +409,12 @@ TEST(OpenSimHelpers, IsAllElementsUniqueReturnsFalseForNotUniqueCase)
     els.append(4);  // uh oh
     els.append(-2);
 
-    ASSERT_FALSE(IsAllElementsUnique(els));
+    ASSERT_FALSE(is_all_elements_unique(els));
 }
 
 TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsUntitledWhenProvidedInMemoryModel)
 {
-    ASSERT_EQ(RecommendedDocumentName(OpenSim::Model{}), "untitled.osim");
+    ASSERT_EQ(recommended_document_name(OpenSim::Model{}), "untitled.osim");
 }
 
 TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsFilenameIfProvidedLoadedModel)
@@ -422,7 +422,7 @@ TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsFilenameIfProvidedLoadedMode
     opyn::init();
     std::filesystem::path modelPath = std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "models" / "Blank" / "blank.osim";
     OpenSim::Model model{modelPath.string()};
-    ASSERT_EQ(RecommendedDocumentName(model), "blank.osim");
+    ASSERT_EQ(recommended_document_name(model), "blank.osim");
 }
 
 TEST(OpenSimHelpers, HasModelFileExtension_AcceptsCapitalizedOsimExtension)
@@ -431,18 +431,18 @@ TEST(OpenSimHelpers, HasModelFileExtension_AcceptsCapitalizedOsimExtension)
     // file extensions, probably because they were authored on OSes with
     // a case-insensitive filesystem (e.g. Windows). The codebase should try
     // to ignore this error so that legacy files keep loading (#984).
-    ASSERT_TRUE(HasModelFileExtension("some/path/to/legacy/model.OSIM"));
-    ASSERT_TRUE(HasModelFileExtension("some/path/to/legacy/model.osim"));
-    ASSERT_FALSE(HasModelFileExtension("some/path/to/legacy/model.jpeg"));
-    ASSERT_FALSE(HasModelFileExtension("some/path/to/legacy/model"));
-    ASSERT_FALSE(HasModelFileExtension("some/path/to/legacy/osim"));
+    ASSERT_TRUE(has_model_file_extension("some/path/to/legacy/model.OSIM"));
+    ASSERT_TRUE(has_model_file_extension("some/path/to/legacy/model.osim"));
+    ASSERT_FALSE(has_model_file_extension("some/path/to/legacy/model.jpeg"));
+    ASSERT_FALSE(has_model_file_extension("some/path/to/legacy/model"));
+    ASSERT_FALSE(has_model_file_extension("some/path/to/legacy/osim"));
 }
 
 TEST(OpenSimHelpers, WriteObjectXMLToStringWorksOnBasicRootObject)
 {
     OpenSim::Body body{"somebody", 1.0, SimTK::Vec3{2.0, 3.0, 4.0}, SimTK::Inertia{SimTK::Vec3{1.0}}};
     body.finalizeFromProperties();
-    const std::string dump = WriteObjectXMLToString(body);
+    const std::string dump = write_object_xml_to_string(body);
 
     ASSERT_TRUE(dump.contains("somebody"));
     ASSERT_TRUE(dump.contains("<mass>"));
@@ -461,16 +461,16 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
     //     body3a
     OpenSim::Model model;
     const auto& ground = model.getGround();
-    const auto& body1  = AddBody(model, "body1",  1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-    const auto& body2a = AddBody(model, "body2a", 2.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-    const auto& body2b = AddBody(model, "body2b", 2.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-    const auto& body3a = AddBody(model, "body3",  2.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-    const auto& b1_to_g    = AddJoint<OpenSim::FreeJoint>(model, "body1_to_ground",  ground, body1);
-    const auto& b2a_to_b1  = AddJoint<OpenSim::FreeJoint>(model, "body2a_to_body1",  body1,  body2a);
-    const auto& b2b_to_b1  = AddJoint<OpenSim::FreeJoint>(model, "body2b_to_body1",  body1,  body2b);
-    const auto& b3a_to_b2a = AddJoint<OpenSim::FreeJoint>(model, "body3a_to_body2a", body2a, body3a);
-    FinalizeConnections(model);
-    InitializeModel(model);
+    const auto& body1  = add_body(model, "body1",  1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& body2a = add_body(model, "body2a", 2.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& body2b = add_body(model, "body2b", 2.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& body3a = add_body(model, "body3",  2.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& b1_to_g    = add_joint<OpenSim::FreeJoint>(model, "body1_to_ground",  ground, body1);
+    const auto& b2a_to_b1  = add_joint<OpenSim::FreeJoint>(model, "body2a_to_body1",  body1,  body2a);
+    const auto& b2b_to_b1  = add_joint<OpenSim::FreeJoint>(model, "body2b_to_body1",  body1,  body2b);
+    const auto& b3a_to_b2a = add_joint<OpenSim::FreeJoint>(model, "body3a_to_body2a", body2a, body3a);
+    finalize_connections(model);
+    initialize_model(model);
 
     // helper: makes testing easier
     const auto slurp = []<typename T>(osc::cpp23::generator<T> g)
@@ -490,7 +490,7 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
 
     // test ground
     {
-        const auto got = slurp(ForEachInboundConnection(&model, &model.getGround(), filter));
+        const auto got = slurp(for_each_inbound_connection(&model, &model.getGround(), filter));
         std::vector<ComponentConnectionView> expected = {
             ComponentConnectionView{b1_to_g,   ground, "parent_frame"},
         };
@@ -499,7 +499,7 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
 
     // test body1
     {
-        const auto got = slurp(ForEachInboundConnection(&model, &body1, filter));
+        const auto got = slurp(for_each_inbound_connection(&model, &body1, filter));
         std::vector<ComponentConnectionView> expected = {
             ComponentConnectionView{b1_to_g,   body1, "child_frame"},
             ComponentConnectionView{b2a_to_b1, body1, "parent_frame"},
@@ -510,7 +510,7 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
 
     // test body2a
     {
-        const auto got = slurp(ForEachInboundConnection(&model, &body2a, filter));
+        const auto got = slurp(for_each_inbound_connection(&model, &body2a, filter));
         std::vector<ComponentConnectionView> expected = {
             ComponentConnectionView{b2a_to_b1,  body2a, "child_frame"},
             ComponentConnectionView{b3a_to_b2a, body2a, "parent_frame"},
@@ -520,7 +520,7 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
 
     // test body2b
     {
-        const auto got = slurp(ForEachInboundConnection(&model, &body2b, filter));
+        const auto got = slurp(for_each_inbound_connection(&model, &body2b, filter));
         std::vector<ComponentConnectionView> expected = {
             ComponentConnectionView{b2b_to_b1,  body2b, "child_frame"},
         };
@@ -529,7 +529,7 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
 
     // test body3a
     {
-        const auto got = slurp(ForEachInboundConnection(&model, &body3a, filter));
+        const auto got = slurp(for_each_inbound_connection(&model, &body3a, filter));
         std::vector<ComponentConnectionView> expected = {
             ComponentConnectionView{b3a_to_b2a,  body3a, "child_frame"},
         };
@@ -549,25 +549,25 @@ TEST(OpenSimHelpers, ScaleModelMassPreserveMassDistribution_WorksOnBasicExample)
 
     OpenSim::Model model;
     const auto& ground = model.getGround();
-    const auto& body1  = AddBody(model, "body1",  1.5, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-    const auto& body2a = AddBody(model, "body2a", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-    const auto& body2b = AddBody(model, "body2b", 0.5, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
-    AddJoint<OpenSim::FreeJoint>(model, "body1_to_ground",  ground, body1);
-    AddJoint<OpenSim::FreeJoint>(model, "body2a_to_body1",  body1,  body2a);
-    AddJoint<OpenSim::FreeJoint>(model, "body2b_to_body1",  body1,  body2b);
+    const auto& body1  = add_body(model, "body1",  1.5, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& body2a = add_body(model, "body2a", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& body2b = add_body(model, "body2b", 0.5, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    add_joint<OpenSim::FreeJoint>(model, "body1_to_ground",  ground, body1);
+    add_joint<OpenSim::FreeJoint>(model, "body2a_to_body1",  body1,  body2a);
+    add_joint<OpenSim::FreeJoint>(model, "body2b_to_body1",  body1,  body2b);
 
-    FinalizeConnections(model);
-    InitializeModel(model);
-    SimTK::State state = InitializeState(model);
+    finalize_connections(model);
+    initialize_model(model);
+    SimTK::State state = initialize_state(model);
 
     const double originalTotalMass = 3.0;
     const double tolerance = 0.000001;  // 1 microgram
     ASSERT_NEAR(model.getTotalMass(state), originalTotalMass, tolerance);
 
     const double newTotalMass = 5.0;
-    ScaleModelMassPreserveMassDistribution(model, state, newTotalMass);
-    InitializeModel(model);
-    state = InitializeState(model);
+    scale_model_mass_preserve_mass_distribution(model, state, newTotalMass);
+    initialize_model(model);
+    state = initialize_state(model);
 
     const double massScalingFactor = newTotalMass / originalTotalMass;
 

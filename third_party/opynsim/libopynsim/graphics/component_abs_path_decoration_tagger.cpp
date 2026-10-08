@@ -10,7 +10,7 @@ void opyn::ComponentAbsPathDecorationTagger::operator()(
     osc::SceneDecoration& decoration)
 {
     if (&component != last_component_) {
-        id_ = GetAbsolutePathStringName(component);
+        id_ = get_absolute_path_string_name(component);
         last_component_ = &component;
     }
 

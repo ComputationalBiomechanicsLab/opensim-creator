@@ -49,7 +49,7 @@ namespace opyn
 
             // Ensure every entry in `wrap_cylinders` can be found in the source model.
             for (int i = 0; i < getProperty_bodies().size(); ++i) {
-                const auto* body = FindComponent<OpenSim::Body>(sourceModel, get_bodies(i));
+                const auto* body = find_component<OpenSim::Body>(sourceModel, get_bodies(i));
                 if (not body) {
                     messages.emplace_back(
                         ScalingStepValidationState::Error,
@@ -86,7 +86,7 @@ namespace opyn
 
             OpenSim::ScaleSet scaleSet;
             for (int i = 0; i < getProperty_bodies().size(); ++i) {
-                const auto* body = FindComponent<OpenSim::Body>(model, get_bodies(i));
+                const auto* body = find_component<OpenSim::Body>(model, get_bodies(i));
                 if (not body) {
                     auto msg = std::format("{}: Cannot find a `Body` in 'bodies' in the source model (or it isn't a `Body`).", get_bodies(i));
                     throw std::runtime_error{std::move(msg)};
@@ -99,8 +99,8 @@ namespace opyn
                 scaleSet.adoptAndAppend(scale.release());
             }
             model.scale(model.updWorkingState(), scaleSet, get_preserve_masses());
-            InitializeModel(model);
-            InitializeState(model);
+            initialize_model(model);
+            initialize_state(model);
         }
     };
 }

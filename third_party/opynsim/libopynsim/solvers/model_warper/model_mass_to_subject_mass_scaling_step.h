@@ -74,9 +74,9 @@ namespace opyn
                 *blendingFactor
             );
 
-            ScaleModelMassPreserveMassDistribution(resultModel, resultModel.getWorkingState(), effectiveTargetMass);
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            scale_model_mass_preserve_mass_distribution(resultModel, resultModel.getWorkingState(), effectiveTargetMass);
+            initialize_model(resultModel);
+            initialize_state(resultModel);
         }
     };
 }

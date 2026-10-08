@@ -15,8 +15,8 @@ public:
     Impl() :
         m_Model{std::make_unique<OpenSim::Model>()}
     {
-        opyn::InitializeModel(*m_Model);
-        opyn::InitializeState(*m_Model);
+        opyn::initialize_model(*m_Model);
+        opyn::initialize_state(*m_Model);
     }
 
     explicit Impl(const ModelStatePair& p) :
@@ -24,17 +24,17 @@ public:
     {}
 
     explicit Impl(const std::filesystem::path& osimPath) :
-        m_Model{opyn::LoadModel(osimPath)}
+        m_Model{opyn::load_model(osimPath)}
     {
-        opyn::InitializeModel(*m_Model);
-        opyn::InitializeState(*m_Model);
+        opyn::initialize_model(*m_Model);
+        opyn::initialize_state(*m_Model);
     }
 
     explicit Impl(OpenSim::Model&& model) :
         m_Model{std::make_unique<OpenSim::Model>(std::move(model))}
     {
-        opyn::InitializeModel(*m_Model);
-        opyn::InitializeState(*m_Model);
+        opyn::initialize_model(*m_Model);
+        opyn::initialize_state(*m_Model);
     }
 
     Impl(const OpenSim::Model& m, const SimTK::State& st) :
@@ -49,8 +49,8 @@ public:
         m_Model(std::make_unique<OpenSim::Model>(m)),
         m_FixupScaleFactor{fixupScaleFactor}
     {
-        opyn::InitializeModel(*m_Model);
-        opyn::InitializeState(*m_Model);
+        opyn::initialize_model(*m_Model);
+        opyn::initialize_state(*m_Model);
         m_Model->updWorkingState() = st;
         m_Model->updWorkingState().invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
         m_Model->realizeReport(m_Model->updWorkingState());
@@ -60,10 +60,10 @@ public:
         m_Model{std::make_unique<OpenSim::Model>(*o.m_Model)},
         m_FixupScaleFactor{o.m_FixupScaleFactor}
     {
-        opyn::InitializeModel(*m_Model);
+        opyn::initialize_model(*m_Model);
         SimTK::State& state = m_Model->initializeState();
         state = o.m_Model->getWorkingState();
-        opyn::TryEquilibrateMusclesOrLogWarning(*m_Model, state);
+        opyn::try_equilibrate_muscles_or_log_warning(*m_Model, state);
         m_Model->realizeDynamics(state);
     }
     Impl(Impl&&) noexcept = default;

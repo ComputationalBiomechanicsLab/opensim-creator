@@ -392,7 +392,7 @@ namespace
         OpenSim::Object::getRegisteredObjectsOfGivenType<T>(ptrs);
 
         for (size_t i = 0; i < size(ptrs); ++i) {
-            out.insert(At(ptrs, i).getConcreteClassName());
+            out.insert(at(ptrs, i).getConcreteClassName());
         }
     }
 
@@ -643,12 +643,12 @@ namespace
                     rv.push_back(p);
                 }
                 else {
-                    rv.emplace_back(Clone(v));
+                    rv.emplace_back(clone(v));
                 }
             }
             else {
                 // not in the manual prototype LUT - just take whatever OpenSim has
-                rv.emplace_back(Clone(v));
+                rv.emplace_back(clone(v));
             }
         }
 
@@ -682,7 +682,7 @@ namespace
                 continue;
             }
 
-            rv.emplace_back(Clone(c));
+            rv.emplace_back(clone(c));
         }
 
         rgs::sort(rv, rgs::less{}, [](const auto& ptr) { return ptr->getConcreteClassName(); });

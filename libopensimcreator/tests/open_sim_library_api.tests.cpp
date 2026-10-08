@@ -502,12 +502,12 @@ TEST(OpenSimModel, OriginalReproFrom3299ThrowsInsteadOfSegfaulting)
 TEST(OpenSimModel, DeleteComponentFromModelFollowedByFinalizeConnectionsShouldNotSegfault)
 {
     OpenSim::Model model;
-    auto& sphere = opyn::AttachGeometry<OpenSim::Sphere>(model.updGround());
+    auto& sphere = opyn::attach_geometry<OpenSim::Sphere>(model.updGround());
 
-    opyn::InitializeModel(model);
-    opyn::InitializeState(model);
-    opyn::TryDeleteComponentFromModel(model, sphere);
-    opyn::FinalizeConnections(model);
+    opyn::initialize_model(model);
+    opyn::initialize_state(model);
+    opyn::try_delete_component_from_model(model, sphere);
+    opyn::finalize_connections(model);
 }
 
 // repro for (#752)
@@ -516,18 +516,18 @@ TEST(OpenSimModel, DeleteComponentFromModelFollowedByFinalizeConnectionsShouldNo
 TEST(OpenSimModel, DeleteComponentFromModelFollowedByReinitializingAndThenFinalizingDefinitelyShouldntSegfault)
 {
     OpenSim::Model model;
-    auto& sphere = opyn::AttachGeometry<OpenSim::Sphere>(model.updGround());
+    auto& sphere = opyn::attach_geometry<OpenSim::Sphere>(model.updGround());
 
-    opyn::InitializeModel(model);
-    opyn::InitializeState(model);
-    opyn::TryDeleteComponentFromModel(model, sphere);
+    opyn::initialize_model(model);
+    opyn::initialize_state(model);
+    opyn::try_delete_component_from_model(model, sphere);
 
     // these put the model back into a safe state
-    opyn::InitializeModel(model);
-    opyn::InitializeState(model);
+    opyn::initialize_model(model);
+    opyn::initialize_state(model);
 
     // and then finalizing the connections should be fine (#752)
-    opyn::FinalizeConnections(model);
+    opyn::finalize_connections(model);
 }
 
 // repro for (#773)
@@ -593,10 +593,10 @@ TEST(OpenSimModel, ReFinalizingAnEvenSimplerModelWithUnusualJointTopologyDoesNot
 TEST(OpenSimModel, MeshGetComponentListDoesNotIterate)
 {
     OpenSim::Model model;
-    auto& mesh = opyn::AddComponent(model, std::make_unique<OpenSim::Mesh>());
+    auto& mesh = opyn::add_component(model, std::make_unique<OpenSim::Mesh>());
     mesh.setFrame(model.getGround());
-    opyn::InitializeModel(model);
-    opyn::InitializeState(model);
+    opyn::initialize_model(model);
+    opyn::initialize_state(model);
 
     ASSERT_EQ(mesh.countNumComponents(), 0);
 
@@ -626,25 +626,25 @@ TEST(OpenSimModel, MeshGetComponentListDoesNotIterate)
 TEST(OpenSimModel, ChainsOfPOFsWorkAsExpected)
 {
     OpenSim::Model m;
-    auto& pof1 = opyn::AddModelComponent<OpenSim::PhysicalOffsetFrame>(m, "z", m.getGround(), SimTK::Transform{});
-    auto& pof2 = opyn::AddModelComponent<OpenSim::PhysicalOffsetFrame>(m, "a", pof1, SimTK::Transform{});
-    auto& pof3 = opyn::AddModelComponent<OpenSim::PhysicalOffsetFrame>(m, "b", pof2, SimTK::Transform{});
-    opyn::AddModelComponent<OpenSim::PhysicalOffsetFrame>(m, "w", pof3, SimTK::Transform{});
+    auto& pof1 = opyn::add_model_component<OpenSim::PhysicalOffsetFrame>(m, "z", m.getGround(), SimTK::Transform{});
+    auto& pof2 = opyn::add_model_component<OpenSim::PhysicalOffsetFrame>(m, "a", pof1, SimTK::Transform{});
+    auto& pof3 = opyn::add_model_component<OpenSim::PhysicalOffsetFrame>(m, "b", pof2, SimTK::Transform{});
+    opyn::add_model_component<OpenSim::PhysicalOffsetFrame>(m, "w", pof3, SimTK::Transform{});
 
-    opyn::FinalizeConnections(m);
-    opyn::InitializeModel(m);  // OpenSim's carve-out should ensure this works
-    opyn::InitializeState(m);
+    opyn::finalize_connections(m);
+    opyn::initialize_model(m);  // OpenSim's carve-out should ensure this works
+    opyn::initialize_state(m);
 }
 
 // this a sanity check for behavior that I wasn't sure about when developing a UI
 TEST(OpenSimModel, LvalueAssignmentWorksInTrivialCase)
 {
     OpenSim::Model lhs;
-    opyn::InitializeModel(lhs);
-    opyn::InitializeState(lhs);
+    opyn::initialize_model(lhs);
+    opyn::initialize_state(lhs);
     lhs = OpenSim::Model{};
-    opyn::InitializeModel(lhs);
-    opyn::InitializeState(lhs);
+    opyn::initialize_model(lhs);
+    opyn::initialize_state(lhs);
 
     // (shouldn't throw)
 }
@@ -670,14 +670,14 @@ TEST(OpenSimModel, CanCopyModelContainingExternalLoads)
         std::filesystem::weakly_canonical(std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_924_external-loads.xml");
 
     OpenSim::Model model{exampleModel.string()};
-    opyn::InitializeModel(model);
-    opyn::InitializeState(model);
+    opyn::initialize_model(model);
+    opyn::initialize_state(model);
     model.addModelComponent(&dynamic_cast<OpenSim::ExternalLoads&>(*OpenSim::Object::makeObjectFromFile(exampleExternalLoadsFile.string())));
 
-    opyn::InitializeModel(model);
-    opyn::InitializeState(model);
+    opyn::initialize_model(model);
+    opyn::initialize_state(model);
 
     // the only way to fix this bug is upstream, because `Object::setDocument` is `protected`
     auto copy{model};
-    ASSERT_NO_THROW({ opyn::InitializeModel(copy); })  << "this shouldn't throw (see: opensim-core/3926 or opensim-core/3927)";
+    ASSERT_NO_THROW({ opyn::initialize_model(copy); })  << "this shouldn't throw (see: opensim-core/3926 or opensim-core/3927)";
 }

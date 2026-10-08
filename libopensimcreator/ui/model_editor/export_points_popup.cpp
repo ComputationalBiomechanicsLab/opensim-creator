@@ -65,7 +65,7 @@ namespace
         const SimTK::State& state)
     {
         return
-            opyn::CanExtractPointInfoFrom(component, state) &&
+            opyn::can_extract_point_info_from(component, state) &&
             contains_case_insensitive(component.getName(), uiState.searchString);
     }
 
@@ -87,7 +87,7 @@ namespace
         ui::same_line();
         ui::draw_text_disabled(component.getConcreteClassName());
 
-        if (const std::optional<opyn::PointInfo> pointInfo = opyn::TryExtractPointInfo(component, state)) {
+        if (const std::optional<opyn::PointInfo> pointInfo = opyn::try_extract_point_info(component, state)) {
             ui::draw_text_disabled("Expressed In: {}", pointInfo->frame_abs_path.toString());
         }
 
@@ -99,9 +99,9 @@ namespace
         const OpenSim::Component& component,
         const SimTK::State& state)
     {
-        OSC_ASSERT(opyn::CanExtractPointInfoFrom(component, state));
+        OSC_ASSERT(opyn::can_extract_point_info_from(component, state));
 
-        const std::string absPath = opyn::GetAbsolutePathString(component);
+        const std::string absPath = opyn::get_absolute_path_string(component);
 
         bool selected = uiState.selectedPointAbsPaths.contains(absPath);
         if (ui::draw_checkbox(component.getName(), &selected))
@@ -165,17 +165,17 @@ namespace
     {
         for (const OpenSim::Component& component : model.getComponentList())
         {
-            if (opyn::CanExtractPointInfoFrom(component, state) && predicate(component))
+            if (opyn::can_extract_point_info_from(component, state) && predicate(component))
             {
                 static_assert(num_options<SelectionState>() == 2u);
                 switch (selectionState)
                 {
                 case SelectionState::Selected:
-                    uiState.selectedPointAbsPaths.insert(opyn::GetAbsolutePathString(component));
+                    uiState.selectedPointAbsPaths.insert(opyn::get_absolute_path_string(component));
                     break;
                 case SelectionState::NotSelected:
                 default:
-                    uiState.selectedPointAbsPaths.erase(opyn::GetAbsolutePathString(component));
+                    uiState.selectedPointAbsPaths.erase(opyn::get_absolute_path_string(component));
                     break;
                 }
             }
@@ -192,9 +192,9 @@ namespace
         {
             if (ui::draw_menu_item(f.getName()))
             {
-                const auto isAttachedToFrame = [path = opyn::GetAbsolutePath(f), &state](const OpenSim::Component& c)
+                const auto isAttachedToFrame = [path = opyn::get_absolute_path(f), &state](const OpenSim::Component& c)
                 {
-                    if (const auto pointInfo = opyn::TryExtractPointInfo(c, state))
+                    if (const auto pointInfo = opyn::try_extract_point_info(c, state))
                     {
                         return pointInfo->frame_abs_path == path;
                     }
@@ -309,7 +309,7 @@ namespace
         const OpenSim::Model& model)
     {
         return uiState.maybeSelectedFrameAbsPath ?
-            opyn::FindComponent(model, *uiState.maybeSelectedFrameAbsPath) :
+            opyn::find_component(model, *uiState.maybeSelectedFrameAbsPath) :
             nullptr;
     }
 
@@ -334,7 +334,7 @@ namespace
         FrameSelectorUiState& uiState,
         const OpenSim::Frame& frame)
     {
-        const std::string absPath = opyn::GetAbsolutePathString(frame);
+        const std::string absPath = opyn::get_absolute_path_string(frame);
         const bool selected = uiState.maybeSelectedFrameAbsPath == absPath;
 
         if (ui::draw_selectable(frame.getName(), selected))
@@ -383,7 +383,7 @@ namespace
             return std::nullopt;  // caller doesn't want re-expression
         }
 
-        const auto* const frame = opyn::FindComponent<OpenSim::Frame>(model, *maybeAbsPathOfFrameToReexpressPointsIn);
+        const auto* const frame = opyn::find_component<OpenSim::Frame>(model, *maybeAbsPathOfFrameToReexpressPointsIn);
         if (!frame)
         {
             return std::nullopt;  // the selected frame doesn't exist in the model (bug?)
@@ -412,7 +412,7 @@ namespace
         const opyn::PointInfo& pointInfo,
         const SimTK::Transform& ground2otherFrame)
     {
-        const auto* const frame = opyn::FindComponent<OpenSim::Frame>(model, pointInfo.frame_abs_path);
+        const auto* const frame = opyn::find_component<OpenSim::Frame>(model, pointInfo.frame_abs_path);
         if (!frame)
         {
             return pointInfo.location;  // cannot find frame (bug?)
@@ -429,13 +429,13 @@ namespace
         const std::string& pointAbsPath,
         std::ostream& out)
     {
-        const OpenSim::Component* const c = opyn::FindComponent(model, pointAbsPath);
+        const OpenSim::Component* const c = opyn::find_component(model, pointAbsPath);
         if (!c)
         {
             return;  // skip writing: point no longer exists in model
         }
 
-        const std::optional<opyn::PointInfo> poi = opyn::TryExtractPointInfo(*c, state);
+        const std::optional<opyn::PointInfo> poi = opyn::try_extract_point_info(*c, state);
         if (!poi)
         {
             return;  // skip writing: cannot extract point info for the component
@@ -448,7 +448,7 @@ namespace
             poi->location;
 
         const std::string name = shouldExportPointsWithAbsPathNames ?
-            opyn::GetAbsolutePathString(*c) :
+            opyn::get_absolute_path_string(*c) :
             c->getName();
 
         const auto columns = std::to_array<std::string>({

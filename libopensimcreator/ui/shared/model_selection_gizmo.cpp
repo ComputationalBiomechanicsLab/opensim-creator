@@ -106,12 +106,12 @@ namespace
             m_ComponentAbsPath{component.getAbsolutePath()}
         {
             OSC_ASSERT(m_Model != nullptr);
-            OSC_ASSERT(opyn::FindComponent<AssociatedComponent>(m_Model->get_model(), m_ComponentAbsPath));
+            OSC_ASSERT(opyn::find_component<AssociatedComponent>(m_Model->get_model(), m_ComponentAbsPath));
         }
 
         const AssociatedComponent* findSelection() const
         {
-            return opyn::FindComponent<AssociatedComponent>(m_Model->get_model(), m_ComponentAbsPath);
+            return opyn::find_component<AssociatedComponent>(m_Model->get_model(), m_ComponentAbsPath);
         }
 
         const OpenSim::Model& getModel() const

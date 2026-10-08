@@ -27,7 +27,7 @@ osc::MiStation::MiStation(
     m_ID{id},
     m_Attachment{attachment},
     m_Position{position},
-    m_Name{opyn::SanitizeToOpenSimComponentName(name)}
+    m_Name{opyn::sanitize_to_open_sim_component_name(name)}
 {
 }
 
@@ -38,7 +38,7 @@ osc::MiStation::MiStation(
 
     m_Attachment{attachment},
     m_Position{position},
-    m_Name{opyn::SanitizeToOpenSimComponentName(name)}
+    m_Name{opyn::sanitize_to_open_sim_component_name(name)}
 {
 }
 
@@ -74,5 +74,5 @@ std::ostream& osc::MiStation::implWriteToStream(std::ostream& o) const
 
 void osc::MiStation::implSetLabel(std::string_view sv)
 {
-    m_Name = opyn::SanitizeToOpenSimComponentName(sv);
+    m_Name = opyn::sanitize_to_open_sim_component_name(sv);
 }

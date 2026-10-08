@@ -42,7 +42,7 @@ namespace opyn
 
             // Ensure every entry in `path_points` can be found in the source model.
             for (int i = 0; i < getProperty_path_points().size(); ++i) {
-                const auto* pathPoint = FindComponent<OpenSim::PathPoint>(sourceModel, get_path_points(i));
+                const auto* pathPoint = find_component<OpenSim::PathPoint>(sourceModel, get_path_points(i));
                 if (not pathPoint) {
                     messages.emplace_back(
                         ScalingStepValidationState::Error,
@@ -64,11 +64,11 @@ namespace opyn
 
             // Warp each path point specified by the `path_points` property.
             for (int i = 0; i < getProperty_path_points().size(); ++i) {
-                const auto* sourcePathPoint = FindComponent<OpenSim::PathPoint>(sourceModel, get_path_points(i));
+                const auto* sourcePathPoint = find_component<OpenSim::PathPoint>(sourceModel, get_path_points(i));
                 OSC_ASSERT_ALWAYS(sourcePathPoint && "could not find a path point in the source model");
 
                 // Find the path point in the source model and use it produce the warped path point.
-                const auto* resultPathPoint = FindComponent<OpenSim::PathPoint>(resultModel, get_path_points(i));
+                const auto* resultPathPoint = find_component<OpenSim::PathPoint>(resultModel, get_path_points(i));
                 OSC_ASSERT_ALWAYS(resultPathPoint && "could not find a path point in the model");
 
                 const SimTK::Vec3 warpedLocation = scalingCache.lookup_tps_warped_rigid_point(
@@ -84,12 +84,12 @@ namespace opyn
                     commonParams.compensate_for_frame_changes
                 );
 
-                auto* resultPathPointMut = FindComponentMut<OpenSim::PathPoint>(resultModel, get_path_points(i));
+                auto* resultPathPointMut = find_component_mut<OpenSim::PathPoint>(resultModel, get_path_points(i));
                 OSC_ASSERT_ALWAYS(resultPathPointMut && "could not find a corresponding path point in the result model");
                 resultPathPointMut->set_location(warpedLocation);
             }
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            initialize_model(resultModel);
+            initialize_state(resultModel);
         }
     };
 }

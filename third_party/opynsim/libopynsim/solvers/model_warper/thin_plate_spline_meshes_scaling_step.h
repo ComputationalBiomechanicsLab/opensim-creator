@@ -49,7 +49,7 @@ namespace opyn
 
             // Ensure all specified meshes can be found in the source model.
             for (int i = 0; i < getProperty_meshes().size(); ++i) {
-                const auto* mesh = FindComponent<OpenSim::Mesh>(sourceModel, get_meshes(i));
+                const auto* mesh = find_component<OpenSim::Mesh>(sourceModel, get_meshes(i));
                 if (not mesh) {
                     messages.emplace_back(
                         ScalingStepValidationState::Error,
@@ -71,11 +71,11 @@ namespace opyn
 
             // Warp each mesh specified by the `meshes` property.
             for (int i = 0; i < getProperty_meshes().size(); ++i) {
-                const auto* sourceMesh = FindComponent<OpenSim::Mesh>(sourceModel, get_meshes(i));
+                const auto* sourceMesh = find_component<OpenSim::Mesh>(sourceModel, get_meshes(i));
                 OSC_ASSERT_ALWAYS(sourceMesh && "could not find a mesh in the source model");
 
                 // Find the input mesh and use it produce the warped mesh.
-                const auto* resultMesh = FindComponent<OpenSim::Mesh>(resultModel, get_meshes(i));
+                const auto* resultMesh = find_component<OpenSim::Mesh>(resultModel, get_meshes(i));
                 OSC_ASSERT_ALWAYS(resultMesh && "could not find a mesh in the model");
 
                 std::unique_ptr<InMemoryMesh> warpedMesh = scalingCache.lookup_tps_mesh_warp(
@@ -91,13 +91,13 @@ namespace opyn
                 OSC_ASSERT_ALWAYS(warpedMesh && "warping a mesh in the model failed");
 
                 // Overwrite the mesh in the result model with the warped mesh.
-                auto* resultMeshMut = FindComponentMut<OpenSim::Mesh>(resultModel, get_meshes(i));
+                auto* resultMeshMut = find_component_mut<OpenSim::Mesh>(resultModel, get_meshes(i));
                 OSC_ASSERT_ALWAYS(resultMesh && "could not find a corresponding mesh in the result model");
-                OverwriteGeometry(resultModel, *resultMeshMut, std::move(warpedMesh));
-                OSC_ASSERT_ALWAYS(FindComponent<InMemoryMesh>(resultModel, get_meshes(i)) != nullptr);
+                overwrite_geometry(resultModel, *resultMeshMut, std::move(warpedMesh));
+                OSC_ASSERT_ALWAYS(find_component<InMemoryMesh>(resultModel, get_meshes(i)) != nullptr);
             }
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            initialize_model(resultModel);
+            initialize_state(resultModel);
         }
     };
 }

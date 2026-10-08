@@ -46,7 +46,7 @@ namespace opyn
 
             // Ensure every entry in `offset_frames` can be found in the source model.
             for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
-                const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
+                const auto* offsetFrame = find_component<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
                 if (not offsetFrame) {
                     messages.emplace_back(
                         ScalingStepValidationState::Error,
@@ -69,11 +69,11 @@ namespace opyn
 
             // Warp each offset frame `translation` specified by the `offset_frames` property.
             for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
-                const auto* sourceOffsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
+                const auto* sourceOffsetFrame = find_component<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
                 OSC_ASSERT_ALWAYS(sourceOffsetFrame && "could not find a `PhysicalOffsetFrame` in the source model");
 
                 // Find the path point in the source model and use it produce the warped path point.
-                const auto* resultOffsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
+                const auto* resultOffsetFrame = find_component<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
                 OSC_ASSERT_ALWAYS(resultOffsetFrame && "could not find a `PhysicalOffsetFrame` in the model");
 
                 const SimTK::Vec3 warpedLocation = scalingCache.lookup_tps_warped_rigid_point(
@@ -89,12 +89,12 @@ namespace opyn
                     commonParams.compensate_for_frame_changes
                 );
 
-                auto* resultOffsetFrameMut = FindComponentMut<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
+                auto* resultOffsetFrameMut = find_component_mut<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
                 OSC_ASSERT_ALWAYS(resultOffsetFrameMut && "could not find a corresponding `PhysicalOffsetFrame` in the result model");
                 resultOffsetFrameMut->set_translation(warpedLocation);
             }
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            initialize_model(resultModel);
+            initialize_state(resultModel);
         }
     };
 }

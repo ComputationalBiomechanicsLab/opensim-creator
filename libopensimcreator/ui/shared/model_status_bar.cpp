@@ -41,7 +41,7 @@ private:
         const OpenSim::Component* const c = m_Model->get_selected();
 
         if (c) {
-            const std::vector<const OpenSim::Component*> els = opyn::GetPathElements(*c);
+            const std::vector<const OpenSim::Component*> els = opyn::get_path_elements(*c);
             for (ptrdiff_t i = 0; i < std::ssize(els)-1; ++i) {
                 const OpenSim::Component& el = *els[i];
 
@@ -86,7 +86,7 @@ private:
                     parent(),
                     "##hovermenu",
                     m_Model,
-                    opyn::GetAbsolutePath(c)
+                    opyn::get_absolute_path(c)
                 );
                 menu->open();
                 App::post_event<OpenPopupEvent>(*parent(), std::move(menu));

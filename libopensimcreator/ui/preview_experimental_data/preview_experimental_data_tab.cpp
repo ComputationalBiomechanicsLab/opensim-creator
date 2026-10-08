@@ -83,7 +83,7 @@ namespace
 
         bool isModelLoaded() const
         {
-            return opyn::HasInputFileName(m_Model->get_model());
+            return opyn::has_input_file_name(m_Model->get_model());
         }
 
         void loadModelFile(const std::filesystem::path& p)
@@ -98,7 +98,7 @@ namespace
             ReinitializationFlags flags = ReinitializationFlag::None)
         {
             // reload/reset model
-            if (opyn::HasInputFileName(m_Model->get_model())) {
+            if (opyn::has_input_file_name(m_Model->get_model())) {
                 SceneCache dummy;
                 ActionReloadOsimFromDisk(*m_Model, dummy);
             }
@@ -165,7 +165,7 @@ namespace
             state.setTime(newTime);
 
             if (m_AssociatedTrajectory) {
-                opyn::UpdateStateFromStorageTime(
+                opyn::update_state_from_storage_time(
                     m_Model->upd_model(),
                     state,
                     m_AssociatedTrajectory->mapper(),
@@ -208,7 +208,7 @@ namespace
 
             // (re)load associated trajectory
             if (m_AssociatedTrajectory) {
-                opyn::InitializeModel(m_Model->upd_model());
+                opyn::initialize_model(m_Model->upd_model());
 
                 m_AssociatedTrajectory->reload_from_disk(m_Model->get_model());
                 dataTimeRange = osc::bounding_interval_of(dataTimeRange, m_AssociatedTrajectory->time_range());
@@ -216,7 +216,7 @@ namespace
 
             // (re)load motions
             for (const std::filesystem::path& path : m_AssociatedMotionFiles) {
-                const auto& motion = opyn::AddModelComponent<opyn::AnnotatedMotion>(m_Model->upd_model(), path);
+                const auto& motion = opyn::add_model_component<opyn::AnnotatedMotion>(m_Model->upd_model(), path);
                 dataTimeRange = osc::bounding_interval_of(dataTimeRange, motion.time_range());
             }
 
@@ -229,8 +229,8 @@ namespace
             }
 
             // care: state initialization is dependent on `m_AssociatedTrajectory`
-            opyn::InitializeModel(m_Model->upd_model());
-            opyn::InitializeState(m_Model->upd_model());
+            opyn::initialize_model(m_Model->upd_model());
+            opyn::initialize_state(m_Model->upd_model());
             m_Model->commit(label);
 
             if (dataTimeRange and (flags & ReinitializationFlag::RecalculateTimeRange)) {

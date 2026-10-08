@@ -53,11 +53,11 @@ public:
 
         const OpenSim::Model& model = m_Model->get_model();
 
-        const auto* selectedPf = opyn::FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
+        const auto* selectedPf = opyn::find_component<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
         if (not selectedPf) {
             // if nothing selected (or not found), coerce the initial selection to ground
             selectedPf = &model.getGround();
-            m_BodyDetails.parentFrameAbsPath = opyn::GetAbsolutePathString(*selectedPf);
+            m_BodyDetails.parentFrameAbsPath = opyn::get_absolute_path_string(*selectedPf);
         }
 
         ui::set_num_columns(2);
@@ -130,7 +130,7 @@ public:
                 }
                 if (ui::draw_selectable(pf.getName(), &pf == selectedPf)) {
                     selectedPf = &pf;
-                    m_BodyDetails.parentFrameAbsPath = opyn::GetAbsolutePathString(*selectedPf);
+                    m_BodyDetails.parentFrameAbsPath = opyn::get_absolute_path_string(*selectedPf);
                 }
                 if (&pf == selectedPf) {
                     ui::add_screenshot_annotation_to_last_drawn_item(pf.getName());
@@ -189,7 +189,7 @@ public:
             ui::draw_help_marker("Attaches visual geometry to the new body. This is what the OpenSim::Body looks like in the UI. The geometry is purely cosmetic and does not affect the simulation");
             ui::next_column();
             {
-                const std::string label = m_BodyDetails.maybeGeometry ? opyn::GetDisplayName(*m_BodyDetails.maybeGeometry) : std::string{"attach"};
+                const std::string label = m_BodyDetails.maybeGeometry ? opyn::get_display_name(*m_BodyDetails.maybeGeometry) : std::string{"attach"};
 
                 if (ui::draw_button(label)) {
                     // open geometry selection popup

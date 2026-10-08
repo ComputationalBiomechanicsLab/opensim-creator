@@ -29,7 +29,7 @@ public:
     OutputExtractorDataType output_type() const { return OutputExtractorDataType::Float; }
     OutputValueExtractor output_value_extractor(const OpenSim::Component& root) const
     {
-        if (const auto* force = FindComponent<OpenSim::Force>(root, force_abs_path_)) {
+        if (const auto* force = find_component<OpenSim::Force>(root, force_abs_path_)) {
             return OutputValueExtractor{[force, index = record_index_](const StateViewWithMetadata& state)
             {
                 const OpenSim::Array<double> values = force->getRecordValues(state.state());

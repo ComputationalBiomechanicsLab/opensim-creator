@@ -27,8 +27,8 @@ public:
         m_FixupScaleFactor{msp.get_fixup_scale_factor()},
         m_CommitMessage{message}
     {
-        opyn::InitializeModel(*m_Model);
-        opyn::InitializeState(*m_Model);
+        opyn::initialize_model(*m_Model);
+        opyn::initialize_state(*m_Model);
     }
 
     UID getID() const

@@ -77,7 +77,7 @@ namespace opyn
             std::vector<ScalingStepValidationMessage> messages;
 
             // Ensure the model has a filesystem location (prerequisite).
-            const auto modelFilesystemLocation = opyn::TryFindInputFile(sourceModel);
+            const auto modelFilesystemLocation = opyn::try_find_input_file(sourceModel);
             if (not modelFilesystemLocation) {
                 messages.emplace_back(ScalingStepValidationState::Error, "The source model has no filesystem location.");
                 return messages;
@@ -110,7 +110,7 @@ namespace opyn
             }
 
             // Ensure `landmarks_frame` exists in the model
-            const auto* landmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
+            const auto* landmarksFrame = find_component<OpenSim::Frame>(sourceModel, get_landmarks_frame());
             if (not landmarksFrame) {
                 messages.emplace_back(
                     ScalingStepValidationState::Error,
@@ -129,7 +129,7 @@ namespace opyn
             const OpenSim::Model& resultModel) const
         {
             // Lookup/validate warping inputs.
-            const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(resultModel);
+            const std::optional<std::filesystem::path> modelFilesystemLocation = try_find_input_file(resultModel);
             OSC_ASSERT_ALWAYS(modelFilesystemLocation && "The source model has no filesystem location");
 
             OSC_ASSERT_ALWAYS(not get_source_landmarks_file().empty());
@@ -140,10 +140,10 @@ namespace opyn
 
             OSC_ASSERT_ALWAYS(not get_landmarks_frame().empty());
 
-            const auto* sourceLandmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
+            const auto* sourceLandmarksFrame = find_component<OpenSim::Frame>(sourceModel, get_landmarks_frame());
             OSC_ASSERT_ALWAYS(sourceLandmarksFrame && "could not find the landmarks frame in the source model");
 
-            const auto* resultLandmarksFrame = FindComponent<OpenSim::Frame>(resultModel, get_landmarks_frame());
+            const auto* resultLandmarksFrame = find_component<OpenSim::Frame>(resultModel, get_landmarks_frame());
             OSC_ASSERT_ALWAYS(resultLandmarksFrame && "could not find the landmarks frame in the model");
 
             const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");

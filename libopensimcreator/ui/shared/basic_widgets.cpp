@@ -368,9 +368,9 @@ void osc::DrawSelectOwnerMenu(opyn::ModelStatePair& model, const OpenSim::Compon
         model.set_hovered(nullptr);
 
         for (
-            const OpenSim::Component* owner = opyn::GetOwner(selected);
+            const OpenSim::Component* owner = opyn::get_owner(selected);
             owner != nullptr;
-            owner = opyn::GetOwner(*owner))
+            owner = opyn::get_owner(*owner))
         {
             const std::string menuLabel = [&owner]()
             {
@@ -503,12 +503,12 @@ void osc::DrawOutputNameColumn(
     {
         if (ui::is_item_hovered())
         {
-            maybeActiveSate->set_hovered(opyn::FindComponent(maybeActiveSate->get_model(), co->component_abs_path()));
+            maybeActiveSate->set_hovered(opyn::find_component(maybeActiveSate->get_model(), co->component_abs_path()));
         }
 
         if (ui::is_item_clicked(ui::MouseButton::Left))
         {
-            maybeActiveSate->set_selected(opyn::FindComponent(maybeActiveSate->get_model(), co->component_abs_path()));
+            maybeActiveSate->set_selected(opyn::find_component(maybeActiveSate->get_model(), co->component_abs_path()));
         }
     }
 
@@ -705,7 +705,7 @@ void osc::DrawCalculateTransformMenu(
         {
             DrawFrameInformationExpressedIn(frame, state, otherFrame);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(frame));
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::try_get_parent_frame(frame));
         ui::end_menu();
     }
 }
@@ -734,7 +734,7 @@ void osc::DrawCalculateAxisDirectionsMenu(
             ui::same_line();
             ui::draw_vector3_input("##zdir", z, "%.6f", ui::TextInputFlag::ReadOnly);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(frame));
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::try_get_parent_frame(frame));
         ui::end_menu();
     }
 }
@@ -752,7 +752,7 @@ void osc::DrawCalculateOriginMenu(
             ui::same_line();
             ui::draw_vector3_input("##origin", v, "%.6f", ui::TextInputFlag::ReadOnly);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(frame));
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::try_get_parent_frame(frame));
         ui::end_menu();
     }
 }
@@ -784,7 +784,7 @@ void osc::DrawCalculateOriginMenu(
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(sphere.getFrame()));
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::try_get_parent_frame(sphere.getFrame()));
 
         ui::end_menu();
     }
@@ -868,7 +868,7 @@ void osc::DrawCalculateOriginMenu(
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(ellipsoid.getFrame()));
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::try_get_parent_frame(ellipsoid.getFrame()));
 
         ui::end_menu();
     }
@@ -921,7 +921,7 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
             ui::same_line();
             ui::draw_vector3_input("##zdir", z, "%.6f", ui::TextInputFlag::ReadOnly);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::TryGetParentFrame(ellipsoid.getFrame()));
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, opyn::try_get_parent_frame(ellipsoid.getFrame()));
         ui::end_menu();
     }
 }
@@ -1419,7 +1419,7 @@ void osc::DrawSaveModelButton(const std::shared_ptr<opyn::ModelStatePair>& model
 
 void osc::DrawReloadModelButton(UndoableModelStatePair& model)
 {
-    const bool disable = model.is_readonly() or not opyn::HasInputFileName(model.get_model());
+    const bool disable = model.is_readonly() or not opyn::has_input_file_name(model.get_model());
 
     if (disable) {
         ui::begin_disabled();
@@ -1476,7 +1476,7 @@ void osc::DrawUndoAndRedoButtons(opyn::ModelStatePair& model)
 
 void osc::DrawToggleFramesButton(opyn::ModelStatePair& model, IconCache& icons)
 {
-    const Icon& icon = icons.find_or_throw(opyn::IsShowingFrames(model.get_model()) ? "frame_colored" : "frame_bw");
+    const Icon& icon = icons.find_or_throw(opyn::is_showing_frames(model.get_model()) ? "frame_colored" : "frame_bw");
 
     if (model.is_readonly()) {
         ui::begin_disabled();
@@ -1492,7 +1492,7 @@ void osc::DrawToggleFramesButton(opyn::ModelStatePair& model, IconCache& icons)
 
 void osc::DrawToggleMarkersButton(opyn::ModelStatePair& model, IconCache& icons)
 {
-    const Icon& icon = icons.find_or_throw(opyn::IsShowingMarkers(model.get_model()) ? "marker_colored" : "marker");
+    const Icon& icon = icons.find_or_throw(opyn::is_showing_markers(model.get_model()) ? "marker_colored" : "marker");
     if (model.is_readonly()) {
         ui::begin_disabled();
     }
@@ -1507,7 +1507,7 @@ void osc::DrawToggleMarkersButton(opyn::ModelStatePair& model, IconCache& icons)
 
 void osc::DrawToggleWrapGeometryButton(opyn::ModelStatePair& model, IconCache& icons)
 {
-    const Icon& icon = icons.find_or_throw(opyn::IsShowingWrapGeometry(model.get_model()) ? "wrap_colored" : "wrap");
+    const Icon& icon = icons.find_or_throw(opyn::is_showing_wrap_geometry(model.get_model()) ? "wrap_colored" : "wrap");
     if (model.is_readonly()) {
         ui::begin_disabled();
     }
@@ -1522,7 +1522,7 @@ void osc::DrawToggleWrapGeometryButton(opyn::ModelStatePair& model, IconCache& i
 
 void osc::DrawToggleContactGeometryButton(opyn::ModelStatePair& model, IconCache& icons)
 {
-    const Icon& icon = icons.find_or_throw(opyn::IsShowingContactGeometry(model.get_model()) ? "contact_colored" : "contact");
+    const Icon& icon = icons.find_or_throw(opyn::is_showing_contact_geometry(model.get_model()) ? "contact_colored" : "contact");
     if (model.is_readonly()) {
         ui::begin_disabled();
     }
@@ -1537,7 +1537,7 @@ void osc::DrawToggleContactGeometryButton(opyn::ModelStatePair& model, IconCache
 
 void osc::DrawToggleForcesButton(opyn::ModelStatePair& model, IconCache& icons)
 {
-    const Icon& icon = icons.find_or_throw(opyn::IsShowingForces(model.get_model()) ? "forces_colored" : "forces_bw");
+    const Icon& icon = icons.find_or_throw(opyn::is_showing_forces(model.get_model()) ? "forces_colored" : "forces_bw");
     if (model.is_readonly()) {
         ui::begin_disabled();
     }

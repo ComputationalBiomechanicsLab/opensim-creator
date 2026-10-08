@@ -1206,7 +1206,7 @@ namespace
         if (rs.getOptions().get_should_show_effective_muscle_line_of_action_for_origin() or
             rs.getOptions().get_should_show_effective_muscle_line_of_action_for_insertion()) {
 
-            if (const auto loas = GetEffectiveLinesOfActionInGround(musc, rs.getState())) {
+            if (const auto loas = get_effective_lines_of_action_in_ground(musc, rs.getState())) {
 
                 if (rs.getOptions().get_should_show_effective_muscle_line_of_action_for_origin()) {
                     DrawLineOfActionArrow(rs, musc, loas->origin, c_EffectiveLineOfActionColor);
@@ -1222,7 +1222,7 @@ namespace
         if (rs.getOptions().get_should_show_anatomical_muscle_line_of_action_for_origin() or
             rs.getOptions().get_should_show_anatomical_muscle_line_of_action_for_insertion()) {
 
-            if (const auto loas = GetAnatomicalLinesOfActionInGround(musc, rs.getState())) {
+            if (const auto loas = get_anatomical_lines_of_action_in_ground(musc, rs.getState())) {
 
                 if (rs.getOptions().get_should_show_anatomical_muscle_line_of_action_for_origin()) {
                     DrawLineOfActionArrow(rs, musc, loas->origin, c_AnatomicalLineOfActionColor);
@@ -1253,7 +1253,7 @@ namespace
         }
 
         // the `AbstractGeometryPath` has an owner, downcast to specialize
-        if (const auto* const muscle = GetOwner<OpenSim::Muscle>(gp)) {
+        if (const auto* const muscle = get_owner<OpenSim::Muscle>(gp)) {
             // owner is a muscle, coerce selection "hit" to the muscle
 
             HandleLinesOfAction(rs, *muscle);
@@ -1270,17 +1270,17 @@ namespace
                 return;
             }
         }
-        else if (const auto* const ligament = GetOwner<OpenSim::Ligament>(gp)) {
+        else if (const auto* const ligament = get_owner<OpenSim::Ligament>(gp)) {
             // owner is an `OpenSim::Ligament`, coerce selection "hit" to the path actuator (#919)
             HandleGenericGeometryPath(rs, gp, *ligament);
             return;
         }
-        else if (const auto* const pa = GetOwner<OpenSim::PathActuator>(gp)) {
+        else if (const auto* const pa = get_owner<OpenSim::PathActuator>(gp)) {
             // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
             HandleGenericGeometryPath(rs, gp, *pa);
             return;
         }
-        else if (const auto* const pathSpring = GetOwner<OpenSim::PathSpring>(gp)) {
+        else if (const auto* const pathSpring = get_owner<OpenSim::PathSpring>(gp)) {
             // owner is a path spring, coerce selection "hit" to the path spring (#650)
             HandleGenericGeometryPath(rs, gp, *pathSpring);
             return;
@@ -1299,7 +1299,7 @@ namespace
         // promote current component to the parent of the frame geometry, because
         // a user is probably more interested in the thing the frame geometry
         // represents (e.g. an offset frame) than the geometry itself (#506)
-        const OpenSim::Component& componentToLinkTo = GetOwnerOr(frameGeometry, frameGeometry);
+        const OpenSim::Component& componentToLinkTo = get_owner_or(frameGeometry, frameGeometry);
 
         rs.emitGenericDecorations(frameGeometry, componentToLinkTo);
     }
@@ -1323,7 +1323,7 @@ namespace
         }
 
         // else: try and compute a geometry-to-plane contact force and show it in-UI
-        const std::optional<ForcePoint> contactForcePoint = TryGetContactForceInGround(
+        const std::optional<ForcePoint> contactForcePoint = try_get_contact_force_in_ground(
             rs.getModel(),
             rs.getState(),
             hcf
@@ -1461,7 +1461,7 @@ void opyn::generate_subcomponent_decorations(
     {
         // handle OSC-specific decoration specializations, or fallback to generic
         // component decoration handling
-        if (not ShouldShowInUI(c)) {
+        if (not should_show_in_ui(c)) {
             return;
         }
         else if (const auto* const custom = dynamic_cast<const CustomDecorationGenerator*>(&c)) {

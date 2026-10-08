@@ -85,12 +85,12 @@ namespace
         OSC_ASSERT(oneDimensionalOutputExtractor.output_type() == opyn::OutputExtractorDataType::Float);
 
         // HACK: pre-acquire the environment, because `*simulation.getModel()` acquires the model
-        //       mutex for the entire duration of the `ForEachComponentInclusive`, and acquiring
+        //       mutex for the entire duration of the `for_each_component_inclusive`, and acquiring
         //       the environment inside this function then causes a recursion error/deadlock (#969)
         auto environment = simulation.tryUpdEnvironment();
 
         int id = 0;
-        opyn::ForEachComponentInclusive(*simulation.getModel(), [&oneDimensionalOutputExtractor, environment, &id](const auto& component)
+        opyn::for_each_component_inclusive(*simulation.getModel(), [&oneDimensionalOutputExtractor, environment, &id](const auto& component)
         {
             const auto numOutputs = component.getNumOutputs();
             if (numOutputs <= 0) {

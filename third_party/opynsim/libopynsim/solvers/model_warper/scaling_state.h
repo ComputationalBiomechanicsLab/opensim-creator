@@ -102,7 +102,7 @@ namespace opyn
             if (not component) {
                 return;
             }
-            OpenSim::AbstractProperty* property = FindPropertyMut(*component, edit.get_property_name());
+            OpenSim::AbstractProperty* property = find_property_mut(*component, edit.get_property_name());
             if (not property) {
                 return;
             }
@@ -194,8 +194,8 @@ namespace opyn
             // Create an independent copy of the source model, which will be scaled in-place.
             OpenSim::Model resultModel = source_model_->get_model();
             resultModel.clearConnections();
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            initialize_model(resultModel);
+            initialize_state(resultModel);
 
             if (not has_scaling_steps()) {
                 // There are no scaling steps, so a copy of the source model is a scaled model (trivially).
@@ -216,7 +216,7 @@ namespace opyn
 
     private:
         template<typename T = OpenSim::Component>
-        T* find_scaling_component_mut(const OpenSim::ComponentPath& p) { return FindComponentMut<T>(*scaling_document_, p); }
+        T* find_scaling_component_mut(const OpenSim::ComponentPath& p) { return find_component_mut<T>(*scaling_document_, p); }
 
         std::shared_ptr<BasicModelStatePair> source_model_ = std::make_shared<BasicModelStatePair>();
         std::shared_ptr<ModelWarperV3Document> scaling_document_ = std::make_shared<ModelWarperV3Document>();

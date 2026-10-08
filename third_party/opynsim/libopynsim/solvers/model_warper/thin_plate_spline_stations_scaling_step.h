@@ -43,7 +43,7 @@ namespace opyn
 
             // Ensure every entry in `stations` can be found in the source model.
             for (int i = 0; i < getProperty_stations().size(); ++i) {
-                const auto* station = FindComponent<OpenSim::Station>(sourceModel, get_stations(i));
+                const auto* station = find_component<OpenSim::Station>(sourceModel, get_stations(i));
                 if (not station) {
                     messages.emplace_back(
                         ScalingStepValidationState::Error,
@@ -65,11 +65,11 @@ namespace opyn
 
             // Warp each station specified by the `stations` property.
             for (int i = 0; i < getProperty_stations().size(); ++i) {
-                const auto* sourceStation = FindComponent<OpenSim::Station>(sourceModel, get_stations(i));
+                const auto* sourceStation = find_component<OpenSim::Station>(sourceModel, get_stations(i));
                 OSC_ASSERT_ALWAYS(sourceStation && "could not find a station in the source model");
 
                 // Find the input station and use it produce the warped station.
-                const auto* resultStation = FindComponent<OpenSim::Station>(resultModel, get_stations(i));
+                const auto* resultStation = find_component<OpenSim::Station>(resultModel, get_stations(i));
                 OSC_ASSERT_ALWAYS(resultStation && "could not find a station in the model");
 
                 const SimTK::Vec3 warpedLocation = scalingCache.lookup_tps_warped_rigid_point(
@@ -85,12 +85,12 @@ namespace opyn
                     commonParams.compensate_for_frame_changes
                 );
 
-                auto* resultStationMut = FindComponentMut<OpenSim::Station>(resultModel, get_stations(i));
+                auto* resultStationMut = find_component_mut<OpenSim::Station>(resultModel, get_stations(i));
                 OSC_ASSERT_ALWAYS(resultStationMut && "could not find a corresponding station in the result model");
                 resultStationMut->set_location(warpedLocation);
             }
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            initialize_model(resultModel);
+            initialize_state(resultModel);
         }
     };
 }

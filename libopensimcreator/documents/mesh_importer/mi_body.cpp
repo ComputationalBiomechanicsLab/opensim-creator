@@ -20,14 +20,14 @@ osc::MiBody::MiBody(
     const Transform& xform) :
 
     m_ID{id},
-    m_Name{opyn::SanitizeToOpenSimComponentName(name)},
+    m_Name{opyn::sanitize_to_open_sim_component_name(name)},
     m_Xform{xform}
 {
 }
 
 void osc::MiBody::implSetLabel(std::string_view sv)
 {
-    m_Name = opyn::SanitizeToOpenSimComponentName(sv);
+    m_Name = opyn::sanitize_to_open_sim_component_name(sv);
 }
 
 MiClass osc::MiBody::CreateClass()

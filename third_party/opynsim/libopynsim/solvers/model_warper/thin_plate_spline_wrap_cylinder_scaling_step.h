@@ -72,7 +72,7 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
 
             // Ensure every entry in `wrap_cylinders` can be found in the source model.
             for (int i = 0; i < getProperty_wrap_cylinders().size(); ++i) {
-                const auto* offsetFrame = FindComponent<OpenSim::WrapCylinder>(sourceModel, get_wrap_cylinders(i));
+                const auto* offsetFrame = find_component<OpenSim::WrapCylinder>(sourceModel, get_wrap_cylinders(i));
                 if (not offsetFrame) {
                     messages.emplace_back(
                         ScalingStepValidationState::Error,
@@ -103,11 +103,11 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
 
             // Warp each `WrapCylinder` specified by the `wrap_cylinders` property.
             for (int i = 0; i < getProperty_wrap_cylinders().size(); ++i) {
-                const auto* sourceWrapCylinder = FindComponent<OpenSim::WrapCylinder>(sourceModel, get_wrap_cylinders(i));
+                const auto* sourceWrapCylinder = find_component<OpenSim::WrapCylinder>(sourceModel, get_wrap_cylinders(i));
                 OSC_ASSERT_ALWAYS(sourceWrapCylinder && "could not find a `WrapCylinder` in the source model");
 
                 // Find the `i`th `WrapCylinder` in the model.
-                auto* resultWrapCylinder = FindComponentMut<OpenSim::WrapCylinder>(resultModel, get_wrap_cylinders(i));
+                auto* resultWrapCylinder = find_component_mut<OpenSim::WrapCylinder>(resultModel, get_wrap_cylinders(i));
                 OSC_ASSERT_ALWAYS(resultWrapCylinder && "could not find a `WrapCylinder` in the model");
 
                 // Calculate the `WrapCylinder`'s new `translation` by warping the origin.
@@ -197,8 +197,8 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                 resultWrapCylinder->set_xyz_body_rotation(newCylinderRotation.convertRotationToBodyFixedXYZ());
                 resultWrapCylinder->set_radius(newRadius);
             }
-            InitializeModel(resultModel);
-            InitializeState(resultModel);
+            initialize_model(resultModel);
+            initialize_state(resultModel);
         }
     };
 }

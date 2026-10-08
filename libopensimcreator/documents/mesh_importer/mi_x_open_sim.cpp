@@ -80,10 +80,10 @@ namespace
         auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.getPath().string());
         mesh->setName(std::string{meshEl.getLabel()});
         mesh->set_scale_factors(to<SimTK::Vec3>(meshEl.getXForm().scale));
-        opyn::AttachGeometry(*meshPhysOffsetFrame, std::move(mesh));
+        opyn::attach_geometry(*meshPhysOffsetFrame, std::move(mesh));
 
         // make it a child of the parent's physical frame
-        opyn::AddComponent(parentPhysFrame, std::move(meshPhysOffsetFrame));
+        opyn::add_component(parentPhysFrame, std::move(meshPhysOffsetFrame));
     }
 
     // create a body for the `model`, but don't add it to the model yet
@@ -311,8 +311,8 @@ namespace
         // add + connect the joint to the POFs
         //
         // care: ownership change happens here (#642)
-        OpenSim::PhysicalOffsetFrame& parentRef = opyn::AddFrame(*jointUniqPtr, std::move(parentPOF));
-        const OpenSim::PhysicalOffsetFrame& childRef = opyn::AddFrame(*jointUniqPtr, std::move(childPOF));
+        OpenSim::PhysicalOffsetFrame& parentRef = opyn::add_frame(*jointUniqPtr, std::move(parentPOF));
+        const OpenSim::PhysicalOffsetFrame& childRef = opyn::add_frame(*jointUniqPtr, std::move(childPOF));
         jointUniqPtr->connectSocket_parent_frame(parentRef);
         jointUniqPtr->connectSocket_child_frame(childRef);
 
@@ -321,11 +321,11 @@ namespace
         OSC_ASSERT_ALWAYS(parent.createdBody == nullptr && "at this point in the algorithm, all parents should have already been created");
         if (child.createdBody)
         {
-            opyn::AddBody(model, std::move(child.createdBody));  // add created body to model
+            opyn::add_body(model, std::move(child.createdBody));  // add created body to model
         }
 
         // add the joint to the model
-        opyn::AddJoint(model, std::move(jointUniqPtr));
+        opyn::add_joint(model, std::move(jointUniqPtr));
 
         // if there are any meshes attached to the joint, attach them to the parent
         for (const MiMesh& mesh : doc.iter<MiMesh>())
@@ -378,10 +378,10 @@ namespace
         visitedBodies[bodyEl.getID()] = addedBody.get();
 
         // add the components into the OpenSim::Model
-        opyn::AddFrame(*weldJoint, std::move(parentFrame));
-        opyn::AddFrame(*weldJoint, std::move(childFrame));
-        opyn::AddBody(model, std::move(addedBody));
-        opyn::AddJoint(model, std::move(weldJoint));
+        opyn::add_frame(*weldJoint, std::move(parentFrame));
+        opyn::add_frame(*weldJoint, std::move(childFrame));
+        opyn::add_body(model, std::move(addedBody));
+        opyn::add_joint(model, std::move(weldJoint));
     }
 
     void AddStationToModel(
@@ -402,7 +402,7 @@ namespace
         if (flags & ModelCreationFlags::ExportStationsAsMarkers)
         {
             // export as markers in the model's markerset (overridden behavior)
-            opyn::AddMarker(model, to_string(stationEl.getLabel()), *res.physicalFrame, locationInParent);
+            opyn::add_marker(model, to_string(stationEl.getLabel()), *res.physicalFrame, locationInParent);
         }
         else
         {
@@ -410,7 +410,7 @@ namespace
             auto station = std::make_unique<OpenSim::Station>(*res.physicalFrame, locationInParent);
             station->setName(to_string(stationEl.getLabel()));
 
-            opyn::AddComponent(*res.physicalFrame, std::move(station));
+            opyn::add_component(*res.physicalFrame, std::move(station));
         }
     }
 
@@ -459,8 +459,8 @@ namespace
         OpenSim::Model& m = *ptr;
 
         // init model+state
-        opyn::InitializeModel(m);
-        const SimTK::State& st = opyn::InitializeState(m);
+        opyn::initialize_model(m);
+        const SimTK::State& st = opyn::initialize_state(m);
 
         // this is what this method populates
         MiDocument rv;
@@ -545,7 +545,7 @@ namespace
         // then try to import all the meshes
         for (const OpenSim::Mesh& mesh : m.getComponentList<OpenSim::Mesh>())
         {
-            const std::optional<std::filesystem::path> maybeMeshPath = opyn::FindGeometryFileAbsPath(m, mesh);
+            const std::optional<std::filesystem::path> maybeMeshPath = opyn::find_geometry_file_abs_path(m, mesh);
 
             if (!maybeMeshPath)
             {
@@ -612,7 +612,7 @@ namespace
                 continue;
             }
 
-            if (opyn::OwnerIs<OpenSim::AbstractPathPoint>(station))
+            if (opyn::owner_is<OpenSim::AbstractPathPoint>(station))
             {
                 continue;
             }
@@ -656,7 +656,7 @@ namespace
 
 MiDocument osc::CreateModelFromOsimFile(const std::filesystem::path& p)
 {
-    return CreateMeshImporterDocumentFromModel(opyn::LoadModel(p));
+    return CreateMeshImporterDocumentFromModel(opyn::load_model(p));
 }
 
 std::unique_ptr<OpenSim::Model> osc::CreateOpenSimModelFromMeshImporterDocument(
@@ -733,8 +733,8 @@ std::unique_ptr<OpenSim::Model> osc::CreateOpenSimModelFromMeshImporterDocument(
 
     // ensure returned model is initialized from latest document
     model->finalizeConnections();  // ensure all sockets are finalized to paths (#263)
-    opyn::InitializeModel(*model);
-    opyn::InitializeState(*model);
+    opyn::initialize_model(*model);
+    opyn::initialize_state(*model);
 
     return model;
 }
