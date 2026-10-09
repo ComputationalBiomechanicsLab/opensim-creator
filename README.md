@@ -1,6 +1,6 @@
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.08284/status.svg)](https://doi.org/10.21105/joss.08284)
 
-# OpenSim Creator <img src="resources/OpenSimCreator/textures/osc.svg" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
+# OpenSim Creator <img src="third_party/opynsim/osc/resources/OpenSimCreator/textures/osc.svg" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
 
 > A UI for building OpenSim models
 
