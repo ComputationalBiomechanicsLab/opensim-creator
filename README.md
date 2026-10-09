@@ -23,8 +23,7 @@ OpenSim Creator (`osc`) is a standalone UI for building and editing
 
 `osc` started development in 2021 in the [Biomechanical Engineering](https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering)
 department at [TU Delft](https://www.tudelft.nl/). Historically, `osc` was
-a standalone project built against the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It
-now is built from [OPynSim](https://github.com/opynsim/opynsim) which, for
+a standalone project built against the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It is now built from [OPynSim](https://github.com/opynsim/opynsim) which, for
 ease-of-development reasons, also builds `osc` (it's easier to maintain a monorepo).
 The platform otherwise only uses lightweight open-source libraries that can
 easily be built from source to implement the UI on all target platforms. This
