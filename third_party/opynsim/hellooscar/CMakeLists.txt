@@ -16,7 +16,7 @@ if(TRUE)
     install(
         TARGETS hellooscar
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        COMPONENT opynsim-cpp
+        COMPONENT opynsim_cpp
     )
 endif()
 

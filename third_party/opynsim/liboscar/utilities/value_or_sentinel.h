@@ -39,10 +39,10 @@ namespace osc
         constexpr       T&  operator*()      &  noexcept { return value_; }
         constexpr const T&& operator*() const&& noexcept { return std::move(value_); }
         constexpr       T&& operator*()      && noexcept { return std::move(value_); }
-        constexpr const T&  value()     const&           { return *this ? value_            : throw std::bad_optional_access{}; }
-        constexpr       T&  value()          &           { return *this ? value_            : throw std::bad_optional_access{}; }
-        constexpr const T&& value()     const&&          { return *this ? std::move(value_) : throw std::bad_optional_access{}; }
-        constexpr       T&& value()          &&          { return *this ? std::move(value_) : throw std::bad_optional_access{}; }
+        constexpr const T&  value()     const&           { if (not *this) { throw std::bad_optional_access{}; } return value_; }
+        constexpr       T&  value()          &           { if (not *this) { throw std::bad_optional_access{}; } return value_; }
+        constexpr const T&& value()     const&&          { if (not *this) { throw std::bad_optional_access{}; } return std::move(value_); }
+        constexpr       T&& value()          &&          { if (not *this) { throw std::bad_optional_access{}; } return std::move(value_); }
 
     private:
         T value_ = Sentinel;

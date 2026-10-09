@@ -9,7 +9,7 @@ if(TRUE)
     install(
         TARGETS oscar_demo_viewer
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        COMPONENT opynsim-cpp
+        COMPONENT opynsim_cpp
     )
 endif()
 

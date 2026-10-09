@@ -5,7 +5,7 @@
 
 # the `.deb` package only installs the application
 set(CPACK_DEB_COMPONENT_INSTALL ON)
-set(CPACK_COMPONENTS_ALL "opensimcreator-exe")
+set(CPACK_COMPONENTS_ALL "opensimcreator_exe")
 set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgl1, libopengl0")

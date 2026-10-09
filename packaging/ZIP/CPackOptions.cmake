@@ -1,6 +1,6 @@
 # the `.zip` package only installs the application
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-set(CPACK_COMPONENTS_ALL "opensimcreator-exe")
+set(CPACK_COMPONENTS_ALL "opensimcreator_exe")
 set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
 if(WIN32)

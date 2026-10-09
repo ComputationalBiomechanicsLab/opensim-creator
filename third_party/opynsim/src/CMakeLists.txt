@@ -142,7 +142,7 @@ if(TRUE)
     install(
         DIRECTORY   "${OPYN_OPYNSIM_STAGING_DIR}/"
         DESTINATION "${OPYN_PYTHON_INSTALL_DIR}"
-        COMPONENT opynsim-python
+        COMPONENT opynsim_python
         FILES_MATCHING
             PATTERN "*.py"
             PATTERN "*.pyi"
@@ -155,7 +155,7 @@ if(TRUE)
     install(
         FILES $<TARGET_FILE:_core>
         DESTINATION "${OPYN_PYTHON_INSTALL_DIR}"
-        COMPONENT opynsim-python
+        COMPONENT opynsim_python
     )
 
     # If `CMAKE_INSTALL_DO_STRIP` is `TRUE` at install-time, strip
@@ -192,7 +192,7 @@ if(TRUE)
                 endif()
             endif()
             "
-            COMPONENT opynsim-python
+            COMPONENT opynsim_python
         )
     endif()
 endif()

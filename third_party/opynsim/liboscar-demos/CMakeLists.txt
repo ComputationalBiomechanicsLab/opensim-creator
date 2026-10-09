@@ -34,14 +34,14 @@ if(TRUE)
     install(
         DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/oscar_demos"
         DESTINATION "resources"
-        COMPONENT opynsim-cpp
+        COMPONENT opynsim_cpp
     )
 
     # Install all of `liboscar-demos`'s header files to `include/liboscar-demos`
     install(
         DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/liboscar-demos"
-        COMPONENT   opynsim-cpp
+        COMPONENT   opynsim_cpp
         FILES_MATCHING PATTERN "*.h"
         PATTERN "tests" EXCLUDE
     )
@@ -50,12 +50,12 @@ if(TRUE)
     install(
         TARGETS oscar_demos
         EXPORT oscar_demosTargets
-        COMPONENT opynsim-cpp
+        COMPONENT opynsim_cpp
     )
     install(
         EXPORT oscar_demosTargets
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/oscar_demos"
-        COMPONENT opynsim-cpp
+        COMPONENT opynsim_cpp
     )
 
     # Generate + install an `oscarConfig.cmake` file (it's what `find_package` looks for)
@@ -67,6 +67,6 @@ if(TRUE)
     install(
         FILES       "${CMAKE_CURRENT_BINARY_DIR}/generated/oscar_demosConfig.cmake"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/oscar_demos"
-        COMPONENT   opynsim-cpp
+        COMPONENT   opynsim_cpp
     )
 endif()

@@ -675,8 +675,8 @@ endif()
 if(TRUE)
 
     # install `osimTargets.cmake` to `lib/cmake/osim`
-    install(TARGETS osim EXPORT osimTargets COMPONENT osim-cpp)
-    install(EXPORT osimTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/osim COMPONENT osim-cpp)
+    install(TARGETS osim EXPORT osimTargets COMPONENT osim_cpp)
+    install(EXPORT osimTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/osim COMPONENT osim_cpp)
 
     # install `osimConfig.cmake` to `lib/cmake/osim`
     configure_package_config_file(
@@ -684,7 +684,7 @@ if(TRUE)
         "${CMAKE_CURRENT_BINARY_DIR}/generated/osimConfig.cmake"
         INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/osim
     )
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osimConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/osim" COMPONENT osim-cpp)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osimConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/osim" COMPONENT osim_cpp)
 
     # install simbody headers to `include/simbody` (compatible with `simbody`'s install)
     install(
@@ -705,12 +705,12 @@ if(TRUE)
             ${OPYN_SIMBODY_BASEDIR}/Simbody/Visualizer/include/
 
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/simbody"
-        COMPONENT osim-cpp
+        COMPONENT osim_cpp
     )
 
     # install lepton headers to `include/lepton` (compatible with `opensim-core`'s install)
     file(GLOB_RECURSE OPYN_GLOBBED_LEPTON_HEADERS "${OPYN_OPENSIM_BASEDIR}/Vendors/lepton/include/lepton/*.h")
-    install(FILES ${OPYN_GLOBBED_LEPTON_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/lepton" COMPONENT osim-cpp)
+    install(FILES ${OPYN_GLOBBED_LEPTON_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/lepton" COMPONENT osim_cpp)
 
     # install OpenSim headers to `include/OpenSim` (compatible with `opensim-core`'s install)
     set(OPYN_EXCLUDED_PATTERNS "/Test/" "/Tests/" "/Examples/" "/Moco/" "/Sandbox/" "/Tools/" "C3DFileAdapter")
@@ -729,6 +729,6 @@ if(TRUE)
     foreach(header ${OPYN_HEADER_FILES})
         file(RELATIVE_PATH header_relpath ${OPYN_OPENSIM_BASEDIR} ${header})
         get_filename_component(DIR ${header_relpath} DIRECTORY)
-        install(FILES ${header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DIR} COMPONENT osim-cpp)
+        install(FILES ${header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DIR} COMPONENT osim_cpp)
     endforeach()
 endif()

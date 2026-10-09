@@ -75,6 +75,8 @@ namespace osc
             vector_.assign(init.begin(), init.end());
         }
 
+        ~VariableLengthArray() noexcept = default;
+
         VariableLengthArray& operator=(const VariableLengthArray& other)
             requires std::is_copy_assignable_v<T>
         {

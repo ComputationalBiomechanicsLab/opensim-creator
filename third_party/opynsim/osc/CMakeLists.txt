@@ -80,7 +80,7 @@ if(WIN32)
     endif()
     install(
         TARGETS osc
-        COMPONENT opensimcreator-exe
+        COMPONENT opensimcreator_exe
         RUNTIME_DEPENDENCIES
             PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"  # don't install Windows-provided libs
             POST_EXCLUDE_REGEXES ".*system32.*[.]dll"  # don't install Windows-provided libs
@@ -102,7 +102,7 @@ if(WIN32)
             FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
             RENAME "osc.toml"
             DESTINATION "."
-            COMPONENT opensimcreator-exe
+            COMPONENT opensimcreator_exe
         )
     endif()
 
@@ -110,7 +110,7 @@ if(WIN32)
     install(
         DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/OpenSimCreator"
         DESTINATION "resources"
-        COMPONENT opensimcreator-exe
+        COMPONENT opensimcreator_exe
     )
 elseif(UNIX AND NOT APPLE)
     # On Linux, configure an `osc.toml` that's used when running from the
@@ -139,7 +139,7 @@ elseif(UNIX AND NOT APPLE)
         RUNTIME_DEPENDENCIES
         DIRECTORIES ${CMAKE_INSTALL_LIBDIR}
         POST_EXCLUDE_REGEXES "^/usr/*" "^/lib/*"  # don't copy system-provided dependencies
-        COMPONENT opensimcreator-exe
+        COMPONENT opensimcreator_exe
     )
 
     # On Linux (installation): install a user-facing `osc.toml` config file
@@ -158,7 +158,7 @@ elseif(UNIX AND NOT APPLE)
             FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_debian.toml"
             RENAME "osc.toml"
             DESTINATION "."
-            COMPONENT opensimcreator-exe
+            COMPONENT opensimcreator_exe
         )
     endif()
 
@@ -166,7 +166,7 @@ elseif(UNIX AND NOT APPLE)
     install(
         DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/resources/OpenSimCreator"
         DESTINATION "resources"
-        COMPONENT opensimcreator-exe
+        COMPONENT opensimcreator_exe
     )
 elseif(APPLE)
     # On Apple, resource files (configuration, images, etc.) are
@@ -239,6 +239,6 @@ elseif(APPLE)
     install(
         TARGETS osc
         BUNDLE DESTINATION .
-        COMPONENT opensimcreator-exe
+        COMPONENT opensimcreator_exe
     )
 endif()

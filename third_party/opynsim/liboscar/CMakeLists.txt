@@ -89,21 +89,21 @@ if(TRUE)
     install(
         FILES       "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscar_config.h"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/liboscar"
-        COMPONENT   opynsim-cpp
+        COMPONENT   opynsim_cpp
     )
 
     # Install generated `oscar.h`
     install(
         FILES       "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/oscar.h"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/liboscar"
-        COMPONENT   opynsim-cpp
+        COMPONENT   opynsim_cpp
     )
 
     # Install all of `liboscar`'s header files to `include/liboscar`
     install(
         DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/liboscar"
-        COMPONENT   opynsim-cpp
+        COMPONENT   opynsim_cpp
         FILES_MATCHING PATTERN "*.h"
         PATTERN "tests" EXCLUDE
     )
@@ -112,12 +112,12 @@ if(TRUE)
     install(
         TARGETS   oscar
         EXPORT    oscarTargets
-        COMPONENT opynsim-cpp
+        COMPONENT opynsim_cpp
     )
     install(
         EXPORT      oscarTargets
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/oscar"
-        COMPONENT   opynsim-cpp
+        COMPONENT   opynsim_cpp
     )
 
     # Generate + install an `oscarConfig.cmake` file
@@ -129,6 +129,6 @@ if(TRUE)
     install(
         FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/oscarConfig.cmake"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/oscar"
-        COMPONENT opynsim-cpp
+        COMPONENT opynsim_cpp
     )
 endif()
