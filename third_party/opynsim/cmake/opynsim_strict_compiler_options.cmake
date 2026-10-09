@@ -6,6 +6,7 @@ function(opyn_add_strict_compiler_options_to target)
         $<$<CXX_COMPILER_ID:MSVC>:
             /WX                 # treat all warnings as errors
             /W4                 # set the warning level very high
+            /w14458             # shadowing member variables with local variables is disallowed
             /external:W0        # disable warnings for external headers
             /analyze            # enable static code analysis
             /analyze:plugin EspXEngine.dll  # enable extended static analysis checks

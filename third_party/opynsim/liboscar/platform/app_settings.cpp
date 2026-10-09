@@ -172,14 +172,14 @@ R"(# configuration options
 
         // data that's stored in a stack during configuration traversal
         struct StackElement final {
-            StackElement(std::string_view table_name, const toml::table& table) :
+            StackElement(std::string_view table_name, const toml::table* table) :
                 table_name{table_name},
-                table{&table}
+                table{table}
             {}
 
             std::string_view table_name;
             const toml::table* table;
-            toml::table::const_iterator iterator = table->cbegin();
+            toml::table::const_iterator iterator = this->table->cbegin();
         };
 
         // crawl the table
@@ -187,7 +187,7 @@ R"(# configuration options
         // - every section acts as a key prefix of `$section1/$section2/$key`
         std::vector<StackElement> stack;
         stack.reserve(16);  // guess
-        stack.emplace_back("", config);  // required for .begin()+1
+        stack.emplace_back("", &config);  // required for .begin()+1
         while (not stack.empty()) {
 
             const std::string key_prefix = [&stack]()
@@ -206,7 +206,7 @@ R"(# configuration options
                 const auto& [k, node] = *cur.iterator;
 
                 if (const auto* ptr = node.as_table()) {
-                    stack.emplace_back(k, *ptr);
+                    stack.emplace_back(k, ptr);
                     recursing = true;
                     ++cur.iterator;
                     break;
