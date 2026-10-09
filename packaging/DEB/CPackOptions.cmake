@@ -4,8 +4,9 @@
 # Debian (and derivatives, such as Ubuntu and Linux Mint).
 
 # the `.deb` package only installs the application
-set(CPACK_DEB_COMPONENT_INSTALL OFF)
-set(CPACK_COMPONENTS_ALL "osc_app")
+set(CPACK_DEB_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENTS_ALL "opensimcreator-exe")
+set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgl1, libopengl0")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)

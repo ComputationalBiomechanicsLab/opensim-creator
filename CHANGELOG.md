@@ -6,6 +6,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- OpenSim Creator's C++ source code was moved to [OPynSim](https://github.com/opynsim/opynsim),
+  which ensures it is synchronized 1:1 with OPynSim's features/bugfixes. The
+  opensim-creator repository now only handles documentation, packaging, branding,
+  and issue management.
+- Development/ErrorCheck/RapidLinuxLinking/Inlined presets were removed from
+  opensim-creator: developers should now directly develop against OPynSim, which
+  has equivalent presets and checks.
 - Fixed Windows installer (`.msi`) upgrades by ensuring a stable `CPACK_WIX_UPGRADE_GUID`
   between releases, which should enable correct upgrade, repair, and removal behavior.
 - The Windows portable installer (`.zip`) is now code signed, which should reduce the

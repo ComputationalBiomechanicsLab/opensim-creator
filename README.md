@@ -11,7 +11,6 @@
 - 🧬 Want to know more about the project? [See www.opensimcreator.com](https://www.opensimcreator.com)
 - ❓ Have a question? [Go to the discussions page](../../discussions)
 - 🐛 Found a bug or want to request a feature? [Post it on the issues page](../../issues)
-- 🏗️ Want to build it from source? [There's a development section in the documentation](https://docs.opensimcreator.com)
 - 🥰 Want to contribute to it? [There's a contribution section in the documentation](https://docs.opensimcreator.com/manual/en/latest/contributing.html)
 
 
@@ -23,11 +22,13 @@ OpenSim Creator (`osc`) is a standalone UI for building and editing
 [OpenSim](https://github.com/opensim-org/opensim-core) models.
 
 `osc` started development in 2021 in the [Biomechanical Engineering](https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering)
-department at [TU Delft](https://www.tudelft.nl/). Architecturally, `osc` is a C++ codebase
-that is directly integrated against the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It
-otherwise only uses lightweight open-source libraries that can easily be built from source
-(e.g. [oscar](https://github.com/adamkewley/oscar)) to implement the UI on all target
-platforms. This makes `osc` fairly easy to build, integrate, and package.
+department at [TU Delft](https://www.tudelft.nl/). Historically, `osc` was
+a standalone project built against the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It
+now is built from [OPynSim](https://github.com/opynsim/opynsim) which, for
+ease-of-development reasons, also builds `osc` (it's easier to maintain a monorepo).
+The platform otherwise only uses lightweight open-source libraries that can
+easily be built from source to implement the UI on all target platforms. This
+makes `osc` fairly easy to build, integrate, and package.
 
 
 <a name="citing"></a>
@@ -61,17 +62,17 @@ every release of OpenSim Creator:
   `gcc`, `clang`, and MSVC with many warnings/lints enabled to ensure the source code has a
   strong chance of being compile-able far in the future as architectures, operating systems, and
   compilers evolve.
-- The project includes all of its library dependencies in-tree. It doesn't use git submodules, internet
-  downloads, or package managers. This means that everything that's needed to build OpenSimCreator
-  (apart from widely-available compiler toolchains) is available in this repository and not dependent
-  on external services that might change over time.
+- The project includes all of its library dependencies in-tree (including [OPynSim](https://github.com/opynsim/opynsim)).
+  It doesn't use git submodules, internet downloads, or package managers. This
+  means that everything that's needed to build OpenSimCreator (apart from
+  widely-available compiler toolchains) is available in this repository and
+  not dependent on external services that might change over time.
 
 ## 🥰 Contributing
 
 If you would like to contribute to OpenSim Creator then thank you 🥰: it's people like you
 that make open-source awesome! Please consult the [contribution section](https://docs.opensimcreator.com/manual/en/latest/contributing.html)
-in the official documentation. The development section of the documentation also outlines how
-to build the project from source!
+in the official documentation.
 
 ## ❤️ Acknowledgements
 
@@ -105,6 +106,3 @@ development supported and stable.
   </tr>
 </table>
 
-Finally, we would also like to thank the wider open-source community. OpenSim Creator
-wouldn't be possible without using and learning from high-quality open-source libraries
-and technical literature from thousands of contributors.

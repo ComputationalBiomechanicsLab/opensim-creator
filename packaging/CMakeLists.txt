@@ -22,14 +22,14 @@ option(OSC_NOTARIZATION_ENABLED "Enable notarizing the package" ${_notarize_defa
 set(CPACK_PACKAGE_NAME                "opensimcreator")
 set(CPACK_PACKAGE_VENDOR              "Adam Kewley")
 set(CPACK_PACKAGE_CONTACT             "Adam Kewley <contact@adamkewley.com>")
-set(CPACK_PACKAGE_HOMEPAGE_URL        "${OSC_REPO_URL}")
+set(CPACK_PACKAGE_HOMEPAGE_URL        "https://github.com/ComputationalBiomechanicsLab/opensim-creator")
 set(CPACK_PACKAGE_DESCRIPTION         "A standalone GUI for building OpenSim models")
-set(CPACK_PACKAGE_EXECUTABLES         "osc;${OSC_LONG_APPNAME}")  # ensure human-readable application name can be searched in start bar etc. (#1079)
+set(CPACK_PACKAGE_EXECUTABLES         "osc;OpenSim Creator")  # ensure human-readable application name can be searched in start bar etc. (#1079)
 
 # Set custom CPack variables that are forwarded to `CPackOptions.cmake` scripts
 set(CPACK_OSC_CODESIGN_ENABLED         ${OSC_CODESIGN_ENABLED})
 set(CPACK_OSC_NOTARIZATION_ENABLED     ${OSC_NOTARIZATION_ENABLED})
-set(CPACK_OSC_LONG_APPNAME            "${OSC_LONG_APPNAME}")
+set(CPACK_OSC_LONG_APPNAME            "OpenSim Creator")
 set(CPACK_OSC_PROJECT_NAME            "${PROJECT_NAME}")
 set(CPACK_OSC_PROJECT_VERSION         "${PROJECT_VERSION}")
 set(CPACK_OSC_PROJECT_SOURCE_DIR      "${PROJECT_SOURCE_DIR}")

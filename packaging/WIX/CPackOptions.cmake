@@ -5,8 +5,9 @@
 # OSC documentation).
 
 # the `.msi` package only installs the application (no docs/libs)
-set(CPACK_WIX_COMPONENT_INSTALL OFF)
-set(CPACK_COMPONENTS_ALL "osc_app")
+set(CPACK_WIX_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENTS_ALL "opensimcreator-exe")
+set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
 set(CPACK_WIX_UI_REF "WixUI_InstallDir")  # Disable component selection dialog in installer
 
 # use the naming convention `opensimcreator-$version-windows-$arch.exe` (#975)

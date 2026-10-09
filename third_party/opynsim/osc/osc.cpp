@@ -16,14 +16,14 @@ using namespace osc;
 
 namespace
 {
-    constexpr std::string_view c_Usage = "usage: osc [--help] [fd] MODEL.osim\n";
+    constexpr std::string_view c_usage = "usage: osc [--help] [fd] MODEL.osim\n";
 
-    constexpr std::string_view c_Help = R"(OPTIONS
+    constexpr std::string_view c_help = R"(OPTIONS
     --help
         Show this help
 )";
 
-    AppMetadata GetOpenSimCreatorAppMetadata()
+    AppMetadata get_open_sim_creator_app_metadata()
     {
         AppMetadata metadata;
         metadata.set_organization_name(OSC_ORGNAME_STRING);
@@ -51,13 +51,13 @@ int main(int argc, char* argv[])
             unnamed_args.push_back(arg);
         }
         else if (arg == "--help") {
-            std::cout << c_Usage << '\n' << c_Help << '\n';
+            std::cout << c_usage << '\n' << c_help << '\n';
             return EXIT_SUCCESS;
         }
     }
 
     // init top-level application state
-    OpenSimCreatorApp app{GetOpenSimCreatorAppMetadata()};
+    OpenSimCreatorApp app{get_open_sim_creator_app_metadata()};
 
     // init top-level widget (tab host)
     auto tabbed_widget = std::make_unique<MainUIScreen>();

@@ -5,8 +5,6 @@ include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)   # CMAKE_INSTALL_LIBDIR
 
 option(OSCDEPS_BUILD_OPYNSIM_DEPS "Build opynsim's transitive dependencies" ON)
-option(OSCDEPS_BUILD_OSCAR        "Build oscar (via opynsim)"               ON)
-option(OSCDEPS_BUILD_OPYNSIM      "Build opynsim"                           ON)
 
 # set OSCDEPS_BUILD_ALWAYS
 if(TRUE)
@@ -86,25 +84,6 @@ if(OSCDEPS_BUILD_OPYNSIM_DEPS)
         CMAKE_CACHE_ARGS
             ${_oscdeps_dependency_cmake_args}
             -DBUILD_TESTING:BOOL=OFF
-            -DOPYNDEPS_BUILD_OSCAR:BOOL=${OSCDEPS_BUILD_OSCAR}
     )
-endif()
-
-if(OSCDEPS_BUILD_OPYNSIM)
-    ExternalProject_Add(opynsim
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opynsim
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${_oscdeps_dependency_cmake_args}
-            -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
-            -DBUILD_TESTING:BOOL=OFF
-            -DOPYN_BUILD_PYTHON_BINDINGS:BOOL=OFF
-            -DOPYN_BUILD_DOCS:BOOL=OFF
-            -DOPYN_USE_STRICT_COMPILER_FLAGS:BOOL=OFF
-            -DOPYN_PACKAGE:BOOL=OFF
-    )
-    if(OSCDEPS_BUILD_OPYNSIM_DEPS)
-        add_dependencies(opynsim opyndeps)
-    endif()
 endif()
 

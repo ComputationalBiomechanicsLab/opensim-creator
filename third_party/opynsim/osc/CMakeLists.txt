@@ -1,41 +1,3 @@
-option(OSC_USE_STRICT_COMPILER_FLAGS "Add stricter compilation flags to targets" OFF)
-set(
-    OSC_REPO_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator"
-    CACHE STRING
-    "the internet location of the software's repo - used by in-app links, installers, etc."
-)
-mark_as_advanced(OSC_REPO_URL)
-set(
-    OSC_DOCS_URL "https://docs.opensimcreator.com"
-    CACHE STRING
-    "a url for the software's documentation - used by in-app links, installers, etc."
-)
-mark_as_advanced(OSC_DOCS_URL)
-set(
-    OSC_HELP_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator/discussions"
-    CACHE STRING
-    "the internet location of the software's help page - used by in-app links, installers, etc."
-)
-mark_as_advanced(OSC_HELP_URL)
-set(
-    OSC_ORGNAME "cbl"
-    CACHE STRING
-    "the name of the organization that created the application (affects configuration location)"
-)
-mark_as_advanced(OSC_ORGNAME)
-set(
-    OSC_APPNAME "osc"
-    CACHE STRING
-    "the short name for the application (affects configuration location)"
-)
-mark_as_advanced(OSC_APPNAME)
-set(
-    OSC_LONG_APPNAME "OpenSim Creator"
-    CACHE STRING
-    "a longer, user-friendly name of the application"
-)
-mark_as_advanced(OSC_LONG_APPNAME)
-
 # Configure `osc_config.h` (compile-time configuration)
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/osc_config.h.in"
@@ -50,8 +12,8 @@ set_target_properties(osc PROPERTIES
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS        OFF
 )
-if(OSC_USE_STRICT_COMPILER_FLAGS)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/opynsim/cmake/opynsim_strict_compiler_options.cmake)
+if(OPYN_USE_STRICT_COMPILER_FLAGS)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(osc)
 endif()
 target_link_libraries(osc PRIVATE opensimcreator)
@@ -66,7 +28,7 @@ if(WIN32)
     # from the build directory (runtime configuration when developing)
     #
     # See `packaging/` for the `osc.toml` that's used at install-time
-    set(OSC_CONFIG_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources")
+    set(OSC_CONFIG_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/resources")
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
         "${CMAKE_CURRENT_BINARY_DIR}/osc.toml"
@@ -118,7 +80,7 @@ if(WIN32)
     endif()
     install(
         TARGETS osc
-        COMPONENT osc_app
+        COMPONENT opensimcreator-exe
         RUNTIME_DEPENDENCIES
             PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"  # don't install Windows-provided libs
             POST_EXCLUDE_REGEXES ".*system32.*[.]dll"  # don't install Windows-provided libs
@@ -140,22 +102,22 @@ if(WIN32)
             FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
             RENAME "osc.toml"
             DESTINATION "."
-            COMPONENT osc_app
+            COMPONENT opensimcreator-exe
         )
     endif()
 
     # On Windows (installation), install the runtime `resources/` (assets) directory
     install(
-        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../resources/OpenSimCreator"
+        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources/OpenSimCreator"
         DESTINATION "resources"
-        COMPONENT osc_app
+        COMPONENT opensimcreator-exe
     )
 elseif(UNIX AND NOT APPLE)
     # On Linux, configure an `osc.toml` that's used when running from the
     # build directory (runtime configuration)
     #
     # See `packaging/` for the installed version
-    set(OSC_CONFIG_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources")
+    set(OSC_CONFIG_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/resources")
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
         "${CMAKE_CURRENT_BINARY_DIR}/osc.toml"
@@ -177,7 +139,7 @@ elseif(UNIX AND NOT APPLE)
         RUNTIME_DEPENDENCIES
         DIRECTORIES ${CMAKE_INSTALL_LIBDIR}
         POST_EXCLUDE_REGEXES "^/usr/*" "^/lib/*"  # don't copy system-provided dependencies
-        COMPONENT osc_app
+        COMPONENT opensimcreator-exe
     )
 
     # On Linux (installation): install a user-facing `osc.toml` config file
@@ -196,15 +158,15 @@ elseif(UNIX AND NOT APPLE)
             FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_debian.toml"
             RENAME "osc.toml"
             DESTINATION "."
-            COMPONENT osc_app
+            COMPONENT opensimcreator-exe
         )
     endif()
 
     # On Linux (installation), copy `resources/` (assets) directory
     install(
-        DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/../resources/OpenSimCreator"
+        DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/resources/OpenSimCreator"
         DESTINATION "resources"
-        COMPONENT osc_app
+        COMPONENT opensimcreator-exe
     )
 elseif(APPLE)
     # On Apple, resource files (configuration, images, etc.) are
@@ -223,7 +185,7 @@ elseif(APPLE)
     set_target_properties(osc PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
-        OUTPUT_NAME "${OSC_LONG_APPNAME}"  # This is what users see in the docking bar etc.
+        OUTPUT_NAME "OpenSim Creator"  # This is what users see in the docking bar etc.
     )
 
     # On Apple, create a symlink named 'osc' inside the bundle next to the main binary
@@ -253,10 +215,10 @@ elseif(APPLE)
     # and ensure they have the same directory structure
     file(GLOB_RECURSE OSC_RESOURCE_FILES
         CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/../resources/*"
+        "${CMAKE_CURRENT_SOURCE_DIR}/resources/*"
     )
     foreach(_absolute_path ${OSC_RESOURCE_FILES})
-        file(RELATIVE_PATH _relative_path "${CMAKE_CURRENT_SOURCE_DIR}/../resources/" ${_absolute_path})
+        file(RELATIVE_PATH _relative_path "${CMAKE_CURRENT_SOURCE_DIR}/resources/" ${_absolute_path})
         get_filename_component(_relative_directory "${_relative_path}" DIRECTORY)
         target_sources(osc PRIVATE "${_absolute_path}")
         set_source_files_properties("${_absolute_path}" PROPERTIES
@@ -277,10 +239,6 @@ elseif(APPLE)
     install(
         TARGETS osc
         BUNDLE DESTINATION .
-        COMPONENT osc_app
+        COMPONENT opensimcreator-exe
     )
-endif()
-
-if (BUILD_TESTING)
-    add_subdirectory(tests)
 endif()

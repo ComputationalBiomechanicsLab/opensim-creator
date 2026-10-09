@@ -77,7 +77,7 @@ PRIVATE
     Threads::Threads  # implicitly required by SDL3
 )
 
-if(BUILD_TESTING)
+if(OPYN_BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 

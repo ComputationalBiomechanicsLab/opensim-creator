@@ -21,7 +21,7 @@ target_include_directories(oscar_demos PUBLIC
 )
 target_link_libraries(oscar_demos PUBLIC oscar)
 
-if(BUILD_TESTING)
+if(OPYN_BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 

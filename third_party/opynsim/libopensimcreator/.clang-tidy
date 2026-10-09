@@ -1,0 +1,2 @@
+# libopensimcreator has legacy identifiers.
+Checks: '-readability-identifier-naming'

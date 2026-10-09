@@ -1,39 +1,29 @@
-option(OSC_USE_STRICT_COMPILER_FLAGS "Add stricter compilation flags to targets"                    OFF)
-option(OSC_LIBOPENSIMCREATOR_INSTALL "Install libopensimcreator library and headers (experimental)" OFF)
-mark_as_advanced(OSC_LIBOPENSIMCREATOR_INSTALL)
-
-if(NOT TARGET oscar)
-    find_package(oscar REQUIRED)
-endif()
-if(NOT TARGET opynsim)
-    find_package(opynsim REQUIRED)
-endif()
-
-file(GLOB_RECURSE _osc_sources "*.cpp")
-list(FILTER _osc_sources EXCLUDE REGEX "tests")
-add_library(opensimcreator STATIC ${_osc_sources})
-unset(_osc_sources)
+file(GLOB_RECURSE LIBOPYNSIM_SOURCE_FILES "*.cpp")
+list(FILTER LIBOPYNSIM_SOURCE_FILES EXCLUDE REGEX "tests")
+add_library(opensimcreator STATIC ${LIBOPYNSIM_SOURCE_FILES})
+unset(LIBOPYNSIM_SOURCE_FILES)
 
 target_compile_features(opensimcreator PUBLIC cxx_std_23)
 set_target_properties(opensimcreator PROPERTIES
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS        OFF
 )
-if(OSC_USE_STRICT_COMPILER_FLAGS)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/opynsim/cmake/opynsim_strict_compiler_options.cmake)
+if(OPYN_USE_STRICT_COMPILER_FLAGS)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(opensimcreator)
 endif()
 target_include_directories(opensimcreator
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>"  # so that `#include <libopensimcreator/HEADER.h>` works
-    PUBLIC  $<INSTALL_INTERFACE:include>                        # because all headers are installed into `liboscar/`
+    PUBLIC  $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(opensimcreator PUBLIC opynsim oscar)
 
-if(BUILD_TESTING)
+if(OPYN_BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
-if(OSC_LIBOPENSIMCREATOR_INSTALL)
+# Handle installation
+if(TRUE)
     include(GNUInstallDirs)             # `CMAKE_INSTALL_LIBDIR`, `CMAKE_INSTALL_INCLUDEDIR`
     include(CMakePackageConfigHelpers)  # `configure_package_config_file`
 
@@ -41,7 +31,7 @@ if(OSC_LIBOPENSIMCREATOR_INSTALL)
     install(
         DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/libopensimcreator"
-        COMPONENT osc_cpp
+        COMPONENT opensimcreator-cpp
         FILES_MATCHING PATTERN "*.h"
         PATTERN "tests" EXCLUDE
     )
@@ -50,12 +40,12 @@ if(OSC_LIBOPENSIMCREATOR_INSTALL)
     install(
         TARGETS opensimcreator
         EXPORT opensimcreatorTargets
-        COMPONENT osc_cpp
+        COMPONENT opensimcreator-cpp
     )
     install(
         EXPORT opensimcreatorTargets
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opensimcreator"
-        COMPONENT osc_cpp
+        COMPONENT opensimcreator-cpp
     )
 
     # Generate + install an `opensimcreatorConfig.cmake` file
@@ -67,6 +57,6 @@ if(OSC_LIBOPENSIMCREATOR_INSTALL)
     install(
         FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/opensimcreatorConfig.cmake"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opensimcreator"
-        COMPONENT osc_cpp
+        COMPONENT opensimcreator-cpp
     )
 endif()

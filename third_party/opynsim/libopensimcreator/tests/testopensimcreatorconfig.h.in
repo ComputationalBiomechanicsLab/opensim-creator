@@ -8,7 +8,7 @@
 // char[]
 //
 // absolute path to the general resources directory for the OSC project
-#define OSC_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/../../resources"
+#define OSC_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/../../osc/resources"
 
 // char[]
 //

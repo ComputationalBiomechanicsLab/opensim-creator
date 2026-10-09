@@ -1117,11 +1117,11 @@ namespace osc::ui
         };
         constexpr PlotFlags operator|(PlotFlags lhs, PlotFlags rhs)
         {
-            return static_cast<PlotFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));
+            return static_cast<PlotFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
         }
         constexpr PlotFlags operator^(PlotFlags lhs, PlotFlags rhs)
         {
-            return static_cast<PlotFlags>(std::to_underlying(lhs) ^ std::to_underlying(rhs));
+            return static_cast<PlotFlags>(std::to_underlying(lhs) ^ std::to_underlying(rhs));  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
         }
         constexpr bool operator&(PlotFlags lhs, PlotFlags rhs)
         {
@@ -1179,7 +1179,7 @@ namespace osc::ui
 
         constexpr AxisFlags operator|(AxisFlags lhs, AxisFlags rhs)
         {
-            return static_cast<AxisFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));
+            return static_cast<AxisFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
         }
 
         enum class Condition {

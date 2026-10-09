@@ -648,6 +648,12 @@ PUBLIC
     SWIG_PYTHON
 )
 target_compile_features(osim PUBLIC cxx_std_23)
+target_compile_options(osim PRIVATE
+    # gcc/clang flags
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+        -Wno-tautological-undefined-compare  # Broken in OpenSim's sources
+    >
+)
 target_link_libraries(osim PUBLIC spdlog::spdlog)  # used by OpenSim (logging)
 
 # BLAS/LAPACK/OpenBLAS is used by simbody for linear algebra.
