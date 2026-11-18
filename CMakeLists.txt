@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(osc VERSION 0.8.0 LANGUAGES CXX C)
+project(osc VERSION 0.9.0 LANGUAGES CXX C)
 
 option(BUILD_TESTING            "Build test suites"                                     ON)
 option(OSC_BUILD_DOCS           "Build OpenSim Creator's documentation"                 OFF)
