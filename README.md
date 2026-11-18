@@ -11,8 +11,6 @@
 - 🧬 Want to know more about the project? [See www.opensimcreator.com](https://www.opensimcreator.com)
 - ❓ Have a question? [Go to the discussions page](../../discussions)
 - 🐛 Found a bug or want to request a feature? [Post it on the issues page](../../issues)
-- 🥰 Want to contribute to it? [There's a contribution section in the documentation](https://docs.opensimcreator.com/manual/en/latest/contributing.html)
-
 
 ## 👓 Overview
 
@@ -23,11 +21,11 @@ OpenSim Creator (`osc`) is a standalone UI for building and editing
 
 `osc` started development in 2021 in the [Biomechanical Engineering](https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering)
 department at [TU Delft](https://www.tudelft.nl/). Historically, `osc` was
-a standalone project built against the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It is now built from [OPynSim](https://github.com/opynsim/opynsim) which, for
-ease-of-development reasons, also builds `osc` (it's easier to maintain a monorepo).
-The platform otherwise only uses lightweight open-source libraries that can
-easily be built from source to implement the UI on all target platforms. This
-makes `osc` fairly easy to build, integrate, and package.
+a standalone project built against the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It is now built
+from [OPynSim](https://github.com/opynsim/opynsim) which, for ease-of-development reasons, also builds `osc` (it's
+easier to maintain a monorepo). The platform otherwise only uses lightweight open-source
+libraries that can easily be built from source to implement the UI on all target
+platforms. This makes `osc` fairly easy to build, integrate, and package.
 
 
 <a name="citing"></a>
@@ -75,9 +73,9 @@ in the official documentation.
 
 ## ❤️ Acknowledgements
 
-We would like to thank the [Chan Zuckerberg Initiative](https://chanzuckerberg.com/) which
-currently funds OpenSim Creator's development through the "Essential Open Source Software
-for Science" grant scheme (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
+We would like to thank the [Chan Zuckerberg Initiative](https://chanzuckerberg.com/) which funded OpenSim
+Creator's development between 2021-2025 through the "Essential Open Source Software for Science" grant
+scheme (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
 
 We would also like to thank the [Department of Biomechanical Engineering at TU Delft](https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering),
 which has provided the necessary institutional support required to keep OpenSim Creator's
@@ -104,4 +102,3 @@ development supported and stable.
     </td>
   </tr>
 </table>
-

@@ -4,11 +4,17 @@ The Release Process
 This is a rough overview of OpenSim Creator's release process - mostly intended as
 internal documentation for the development team.
 
-OpenSim Creator aims to have a 1-2 month release cadence - even if no major changes
-occur in that window. This ensures that at least one tested, libASANed, linted, and
-manually-checked release of OpenSim Creator available with that cadence and ensures
-that the release pipeline is regularly exercised and ready to roll when quick hotfixes
-are required.
+.. note::
+
+    As of OpenSim Creator 0.9.0, most of OpenSim Creator's source code and build
+    was ported to `OPynSim <https://github.com/opynsim/opynsim>`_ to make the developers'
+    lives easier (developing across two repos is a nightmare). The release process for
+    OpenSim Creator is mostly about packaging OPynSim to resemble OpenSim
+    Creator's previous packaging.
+
+    If you need to setup a development environment to build OpenSim Creator from
+    source on your computer then consult the OPynSim development guide at
+    https://docs.opynsim.eu/.
 
 Release Checklist (Markdown)
 ----------------------------
@@ -21,13 +27,6 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Create an issue called something like `Release XX.xx.pp`
     - [ ] Copy this checklist into it
     - [ ] Bump the VERSION in the top-level `CMakeLists.txt` accordingly
-    - [ ] Build the project with `ErrorCheck` on Linux and ensure all tests etc. pass
-          with it (`cmake --workflow --preset ErrorCheck`).
-    - [ ] Ensure the `clang-tidy` lints and test suite passes with the `ErrorCheck` build
-    - [ ] Build `Release-Linux-amd64` and ensure the release build's test suite passes under `valgrind`: `LIBGL_ALWAYS_SOFTWARE=1 valgrind --leak-check=full --trace-children=yes -- ctest --test-dir build/Release-Linux-amd64 --output-on-failure`
-    - [ ] Manually spot-check new changes with the debug+ASAN build (might require settings `UBSAN_OPTIONS` - see `CMakePresets.json`)
-    - [ ] Fix all bugs/problems found during the above steps
-    - [ ] Commit any fixes to CI and ensure CI passes
     - [ ] Clean-install the passing binaries on development machines, ensure they install on all OSes
           if there's any issues, fix them, commit, ensure CI passes, etc.
     - [ ] Update `CHANGELOG.md` sections such that the current `Unreleased` section becomes
@@ -88,34 +87,3 @@ Creator, it's usually copied into a GitHub issue:
       - [ ] SimTK
       - [ ] Reddit (occasionally)
       - [ ] https://research-software-directory.org/software/opensim-creator (usually this is automatic)
-
-Release Build Matrix
---------------------
-
-Here is a **rough** top-level overview of the architectures/platforms/compilers that
-are used to produce OpenSim Creator's releases. Developers don't need to use exactly
-the same combinations (it's healthy to exercise other combinations!) but these are
-the ones that are used during a release, so everything must eventually compile+pass
-with these combinations:
-
-.. list-table:: OpenSim Creator's Release Matrix.
-   :header-rows: 1
-
-   * - Architecture
-     - Target Operating System
-     - C++ Toolchain Used
-   * - amd64 (/arch:AVX2)
-     - Windows 10 (>= v1507)
-     - MSVC 19.44.35227.0
-   * - arm64
-     - MacOS 14.5
-     - XCode 15.4
-   * - amd64 (-march-x86-64-v3)
-     - Linux /w glibc 2.28 (e.g. Ubuntu >=20.04, Debian >=10, AlmaLinux >=8, RHEL >=8, OpenSUSE >=15)
-     - gcc 13.3.0 (e.g. ``gcc-toolset-13-gcc`` in AlmaLinux8)
-
-Notably, these toolchains **do not** have 100 % coverage of the C++20/23 language or
-library specifications. So check `C++ Compiler Support`_ if you plan on using a newer C++
-features.
-
-.. _C++ Compiler Support: https://en.cppreference.com/w/cpp/compiler_support

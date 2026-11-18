@@ -9,6 +9,7 @@ option(OSC_STRICT_ABI_CHECKS    "Run binary compatibility tests"                
 set   (OSC_VENV "" CACHE PATH   "Path to a Python virtual environment (.venv) the build must use for anything Python-related")
 
 if(OSC_VENV)
+    # If applicable, ensure `Python_EXECUTABLE` points to the provided venv.
     include(third_party/opynsim/cmake/opynsim_set_python_executable_to_venv.cmake)
     opyn_set_python_executable_to_venv(${OSC_VENV})
 endif()
@@ -21,7 +22,11 @@ if(BUILD_TESTING)
     enable_testing()
 endif()
 
-# Note: cache variables should be set by the caller (e.g. in CMakePresets.json)
+# IMPORTANT: OpenSim Creator is just OPynSim, but packaged and documented as a standalone
+#            desktop application. Contribute to https://github.com/opynsim/opynsim if you're
+#            interested in developing it.
+#
+# Note: by now cache variables should be set by the caller (e.g. in CMakePresets.json)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/opynsim)
 
 if(OSC_BUILD_DOCS)

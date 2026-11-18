@@ -10,10 +10,9 @@ from the `GitHub Releases Page`_.
 Installing on Windows (10 or newer)
 -----------------------------------
 
-- Download an installer ``exe`` from the `GitHub Releases Page`_. **Note**: As of mid-2025,
-  Microsoft Edge may now prevent you from running the installer. This is because OpenSim
-  Creator hasn't arranged binary signing yet (sorry). The solution to this issue is to download
-  OpenSim Creator via another browser (e.g. Firefox, Google Chrome).
+- Download an installer ``exe`` from the `GitHub Releases Page`_. **Note**: Sometimes,
+  Microsoft Edge prevents running the installer. The solution to this issue is
+  to download OpenSim Creator via another browser (e.g. Firefox, Google Chrome).
 - Run the ``.exe``, continue past any security warnings
 - Follow the familiar ``next``, ``next``, ``finish`` installation wizard
 - Run OpenSim Creator by typing ``OpenSim Creator`` in your start menu, or browse to
@@ -37,7 +36,7 @@ Installing on MacOS (Sonoma 14.5 or newer)
   binaries, because it requires organizing and paying for an Apple Developer
   account. Unsigned binaries can require additional installation steps:
 
-  **On Sequoia**: open a terminal and run ``xattr -cr /path/to/opensimcreator.dmg`` to
+  **On macOS Sequoia or newer**: open a terminal and run ``xattr -cr /path/to/opensimcreator.dmg`` to
   clear any quarantine flags that MacOS added when the dmg was downloaded. Mount the
   dmg (e.g. by double-clicking it), drag and drop ``OpenSim Creator`` into the ``Applications``
   directory. Try to run the application. MacOS will fail to open it this first
@@ -46,7 +45,7 @@ Installing on MacOS (Sonoma 14.5 or newer)
   mac``, click ``Open Anyway``. After doing this the first time, subsequent runs
   shouldn't require these steps.
 
-  **On MacOSes older than Sequoia**: Mount the dmg (e.g. by double-clicking it), drag
+  **On macOS's older than Sequoia**: Mount the dmg (e.g. by double-clicking it), drag
   and drop ``OpenSim Creator`` to the ``Applications`` directory. Open the ``Applications`` directory
   and right-click ``OpenSim Creator``, click ``open``. MacOS will ask you whether you're sure
   you want to open it (you are). After doing this the first time, subsequent runs
@@ -66,10 +65,22 @@ Installing on Ubuntu (22.04 or newer)
   from your desktop, or you can browse to the installation location (``/opt/osc``)
 
 
-Building from Source
---------------------
-
-See :doc:`building-from-source` for an explanation of how to do this.
-
 .. _GitHub Releases Page: https://github.com/ComputationalBiomechanicsLab/opensim-creator/releases
 .. _Apple Gatekeeper Documentation: https://support.apple.com/en-us/102445
+
+
+Supported Platforms
+-------------------
+
+The following platforms are currently built and released by the OpenSim Creator project team
+(see `Releases <https://github.com/ComputationalBiomechanicsLab/opensim-creator/releases/>`_):
+
++----------------+------------------------------------------------------------------------------------------------+------------------------------------------+
+| Python Version | Operating System                                                                               | Processor Architecture                   |
++================+================================================================================================+==========================================+
+| ≥ 3.12         | Windows ≥ 10                                                                                   | amd64 (Intel/AMD chip with AVX2 support) |
++----------------+------------------------------------------------------------------------------------------------+------------------------------------------+
+| ≥ 3.12         | MacOS ≥ 14.0 (Sonoma)                                                                          | arm64 (Apple Silicon)                    |
++----------------+------------------------------------------------------------------------------------------------+------------------------------------------+
+| ≥ 3.12         | Linux /w glibc 2.28 (Ubuntu ≥ 20.04, Debian ≥ 10, AlmaLinux ≥ 8, RHEL ≥ 8, OpenSUSE ≥ 15)      | amd64 (Intel/AMD chip with AVX2 support) |
++----------------+------------------------------------------------------------------------------------------------+------------------------------------------+

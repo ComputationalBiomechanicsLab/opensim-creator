@@ -39,8 +39,6 @@ Table of Contents
    :maxdepth: 2
    :caption: Development
 
-   building-from-source
-   development-environment
    contributing
    the-release-process
 
@@ -48,8 +46,9 @@ Table of Contents
     :caption: Other Links
 
     OpenSim Creator GitHub <https://github.com/ComputationalBiomechanicsLab/opensim-creator>
-    OpenSim Creator Forum <https://github.com/ComputationalBiomechanicsLab/opensim-creator/discussions>
+    OpenSim Creator Discussions <https://github.com/ComputationalBiomechanicsLab/opensim-creator/discussions>
     OpenSim Creator Bug Tracker <https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues>
+    OPynSim <https://docs.opynsim.eu>
     OpenSim GitHub <https://github.com/opensim-org/opensim-core>
     OpenSim Documentation <https://simtk-confluence.stanford.edu/display/OpenSim/Documentation>
 

@@ -1,8 +1,20 @@
 Contributing
 ============
 
-If you would like to contribute to OpenSim Creator then thank you 🥰: it's people like you
-that make open-source awesome!
+If you would like to contribute to OpenSim Creator then thank you 🥰. It's people like you
+that make open-source awesome:
+
+Practical Considerations
+------------------------
+
+- **Want to change the implementation?** Contribute to `OPynSim <https://github.com/opynsim/opynsim>`_ instead. As
+  of OpenSim Creator 0.9.0, most of OpenSim Creator's source code and build was ported to
+  `OPynSim <https://github.com/opynsim/opynsim>`_. Therefore, if you want to change any part of the implementation,
+  contribute to `OPynSim <https://opynsim.eu>`_ and   your contribution will eventually be propagated to OpenSim Creator.
+- **Want to change the documentation/packaging?** Contribute to OpenSim Creator as usual (this page). The documentation
+  and packaging is still built from the `OpenSim Creator GitHub Repository <https://github.com/ComputationalBiomechanicsLab/opensim-creator>`_.
+
+
 
 Key Points
 ----------
@@ -38,10 +50,5 @@ OpenSim Creator:
 7. Make pull requests (PRs) directly against the ``main`` branch. OpenSim Creator does not use
    separate branches for development, testing, prod, etc. Branches are typically deleted if they
    are old and no longer up-to-date with ``main``.
-
-8. If your change potentially (temporarily) breaks a feature in OpenSim Creator, or is extremely
-   experimental, then you should hide it behind a flag, configuration option, UI checkbox,
-   or similar. This is so that your change can be merged + shipped quickly without it "dangling
-   around" on a branch for a large amount of time.
 
 .. _GitHub Issues: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues
