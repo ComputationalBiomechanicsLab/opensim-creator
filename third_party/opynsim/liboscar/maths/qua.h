@@ -38,12 +38,18 @@ namespace osc
 
         // constructs a `Qua` with `w = s` and the xyz of `v`
         constexpr Qua(T s, const Vector<T, 3>& v) :
-            w{s}, x{v.x()}, y{v.y()}, z{v.z()}
+            w{s},
+            x{v.x()},
+            y{v.y()},
+            z{v.z()}
         {}
 
         // constructs a `Qua` from its wxyz components
-        constexpr Qua(T w_, T x_, T y_, T z_) :
-            w{w_}, x{x_}, y{y_}, z{z_}
+        constexpr Qua(T w, T x, T y, T z) :
+            w{w},
+            x{x},
+            y{y},
+            z{z}
         {}
 
         // constructs a `Qua` by `static_cast<T>`ing each element in `q`
@@ -67,14 +73,14 @@ namespace osc
             T real_part = norm_u_norm_v + dot(u, v);
             Vector<T, 3> t;
 
-            if(real_part < static_cast<T>(1.e-6f) * norm_u_norm_v) {
+            if (real_part < static_cast<T>(1.e-6f) * norm_u_norm_v) {
                 // If u and v are exactly opposite, rotate 180 degrees
                 // around an arbitrary orthogonal axis. Axis normalisation
                 // can happen later, when we normalise the quaternion.
                 real_part = static_cast<T>(0);
-                t = abs(u.x()) > abs(u.z()) ? Vector<T, 3>(-u.y(), u.x(), static_cast<T>(0)) : Vector<T, 3>(static_cast<T>(0), -u.z(), u.y());
-            }
-            else {
+                t = abs(u.x()) > abs(u.z()) ? Vector<T, 3>(-u.y(), u.x(), static_cast<T>(0))
+                                            : Vector<T, 3>(static_cast<T>(0), -u.z(), u.y());
+            } else {
                 // Otherwise, build quaternion the standard way.
                 t = cross(u, v);
             }
@@ -96,16 +102,10 @@ namespace osc
         }
 
         // constructs a `Qua` by decomposing an orthogonal matrix
-        explicit Qua(const Matrix<T, 3, 3>& m)
-        {
-            *this = quaternion_cast(m);
-        }
+        explicit Qua(const Matrix<T, 3, 3>& m) { *this = quaternion_cast(m); }
 
         // constructs a `Qua` by decomposing an orthogonal matrix
-        explicit Qua(const Matrix<T, 4, 4>& m)
-        {
-            *this = quaternion_cast(m);
-        }
+        explicit Qua(const Matrix<T, 4, 4>& m) { *this = quaternion_cast(m); }
 
         constexpr size_type size() const { return 4; }
         constexpr pointer data() { return &w; }
@@ -280,21 +280,33 @@ namespace osc
     // when handled as a tuple-like object, a `Quaternion` decomposes into its elements
 
     template<size_t I, typename T>
-    constexpr const T& get(const Qua<T>& v) { return v[I]; }
+    constexpr const T& get(const Qua<T>& v)
+    {
+        return v[I];
+    }
 
     template<size_t I, typename T>
-    constexpr T& get(Qua<T>& v) { return v[I]; }
+    constexpr T& get(Qua<T>& v)
+    {
+        return v[I];
+    }
 
     template<size_t I, typename T>
-    constexpr T&& get(Qua<T>&& v) { return std::move(v[I]); }
+    constexpr T&& get(Qua<T>&& v)
+    {
+        return std::move(v[I]);
+    }
 
     template<size_t I, typename T>
-    constexpr const T&& get(const Qua<T>&& v) { return std::move(v[I]); }
+    constexpr const T&& get(const Qua<T>&& v)
+    {
+        return std::move(v[I]);
+    }
 }
 
 template<typename T>
 struct std::tuple_size<osc::Qua<T>> {
-    static inline constexpr size_t value = 4;
+    static constexpr size_t value = 4;
 };
 
 template<size_t I, typename T>

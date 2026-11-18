@@ -22,6 +22,7 @@ namespace osc
     class MeshIndicesView final {
     private:
         using U32PtrOrU16Ptr = std::variant<const uint16_t*, const uint32_t*>;
+
     public:
         class Iterator final {
         public:
@@ -33,22 +34,22 @@ namespace osc
 
             Iterator() = default;
 
-            explicit Iterator(U32PtrOrU16Ptr ptr) : ptr_{ptr}
+            explicit Iterator(U32PtrOrU16Ptr ptr) :
+                ptr_{ptr}
             {}
 
             value_type operator*() const
             {
-                return std::visit(Overload{
-                    [](const auto* ptr) { return static_cast<value_type>(*ptr); }
-                }, ptr_);
+                return std::visit(
+                    Overload{
+                        [](const auto* ptr) { return static_cast<value_type>(*ptr); },
+                    },
+                    ptr_);
             }
 
             friend bool operator==(const Iterator&, const Iterator&) = default;
 
-            Iterator& operator++()
-            {
-                return *this += 1;
-            }
+            Iterator& operator++() { return *this += 1; }
 
             Iterator operator++(int)
             {
@@ -59,18 +60,23 @@ namespace osc
 
             Iterator& operator+=(difference_type n)
             {
-                std::visit(Overload{
-                    [n](auto& ptr) { ptr += n; }
-                }, ptr_);
+                std::visit(
+                    Overload{[n](auto& ptr) {
+                        ptr += n;
+                    }},
+                    ptr_);
                 return *this;
             }
 
             value_type operator[](difference_type pos) const
             {
-                return std::visit(Overload{
-                    [pos](const auto* ptr) { return static_cast<value_type>(ptr[pos]); }
-                }, ptr_);
+                return std::visit(
+                    Overload{[pos](const auto* ptr) {
+                        return static_cast<value_type>(ptr[pos]);
+                    }},
+                    ptr_);
             }
+
         private:
             U32PtrOrU16Ptr ptr_{static_cast<const uint16_t*>(nullptr)};
         };
@@ -103,25 +109,13 @@ namespace osc
             MeshIndicesView{std::ranges::data(range), std::ranges::size(range)}
         {}
 
-        bool is_uint16() const
-        {
-            return std::holds_alternative<const uint16_t*>(ptr_);
-        }
+        bool is_uint16() const { return std::holds_alternative<const uint16_t*>(ptr_); }
 
-        bool is_uint32() const
-        {
-            return std::holds_alternative<const uint32_t*>(ptr_);
-        }
+        bool is_uint32() const { return std::holds_alternative<const uint32_t*>(ptr_); }
 
-        [[nodiscard]] bool empty() const
-        {
-            return size() == 0;
-        }
+        [[nodiscard]] bool empty() const { return size() == 0; }
 
-        size_type size() const
-        {
-            return size_;
-        }
+        size_type size() const { return size_; }
 
         std::span<const uint16_t> to_uint16_span() const
         {
@@ -133,29 +127,26 @@ namespace osc
             return {std::get<const uint32_t*>(ptr_), size_};
         }
 
-        value_type operator[](size_type pos) const
-        {
-            return begin()[pos];
-        }
+        value_type operator[](size_type pos) const { return begin()[pos]; }
 
         value_type at(size_type pos) const
         {
             if (pos >= size()) {
-                throw std::out_of_range{"attempted to access a MeshIndicesView with an invalid index"};
+                throw std::out_of_range{
+                    "attempted to access a MeshIndicesView with an invalid index"};
             }
             return this->operator[](pos);
         }
 
-        Iterator begin() const
-        {
-            return Iterator{ptr_};
-        }
+        Iterator begin() const { return Iterator{ptr_}; }
 
         Iterator end() const
         {
-            return std::visit(Overload{
-                [size = size_](const auto* ptr) { return Iterator{ptr + size}; },
-            }, ptr_);
+            return std::visit(
+                Overload{
+                    [size = size_](const auto* ptr) { return Iterator{ptr + size}; },
+                },
+                ptr_);
         }
 
     private:

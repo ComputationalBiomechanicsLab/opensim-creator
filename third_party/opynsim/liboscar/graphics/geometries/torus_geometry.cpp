@@ -32,29 +32,29 @@ osc::TorusGeometry::TorusGeometry(const Params& p)
         const auto fj = static_cast<float>(j);
         for (size_t i = 0; i <= p.num_tubular_segments; ++i) {
             const auto fi = static_cast<float>(i);
-            const Radians u = fi/fnum_tubular_segments * p.arc;
-            const Radians v = fj/fnum_radial_segments * 360_deg;
+            const Radians u = fi / fnum_tubular_segments * p.arc;
+            const Radians v = fj / fnum_radial_segments * 360_deg;
 
             const Vector3& vertex = vertices.emplace_back(
                 (p.tube_center_radius + p.tube_radius * cos(v)) * cos(u),
                 (p.tube_center_radius + p.tube_radius * cos(v)) * sin(u),
-                p.tube_radius * sin(v)
-            );
-            normals.push_back(normalize(Vector3{
-                vertex.x() - p.tube_center_radius*cos(u),
-                vertex.y() - p.tube_center_radius*sin(u),
-                vertex.z() - 0.0f,
-            }));
-            uvs.emplace_back(fi/fnum_tubular_segments, fj/fnum_radial_segments);
+                p.tube_radius * sin(v));
+            normals.push_back(normalize(
+                Vector3{
+                    vertex.x() - p.tube_center_radius * cos(u),
+                    vertex.y() - p.tube_center_radius * sin(u),
+                    vertex.z() - 0.0f,
+                }));
+            uvs.emplace_back(fi / fnum_tubular_segments, fj / fnum_radial_segments);
         }
     }
 
     for (size_t j = 1; j <= p.num_radial_segments; ++j) {
         for (size_t i = 1; i <= p.num_tubular_segments; ++i) {
-            const auto a = static_cast<uint32_t>((p.num_tubular_segments + 1)*(j + 0) + i - 1);
-            const auto b = static_cast<uint32_t>((p.num_tubular_segments + 1)*(j - 1) + i - 1);
-            const auto c = static_cast<uint32_t>((p.num_tubular_segments + 1)*(j - 1) + i);
-            const auto d = static_cast<uint32_t>((p.num_tubular_segments + 1)*(j + 0) + i);
+            const auto a = static_cast<uint32_t>((p.num_tubular_segments + 1) * (j + 0) + i - 1);
+            const auto b = static_cast<uint32_t>((p.num_tubular_segments + 1) * (j - 1) + i - 1);
+            const auto c = static_cast<uint32_t>((p.num_tubular_segments + 1) * (j - 1) + i);
+            const auto d = static_cast<uint32_t>((p.num_tubular_segments + 1) * (j + 0) + i);
 
             indices.insert(indices.end(), {a, b, d});
             indices.insert(indices.end(), {b, c, d});

@@ -1,5 +1,5 @@
-#ifndef OPENSIM_POLYNOMIALPATHFITTER_H
-#define OPENSIM_POLYNOMIALPATHFITTER_H
+#ifndef OPENSIM_POLYNOMIAL_PATH_FITTER_H
+#define OPENSIM_POLYNOMIAL_PATH_FITTER_H
 /* -------------------------------------------------------------------------- *
  *                    OpenSim:  PolynomialPathFitter.h                        *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2023 Stanford University and the Authors                *
+ * Copyright (c) 2005-2026 Stanford University and the Authors                *
  * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/TableProcessor.h>
 #include <OpenSim/Actuators/ModelProcessor.h>
+#include <OpenSim/Simulation/TableProcessor.h>
 #include <OpenSim/Simulation/Model/FunctionBasedPath.h>
 
 namespace OpenSim {
@@ -75,29 +75,24 @@ private:
  *
  * # Settings
  * Various settings can be adjusted to control the path fitting process. The
- * `setMomentArmsThreshold` method determines whether or not a path depends on a
- * model coordinate. In other words, the absolute value the moment arm of a with
- * respect to a particular coordinate must be greater than this value to be
- * included during path fitting. The `setMinimumPolynomialOrder` and
- * `setMaximumPolynomialOrder` methods specify the minimum and maximum order of
- * the polynomial used to fit each path. The `setGlobalCoordinateSamplingBounds`
- * property specifies the global bounds (in degrees) that determine the minimum
- * and maximum coordinate values sampled at each time point. The method
- * `appendCoordinateSamplingBounds` can be used to override the global bounds
- * for a specific coordinate. The `setMomentArmTolerance` and
- * `setPathLengthTolerance` methods specify the tolerance on the
- * root-mean-square (RMS) error (in meters) between the moment arms and path
- * lengths computed from the original model paths and the fitted polynomial
- * paths. The `setNumSamplesPerFrame` method specifies the number of samples
- * taken per time frame in the coordinate values table used to fit each path.
- * The `setNumParallelThreads` method specifies the number of threads used to
- * parallelize the path fitting process. The `setLatinHypercubeAlgorithm` method
- * specifies the Latin hypercube sampling algorithm used to sample coordinate
- * values for path fitting.
+ * `setMinimumPolynomialOrder` and `setMaximumPolynomialOrder` methods specify
+ * the minimum and maximum order of the polynomial used to fit each path. The
+ * `setGlobalCoordinateSamplingBounds` property specifies the global bounds (in
+ * degrees) that determine the minimum and maximum coordinate values sampled at
+ * each time point. The method `appendCoordinateSamplingBounds` can be used to
+ * override the global bounds for a specific coordinate. The
+ * `setMomentArmTolerance` and `setPathLengthTolerance` methods specify the
+ * tolerance on the root-mean-square (RMS) error (in meters) between the moment
+ * arms and path lengths computed from the original model paths and the fitted
+ * polynomial paths. The `setNumSamplesPerFrame` method specifies the number of
+ * samples taken per time frame in the coordinate values table used to fit each
+ * path. The `setNumParallelThreads` method specifies the number of threads used
+ * to parallelize the path fitting process. The `setLatinHypercubeAlgorithm`
+ * method specifies the Latin hypercube sampling algorithm used to sample
+ * coordinate values for path fitting.
  *
  * The default settings are as follows:
  *
- *    - Moment arm threshold: 1e-3 meters
  *    - Minimum polynomial order: 2
  *    - Maximum polynomial order: 6
  *    - Global coordinate sampling bounds: [-10, 10] degrees
@@ -264,7 +259,8 @@ public:
 
     // SETTINGS
     /**
-     * The directory to which the path fitting results are written.
+     * The directory relative to the working directory to which the path fitting
+     * results are written.
      *
      * If the path fitting is successful, the fitted paths are written as a
      * `Set` of `FunctionBasedPath` objects (with path length functions defined
@@ -295,18 +291,6 @@ public:
      */
     void setUseStepwiseRegression(bool tf);
     bool getUseStepwiseRegression() const;
-
-    /**
-     * The moment arm threshold value that determines whether or not a path
-     * depends on a model coordinate. In other words, the moment arm of a path
-     * with respect to a particular coordinate must be greater than this value
-     * to be included during path fitting.
-     *
-     * @note The default moment arm threshold is set to 1e-3 meters.
-     */
-    void setMomentArmThreshold(double threshold);
-    /// @copydoc setMomentArmThreshold()
-    double getMomentArmThreshold() const;
 
     /**
      * The minimum order of the polynomial used to fit each path. The order of
@@ -491,6 +475,15 @@ public:
         return get_include_lengthening_speed_function();
     }
 
+    /// <b>(Deprecated)</b> Moment arms associated with a path are now
+    /// automatically detected based on the model's topology.
+    [[deprecated("Path moment arms are now detected based on model topology.")]]
+    void setMomentArmThreshold(double) {}
+    /// <b>(Deprecated)</b> Moment arms associated with a path are now
+    /// automatically detected based on the model's topology.
+    [[deprecated("Path moment arms are now detected based on model topology.")]]
+    double getMomentArmThreshold() const { return -1; }
+
     // HELPER FUNCTIONS
     /**
      * Print out a summary of the path fitting results, including information
@@ -504,6 +497,11 @@ public:
      * fitted to the geometry-based paths in `model`. These paths can be defined
      * by `MultivariatePolynomialFunction`s generated by this class or any other
      * `Function` objects that approximate the original model paths.
+     *
+     * @note Since this is a static helper function, the number of threads used
+     *       to parallelize the path length and moment arm computations is
+     *       determined by the number of available hardware threads, not via
+     *       the value set by the `setNumParallelThreads()` method.
      */
     static void evaluateFunctionBasedPaths(Model model,
             TableProcessor trajectory,
@@ -524,11 +522,6 @@ private:
     OpenSim_DECLARE_PROPERTY(use_stepwise_regression, bool,
             "Whether or not to use stepwise regression to fit a minimal set of "
             "polynomial coefficients.");
-    OpenSim_DECLARE_PROPERTY(moment_arm_threshold, double,
-            "The moment arm threshold value that determines whether or not a "
-            "path depends on a model coordinate. In other words, the moment "
-            "arm of a path with respect to a coordinate must be greater than "
-            "this value to be included during path fitting.");
     OpenSim_DECLARE_PROPERTY(minimum_polynomial_order, int,
             "The minimum order of the polynomial used to fit each path. The "
             "order of a polynomial is the highest power of the independent "
@@ -573,149 +566,18 @@ private:
             "fitted path (default: false).");
 
     void constructProperties();
+    void validateProperties();
 
-    // PATH FITTING PIPELINE
-    /**
-     * Type alias for the moment arm map. The keys are the paths in the model
-     * and the values are vectors containing the names of coordinates on which
-     * the paths depend.
-     */
-    typedef std::unordered_map<std::string, std::vector<std::string>>
-            MomentArmMap;
-
-    /**
-     * Helper function to load the reference coordinate values trajectory and
-     * validate the model. The coordinate values table is modified to update the
-     * column labels based on the model coordinate paths, to update any
-     * coordinates dependent on `CoordinateCouplerConstraint`s, and to convert
-     * the coordinate values to radians if the "inDegrees" metadata flag is set
-     * to "yes".
-     */
-    static TimeSeriesTable loadCoordinateValuesAndValidateModel(
-            const std::string& documentDir,
-            TableProcessor tableProcessor,
-            Model& model);
-
-    /**
-     * Helper function to sample coordinate values around the user-provided
-     * coordinate trajectory contained in the `values` input table. The
-     * sampling is defined based on the coordinate bounds and range maps,
-     * the number of samples per frame, and the Latin hypercube sampling
-     * algorithm.
-     */
-    TimeSeriesTable sampleCoordinateValues(const TimeSeriesTable& values);
-
-    /**
-     * Helper function to compute path lengths and moment arms for the
-     * geometry-based paths in the model. The path lengths and moment arms
-     * are computed using the coordinate values in the `coordinateValues`
-     * table. The `numThreads` argument specifies the number of threads used
-     * to parallelize the computations.
-     */
-    static void computePathLengthsAndMomentArms(const Model& model,
-            const TimeSeriesTable& coordinateValues, int numThreads,
-            TimeSeriesTable& pathLengths, TimeSeriesTable& momentArms);
-
-    /**
-     * Helper function to filter out bad coordinate value samples and determine
-     * which coordinates each path is dependent on. Bad samples are defined as
-     * coordinate values that produce path length and/or moment are values that
-     * deviate by a set number of standard deviations away from the nominal
-     * trajectories. The `momentArmMap` argument is a map containing the
-     * coordinates each path is dependent on. Columns in the `momentArms` table
-     * are removed if they do not correspond to entries in the `momentArmMap`.
-     */
-    void filterSampledData(const Model& model,
-            TimeSeriesTable& coordinateValues, TimeSeriesTable& pathLengths,
-            TimeSeriesTable& momentArms, MomentArmMap& momentArmMap);
-
-    /**
-     * Helper function to fit polynomial coefficients to the path lengths and
-     * moment arms computed from the geometry-based paths in the model. The
-     * `coordinateValues`, `pathLengths`, and `momentArms` table arguments are
-     * the result of previous model sampling and data filtering steps. The
-     * `momentArmMap` argument is a map containing the coordinates each path is
-     * dependent on, which determines the number of independent coordinates
-     * that each `MultivariatePolynomialFunction` contains to approximate the
-     * original path.
-     */
-    Set<FunctionBasedPath> fitPolynomialCoefficients(const Model& model,
-            const TimeSeriesTable& coordinateValues,
-            const TimeSeriesTable& pathLengths,
-            const TimeSeriesTable& momentArms,
-            const MomentArmMap& momentArmMap);
-
-    // HELPER FUNCTIONS
-    /**
-     * Generate all possible combinations of `k` elements from a set of `n`
-     * total elements.
-     */
-    static int choose(int n, int k) {
-        if (k == 0) { return 1; }
-        return (n * choose(n - 1, k - 1)) / k;
-    }
-
-    /**
-     * Get the (canonicalized) absolute directory containing the file from
-     * which this tool was loaded. If the `FunctionBasedPathFitter` was not
-     * loaded from a file, this returns an empty string.
-     */
+    // Get the (canonicalized) absolute directory containing the file from
+    // which this tool was loaded. If the `FunctionBasedPathFitter` was not
+    // loaded from a file, this returns an empty string.
     std::string getDocumentDirectory() const;
 
-    /**
-     * Remove columns from the `momentArms` table that do not correspond to
-     * entries in the `momentArmMap`.
-     */
-    static void removeMomentArmColumns(TimeSeriesTable& momentArms,
-            const MomentArmMap& momentArmMap);
-
-    /**
-     * Fit to the path length and moment arm samples using all possible
-     * polynomial coefficients. `coordinates` is the matrix of coordinate values
-     * for coordinates that the current path depends on. The vector `b` contains
-     * the path length and moment arm values for the current path.
-     *
-     * We solve for the coefficients of the polynomial using a least squares of
-     * fit, `Ax = b`. Each row of `A` contains polynomial terms evaluated using
-     * the coordinate values from a particular point in time. `x` is the vector
-     * polynomial coefficients. The first N elements of `b` contain the path
-     * length values, where N is the number of time points. The remaining N*Nc
-     * rows of `b` contain the moment arm values, where Nc is the number of
-     * coordinates the path depends on.
-     */
-    int fitAllCoefficients(const SimTK::Matrix& coordinates,
-            const SimTK::Vector& b, int minOrder, int maxOrder,
-            SimTK::Vector& coefficients) const;
-
-    /**
-     * Fit to the path length and moment arm samples using stepwise regression
-     * to find a minimal set of polynomial coefficients. `coordinates` is the
-     * matrix of coordinate values for coordinates that the current path depends
-     * on. The vector `b` contains the path length and moment arm values for the
-     * current path.
-     */
-    void fitCoefficientsStepwiseRegression(
-        const SimTK::Matrix& coordinates, const SimTK::Vector& b, int order,
-        SimTK::Vector& coefficients) const;
-
-    /**
-     * Get the RMS errors between two sets of path lengths and moment arms
-     * computed from a model with FunctionBasedPaths and the original model. The
-     * `modelFitted` argument must be the model with the FunctionBasedPaths.
-     */
-    static void computeFittingErrors(const Model& modelFitted,
-            const TimeSeriesTable& pathLengths,
-            const TimeSeriesTable& momentArms,
-            const TimeSeriesTable& pathLengthsFitted,
-            const TimeSeriesTable& momentArmsFitted,
-            double pathLengthTolerance, double momentArmTolerance);
-
     // MEMBER VARIABLES
-    std::unordered_map<std::string, SimTK::Vec2> m_coordinateBoundsMap;
-    std::unordered_map<std::string, SimTK::Vec2> m_coordinateRangeMap;
-    bool m_useStochasticEvolutionaryLHS = false;
+    Model m_model;
+    TimeSeriesTable m_values;
 };
 
 } // namespace OpenSim
 
-#endif // OPENSIM_POLYNOMIALPATHFITTER_H
+#endif // OPENSIM_POLYNOMIAL_PATH_FITTER_H

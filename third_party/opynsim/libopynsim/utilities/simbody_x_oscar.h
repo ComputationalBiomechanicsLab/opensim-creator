@@ -14,7 +14,10 @@
 
 #include <array>
 
-namespace osc { struct Transform; }
+namespace osc
+{
+    struct Transform;
+}
 
 // simbody_x_oscar
 //

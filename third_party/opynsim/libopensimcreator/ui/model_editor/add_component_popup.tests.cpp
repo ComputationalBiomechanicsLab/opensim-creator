@@ -32,8 +32,7 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
             popup.on_draw();
             popup.end_popup();
             context.render();
-        }
-        catch (const std::exception& ex) {
+        } catch (const std::exception& ex) {
             FAIL() << entry.name() << ": " << ex.what();
         }
     }

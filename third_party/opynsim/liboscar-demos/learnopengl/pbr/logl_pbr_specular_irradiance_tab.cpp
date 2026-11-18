@@ -30,18 +30,19 @@ using namespace osc;
 namespace
 {
     constexpr auto c_light_positions = std::to_array<Vector3>({
-        {-10.0f,  10.0f, 10.0f},
-        { 10.0f,  10.0f, 10.0f},
+        {-10.0f, 10.0f, 10.0f},
+        {10.0f, 10.0f, 10.0f},
         {-10.0f, -10.0f, 10.0f},
-        { 10.0f, -10.0f, 10.0f},
+        {10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vector3, c_light_positions.size()> c_light_radiances = std::to_array<Vector3>({
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
-    });
+    constexpr std::array<Vector3, c_light_positions.size()> c_light_radiances =
+        std::to_array<Vector3>({
+            {300.0f, 300.0f, 300.0f},
+            {300.0f, 300.0f, 300.0f},
+            {300.0f, 300.0f, 300.0f},
+            {300.0f, 300.0f, 300.0f},
+        });
 
     constexpr int c_num_rows = 7;
     constexpr int c_num_cols = 7;
@@ -60,8 +61,7 @@ namespace
     {
         Texture2D hdr_texture = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
-            ColorSpace::Linear
-        );
+            ColorSpace::Linear);
         hdr_texture.set_wrap_mode(TextureWrapMode::Clamp);
         hdr_texture.set_filter_mode(TextureFilterMode::Linear);
 
@@ -76,19 +76,21 @@ namespace
 
         // create material that projects all 6 faces onto the output cubemap
         Material material{Shader{
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.vert"),
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.geom"),
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.frag"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.vert"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.geom"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.frag"),
         }};
         material.set("uEquirectangularMap", hdr_texture);
         material.set_array(
-            "uShadowMatrices",
-            calc_cubemap_view_proj_matrices(projection_matrix, Vector3{})
-        );
+            "uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vector3{}));
 
         Camera camera;
         RenderQueue render_queue;
-        render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+        render_queue.emplace(
+            BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
         graphics::render_to(cubemap_render_target, render_queue, camera);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -106,26 +108,29 @@ namespace
         const Matrix4x4 capture_projection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.vert"),
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.geom"),
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.frag"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.vert"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.geom"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.frag"),
         }};
         material.set("uEnvironmentMap", skybox);
         material.set_array(
-            "uShadowMatrices",
-            calc_cubemap_view_proj_matrices(capture_projection, Vector3{})
-        );
+            "uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
 
         Camera camera;
         RenderQueue render_queue;
-        render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+        render_queue.emplace(
+            BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
         graphics::render_to(irradiance_cubemap, render_queue, camera);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
         return irradiance_cubemap;
     }
 
-    Cubemap create_prefiltered_environment_map(ResourceLoader& loader, const RenderTexture& environment_map)
+    Cubemap create_prefiltered_environment_map(
+        ResourceLoader& loader, const RenderTexture& environment_map)
     {
         const int level_zero_width = 128;
         static_assert(std::popcount(static_cast<unsigned>(level_zero_width)) == 1);
@@ -144,16 +149,17 @@ namespace
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/Prefilter.frag"),
         }};
         material.set("uEnvironmentMap", environment_map);
-        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
+        material.set_array(
+            "uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
 
-        Cubemap rv{level_zero_width, TextureFormat::RGBFloat};  // TODO: add support for TextureFormat:::RGFloat16
+        Cubemap rv{
+            level_zero_width,
+            TextureFormat::RGBFloat};  // TODO: add support for TextureFormat:::RGFloat16
         rv.set_wrap_mode(TextureWrapMode::Clamp);
         rv.set_filter_mode(TextureFilterMode::Mipmap);
 
-        const auto max_mipmap_level = static_cast<size_t>(max(
-            0,
-            static_cast<int>(std::bit_width(static_cast<size_t>(level_zero_width))) - 1  // NOLINT(readability-redundant-casting) casted to int because of LWG3656
-        ));
+        const auto max_mipmap_level = static_cast<size_t>(
+            max(0, static_cast<int>(std::bit_width(static_cast<size_t>(level_zero_width))) - 1));
         static_assert(max_mipmap_level == 7);
 
         // render prefilter map such that each supported level of roughness maps into one
@@ -162,12 +168,15 @@ namespace
         RenderQueue render_queue;
         for (size_t mip = 0; mip <= max_mipmap_level; ++mip) {
             const size_t mip_width = level_zero_width >> mip;
-            capture_render_texture.set_pixel_dimensions({static_cast<int>(mip_width), static_cast<int>(mip_width)});
+            capture_render_texture.set_pixel_dimensions(
+                {static_cast<int>(mip_width), static_cast<int>(mip_width)});
 
-            const float mip_roughness = static_cast<float>(mip)/static_cast<float>(max_mipmap_level);
+            const float mip_roughness =
+                static_cast<float>(mip) / static_cast<float>(max_mipmap_level);
             material.set("uRoughness", mip_roughness);
 
-            render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+            render_queue.emplace(
+                BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
             graphics::render_to(capture_render_texture, render_queue, camera);
             graphics::copy_texture(capture_render_texture, rv, mip);
             render_queue.clear();
@@ -194,7 +203,8 @@ namespace
         camera.set_view_matrix_override(identity<Matrix4x4>());
 
         RenderQueue render_queue;
-        render_queue.emplace(PlaneGeometry{{.dimensions = Vector2{2.0f}}}, identity<Transform>(), material);
+        render_queue.emplace(
+            PlaneGeometry{{.dimensions = Vector2{2.0f}}}, identity<Transform>(), material);
         graphics::render_to(render_texture, render_queue, camera);
 
         Texture2D rv{
@@ -239,16 +249,14 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vector2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
+        const Vector2 workspace_pixel_dimensions =
+            device_pixel_ratio * workspace_screen_space_rect.dimensions();
 
         output_render_texture_.set_pixel_dimensions(workspace_pixel_dimensions);
         output_render_texture_.set_device_pixel_ratio(device_pixel_ratio);
@@ -270,14 +278,20 @@ private:
         pbr_material_.set_array("uLightColors", c_light_radiances);
         pbr_material_.set("uIrradianceMap", irradiance_map_);
         pbr_material_.set("uPrefilterMap", prefilter_map_);
-        pbr_material_.set("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
+        pbr_material_.set(
+            "uMaxReflectionLOD",
+            static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
         pbr_material_.set("uBRDFLut", brdf_lookup_);
 
         draw_spheres();
         draw_lights();
-        graphics::render_to(output_render_texture_, render_queue_, camera_, {
-            .clear_color = {0.1f, 1.0f},
-        });
+        graphics::render_to(
+            output_render_texture_,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = {0.1f, 1.0f},
+            });
         render_queue_.clear();
     }
 
@@ -286,14 +300,18 @@ private:
         pbr_material_.set("uAlbedoColor", Vector3{0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
-            pbr_material_.set("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
+            pbr_material_.set(
+                "uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
 
             for (int col = 0; col < c_num_cols; ++col) {
-                const float normalized_color = static_cast<float>(col) / static_cast<float>(c_num_cols);
+                const float normalized_color =
+                    static_cast<float>(col) / static_cast<float>(c_num_cols);
                 pbr_material_.set("uRoughness", clamp(normalized_color, 0.005f, 1.0f));
 
-                const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
-                const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
+                const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols) / 2.0f) *
+                                c_cell_spacing;
+                const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows) / 2.0f) *
+                                c_cell_spacing;
 
                 render_queue_.emplace(sphere_mesh_, {.translation = {x, y, 0.0f}}, pbr_material_);
             }
@@ -306,22 +324,24 @@ private:
 
         for (const Vector3& pos : c_light_positions) {
             render_queue_.emplace(
-                sphere_mesh_,
-                {.scale = Vector3{0.5f}, .translation = pos},
-                pbr_material_
-            );
+                sphere_mesh_, {.scale = Vector3{0.5f}, .translation = pos}, pbr_material_);
         }
     }
 
     void draw_background()
     {
         background_material_.set("uEnvironmentMap", projected_map_);
-        background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
+        // for skybox depth trick
+        background_material_.set_depth_function(DepthFunction::LessOrEqual);
 
         render_queue_.emplace(cube_mesh_, identity<Transform>(), background_material_);
-        graphics::render_to(output_render_texture_, render_queue_, camera_, {
-            .clear_flags = ClearFlag::None,
-        });
+        graphics::render_to(
+            output_render_texture_,
+            render_queue_,
+            camera_,
+            {
+                .clear_flags = ClearFlag::None,
+            });
         render_queue_.clear();
     }
 
@@ -359,13 +379,27 @@ private:
     PerfPanel perf_panel_{&owner()};
 };
 
-
-CStringView osc::LOGLPBRSpecularIrradianceTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLPBRSpecularIrradianceTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLPBRSpecularIrradianceTab::LOGLPBRSpecularIrradianceTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLPBRSpecularIrradianceTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLPBRSpecularIrradianceTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLPBRSpecularIrradianceTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLPBRSpecularIrradianceTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLPBRSpecularIrradianceTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLPBRSpecularIrradianceTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLPBRSpecularIrradianceTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLPBRSpecularIrradianceTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

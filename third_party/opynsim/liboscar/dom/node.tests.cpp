@@ -30,20 +30,22 @@ namespace
             return lhs.data_ == rhs.data_;
         }
     private:
-        std::unique_ptr<Node> impl_clone() const override { return std::make_unique<MinimalNodeImpl>(*this); }
+        std::unique_ptr<Node> impl_clone() const override { return
+std::make_unique<MinimalNodeImpl>(*this); }
 
         int data_ = RandomInt();
     };
 
     class DifferentMinimalNodeImpl final : public osc::Node {
     public:
-        friend bool operator==(DifferentMinimalNodeImpl const& lhs, DifferentMinimalNodeImpl const& rhs)
+        friend bool operator==(DifferentMinimalNodeImpl const& lhs, DifferentMinimalNodeImpl const&
+rhs)
         {
             return lhs.data_ == rhs.data_;
         }
     private:
-        std::unique_ptr<Node> impl_clone() const final { return std::make_unique<DifferentMinimalNodeImpl>(*this); }
-        int data_ = RandomInt();
+        std::unique_ptr<Node> impl_clone() const final { return
+std::make_unique<DifferentMinimalNodeImpl>(*this); } int data_ = RandomInt();
     };
 
     class NodeWithCtorArg final : public osc::Node {
@@ -51,21 +53,24 @@ namespace
         explicit NodeWithCtorArg(int arg) : m_Arg{arg} {}
         int arg() const { return m_Arg; }
     private:
-        std::unique_ptr<Node> impl_clone() const final { return std::make_unique<NodeWithCtorArg>(*this); }
+        std::unique_ptr<Node> impl_clone() const final { return
+std::make_unique<NodeWithCtorArg>(*this); }
 
         int m_Arg;
     };
 
     class DerivedFromMinimalNodeImpl final : public MinimalNodeImpl {
     public:
-        friend bool operator==(DerivedFromMinimalNodeImpl const& lhs, DerivedFromMinimalNodeImpl const& rhs)
+        friend bool operator==(DerivedFromMinimalNodeImpl const& lhs, DerivedFromMinimalNodeImpl
+const& rhs)
         {
             return
-                static_cast<MinimalNodeImpl const&>(lhs) == static_cast<MinimalNodeImpl const&>(rhs) &&
-                lhs.m_DerivedData == rhs.m_DerivedData;
+                static_cast<MinimalNodeImpl const&>(lhs) == static_cast<MinimalNodeImpl const&>(rhs)
+&& lhs.m_DerivedData == rhs.m_DerivedData;
         }
     private:
-        std::unique_ptr<Node> impl_clone() const override { return std::make_unique<DerivedFromMinimalNodeImpl>(*this); }
+        std::unique_ptr<Node> impl_clone() const override { return
+std::make_unique<DerivedFromMinimalNodeImpl>(*this); }
 
         int m_DerivedData = RandomInt();
     };
@@ -77,7 +82,8 @@ namespace
             set_name(name);
         }
     private:
-        std::unique_ptr<Node> impl_clone() const final { return std::make_unique<NodeWithName>(*this); }
+        std::unique_ptr<Node> impl_clone() const final { return
+std::make_unique<NodeWithName>(*this); }
     };
 }
 
@@ -195,7 +201,8 @@ TEST(Node, AddChildToMinimalExampleFollowedByGetParentOfDifferentTypeReturnsFals
 TEST(Node, AddChildOfDifferentTypeToMinimalExampleFollowedByGetParentOfOriginalTypeReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    DifferentMinimalNodeImpl& child = parent.add_child(std::make_unique<DifferentMinimalNodeImpl>());
+    DifferentMinimalNodeImpl& child =
+parent.add_child(std::make_unique<DifferentMinimalNodeImpl>());
 
     ASSERT_FALSE(child.parent<MinimalNodeImpl>());
 }
@@ -235,7 +242,8 @@ TEST(Node, AddChildToMinimalExampleFollowedByUpdParentOfDifferentTypeReturnsFals
 TEST(Node, AddChildOfDifferentTypeToMinimalExampleFollowedByUpdParentOfOriginalTypeReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    DifferentMinimalNodeImpl& child = parent.add_child(std::make_unique<DifferentMinimalNodeImpl>());
+    DifferentMinimalNodeImpl& child =
+parent.add_child(std::make_unique<DifferentMinimalNodeImpl>());
 
     ASSERT_FALSE(child.upd_parent<MinimalNodeImpl>());
 }
@@ -614,7 +622,8 @@ TEST(Node, GetAbsolutePathOfGrandchildReturnsExpectedAbsolutePath)
 TEST(Node, GetAbsolutePathToGreatGrandchildReturnsExpectedAbsolutePath)
 {
     NodeWithName a{"a"};
-    auto const& d = a.emplace_child<NodeWithName>("b").emplace_child<NodeWithName>("c").emplace_child<NodeWithName>("d");
+    auto const& d =
+a.emplace_child<NodeWithName>("b").emplace_child<NodeWithName>("c").emplace_child<NodeWithName>("d");
 
     ASSERT_EQ(d.absolute_path(), "/a/b/c/d"sv);
 }
@@ -706,14 +715,16 @@ TEST(Node, FindReturnsExpectedPathsForGrandchild)
         //                      | from a  | from b  | from c  |
         {""                     , nullptr , nullptr , nullptr },
         {"/"                    ,   &a    ,   &a    ,   &a    },
-        {"/////"                ,   &a    ,   &a    ,   &a    },  // see: NodePath tests: should collapse multiple slashes
+        {"/////"                ,   &a    ,   &a    ,   &a    },  // see: NodePath tests: should
+collapse multiple slashes
         {"."                    ,   &a    ,   &b    ,   &c    },
         {"./."                  ,   &a    ,   &a    ,   &a    },
         {".."                   ,   &a    ,   &a    ,   &b    },
         {"../."                 ,   &a    ,   &a    ,   &b    },
         {"../.."                ,   &a    ,   &a    ,   &a    },
         {"../../b"              ,   &b    ,   &b    ,   &b    },
-        {"../../b/"             ,   &b    ,   &b    ,   &b    },  // see: NodePath tests: should ignore trailing slashes
+        {"../../b/"             ,   &b    ,   &b    ,   &b    },  // see: NodePath tests: should
+ignore trailing slashes
         {"../../c"              , nullptr , nullptr , nullptr },
         {"../../c/"             , nullptr , nullptr , nullptr },
         {".././b/.."            ,   &a    ,   &a    , nullptr },

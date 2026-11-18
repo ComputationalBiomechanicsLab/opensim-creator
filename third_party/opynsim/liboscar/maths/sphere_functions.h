@@ -6,10 +6,10 @@
 #include <optional>
 #include <span>
 
-namespace osc { struct AABB; }
-
 namespace osc
 {
+    struct AABB;
+
     // returns a `Sphere` that loosely bounds the given `Vector3`s
     std::optional<Sphere> bounding_sphere_of(std::span<const Vector3>);
 

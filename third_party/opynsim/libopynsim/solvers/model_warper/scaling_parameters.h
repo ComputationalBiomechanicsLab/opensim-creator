@@ -36,6 +36,7 @@ namespace opyn
         {
             return values_.insert_or_assign(name, value);
         }
+
     private:
         std::map<std::string, ScalingParameterValue> values_;
     };

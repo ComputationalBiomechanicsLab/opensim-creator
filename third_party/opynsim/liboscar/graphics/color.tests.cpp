@@ -24,13 +24,14 @@ namespace
         Color input;
         ColorHSLA expected_output;
     };
-    constexpr auto c_rgba_to_hsla_known_conversion_values = std::to_array<KnownRGBAToHSLAConversions>({
-         // RGBA                     // HSLA
-         // r     g     b     a      // h (degrees) s     l     a
-        {{  1.0f, 0.0f, 0.0f, 1.0f}, {  0.0f,       1.0f, 0.5f, 1.0f}},  // red
-        {{  0.0f, 1.0f, 0.0f, 1.0f}, {  120.0f,     1.0f, 0.5f, 1.0f}},  // green
-        {{  0.0f, 0.0f, 1.0f, 1.0f}, {  240.0f,     1.0f, 0.5f, 1.0f}},  // blue
-    });
+    constexpr auto c_rgba_to_hsla_known_conversion_values =
+        std::to_array<KnownRGBAToHSLAConversions>({
+            // RGBA                     // HSLA
+            // r     g     b     a      // h (degrees) s     l     a
+            {{1.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.5f, 1.0f}},    // red
+            {{0.0f, 1.0f, 0.0f, 1.0f}, {120.0f, 1.0f, 0.5f, 1.0f}},  // green
+            {{0.0f, 0.0f, 1.0f, 1.0f}, {240.0f, 1.0f, 0.5f, 1.0f}},  // blue
+        });
 
     std::ostream& operator<<(std::ostream& o, const KnownRGBAToHSLAConversions& test_case)
     {
@@ -55,7 +56,9 @@ TEST(Color, constructed_from_two_values_fills_RGB_components_with_first_and_alph
     static_assert(Color{0.83f, 0.4f} == Color{0.83f, 0.83f, 0.83f, 0.4f});
 }
 
-TEST(Color, constructed_with_Vector3_and_float_fills_RGB_components_with_Vector3_and_alpha_with_float)
+TEST(
+    Color,
+    constructed_with_Vector3_and_float_fills_RGB_components_with_Vector3_and_alpha_with_float)
 {
     static_assert(Color{Vector3{0.1f, 0.2f, 0.3f}, 0.7f} == Color{0.1f, 0.2f, 0.3f, 0.7f});
 }
@@ -228,7 +231,8 @@ TEST(Color, to_linear_colorspace_on_Color_returns_linearized_version_of_the_Colo
     ASSERT_EQ(linear_color.r, to_linear_colorspace(srgb_color.r));
     ASSERT_EQ(linear_color.g, to_linear_colorspace(srgb_color.g));
     ASSERT_EQ(linear_color.b, to_linear_colorspace(srgb_color.b));
-    ASSERT_EQ(linear_color.a, srgb_color.a) << "alpha should remain untouched by this operation (alpha is always linear)";
+    ASSERT_EQ(linear_color.a, srgb_color.a)
+        << "alpha should remain untouched by this operation (alpha is always linear)";
 }
 
 TEST(Color, to_srgb_colorspace_returns_srgb_version_of_the_linear_Color)
@@ -239,10 +243,13 @@ TEST(Color, to_srgb_colorspace_returns_srgb_version_of_the_linear_Color)
     ASSERT_EQ(srgb_color.r, to_srgb_colorspace(linear_color.r));
     ASSERT_EQ(srgb_color.g, to_srgb_colorspace(linear_color.g));
     ASSERT_EQ(srgb_color.b, to_srgb_colorspace(linear_color.b));
-    ASSERT_EQ(srgb_color.a, linear_color.a) << "alpha should remain untouched by this operation (alpha is always linear)";
+    ASSERT_EQ(srgb_color.a, linear_color.a)
+        << "alpha should remain untouched by this operation (alpha is always linear)";
 }
 
-TEST(Color, to_linear_colorspace_followed_by_to_srgb_colorspace_on_Color_returns_original_input_Color)
+TEST(
+    Color,
+    to_linear_colorspace_followed_by_to_srgb_colorspace_on_Color_returns_original_input_Color)
 {
     const Color original_color = {0.1f, 0.1f, 0.1f, 0.5f};
     const Color converted_color = to_srgb_colorspace(to_linear_colorspace(original_color));
@@ -372,7 +379,7 @@ TEST(Color, lerp_with_intermediate_interpolant_returns_expected_result)
     const Color rv = lerp(a, b, t);
 
     for (size_t i = 0; i < 4; ++i) {
-        ASSERT_NEAR(rv[i], (1.0f-t)*a[i] + t*b[i], tolerance);
+        ASSERT_NEAR(rv[i], ((1.0f - t) * a[i]) + (t * b[i]), tolerance);
     }
 }
 
@@ -414,7 +421,9 @@ TEST(Color, try_parse_html_color_string_parses_LDR_RGBx32_hex_string_to_Color)
     ASSERT_EQ(try_parse_html_color_string("#00000000"), Color::clear());
 
     // no color-space conversion occurs on intermediate values (e.g. no sRGB-to-linear)
-    ASSERT_EQ(try_parse_html_color_string("#110000ff"), Color((1.0f*16.0f + 1.0f)/255.0f, 0.0f, 0.0f, 1.0f));
+    ASSERT_EQ(
+        try_parse_html_color_string("#110000ff"),
+        Color(((1.0f * 16.0f) + 1.0f) / 255.0f, 0.0f, 0.0f, 1.0f));
 
     // when caller specifies 3 components, assume alpha == 1.0
     ASSERT_EQ(try_parse_html_color_string("#ff0000"), Color::red());
@@ -422,16 +431,19 @@ TEST(Color, try_parse_html_color_string_parses_LDR_RGBx32_hex_string_to_Color)
 
     // unparseable input
     ASSERT_EQ(try_parse_html_color_string("not a color"), std::nullopt);
-    ASSERT_EQ(try_parse_html_color_string(" #ff0000ff"), std::nullopt);  // caller handles whitespace
-    ASSERT_EQ(try_parse_html_color_string("ff0000ff"), std::nullopt);  // caller must put the # prefix before the string
-    ASSERT_EQ(try_parse_html_color_string("red"), std::nullopt);  // literal hdr_color strings (e.g. as in Unity) aren't supported (yet)
+    // caller handles whitespace
+    ASSERT_EQ(try_parse_html_color_string(" #ff0000ff"), std::nullopt);
+    // caller must put the # prefix before the string
+    ASSERT_EQ(try_parse_html_color_string("ff0000ff"), std::nullopt);
+    // literal hdr_color strings (e.g. as in Unity) aren't supported (yet)
+    ASSERT_EQ(try_parse_html_color_string("red"), std::nullopt);
 }
 
 TEST(Color, to_ColorHSLA_color_works_as_expected)
 {
     for (const auto& [rgba, expected] : c_rgba_to_hsla_known_conversion_values) {
         const auto got = to<ColorHSLA>(rgba);
-        ASSERT_NEAR(got.hue, expected.hue/360.0f, c_hlsl_conversion_tolerance_per_component);
+        ASSERT_NEAR(got.hue, expected.hue / 360.0f, c_hlsl_conversion_tolerance_per_component);
         ASSERT_NEAR(got.saturation, expected.saturation, c_hlsl_conversion_tolerance_per_component);
         ASSERT_NEAR(got.lightness, expected.lightness, c_hlsl_conversion_tolerance_per_component);
         ASSERT_NEAR(got.alpha, expected.alpha, c_hlsl_conversion_tolerance_per_component);
@@ -445,10 +457,14 @@ TEST(Color, hsla_color_to_Color_works_as_expected)
         normalized.hue /= 360.0f;
 
         const auto got = to<Color>(normalized);
-        ASSERT_NEAR(got.r, tc.input.r, c_hlsl_conversion_tolerance_per_component) << tc << ", got = " << got;
-        ASSERT_NEAR(got.g, tc.input.g, c_hlsl_conversion_tolerance_per_component) << tc << ", got = " << got;
-        ASSERT_NEAR(got.b, tc.input.b, c_hlsl_conversion_tolerance_per_component) << tc << ", got = " << got;
-        ASSERT_NEAR(got.a, tc.input.a, c_hlsl_conversion_tolerance_per_component) << tc << ", got = " << got;
+        ASSERT_NEAR(got.r, tc.input.r, c_hlsl_conversion_tolerance_per_component)
+            << tc << ", got = " << got;
+        ASSERT_NEAR(got.g, tc.input.g, c_hlsl_conversion_tolerance_per_component)
+            << tc << ", got = " << got;
+        ASSERT_NEAR(got.b, tc.input.b, c_hlsl_conversion_tolerance_per_component)
+            << tc << ", got = " << got;
+        ASSERT_NEAR(got.a, tc.input.a, c_hlsl_conversion_tolerance_per_component)
+            << tc << ", got = " << got;
     }
 }
 

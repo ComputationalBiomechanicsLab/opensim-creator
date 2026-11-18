@@ -6,8 +6,11 @@
 #include <filesystem>
 #include <unordered_map>
 
-namespace OpenSim { class Model; }
-namespace OpenSim { class Storage; }
+namespace OpenSim
+{
+    class Model;
+    class Storage;
+}
 
 namespace opyn
 {
@@ -25,7 +28,11 @@ namespace opyn
 
         osc::ClosedInterval<float> time_range() const;
         const OpenSim::Storage& storage() const { return *storage_; }
-        const std::unordered_map<int, int>& mapper() const { return storage_index_to_model_state_var_index_map_; }
+        const std::unordered_map<int, int>& mapper() const
+        {
+            return storage_index_to_model_state_var_index_map_;
+        }
+
     private:
         std::filesystem::path source_file_;
         osc::ClonePtr<OpenSim::Storage> storage_;

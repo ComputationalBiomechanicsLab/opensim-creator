@@ -12,17 +12,18 @@ using namespace osc;
 namespace
 {
     enum class ExampleDenseFlag : uint8_t {
-        None      = 0,
-        Flag1     = 1<<0,
-        Flag2     = 1<<1,
-        Flag3     = 1<<2,
+        None = 0,
+        Flag1 = 1 << 0,
+        Flag2 = 1 << 1,
+        Flag3 = 1 << 2,
         NUM_FLAGS = 3,
     };
 }
 
 TEST(Flags, from_underlying_works)
 {
-    const auto flags = Flags<ExampleDenseFlag>::from_underlying(std::to_underlying(ExampleDenseFlag::Flag3));
+    const auto flags =
+        Flags<ExampleDenseFlag>::from_underlying(std::to_underlying(ExampleDenseFlag::Flag3));
     ASSERT_EQ(flags.underlying_value(), std::to_underlying(ExampleDenseFlag::Flag3));
 }
 
@@ -124,7 +125,8 @@ TEST(Flags, operator_or_works_as_expected)
         {
             .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
             .rhs = Flags{ExampleDenseFlag::Flag3},
-            .expected = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3},
+            .expected =
+                Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3},
         },
         {
             .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
@@ -162,7 +164,8 @@ TEST(Flags, operator_or_equals_works_as_expected)
         {
             .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
             .rhs = Flags{ExampleDenseFlag::Flag3},
-            .expected = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3},
+            .expected =
+                Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3},
         },
         {
             .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
@@ -186,15 +189,20 @@ TEST(Flags, lowest_set_returns_none_if_none_are_set)
 
 TEST(Flags, lowest_set_returns_lowest_flag_for_non_None_values)
 {
-    ASSERT_EQ(Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag1}.lowest_set(), ExampleDenseFlag::Flag1);
-    ASSERT_EQ(Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag2}.lowest_set(), ExampleDenseFlag::Flag2);
-    ASSERT_EQ(Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag3}.lowest_set(), ExampleDenseFlag::Flag3);
+    ASSERT_EQ(
+        Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag1}.lowest_set(), ExampleDenseFlag::Flag1);
+    ASSERT_EQ(
+        Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag2}.lowest_set(), ExampleDenseFlag::Flag2);
+    ASSERT_EQ(
+        Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag3}.lowest_set(), ExampleDenseFlag::Flag3);
     {
-        constexpr auto flags = Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3};
+        constexpr auto flags =
+            Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3};
         ASSERT_EQ(flags.lowest_set(), ExampleDenseFlag::Flag2);
     }
     {
-        constexpr auto flags = Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+        constexpr auto flags =
+            Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
         ASSERT_EQ(flags.lowest_set(), ExampleDenseFlag::Flag1);
     }
 }
@@ -244,7 +252,8 @@ TEST(Flags, set_true_sets_the_given_flag)
 {
     Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
     flags.set(ExampleDenseFlag::Flag2, true);
-    const Flags<ExampleDenseFlag> expected{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3};
+    const Flags<ExampleDenseFlag> expected{
+        ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3};
     ASSERT_TRUE(flags == expected);
 }
 
@@ -320,7 +329,8 @@ TEST(Flags, is_hashable)
 {
     using ExampleDenseFlags = Flags<ExampleDenseFlag>;
     const ExampleDenseFlags flags1 = {ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2};
-    const ExampleDenseFlags flags2 = {ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3};
+    const ExampleDenseFlags flags2 = {
+        ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3};
 
     const std::hash<ExampleDenseFlags> hasher;
     ASSERT_NE(hasher(flags1), hasher(flags2));

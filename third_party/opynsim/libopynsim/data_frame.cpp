@@ -29,26 +29,32 @@ namespace
             const Series& s = series[i];
             const bool inserted = rv.try_emplace(std::string{s.name()}, i).second;
             if (not inserted) {
-                throw osc::formatted_runtime_error("The provided series contains a duplicate name '{}': all series must have unique names", s.name());
+                throw osc::formatted_runtime_error(
+                    "The provided series contains a duplicate name '{}': all series must have unique names",
+                    s.name());
             }
         }
         return rv;
     }
 
     std::vector<Series> build_series_from_separate_vectors(
-        std::vector<std::string> column_names,
-        std::vector<std::vector<double>> column_data)
+        std::vector<std::string> column_names, std::vector<std::vector<double>> column_data)
     {
-        OSC_ASSERT_ALWAYS(column_names.size() == column_data.size() && "The number of column names (headers) must match the number of column data vectors");
+        OSC_ASSERT_ALWAYS(
+            column_names.size() == column_data.size() &&
+            "The number of column names (headers) must match the number of column data vectors");
         if (not column_data.empty()) {
             const size_t num_rows_in_first_column = column_data.front().size();
-            OSC_ASSERT_ALWAYS(rgs::all_of(column_data, [num_rows_in_first_column](const auto& column) { return column.size() == num_rows_in_first_column; }));
+            OSC_ASSERT_ALWAYS(
+                rgs::all_of(column_data, [num_rows_in_first_column](const auto& column) {
+                    return column.size() == num_rows_in_first_column;
+                }));
         }
 
         std::vector<Series> rv;
         rv.reserve(column_names.size());
         for (size_t i = 0; i < column_names.size(); ++i) {
-            rv.emplace_back(std::move(column_names[i]),std::move(column_data[i]));
+            rv.emplace_back(std::move(column_names[i]), std::move(column_data[i]));
         }
         return rv;
     }
@@ -94,8 +100,7 @@ opyn::DataFrame::DataFrame(
 {}
 
 opyn::DataFrame::DataFrame(
-    std::vector<Series> series,
-    std::unordered_map<std::string, std::string> attrs) :
+    std::vector<Series> series, std::unordered_map<std::string, std::string> attrs) :
 
     series_{std::move(series)},
     column_to_index_lookup_{build_index_lookup(series_)},
@@ -103,7 +108,9 @@ opyn::DataFrame::DataFrame(
 {
     if (not series_.empty()) {
         const size_t num_rows_in_first_column = series_.front().size();
-        OSC_ASSERT_ALWAYS(rgs::all_of(series_, [num_rows_in_first_column](const auto& column) { return column.size() == num_rows_in_first_column; }));
+        OSC_ASSERT_ALWAYS(rgs::all_of(series_, [num_rows_in_first_column](const auto& column) {
+            return column.size() == num_rows_in_first_column;
+        }));
     }
 }
 
@@ -164,7 +171,9 @@ opyn::DataFrame::const_reference opyn::DataFrame::operator[](std::string_view na
 
 opyn::DataFrame::const_iterator opyn::DataFrame::find(std::string_view name) const
 {
-    if (const auto it = column_to_index_lookup_.find(std::string{name}); it != column_to_index_lookup_.end()) {
+    if (const auto it = column_to_index_lookup_.find(std::string{name});
+        it != column_to_index_lookup_.end()) {
+
         return series_.begin() + it->second;
     }
     return end();
@@ -172,14 +181,14 @@ opyn::DataFrame::const_iterator opyn::DataFrame::find(std::string_view name) con
 
 opyn::DataFrame opyn::DataFrame::with_series(Series series) const
 {
-    OSC_ASSERT_ALWAYS((this->empty() or this->height() == series.size()) && "DataFrame::with_series was called on a nonempty `DataFrame` with a `Series` of the wrong size");
+    OSC_ASSERT_ALWAYS(
+        (this->empty() or this->height() == series.size()) &&
+        "DataFrame::with_series was called on a nonempty `DataFrame` with a `Series` of the wrong size");
 
     DataFrame rv{*this};
     rv.attrs_.clear();
-    const auto& [index_iterator, inserted] = rv.column_to_index_lookup_.try_emplace(
-        std::string{series.name()},
-        rv.series_.size()
-    );
+    const auto& [index_iterator, inserted] =
+        rv.column_to_index_lookup_.try_emplace(std::string{series.name()}, rv.series_.size());
     if (inserted) {
         rv.series_.push_back(std::move(series));
     } else {
@@ -192,10 +201,12 @@ std::ostream& opyn::operator<<(std::ostream& out, const DataFrame& data_frame)
 {
     static constexpr size_t num_head_data_rows = 5;
     static constexpr size_t num_tail_data_rows = 5;
-    static constexpr size_t max_data_rows = num_head_data_rows + num_tail_data_rows + 1;  // +1 because it's silly to put ellipsis when there's one more element.
+    // +1 because it's silly to put ellipsis when there's one more element.
+    static constexpr size_t max_data_rows = num_head_data_rows + num_tail_data_rows + 1;
     static constexpr size_t num_head_columns = 4;
     static constexpr size_t num_tail_columns = 2;
-    static constexpr size_t max_columns = num_head_columns + num_tail_columns + 1;  // +1 because it's silly to put ellipsis when there's one more element.
+    // +1 because it's silly to put ellipsis when there's one more element.
+    static constexpr size_t max_columns = num_head_columns + num_tail_columns + 1;
 
     // Represents a single string-formatted column in the table.
     struct FormattedColumn final {
@@ -232,8 +243,7 @@ std::ostream& opyn::operator<<(std::ostream& out, const DataFrame& data_frame)
                 for (size_t i = series.size() - num_tail_data_rows; i < series.size(); ++i) {
                     append_row(format_double_like_pandas(series[i]));
                 }
-            }
-            else {
+            } else {
                 // Print all values with no ellipsis.
                 for (const auto& value : series) {
                     append_row(format_double_like_pandas(value));
@@ -293,7 +303,8 @@ std::ostream& opyn::operator<<(std::ostream& out, const DataFrame& data_frame)
             const std::string_view header = c.header.empty() ? std::string_view{" "} : c.header;
             out << ' ';  // Left padding
             out << header;
-            const auto remaining = static_cast<ptrdiff_t>(c.content_width) - static_cast<ptrdiff_t>(header.size());
+            const auto remaining =
+                static_cast<ptrdiff_t>(c.content_width) - static_cast<ptrdiff_t>(header.size());
             for (ptrdiff_t i = 0; i < remaining; ++i) {
                 out << ' ';
             }
@@ -307,12 +318,14 @@ std::ostream& opyn::operator<<(std::ostream& out, const DataFrame& data_frame)
         // Emit alignment rows
         out << '|';  // Left line
         if (formatted_columns.empty()) {
-            // Edge-case: If there's no columns, emit a minimum alignment column (markdown requirement).
+            // Edge-case: If there's no columns, emit a minimum alignment column (markdown
+            // requirement).
             out << "---|";
         }
         for (const auto& c : formatted_columns) {
             out << ':';  // Left-align
-            const size_t num_dashes = rgs::max(2uz, c.content_width + 1);  // +1 to account for right padding
+            const size_t num_dashes =
+                rgs::max(2uz, c.content_width + 1);  // +1 to account for right padding
             for (size_t i = 0; i < num_dashes; ++i) {
                 out << '-';
             }
@@ -321,16 +334,18 @@ std::ostream& opyn::operator<<(std::ostream& out, const DataFrame& data_frame)
         out << '\n';
     }
 
-    OSC_ASSERT_ALWAYS(rgs::adjacent_find(formatted_columns, rgs::not_equal_to{}, &FormattedColumn::num_rows) == formatted_columns.end());
-    const size_t num_displayed_rows = formatted_columns.empty() ? 0zu : formatted_columns.front().num_rows();
+    OSC_ASSERT_ALWAYS(
+        rgs::adjacent_find(formatted_columns, rgs::not_equal_to{}, &FormattedColumn::num_rows) ==
+        formatted_columns.end());
+    const size_t num_displayed_rows =
+        formatted_columns.empty() ? 0zu : formatted_columns.front().num_rows();
 
     // Emit table data rows.
     if (formatted_columns.empty()) {
         // Edge-case: If there are no columns, emit a minimum empty column (markdown requirement).
 
         out << "|   |\n";
-    }
-    else if (num_displayed_rows == 0) {
+    } else if (num_displayed_rows == 0) {
         // Edge-case: If there are no rows, emit empty columns for each row (markdown requirement).
 
         out << '|';  // Left line
@@ -351,7 +366,8 @@ std::ostream& opyn::operator<<(std::ostream& out, const DataFrame& data_frame)
 
             out << ' ';  // Left padding
             out << c.rows[row];
-            const auto remaining = static_cast<ptrdiff_t>(c.content_width) - static_cast<ptrdiff_t>(c.rows[row].size());
+            const auto remaining = static_cast<ptrdiff_t>(c.content_width) -
+                                   static_cast<ptrdiff_t>(c.rows[row].size());
             for (ptrdiff_t i = 0; i < remaining; ++i) {
                 out << ' ';
             }

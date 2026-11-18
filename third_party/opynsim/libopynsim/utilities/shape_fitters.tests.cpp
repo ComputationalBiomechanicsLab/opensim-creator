@@ -40,10 +40,12 @@ TEST(fit_sphere_htbad, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 TEST(fit_sphere_htbad, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
 {
     // generate a UV unit sphere
-    const osc::Mesh sphere_mesh = osc::SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
+    const osc::Mesh sphere_mesh =
+        osc::SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
     const osc::Sphere sphere_fit = fit_sphere_htbad(sphere_mesh);
 
-    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphere_fit.origin, osc::Vector3{}, 0.000001f)));
+    ASSERT_TRUE(
+        osc::all_of(osc::equal_within_absdiff(sphere_fit.origin, osc::Vector3{}, 0.000001f)));
     ASSERT_TRUE(osc::equal_within_absdiff(sphere_fit.radius, 1.0f, 0.000001f));
 }
 
@@ -51,22 +53,26 @@ TEST(fit_sphere_htbad, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphe
 {
     const osc::Transform t = {
         .scale = {3.25f, 3.25f, 3.25f},  // keep it spherical
-        .rotation = osc::angle_axis(osc::Degrees{45.0f}, osc::normalize(osc::Vector3{1.0f, 1.0f, 0.0f})),
+        .rotation =
+            osc::angle_axis(osc::Degrees{45.0f}, osc::normalize(osc::Vector3{1.0f, 1.0f, 0.0f})),
         .translation = {7.0f, 3.0f, 1.5f},
     };
 
-    osc::Mesh sphere_mesh = osc::SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
+    osc::Mesh sphere_mesh =
+        osc::SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
     sphere_mesh.transform_vertices(t);
 
     const osc::Sphere sphere_fit = fit_sphere_htbad(sphere_mesh);
 
-    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphere_fit.origin, t.translation, 0.000001f)));
+    ASSERT_TRUE(
+        osc::all_of(osc::equal_within_absdiff(sphere_fit.origin, t.translation, 0.000001f)));
     ASSERT_TRUE(osc::equal_within_reldiff(sphere_fit.radius, t.scale.x(), 0.000001f));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
 //
-//     How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in extinct animals
+//     How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in
+//     extinct animals
 //         Peter J. Bishop, Andrew R. Cuff, and John R. Hutchinson
 //         Paleobiology, 47(1), 1-38
 //         doi:10.1017/pab.2020.46
@@ -84,7 +90,8 @@ TEST(fit_sphere_htbad, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphe
 // - compare the fitted analytic geometry to whatever OSC produces
 TEST(fit_sphere_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
-    // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
+    // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape
+    // fitter script
     constexpr osc::Sphere c_expected_sphere{{5.0133f, -27.43f, 164.2998f}, 7.8291f};
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
@@ -93,7 +100,9 @@ TEST(fit_sphere_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublis
     const osc::Mesh mesh = load_mesh_via_simbody(obj_path);
     const osc::Sphere sphere_fit = fit_sphere_htbad(mesh);
 
-    ASSERT_TRUE(osc::all_of(osc::equal_within_absdiff(sphere_fit.origin, c_expected_sphere.origin, 0.0001f)));
+    ASSERT_TRUE(
+        osc::all_of(
+            osc::equal_within_absdiff(sphere_fit.origin, c_expected_sphere.origin, 0.0001f)));
     ASSERT_TRUE(osc::equal_within_absdiff(sphere_fit.radius, c_expected_sphere.radius, 0.0001f));
 }
 
@@ -109,7 +118,8 @@ TEST(fit_plane_htbad, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
 
 // reproduction: ensure the C++ rewrite produces similar results to:
 //
-//     How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in extinct animals
+//     How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in
+//     extinct animals
 //         Peter J. Bishop, Andrew R. Cuff, and John R. Hutchinson
 //         Paleobiology, 47(1), 1-38
 //         doi:10.1017/pab.2020.46
@@ -127,9 +137,9 @@ TEST(fit_plane_htbad, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
 // - compare the fitted analytic geometry to whatever OSC produces
 TEST(fit_plane_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
-    // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr osc::Plane c_expected_plane =
-    {
+    // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape
+    // fitter script
+    constexpr osc::Plane c_expected_plane = {
         {4.6138f, -24.0131f, 163.1295f},
         {0.2131f, 0.94495f, -0.24833f},
     };
@@ -146,7 +156,8 @@ TEST(fit_plane_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublish
 
 // reproduction: ensure the C++ rewrite produces similar results to:
 //
-//     How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in extinct animals
+//     How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in
+//     extinct animals
 //         Peter J. Bishop, Andrew R. Cuff, and John R. Hutchinson
 //         Paleobiology, 47(1), 1-38
 //         doi:10.1017/pab.2020.46
@@ -164,11 +175,14 @@ TEST(fit_plane_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublish
 // - compare the fitted analytic geometry to whatever OSC produces
 TEST(fit_ellipsoid_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
-    // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr osc::Vector3 c_expected_origin = {4.41627617443540f, -28.2484366502307f, 165.041246898544f};
-    constexpr osc::Vector3 c_expected_radii = {9.39508101198322f,   8.71324627349633f,  6.71387132216324f};
-    // OSC change: the _signs_ of these direction vectors might be different from the MATLAB script because
-    // OSC's implementation also gurantees that the vectors are right-handed
+    // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape
+    // fitter script
+    constexpr osc::Vector3 c_expected_origin = {
+        4.41627617443540f, -28.2484366502307f, 165.041246898544f};
+    constexpr osc::Vector3 c_expected_radii = {
+        9.39508101198322f, 8.71324627349633f, 6.71387132216324f};
+    // OSC change: the _signs_ of these direction vectors might be different from the MATLAB script
+    // because OSC's implementation also gurantees that the vectors are right-handed
     constexpr auto c_expected_radii_directions = std::to_array<osc::Vector3>({
         osc::Vector3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
         osc::Vector3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},
@@ -183,17 +197,21 @@ TEST(fit_ellipsoid_htbad, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPub
     const osc::Ellipsoid fit = fit_ellipsoid_htbad(mesh);
     const auto directions = axis_directions_of(fit);
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(fit.origin, c_expected_origin, c_maximum_absolute_error)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(fit.radii,  c_expected_radii, c_maximum_absolute_error)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(directions[0], c_expected_radii_directions[0], c_maximum_absolute_error)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(directions[1], c_expected_radii_directions[1], c_maximum_absolute_error)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(directions[2], c_expected_radii_directions[2], c_maximum_absolute_error)));
+    ASSERT_TRUE(
+        all_of(equal_within_absdiff(fit.origin, c_expected_origin, c_maximum_absolute_error)));
+    ASSERT_TRUE(
+        all_of(equal_within_absdiff(fit.radii, c_expected_radii, c_maximum_absolute_error)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(
+        directions[0], c_expected_radii_directions[0], c_maximum_absolute_error)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(
+        directions[1], c_expected_radii_directions[1], c_maximum_absolute_error)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(
+        directions[2], c_expected_radii_directions[2], c_maximum_absolute_error)));
 }
 
 TEST(fit_ellipsoid_htbad, ThrowsErrorIfGivenLessThan9Points)
 {
-    const auto generate_spherical_mesh_with_n_points = [](size_t n)
-    {
+    const auto generate_spherical_mesh_with_n_points = [](size_t n) {
         osc::Radians theta{0.0f};
         osc::Radians phi{0.0f};
         const float radius = 1.0f;
@@ -215,8 +233,7 @@ TEST(fit_ellipsoid_htbad, ThrowsErrorIfGivenLessThan9Points)
         return m;
     };
 
-    for (size_t i = 0; i < 9; ++i)
-    {
+    for (size_t i = 0; i < 9; ++i) {
         ASSERT_ANY_THROW({ fit_ellipsoid_htbad(generate_spherical_mesh_with_n_points(i)); });
     }
 

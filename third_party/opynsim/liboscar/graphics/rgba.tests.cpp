@@ -27,7 +27,8 @@ TEST(Rgba, can_be_constructed_from_Rgb_of_same_type)
 
 TEST(Rgba, can_be_constructed_from_Rgb_with_custom_alpha)
 {
-    static_assert(Rgba{Rgb<float>{0.25f, 0.50f, 0.75f}, 0.33f} == Rgba<float>{0.25, 0.5f, 0.75f, 0.33f});
+    static_assert(
+        Rgba{Rgb<float>{0.25f, 0.50f, 0.75f}, 0.33f} == Rgba<float>{0.25, 0.5f, 0.75f, 0.33f});
 }
 
 TEST(Rgba, rgb_returns_Rgba_converted_into_Rgb)
@@ -116,7 +117,9 @@ TEST(Rgba, Unorm8_rgba_can_be_hashed)
     }
 }
 
-TEST(Rgba, can_implicitly_construct_Rgba_from_different_components_if_components_are_implicitly_convertible)
+TEST(
+    Rgba,
+    can_implicitly_construct_Rgba_from_different_components_if_components_are_implicitly_convertible)
 {
     const Rgba<float> float_val{0.0f, 0.5f, 1.0f, 1.0f};
     const Rgba<Unorm8> unorm8_val = float_val;
@@ -140,9 +143,11 @@ TEST(Rgba, can_explicitly_construct_from_Vector4_of_different_type)
 TEST(Rgba, map_with_unary_operation_works_as_expected)
 {
     const Rgba<float> inputs = {1.0f, 2.0f, 3.0f, 4.0f};
-    const auto f = [](float input) { return input + 1.0f; };
+    const auto f = [](float input) {
+        return input + 1.0f;
+    };
     const Rgba<float> result = map(inputs, f);
-    const Rgba<float> expected = {1.0f+1.0f, 2.0f+1.0f, 3.0f+1.0f, 4.0f+1.0f};
+    const Rgba<float> expected = {1.0f + 1.0f, 2.0f + 1.0f, 3.0f + 1.0f, 4.0f + 1.0f};
 
     ASSERT_EQ(result, expected);
 }
@@ -152,7 +157,7 @@ TEST(Rgba, map_with_binary_operation_works_as_expected)
     const Rgba<float> lhs = {1.0f, 2.0f, 3.0f, 4.0f};
     const Rgba<float> rhs = {1.0f, 2.0f, 3.0f, 4.0f};
     const Rgba<float> result = map(lhs, rhs, std::plus<float>{});
-    const Rgba<float> expected = {1.0f+1.0f, 2.0f+2.0f, 3.0f+3.0f, 4.0f+4.0f};
+    const Rgba<float> expected = {1.0f + 1.0f, 2.0f + 2.0f, 3.0f + 3.0f, 4.0f + 4.0f};
 
     ASSERT_EQ(result, expected);
 }
@@ -161,7 +166,7 @@ TEST(Rgba, lerp_works_with_unorm8)
 {
     const Rgba<Unorm8> lhs = {0x00, 0x00, 0x00, 0x00};
     const Rgba<Unorm8> rhs = {0xff, 0xff, 0xff, 0xff};
-    const Rgba<Unorm8> result = lerp(lhs, rhs, 123.0f/255.0f);
+    const Rgba<Unorm8> result = lerp(lhs, rhs, 123.0f / 255.0f);
     const Rgba<Unorm8> expected = {123, 123, 123, 123};
 
     ASSERT_EQ(result, expected);

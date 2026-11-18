@@ -1,23 +1,16 @@
 import test_stl_ext as t
 import typing
 import pytest
-import sys
 from common import collect, skip_on_pypy
 
 
 
 def optional(arg: str, /) -> str:
-    if sys.version_info < (3, 10):
-        return "typing.Optional[" + arg + "]"
-    else:
-        return arg + " | " + "None"
+    return arg + " | " + "None"
 
 
 def union(*args: str) -> str:
-    if sys.version_info < (3, 10):
-        return "typing.Union[" + ", ".join(args) + "]"
-    else:
-        return " | ".join(args)
+    return " | ".join(args)
 
 
 @pytest.fixture
@@ -200,6 +193,53 @@ def test21_tuple_pair_basic():
     assert t.empty_tuple(()) == ()
     assert t.swap_tuple((1, 2.5)) == (2.5, 1)
     assert t.swap_pair((1, 2.5)) == (2.5, 1)
+
+
+def test21b_seq_getitem_raises():
+    # A custom sequence with a valid __len__ but a __getitem__ that raises
+    # must fail cleanly (overload resolution reports a TypeError) without
+    # leaking the original exception. Regression test for a missing
+    # PyErr_Clear() in the Py_LIMITED_API path of seq_get*.
+    class BadSeq:
+        def __init__(self, n):
+            self.n = n
+
+        def __len__(self):
+            return self.n
+
+        def __getitem__(self, i):
+            raise ValueError("boom from __getitem__")
+
+    # std::pair / std::tuple use seq_get_with_size, std::array likewise.
+    for fn, n in ((t.swap_pair, 2), (t.swap_tuple, 2), (t.array_in, 3)):
+        with pytest.raises(TypeError) as excinfo:
+            fn(BadSeq(n))
+        assert "incompatible function arguments" in str(excinfo.value)
+
+        # The error indicator must not have leaked: raising a fresh
+        # exception here must not pick up the ValueError as its context.
+        try:
+            raise RuntimeError("fresh")
+        except RuntimeError as e:
+            assert e.__context__ is None
+
+
+def test21c_tuple_pair_generic_sequence():
+    # A generic sequence (not a tuple) whose __getitem__ creates fresh items
+    # is converted via a temporary tuple that solely owns those items. The
+    # caster must keep that tuple alive until the elements are copied out.
+    class Seq:
+        def __init__(self, *vals):
+            self.vals = vals
+
+        def __len__(self):
+            return len(self.vals)
+
+        def __getitem__(self, i):
+            return t.Poisoned(self.vals[i])
+
+    assert t.pair_of_poisoned(Seq(1, 2)) == 102
+    assert t.tuple_of_poisoned(Seq(3, 4, 5)) == 30405
 
 
 # ------------------------------------------------------------------
@@ -635,6 +675,14 @@ def test64_set_in_failure():
     assert "incompatible function arguments" in str(excinfo.value)
 
 
+def test64b_set_of_temporaries():
+    # The source is a generator yielding fresh bound objects whose only
+    # reference is held by the iterator; the set caster must not drop that
+    # reference before constructing the set element (use-after-free).
+    assert sorted(t.set_of_ordered_values(t.Ordered(i) for i in range(5))) == \
+        [0, 1, 2, 3, 4]
+
+
 def test65_class_with_movable_field(clean):
     cwmf = t.ClassWithMovableField()
     m1 = t.Movable(1)
@@ -879,3 +927,47 @@ def test74_variant_implicit_conversions():
     assert event.id is None
     event.id = t.BasicID1(78)
     assert type(event.id) is t.BasicID1
+
+def test75_weird_nones():
+    assert t.takes_nullptr(None) == "nullptr"
+    assert t.takes_monostate(None) == "monostate"
+
+def test76_map_from_other_mappings():
+    import collections.abc
+
+    assert t.map_str_int_in({}) == ""
+    assert t.map_str_int_in({"a": 1, "b": 2}) == "a=1;b=2;"
+
+    # A dict subclass is read through its (potentially overridden) items()
+    class Shouty(dict):
+        def items(self):
+            return [(k.upper(), v) for k, v in super().items()]
+
+    assert t.map_str_int_in(Shouty(a=1)) == "A=1;"
+
+    # A mapping that does not derive from dict
+    class Mapping(collections.abc.Mapping):
+        def __init__(self, d):
+            self.d = d
+        def __getitem__(self, k):
+            return self.d[k]
+        def __iter__(self):
+            return iter(self.d)
+        def __len__(self):
+            return len(self.d)
+
+    assert t.map_str_int_in(Mapping({})) == ""
+    assert t.map_str_int_in(Mapping({"a": 1, "b": 2})) == "a=1;b=2;"
+
+    # Rejected: items() that yields something other than 2-tuples
+    class Weird(dict):
+        def items(self):
+            return [1, 2, 3]
+
+    with pytest.raises(TypeError, match="incompatible function arguments"):
+        t.map_str_int_in(Weird(a=1))
+
+    # Rejected: not a mapping, and a mapping without items()
+    for arg in (None, 5, [("a", 1)]):
+        with pytest.raises(TypeError, match="incompatible function arguments"):
+            t.map_str_int_in(arg)

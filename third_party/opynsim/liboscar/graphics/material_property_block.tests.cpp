@@ -43,7 +43,7 @@ TEST(MaterialPropertyBlock, can_default_construct)
 TEST(MaterialPropertyBlock, can_copy_construct)
 {
     const MaterialPropertyBlock mpb;
-    const MaterialPropertyBlock copy{mpb};  // NOLINT(performance-unnecessary-copy-initialization)
+    const MaterialPropertyBlock copy{mpb};
 }
 
 TEST(MaterialPropertyBlock, can_move_construct)
@@ -236,7 +236,9 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockSetBoolCausesGetterToReturnSetV
     ASSERT_EQ(mpb.get<bool>(key), value);
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
+TEST(
+    MaterialPropertyBlock,
+    MaterialPropertyBlockSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
 {
     MaterialPropertyBlock mpb;
 
@@ -262,12 +264,15 @@ TEST(MaterialPropertyBlock, set_RenderTexture_causes_get_RenderTexture_to_return
     ASSERT_TRUE(mpb.get<RenderTexture>(key));
 }
 
-TEST(MaterialPropertyBlock, set_array_RenderTexture_causes_get_array_RenderTexture_to_return_same_sequence_of_RenderTextures)
+TEST(
+    MaterialPropertyBlock,
+    set_array_RenderTexture_causes_get_array_RenderTexture_to_return_same_sequence_of_RenderTextures)
 {
     MaterialPropertyBlock mpb;
 
     const std::string key = "someKey";
-    const std::vector<RenderTexture> render_textures = {generate_render_texture(), generate_render_texture()};
+    const std::vector<RenderTexture> render_textures = {
+        generate_render_texture(), generate_render_texture()};
 
     ASSERT_FALSE(mpb.get_array<RenderTexture>(key));
     mpb.set_array(key, render_textures);
@@ -276,7 +281,9 @@ TEST(MaterialPropertyBlock, set_array_RenderTexture_causes_get_array_RenderTextu
     ASSERT_TRUE(rgs::equal(render_textures, *rv));
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockSetSharedColorRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)
+TEST(
+    MaterialPropertyBlock,
+    MaterialPropertyBlockSetSharedColorRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)
 {
     MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.get<SharedColorRenderBuffer>("someKey"));
@@ -284,7 +291,9 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockSetSharedColorRenderBufferOnMat
     ASSERT_TRUE(mpb.get<SharedColorRenderBuffer>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockSetSharedDepthRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)
+TEST(
+    MaterialPropertyBlock,
+    MaterialPropertyBlockSetSharedDepthRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)
 {
     MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.get<SharedDepthStencilRenderBuffer>("someKey"));
@@ -303,7 +312,7 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockCanCompareEquals)
 TEST(MaterialPropertyBlock, MaterialPropertyBlockCopyConstructionComparesEqual)
 {
     const MaterialPropertyBlock m;
-    const MaterialPropertyBlock copy{m};  // NOLINT(performance-unnecessary-copy-initialization)
+    const MaterialPropertyBlock copy{m};
 
     ASSERT_EQ(m, copy);
 }
@@ -340,7 +349,8 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockCanPrintToOutputStream)
     ss << m1;  // just ensure this compiles and runs
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialPropertyBlock)
+TEST(
+    MaterialPropertyBlock, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialPropertyBlock)
 {
     const MaterialPropertyBlock m1;
     std::stringstream ss;

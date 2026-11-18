@@ -10,9 +10,7 @@ different set of compilation and linker flags depending on the target platform.
 
 If you prefer another build system, then you have the following options:
 
-- `Nicholas Junge <https://github.com/nicholasjng>`__ has created a `Bazel
-  interface <https://github.com/nicholasjng/nanobind-Bazel>`__ to nanobind.
-  Please report Bazel-specific issues there.
+- See the :ref:`Bazel documentation <bazel>` for the Bazel integration.
 
 - `Will Ayd <https://github.com/WillAyd/>`__ has created a `Meson WrapDB
   package <https://mesonbuild.com/Wrapdb-projects.html>`__ for nanobind. Please
@@ -68,12 +66,26 @@ The high-level interface consists of just one CMake command:
         - Perform a `stable ABI
           <https://docs.python.org/3/c-api/stable.html>`__ build, making it
           possible to use a compiled extension across Python minor versions.
-          The flag is ignored on Python versions older than < 3.12.
+          Linked builds compile the nanobind library under the limited API
+          and require Python 3.12 or newer; the flag is ignored on
+          unsupported Python versions. :ref:`Split mode <split-mode>`
+          (``BACKEND_MODULE``) always targets the stable ABI with a Python
+          3.10 floor, and this flag is then redundant.
+      * - ``STABLE_ABI_VERSION <version>``
+        - Raise the stable ABI floor of a :ref:`split mode <split-mode>`
+          extension to the given ``MAJOR.MINOR`` Python version (e.g.
+          ``3.13``). The default floor is 3.10, or 3.15 in ``abi3t`` builds.
+          When ``scikit-build-core`` is used, the floor tracks
+          ``tool.scikit-build.wheel.py-api`` and this parameter is usually
+          unnecessary.
       * - ``FREE_THREADED``
         - Compile an Python extension that opts into free-threaded (i.e.,
           GIL-less) Python behavior, which requires a special free-threaded
           build of Python 3.13 or newer. The flag is ignored on unsupported
-          Python versions.
+          Python versions. Combined with ``BACKEND_MODULE``, it targets the
+          provisional ``abi3t`` stable ABI variant (`PEP 803
+          <https://peps.python.org/pep-0803/>`__) and requires free-threaded
+          Python 3.15 or newer.
       * - ``NB_STATIC``
         - Compile the core nanobind library as a static library. This
           simplifies redistribution but can increase the combined binary
@@ -83,6 +95,20 @@ The high-level interface consists of just one CMake command:
         - The opposite of ``NB_STATIC``: compile the core nanobind library
           as a shared library for use in projects that consist of multiple
           extensions.
+      * - ``BACKEND_MODULE <name>``
+        - Compile the extension in :ref:`split mode <split-mode>`: it then
+          contains no nanobind library code at all and resolves the
+          compiled backend at import time from the named backend module
+          (``nanobind_backend`` is shipped by the `nanobind-backend
+          <https://pypi.org/project/nanobind-backend>`__ wheel). Accepts a
+          dotted module name, e.g. a backend module bundled inside your own
+          package. Cannot be combined with ``NB_STATIC`` or ``NB_SHARED``.
+      * - ``BACKEND_PYPI <name>``
+        - Name of the PyPI package shipping the backend module. When the
+          module is missing at import time, the resulting ``ImportError``
+          advises the user to ``pip install`` this package. Defaults to
+          ``nanobind-backend`` when ``BACKEND_MODULE`` is not customized;
+          otherwise no hint is added unless this keyword names a package.
       * - ``NB_SUPPRESS_WARNINGS``
         - Mark the include directories of nanobind and Python as
           `SYSTEM <https://cmake.org/cmake/help/latest/command/include_directories.html>`__
@@ -91,7 +117,10 @@ The high-level interface consists of just one CMake command:
           raises the warning level via flags like ``-pedantic``, ``-Wcast-qual``,
           ``-Wsign-conversion``.
       * - ``PROTECT_STACK``
-        - Don't remove stack smashing-related protections.
+        - Keep the stack protector enabled (for both the extension and
+          nanobind's core library in the linked modes; a split-mode
+          extension contains no library code, and the backend module has its own
+          ``PROTECT_STACK`` option).
       * - ``LTO``
         - Perform link time optimization.
       * - ``NOMINSIZE``
@@ -132,7 +161,7 @@ The high-level interface consists of just one CMake command:
 
    - It links the newly created library against the ``nanobind-..`` target.
 
-   - It appends the library suffix (e.g., ``.cpython-39-darwin.so``) based
+   - It appends the library suffix (e.g., ``.cpython-313-darwin.so``) based
      on information provided by CMake’s ``FindPython`` module.
 
    - When requested via the optional ``STABLE_ABI`` parameter, the build system
@@ -141,11 +170,13 @@ The high-level interface consists of just one CMake command:
 
      Once compiled, a stable ABI extension can be reused across Python minor
      versions. In contrast, ordinary builds are only compatible across patch
-     versions. This feature requires Python >= 3.12 and is ignored on older
-     versions. Note that use of the stable ABI come at a small performance cost
-     since nanobind can no longer access the internals of various data
-     structures directly. If in doubt, benchmark your code to see if the cost
-     is acceptable.
+     versions. In non-split builds, this feature requires Python >= 3.12 and is
+     ignored on older versions. :ref:`Split mode <split-mode>` builds always
+     target the stable ABI, with a Python 3.10 floor that can be raised via
+     ``STABLE_ABI_VERSION``. Note that use of the stable ABI without split mode
+     comes at performance cost, since key parts of nanobind can no longer
+     access the internals of various data structures directly. If in doubt,
+     benchmark your code to see if the cost is acceptable.
 
    - In non-debug modes, it compiles with *size optimizations* (i.e.,
      ``-Os``). This is generally the mode that you will want to use for
@@ -172,13 +203,22 @@ The high-level interface consists of just one CMake command:
      Size optimizations can be disabled by specifying the optional
      ``NOMINSIZE`` argument, though doing so is not recommended.
 
-   - ``nanobind_add_module()`` also disables stack-smashing protections
-     (i.e., it specifies ``-fno-stack-protector`` to Clang/GCC).
-     Protecting against such vulnerabilities in a Python VM seems futile,
-     and it adds non-negligible extra cost (+8% binary size in
-     benchmarks). This behavior can be disabled by specifying the optional
-     ``PROTECT_STACK`` flag. Either way, is not recommended that you use
-     nanobind in a setting where it presents an attack surface.
+   - On Linux, GCC normally compiles code with ``-fstack-protector-strong``,
+     which inserts stack canaries to defend against attacks where a buffer
+     overflow writes past a stack buffer into the saved return address.
+
+     This defense is especially costly for nanobind-based bindings, where it
+     instruments every function binding wrapper and all ndarray-related code.
+     In the test suite, it increases binary size by ~9-12% while adding 1-2%
+     runtime cost. The threat model is questionable in this context, since
+     the arrays being processed are either controlled by Python or validated
+     by nanobind.
+
+     The build system therefore disables the stack protector for both the user
+     extension and ``libnanobind`` (``-fno-stack-protector`` on Clang/GCC,
+     ``/GS-`` on MSVC). To opt out of this feature, pass ``PROTECT_STACK`` to
+     :cmake:command:`nanobind_add_module`, which reverts to the compiler's
+     default behavior.
 
    - It sets the default symbol visibility to ``hidden`` so that only functions
      and types specifically marked for export generate symbols in the resulting
@@ -212,6 +252,26 @@ The high-level interface consists of just one CMake command:
      restrict the visibility of symbols to a named subdomain to avoid conflicts
      between bindings. See the associated :ref:`FAQ entry <type-visibility>`
      for details.
+
+.. cmake:command:: nanobind_add_backend
+
+   Build a *backend module*: a Python module that contains the compiled
+   nanobind backend and serves it to extensions built in :ref:`split mode
+   <split-mode>`. See the section on :ref:`compiling a custom backend
+   <custom-backend>` for details.
+
+   .. code-block:: cmake
+
+      nanobind_add_backend(_backend)   # ships as, e.g., my_package._backend
+
+   Backend modules never target the stable ABI and must be built per Python
+   version. On a free-threaded interpreter, the backend is automatically built
+   free-threaded and serves only free-threaded extensions. They always carry
+   nanobind's detailed assertion messages, since a user who hits one cannot
+   rebuild the backend in ``Debug`` mode. The optional parameters
+   ``PROTECT_STACK``, ``NOMINSIZE``, ``NOSTRIP``, and
+   ``NB_SUPPRESS_WARNINGS`` have the same meaning as in
+   :cmake:command:`nanobind_add_module`.
 
 .. _lowlevel-cmake:
 
@@ -284,6 +344,8 @@ The various commands are described below:
         - Perform a stable ABI build targeting Python v3.12+.
       * - ``-ft``
         - Perform a build that opts into the Python 3.13+ free-threaded behavior.
+      * - ``-ps``
+        - Keep the stack protector enabled (see the ``PROTECT_STACK`` flag).
 
    .. code-block:: cmake
 
@@ -292,6 +354,14 @@ The various commands are described below:
 
       # Static ABI3 build
       nanobind_build_library(nanobind-static-abi3)
+
+   The command also takes an optional ``FULL_ASSERTIONS`` flag. nanobind checks
+   many internal invariants and prints a detailed message when one of them
+   fails. Optimized builds normally replace these messages with a generic one
+   that asks the user to rebuild in ``Debug`` mode, which saves a few kilobytes
+   of string data. ``FULL_ASSERTIONS`` keeps the detailed messages regardless
+   of the build type. :cmake:command:`nanobind_add_backend` uses this flag
+   because the users of a backend module have no way to rebuild it.
 
 .. cmake:command:: nanobind_opt_size
 
@@ -327,10 +397,11 @@ The various commands are described below:
 
 .. cmake:command:: nanobind_disable_stack_protector
 
-   The stack protector affects the binary size of bindings negatively (+8%
-   on Linux in benchmarks). Protecting from stack smashing in a Python VM
-   seems in any case futile, so this function disables it for the specified
-   target when performing a build with optimizations. Use it as follows:
+   Disables the stack-smashing protector for the specified target in optimized
+   builds. The canary guards against stack buffer overflows, but nanobind's hot
+   path has only fixed-size stack arrays indexed by the validated argument
+   count, so it is pure overhead there (+8% binary size on Linux). Use it as
+   follows:
 
    .. code-block:: cmake
 
@@ -354,6 +425,15 @@ The various commands are described below:
 
       nanobind_extension_abi3(my_target)
 
+.. cmake:command:: nanobind_extension_abi3t
+
+   This function assigns the ``abi3t`` stable ABI extension name of
+   free-threaded Python 3.15+ (`PEP 803 <https://peps.python.org/pep-0803/>`__)
+   to the compiled binding, e.g., ``.abi3t.so``. Use it as follows:
+
+   .. code-block:: cmake
+
+      nanobind_extension_abi3t(my_target)
 
 .. cmake:command:: nanobind_compile_options
 
@@ -506,6 +586,10 @@ Nanobind's CMake tooling includes a convenience command to interface with the
       * - ``EXCLUDE_DOCSTRINGS``
         - Generate a stub containing only typed signatures without docstrings.
 
+      * - ``EXCLUDE_VALUES``
+        - Don't include the values of variables in the generated stub, only
+          their types.
+
       * - ``INCLUDE_PRIVATE``
         - Also include private members, whose names begin or end with a single
           underscore.
@@ -518,8 +602,10 @@ Nanobind's CMake tooling includes a convenience command to interface with the
           Multiple marker file paths can be optionally passed to this parameter.
 
       * - ``PATTERN_FILE``
-        - Specify a pattern file used to replace declarations in the stub. The
-          syntax is described in the section on :ref:`stub generation <stubs>`.
+        - Specify one or more pattern files used to replace declarations in
+          the stub. The syntax is described in the section on :ref:`stub
+          generation <stubs>`. When several files are given, their rules are
+          merged in the order specified, and the first matching rule wins.
 
       * - ``COMPONENT``
         - Specify a component when ``INSTALL_TIME`` stub generation is used.

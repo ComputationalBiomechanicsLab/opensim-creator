@@ -5,7 +5,8 @@
 
 namespace osc
 {
-    using VariantTypeList = OptionList<VariantType,
+    using VariantTypeList = OptionList<
+        VariantType,
         VariantType::None,
         VariantType::Bool,
         VariantType::Color,
@@ -15,6 +16,5 @@ namespace osc
         VariantType::StringName,
         VariantType::Vector2,
         VariantType::Vector3,
-        VariantType::VariantArray
-    >;
+        VariantType::VariantArray>;
 }

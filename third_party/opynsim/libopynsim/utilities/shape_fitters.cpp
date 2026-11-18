@@ -25,9 +25,7 @@ namespace rgs = std::ranges;
 namespace
 {
     // Returns the contents of `lhs` with `rhs` subtracted from each element.
-    std::vector<osc::Vector3> minus(
-        std::span<const osc::Vector3> lhs,
-        const osc::Vector3& rhs)
+    std::vector<osc::Vector3> minus(std::span<const osc::Vector3> lhs, const osc::Vector3& rhs)
     {
         std::vector<osc::Vector3> rv;
         rv.reserve(lhs.size());
@@ -105,7 +103,7 @@ namespace
     template<int N>
     SimTK::Vec<N> reciprocal_of(const SimTK::Vec<N>& vs)
     {
-        return {1.0/vs[0], 1.0/vs[1], 1.0/vs[2]};
+        return {1.0 / vs[0], 1.0 / vs[1], 1.0 / vs[2]};
     }
 
     // Returns a pair that contains eigenvectors (first) and eigenvalues (second)
@@ -163,8 +161,7 @@ namespace
         const auto unsorted = eig(m);
 
         // create indices into the unordered result that are sorted by increasing Eigenvalue
-        const auto sorted_indices = [&unsorted]()
-        {
+        const auto sorted_indices = [&unsorted] {
             std::array<int, N> indices{};
             osc::cpp23::iota(indices, 0);
             rgs::sort(indices, rgs::less{}, [&unsorted](int v) { return unsorted.second(v, v); });
@@ -172,8 +169,7 @@ namespace
         }();
 
         // use the indices to create a sorted version of the result
-        auto sorted = [&unsorted, &sorted_indices]()
-        {
+        auto sorted = [&unsorted, &sorted_indices] {
             auto copy = unsorted;
             for (int dest = 0; dest < N; ++dest) {
                 const int src = sorted_indices[dest];
@@ -198,16 +194,13 @@ namespace
 
     // solve systems of linear equations `Ax = B` for `x`
     SimTK::Vector solve_linear_least_squares(
-        const SimTK::Matrix& a,
-        const SimTK::Vector& b,
-        std::optional<double> rcond = std::nullopt)
+        const SimTK::Matrix& a, const SimTK::Vector& b, std::optional<double> rcond = std::nullopt)
     {
         OSC_ASSERT(a.nrow() == b.nrow());
         SimTK::Vector result(a.ncol(), 0.0);
         if (rcond) {
             SimTK::FactorQTZ{a, *rcond}.solve(b, result);
-        }
-        else {
+        } else {
             SimTK::FactorQTZ{a}.solve(b, result);
         }
 
@@ -240,9 +233,7 @@ namespace
     // returns `v` projected onto a plane's 2D surface, where the
     // plane's surface has basis vectors `basis1` and `basis2`
     osc::Vector2 project_3d_point_onto_plane(
-        const osc::Vector3& v,
-        const osc::Vector3& basis1,
-        const osc::Vector3& basis2)
+        const osc::Vector3& v, const osc::Vector3& basis1, const osc::Vector3& basis2)
     {
         return {dot(v, basis1), dot(v, basis2)};
     }
@@ -250,11 +241,9 @@ namespace
     // returns `surfacePoint` un-projected from the 2D surface of a plane, where
     // the plane's surface has basis vectors `basis1` and `basis2`
     osc::Vector3 unproject_2d_plane_point_into_3d(
-        osc::Vector2 plane_surface_point,
-        const osc::Vector3& basis1,
-        const osc::Vector3& basis2)
+        osc::Vector2 plane_surface_point, const osc::Vector3& basis1, const osc::Vector3& basis2)
     {
-        return plane_surface_point.x()*basis1 + plane_surface_point.y()*basis2;
+        return plane_surface_point.x() * basis1 + plane_surface_point.y() * basis2;
     }
 
     // part of solving this algebraic form for an ellipsoid:
@@ -284,17 +273,17 @@ namespace
             const double y = vs[row].y();
             const double z = vs[row].z();
 
-            d(row, 0) = x*x + y*y - 2.0*z*z;
-            d(row, 1) = x*x + z*z - 2.0*y*y;
-            d(row, 2) = 2.0*x*y;
-            d(row, 3) = 2.0*x*z;
-            d(row, 4) = 2.0*y*z;
-            d(row, 5) = 2.0*x;
-            d(row, 6) = 2.0*y;
-            d(row, 7) = 2.0*z;
-            d(row, 8) = 1.0 + 0.0*x;
+            d(row, 0) = (x * x) + (y * y) - (2.0 * z * z);
+            d(row, 1) = (x * x) + (z * z) - (2.0 * y * y);
+            d(row, 2) = 2.0 * x * y;
+            d(row, 3) = 2.0 * x * z;
+            d(row, 4) = 2.0 * y * z;
+            d(row, 5) = 2.0 * x;
+            d(row, 6) = 2.0 * y;
+            d(row, 7) = 2.0 * z;
+            d(row, 8) = 1.0 + (0.0 * x);
 
-            d2(row) = x*x + y*y + z*z;
+            d2(row) = (x * x) + (y * y) + (z * z);
         }
 
         // note: SimTK and MATLAB behave slightly different when given inputs
@@ -307,10 +296,9 @@ namespace
 
         // solve the normal system of equations
         SimTK::Vector u = solve_linear_least_squares(
-            d.transpose() * d,  // lhs * u = ...
-            d.transpose() * d2, // ... rhs
-            c_r_cond_reported_by_matlab
-        );
+            d.transpose() * d,   // lhs * u = ...
+            d.transpose() * d2,  // ... rhs
+            c_r_cond_reported_by_matlab);
 
         // repack vector into compile-time-known array
         OSC_ASSERT(u.size() == 9);
@@ -324,10 +312,10 @@ namespace
     // (I didn't have time to figure out what V is in this context)
     std::array<double, 10> solve_v(const std::array<double, 9>& u)
     {
-        return{
+        return {
             u[0] + u[1] - 1.0f,
-            u[0] - 2.0f*u[1] - 1.0f,
-            u[1] - 2.0f*u[0] - 1.0f,
+            u[0] - (2.0f * u[1]) - 1.0f,
+            u[1] - (2.0f * u[0]) - 1.0f,
             u[2],
             u[3],
             u[4],
@@ -367,9 +355,7 @@ namespace
     }
 
     // calculates the center of the ellipsoid (see original MATLAB code)
-    SimTK::Vec3 calc_ellipsoid_origin(
-        const SimTK::Mat44& a,
-        const std::array<double, 10>& v)
+    SimTK::Vec3 calc_ellipsoid_origin(const SimTK::Mat44& a, const std::array<double, 10>& v)
     {
         SimTK::Matrix top_left(3, 3);
         top_left(0, 0) = a(0, 0);
@@ -394,8 +380,7 @@ namespace
     }
 
     std::pair<SimTK::Mat33, SimTK::Mat33> solve_eigen_problem(
-        const SimTK::Mat44& a,
-        const SimTK::Vec3& center)
+        const SimTK::Mat44& a, const SimTK::Vec3& center)
     {
         SimTK::Matrix t = eye(4);
         t(3, 0) = center[0];
@@ -414,7 +399,9 @@ osc::Sphere opyn::fit_sphere_htbad(const osc::Mesh& mesh)
     // the original inspiration for this implementation came from the
     // shape fitting code found in the supplementary information of:
     //
-    //     Bishop, P., Cuff, A., & Hutchinson, J. (2021). How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in extinct animals. Paleobiology, 47(1), 1-38. doi:10.1017/pab.2020.46
+    //     Bishop, P., Cuff, A., & Hutchinson, J. (2021). How to build a dinosaur: Musculoskeletal
+    //     modeling and simulation of locomotor biomechanics in extinct animals. Paleobiology,
+    //     47(1), 1-38. doi:10.1017/pab.2020.46
     //         https://datadryad.org/stash/dataset/doi:10.5061/dryad.73n5tb2v9
     //
     // the sphere-fitting source code in that implementation is cited as being
@@ -438,7 +425,8 @@ osc::Sphere opyn::fit_sphere_htbad(const osc::Mesh& mesh)
     //
     // # Maths:
     //
-    // - this is a simplified in-source explanation of https://jekel.me/2015/Least-Squares-Sphere-Fit/
+    // - this is a simplified in-source explanation of
+    // https://jekel.me/2015/Least-Squares-Sphere-Fit/
     //
     //     the blog post is better than this comment, the comment is here only for archival purposes
     //     in case the blog goes down etc.
@@ -479,9 +467,9 @@ osc::Sphere opyn::fit_sphere_htbad(const osc::Mesh& mesh)
         const osc::Vector3 vert = points[i];
 
         f(i) = osc::dot(vert, vert);  // x^2 + y^2 + z^2
-        a(i, 0) = 2.0f*vert[0];
-        a(i, 1) = 2.0f*vert[1];
-        a(i, 2) = 2.0f*vert[2];
+        a(i, 0) = 2.0f * vert[0];
+        a(i, 1) = 2.0f * vert[1];
+        a(i, 2) = 2.0f * vert[2];
         a(i, 3) = 1.0f;
     }
 
@@ -493,7 +481,7 @@ osc::Sphere opyn::fit_sphere_htbad(const osc::Mesh& mesh)
     const double x0 = c[0];
     const double y0 = c[1];
     const double z0 = c[2];
-    const double r2 = c[3] + x0*x0 + y0*y0 + z0*z0;
+    const double r2 = c[3] + (x0 * x0) + (y0 * y0) + (z0 * z0);
 
     const osc::Vector3 origin{osc::Vector3d{x0, y0, z0}};
     const auto radius = static_cast<float>(sqrt(r2));
@@ -508,7 +496,9 @@ osc::Plane opyn::fit_plane_htbad(const osc::Mesh& mesh)
     // the original inspiration for this implementation came from the
     // shape fitting code found in the supplementary information of:
     //
-    //     Bishop, P., Cuff, A., & Hutchinson, J. (2021). How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in extinct animals. Paleobiology, 47(1), 1-38. doi:10.1017/pab.2020.46
+    //     Bishop, P., Cuff, A., & Hutchinson, J. (2021). How to build a dinosaur: Musculoskeletal
+    //     modeling and simulation of locomotor biomechanics in extinct animals. Paleobiology,
+    //     47(1), 1-38. doi:10.1017/pab.2020.46
     //         https://datadryad.org/stash/dataset/doi:10.5061/dryad.73n5tb2v9
     //     (hereafter referred to as "PB's implementation")
     //
@@ -516,8 +506,10 @@ osc::Plane opyn::fit_plane_htbad(const osc::Mesh& mesh)
     // "adapted from `affine_fit` function contributed by Audrien Leygue in
     // the MATLAB file exchange", which is probably this:
     //
-    //      Adrien Leygue (2023). Plane fit (https://www.mathworks.com/matlabcentral/fileexchange/43305-plane-fit), MATLAB Central File Exchange. Retrieved October 10, 2023.
-    //      (hereafter referred to as "AL's implementation")
+    //      Adrien Leygue (2023). Plane fit
+    //      (https://www.mathworks.com/matlabcentral/fileexchange/43305-plane-fit), MATLAB Central
+    //      File Exchange. Retrieved October 10, 2023. (hereafter referred to as "AL's
+    //      implementation")
     //
     // AL's implementation computes the normal and an orthonormal basis for the plane
     // but only explains it as "principal directions". Some googleing reveals that
@@ -583,20 +575,17 @@ osc::Plane opyn::fit_plane_htbad(const osc::Mesh& mesh)
 
     // project points onto B1 and B2 (plane-space) and calculate the 2D bounding box
     // of them in plane-spae
-    const osc::Rect bounds = bounding_rect_of(vertices_reduced, [&basis1, &basis2](const osc::Vector3& v)
-    {
-        return project_3d_point_onto_plane(v, basis1, basis2);
-    });
+    const osc::Rect bounds =
+        bounding_rect_of(vertices_reduced, [&basis1, &basis2](const osc::Vector3& v) {
+            return project_3d_point_onto_plane(v, basis1, basis2);
+        });
 
     // calculate the midpoint of those bounds in plane-space
     const osc::Vector2 bounds_midpoint_in_plane_space = bounds.origin();
 
     // un-project the plane-space midpoint back into mesh-space
-    const osc::Vector3 bounds_mid_point_in_reduced_space = unproject_2d_plane_point_into_3d(
-        bounds_midpoint_in_plane_space,
-        basis1,
-        basis2
-    );
+    const osc::Vector3 bounds_mid_point_in_reduced_space =
+        unproject_2d_plane_point_into_3d(bounds_midpoint_in_plane_space, basis1, basis2);
     const osc::Vector3 bounds_mid_point_in_mesh_space = bounds_mid_point_in_reduced_space + mean;
 
     return osc::Plane{bounds_mid_point_in_mesh_space, normal};
@@ -609,13 +598,17 @@ osc::Ellipsoid opyn::fit_ellipsoid_htbad(const osc::Mesh& mesh)
     // the original inspiration for this implementation came from the
     // shape fitting code found in the supplementary information of:
     //
-    //     Bishop, P., Cuff, A., & Hutchinson, J. (2021). How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in extinct animals. Paleobiology, 47(1), 1-38. doi:10.1017/pab.2020.46
+    //     Bishop, P., Cuff, A., & Hutchinson, J. (2021). How to build a dinosaur: Musculoskeletal
+    //     modeling and simulation of locomotor biomechanics in extinct animals. Paleobiology,
+    //     47(1), 1-38. doi:10.1017/pab.2020.46
     //         https://datadryad.org/stash/dataset/doi:10.5061/dryad.73n5tb2v9
     //
     // The ellipsoid-fitting code in that implementation is cited as being
     // authored by Yury Petrov, and it's probably this:
     //
-    //      Yury (2023). Ellipsoid fit (https://www.mathworks.com/matlabcentral/fileexchange/24693-ellipsoid-fit), MATLAB Central File Exchange. Retrieved October 12, 2023.
+    //      Yury (2023). Ellipsoid fit
+    //      (https://www.mathworks.com/matlabcentral/fileexchange/24693-ellipsoid-fit), MATLAB
+    //      Central File Exchange. Retrieved October 12, 2023.
     //
     // Yury's implementation refers to using a 10-parameter algebraic description
     // of an ellipsoid, and the implementation solved an eigen problem at some point,
@@ -629,7 +622,9 @@ osc::Ellipsoid opyn::fit_ellipsoid_htbad(const osc::Mesh& mesh)
     // as a form of PCA?
 
     const std::vector<osc::Vector3> mesh_vertices = mesh.indexed_vertices();
-    OSC_ASSERT_ALWAYS(mesh_vertices.size() >= 9 && "there must be >= 9 indexed vertices in the mesh in order to solve the ellipsoid's algebreic form");
+    OSC_ASSERT_ALWAYS(
+        mesh_vertices.size() >= 9 &&
+        "there must be >= 9 indexed vertices in the mesh in order to solve the ellipsoid's algebreic form");
     const auto u = solve_ellipsoid_algebraic_form(mesh_vertices);
     const auto v = solve_v(u);
     const auto a = calc_a(v);  // form the algebraic form of the ellipsoid
@@ -640,7 +635,8 @@ osc::Ellipsoid opyn::fit_ellipsoid_htbad(const osc::Mesh& mesh)
     // use Eigenanalysis to solve for the ellipsoid's radii and frame
     auto [evecs, evals] = solve_eigen_problem(a, ellipsoid_origin);
 
-    // OpenSimCreator modification (this is slightly different behavior from "How to Build a Dinosaur"'s MATLAB code)
+    // OpenSimCreator modification (this is slightly different behavior from "How to Build a
+    // Dinosaur"'s MATLAB code)
     //
     // the original code allows negative radii to come out of the algorithm, but
     // OSC's implementation ensures radii are always positive by negating the
@@ -653,8 +649,8 @@ osc::Ellipsoid opyn::fit_ellipsoid_htbad(const osc::Mesh& mesh)
         }
     }
 
-    // OpenSimCreator modification: also ensure that the Eigen vectors form a _right handed_ coordinate
-    // system, because that's what SimTK etc. use
+    // OpenSimCreator modification: also ensure that the Eigen vectors form a _right handed_
+    // coordinate system, because that's what SimTK etc. use
     right_handify(evecs);
 
     return osc::Ellipsoid{

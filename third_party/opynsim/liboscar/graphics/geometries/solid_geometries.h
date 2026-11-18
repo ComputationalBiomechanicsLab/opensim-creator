@@ -28,6 +28,5 @@ namespace osc
         SphereGeometry,
         TetrahedronGeometry,
         TorusGeometry,
-        TorusKnotGeometry
-    >;
+        TorusKnotGeometry>;
 }

@@ -23,13 +23,11 @@ using namespace osc::literals;
 namespace
 {
     std::unordered_map<std::string, osc::Variant> to_values(
-        std::string_view prefix,
-        const ModelRendererParams& params)
+        std::string_view prefix, const ModelRendererParams& params)
     {
         std::unordered_map<std::string, osc::Variant> rv;
         std::string sub_prefix;
-        const auto callback = [&sub_prefix, &rv](std::string_view subkey, osc::Variant value)
-        {
+        const auto callback = [&sub_prefix, &rv](std::string_view subkey, osc::Variant value) {
             rv.insert_or_assign(sub_prefix + std::string{subkey}, std::move(value));
         };
 
@@ -40,7 +38,8 @@ namespace
         sub_prefix = std::string{prefix} + std::string{"graphics/"};
         params.rendering_options.for_each_option_as_app_setting_value(callback);
         rv.insert_or_assign(std::string{prefix} + "light_color", osc::Variant{params.light_color});
-        rv.insert_or_assign(std::string{prefix} + "background_color", osc::Variant{params.background_color});
+        rv.insert_or_assign(
+            std::string{prefix} + "background_color", osc::Variant{params.background_color});
         // TODO: floorLocation
 
         return rv;
@@ -57,7 +56,7 @@ namespace
         if (const auto* v = lookup_or_nullptr(values, std::string{prefix} + "light_color")) {
             params.light_color = to<osc::Color>(*v);
         }
-        if (const auto* v = lookup_or_nullptr(values,std::string{prefix} + "background_color")) {
+        if (const auto* v = lookup_or_nullptr(values, std::string{prefix} + "background_color")) {
             params.background_color = to<osc::Color>(*v);
         }
         // TODO: floorLocation
@@ -75,9 +74,7 @@ opyn::ModelRendererParams::ModelRendererParams() :
 }
 
 void opyn::upd_model_renderer_params_from(
-    const osc::AppSettings& settings,
-    std::string_view key_prefix,
-    ModelRendererParams& params)
+    const osc::AppSettings& settings, std::string_view key_prefix, ModelRendererParams& params)
 {
     auto values = to_values(key_prefix, params);
     for (auto& [k, v] : values) {

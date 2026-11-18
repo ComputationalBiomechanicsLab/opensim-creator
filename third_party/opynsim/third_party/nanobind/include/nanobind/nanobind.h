@@ -21,8 +21,8 @@
 #  pragma warning(disable: 4251) // [..] needs to have a dll-interface to be used by clients of class [..]
 #endif
 
-#define NB_VERSION_MAJOR 2
-#define NB_VERSION_MINOR 12
+#define NB_VERSION_MAJOR 3
+#define NB_VERSION_MINOR 1
 #define NB_VERSION_PATCH 0
 #define NB_VERSION_DEV   0 // A value > 0 indicates a development release
 
@@ -35,20 +35,24 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <exception>
 #include <stdexcept>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
 #include <new>
+#if defined(NB_FREE_THREADED)
+#  include <atomic>
+#endif
 
 // Implementation. The nb_*.h files should only be included through nanobind.h
 // IWYU pragma: begin_exports
 #include "nb_defs.h"
-#include "nb_enums.h"
+#include "nb_platform.h"
 #include "nb_traits.h"
 #include "nb_tuple.h"
-#include "nb_lib.h"
+#include "nb_backend.h"
 #include "nb_descr.h"
 #include "nb_types.h"
 #include "nb_accessor.h"

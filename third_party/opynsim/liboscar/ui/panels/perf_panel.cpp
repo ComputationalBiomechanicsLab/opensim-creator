@@ -84,11 +84,23 @@ public:
                 ui::table_set_column_index(column++);
                 ui::draw_text("{}", measurement.call_count());
                 ui::table_set_column_index(column++);
-                ui::draw_text("{} us", std::chrono::duration_cast<std::chrono::microseconds>(measurement.last_duration()).count());
+                ui::draw_text(
+                    "{} us",
+                    std::chrono::duration_cast<std::chrono::microseconds>(
+                        measurement.last_duration())
+                        .count());
                 ui::table_set_column_index(column++);
-                ui::draw_text("{} us", std::chrono::duration_cast<std::chrono::microseconds>(measurement.average_duration()).count());
+                ui::draw_text(
+                    "{} us",
+                    std::chrono::duration_cast<std::chrono::microseconds>(
+                        measurement.average_duration())
+                        .count());
                 ui::table_set_column_index(column++);
-                ui::draw_text("{} us", std::chrono::duration_cast<std::chrono::microseconds>(measurement.total_duration()).count());
+                ui::draw_text(
+                    "{} us",
+                    std::chrono::duration_cast<std::chrono::microseconds>(
+                        measurement.total_duration())
+                        .count());
             }
 
             ui::end_table();
@@ -102,4 +114,7 @@ private:
 osc::PerfPanel::PerfPanel(Widget* parent, std::string_view panel_name) :
     Panel{std::make_unique<Impl>(*this, parent, panel_name)}
 {}
-void osc::PerfPanel::impl_draw_content() { private_data().draw_content(); }
+void osc::PerfPanel::impl_draw_content()
+{
+    private_data().draw_content();
+}

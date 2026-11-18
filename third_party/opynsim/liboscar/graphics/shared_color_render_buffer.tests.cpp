@@ -32,18 +32,21 @@ TEST(SharedColorRenderBuffer, dimensionality_defaults_to_Tex2D)
 
 TEST(SharedColorRenderBuffer, dimensionality_is_based_on_parameters)
 {
-    const SharedColorRenderBuffer buffer{ColorRenderBufferParams{.dimensionality = TextureDimensionality::Cube}};
+    const SharedColorRenderBuffer buffer{
+        ColorRenderBufferParams{.dimensionality = TextureDimensionality::Cube}};
     ASSERT_EQ(buffer.dimensionality(), TextureDimensionality::Cube);
 }
 
 TEST(SharedColorRenderBuffer, pixel_dimensions_is_based_on_parameters)
 {
-    const SharedColorRenderBuffer buffer{ColorRenderBufferParams{.pixel_dimensions = Vector2i(3, 5)}};
-    ASSERT_EQ(buffer.pixel_dimensions(), Vector2i(3,5));
+    const SharedColorRenderBuffer buffer{
+        ColorRenderBufferParams{.pixel_dimensions = Vector2i(3, 5)}};
+    ASSERT_EQ(buffer.pixel_dimensions(), Vector2i(3, 5));
 }
 
 TEST(SharedColorRenderBuffer, anti_aliasing_level_is_based_on_parameters)
 {
-    const SharedColorRenderBuffer buffer{ColorRenderBufferParams{.anti_aliasing_level = AntiAliasingLevel{4}}};
+    const SharedColorRenderBuffer buffer{
+        ColorRenderBufferParams{.anti_aliasing_level = AntiAliasingLevel{4}}};
     ASSERT_EQ(buffer.anti_aliasing_level(), AntiAliasingLevel{4});
 }

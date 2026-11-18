@@ -11,6 +11,7 @@ namespace opyn
 
         /// Called each time the UI "ticks" (i.e. once per frame, before
         /// drawing anything).
-        std::function<void()> on_tick_begin = []{};
+        std::function<void()> on_tick_begin = [] {
+        };
     };
 }

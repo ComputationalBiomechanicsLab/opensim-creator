@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINTBEGIN(readability-*)
+
 #include <version>  // __cpp_lib_generator
 
 #ifdef __cpp_lib_generator
@@ -29,7 +31,7 @@ namespace osc::cpp23
     // liboscar shim for `std::generator<Ref, V, Allocator>` (and also a bit of fun,
     // because what kind of C++ programmer isn't intrigued by coroutines? ;)).
     template<class Ref, class V = void>
-    class generator : public std::ranges::view_interface<generator<Ref, V>> {
+    class generator : public std::ranges::view_interface<generator<Ref, V>> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
     private:
         using value = std::conditional_t<std::is_void_v<V>, std::remove_cvref_t<Ref>, V>;
         using reference = std::conditional_t<std::is_void_v<V>, Ref&&, Ref>;
@@ -101,8 +103,11 @@ namespace osc::cpp23
             explicit iterator(std::coroutine_handle<promise_type> coroutine) :
                 coroutine_{coroutine}
             {}
-
+            iterator(const iterator&) = delete;
             iterator(iterator&& other) noexcept : coroutine_{std::exchange(other.coroutine_), {}} {}
+            ~iterator() noexcept = default;
+
+            iterator& operator=(const iterator&) = delete;
             iterator& operator=(iterator&& other) noexcept { coroutine_ = std::exchange(other.coroutine_, {}); return *this; }
 
             reference operator*() const noexcept(std::is_nothrow_copy_constructible_v<reference>)
@@ -152,6 +157,7 @@ namespace osc::cpp23
         {
             std::swap(active_, other.active_);
             std::swap(coroutine_, other.coroutine_);
+            return *this;
         }
 
         iterator begin()
@@ -177,3 +183,5 @@ namespace osc::cpp23
     };
 #endif
 }
+
+// NOLINTEND(readability-*)

@@ -8,7 +8,8 @@
 namespace osc
 {
     struct TorusKnotGeometryParams final {
-        friend bool operator==(const TorusKnotGeometryParams&, const TorusKnotGeometryParams&) = default;
+        friend bool operator==(const TorusKnotGeometryParams&, const TorusKnotGeometryParams&) =
+            default;
 
         float torus_radius = 1.0f;
         float tube_radius = 0.4f;
@@ -30,7 +31,8 @@ namespace osc
         explicit TorusKnotGeometry(const Params& = {});
 
         const Mesh& mesh() const { return mesh_; }
-        operator const Mesh& () const { return mesh_; }
+        operator const Mesh&() const { return mesh_; }
+
     private:
         Mesh mesh_;
     };

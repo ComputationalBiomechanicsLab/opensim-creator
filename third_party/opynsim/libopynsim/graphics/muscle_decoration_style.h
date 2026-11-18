@@ -23,5 +23,6 @@ namespace opyn
     };
     std::span<const MuscleDecorationStyleMetadata> get_all_muscle_decoration_style_metadata();
     ptrdiff_t get_index_of(MuscleDecorationStyle);
-    const MuscleDecorationStyleMetadata& get_muscle_decoration_style_metadata(MuscleDecorationStyle);
+    const MuscleDecorationStyleMetadata& get_muscle_decoration_style_metadata(
+        MuscleDecorationStyle);
 }

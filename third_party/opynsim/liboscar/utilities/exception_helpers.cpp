@@ -17,8 +17,7 @@ namespace
         out << "exception: " << ex.what() << '\n';
         try {
             std::rethrow_if_nested(ex);
-        }
-        catch (const std::exception& nested_exception) {
+        } catch (const std::exception& nested_exception) {
             print_exception(nested_exception, out, indent + 1);
         }
     }

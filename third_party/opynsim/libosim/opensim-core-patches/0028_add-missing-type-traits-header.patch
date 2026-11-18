@@ -1,0 +1,13 @@
+diff --git a/OpenSim/Common/ArrayPtrs.h b/OpenSim/Common/ArrayPtrs.h
+index fde45365..8c433da9 100644
+--- a/OpenSim/Common/ArrayPtrs.h
++++ b/OpenSim/Common/ArrayPtrs.h
+@@ -33,6 +33,8 @@
+ #include "Exception.h"
+ #include "Logger.h"
+ 
++#include <type_traits>
++
+ 
+ //=============================================================================
+ //=============================================================================

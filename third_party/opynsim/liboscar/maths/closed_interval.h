@@ -21,9 +21,9 @@ namespace osc
 
         constexpr ClosedInterval() = default;
 
-        constexpr ClosedInterval(T lower_, T upper_) :
-            lower{std::move(lower_)},
-            upper{std::move(upper_)}
+        constexpr ClosedInterval(T lower, T upper) :
+            lower{std::move(lower)},
+            upper{std::move(upper)}
         {}
 
         friend bool operator==(const ClosedInterval&, const ClosedInterval&) = default;
@@ -49,7 +49,8 @@ namespace osc
                 return upper - lower;  // edge-case
             }
 
-            return (upper - lower) / static_cast<T>((static_cast<std::make_unsigned_t<U>>(nsteps) - 1));
+            return (upper - lower) /
+                   static_cast<T>((static_cast<std::make_unsigned_t<U>>(nsteps) - 1));
         }
 
         // returns the equivalent normalized interpolant that could be used as an argument
@@ -64,28 +65,18 @@ namespace osc
         {
             if (lower == upper) {
                 return T{0};  // the inverse of `std::lerp`'s behavior (ignoring `std::isfinite`)
-            }
-            else {
+            } else {
                 return (v - lower) / (upper - lower);
             }
         }
 
         // returns the absolute difference between the endpoints
-        constexpr T length() const
-        {
-            return abs(upper - lower);
-        }
+        constexpr T length() const { return abs(upper - lower); }
 
         // returns `length() / 2`
-        constexpr T half_length() const
-        {
-            return length() / T{2};
-        }
+        constexpr T half_length() const { return length() / T{2}; }
 
-        constexpr bool contains(T v) const
-        {
-            return lower <= v and v <= upper;
-        }
+        constexpr bool contains(T v) const { return lower <= v and v <= upper; }
 
         T lower{};
         T upper{};
@@ -101,7 +92,8 @@ namespace osc
     // returns a `ClosedInterval<T>` with `lower == interval.lower - abs_amount` and
     // `upper == interval.upper + abs_amount`
     template<typename T>
-    constexpr ClosedInterval<T> expand_by_absolute_amount(const ClosedInterval<T>& interval, T abs_amount)
+    constexpr ClosedInterval<T> expand_by_absolute_amount(
+        const ClosedInterval<T>& interval, T abs_amount)
     {
         return {interval.lower - abs_amount, interval.upper + abs_amount};
     }
@@ -122,21 +114,24 @@ namespace osc
 
     // returns a `ClosedInterval` that tightly bounds both `x` (if present) and `y`
     template<typename T>
-    constexpr ClosedInterval<T> bounding_interval_of(const std::optional<ClosedInterval<T>>& x, const T& y)
+    constexpr ClosedInterval<T> bounding_interval_of(
+        const std::optional<ClosedInterval<T>>& x, const T& y)
     {
         return x ? bounding_interval_of(*x, y) : bounding_interval_of(y);
     }
 
     // returns a `ClosedInterval` that tightly bounds both `x` and `y`
     template<typename T>
-    constexpr ClosedInterval<T> bounding_interval_of(const ClosedInterval<T>& x, const ClosedInterval<T>& y)
+    constexpr ClosedInterval<T> bounding_interval_of(
+        const ClosedInterval<T>& x, const ClosedInterval<T>& y)
     {
         return ClosedInterval<T>{min(x.lower, y.lower), max(x.upper, y.upper)};
     }
 
     // Returns a `ClosedInterval` that tightly bounds both `x` (if present) and `y`
     template<typename T>
-    constexpr ClosedInterval<T> bounding_interval_of(const std::optional<ClosedInterval<T>>& x, const ClosedInterval<T>& y)
+    constexpr ClosedInterval<T> bounding_interval_of(
+        const std::optional<ClosedInterval<T>>& x, const ClosedInterval<T>& y)
     {
         return x ? bounding_interval_of(*x, y) : y;
     }

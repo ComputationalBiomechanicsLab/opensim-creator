@@ -31,107 +31,124 @@ namespace opyn
     class ScalingCache final {
     public:
         std::unique_ptr<InMemoryMesh> lookup_tps_mesh_warp(
-            const OpenSim::Model& sourceModel,
-            const OpenSim::Model& resultModel,
-            const OpenSim::Mesh& sourceMesh,
-            const OpenSim::Mesh& resultMesh,
-            const OpenSim::Frame& sourceLandmarksFrame,
-            const OpenSim::Frame& resultLandmarksFrame,
-            const ThinPlateSplineCommonInputs& tpsInputs,
-            bool compensateForFrameChanges)
+            const OpenSim::Model& source_model,
+            const OpenSim::Model& result_model,
+            const OpenSim::Mesh& source_mesh,
+            const OpenSim::Mesh& result_mesh,
+            const OpenSim::Frame& source_landmarks_frame,
+            const OpenSim::Frame& result_landmarks_frame,
+            const ThinPlateSplineCommonInputs& tps_inputs,
+            bool compensate_for_frame_changes)
         {
             // Compile the TPS coefficients from the source+destination landmarks
-            const TPSCoefficients3D<float>& coefficients = lookup_tps_coefficients(tpsInputs);
+            const TPSCoefficients3D<float>& coefficients = lookup_tps_coefficients(tps_inputs);
 
             // Calculate transforms to use before/after TPS warping
             const Transforms transforms = calculate_transforms(
-                sourceModel,
-                resultModel,
-                sourceMesh.getFrame(),
-                resultMesh.getFrame(),
-                sourceLandmarksFrame,
-                resultLandmarksFrame,
-                compensateForFrameChanges
-            );
+                source_model,
+                result_model,
+                source_mesh.getFrame(),
+                result_mesh.getFrame(),
+                source_landmarks_frame,
+                result_landmarks_frame,
+                compensate_for_frame_changes);
 
             // Convert the input mesh into an OSC mesh, so that it's suitable for warping.
-            osc::Mesh resultOscMesh = to_osc_mesh(
-                resultModel,
-                resultModel.getWorkingState(),
-                resultMesh
-            );
+            osc::Mesh result_osc_mesh =
+                to_osc_mesh(result_model, result_model.getWorkingState(), result_mesh);
 
             // Warp the vertices in-place.
-            auto vertices = resultOscMesh.vertices();
+            auto vertices = result_osc_mesh.vertices();
             for (auto& vertex : vertices) {
-                vertex = transform_point(transforms.local_to_landmarks, vertex);  // put vertex into landmark frame
+                // put vertex into landmark frame
+                vertex = transform_point(transforms.local_to_landmarks, vertex);
             }
             static_assert(alignof(decltype(vertices.front())) == alignof(SimTK::fVec3));
             static_assert(sizeof(decltype(vertices.front())) == sizeof(SimTK::fVec3));
             auto* punned = std::launder(reinterpret_cast<SimTK::fVec3*>(vertices.data()));
-            tps3d_warp_points_in_place(coefficients, {punned, vertices.size()}, static_cast<float>(tpsInputs.blending_factor));
+            tps3d_warp_points_in_place(
+                coefficients,
+                {punned, vertices.size()},
+                static_cast<float>(tps_inputs.blending_factor));
             for (auto& vertex : vertices) {
-                vertex = transform_point(transforms.landmarks_to_local, vertex);  // put vertex back into mesh frame
+                // put vertex back into mesh frame
+                vertex = transform_point(transforms.landmarks_to_local, vertex);
             }
 
             // Assign the vertices back to the OSC mesh and emit it as an `InMemoryMesh` component
-            resultOscMesh.set_vertices(vertices);
-            resultOscMesh.recalculate_normals();  // maybe should be a runtime param
-            return std::make_unique<InMemoryMesh>(resultOscMesh);
+            result_osc_mesh.set_vertices(vertices);
+            result_osc_mesh.recalculate_normals();  // maybe should be a runtime param
+            return std::make_unique<InMemoryMesh>(result_osc_mesh);
         }
 
         SimTK::Vec3 lookup_tps_warped_rigid_point(
-            const OpenSim::Model& sourceModel,
-            const OpenSim::Model& resultModel,
-            [[maybe_unused]] const SimTK::Vec3& sourceLocation,
-            const SimTK::Vec3& resultLocation,
-            const OpenSim::Frame& sourceParentFrame,
-            const OpenSim::Frame& resultParentFrame,
-            const OpenSim::Frame& sourceLandmarksFrame,
-            const OpenSim::Frame& resultLandmarksFrame,
-            const ThinPlateSplineCommonInputs& tpsInputs,
-            bool compensateForFrameChanges)
+            const OpenSim::Model& source_model,
+            const OpenSim::Model& result_model,
+            [[maybe_unused]] const SimTK::Vec3& source_location,
+            const SimTK::Vec3& result_location,
+            const OpenSim::Frame& source_parent_frame,
+            const OpenSim::Frame& result_parent_frame,
+            const OpenSim::Frame& source_landmarks_frame,
+            const OpenSim::Frame& result_landmarks_frame,
+            const ThinPlateSplineCommonInputs& tps_inputs,
+            bool compensate_for_frame_changes)
         {
             // Compile the TPS coefficients from the source+destination landmarks
-            const TPSCoefficients3D<float>& coefficients = lookup_tps_coefficients(tpsInputs);
+            const TPSCoefficients3D<float>& coefficients = lookup_tps_coefficients(tps_inputs);
 
             // Calculate transforms to use before/after TPS warping
             const Transforms transforms = calculate_transforms(
-                sourceModel,
-                resultModel,
-                sourceParentFrame,
-                resultParentFrame,
-                sourceLandmarksFrame,
-                resultLandmarksFrame,
-                compensateForFrameChanges
-            );
+                source_model,
+                result_model,
+                source_parent_frame,
+                result_parent_frame,
+                source_landmarks_frame,
+                result_landmarks_frame,
+                compensate_for_frame_changes);
 
-            const auto resultLocationInLandmarkFrame = transform_point(transforms.local_to_landmarks, osc::to<osc::Vector3>(resultLocation));
-            const auto warpedLocationInLandmarkFrame = tps3d_warp_point(coefficients, osc::to<SimTK::fVec3>(resultLocationInLandmarkFrame), static_cast<float>(tpsInputs.blending_factor));
-            return osc::to<SimTK::Vec3>(osc::transform_point(transforms.landmarks_to_local, osc::to<osc::Vector3>(warpedLocationInLandmarkFrame)));
+            const auto result_location_in_landmark_frame = transform_point(
+                transforms.local_to_landmarks, osc::to<osc::Vector3>(result_location));
+            const auto warped_location_in_landmark_frame = tps3d_warp_point(
+                coefficients,
+                osc::to<SimTK::fVec3>(result_location_in_landmark_frame),
+                static_cast<float>(tps_inputs.blending_factor));
+            return osc::to<SimTK::Vec3>(osc::transform_point(
+                transforms.landmarks_to_local,
+                osc::to<osc::Vector3>(warped_location_in_landmark_frame)));
         }
 
         SimTK::Transform lookup_tps_affine_transform_without_scaling(
-            const ThinPlateSplineCommonInputs& tpsInputs)
+            const ThinPlateSplineCommonInputs& tps_inputs)
         {
-            OSC_ASSERT_ALWAYS(tpsInputs.apply_affine_rotation && "affine rotation must be requested in order to figure out the transform");
-            OSC_ASSERT_ALWAYS(tpsInputs.apply_affine_translation && "affine translation must be requested in order to figure out the transform");
-            const TPSCoefficients3D<float>& coefficients = lookup_tps_coefficients(tpsInputs);
+            OSC_ASSERT_ALWAYS(
+                tps_inputs.apply_affine_rotation &&
+                "affine rotation must be requested in order to figure out the transform");
+            OSC_ASSERT_ALWAYS(
+                tps_inputs.apply_affine_translation &&
+                "affine translation must be requested in order to figure out the transform");
+            const TPSCoefficients3D<float>& coefficients = lookup_tps_coefficients(tps_inputs);
 
             const SimTK::Vec<3, float> x = coefficients.a2.normalize();
             const SimTK::Vec<3, float> y = coefficients.a3.normalize();
             const SimTK::Vec<3, float> z = coefficients.a4.normalize();
-            const SimTK::Mat33 rotationMatrix{
-                x[0], y[0], z[0],
-                x[1], y[1], z[1],
-                x[2], y[2], z[2],
+            const SimTK::Mat33 rotation_matrix{
+                x[0],
+                y[0],
+                z[0],
+                x[1],
+                y[1],
+                z[1],
+                x[2],
+                y[2],
+                z[2],
             };
-            const SimTK::Rotation rotation{rotationMatrix};
+            const SimTK::Rotation rotation{rotation_matrix};
             const auto translation = osc::to<SimTK::Vec3>(coefficients.a1);
             return SimTK::Transform{rotation, translation};
         }
 
         void clear() { coefficient_cache_.clear(); }
+
     private:
         struct Transforms final {
             osc::Matrix4x4 local_to_landmarks;
@@ -139,61 +156,75 @@ namespace opyn
         };
 
         Transforms calculate_transforms(
-            const OpenSim::Model& sourceModel,
-            const OpenSim::Model& resultModel,
-            const OpenSim::Frame& sourceFrame,
-            const OpenSim::Frame& resultFrame,
-            const OpenSim::Frame& sourceLandmarksFrame,
-            const OpenSim::Frame& resultLandmarksFrame,
-            bool compensateForFrameChanges) const
+            const OpenSim::Model& source_model,
+            const OpenSim::Model& result_model,
+            const OpenSim::Frame& source_frame,
+            const OpenSim::Frame& result_frame,
+            const OpenSim::Frame& source_landmarks_frame,
+            const OpenSim::Frame& result_landmarks_frame,
+            bool compensate_for_frame_changes) const
         {
-            const SimTK::Transform resultTransform = resultFrame.findTransformBetween(resultModel.getWorkingState(), resultLandmarksFrame);
+            const SimTK::Transform result_transform = result_frame.findTransformBetween(
+                result_model.getWorkingState(), result_landmarks_frame);
 
-            if (compensateForFrameChanges) {
-                const SimTK::Transform sourceTransform = sourceFrame.findTransformBetween(sourceModel.getWorkingState(), sourceLandmarksFrame);
-                const SimTK::Transform frameWarpTransform = sourceTransform.invert() * resultTransform;
+            if (compensate_for_frame_changes) {
+                const SimTK::Transform source_transform = source_frame.findTransformBetween(
+                    source_model.getWorkingState(), source_landmarks_frame);
+                const SimTK::Transform frame_warp_transform =
+                    source_transform.invert() * result_transform;
                 return Transforms{
-                    .local_to_landmarks = osc::to<osc::Matrix4x4>(sourceTransform),
-                    .landmarks_to_local = osc::to<osc::Matrix4x4>(frameWarpTransform.invert() * sourceTransform.invert()),
+                    .local_to_landmarks = osc::to<osc::Matrix4x4>(source_transform),
+                    .landmarks_to_local = osc::to<osc::Matrix4x4>(
+                        frame_warp_transform.invert() * source_transform.invert()),
                 };
             } else {
                 return Transforms{
-                    .local_to_landmarks = osc::to<osc::Matrix4x4>(resultTransform),
-                    .landmarks_to_local = osc::to<osc::Matrix4x4>(SimTK::Transform{resultTransform.invert()}),
+                    .local_to_landmarks = osc::to<osc::Matrix4x4>(result_transform),
+                    .landmarks_to_local =
+                        osc::to<osc::Matrix4x4>(SimTK::Transform{result_transform.invert()}),
                 };
             }
         }
 
-        const TPSCoefficients3D<float>& lookup_tps_coefficients(const ThinPlateSplineCommonInputs& tpsInputs)
+        const TPSCoefficients3D<float>& lookup_tps_coefficients(
+            const ThinPlateSplineCommonInputs& tps_inputs)
         {
-            const auto [cacheEntry, inserted] = coefficient_cache_.try_emplace(tpsInputs);
+            const auto [cacheEntry, inserted] = coefficient_cache_.try_emplace(tps_inputs);
             if (not inserted) {
                 return cacheEntry->second;
             }
 
             // Read source+destination landmark files into independent collections
-            const auto sourceLandmarks = read_landmarks_from_csv_into_vector_or_throw(tpsInputs.source_landmarks_path);
-            const auto destinationLandmarks = read_landmarks_from_csv_into_vector_or_throw(tpsInputs.destination_landmarks_path);
+            const auto source_landmarks =
+                read_landmarks_from_csv_into_vector_or_throw(tps_inputs.source_landmarks_path);
+            const auto destination_landmarks =
+                read_landmarks_from_csv_into_vector_or_throw(tps_inputs.destination_landmarks_path);
 
             // Pair the source+destination landmarks together into a TPS coefficient solver's inputs
             TPSCoefficientSolverInputs3D<float> inputs;
-            inputs.landmarks.reserve(osc::max(sourceLandmarks.size(), destinationLandmarks.size()));
-            try_pairing_landmarks(sourceLandmarks, destinationLandmarks, [&inputs, &tpsInputs](const MaybeNamedLandmarkPair& p)
-            {
-                if (auto landmark3d = p.try_get_paired_locations()) {
-                    landmark3d->source = tpsInputs.source_landmarks_prescale * landmark3d->source;
-                    landmark3d->destination = tpsInputs.destination_landmarks_prescale * landmark3d->destination;
-                    inputs.landmarks.push_back(*landmark3d);
-                }
-                else {
-                    osc::log_warn("The landmarks {} could not be paired, might be missing in the source/destination?", p.name());
-                }
-            });
-            inputs.apply_affine_translation = tpsInputs.apply_affine_translation;
-            inputs.apply_affine_scale = tpsInputs.apply_affine_scale;
-            inputs.apply_affine_rotation = tpsInputs.apply_affine_rotation;
-            inputs.apply_non_affine_warp = tpsInputs.apply_non_affine_warp;
-            inputs.warping_penalty = static_cast<float>(tpsInputs.warping_penalty);
+            inputs.landmarks.reserve(
+                osc::max(source_landmarks.size(), destination_landmarks.size()));
+            try_pairing_landmarks(
+                source_landmarks,
+                destination_landmarks,
+                [&inputs, &tps_inputs](const MaybeNamedLandmarkPair& p) {
+                    if (auto landmark3d = p.try_get_paired_locations()) {
+                        landmark3d->source =
+                            tps_inputs.source_landmarks_prescale * landmark3d->source;
+                        landmark3d->destination =
+                            tps_inputs.destination_landmarks_prescale * landmark3d->destination;
+                        inputs.landmarks.push_back(*landmark3d);
+                    } else {
+                        osc::log_warn(
+                            "The landmarks {} could not be paired, might be missing in the source/destination?",
+                            p.name());
+                    }
+                });
+            inputs.apply_affine_translation = tps_inputs.apply_affine_translation;
+            inputs.apply_affine_scale = tps_inputs.apply_affine_scale;
+            inputs.apply_affine_rotation = tps_inputs.apply_affine_rotation;
+            inputs.apply_non_affine_warp = tps_inputs.apply_non_affine_warp;
+            inputs.warping_penalty = static_cast<float>(tps_inputs.warping_penalty);
 
             // Solve the coefficients
             cacheEntry->second = opyn::tps3d_solve_coefficients(inputs);
@@ -201,6 +232,7 @@ namespace opyn
             return cacheEntry->second;
         }
 
-        std::unordered_map<ThinPlateSplineCommonInputs, TPSCoefficients3D<float>> coefficient_cache_;
+        std::unordered_map<ThinPlateSplineCommonInputs, TPSCoefficients3D<float>>
+            coefficient_cache_;
     };
 }

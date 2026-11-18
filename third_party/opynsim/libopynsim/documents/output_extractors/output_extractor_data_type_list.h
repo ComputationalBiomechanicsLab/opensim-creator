@@ -6,9 +6,9 @@
 
 namespace opyn
 {
-    using OutputExtractorDataTypeList = osc::OptionList<OutputExtractorDataType,
+    using OutputExtractorDataTypeList = osc::OptionList<
+        OutputExtractorDataType,
         OutputExtractorDataType::Float,
         OutputExtractorDataType::Vector2,
-        OutputExtractorDataType::String
-    >;
+        OutputExtractorDataType::String>;
 }

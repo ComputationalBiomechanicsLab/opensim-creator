@@ -72,8 +72,17 @@ osc::MeshBasicMaterial::MeshBasicMaterial(const Color& color) :
     MeshBasicMaterial{Params{.color = color}}
 {}
 
-const StringName& osc::MeshBasicMaterial::color_property_name() { return get_color_property_name(); }
+const StringName& osc::MeshBasicMaterial::color_property_name()
+{
+    return get_color_property_name();
+}
 
-Color osc::MeshBasicMaterial::color() const { return get<Color>(color_property_name()).value(); }
+Color osc::MeshBasicMaterial::color() const
+{
+    return get<Color>(color_property_name()).value();
+}
 
-void osc::MeshBasicMaterial::set_color(const Color& color) { set(color_property_name(), color); }
+void osc::MeshBasicMaterial::set_color(const Color& color)
+{
+    set(color_property_name(), color);
+}

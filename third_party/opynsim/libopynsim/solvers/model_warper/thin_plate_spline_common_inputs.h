@@ -13,22 +13,23 @@ namespace opyn
     struct ThinPlateSplineCommonInputs final {
 
         explicit ThinPlateSplineCommonInputs(
-            std::filesystem::path sourceLandmarksPath_,
-            std::filesystem::path destinationLandmarksPath_,
-            double sourceLandmarksPrescale_,
-            double destinationLandmarksPrescale_,
-            double blendingFactor_,
-            double warpingPenalty_) :
+            std::filesystem::path source_landmarks_path,
+            std::filesystem::path destination_landmarks_path,
+            double source_landmarks_prescale,
+            double destination_landmarks_prescale,
+            double blending_factor,
+            double warping_penalty) :
 
-            source_landmarks_path{std::move(sourceLandmarksPath_)},
-            destination_landmarks_path{std::move(destinationLandmarksPath_)},
-            source_landmarks_prescale{sourceLandmarksPrescale_},
-            destination_landmarks_prescale{destinationLandmarksPrescale_},
-            blending_factor{blendingFactor_},
-            warping_penalty{warpingPenalty_}
+            source_landmarks_path{std::move(source_landmarks_path)},
+            destination_landmarks_path{std::move(destination_landmarks_path)},
+            source_landmarks_prescale{source_landmarks_prescale},
+            destination_landmarks_prescale{destination_landmarks_prescale},
+            blending_factor{blending_factor},
+            warping_penalty{warping_penalty}
         {}
 
-        friend bool operator==(const ThinPlateSplineCommonInputs&, const ThinPlateSplineCommonInputs&) = default;
+        friend bool operator==(
+            const ThinPlateSplineCommonInputs&, const ThinPlateSplineCommonInputs&) = default;
 
         std::filesystem::path source_landmarks_path;
         std::filesystem::path destination_landmarks_path;
@@ -57,7 +58,6 @@ struct std::hash<opyn::ThinPlateSplineCommonInputs> final {
             inputs.apply_affine_rotation,
             inputs.apply_non_affine_warp,
             inputs.blending_factor,
-            inputs.warping_penalty
-        );
+            inputs.warping_penalty);
     }
 };

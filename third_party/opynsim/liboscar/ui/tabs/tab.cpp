@@ -17,4 +17,7 @@ std::future<TabSaveResult> osc::Tab::impl_try_save()
     p.set_value(TabSaveResult::Done);
     return p.get_future();
 }
-UID osc::Tab::id() const { return private_data().id(); }
+UID osc::Tab::id() const
+{
+    return private_data().id();
+}

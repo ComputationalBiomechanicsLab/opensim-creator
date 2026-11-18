@@ -6,7 +6,8 @@ int main(int argc, char** argv)
 {
 
     ::testing::InitGoogleTest(&argc, argv);
-    ::testing::GTEST_FLAG(catch_exceptions) = false;  // Ensure exceptions from `SetUpTestSuite` bubble up
+    // Ensure exceptions from `SetUpTestSuite` bubble up
+    ::testing::GTEST_FLAG(catch_exceptions) = false;
 
     // Ensure any thrown exceptions cause the top-level process
     // to return `EXIT_FAILURE`: on Windows this isn't a guarantee O_o?
@@ -23,8 +24,7 @@ int main(int argc, char** argv)
     //
     // By default, `GTest::main` can let `SetUpTestSuite` failures through.
     const auto* unit = ::testing::UnitTest::GetInstance();
-    if (unit->failed_test_count() > 0 ||
-        unit->failed_test_suite_count() > 0) {
+    if (unit->failed_test_count() > 0 || unit->failed_test_suite_count() > 0) {
 
         return EXIT_FAILURE;
     }

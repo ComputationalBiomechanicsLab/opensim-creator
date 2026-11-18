@@ -25,25 +25,25 @@ namespace osc
 {
     // a mesh loading request
     struct MeshLoadRequest final {
-        UID preferredAttachmentPoint;
+        UID preferred_attachment_point;
         std::vector<std::filesystem::path> paths;
     };
 
     // a successfully-loaded mesh
     struct LoadedMesh final {
         std::filesystem::path path;
-        osc::Mesh meshData;
+        osc::Mesh mesh_data;
     };
 
     // an OK response to a mesh loading request
     struct MeshLoadOKResponse final {
-        UID preferredAttachmentPoint;
+        UID preferred_attachment_point;
         std::vector<LoadedMesh> meshes;
     };
 
     // an ERROR response to a mesh loading request
     struct MeshLoadErrorResponse final {
-        UID preferredAttachmentPoint;
+        UID preferred_attachment_point;
         std::filesystem::path path;
         std::string error;
     };
@@ -52,33 +52,24 @@ namespace osc
     using MeshLoadResponse = std::variant<MeshLoadOKResponse, MeshLoadErrorResponse>;
 
     // returns an OK or ERROR response to a mesh load request
-    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest);
+    MeshLoadResponse respond_to_meshload_request(MeshLoadRequest);
 
     // a class that loads meshes in a background thread
     //
     // the UI thread must `.poll()` this to check for responses
     class MeshLoader final {
     public:
-        MeshLoader() : m_Worker{Worker::create(respondToMeshloadRequest)}
-        {
-        }
+        MeshLoader() :
+            worker_{Worker::create(respond_to_meshload_request)}
+        {}
 
-        void send(MeshLoadRequest req)
-        {
-            m_Worker.send(std::move(req));
-        }
+        void send(MeshLoadRequest req) { worker_.send(std::move(req)); }
 
-        std::optional<MeshLoadResponse> poll()
-        {
-            return m_Worker.poll();
-        }
+        std::optional<MeshLoadResponse> poll() { return worker_.poll(); }
 
     private:
-        using Worker = SpscWorker<
-            MeshLoadRequest,
-            MeshLoadResponse,
-            decltype(respondToMeshloadRequest)
-        >;
-        Worker m_Worker;
+        using Worker =
+            SpscWorker<MeshLoadRequest, MeshLoadResponse, decltype(respond_to_meshload_request)>;
+        Worker worker_;
     };
 }

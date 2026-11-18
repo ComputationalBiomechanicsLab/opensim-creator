@@ -20,7 +20,8 @@ namespace
 {
     Color to_color(LogLevel log_level)
     {
-        static_assert(num_options<LogLevel>() == 7);
+        static_assert(num_options_v<LogLevel> == 7);
+        // clang-format off
         switch (log_level) {
         case LogLevel::trace:    return {0.5f, 0.5f, 0.5f, 1.0f};
         case LogLevel::debug:    return {0.8f, 0.8f, 0.8f, 1.0f};
@@ -31,6 +32,7 @@ namespace
         case LogLevel::off:      return {1.0f, 1.0f, 1.0f, 1.0f};
         default:                 std::unreachable();
         }
+        // clang-format on
     }
 
     void copy_traceback_log_to_clipboard()
@@ -98,7 +100,7 @@ public:
                 copy_traceback_log_to_clipboard();
             }
 
-            ui::draw_vertical_spacer(10.0f/15.0f);
+            ui::draw_vertical_spacer(10.0f / 15.0f);
 
             ui::end_menu_bar();
         }
@@ -118,12 +120,15 @@ public:
             }
         }
     }
+
 private:
     bool autoscroll_ = true;
 };
 
-
 osc::LogViewer::LogViewer(Widget* parent) :
     Widget{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LogViewer::impl_on_draw() { private_data().on_draw(); }
+void osc::LogViewer::impl_on_draw()
+{
+    private_data().on_draw();
+}

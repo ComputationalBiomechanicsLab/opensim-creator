@@ -19,8 +19,7 @@ namespace
     {
         try {
             h();
-        }
-        catch (const std::exception&) {
+        } catch (const std::exception&) {
             std::throw_with_nested(std::runtime_error{"g()"});
         }
     }
@@ -29,8 +28,7 @@ namespace
     {
         try {
             g();
-        }
-        catch (const std::exception&) {
+        } catch (const std::exception&) {
             std::throw_with_nested(std::runtime_error{"f()"});
         }
     }
@@ -41,8 +39,7 @@ TEST(potentially_nested_exception_to_string, works_as_intended)
     std::string msg;
     try {
         f();
-    }
-    catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         msg = potentially_nested_exception_to_string(ex);
     }
 

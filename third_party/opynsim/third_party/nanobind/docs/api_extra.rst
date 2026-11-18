@@ -111,11 +111,15 @@ calls to Python require an additional include directive:
 
 See the section on :ref:`trampolines <trampolines>` for further detail.
 
-.. c:macro:: NB_TRAMPOLINE(base, size)
+.. c:macro:: NB_TRAMPOLINE(base)
 
    Install a trampoline in an alias class to enable dispatching C++ virtual
    function calls to a Python implementation. Refer to the documentation on
    :ref:`trampolines <trampolines>` to see how this macro can be used.
+
+   The two-argument form ``NB_TRAMPOLINE(base, size)`` of nanobind 2.x is
+   still accepted, but the ``size`` argument is obsolete and produces a
+   deprecation warning.
 
 .. c:macro:: NB_OVERRIDE(func, ...)
 
@@ -176,7 +180,7 @@ include directive:
 
    #include <nanobind/stl/bind_vector.h>
 
-.. cpp:function:: template <typename Vector, rv_policy Policy = rv_policy::automatic_reference, typename... Args> class_<Vector> bind_vector(handle scope, const char * name, Args &&...args)
+.. cpp:function:: template <typename Vector, rv_policy::value Policy = rv_policy::automatic_reference_v, typename... Args> class_<Vector> bind_vector(handle scope, const char * name, Args &&...args)
 
    Bind the STL vector-derived type `Vector` to the identifier `name` and
    place it in `scope` (e.g., a :cpp:class:`module_`). The variable argument
@@ -245,6 +249,18 @@ include directive:
 
    The binding operation is a no-op if the vector type has already been
    registered with nanobind.
+
+   .. note::
+
+      **Free-threading**: the bindings use :ref:`argument locks
+      <argument-locks>` to make all operations safe under concurrent access in
+      free-threaded interpreters. This includes iterators as well. However,
+      As with a Python ``list``, elements
+      inserted or removed during iteration influence the remaining traversal.
+
+      Element access under the reference-returning policies discussed below
+      remains unsafe in the presence of concurrent modification, since the
+      returned Python object refers to memory owned by the container.
 
    .. warning::
 
@@ -349,9 +365,9 @@ include directive:
       the memory layout and reference-invalidation rules of the
       underlying C++ container type, you can request the old behavior
       by passing a second template argument of
-      :cpp:enumerator:`rv_policy::reference_internal` to
+      :cpp:member:`rv_policy::reference_internal` to
       :cpp:func:`bind_vector`. This will override nanobind's usual
-      choice of :cpp:enumerator:`rv_policy::copy` for ``__getitem__``.
+      choice of :cpp:member:`rv_policy::copy` for ``__getitem__``.
 
       .. code-block:: cpp
 
@@ -389,7 +405,7 @@ nanobind API and requires an additional include directive:
 
    #include <nanobind/stl/bind_map.h>
 
-.. cpp:function:: template <typename Map, rv_policy Policy = rv_policy::automatic_reference, typename... Args> class_<Map> bind_map(handle scope, const char * name, Args &&...args)
+.. cpp:function:: template <typename Map, rv_policy::value Policy = rv_policy::automatic_reference_v, typename... Args> class_<Map> bind_map(handle scope, const char * name, Args &&...args)
 
    Bind the STL map-derived type `Map` (ordered or unordered) to the identifier
    `name` and place it in `scope` (e.g., a :cpp:class:`module_`). The variable
@@ -452,7 +468,20 @@ nanobind API and requires an additional include directive:
 
    If not all of these properties are available, then a subset of the above
    methods will be omitted. Please refer to ``bind_map.h`` for details on the
-   logic.
+   logic. The key type must always be copy-constructible, since the generated
+   iterators store a copy of the last visited key.
+
+   .. note::
+
+      **Free-threading**: the bindings use :ref:`argument locks
+      <argument-locks>` to make operations safe with respect to concurrent
+      access in free-threaded interpreters. This safety guarantee also extends to
+      to key/value/item views.
+
+      Map iterators raise a ``RuntimeError`` when they detect concurrent
+      modification. This detection is best-effort and can miss modifications
+      that preserve both the size and the last visited key. Such a miss affects
+      which elements the iteration visits but never memory safety.
 
    .. warning::
 
@@ -549,7 +578,7 @@ include directive:
 
    #include <nanobind/make_iterator.h>
 
-.. cpp:function:: template <rv_policy Policy = rv_policy::automatic_reference, typename Iterator, typename Sentinel, typename... Extra> auto make_iterator(handle scope, const char * name, Iterator first, Sentinel last, Extra &&...extra)
+.. cpp:function:: template <rv_policy::value Policy = rv_policy::automatic_reference_v, typename Iterator, typename Sentinel, typename... Extra> auto make_iterator(handle scope, const char * name, Iterator first, Sentinel last, Extra &&...extra)
 
    Create a Python iterator wrapping the C++ iterator represented by the range
    ``[first, last)``. The `Extra` parameter can be used to pass additional
@@ -609,17 +638,17 @@ include directive:
       guarantee that all use of your bindings will respect the memory layout
       and reference-invalidation rules of the underlying C++ container type,
       you can request the old behavior by passing
-      :cpp:enumerator:`rv_policy::reference_internal` to the ``Policy``
+      :cpp:member:`rv_policy::reference_internal` to the ``Policy``
       template argument of this function.
 
 
-.. cpp:function:: template <rv_policy Policy = rv_policy::automatic_reference, typename Type, typename... Extra> auto make_iterator(handle scope, const char * name, Type &value, Extra &&...extra)
+.. cpp:function:: template <rv_policy::value Policy = rv_policy::automatic_reference_v, typename Type, typename... Extra> auto make_iterator(handle scope, const char * name, Type &value, Extra &&...extra)
 
    This convenience wrapper calls the above :cpp:func:`make_iterator` variant with
    ``first`` and ``last`` set to ``std::begin(value)`` and ``std::end(value)``,
    respectively.
 
-.. cpp:function:: template <rv_policy Policy = rv_policy::automatic_reference, typename Iterator, typename Sentinel, typename... Extra> iterator make_key_iterator(handle scope, const char * name, Iterator first, Sentinel last, Extra &&...extra)
+.. cpp:function:: template <rv_policy::value Policy = rv_policy::automatic_reference_v, typename Iterator, typename Sentinel, typename... Extra> iterator make_key_iterator(handle scope, const char * name, Iterator first, Sentinel last, Extra &&...extra)
 
    :cpp:func:`make_iterator` specialization for C++ iterators that return
    key-value pairs. `make_key_iterator` returns the first pair element to
@@ -630,7 +659,7 @@ include directive:
    ``(*first).first``.
 
 
-.. cpp:function:: template <rv_policy Policy = rv_policy::automatic_reference, typename Iterator, typename Sentinel, typename... Extra> iterator make_value_iterator(handle scope, const char * name, Iterator first, Sentinel last, Extra &&...extra)
+.. cpp:function:: template <rv_policy::value Policy = rv_policy::automatic_reference_v, typename Iterator, typename Sentinel, typename... Extra> iterator make_value_iterator(handle scope, const char * name, Iterator first, Sentinel last, Extra &&...extra)
 
    :cpp:func:`make_iterator` specialization for C++ iterators that return
    key-value pairs. `make_value_iterator` returns the second pair element to
@@ -735,7 +764,7 @@ section <ndarrays>`.
 
    .. _ndarray_dynamic_constructor:
 
-   .. cpp:function:: ndarray(VoidPtr data, const std::initializer_list<size_t> shape = { }, handle owner = { }, std::initializer_list<int64_t> strides = { }, dlpack::dtype dtype = nanobind::dtype<Scalar>(), int32_t device_type = DeviceType, int32_t device_id = 0, char order = Order)
+   .. cpp:function:: ndarray(VoidPtr data, const std::initializer_list<size_t> shape = { }, handle owner = { }, std::initializer_list<int64_t> strides = { }, dlpack::dtype dtype = nanobind::dtype<Scalar>(), int32_t device_type = DeviceType, int32_t device_id = 0, char order = Order, uint64_t byte_offset = 0)
 
       Create an array wrapping an existing memory allocation.
 
@@ -796,6 +825,11 @@ section <ndarrays>`.
         implementation uses the order specified as an ndarray template
         argument, or C-style order as a fallback.
 
+      - `byte_offset` specifies the DLPack ``DLTensor::byte_offset`` field in
+        bytes. This is useful when `data` is an opaque device handle pointing to
+        the start of an allocation, while the logical array begins later in the
+        allocation.
+
       Both ``strides`` and ``shape`` will be copied by the constructor, hence
       the targets of these initializer lists do not need to remain valid
       following the constructor call.
@@ -805,7 +839,7 @@ section <ndarrays>`.
          The Python *global interpreter lock* (GIL) must be held when calling
          this function.
 
-   .. cpp:function:: ndarray(VoidPtr data, size_t ndim, const size_t * shape, handle owner, const int64_t * strides = nullptr, dlpack::dtype dtype = nanobind::dtype<Scalar>(), int device_type = DeviceType, int device_id = 0, char order = Order)
+   .. cpp:function:: ndarray(VoidPtr data, size_t ndim, const size_t * shape, handle owner, const int64_t * strides = nullptr, dlpack::dtype dtype = nanobind::dtype<Scalar>(), int device_type = DeviceType, int device_id = 0, char order = Order, uint64_t byte_offset = 0)
 
       Alternative form of the above constructor, which accepts the `shape`
       and `strides` arguments using pointers instead of initializer lists.
@@ -831,7 +865,8 @@ section <ndarrays>`.
 
       Return the size of a single array element in bytes. The returned value
       is rounded up to the next full byte in case of bit-level representations
-      (query :cpp:member:`dtype::bits` for bit-level granularity).
+      (query :cpp:member:`dtype::bits <dlpack::dtype::bits>` for bit-level
+      granularity).
 
    .. cpp:function:: size_t nbytes() const
 
@@ -879,6 +914,16 @@ section <ndarrays>`.
       Return a pointer to the array data.
       If :cpp:var:`ReadOnly` is true, a pointer-to-const is returned.
 
+   .. cpp:function:: void * data_handle() const
+
+      Return the raw DLPack ``DLTensor::data`` field without applying the byte
+      offset. For non-CPU devices, this may be an opaque device handle such as
+      an ``id<MTLBuffer>`` for :cpp:class:`device::metal <device::metal>`.
+
+   .. cpp:function:: uint64_t byte_offset() const
+
+      Return the DLPack ``DLTensor::byte_offset`` value in bytes.
+
    .. cpp:function:: template <typename... Args2> auto& operator()(Args2... indices)
 
       Return a reference to the element stored at the provided index/indices.
@@ -902,7 +947,7 @@ section <ndarrays>`.
       ``shape()``, ``stride()``, and ``operator()`` following the conventions
       of the `ndarray` type.
 
-   .. cpp:function:: auto cast(rv_policy policy = rv_policy::automatic_reference, handle parent = {})
+   .. cpp:function:: auto cast(rv_policy policy = rv_policy::automatic, handle parent = {})
 
       The expression ``array.cast(policy, parent)`` is almost equivalent to
       :cpp:func:`nb::cast(array, policy, parent) <cast>`.
@@ -1052,6 +1097,10 @@ Device type
    value`` field that will then match up with
    :cpp:func:`ndarray::device_id()`.
 
+   .. cpp:class:: none
+
+      Unannotated (the device type is unconstrained)
+
    .. cpp:class:: cpu
 
       CPU heap memory
@@ -1067,6 +1116,10 @@ Device type
    .. cpp:class:: cuda_managed
 
       NVIDIA CUDA managed memory
+
+   .. cpp:class:: opencl
+
+      OpenCL device memory
 
    .. cpp:class:: vulkan
 
@@ -1104,6 +1157,11 @@ convert into an equivalent representation in one of the following frameworks:
 
 .. cpp:class:: cupy
 
+.. cpp:class:: mlx
+
+   Apple ``mlx.core.array``. The constructor always copies into a
+   unified-memory buffer, so a requested copy is performed inherently.
+
 .. cpp:class:: memview
 
    Builtin Python ``memoryview`` for CPU-resident data.
@@ -1112,6 +1170,13 @@ convert into an equivalent representation in one of the following frameworks:
 
    An object that both implements the buffer protocol and also has the
    ``__dlpack__`` and ``__dlpack_device__`` attributes.
+
+.. cpp:class:: no_framework
+
+   The default when no framework annotation is given. Instead of a
+   framework-specific array, the :cpp:class:`nb::ndarray <ndarray>` converts
+   into a raw `DLPack <https://github.com/dmlc/dlpack>`__ capsule wrapping a
+   ``DLManagedTensor``.
 
 Eigen convenience type aliases
 ------------------------------
@@ -1136,6 +1201,26 @@ The following helper type aliases require an additional include directive:
 
    This templated type alias creates an ``Eigen::Map<..>`` with flexible strides for
    zero-copy data exchange between Eigen and NumPy.
+
+.. cpp:type:: DStride1 = Eigen::Stride<Eigen::Dynamic, 1>
+
+   Like :cpp:type:`DStride`, but with a *unit inner stride* fixed at compile
+   time. It accepts an arbitrary outer stride while requiring a contiguous inner
+   dimension. Fixing the inner stride this way preserves Eigen's vectorization,
+   which is otherwise disabled when the inner stride is dynamic. See the section
+   on :ref:`auto-vectorization <eigen_vectorization>` for details.
+
+.. cpp:type:: template <typename T> DRef1 = Eigen::Ref<T, 0, DStride1>
+
+   Variant of :cpp:type:`DRef` that uses :cpp:type:`DStride1`. Use it instead of
+   :cpp:type:`DRef` in performance-critical bindings to retain Eigen's
+   vectorization. The contiguous inner dimension must match the storage order of
+   ``T`` (a row-major ``T`` for C-contiguous arrays, a column-major ``T`` for
+   F-contiguous arrays).
+
+.. cpp:type:: template <typename T> DMap1 = Eigen::Map<T, 0, DStride1>
+
+   Variant of :cpp:type:`DMap` that uses :cpp:type:`DStride1`.
 
 .. _chrono_conversions:
 
@@ -1240,14 +1325,17 @@ converting to Python.
 - ``float`` → ``std::chrono::duration``
     A floating-point value can be converted into a duration. The input is
     treated as a number of seconds, and fractional seconds are supported
-    to the extent representable.
+    to the extent representable. This is an :ref:`implicit conversion
+    <noconvert>`: it does not take place in the first pass of overload
+    resolution, nor when an argument is marked ``noconvert``.
 
 - ``float`` → ``std::chrono::[other_clock]::time_point``
     A floating-point value can be converted into a timepoint on a
     clock other than the system clock. The input is treated as a
     number of seconds, and fractional seconds are supported to the
     extent representable. The resulting timepoint will be that many
-    seconds after the target clock's epoch time.
+    seconds after the target clock's epoch time. This is an :ref:`implicit
+    conversion <noconvert>`, as above.
 
 
 Evaluating Python expressions from strings
@@ -1382,6 +1470,11 @@ functions:
 
       Return the Python object associated with this instance (or ``nullptr``).
 
+   .. cpp:function:: size_t ref_count() const noexcept
+
+      Return the reference count of the instance while it is owned by C++.
+      The function returns zero once ownership has been transferred to Python.
+
 .. cpp:class:: intrusive_base
 
    Simple polymorphic base class for a intrusively reference-counted object
@@ -1404,6 +1497,10 @@ functions:
 
       See :cpp:func:`intrusive_counter::self_py()`.
 
+   .. cpp:function:: size_t ref_count() const noexcept
+
+      See :cpp:func:`intrusive_counter::ref_count()`.
+
 .. cpp:function:: void intrusive_init(void (* intrusive_inc_ref_py)(PyObject * ) noexcept, void (* intrusive_dec_ref_py)(PyObject * ) noexcept)
 
    Function to register reference counting hooks with the intrusive reference
@@ -1418,11 +1515,13 @@ functions:
           nb::intrusive_init(
               [](PyObject * o) noexcept {
                   nb::gil_scoped_acquire guard;
-                  Py_INCREF(o);
+                  if (guard.is_valid())
+                      Py_INCREF(o);
               },
               [](PyObject * o) noexcept {
                   nb::gil_scoped_acquire guard;
-                  Py_DECREF(o);
+                  if (guard.is_valid())
+                      Py_DECREF(o);
               });
 
           // ...

@@ -32,12 +32,14 @@ TEST(RenderTargetDepthStencilAttachment, compares_equal_to_copies)
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
-    const RenderTargetDepthStencilAttachment copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
+    const RenderTargetDepthStencilAttachment copy = attachment;
 
     ASSERT_EQ(copy, attachment);
 }
 
-TEST(RenderTargetDepthStencilAttachment, compares_equal_to_separately_constructed_but_logically_equal_value)
+TEST(
+    RenderTargetDepthStencilAttachment,
+    compares_equal_to_separately_constructed_but_logically_equal_value)
 {
     RenderTexture render_texture;
 

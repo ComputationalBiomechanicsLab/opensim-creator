@@ -4,10 +4,9 @@
 #include <liboscar/platform/app.h>
 
 osc::ModelViewerPanelState::ModelViewerPanelState(
-    std::string_view panelName_,
-    ModelViewerPanelFlags flags_) :
+    std::string_view panel_name, ModelViewerPanelFlags flags) :
 
-    panel_name_{panelName_},
-    m_Flags{flags_},
-    m_CachedModelRenderer{App::singleton<SceneCache>(App::resource_loader())}
+    panel_name_{panel_name},
+    flags_{flags},
+    cached_model_renderer_{App::singleton<SceneCache>(App::resource_loader())}
 {}

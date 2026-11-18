@@ -5,10 +5,10 @@
 #include <cstddef>
 #include <filesystem>
 
-namespace opyn { class ModelSpecification; }
-
 namespace opyn
 {
+    class ModelSpecification;
+
     /// A solver that can warp `ModelSpecification`s by applying a sequence of
     /// `ScalingStep`s to an input `ModelSpecification`.
     class ModelWarper final {
@@ -35,6 +35,7 @@ namespace opyn
         /// @param model_specification The source `ModelSpecification` that should
         /// be copied and warped by this `ModelWarper`.
         ModelSpecification warp(const ModelSpecification& model_specification) const;
+
     private:
         class Impl;
         explicit ModelWarper(osc::CopyOnUpdSharedValue<Impl> impl);

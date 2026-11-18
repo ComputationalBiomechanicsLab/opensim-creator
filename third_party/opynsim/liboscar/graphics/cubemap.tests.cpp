@@ -29,7 +29,7 @@ TEST(Cubemap, constructor_throws_if_given_negative_width)
 TEST(Cubemap, can_copy_construct)
 {
     const Cubemap source{1, TextureFormat::RGBA32};
-    const Cubemap copy = source;  // NOLINT(performance-unnecessary-copy-initialization)
+    const Cubemap copy = source;
 }
 
 static_assert(std::is_nothrow_move_constructible_v<Cubemap>);
@@ -86,7 +86,7 @@ TEST(Cubemap, operator_equals_is_available)
 TEST(Cubemap, operator_equals_returns_true_for_copies)
 {
     const Cubemap cubemap{1, TextureFormat::RGBA32};
-    const Cubemap copy = cubemap; // NOLINT(performance-unnecessary-copy-initialization)
+    const Cubemap copy = cubemap;
 
     ASSERT_EQ(cubemap, copy);
 }
@@ -139,7 +139,7 @@ TEST(Cubemap, set_pixel_data_works_for_any_face_when_given_the_correct_number_of
     const TextureFormat format = TextureFormat::RGBA32;
     const size_t bytes_per_pixel_for_format = num_bytes_per_pixel_in(format);
     const size_t width = 5;
-    const size_t num_bytes_per_face = width*width*bytes_per_pixel_for_format;
+    const size_t num_bytes_per_face = width * width * bytes_per_pixel_for_format;
     const std::vector<uint8_t> data(num_bytes_per_face);
 
     Cubemap cubemap{width, format};
@@ -153,7 +153,7 @@ TEST(Cubemap, set_pixel_data_throws_exception_if_given_invalid_number_of_bytes_f
     const TextureFormat format = TextureFormat::RGBA32;
     const size_t invalid_num_bytes_per_pixel = 3;
     const size_t width = 5;
-    const size_t invalid_num_bytes_per_face = width*width*invalid_num_bytes_per_pixel;
+    const size_t invalid_num_bytes_per_face = width * width * invalid_num_bytes_per_pixel;
     const std::vector<uint8_t> invalid_data(invalid_num_bytes_per_face);
 
     Cubemap cubemap{width, format};
@@ -167,7 +167,7 @@ TEST(Cubemap, set_pixel_data_throws_if_given_invalid_number_of_bytes_for_RGB24)
     const TextureFormat format = TextureFormat::RGB24;
     const size_t invalid_num_bytes_per_pixel = 4;
     const size_t width = 5;
-    const size_t invalid_num_bytes_per_face = width*width*invalid_num_bytes_per_pixel;
+    const size_t invalid_num_bytes_per_face = width * width * invalid_num_bytes_per_pixel;
     const std::vector<uint8_t> invalid_data(invalid_num_bytes_per_face);
 
     Cubemap cubemap{width, format};
@@ -181,8 +181,8 @@ TEST(Cubemap, set_pixel_data_throws_if_given_invalid_number_of_bytes_for_its_wid
     const TextureFormat format = TextureFormat::RGBA32;
     const size_t bytes_per_pixel_for_format = num_bytes_per_pixel_in(format);
     const size_t width = 5;
-    const size_t num_bytes = width*width*bytes_per_pixel_for_format;
-    const size_t incorrect_num_bytes = num_bytes+3;
+    const size_t num_bytes = width * width * bytes_per_pixel_for_format;
+    const size_t incorrect_num_bytes = num_bytes + 3;
     const std::vector<uint8_t> invalid_data(incorrect_num_bytes);
 
     Cubemap cubemap{width, format};
@@ -196,7 +196,7 @@ TEST(Cubemap, set_pixel_data_works_with_floating_point_texture_format)
     const TextureFormat format = TextureFormat::RGBAFloat;
     const size_t bytes_per_pixel_for_format = num_bytes_per_pixel_in(format);
     const size_t width = 5;
-    const size_t num_bytes_per_face = width*width*bytes_per_pixel_for_format;
+    const size_t num_bytes_per_face = width * width * bytes_per_pixel_for_format;
     const std::vector<uint8_t> data(num_bytes_per_face);
 
     Cubemap cubemap{width, format};
@@ -240,7 +240,8 @@ TEST(Cubemap, set_wrap_mode_u_sets_U_axis_and_general_wrap_mode_getter)
     ASSERT_EQ(cubemap.wrap_mode_v(), TextureWrapMode::Repeat);
     ASSERT_EQ(cubemap.wrap_mode_w(), TextureWrapMode::Repeat);
     cubemap.set_wrap_mode_u(TextureWrapMode::Clamp);
-    ASSERT_EQ(cubemap.wrap_mode(), TextureWrapMode::Clamp);  // `wrap_mode()` is an alias for `wrap_mode_u()`
+    // `wrap_mode()` is an alias for `wrap_mode_u()`
+    ASSERT_EQ(cubemap.wrap_mode(), TextureWrapMode::Clamp);
     ASSERT_EQ(cubemap.wrap_mode_u(), TextureWrapMode::Clamp);
     ASSERT_EQ(cubemap.wrap_mode_v(), TextureWrapMode::Repeat);
     ASSERT_EQ(cubemap.wrap_mode_w(), TextureWrapMode::Repeat);

@@ -10,11 +10,7 @@ namespace osc
 {
     class IconWithoutMenu final {
     public:
-        explicit IconWithoutMenu(
-            Icon icon,
-            CStringView title,
-            CStringView description
-        );
+        explicit IconWithoutMenu(Icon icon, CStringView title, CStringView description);
 
         CStringView icon_id() const { return button_id_; }
 

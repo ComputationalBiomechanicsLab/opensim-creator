@@ -26,9 +26,9 @@ namespace osc
         explicit Variant(int);
         explicit Variant(std::string);
         explicit Variant(std::string_view);
-        explicit Variant(const char* ptr) : Variant{std::string_view{ptr}} {}
+        explicit Variant(const char* ptr);
         explicit Variant(std::nullopt_t) = delete;
-        explicit Variant(CStringView cstring_view) : Variant{std::string_view{cstring_view}} {}
+        explicit Variant(CStringView cstring_view);
         explicit Variant(const StringName&);
         explicit Variant(Vector2);
         explicit Variant(Vector3);
@@ -58,6 +58,7 @@ namespace osc
     private:
         friend struct std::hash<Variant>;
 
+        // clang-format off
         std::variant<
             std::monostate,
             bool,
@@ -70,6 +71,7 @@ namespace osc
             Vector3,
             std::vector<Variant>
         > data_;
+        // clang-format on
     };
 
     bool operator==(const Variant&, const Variant&);

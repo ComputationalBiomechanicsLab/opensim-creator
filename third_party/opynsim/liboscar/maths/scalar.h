@@ -23,10 +23,10 @@ namespace osc
     };
 
     template<typename T>
-    inline constexpr bool IsScalarV = IsScalar<T>::value;
+    inline constexpr bool is_scalar_v = IsScalar<T>::value;
 
     template<typename T>
-    concept Scalar = IsScalarV<T>;
+    concept Scalar = is_scalar_v<T>;
 
     template<typename T>
     concept ScalarOrBoolean = Scalar<T> or std::same_as<bool, T>;

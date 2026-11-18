@@ -66,7 +66,7 @@ namespace osc
     {
         const Matrix4x4 translator = translate(identity<Matrix4x4>(), -transform.translation);
         const Matrix4x4 rotator = matrix4x4_cast(conjugate(transform.rotation));
-        const Matrix4x4 scaler = scale(identity<Matrix4x4>(), 1.0f/transform.scale);
+        const Matrix4x4 scaler = scale(identity<Matrix4x4>(), 1.0f / transform.scale);
 
         return scaler * rotator * translator;
     }
@@ -94,7 +94,8 @@ namespace osc
         return decompose(m, out.scale, out.rotation, out.translation, skew, perspective);
     }
 
-    // returns a transform that *tries to* perform the equivalent transform as the provided `Matrix4x4`
+    // returns a transform that *tries to* perform the equivalent transform as the provided
+    // `Matrix4x4`
     //
     // - not all 4x4 matrices can be expressed as an `Transform` (e.g. those containing skews)
     // - uses matrix decomposition to break up the provided matrix
@@ -130,7 +131,8 @@ namespace osc
         return transform * point;
     }
 
-    // returns a vector that is the equivalent of the provided vector after applying the inverse of the transform
+    // returns a vector that is the equivalent of the provided vector after applying the inverse of
+    // the transform
     constexpr Vector3 inverse_transform_point(const Transform& transform, Vector3 point)
     {
         point -= transform.translation;
@@ -173,9 +175,7 @@ namespace osc
     // returns the provided transform, but rotated such that the given axis, as expressed
     // in the original transform, will instead point along the new direction
     inline Transform point_axis_along(
-        const Transform& transform,
-        Vector3::size_type axis_index,
-        const Vector3& new_direction)
+        const Transform& transform, Vector3::size_type axis_index, const Vector3& new_direction)
     {
         Vector3 old_direction{};
         old_direction[axis_index] = 1.0f;
@@ -193,9 +193,7 @@ namespace osc
     // alternate explanation: "performs the shortest (angular) rotation of the given
     // transform such that the given axis points towards a point in the same space"
     inline Transform point_axis_towards(
-        const Transform& transform,
-        Vector3::size_type axis_index,
-        const Vector3& position)
+        const Transform& transform, Vector3::size_type axis_index, const Vector3& position)
     {
         return point_axis_along(transform, axis_index, normalize(position - transform.translation));
     }
@@ -203,9 +201,7 @@ namespace osc
     // returns the provided transform, but intrinsically rotated along the given axis by
     // the given number of radians
     inline Transform rotate_axis(
-        const Transform& transform,
-        Vector3::size_type axis_index,
-        Radians angle)
+        const Transform& transform, Vector3::size_type axis_index, Radians angle)
     {
         Vector3 ax{};
         ax[axis_index] = 1.0f;
@@ -220,6 +216,7 @@ namespace osc
     // `position` is NaN.
     inline bool any_element_is_nan(const Transform& transform)
     {
-        return any_of(isnan(transform.scale)) or any_of(isnan(transform.rotation)) or any_of(isnan(transform.translation));
+        return any_of(isnan(transform.scale)) or any_of(isnan(transform.rotation)) or
+               any_of(isnan(transform.translation));
     }
 }

@@ -35,7 +35,7 @@ namespace osc
 
     // satisfied if `abs(x)` is a valid expression for type `T`
     template<typename T>
-    concept HasAbsFunction = requires (T x) {
+    concept HasAbsFunction = requires(T x) {
         { abs(x) } -> std::same_as<T>;
     };
 
@@ -55,7 +55,7 @@ namespace osc
 
     // satisfied if `floor(x)` is a valid expression for type `T`
     template<typename T>
-    concept HasFloorFunction = requires (T x) {
+    concept HasFloorFunction = requires(T x) {
         { floor(x) } -> std::same_as<T>;
     };
 
@@ -89,7 +89,7 @@ namespace osc
 
     // satisfied if `mod(x, y)` is a valid expression for type `T`
     template<typename T>
-    concept HasModFunction = requires (T x, T y) {
+    concept HasModFunction = requires(T x, T y) {
         { mod(x, y) } -> std::same_as<T>;
     };
 
@@ -133,11 +133,14 @@ namespace osc
         { clamp(v, lo, hi) } -> std::convertible_to<T>;
     };
 
-    // returns a vector containing `clamp(vv, lowv, hiv)` for each `(vv, lowv, hiv)` in `v`, `low`, and `hi`
+    // returns a vector containing `clamp(vv, lowv, hiv)` for each `(vv, lowv, hiv)` in `v`, `low`,
+    // and `hi`
     template<HasClampFunction T, size_t N>
-    constexpr Vector<T, N> elementwise_clamp(const Vector<T, N>& v, const Vector<T, N>& lo, const Vector<T, N>& hi)
+    constexpr Vector<T, N> elementwise_clamp(
+        const Vector<T, N>& v, const Vector<T, N>& lo, const Vector<T, N>& hi)
     {
-        return map(v, lo, hi, [](const T& vv, const T& lov, const T& hiv) { return clamp(vv, lov, hiv); });
+        return map(
+            v, lo, hi, [](const T& vv, const T& lov, const T& hiv) { return clamp(vv, lov, hiv); });
     }
 
     // returns a vector containing `clamp(vv, lo, hi)` for each `vv` in `v`
@@ -168,21 +171,16 @@ namespace osc
     }
 
     // returns the equivalent of `a + t(b - a)` (linear interpolation with extrapolation)
-    template<
-        typename Arithmetic1,
-        typename Arithmetic2,
-        typename Arithmetic3
-    >
-    requires
-        std::is_arithmetic_v<Arithmetic1> and
-        std::is_arithmetic_v<Arithmetic2> and
-        std::is_arithmetic_v<Arithmetic3>
+    template<typename Arithmetic1, typename Arithmetic2, typename Arithmetic3>
+    requires std::is_arithmetic_v<Arithmetic1> and std::is_arithmetic_v<Arithmetic2> and
+             std::is_arithmetic_v<Arithmetic3>
     constexpr auto lerp(const Arithmetic1& a, const Arithmetic2& b, const Arithmetic3& t)
     {
         return std::lerp(a, b, t);
     }
 
-    // satisfied if `lerp(a, b, t)` is a valid expression for type `T` and interpolant type `Arithmetic`
+    // satisfied if `lerp(a, b, t)` is a valid expression for type `T` and interpolant type
+    // `Arithmetic`
     template<typename T, typename TInterpolant>
     concept HasLerpFunction = requires(T a, T b, TInterpolant t) {
         { lerp(a, b, t) } -> std::convertible_to<T>;
@@ -191,7 +189,8 @@ namespace osc
     // returns a vector containing `lerp(xv, yv, t)` for each `(xv, yv)` in `x` and `y`
     template<typename T, size_t N, typename TInterpolant>
     requires HasLerpFunction<T, TInterpolant>
-    constexpr auto lerp(const Vector<T, N>& x, const Vector<T, N>& y, const TInterpolant& t) -> Vector<decltype(lerp(x[0], y[0], t)), N>
+    constexpr auto lerp(const Vector<T, N>& x, const Vector<T, N>& y, const TInterpolant& t)
+        -> Vector<decltype(lerp(x[0], y[0], t)), N>
     {
         return map(x, y, [&t](const T& xv, const T& yv) { return lerp(xv, yv, t); });
     }
@@ -244,18 +243,22 @@ namespace osc
         return abs(x - y) <= absdiff;
     }
 
-    // returns a vector containing `equal_within_absdiff(xv, yv, absdiffv)` for each `(xv, yv, absdiffv)` in `x`, `y`, and `absdiff`
+    // returns a vector containing `equal_within_absdiff(xv, yv, absdiffv)` for each `(xv, yv,
+    // absdiffv)` in `x`, `y`, and `absdiff`
     template<typename T, size_t N>
     requires HasAbsFunction<T> and LessThanComparable<T>
-    Vector<bool, N> equal_within_absdiff(const Vector<T, N>& x, const Vector<T, N>& y, const Vector<T, N>& absdiff)
+    Vector<bool, N> equal_within_absdiff(
+        const Vector<T, N>& x, const Vector<T, N>& y, const Vector<T, N>& absdiff)
     {
         return map(x, y, absdiff, equal_within_absdiff<T>);
     }
 
-    // returns a vector containing `equal_within_absdiff(xv, yv, absdiff)` for each `(xv, yv)` in `x` and `y`
+    // returns a vector containing `equal_within_absdiff(xv, yv, absdiff)` for each `(xv, yv)` in
+    // `x` and `y`
     template<typename T, size_t N>
     requires HasAbsFunction<T> and LessThanComparable<T>
-    Vector<bool, N> equal_within_absdiff(const Vector<T, N>& x, const Vector<T, N>& y, const T& absdiff)
+    Vector<bool, N> equal_within_absdiff(
+        const Vector<T, N>& x, const Vector<T, N>& y, const T& absdiff)
     {
         return elementwise_less(abs(x - y), absdiff);
     }
@@ -274,8 +277,8 @@ namespace osc
         return equal_within_absdiff(x, y, epsilon_v<T>);
     }
 
-    // tests if the absolute difference between `x` and `y` is less than epsilon (machine precision) after
-    // accounting for scaling epsilon to the the magnitude of `x` and `y`
+    // tests if the absolute difference between `x` and `y` is less than epsilon (machine precision)
+    // after accounting for scaling epsilon to the the magnitude of `x` and `y`
     template<std::floating_point T>
     bool equal_within_scaled_epsilon(T x, T y)
     {
@@ -298,16 +301,17 @@ namespace osc
     {
         // inspired from:
         //
-        // - https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
+        // https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
         //
         // but, specifically, you should read the section `Epsilon comparisons` here:
         //
-        // - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+        // https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 
         return abs(x - y) <= reldiff * max(abs(x), abs(y));
     }
 
-    // returns a vector containing `equal_within_reldiff(xv, yv, reldiff)` for each `(xv, yv)` in `x` and `y`
+    // returns a vector containing `equal_within_reldiff(xv, yv, reldiff)` for each `(xv, yv)` in
+    // `x` and `y`
     template<std::floating_point T, size_t N>
     Vector<bool, N> equal_within_reldiff(const Vector<T, N>& x, const Vector<T, N>& y, T reldiff)
     {
@@ -363,19 +367,21 @@ namespace osc
         return map(x, y, [](const T& xv, const T& yv) { return midpoint(xv, yv); });
     }
 
-    // returns the arithmetic mean of the provided vectors, or `Vector<T, N>{}/T{0}` if provided no vectors
+    // returns the arithmetic mean of the provided vectors, or `Vector<T, N>{}/T{0}` if provided no
+    // vectors
     template<
         std::ranges::range R,
         typename T = typename std::ranges::range_value_t<R>::value_type,
-        size_t N = std::tuple_size_v<typename std::ranges::range_value_t<R>>
-    >
+        size_t N = std::tuple_size_v<typename std::ranges::range_value_t<R>>>
     requires std::is_arithmetic_v<T>
     constexpr Vector<T, N> centroid_of(const R& r)
     {
-        return std::reduce(std::ranges::begin(r), std::ranges::end(r)) / static_cast<T>(std::ranges::size(r));
+        return std::reduce(std::ranges::begin(r), std::ranges::end(r)) /
+               static_cast<T>(std::ranges::size(r));
     }
 
-    // returns the arithmetic mean of the provided vectors, or `Vector<T, N>{}/T{0}` if provided no vectors
+    // returns the arithmetic mean of the provided vectors, or `Vector<T, N>{}/T{0}` if provided no
+    // vectors
     template<typename T, size_t N>
     requires std::is_arithmetic_v<T>
     constexpr Vector<T, N> centroid_of(const std::initializer_list<Vector<T, N>>& vs)

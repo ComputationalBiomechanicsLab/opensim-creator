@@ -1,7 +1,7 @@
 .. currentmodule:: opynsim.tps3d
 
-Thin-Plate Spline (TPS) Warping
-===============================
+Thin-Plate Spline Warping
+=========================
 
 The :mod:`~opynsim.tps3d` module contains classes/functions related to using
 the Thin-Plate Spline (TPS) technique with 3D data, this page provides a

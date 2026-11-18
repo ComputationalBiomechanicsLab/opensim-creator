@@ -74,8 +74,14 @@ TEST(RenderTextureParams, compares_equivalent_on_copy_construction)
 
 TEST(RenderTextureParams, compares_equivalent_when_independently_constructed_with_same_params)
 {
-    const RenderTextureParams first{.pixel_dimensions = {3, 3}, .device_pixel_ratio = 2.0f, .dimensionality = TextureDimensionality::Cube};
-    const RenderTextureParams second{.pixel_dimensions = {3, 3}, .device_pixel_ratio = 2.0f, .dimensionality = TextureDimensionality::Cube};
+    const RenderTextureParams first{
+        .pixel_dimensions = {3, 3},
+        .device_pixel_ratio = 2.0f,
+        .dimensionality = TextureDimensionality::Cube};
+    const RenderTextureParams second{
+        .pixel_dimensions = {3, 3},
+        .device_pixel_ratio = 2.0f,
+        .dimensionality = TextureDimensionality::Cube};
 
     ASSERT_EQ(first, second);
 }

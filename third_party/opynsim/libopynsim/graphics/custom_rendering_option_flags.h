@@ -9,6 +9,7 @@
 
 namespace opyn
 {
+    // clang-format off
     enum class CustomRenderingOptionFlags : uint32_t {
         None                         = 0,
         DrawFloor                    = 1<<0,
@@ -20,26 +21,29 @@ namespace opyn
 
         Default = DrawFloor | Shadows | DrawSelectionRims,
     };
+    // clang-format on
 
     constexpr bool operator&(CustomRenderingOptionFlags lhs, CustomRenderingOptionFlags rhs)
     {
         return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
     }
 
-    constexpr void set_option(CustomRenderingOptionFlags& flags, CustomRenderingOptionFlags flag, bool v)
+    constexpr void set_option(
+        CustomRenderingOptionFlags& flags, CustomRenderingOptionFlags flag, bool v)
     {
         if (v) {
-            flags = static_cast<CustomRenderingOptionFlags>(std::to_underlying(flags) | std::to_underlying(flag));
-        }
-        else {
-            flags = static_cast<CustomRenderingOptionFlags>(std::to_underlying(flags) & ~std::to_underlying(flag));
+            flags = static_cast<CustomRenderingOptionFlags>(
+                std::to_underlying(flags) | std::to_underlying(flag));
+        } else {
+            flags = static_cast<CustomRenderingOptionFlags>(
+                std::to_underlying(flags) & ~std::to_underlying(flag));
         }
     }
 
     constexpr CustomRenderingOptionFlags custom_rendering_ith_option(size_t i)
     {
-        i = i < osc::num_flags<CustomRenderingOptionFlags>() ? i : 0;
-        return static_cast<CustomRenderingOptionFlags>(1<<i);
+        i = i < osc::num_flags_v<CustomRenderingOptionFlags> ? i : 0;
+        return static_cast<CustomRenderingOptionFlags>(1 << i);
     }
 
     struct CustomRenderingOptionFlagsMetadata final {
@@ -47,5 +51,6 @@ namespace opyn
         osc::CStringView label;
         CustomRenderingOptionFlags value;
     };
-    std::span<const CustomRenderingOptionFlagsMetadata> get_all_custom_rendering_option_flags_metadata();
+    std::span<const CustomRenderingOptionFlagsMetadata>
+    get_all_custom_rendering_option_flags_metadata();
 }

@@ -9,6 +9,7 @@ namespace osc
     // most of the time, the direction is towards whatever's being connected to,
     // but sometimes it can be the opposite, depending on how the datastructure
     // is ultimately used
+    // clang-format off
     enum class MiCrossrefDirection {
         None     = 0,
         ToParent = 1<<0,
@@ -16,6 +17,7 @@ namespace osc
 
         Both = ToChild | ToParent
     };
+    // clang-format on
 
     constexpr bool operator&(MiCrossrefDirection lhs, MiCrossrefDirection rhs)
     {

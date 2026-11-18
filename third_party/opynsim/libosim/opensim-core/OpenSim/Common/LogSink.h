@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2019 Stanford University and the Authors                *
+ * Copyright (c) 2005-2026 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -22,38 +22,52 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimCommonDLL.h"
-#include <iostream>
-#include <spdlog/sinks/base_sink.h>
-#include <mutex>
+#include <OpenSim/Common/LogLevel.h>
+#include <OpenSim/Common/LogMessage.h>
+#include <OpenSim/Common/osimCommonDLL.h>
+
+#include <string>
 
 // This file is not included in osimCommon.h. Only include
 // this file when deriving from LogSink.
-
 namespace OpenSim {
 
 /// Derive from this class to implement your own way of reporting logged
 /// messages.
-class LogSink : public spdlog::sinks::base_sink<std::mutex> {};
-
-/// This sink stores all messages in a string. This is useful for testing the
-/// content of logs.
-class OSIMCOMMON_API StringLogSink : public LogSink {
+class OSIMCOMMON_API LogSink {
 public:
-    /// Clear the contents of the string.
-    void clear() {
-        m_messages.clear();
-    }
-    /// Obtain the string.
-    const std::string& getString() const {
-        return m_messages;
-    }
-private:
-    void sink_it_(const spdlog::details::log_msg& msg) override {
-        m_messages += std::string{msg.payload.begin(), msg.payload.end()} + "\n";
+    virtual ~LogSink() noexcept = default;
+
+    /// Sinks `msg` into this `LogSink`.
+    void sink(const LogMessage& msg) {
+        sinkImpl(msg);
+        sinkImpl(msg.getPayload());
     }
 
-    std::string m_messages;
+    /// Tells this `LogSink` to flush any buffered content to its output.
+    void flush() { flushImpl(); }
+
+    LogLevel getLevel() const { return level_; }
+    void setLevel(LogLevel logLevel) { level_ = logLevel; }
+    bool shouldLog(LogLevel logLevel) { return logLevel >= level_; }
+
+protected:
+    /// Implementors may override this function to provide their own
+    /// message sinking behavior.
+    virtual void sinkImpl(const LogMessage&) {}
+
+    /// Implementors may override this function to provide their own
+    /// message sinking behavior.
+    ///
+    /// Legacy shim: OpenSim 2019/11 to 2026/06 only provided this overload.
+    virtual void sinkImpl(const std::string& msg) {}
+
+    /// Implementors may override this function to provide their own
+    /// message flushing behavior.
+    virtual void flushImpl() {}
+
+private:
+    LogLevel level_ = LogLevel::Trace;
 };
 
 } // namespace OpenSim

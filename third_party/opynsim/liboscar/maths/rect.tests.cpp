@@ -28,7 +28,7 @@ TEST(Rect, from_origin_and_dimensions)
 TEST(Rect, from_corners)
 {
     const Vector2 p0 = {-5.0f, -10.0f};
-    const Vector2 p1 = { 3.0f,  11.0f};
+    const Vector2 p1 = {3.0f, 11.0f};
 
     const Rect result = Rect::from_corners(p0, p1);
 
@@ -39,7 +39,7 @@ TEST(Rect, from_corners)
 TEST(Rect, from_corners_argument_order_doesnt_matter)
 {
     const Vector2 p0 = {-5.0f, -10.0f};
-    const Vector2 p1 = { 3.0f,  11.0f};
+    const Vector2 p1 = {3.0f, 11.0f};
 
     const Rect result_a = Rect::from_corners(p0, p1);
     const Rect result_b = Rect::from_corners(p1, p0);
@@ -218,7 +218,7 @@ TEST(Rect, with_dimensions_scaled_by_rescales_dimensions)
 
     const Rect result = rect.with_dimensions_scaled_by({0.5f, 2.25f});
 
-    ASSERT_EQ(result.dimensions(), Vector2(0.5f*45.0f, 2.25f*45.0f));
+    ASSERT_EQ(result.dimensions(), Vector2(0.5f * 45.0f, 2.25f * 45.0f));
 }
 
 TEST(Rect, with_dimensions_scaled_by_doesnt_change_origin)
@@ -236,8 +236,8 @@ TEST(Rect, with_origin_and_dimensions_scaled_by_rescales_both_origin_and_dimensi
 
     const Rect result = rect.with_origin_and_dimensions_scaled_by(0.5f);
 
-    ASSERT_EQ(result.dimensions(), 0.5f*rect.dimensions());
-    ASSERT_EQ(result.origin(), 0.5f*rect.origin());
+    ASSERT_EQ(result.dimensions(), 0.5f * rect.dimensions());
+    ASSERT_EQ(result.origin(), 0.5f * rect.origin());
 }
 
 TEST(Rect, with_flipped_y_returns_expected_rect)

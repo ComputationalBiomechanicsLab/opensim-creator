@@ -34,7 +34,8 @@ TEST(Vector, can_be_used_to_construct_a_span_of_floats)
 
 TEST(Vector, can_be_used_as_arg_to_sized_span_func)
 {
-    const auto f = []([[maybe_unused]] std::span<float, 2>) {};
+    const auto f = []([[maybe_unused]] std::span<float, 2>) {
+    };
     static_assert(std::invocable<decltype(f), Vector2>);
 }
 
@@ -67,7 +68,9 @@ TEST(Vector, element_by_element_constructor_fills_each_element_of_the_Vector)
 TEST(Vector, element_by_element_constructor_can_convert_args)
 {
     struct B final {};
-    struct A final { explicit operator B() const { return B{}; }};
+    struct A final {
+        explicit operator B() const { return B{}; }
+    };
 
     [[maybe_unused]] const Vector<B, 3> v{A{}, A{}, A{}};
 }
@@ -121,7 +124,8 @@ TEST(Vector, can_be_constructed_with_move_only_convertible_pointers)
     struct A {};
     struct B : A {};
     Vector<std::unique_ptr<B>, 2> pointers;
-    [[maybe_unused]] const Vector<std::unique_ptr<B>, 2> converted_move_only_target{std::move(pointers)};
+    [[maybe_unused]] const Vector<std::unique_ptr<B>, 2> converted_move_only_target{
+        std::move(pointers)};
 }
 
 TEST(Vector, can_be_constructed_from_a_std_array)
@@ -153,8 +157,15 @@ TEST(Vector, constructed_from_bigger_range_results_in_truncation)
 
 TEST(Vector, assignment_correctly_handles_truncation_move_assignment_and_convertability)
 {
-    struct A { explicit A(int v) : v_{v} {} int v_; };
-    struct B : A { using A::A; };
+    struct A {
+        explicit A(int v) :
+            v_{v}
+        {}
+        int v_;
+    };
+    struct B : A {
+        using A::A;
+    };
     Vector<std::unique_ptr<B>, 3> bs = {
         std::make_unique<B>(5),
         std::make_unique<B>(6),
@@ -197,20 +208,21 @@ TEST(Vector, size_can_return_vector_size_at_compile_time)
 
 TEST(Vector, binary_operator_plus_with_scalar_works_as_expected)
 {
-    static_assert(std::same_as<decltype(Vector3f{1.0f, 2.0f, 3.0f} + 2.0 ), Vector3d>);
-    static_assert(std::same_as<decltype(Vector3i{1,    2,    3}    + 2.0f), Vector3f>);
-    static_assert(std::same_as<decltype(Vector3i{1,    2,    3}    + 2.0 ), Vector3d>);
+    static_assert(std::same_as<decltype(Vector3f{1.0f, 2.0f, 3.0f} + 2.0), Vector3d>);
+    static_assert(std::same_as<decltype(Vector3i{1, 2, 3} + 2.0f), Vector3f>);
+    static_assert(std::same_as<decltype(Vector3i{1, 2, 3} + 2.0), Vector3d>);
 
-    ASSERT_EQ((Vector3i{1, 2, 3} + 2.0f), Vector3f(1+2.0f, 2+2.0f, 3+2.0f));
+    ASSERT_EQ((Vector3i{1, 2, 3} + 2.0f), Vector3f(1 + 2.0f, 2 + 2.0f, 3 + 2.0f));
 }
 
 TEST(Vector, binary_operator_plus_works_with_Vector_as_expected)
 {
-    static_assert(std::same_as<decltype(Vector3f{1.0f, 2.0f, 3.0f} + Vector3d{2.0} ), Vector3d>);
-    static_assert(std::same_as<decltype(Vector3i{1,    2,    3}    + Vector3f{2.0f}), Vector3f>);
-    static_assert(std::same_as<decltype(Vector3i{1,    2,    3}    + Vector3d{2.0} ), Vector3d>);
+    static_assert(std::same_as<decltype(Vector3f{1.0f, 2.0f, 3.0f} + Vector3d{2.0}), Vector3d>);
+    static_assert(std::same_as<decltype(Vector3i{1, 2, 3} + Vector3f{2.0f}), Vector3f>);
+    static_assert(std::same_as<decltype(Vector3i{1, 2, 3} + Vector3d{2.0}), Vector3d>);
 
-    ASSERT_EQ((Vector3i{1, 2, 3} + Vector3f{4.0f, 5.0f, 9.0f}), Vector3f(1+4.0f, 2+5.0f, 3+9.0f));
+    ASSERT_EQ(
+        (Vector3i{1, 2, 3} + Vector3f{4.0f, 5.0f, 9.0f}), Vector3f(1 + 4.0f, 2 + 5.0f, 3 + 9.0f));
 }
 
 TEST(Vector, can_be_written_to_a_std_ostream)
@@ -236,7 +248,7 @@ TEST(Vector, x_can_return_mutable_reference)
 {
     Vector3d v{1.0, 2.0, 3.0};
     v.x() += 3.0;
-    ASSERT_EQ(v.x(), 1.0+3.0);
+    ASSERT_EQ(v.x(), 1.0 + 3.0);
 }
 
 TEST(Vector, y_returns_second_element_as_const_reference)
@@ -255,7 +267,7 @@ TEST(Vector, y_can_return_mutable_reference)
 {
     Vector3d v{1.0, 2.0, 3.0};
     v.y() += 3.0;
-    ASSERT_EQ(v.y(), 2.0+3.0);
+    ASSERT_EQ(v.y(), 2.0 + 3.0);
 }
 
 TEST(Vector, z_returns_third_element_as_const_reference)
@@ -274,7 +286,7 @@ TEST(Vector, z_can_return_mutable_reference)
 {
     Vector3d v{1.0, 2.0, 3.0};
     v.z() += 3.0;
-    ASSERT_EQ(v.z(), 3.0+3.0);
+    ASSERT_EQ(v.z(), 3.0 + 3.0);
 }
 
 TEST(Vector, w_returns_fourth_element_as_const_reference)
@@ -293,7 +305,7 @@ TEST(Vector, w_can_return_mutable_reference)
 {
     Vector4d v{1.0, 2.0, 3.0, 4.0};
     v.w() += 3.0;
-    ASSERT_EQ(v.w(), 4.0+3.0);
+    ASSERT_EQ(v.w(), 4.0 + 3.0);
 }
 
 TEST(Vector, xy_returns_expected_elements)
@@ -364,10 +376,11 @@ TEST(Vector, zy_is_constexpr)
 
 TEST(Vector, can_be_formatted)
 {
-    ASSERT_EQ(std::format("{}", Vector3i{1,2,3}), "Vector(1, 2, 3)");
+    ASSERT_EQ(std::format("{}", Vector3i{1, 2, 3}), "Vector(1, 2, 3)");
 }
 
 TEST(Vector, uses_formatting_string_correctly)
 {
-    ASSERT_EQ(std::format("{:.2f}", Vector3d{1.337123, -2.89123, 50.1234}), "Vector(1.34, -2.89, 50.12)");
+    ASSERT_EQ(
+        std::format("{:.2f}", Vector3d{1.337123, -2.89123, 50.1234}), "Vector(1.34, -2.89, 50.12)");
 }

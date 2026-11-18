@@ -10,18 +10,17 @@
 #include <optional>
 #include <string_view>
 
-namespace osc { class PopupPrivate; }
-
 namespace osc
 {
+    class PopupPrivate;
+
     class Popup : public Widget {
     public:
         explicit Popup(
             Widget* parent,
             std::string_view name,
             Vector2 dimensions = {512.0f, 0.0f},
-            ui::PanelFlags = ui::PanelFlag::AlwaysAutoResize
-        );
+            ui::PanelFlags = ui::PanelFlag::AlwaysAutoResize);
 
         bool is_open();
         void open();
@@ -41,6 +40,7 @@ namespace osc
         void set_position(std::optional<Vector2>);
 
         OSC_WIDGET_DATA_GETTERS(PopupPrivate);
+
     private:
         void impl_on_draw() override;
 

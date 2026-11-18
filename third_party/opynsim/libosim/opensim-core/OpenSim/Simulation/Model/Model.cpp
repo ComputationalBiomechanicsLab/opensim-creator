@@ -745,10 +745,10 @@ std::string Model::getWarningMesssageForMotionTypeInconsistency() const
     for (auto& coord : coordinates) {
         const Coordinate::MotionType oldMotionType =
             coord.getUserSpecifiedMotionTypePriorTo40();
+        if (oldMotionType == Coordinate::MotionType::Undefined)
+            continue;
         const Coordinate::MotionType motionType = coord.getMotionType();
-
-        if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
-            (oldMotionType != motionType) ){
+        if (oldMotionType != motionType) {
             message += "Coordinate '" + coord.getName() +
                 "' was labeled as '" + enumToString(oldMotionType) +
                 "' but was found to be '" + enumToString(motionType) + "' based on the joint definition.\n";
@@ -1114,8 +1114,16 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 void Model::addModelComponent(ModelComponent* component)
 {
     if(component){
+        const std::string name = component->getName();
         upd_ComponentSet().adoptAndAppend(component);
-        finalizeFromProperties();
+        try {
+            finalizeFromProperties();
+        } catch (const std::exception& err) {
+            upd_ComponentSet().remove(component);
+            log_error("addModelComponent: finalizeFromProperties() failed, "
+                      "'{}' was not added. (details: {}).",
+                      name, err.what());
+        }
         prependComponentPathToConnecteePath(*component);
     }
 }
@@ -1646,7 +1654,9 @@ bool Model::scale(SimTK::State& s, const ScaleSet& scaleSet,
 
     // Call postScale() on all ModelComponents owned by the model so that
     // components like muscles, ligaments, and path springs can update their
-    // properties based on their new path length.
+    // properties based on their new path length. Realize to velocity so that
+    // path state can be computed.
+    getMultibodySystem().realize(s, SimTK::Stage::Velocity);
     for (ModelComponent& comp : updComponentList<ModelComponent>())
         comp.postScale(s, scaleSet);
 

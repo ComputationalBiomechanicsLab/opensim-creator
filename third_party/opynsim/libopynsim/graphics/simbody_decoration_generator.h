@@ -2,11 +2,18 @@
 
 #include <functional>
 
-namespace osc { class SceneCache; }
-namespace osc { struct SceneDecoration; }
-namespace SimTK { class DecorativeGeometry; }
-namespace SimTK { class SimbodyMatterSubsystem; }
-namespace SimTK { class State; }
+namespace osc
+{
+    class SceneCache;
+    struct SceneDecoration;
+}
+
+namespace SimTK
+{
+    class DecorativeGeometry;
+    class SimbodyMatterSubsystem;
+    class State;
+}
 
 namespace opyn
 {
@@ -18,6 +25,5 @@ namespace opyn
         const SimTK::State&,
         const SimTK::DecorativeGeometry&,
         float fixup_scale_factor,
-        const std::function<void(osc::SceneDecoration&&)>& out
-    );
+        const std::function<void(osc::SceneDecoration&&)>& out);
 }

@@ -27,8 +27,9 @@ namespace
         explicit MockFilesystem(std::shared_ptr<MockState> state) :
             state_{std::move(state)}
         {}
+
     private:
-        bool impl_resource_exists(const ResourcePath& resource_path) final
+        bool impl_resource_exists(const ResourcePath& resource_path) override
         {
             state_->last_existence_check_path = resource_path;
             return true;
@@ -68,9 +69,11 @@ TEST(ResourceLoader, with_prefix_causes_VirtualFilesystem_to_be_called_with_pref
     ResourceLoader prefixed_loader = resource_loader.with_prefix("prefix");
 
     resource_loader.open(ResourcePath{"path"});
-    ASSERT_EQ(mock_state->last_open_call_path, ResourcePath{"path"}) << "with_prefix doesn't affect original ResourceLoader";
+    ASSERT_EQ(mock_state->last_open_call_path, ResourcePath{"path"})
+        << "with_prefix doesn't affect original ResourceLoader";
     prefixed_loader.open(ResourcePath{"path"});
-    ASSERT_EQ(mock_state->last_open_call_path, ResourcePath{"prefix/path"}) << "with_prefix should return a loader the prefixes each open call";
+    ASSERT_EQ(mock_state->last_open_call_path, ResourcePath{"prefix/path"})
+        << "with_prefix should return a loader the prefixes each open call";
 }
 
 TEST(ResourceLoader, resource_exists_calls_underlying_impl_resource_exists)

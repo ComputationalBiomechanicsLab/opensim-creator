@@ -17,20 +17,11 @@ namespace osc
             path_{std::forward<Args>(args)...}
         {}
 
-        std::string string() const
-        {
-            return path_.string();
-        }
+        std::string string() const { return path_.string(); }
 
-        bool has_extension(std::string_view ext) const
-        {
-            return path_.extension() == ext;
-        }
+        bool has_extension(std::string_view ext) const { return path_.extension() == ext; }
 
-        std::string stem() const
-        {
-            return path_.stem().string();
-        }
+        std::string stem() const { return path_.stem().string(); }
 
         friend bool operator==(const ResourcePath&, const ResourcePath&) = default;
         friend ResourcePath operator/(const ResourcePath& lhs, const ResourcePath& rhs)
@@ -45,6 +36,7 @@ namespace osc
         {
             return out << resource_path.path_;
         }
+
     private:
         friend struct std::hash<osc::ResourcePath>;
         std::filesystem::path path_;

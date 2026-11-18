@@ -7,34 +7,28 @@ using namespace opyn;
 
 namespace
 {
-    constexpr auto c_metadata = std::to_array<CustomRenderingOptionFlagsMetadata>(
-    {
-        CustomRenderingOptionFlagsMetadata
-        {
+    constexpr auto c_metadata = std::to_array<CustomRenderingOptionFlagsMetadata>({
+        CustomRenderingOptionFlagsMetadata{
             "show_floor",
             "Floor",
             CustomRenderingOptionFlags::DrawFloor,
         },
-        CustomRenderingOptionFlagsMetadata
-        {
+        CustomRenderingOptionFlagsMetadata{
             "show_mesh_normals",
             "Mesh Normals",
             CustomRenderingOptionFlags::MeshNormals,
         },
-        CustomRenderingOptionFlagsMetadata
-        {
+        CustomRenderingOptionFlagsMetadata{
             "show_shadows",
             "Shadows",
             CustomRenderingOptionFlags::Shadows,
         },
-        CustomRenderingOptionFlagsMetadata
-        {
+        CustomRenderingOptionFlagsMetadata{
             "show_selection_rims",
             "Selection Rims",
             CustomRenderingOptionFlags::DrawSelectionRims,
         },
-        CustomRenderingOptionFlagsMetadata
-        {
+        CustomRenderingOptionFlagsMetadata{
             "order_independent_transparency",
             "Order-Independent Transparency",
             CustomRenderingOptionFlags::OrderIndependentTransparency,
@@ -42,7 +36,8 @@ namespace
     });
 }
 
-std::span<const CustomRenderingOptionFlagsMetadata> opyn::get_all_custom_rendering_option_flags_metadata()
+std::span<const CustomRenderingOptionFlagsMetadata> opyn::
+    get_all_custom_rendering_option_flags_metadata()
 {
     return c_metadata;
 }

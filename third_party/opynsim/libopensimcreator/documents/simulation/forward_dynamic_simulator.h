@@ -8,15 +8,15 @@
 #include <functional>
 #include <memory>
 
-namespace osc { struct ForwardDynamicSimulatorParams; }
-namespace osc { class SimulationReport; }
-
 namespace osc
 {
+    struct ForwardDynamicSimulatorParams;
+    class SimulationReport;
+
     // returns outputs (e.g. auxiliary stuff like integration steps) that the
     // FdSimulator writes into the `SimulationReport`s it emits
-    int GetNumFdSimulatorOutputExtractors();
-    opyn::SharedOutputExtractor GetFdSimulatorOutputExtractor(int);
+    int get_num_fd_simulator_output_extractors();
+    opyn::SharedOutputExtractor get_fd_simulator_output_extractor(int);
 
     // a forward-dynamic simulation that immediately starts running on a background thread
     class ForwardDynamicSimulator final {
@@ -28,21 +28,20 @@ namespace osc
         ForwardDynamicSimulator(
             BasicModelStatePairWithSharedEnvironment,
             const ForwardDynamicSimulatorParams&,
-            std::function<void(SimulationReport)> onReportFromBgThread
-        );
+            std::function<void(SimulationReport)> on_report_from_bg_thread);
         ForwardDynamicSimulator(const ForwardDynamicSimulator&) = delete;
         ForwardDynamicSimulator(ForwardDynamicSimulator&&) noexcept;
         ForwardDynamicSimulator& operator=(const ForwardDynamicSimulator&) = delete;
         ForwardDynamicSimulator& operator=(ForwardDynamicSimulator&&) noexcept;
         ~ForwardDynamicSimulator() noexcept;
 
-        SimulationStatus getStatus() const;
+        SimulationStatus get_status() const;
 
         // blocks the current thread until the simulator thread finishes its execution
         void join();
 
         // asynchronous
-        void requestStop();
+        void request_stop();
 
         // synchronous (blocks until it stops)
         void stop();
@@ -51,6 +50,6 @@ namespace osc
 
     private:
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

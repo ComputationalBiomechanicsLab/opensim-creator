@@ -7,10 +7,10 @@
 
 #include <memory>
 
-namespace osc { struct DepthStencilRenderBufferParams; }
-
 namespace osc
 {
+    struct DepthStencilRenderBufferParams;
+
     // A render buffer that's shareable between `Material`s, `RenderTarget`s,
     // and `RenderTexture`s.
     //
@@ -51,7 +51,8 @@ namespace osc
         explicit SharedDepthStencilRenderBuffer();
         explicit SharedDepthStencilRenderBuffer(const DepthStencilRenderBufferParams&);
 
-        friend bool operator==(const SharedDepthStencilRenderBuffer&, const SharedDepthStencilRenderBuffer&) = default;
+        friend bool operator==(
+            const SharedDepthStencilRenderBuffer&, const SharedDepthStencilRenderBuffer&) = default;
 
         SharedDepthStencilRenderBuffer clone() const;
 
@@ -65,6 +66,7 @@ namespace osc
 
         class DepthStencilRenderBuffer;
         const DepthStencilRenderBuffer& impl() const { return *impl_; }
+
     private:
         friend class GraphicsBackend;
         friend class RenderTexture;

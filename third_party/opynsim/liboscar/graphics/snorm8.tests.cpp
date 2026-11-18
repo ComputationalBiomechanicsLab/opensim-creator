@@ -46,8 +46,8 @@ TEST(Snorm8, normalized_value_returns_normalized_value)
 TEST(Snorm8, constructed_from_float_quantizes_to_between_minus_127_and_127)
 {
     static_assert(Snorm8{-1.0f} == Snorm8{-127});
-    static_assert(Snorm8{ 0.0f} == Snorm8{0});
-    static_assert(Snorm8{ 1.0f} == Snorm8{127});
+    static_assert(Snorm8{0.0f} == Snorm8{0});
+    static_assert(Snorm8{1.0f} == Snorm8{127});
 
     // saturates
     static_assert(Snorm8{-1.7f} == Snorm8{-127});

@@ -6,27 +6,40 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class DisplayStateChangeEvent; }
-namespace osc { class DropFileEvent; }
-namespace osc { class Event; }
-namespace osc { class KeyEvent; }
-namespace osc { class MouseEvent; }
-namespace osc { class MouseWheelEvent; }
-namespace osc { class QuitEvent; }
-namespace osc { class TextInputEvent; }
-namespace osc { class WidgetPrivate; }
-namespace osc { class WindowEvent; }
-
-#define OSC_WIDGET_DATA_GETTERS(ImplClass)                                                                    \
-    const ImplClass& private_data() const { return reinterpret_cast<const ImplClass&>(base_private_data()); } \
-    ImplClass& private_data() { return reinterpret_cast<ImplClass&>(base_private_data()); }
+// NOLINTBEGIN
+#define OSC_WIDGET_DATA_GETTERS(ImplClass)                                                         \
+    const ImplClass& private_data() const                                                          \
+    {                                                                                              \
+        return reinterpret_cast<const ImplClass&>(base_private_data());                            \
+    }                                                                                              \
+    ImplClass& private_data()                                                                      \
+    {                                                                                              \
+        return reinterpret_cast<ImplClass&>(base_private_data());                                  \
+    }
+// NOLINTEND
 
 namespace osc
 {
+    class DisplayStateChangeEvent;
+    class DropFileEvent;
+    class Event;
+    class KeyEvent;
+    class MouseEvent;
+    class MouseWheelEvent;
+    class QuitEvent;
+    class TextInputEvent;
+    class WidgetPrivate;
+    class WindowEvent;
+
     class Widget {
     public:
         Widget(Widget* parent = nullptr);
+        Widget(const Widget&) = delete;
+        Widget(Widget&&) noexcept = delete;
         virtual ~Widget() noexcept;
+
+        Widget& operator=(const Widget&) = delete;
+        Widget& operator=(Widget&&) noexcept = delete;
 
         // Returns `impl_on_event(e)`.
         //
@@ -37,17 +50,19 @@ namespace osc
         // - `App::notify(Widget&, Event&)`
         bool on_event(Event& e) { return impl_on_event(e); }
 
-        // Called by the implementation before it's about to start calling `on_event`, `on_tick`, and `on_draw`
+        // Called by the implementation before it's about to start calling `on_event`, `on_tick`,
+        // and `on_draw`
         void on_mount() { impl_on_mount(); }
 
-        // Called by the implementation after the last time it calls `on_event`, `on_tick`, and `on_draw`
+        // Called by the implementation after the last time it calls `on_event`, `on_tick`, and
+        // `on_draw`
         void on_unmount() { impl_on_unmount(); }
 
         // Called by the implementation once per frame.
         void on_tick() { impl_on_tick(); }
 
-        // Called once per frame with the expectation that the implementation will draw its contents into the current
-        // framebuffer or active ui context.
+        // Called once per frame with the expectation that the implementation will draw its contents
+        // into the current framebuffer or active ui context.
         void on_draw() { impl_on_draw(); }
 
         // Returns a lifetime-checked, but non-lockable, pointer to this `Widget`.
@@ -89,6 +104,7 @@ namespace osc
 
         // Sets the name of this `Widget` instance.
         void set_name(std::string_view);
+
     protected:
         explicit Widget(std::unique_ptr<WidgetPrivate>&&);
 
@@ -116,12 +132,8 @@ namespace osc
         virtual void impl_on_unmount();
         virtual void impl_on_tick();
         virtual void impl_on_draw();
-    private:
-        Widget(const Widget&) = delete;
-        Widget& operator=(const Widget&) = delete;
-        Widget(Widget&&) noexcept = delete;
-        Widget& operator=(Widget&&) noexcept = delete;
 
+    private:
         OSC_WIDGET_DATA_GETTERS(WidgetPrivate);
 
         std::unique_ptr<WidgetPrivate> data_;

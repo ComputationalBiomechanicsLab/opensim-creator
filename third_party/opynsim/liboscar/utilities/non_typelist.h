@@ -13,8 +13,7 @@ namespace osc
     struct NonTypelist;
 
     template<typename T>
-    struct NonTypelist<T> {
-    };
+    struct NonTypelist<T> {};
 
     template<typename T, T Head, T... Tails>
     struct NonTypelist<T, Head, Tails...> {
@@ -33,7 +32,7 @@ namespace osc
     };
 
     template<typename NTList>
-    inline constexpr size_t NonTypelistSizeV = NonTypelistSize<NTList>::value;
+    inline constexpr size_t non_typelist_size_v = NonTypelistSize<NTList>::value;
 
     // NonTypelist: indexed access
 
@@ -47,7 +46,7 @@ namespace osc
 
     template<typename T, T Head, T... Tails, size_t Index>
     struct NonTypeAt<NonTypelist<T, Head, Tails...>, Index> {
-        static_assert(Index < sizeof...(Tails)+1, "index out of range");
-        static constexpr T value = NonTypeAt<NonTypelist<T, Tails...>, Index-1>::value;
+        static_assert(Index < sizeof...(Tails) + 1, "index out of range");
+        static constexpr T value = NonTypeAt<NonTypelist<T, Tails...>, Index - 1>::value;
     };
 }

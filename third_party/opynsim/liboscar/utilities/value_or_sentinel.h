@@ -23,18 +23,27 @@ namespace osc
 
         template<class U = std::remove_cv_t<T>>
         requires std::constructible_from<T, U&&>
-        constexpr ValueOrSentinel(U&& value) : value_(std::forward<U>(value)) {}
+        constexpr ValueOrSentinel(U&& value) :
+            value_(std::forward<U>(value))
+        {}
 
         friend constexpr bool operator==(ValueOrSentinel, ValueOrSentinel) = default;
 
         template<typename U>
-        friend constexpr bool operator==(const ValueOrSentinel& lhs, const U& rhs) { return *lhs == rhs; }
+        friend constexpr bool operator==(const ValueOrSentinel& lhs, const U& rhs)
+        {
+            return *lhs == rhs;
+        }
 
         template<typename U>
-        friend constexpr bool operator==(const U& lhs, const ValueOrSentinel& rhs) { return lhs == *rhs; }
+        friend constexpr bool operator==(const U& lhs, const ValueOrSentinel& rhs)
+        {
+            return lhs == *rhs;
+        }
 
-        explicit constexpr operator bool () const { return value_ != Sentinel; }
+        explicit constexpr operator bool() const { return value_ != Sentinel; }
 
+        // clang-format off
         constexpr const T&  operator*() const&  noexcept { return value_; }
         constexpr       T&  operator*()      &  noexcept { return value_; }
         constexpr const T&& operator*() const&& noexcept { return std::move(value_); }
@@ -43,6 +52,7 @@ namespace osc
         constexpr       T&  value()          &           { if (not *this) { throw std::bad_optional_access{}; } return value_; }
         constexpr const T&& value()     const&&          { if (not *this) { throw std::bad_optional_access{}; } return std::move(value_); }
         constexpr       T&& value()          &&          { if (not *this) { throw std::bad_optional_access{}; } return std::move(value_); }
+        // clang-format on
 
     private:
         T value_ = Sentinel;
@@ -58,7 +68,10 @@ namespace osc
 template<typename T, T Sentinel>
 struct std::formatter<osc::ValueOrSentinel<T, Sentinel>> {
     template<class ParseCtx>
-    constexpr auto parse(ParseCtx& ctx) { return inner_.parse(ctx); }
+    constexpr auto parse(ParseCtx& ctx)
+    {
+        return inner_.parse(ctx);
+    }
 
     template<class FmtCtx>
     auto format(const osc::ValueOrSentinel<T, Sentinel>& v, FmtCtx& ctx) const
@@ -68,6 +81,7 @@ struct std::formatter<osc::ValueOrSentinel<T, Sentinel>> {
         *it++ = ')';
         return it;
     }
+
 private:
     std::formatter<T> inner_;
 };

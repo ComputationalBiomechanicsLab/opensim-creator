@@ -2,10 +2,10 @@
 
 #include <liboscar/ui/tabs/tab.h>
 
-namespace osc { class Widget; }
-
 namespace osc
 {
+    class Widget;
+
     class LOGLHDRTab final : public Tab {
     public:
         static CStringView id();
@@ -13,10 +13,10 @@ namespace osc
         explicit LOGLHDRTab(Widget*);
 
     private:
-        void impl_on_mount() final;
-        void impl_on_unmount() final;
-        bool impl_on_event(Event&) final;
-        void impl_on_draw() final;
+        void impl_on_mount() override;
+        void impl_on_unmount() override;
+        bool impl_on_event(Event&) override;
+        void impl_on_draw() override;
 
         class Impl;
         OSC_WIDGET_DATA_GETTERS(Impl);

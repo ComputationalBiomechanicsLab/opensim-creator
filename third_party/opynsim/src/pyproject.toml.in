@@ -1,0 +1,18 @@
+# This pyproject only exists to make `pip install` work on
+# the build directory, which is handy for development.
+#
+# See `packaging/` for how the various config files etc. are
+# handled when they are shipped to users.
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opynsim"
+version = "@PROJECT_VERSION@"
+dependencies = ["numpy"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["opynsim*"]

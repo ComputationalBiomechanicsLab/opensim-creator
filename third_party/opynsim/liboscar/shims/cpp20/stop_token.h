@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINTBEGIN(readability-*)
+
 #include <version> // __cpp_lib_jthread
 
 #ifdef __cpp_lib_jthread
@@ -65,3 +67,5 @@ namespace osc::cpp20
     };
 #endif
 }
+
+// NOLINTEND(readability-*)

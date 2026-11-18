@@ -24,6 +24,7 @@ using namespace osc;
 namespace
 {
     // world space positions of each cube (step 2)
+    // clang-format off
     constexpr auto c_cube_positions = std::to_array<Vector3>({
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},
@@ -36,6 +37,7 @@ namespace
         { 1.5f,  0.2f, -1.5f },
         {-1.3f,  1.0f, -1.5f },
     });
+    // clang-format on
 
     MouseCapturingCamera create_camera_that_matches_learnopengl()
     {
@@ -56,18 +58,12 @@ namespace
         material.set(
             "uTexture1",
             Image::read_into_texture(
-                loader.open("oscar_demos/learnopengl/textures/container.jpg"),
-                ColorSpace::sRGB
-            )
-        );
+                loader.open("oscar_demos/learnopengl/textures/container.jpg"), ColorSpace::sRGB));
 
         material.set(
             "uTexture2",
             Image::read_into_texture(
-                loader.open("oscar_demos/learnopengl/textures/awesomeface.png"),
-                ColorSpace::sRGB
-            )
-        );
+                loader.open("oscar_demos/learnopengl/textures/awesomeface.png"), ColorSpace::sRGB));
 
         return material;
     }
@@ -93,10 +89,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_tick()
     {
@@ -116,8 +109,7 @@ private:
     {
         if (show_step1_) {
             render_queue_.emplace(mesh_, step1_transform_, material_);
-        }
-        else {
+        } else {
             const Vector3 axis = normalize(Vector3{1.0f, 0.3f, 0.5f});
 
             for (size_t i = 0; i < c_cube_positions.size(); ++i) {
@@ -127,15 +119,17 @@ private:
                         .rotation = angle_axis(i * 20_deg, axis),
                         .translation = c_cube_positions[i],
                     },
-                    material_
-                );
+                    material_);
             }
         }
 
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-            .clear_color = {0.2f, 0.3f, 0.3f, 1.0f},
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+                .clear_color = {0.2f, 0.3f, 0.3f, 1.0f},
+            });
         render_queue_.clear();
     }
 
@@ -166,14 +160,31 @@ private:
     PerfPanel perf_panel_{&owner()};
 };
 
-
-CStringView osc::LOGLCoordinateSystemsTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLCoordinateSystemsTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLCoordinateSystemsTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLCoordinateSystemsTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLCoordinateSystemsTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLCoordinateSystemsTab::impl_on_tick() { private_data().on_tick(); }
-void osc::LOGLCoordinateSystemsTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLCoordinateSystemsTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLCoordinateSystemsTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLCoordinateSystemsTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLCoordinateSystemsTab::impl_on_tick()
+{
+    private_data().on_tick();
+}
+void osc::LOGLCoordinateSystemsTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

@@ -37,7 +37,7 @@ osc::CircleGeometry::CircleGeometry(const Params& p)
     // not-middle vertices
     for (size_t s = 0; s <= num_segments; ++s) {
         const auto fs = static_cast<float>(s);
-        const auto segment = p.theta_start + (fs/fnum_segments * p.theta_length);
+        const auto segment = p.theta_start + (fs / fnum_segments * p.theta_length);
         const auto cos_segment = cos(segment);
         const auto sin_segment = sin(segment);
 
@@ -48,7 +48,7 @@ osc::CircleGeometry::CircleGeometry(const Params& p)
 
     OSC_ASSERT(num_segments + 1 < std::numeric_limits<uint32_t>::max());
     for (uint32_t i = 1; i <= static_cast<uint32_t>(num_segments); ++i) {
-        indices.insert(indices.end(), {i, i+1, 0});
+        indices.insert(indices.end(), {i, i + 1, 0});
     }
 
     mesh_.set_vertices(vertices);

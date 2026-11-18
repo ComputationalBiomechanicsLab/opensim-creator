@@ -9,6 +9,21 @@ TEST(extract_filename, returns_blank_when_called_with_blank_string)
     static_assert(extract_filename("").empty());
 }
 
+TEST(extract_filename, returns_blank_when_called_with_unix_separator)
+{
+    static_assert(extract_filename("/").empty());
+}
+
+TEST(extract_filename, returns_blank_when_called_with_windows_separator)
+{
+    static_assert(extract_filename("\\").empty());
+}
+
+TEST(extract_filename, returns_correct_output_on_single_character_input)
+{
+    static_assert(extract_filename("a") == "a");
+}
+
 TEST(extract_filename, returns_filename_when_given_only_filename)
 {
     static_assert(extract_filename("file.cpp") == "file.cpp");

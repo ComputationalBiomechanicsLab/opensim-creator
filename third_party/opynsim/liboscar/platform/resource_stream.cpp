@@ -20,7 +20,7 @@ namespace
         }
 
         auto rv = std::make_unique<std::ifstream>(path, std::ios::binary | std::ios::in);
-        if (not *rv) {
+        if (not*rv) {
             throw formatted_runtime_error("{}: failed to load ResourceStream", path.string());
         }
         return rv;

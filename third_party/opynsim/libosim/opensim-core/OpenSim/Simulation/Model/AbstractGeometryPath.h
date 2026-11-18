@@ -160,6 +160,20 @@ public:
      */
     virtual bool isVisualPath() const = 0;
 
+    /**
+     * Find the list of paths to independent coordinates which fully determine
+     * the kinematic state of this path.
+     *
+     * Internally, this may use a variety of methods to find the list of
+     * coordinates. It may search the kinematic tree to find the joints lying
+     * between the origin and insertion points of the path, or it may use
+     * a user-defined list of coordinates as part of a function-based path
+     * representation. It is up to concrete implementations
+     * (e.g., `GeometryPath`) to provide a relevant implementation.
+     */
+    virtual std::vector<ComponentPath>
+    findIndependentCoordinates(const SimTK::State&) const = 0;
+
     // DEFAULTED METHODS
     //
     // These are methods that for which AbstractGeometryPath provides default
@@ -233,36 +247,63 @@ public:
     double getPreScaleLength(const SimTK::State& s) const;
     void setPreScaleLength(const SimTK::State& s, double preScaleLength);
 
+#ifndef SWIG  // `DecorativePathPoint` is a C++-only API
     /**
      * Represents a decorative (i.e. visualization-only) point of an
-     * `AbstractGeometryPath`. Can be used by UI implementations to
-     * display the path.
+     * `AbstractGeometryPath`. Can be used by visualizers and
+     * `generateDecorations` to display the path.
      */
     class DecorativePathPoint final {
     public:
         explicit DecorativePathPoint(
             const SimTK::Vec3& locationInGround,
             const Component* associatedComponent = nullptr) :
-
             m_locationInGround{locationInGround},
             m_maybeAssociatedComponent{associatedComponent}
         {}
 
         SimTK::Vec3 getLocationInGround() const { return m_locationInGround; }
-        void setLocationInGround(const SimTK::Vec3& p) { m_locationInGround = p; }
-        const Component* getAssociatedComponent() const { return m_maybeAssociatedComponent; }
+        void setLocationInGround(const SimTK::Vec3& p) {
+            m_locationInGround = p;
+        }
+
+        const Component* getAssociatedComponent() const {
+            return m_maybeAssociatedComponent;
+        }
     private:
         SimTK::Vec3 m_locationInGround;
         const Component* m_maybeAssociatedComponent;
     };
 
+    /**
+     * Calls `callback` with each point of a decorative representation of the
+     * path, if such a representation is available.
+     *
+     * @param state Current simulation state, used to read the state of this
+     *              path.
+     * @param modelDisplayHints Model-level decorative display hints, which may
+     *                          affect how decorative path points are generated.
+     * @param callback A callback that should be called with each point of the
+     *                 decorative path.
+     */
     void forEachDecorativePathPoint(
-        const SimTK::State&,
+        const SimTK::State& state,
+        const ModelDisplayHints& modelDisplayHints,
         const std::function<void(const DecorativePathPoint&)>& callback) const;
 
-    std::vector<DecorativePathPoint> getDecorativePathPoints(const SimTK::State&) const;
+    /**
+     * Get a vector of decorative path points.
+     *
+     * @param state Current simulation state, used to read the state of this
+     *              path.
+     * @param modelDisplayHints Model-level decorative display hints, which may
+     *                          affect how decorative path points are generated.
+     */
+    std::vector<DecorativePathPoint> getDecorativePathPoints(
+        const SimTK::State& state,
+        const ModelDisplayHints& modelDisplayHints) const;
+#endif  // #ifndef SWIG
 
-protected:
     /**
      * Generates default decorations for this `AbstractGeometryPath`, based on
      * the decorative points emitted by `implForEachDecorativePathPoint`.
@@ -270,31 +311,33 @@ protected:
      * Derived classes may override this to provide different display behavior
      * for the path.
      */
-    void generateDecorations(
-        bool fixed,
-        const ModelDisplayHints&,
+    void generateDecorations(bool fixed, const ModelDisplayHints&,
         const SimTK::State&,
-        SimTK::Array_<SimTK::DecorativeGeometry>&
-    ) const override;
+        SimTK::Array_<SimTK::DecorativeGeometry>&) const override;
+
 private:
     /**
      * Implementors should call `callback` with each point of a decorative
      * representation of the path.
      *
-     * The decorative representation does not necessarily need to be the same
-     * as the computational representation: it only needs to be a "suitable"
-     * visual representation of the path (if any).
+     * The decorative representation of a path does not necessarily need to be
+     * the same as the computational representation: it only needs to be a
+     * "suitable" visual representation of the path (if any).
      *
-     * @param s        Current simulation state, used to read the state of this path.
+     * @param state    Current simulation state, used to read the state of this
+     *                 path.
+     * @param modelDisplayHints Model-level display hints. Implementors may
+     *                          use pertinent decoration hints from this.
      * @param callback A callback that should be called with each point of the
      *                 decorative path.
      */
     virtual void implForEachDecorativePathPoint(
-        const SimTK::State& s,
+        const SimTK::State& state,
+        const ModelDisplayHints& modelDisplayHints,
         const std::function<void(const DecorativePathPoint&)>& callback) const
     {
-        // No-op: implementations are also permitted to provide no decorative point
-        // representation at all.
+        // No-op: implementations are also permitted to provide no decorative
+        // point representation at all.
     }
 
     // Used by `(get|set)PreLengthScale`. Used during `extend(Pre|Post)Scale` by

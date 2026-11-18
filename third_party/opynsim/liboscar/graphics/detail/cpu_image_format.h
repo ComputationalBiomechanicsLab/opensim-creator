@@ -16,12 +16,12 @@ namespace osc::detail
         NUM_OPTIONS,
     };
 
-    using CPUImageFormatList = OptionList<CPUImageFormat,
+    using CPUImageFormatList = OptionList<
+        CPUImageFormat,
         CPUImageFormat::R8,
         CPUImageFormat::RG,
         CPUImageFormat::RGB,
         CPUImageFormat::RGBA,
         CPUImageFormat::Depth,
-        CPUImageFormat::DepthStencil
-    >;
+        CPUImageFormat::DepthStencil>;
 }

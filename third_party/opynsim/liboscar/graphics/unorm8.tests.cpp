@@ -24,7 +24,8 @@ TEST(Unorm8, default_constructs_to_zero)
 }
 TEST(Unorm8, compares_equivalent_to_a_std_byte_with_the_same_value)
 {
-    static_assert(to<Unorm8>(static_cast<std::byte>(0xfa)) == to<Unorm8>(static_cast<std::byte>(0xfa)));
+    static_assert(
+        to<Unorm8>(static_cast<std::byte>(0xfa)) == to<Unorm8>(static_cast<std::byte>(0xfa)));
 }
 
 TEST(Unorm8, compares_equivalent_to_another_Unorm8_with_the_same_floating_point_value)
@@ -54,7 +55,10 @@ TEST(Unorm8, can_construct_a_Vector3_of_floats_from_a_Vector3_of_Unorm8s)
 
     const Vector<Unorm8, 3> vector3_of_unorm8s{Unorm8{0.1f}, Unorm8{0.2f}, Unorm8{0.3f}};
     const Vector3 vector3_of_floats{vector3_of_unorm8s};
-    const Vector3 expected_content{Unorm8{0.1f}.normalized_value(), Unorm8{0.2f}.normalized_value(), Unorm8{0.3f}.normalized_value()};
+    const Vector3 expected_content{
+        Unorm8{0.1f}.normalized_value(),
+        Unorm8{0.2f}.normalized_value(),
+        Unorm8{0.3f}.normalized_value()};
     ASSERT_EQ(vector3_of_floats, expected_content);
 }
 

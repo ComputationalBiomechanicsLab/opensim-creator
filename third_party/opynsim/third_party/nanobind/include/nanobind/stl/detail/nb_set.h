@@ -21,11 +21,16 @@ template <typename Set, typename Key> struct set_caster {
 
     using Caster = make_caster<Key>;
 
-    bool from_python(handle src, uint8_t flags, cleanup_list *cleanup) noexcept {
+    bool from_python(handle src, uint32_t flags, cleanup_list *cleanup) noexcept {
         value.clear();
 
-        PyObject* iter = PyObject_GetIter(src.ptr());
-        if (!iter) {
+        // Cheap pre-check so that a failed PyObject_GetIter on a
+        // non-iterable overload candidate never raises and clears
+        if (!iterable_check(src.ptr()))
+            return false;
+
+        PyObject *iter = PyObject_GetIter(src.ptr());
+        if (NB_UNLIKELY(!iter)) {
             PyErr_Clear();
             return false;
         }
@@ -39,12 +44,14 @@ template <typename Set, typename Key> struct set_caster {
         while ((key = PyIter_Next(iter)) != nullptr) {
             success &= (key_caster.from_python(key, flags, cleanup) &&
                         key_caster.template can_cast<Key>());
-            Py_DECREF(key);
 
-            if (!success)
+            if (!success) {
+                Py_DECREF(key);
                 break;
+            }
 
             value.emplace(key_caster.operator cast_t<Key>());
+            Py_DECREF(key);
         }
 
         if (PyErr_Occurred()) {
@@ -58,11 +65,12 @@ template <typename Set, typename Key> struct set_caster {
     }
 
     template <typename T>
-    static handle from_cpp(T &&src, rv_policy policy, cleanup_list *cleanup) {
+    static handle from_cpp(T &&src, rv_policy policy,
+                           cleanup_list *cleanup) noexcept {
         object ret = steal(PySet_New(nullptr));
 
         if (ret.is_valid()) {
-            for (auto& key : src) {
+            for (auto&& key : src) {
                 object k = steal(
                     Caster::from_cpp(forward_like_<T>(key), policy, cleanup));
 

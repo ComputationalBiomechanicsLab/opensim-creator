@@ -29,6 +29,7 @@ namespace osc
         {
             return lhs.type_info_->before(*rhs.type_info_);
         }
+
     private:
         const std::type_info* type_info_;
     };

@@ -9,10 +9,7 @@
 #include <string_view>
 
 osc::PanelPrivate::PanelPrivate(
-    Panel& owner,
-    Widget* parent,
-    std::string_view panel_name,
-    ui::PanelFlags panel_flags) :
+    Panel& owner, Widget* parent, std::string_view panel_name, ui::PanelFlags panel_flags) :
 
     WidgetPrivate{owner, parent},
     panel_enabled_config_key_{std::format("panels/{}/enabled", panel_name)},
@@ -25,8 +22,7 @@ bool osc::PanelPrivate::is_open() const
 {
     if (auto v = App::settings().find_value(panel_enabled_config_key_)) {
         return to<bool>(*v);
-    }
-    else {
+    } else {
         return false;
     }
 }

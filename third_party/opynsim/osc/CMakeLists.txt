@@ -13,8 +13,10 @@ set_target_properties(osc PROPERTIES
     CXX_EXTENSIONS        OFF
 )
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(osc)
+endif()
+if(OPYN_ENABLE_SANITIZERS)
+    opyn_add_sanitizer_flags_to(osc)
 endif()
 target_link_libraries(osc PRIVATE opensimcreator)
 target_include_directories(osc

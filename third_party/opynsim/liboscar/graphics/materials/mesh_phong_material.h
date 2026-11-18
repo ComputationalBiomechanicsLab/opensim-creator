@@ -7,7 +7,8 @@
 namespace osc
 {
     struct MeshPhongMaterialParams final {
-        friend bool operator==(const MeshPhongMaterialParams&, const MeshPhongMaterialParams&) = default;
+        friend bool operator==(const MeshPhongMaterialParams&, const MeshPhongMaterialParams&) =
+            default;
 
         Vector3 light_position = {1.0f, 1.0f, 1.0f};
         Vector3 viewer_position = {0.0f, 0.0f, 0.0f};

@@ -5,47 +5,41 @@
 
 #include <memory>
 
-namespace opyn { class ModelStatePair; }
-namespace osc { class ModelViewerPanelParameters; }
-namespace osc { class ModelViewerPanelState; }
+namespace opyn
+{
+    class ModelStatePair;
+}
 
 namespace osc
 {
+    class ModelViewerPanelParameters;
+    class ModelViewerPanelState;
+
     // modal popup that prompts the user to select components in the model (e.g.
     // to define an edge, or a frame)
     class ChooseComponentsEditorLayer final : public ModelViewerPanelLayer {
     public:
         ChooseComponentsEditorLayer(
-            std::shared_ptr<opyn::ModelStatePair>,
-            ChooseComponentsEditorLayerParameters
-        );
+            std::shared_ptr<opyn::ModelStatePair>, ChooseComponentsEditorLayerParameters);
         ChooseComponentsEditorLayer(const ChooseComponentsEditorLayer&) = delete;
         ChooseComponentsEditorLayer(ChooseComponentsEditorLayer&&) noexcept;
         ChooseComponentsEditorLayer& operator=(const ChooseComponentsEditorLayer&) = delete;
         ChooseComponentsEditorLayer& operator=(ChooseComponentsEditorLayer&&) noexcept;
-        ~ChooseComponentsEditorLayer() noexcept;
+        ~ChooseComponentsEditorLayer() noexcept override;
 
     private:
-        bool implHandleKeyboardInputs(
-            ModelViewerPanelParameters&,
-            ModelViewerPanelState&
-        ) final;
+        bool impl_handle_keyboard_inputs(
+            ModelViewerPanelParameters&, ModelViewerPanelState&) override;
 
-        bool implHandleMouseInputs(
-            ModelViewerPanelParameters&,
-            ModelViewerPanelState&
-        ) final;
+        bool impl_handle_mouse_inputs(ModelViewerPanelParameters&, ModelViewerPanelState&) override;
 
-        void implOnDraw(
-            ModelViewerPanelParameters&,
-            ModelViewerPanelState&
-        ) final;
+        void impl_on_draw(ModelViewerPanelParameters&, ModelViewerPanelState&) override;
 
-        float implGetBackgroundAlpha() const final;
+        float impl_get_background_alpha() const override;
 
-        bool implShouldClose() const final;
+        bool impl_should_close() const override;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

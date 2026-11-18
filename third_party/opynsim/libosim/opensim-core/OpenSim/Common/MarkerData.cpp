@@ -24,16 +24,17 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <fstream>
-#include <math.h>
-#include <float.h>
 #include "MarkerData.h"
+
 #include "SimmIO.h"
-#include "SimmMacros.h"
 #include "Storage.h"
-#include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
-#include "OpenSim/Common/STOFileAdapter.h"
+
+#include <algorithm>
+#include <cfloat>
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <regex>
 
 //=============================================================================
 // STATICS
@@ -45,6 +46,25 @@ using SimTK::Vec3;
 //=============================================================================
 // HELPER FUNCTIONS
 //=============================================================================
+// Rewrite a version-2 STO file as version-1. Returns true if the version was
+// changed. This function can be removed when Storage class is removed.
+inline bool revertToVersionNumber1(const std::string& filenameOld,
+                                   const std::string& filenameNew) {
+    std::regex versionline{ R"([ \t]*version[ \t]*=[ \t]*2[ \t]*)" };
+    std::ifstream fileOld{ filenameOld };
+    std::ofstream fileNew{ filenameNew };
+    std::string line{};
+    bool changedVersion{false};
+    while (std::getline(fileOld, line)) {
+        if (std::regex_match(line, versionline)) {
+            fileNew << "version=1\n";
+            changedVersion = true;
+        } else
+            fileNew << line << "\n";
+    }
+    return changedVersion;
+}
+
 // Add number of rows (nRows) and number of columns (nColumns) to the header of
 // the STO file. Note that nColumns will include time, so it will be number of
 // columns in the matrix plus 1 (for time).
@@ -88,16 +108,6 @@ MarkerData::MarkerData(const string& aFileName) :
     _numMarkers(0),
     _markerNames("")
 {
-
-#if 0
-   if (!aFileName)
-        return;
-
-   if (!lookForFile(aFileName, gWorkingDir.c_str(), actualFilename))
-   {
-      return smFileError;
-   }
-#endif
 
    /* Check if the suffix is TRC or TRB. Will read TRC by default */
     string suffix;
@@ -164,40 +174,11 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
       if (findFirstNonWhiteSpace(line) == -1)
          continue;
 
-        if (aSMD._frames.getSize() == aSMD._numFrames)
-        {
-#if 0
-            if (gUseGlobalMessages)
-            {
-                gErrorBuffer += "Extra data found at end of tracked marker file. ";
-                gErrorBuffer += "Header declared only " + intToString(trc->header.numFrames) + " frames.\n";
-            }
-            rc = smFileWarning;
-#endif
-            break;
-        }
-
-      if (!readIntegerFromString(line, &frameNum))
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gErrorBuffer += "Could not read frame number in tracked marker file.\n";
-         rc = smFileError;
-         goto cleanup;
-#endif
-      }
-
-      if (!readDoubleFromString(line, &time))
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gErrorBuffer += "Could not read time in tracked marker file.\n";
-         rc = smFileError;
-         goto cleanup;
-#endif
-      }
-
-        MarkerFrame *frame = new MarkerFrame(aSMD._numMarkers, frameNum, time, aSMD._units);
+      if (aSMD._frames.getSize() == aSMD._numFrames) { break; }
+      if (!readIntegerFromString(line, &frameNum)) { continue; }
+      if (!readDoubleFromString(line, &time)) { continue; }
+      MarkerFrame* frame =
+              new MarkerFrame(aSMD._numMarkers, frameNum, time, aSMD._units);
 
       /* keep reading sets of coordinates until the end of the line is
        * reached. If more coordinates were read than there are markers,
@@ -207,50 +188,16 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
       bool allowNaNs = true;
       while (readCoordinatesFromString(line, &coords[0], allowNaNs))
       {
-         if (coordsRead >= aSMD._numMarkers)
-         {
-            break;
-
-#if 0  // Don't return an error because many TRC files have extra data at the ends of rows
-            if (gUseGlobalMessages)
-               gErrorBuffer += "Extra data found in frame number " + intToString(frameNum) +
-                               " in tracked marker file.\n";
-            rc = smFileError;
-            // delete the current markerCoordList because framesRead has not been incremented yet.
-            delete [] f->markerCoordList;
-            goto cleanup;
-#endif
-         }
-         if (coordsRead < aSMD._numMarkers)
-                frame->addMarker(coords);
-         coordsRead++;
+          if (coordsRead >= aSMD._numMarkers) { break; }
+          if (coordsRead < aSMD._numMarkers) { frame->addMarker(coords); }
+          coordsRead++;
       }
 
-      if (coordsRead < aSMD._numMarkers)
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gErrorBuffer += " Missing data in frame number " + intToString(frameNum) +
-                            " in tracked marker file.\n";
-         rc = smFileError;
-         // delete the current markerCoordList because framesRead has not been incremented yet.
-         delete [] f->markerCoordList;
-         goto cleanup;
-#endif
-      }
-        aSMD._frames.append(frame);
+      aSMD._frames.append(frame);
    }
 
-   if (aSMD._frames.getSize() < aSMD._numFrames)
-   {
-#if 0
-      if (gUseGlobalMessages)
-         gErrorBuffer += "Missing data in tracked marker file. Only " + intToString(framesRead) + " of " +
-                         intToString(trc->header.numFrames) + " frames found.\n";
-      rc = smFileError;
-      goto cleanup;
-#endif
-        aSMD._numFrames = aSMD._frames.getSize();
+   if (aSMD._frames.getSize() < aSMD._numFrames) {
+       aSMD._numFrames = aSMD._frames.getSize();
    }
 
    /* If the user-defined frame numbers are not contiguous from the first frame to the
@@ -265,16 +212,6 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
             aSMD._frames[i]->setFrameNumber(firstIndex + i);
    }
 
-#if 0
-   if (gUseGlobalMessages)
-   {
-      gMessage += "TRC file " + actualFileName + "\n\t" + intToString(trc->header.numFrames)
-                  + " frames\n\t" + intToString(trc->header.numMarkers) + " markers/frame\n";
-      gMessage += "Read " + intToString(framesRead) + " frames.\n";
-   }
-#endif
-
-//cleanup:
    in.close();
 }
 
@@ -300,12 +237,9 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
    readIntegerFromString(line, &pathFileType);
    if (buffer != "PathFileType" || (pathFileType != 3 && pathFileType != 4))
    {
-        throw Exception("MarkerData: ERR- File "+aFileName+" does not appear to be a valid TRC file",__FILE__,__LINE__);
-#if 0
-      if (gUseGlobalMessages)
-         gErrorBuffer += "Unknown file type " + intToString(pathFileType) + " in TRC file" + actualFileName;
-      return smFileError;
-#endif
+       throw Exception("MarkerData: ERR- File " + aFileName +
+                               " does not appear to be a valid TRC file",
+               __FILE__, __LINE__);
    }
 
    /* read line 2 - header info column names */
@@ -321,33 +255,14 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
    ok = ok && readIntegerFromString(line, &aSMD._numMarkers);
    ok = ok && readStringFromString(line, buffer);
 
-   if (pathFileType == 3)
-   {
-      if (!ok)
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gErrorBuffer += "Could not read line 3 in TRC file " + actualFileName + ".\n";
-         return smFormatError;
-#endif
-      }
-      aSMD._originalDataRate = aSMD._dataRate;
-      aSMD._originalStartFrame = 1;
-      aSMD._originalNumFrames = aSMD._numFrames;
-   }
-   else if (pathFileType == 4)
-   {
-      ok = ok && readDoubleFromString(line, &aSMD._originalDataRate);
-      ok = ok && readIntegerFromString(line, &aSMD._originalStartFrame);
-      ok = ok && readIntegerFromString(line, &aSMD._originalNumFrames);
-      if (!ok)
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gErrorBuffer += "Could not read line3 in TRC file " + actualFileName + ".\n";
-         return smFormatError;
-#endif
-      }
+   if (pathFileType == 3) {
+       aSMD._originalDataRate = aSMD._dataRate;
+       aSMD._originalStartFrame = 1;
+       aSMD._originalNumFrames = aSMD._numFrames;
+   } else if (pathFileType == 4) {
+       ok = ok && readDoubleFromString(line, &aSMD._originalDataRate);
+       ok = ok && readIntegerFromString(line, &aSMD._originalStartFrame);
+       ok = ok && readIntegerFromString(line, &aSMD._originalNumFrames);
    }
 
    aSMD._units = Units(buffer);
@@ -363,18 +278,9 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
    markersRead = 0;
    while (!line.empty())
    {
-      if (!readTabDelimitedStringFromString(line, buffer))
-         break;
-      if (markersRead >= aSMD._numMarkers)
-      {
-#if 0
-         if (gUseGlobalMessages)
-            gMessage += "More marker names in TRC file than in model. Ignoring extra marker names.\n";
-         break;
-#endif
-      }
-        aSMD._markerNames.append(buffer);
-      markersRead++;
+       if (!readTabDelimitedStringFromString(line, buffer)) { break; }
+       aSMD._markerNames.append(buffer);
+       markersRead++;
    }
 
     /* If we don't read the header, we'll throw meaningful exception and abort rather than crash the machine!! */
@@ -425,76 +331,7 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
  */
 void MarkerData::readTRBFile(const string& aFileName, MarkerData& aSMD)
 {
-#if 0
-   int i, j, index, headerSize, numMarkersThisFrame;
-   unsigned short header[6];
-   long data[100];
-   FILE* file;
-
-   trc->filename = new char [actualFileName.size() + 1];
-   strcpy(trc->filename, actualFileName.c_str());
-
-   readTRBFileHeader(actualFileName, &trc->header, headerSize);
-
-   file = fopen(actualFileName.c_str(), "rb");
-
-   trc->frameList = new smTRCFrame [trc->header.numFrames];
-
-   fseek(file, headerSize, SEEK_SET);
-
-   for (i = 0; i < trc->header.numFrames; i++)
-   {
-      trc->frameList[i].frameNum = i;
-      trc->frameList[i].time = (double) i / trc->header.dataRate;
-      trc->frameList[i].units = trc->header.units;
-
-      trc->frameList[i].numMarkers = trc->header.numMarkers;
-      trc->frameList[i].markerCoordList = new smPoint3 [trc->frameList[i].numMarkers];
-
-      // initialize all the markers to UNDEFINED
-      for (j = 0; j < trc->frameList[i].numMarkers; j++)
-      {
-         trc->frameList[i].markerCoordList[j][0] = UNDEFINED_DOUBLE;
-         trc->frameList[i].markerCoordList[j][1] = UNDEFINED_DOUBLE;
-         trc->frameList[i].markerCoordList[j][2] = UNDEFINED_DOUBLE;
-      }
-
-      // now read the header to see how many markers are present
-      for (j = 0; j < 6; j++)
-         header[j] = _read_binary_unsigned_short(file);
-
-      numMarkersThisFrame = (header[4] - 3) / 6;
-
-      for (j = 0; j < numMarkersThisFrame; j++)
-      {
-         fread(data, 6*4, 1, file);
-
-         // the index of this marker is stored in the first data element
-         index = data[0] - 1;
-
-         // if the index is good, copy the marker coordinates
-         if (index >= 0 && index < trc->frameList[i].numMarkers)
-         {
-            trc->frameList[i].markerCoordList[index][0] = *(float *)(&data[1]);
-            trc->frameList[i].markerCoordList[index][1] = *(float *)(&data[2]);
-            trc->frameList[i].markerCoordList[index][2] = *(float *)(&data[3]);
-         }
-      }
-   }
-
-   goto finish;
-
-//invalid:
-   if (gUseGlobalMessages)
-      gErrorBuffer += "Cannot read " + actualFileName + ". File format is invalid.";
-   return smFormatError;
-
-   smFreeTRCStruct(trc);
-
-finish:
-   fclose(file);
-   return smNoError;
-#endif
+    log_warn("readTRBFile not implemented!");
 }
 
 //_____________________________________________________________________________
@@ -676,127 +513,71 @@ double MarkerData::getLastFrameTime() const
  */
 void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEndTime)
 {
-    if (_numFrames < 2)
+    if (_numFrames < 2) {
+        log_warn("The MarkerData contained less than 2 frames. Unable to "
+                 "compute an average!");
         return;
+    }
 
     int startIndex = 0, endIndex = 1;
-    double *minX = NULL, *minY = NULL, *minZ = NULL, *maxX = NULL, *maxY = NULL, *maxZ = NULL;
-
     findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
-    MarkerFrame *averagedFrame = new MarkerFrame(*_frames[startIndex]);
-
-    /* If aThreshold is greater than zero, then calculate
-     * the movement of each marker so you can check if it
-     * is greater than aThreshold.
-     */
-    if (aThreshold > 0.0)
-    {
-        minX = new double [_numMarkers];
-        minY = new double [_numMarkers];
-        minZ = new double [_numMarkers];
-        maxX = new double [_numMarkers];
-        maxY = new double [_numMarkers];
-        maxZ = new double [_numMarkers];
-        for (int i = 0; i < _numMarkers; i++)
-        {
-            minX[i] = minY[i] = minZ[i] =  SimTK::Infinity;
-            maxX[i] = maxY[i] = maxZ[i] = -SimTK::Infinity;
-        }
-    }
-
-    /* Initialize all the averaged marker locations to 0,0,0. Then
-     * loop through the frames to be averaged, adding each marker location
-     * to averagedFrame. Keep track of the min/max XYZ for each marker
-     * so you can compare it to aThreshold when you're done.
-     */
-    for (int i = 0; i < _numMarkers; i++)
-    {
-        int numFrames = 0;
-        Vec3& avePt = averagedFrame->updMarker(i);
-        avePt = Vec3(0);
-
-        for (int j = startIndex; j <= endIndex; j++)
-        {
-            Vec3& pt = _frames[j]->updMarker(i);
-            if (!pt.isNaN())
-            {
-                Vec3& coords = pt; //.get();
-                avePt += coords;
-                numFrames++;
-                if (aThreshold > 0.0)
-                {
-                    if (coords[0] < minX[i])
-                        minX[i] = coords[0];
-                    if (coords[0] > maxX[i])
-                        maxX[i] = coords[0];
-                    if (coords[1] < minY[i])
-                        minY[i] = coords[1];
-                    if (coords[1] > maxY[i])
-                        maxY[i] = coords[1];
-                    if (coords[2] < minZ[i])
-                        minZ[i] = coords[2];
-                    if (coords[2] > maxZ[i])
-                        maxZ[i] = coords[2];
-                }
-            }
-        }
-
-        /* Now divide by the number of frames to get the average. */
-        if (numFrames > 0)
-            avePt /= (double)numFrames;
-        else
-            avePt = Vec3(SimTK::NaN) ;//(SimTK::NaN, SimTK::NaN, SimTK::NaN);
-    }
-
+    // Get a reference to the first frame in the array, NOT the first frame in
+    // the slice. At the end all values will be dropped and this will be the only
+    // frame left
+    auto* averagedFrame = _frames[0];
     /* Store the indices from the file of the first frame and
      * last frame that were averaged, so you can report them later.
      */
     int startUserIndex = _frames[startIndex]->getFrameNumber();
     int endUserIndex = _frames[endIndex]->getFrameNumber();
-
-    /* Now delete all the existing frames and insert the averaged one. */
-    _frames.clearAndDestroy();
-    _frames.append(averagedFrame);
-    _numFrames = 1;
-    _firstFrameNumber = _frames[0]->getFrameNumber();
-
-    if (aThreshold > 0.0)
-    {
-        for (int i = 0; i < _numMarkers; i++)
-        {
-            Vec3& pt = _frames[0]->updMarker(i);
-
-            if (pt.isNaN())
-            {
-                log_warn("Marker {} is missing in frames {} to {}. Coordinate "
-                         "will be set to NAN.", _markerNames[i], startUserIndex,
-                        endUserIndex);
+    // Calculate the average and min/max movement of each marker
+    for (int i = 0; i < _numMarkers; ++i) {
+        auto sum = Vec3(0);
+        // Number of non-NaN frames
+        auto n = 0;
+        auto lo = Vec3(SimTK::Infinity);
+        auto hi = Vec3(-SimTK::Infinity);
+        for (int j = startIndex; j <= endIndex; ++j) {
+            const auto& p = _frames[j]->getMarker(i);
+            if (!p.isNaN()) {
+                n += 1;
+                sum += p;
+                // Element-wise min/max over the Vec3
+                for (int k = 0; k < 3; ++k) {
+                    lo[k] = std::min(lo[k], p[k]);
+                    hi[k] = std::max(hi[k], p[k]);
+                }
             }
-            else if (maxX[i] - minX[i] > aThreshold ||
-                      maxY[i] - minY[i] > aThreshold ||
-                      maxZ[i] - minZ[i] > aThreshold)
-            {
-                double maxDim = maxX[i] - minX[i];
-                maxDim = MAX(maxDim, (maxY[i] - minY[i]));
-                maxDim = MAX(maxDim, (maxZ[i] - minZ[i]));
-                log_warn("Movement of marker {} in {} is {} (threshold = {})",
-                        _markerNames[i], _fileName, maxDim, aThreshold);
-            }
+        }
+
+        if (n != 0) {
+            // Divide by the number of frames to get the average.
+            averagedFrame->updMarker(i) = sum / static_cast<double>(n);
+        } else {
+
+            averagedFrame->updMarker(i) = Vec3(SimTK::NaN);
+            log_warn("Marker {} is missing in frames {} to {}. Coordinate "
+                     "will be set to NAN.",
+                    _markerNames[i], startUserIndex, endUserIndex);
+        }
+
+        // Alert if the min/max movement of the marker is above the aThreshold.
+        const Vec3 rng = hi - lo;
+        const double maxDim = std::max({rng[0], rng[1], rng[2]});
+        if (maxDim > aThreshold) {
+            log_warn("Movement of marker {} in {} is {} (threshold = {})",
+                    _markerNames[i], _fileName, maxDim, aThreshold);
         }
     }
 
+    // Now delete all existing frames in place, except the averaged frame.
+    for (int i = _numFrames - 1; i >= 0; --i) {
+        if (_frames[i] != averagedFrame) { _frames.remove(i); }
+    }
+    _numFrames = 1;
+
     log_info("Averaged frames from time {} to {} in {} (frames {} to {})",
             aStartTime, aEndTime, _fileName, startUserIndex, endUserIndex);
-
-    if (aThreshold > 0.0)
-    {
-        delete [] minX;
-        delete [] minY;
-        delete [] minZ;
-        delete [] maxX;
-        delete [] maxY;
-        delete [] maxZ;
-    }
 }
 
 //_____________________________________________________________________________

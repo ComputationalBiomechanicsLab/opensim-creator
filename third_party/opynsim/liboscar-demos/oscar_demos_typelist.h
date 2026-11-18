@@ -86,6 +86,5 @@ namespace osc
         ImGuizmoDemoTab,
         MandelbrotTab,
         MeshGenTestTab,
-        SubMeshDemo
-    >;
+        SubMeshDemo>;
 }

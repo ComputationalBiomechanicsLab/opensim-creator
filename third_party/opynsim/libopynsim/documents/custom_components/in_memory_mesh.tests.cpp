@@ -23,11 +23,11 @@ TEST(InMemoryMesh, default_constructed_instance_emits_blank_mesh)
 
     int num_decorations_emitted = 0;
     osc::SceneDecoration last_decoration;
-    mesh.generate_custom_decorations(state, [&num_decorations_emitted, &last_decoration](osc::SceneDecoration&& decoration)
-    {
-        ++num_decorations_emitted;
-        last_decoration = std::move(decoration);
-    });
+    mesh.generate_custom_decorations(
+        state, [&num_decorations_emitted, &last_decoration](osc::SceneDecoration&& decoration) {
+            ++num_decorations_emitted;
+            last_decoration = std::move(decoration);
+        });
 
     ASSERT_EQ(num_decorations_emitted, 1);
     ASSERT_EQ(last_decoration.mesh.num_vertices(), 0);

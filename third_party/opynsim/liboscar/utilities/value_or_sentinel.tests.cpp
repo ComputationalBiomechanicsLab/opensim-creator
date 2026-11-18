@@ -60,10 +60,10 @@ TEST(ValueOrSentinel, compares_true_with_value_when_filled_with_value)
 TEST(ValueOrSentinel, compares_true_with_sentinel_value)
 {
     const ValueOrSentinel<int, -50> a;  // Sentinel-constructed
-    ASSERT_EQ( a,  -50);
-    ASSERT_EQ(-50,  a);
-    ASSERT_NE( a,   7);
-    ASSERT_NE( 7,   a);
+    ASSERT_EQ(a, -50);
+    ASSERT_EQ(-50, a);
+    ASSERT_NE(a, 7);
+    ASSERT_NE(7, a);
 }
 
 TEST(ValueOrSentinel, value_throws_if_called_on_sentinel)
@@ -83,13 +83,13 @@ TEST(ValueOrSentinel, value_throws_if_called_on_sentinel)
     // const&& overload
     {
         const ValueOrSentinel<int, -5> empty;
-        ASSERT_THROW({ std::move(empty).value(); }, std::bad_optional_access);  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
+        ASSERT_THROW({ std::move(empty).value(); }, std::bad_optional_access);
     }
 
     // && overload
     {
         ValueOrSentinel<int, -5> empty;
-        ASSERT_THROW({ std::move(empty).value(); }, std::bad_optional_access);  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
+        ASSERT_THROW({ std::move(empty).value(); }, std::bad_optional_access);
     }
 }
 
@@ -111,13 +111,13 @@ TEST(ValueOrSentinel, operator_star_accesses_value)
     // const&& overload
     {
         const ValueOrSentinel<int, -5> v = -3;
-        ASSERT_EQ(*std::move(v), -3);  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
+        ASSERT_EQ(*std::move(v), -3);
     }
 
     // && overload
     {
         const ValueOrSentinel<int, -5> v = -4;
-        ASSERT_EQ(*std::move(v), -4);  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
+        ASSERT_EQ(*std::move(v), -4);
     }
 }
 

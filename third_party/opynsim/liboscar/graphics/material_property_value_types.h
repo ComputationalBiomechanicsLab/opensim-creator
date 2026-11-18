@@ -15,22 +15,22 @@
 //
 // This should match `MaterialPropertyValueTypes`. Yes, macros suck, but C++26 (reflection)
 // is required to work around it.
-#define OSC_FOR_EACH_MATERIAL_PROPERTY_VALUE_TYPE(X)  \
-    X(bool)                                     \
-    X(osc::Color)                               \
-    X(osc::Color32)                             \
-    X(osc::Cubemap)                             \
-    X(float)                                    \
-    X(int)                                      \
-    X(osc::Matrix3x3)                           \
-    X(osc::Matrix4x4)                           \
-    X(osc::RenderTexture)                       \
-    X(osc::SharedColorRenderBuffer)             \
-    X(osc::SharedDepthStencilRenderBuffer)      \
-    X(osc::Texture2D)                           \
-    X(osc::Vector2)                             \
-    X(osc::Vector3)                             \
-    X(osc::Vector4)                             \
+#define OSC_FOR_EACH_MATERIAL_PROPERTY_VALUE_TYPE(X)                                               \
+    X(bool)                                                                                        \
+    X(osc::Color)                                                                                  \
+    X(osc::Color32)                                                                                \
+    X(osc::Cubemap)                                                                                \
+    X(float)                                                                                       \
+    X(int)                                                                                         \
+    X(osc::Matrix3x3)                                                                              \
+    X(osc::Matrix4x4)                                                                              \
+    X(osc::RenderTexture)                                                                          \
+    X(osc::SharedColorRenderBuffer)                                                                \
+    X(osc::SharedDepthStencilRenderBuffer)                                                         \
+    X(osc::Texture2D)                                                                              \
+    X(osc::Vector2)                                                                                \
+    X(osc::Vector3)                                                                                \
+    X(osc::Vector4)
 
 namespace osc
 {
@@ -49,6 +49,5 @@ namespace osc
         Texture2D,
         Vector2,
         Vector3,
-        Vector4
-    >;
+        Vector4>;
 }

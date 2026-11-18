@@ -6,15 +6,23 @@
 #include <memory>
 #include <string_view>
 
-namespace OpenSim { class ComponentPath; }
-namespace opyn { class ModelStatePair; }
-namespace osc { class Widget; }
+namespace OpenSim
+{
+    class ComponentPath;
+}
+
+namespace opyn
+{
+    class ModelStatePair;
+}
 
 namespace osc
 {
+    class Widget;
+
     enum class ComponentContextMenuFlag : unsigned {
-        None               = 0,
-        NoPlotVsCoordinate = 1<<0,
+        None = 0,
+        NoPlotVsCoordinate = 1 << 0,
     };
     using ComponentContextMenuFlags = Flags<ComponentContextMenuFlag>;
 
@@ -22,14 +30,13 @@ namespace osc
     public:
         explicit ComponentContextMenu(
             Widget* parent,
-            std::string_view popupName,
+            std::string_view popup_name,
             std::shared_ptr<opyn::ModelStatePair>,
             const OpenSim::ComponentPath&,
-            ComponentContextMenuFlags = {}
-        );
+            ComponentContextMenuFlags = {});
 
     private:
-        void impl_draw_content() final;
+        void impl_draw_content() override;
 
         class Impl;
         OSC_WIDGET_DATA_GETTERS(Impl);

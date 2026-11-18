@@ -12,12 +12,14 @@ if(OPYN_BUILD_PYTHON_BINDINGS)
     set_target_properties(oscar_demos PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(oscar_demos)
 endif()
+if(OPYN_ENABLE_SANITIZERS)
+    opyn_add_sanitizer_flags_to(oscar_demos)
+endif()
 target_include_directories(oscar_demos PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>  # so that `#include "liboscar-demos/HEADER.h"` works
-    $<INSTALL_INTERFACE:include>                       # because all headers are installed into `liboscar-demos/`
+    $<BUILD_INTERFACE:${OPYN_BUILD_INTERFACE_INCLUDE_DIR}>  # so that `#include "liboscar-demos/HEADER.h"` works
+    $<INSTALL_INTERFACE:include>                            # because all headers are installed into `liboscar-demos/`
 )
 target_link_libraries(oscar_demos PUBLIC oscar)
 

@@ -91,51 +91,111 @@ TEST(CoordinateDirection, have_an_expected_total_ordering)
 TEST(CoordinateDirection, cross_works_as_expected)
 {
     // cross products along same axis (undefined: falls back to first arg)
-    static_assert(cross(CoordinateDirection::x(), CoordinateDirection::x()) == CoordinateDirection::x());
-    static_assert(cross(CoordinateDirection::x(), CoordinateDirection::minus_x()) == CoordinateDirection::x());
-    static_assert(cross(CoordinateDirection::minus_x(), CoordinateDirection::x()) == CoordinateDirection::minus_x());
-    static_assert(cross(CoordinateDirection::y(), CoordinateDirection::y()) == CoordinateDirection::y());
-    static_assert(cross(CoordinateDirection::y(), CoordinateDirection::minus_y()) == CoordinateDirection::y());
-    static_assert(cross(CoordinateDirection::minus_y(), CoordinateDirection::y()) == CoordinateDirection::minus_y());
-    static_assert(cross(CoordinateDirection::z(), CoordinateDirection::z()) == CoordinateDirection::z());
-    static_assert(cross(CoordinateDirection::z(), CoordinateDirection::minus_z()) == CoordinateDirection::z());
-    static_assert(cross(CoordinateDirection::minus_z(), CoordinateDirection::z()) == CoordinateDirection::minus_z());
+    static_assert(
+        cross(CoordinateDirection::x(), CoordinateDirection::x()) == CoordinateDirection::x());
+    static_assert(
+        cross(CoordinateDirection::x(), CoordinateDirection::minus_x()) ==
+        CoordinateDirection::x());
+    static_assert(
+        cross(CoordinateDirection::minus_x(), CoordinateDirection::x()) ==
+        CoordinateDirection::minus_x());
+    static_assert(
+        cross(CoordinateDirection::y(), CoordinateDirection::y()) == CoordinateDirection::y());
+    static_assert(
+        cross(CoordinateDirection::y(), CoordinateDirection::minus_y()) ==
+        CoordinateDirection::y());
+    static_assert(
+        cross(CoordinateDirection::minus_y(), CoordinateDirection::y()) ==
+        CoordinateDirection::minus_y());
+    static_assert(
+        cross(CoordinateDirection::z(), CoordinateDirection::z()) == CoordinateDirection::z());
+    static_assert(
+        cross(CoordinateDirection::z(), CoordinateDirection::minus_z()) ==
+        CoordinateDirection::z());
+    static_assert(
+        cross(CoordinateDirection::minus_z(), CoordinateDirection::z()) ==
+        CoordinateDirection::minus_z());
 
     // +X on lhs
-    static_assert(cross(CoordinateDirection::x(), CoordinateDirection::y()) == CoordinateDirection::z());
-    static_assert(cross(CoordinateDirection::x(), CoordinateDirection::minus_y()) == CoordinateDirection::minus_z());
-    static_assert(cross(CoordinateDirection::x(), CoordinateDirection::z()) == CoordinateDirection::minus_y());
-    static_assert(cross(CoordinateDirection::x(), CoordinateDirection::minus_z()) == CoordinateDirection::y());
+    static_assert(
+        cross(CoordinateDirection::x(), CoordinateDirection::y()) == CoordinateDirection::z());
+    static_assert(
+        cross(CoordinateDirection::x(), CoordinateDirection::minus_y()) ==
+        CoordinateDirection::minus_z());
+    static_assert(
+        cross(CoordinateDirection::x(), CoordinateDirection::z()) ==
+        CoordinateDirection::minus_y());
+    static_assert(
+        cross(CoordinateDirection::x(), CoordinateDirection::minus_z()) ==
+        CoordinateDirection::y());
 
     // -X on lhs
-    static_assert(cross(CoordinateDirection::minus_x(), CoordinateDirection::y()) == CoordinateDirection::minus_z());
-    static_assert(cross(CoordinateDirection::minus_x(), CoordinateDirection::minus_y()) == CoordinateDirection::z());
-    static_assert(cross(CoordinateDirection::minus_x(), CoordinateDirection::z()) == CoordinateDirection::y());
-    static_assert(cross(CoordinateDirection::minus_x(), CoordinateDirection::minus_z()) == CoordinateDirection::minus_y());
+    static_assert(
+        cross(CoordinateDirection::minus_x(), CoordinateDirection::y()) ==
+        CoordinateDirection::minus_z());
+    static_assert(
+        cross(CoordinateDirection::minus_x(), CoordinateDirection::minus_y()) ==
+        CoordinateDirection::z());
+    static_assert(
+        cross(CoordinateDirection::minus_x(), CoordinateDirection::z()) ==
+        CoordinateDirection::y());
+    static_assert(
+        cross(CoordinateDirection::minus_x(), CoordinateDirection::minus_z()) ==
+        CoordinateDirection::minus_y());
 
     // +Y on lhs
-    static_assert(cross(CoordinateDirection::y(), CoordinateDirection::z()) == CoordinateDirection::x());
-    static_assert(cross(CoordinateDirection::y(), CoordinateDirection::minus_z()) == CoordinateDirection::minus_x());
-    static_assert(cross(CoordinateDirection::y(), CoordinateDirection::x()) == CoordinateDirection::minus_z());
-    static_assert(cross(CoordinateDirection::y(), CoordinateDirection::minus_x()) == CoordinateDirection::z());
+    static_assert(
+        cross(CoordinateDirection::y(), CoordinateDirection::z()) == CoordinateDirection::x());
+    static_assert(
+        cross(CoordinateDirection::y(), CoordinateDirection::minus_z()) ==
+        CoordinateDirection::minus_x());
+    static_assert(
+        cross(CoordinateDirection::y(), CoordinateDirection::x()) ==
+        CoordinateDirection::minus_z());
+    static_assert(
+        cross(CoordinateDirection::y(), CoordinateDirection::minus_x()) ==
+        CoordinateDirection::z());
 
     // -Y on lhs
-    static_assert(cross(CoordinateDirection::minus_y(), CoordinateDirection::z()) == CoordinateDirection::minus_x());
-    static_assert(cross(CoordinateDirection::minus_y(), CoordinateDirection::minus_z()) == CoordinateDirection::x());
-    static_assert(cross(CoordinateDirection::minus_y(), CoordinateDirection::x()) == CoordinateDirection::z());
-    static_assert(cross(CoordinateDirection::minus_y(), CoordinateDirection::minus_x()) == CoordinateDirection::minus_z());
+    static_assert(
+        cross(CoordinateDirection::minus_y(), CoordinateDirection::z()) ==
+        CoordinateDirection::minus_x());
+    static_assert(
+        cross(CoordinateDirection::minus_y(), CoordinateDirection::minus_z()) ==
+        CoordinateDirection::x());
+    static_assert(
+        cross(CoordinateDirection::minus_y(), CoordinateDirection::x()) ==
+        CoordinateDirection::z());
+    static_assert(
+        cross(CoordinateDirection::minus_y(), CoordinateDirection::minus_x()) ==
+        CoordinateDirection::minus_z());
 
     // +Z on lhs
-    static_assert(cross(CoordinateDirection::z(), CoordinateDirection::x()) == CoordinateDirection::y());
-    static_assert(cross(CoordinateDirection::z(), CoordinateDirection::minus_x()) == CoordinateDirection::minus_y());
-    static_assert(cross(CoordinateDirection::z(), CoordinateDirection::y()) == CoordinateDirection::minus_x());
-    static_assert(cross(CoordinateDirection::z(), CoordinateDirection::minus_y()) == CoordinateDirection::x());
+    static_assert(
+        cross(CoordinateDirection::z(), CoordinateDirection::x()) == CoordinateDirection::y());
+    static_assert(
+        cross(CoordinateDirection::z(), CoordinateDirection::minus_x()) ==
+        CoordinateDirection::minus_y());
+    static_assert(
+        cross(CoordinateDirection::z(), CoordinateDirection::y()) ==
+        CoordinateDirection::minus_x());
+    static_assert(
+        cross(CoordinateDirection::z(), CoordinateDirection::minus_y()) ==
+        CoordinateDirection::x());
 
     // -Z on lhs
-    static_assert(cross(CoordinateDirection::minus_z(), CoordinateDirection::x()) == CoordinateDirection::minus_y());
-    static_assert(cross(CoordinateDirection::minus_z(), CoordinateDirection::minus_x()) == CoordinateDirection::y());
-    static_assert(cross(CoordinateDirection::minus_z(), CoordinateDirection::y()) == CoordinateDirection::x());
-    static_assert(cross(CoordinateDirection::minus_z(), CoordinateDirection::minus_y()) == CoordinateDirection::minus_x());
+    static_assert(
+        cross(CoordinateDirection::minus_z(), CoordinateDirection::x()) ==
+        CoordinateDirection::minus_y());
+    static_assert(
+        cross(CoordinateDirection::minus_z(), CoordinateDirection::minus_x()) ==
+        CoordinateDirection::y());
+    static_assert(
+        cross(CoordinateDirection::minus_z(), CoordinateDirection::y()) ==
+        CoordinateDirection::x());
+    static_assert(
+        cross(CoordinateDirection::minus_z(), CoordinateDirection::minus_y()) ==
+        CoordinateDirection::minus_x());
 }
 
 TEST(CoordinateDirection, try_parse_blank_input_returns_nullopt)
@@ -208,15 +268,13 @@ namespace
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    CoordinateDirectionParsingTest,
-    ParsingTestFixture,
-    testing::ValuesIn(c_parsing_test_cases)
-);
+    CoordinateDirectionParsingTest, ParsingTestFixture, testing::ValuesIn(c_parsing_test_cases));
 
 TEST_P(ParsingTestFixture, Check)
 {
-    const ParsingTestCase test_case =  GetParam();
-    ASSERT_EQ(CoordinateDirection::try_parse(test_case.input), test_case.expected) << "input = " << test_case.input;
+    const ParsingTestCase test_case = GetParam();
+    ASSERT_EQ(CoordinateDirection::try_parse(test_case.input), test_case.expected)
+        << "input = " << test_case.input;
 }
 
 // printing test cases
@@ -240,10 +298,7 @@ namespace
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    CoordinateDirectionPrintingTest,
-    PrintingTestFixture,
-    testing::ValuesIn(c_printing_test_cases)
-);
+    CoordinateDirectionPrintingTest, PrintingTestFixture, testing::ValuesIn(c_printing_test_cases));
 
 TEST_P(PrintingTestFixture, Check)
 {
@@ -275,7 +330,7 @@ TEST(CoordinateDirection, direction_vector_returns_expected_results)
     ASSERT_EQ(CoordinateDirection::minus_y().direction_vector(), Vector3(0.0f, -1.0f, 0.0f));
     ASSERT_EQ(CoordinateDirection::minus_z().direction_vector(), Vector3(0.0f, 0.0f, -1.0f));
 }
- TEST(CoordinateDirection, index_returns_expected_results)
+TEST(CoordinateDirection, index_returns_expected_results)
 {
     static_assert(CoordinateDirection::x().index() == 0);
     static_assert(CoordinateDirection::y().index() == 1);

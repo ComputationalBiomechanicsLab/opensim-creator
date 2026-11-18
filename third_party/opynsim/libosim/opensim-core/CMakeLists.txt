@@ -28,8 +28,8 @@ include(FeatureSummary)
 # OpenSim version.
 # ----------------
 set(OPENSIM_MAJOR_VERSION 4)
-set(OPENSIM_MINOR_VERSION 5)
-set(OPENSIM_PATCH_VERSION 2)
+set(OPENSIM_MINOR_VERSION 6)
+set(OPENSIM_PATCH_VERSION 0)
 
 # Don't include the patch version if it is 0.
 set(PATCH_VERSION_STRING)
@@ -123,6 +123,8 @@ set(PROCESSOR_COUNT "${PROCESSOR_COUNT}" CACHE STRING
     "Number of concurrent jobs when running tests via RUN_TESTS_PARALLEL target.")
 mark_as_advanced(PROCESSOR_COUNT)
 
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
 # Try to use MathJax for Doxygen equations.
 option(OPENSIM_DOXYGEN_USE_MATHJAX "Try to use MathJax to render Doxygen
 equations. If OFF, LATEX is used instead if you have it; otherwise we use
@@ -168,10 +170,11 @@ wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
 option(OPENSIM_DISABLE_LOG_FILE
 "Disable OpenSim from automatically creating 'opensim.log'.
 
-By default, any application linking to osimCommon will create an
-'opensim.log' file in the current working directory. All log messages
-written by OpenSim (incl. during static initialization) are written to
-both this file and the standard output streams." OFF)
+When file logging is enabled (this flag set to `OFF`), applications
+linking to osimCommon will create an 'opensim.log' file in the
+current working directory. All log messages written by OpenSim
+(incl. during static initialization) are written to both this file
+and the standard output streams." ON)
 
 option(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION
 "Disable OpenSim from registering bundled `Object` types at static
@@ -183,12 +186,8 @@ on using by calling `RegisterTypes_osimLIBRARY` (e.g. `RegisterTypes_osimActuato
 or by manually registering each type (e.g. `Object::registerType(PhysicalOffsetFrame());`)." OFF)
 mark_as_advanced(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION)
 
-if(OPENSIM_DISABLE_LOG_FILE)
-    add_definitions(-DOPENSIM_DISABLE_LOG_FILE=1)
-endif()
-if(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION)
-    add_definitions(-DOPENSIM_DISABLE_STATIC_TYPE_REGISTRATION=1)
-endif()
+option(OPENSIM_ENABLE_WARNINGS
+"Adds additional warning flags to OpenSim's build targets" OFF)
 
 set(OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT OFF)
 if(WIN32)
@@ -260,7 +259,6 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DATAROOTDIR}/OpenSim/java")
     set(OPENSIM_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/Code")
     set(OPENSIM_INSTALL_SIMBODYDIR ".")
-    set(OPENSIM_INSTALL_SPDLOGDIR ".")
     set(OPENSIM_INSTALL_CASADIDIR ".")
 
 else()
@@ -282,7 +280,6 @@ else()
     set(OPENSIM_INSTALL_JAVASRCDIR sdk/Java)
     set(OPENSIM_INSTALL_APIEXDIR Resources/Code)
     set(OPENSIM_INSTALL_SIMBODYDIR sdk/Simbody)
-    set(OPENSIM_INSTALL_SPDLOGDIR sdk/spdlog)
     set(OPENSIM_INSTALL_CASADIDIR sdk)
 
 endif()
@@ -382,120 +379,6 @@ else()
     set(inst_set_to_use ${default_build_inst_set})
 endif()
 
-## When building in any of the Release modes, tell gcc to use not-quite most
-## aggressive optimization and to generate SSE2 floating point instructions.
-## Here we are specifying *all* of the Release flags, overriding CMake's
-## defaults.  Watch out for optimizer bugs in particular gcc versions!
-
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
-        ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    if(inst_set_to_use)
-        string(TOLOWER ${inst_set_to_use} GCC_INST_SET)
-        set(GCC_INST_SET "-m${GCC_INST_SET}")
-    else()
-        set(GCC_INST_SET)
-    endif()
-
-    # Testing with Clang 3.3 on Ubuntu 14.04 shows a 5% decrease
-    # in the runtime of the tests when we enable loop unrolling.
-    set(GCC_OPT_ENABLE "-funroll-loops")
-
-    # If you know of optimization bugs that affect SimTK in particular
-    # gcc versions, this is the place to turn off those optimizations.
-    set(GCC_OPT_DISABLE)
-
-    # C++
-    set(CMAKE_CXX_FLAGS_DEBUG          "-g ${GCC_INST_SET}"
-      CACHE STRING "g++ Debug build compile flags" FORCE)
-    set(CMAKE_CXX_FLAGS_RELEASE
-      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}"
-      CACHE STRING "g++ Release build compile flags" FORCE)
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
-      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}"
-      CACHE STRING "g++ RelWithDebInfo build compile flags" FORCE)
-    set(CMAKE_CXX_FLAGS_MINSIZEREL     "-DNDEBUG -Os ${GCC_INST_SET}"
-      CACHE STRING "g++ MinSizeRel build compile flags" FORCE)
-
-    # C
-    set(CMAKE_C_FLAGS_DEBUG            "-g ${GCC_INST_SET}"
-      CACHE STRING "gcc Debug build compile flags" FORCE)
-    set(CMAKE_C_FLAGS_RELEASE
-      "-DNDEBUG -O2 ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}"
-      CACHE STRING "gcc Release build compile flags" FORCE)
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO
-      "-DNDEBUG -O2 -g ${GCC_OPT_ENABLE} ${GCC_OPT_DISABLE} ${GCC_INST_SET}"
-      CACHE STRING "gcc RelWithDebInfo build compile flags" FORCE)
-    set(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os ${GCC_INST_SET}"
-      CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
-
-    add_compile_options(-Wall -Wextra) # -Werror
-    # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
-    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-        add_compile_options(-Wshorten-64-to-32)
-        # TODO Find clang/gcc equivalent to C4267; -Wconversion gives way too
-        # many warnings.
-    endif()
-    # The assert() macro is omitted in Release, causing "unused-variable"
-    # warnings. It is sufficient to just catch such warnings in Debug.
-    add_compile_options($<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
-            $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>)
-
-    # Avoid warnings for Object::Self and Object::Super typedefs.
-    # This warning exists in GCC and Clang >=4.0.
-    if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
-            NOT (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "5.0.0"))
-        add_compile_options(-Wno-unused-local-typedefs)
-    endif()
-endif()
-
-## When building in any of the Release modes, tell VC++ cl compiler to use intrinsics
-## (i.e. sqrt instruction rather than sqrt subroutine) with flag /Oi.
-
-if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
-    if(inst_set_to_use)
-        string(TOUPPER ${inst_set_to_use} CL_INST_SET)
-        set(CL_INST_SET "/arch:${CL_INST_SET}")
-    else()
-        set(CL_INST_SET)
-    endif()
-
-    set(BUILD_LIMIT_PARALLEL_COMPILES "" CACHE STRING
-        "Set a maximum number of simultaneous compilations.")
-    mark_as_advanced(BUILD_LIMIT_PARALLEL_COMPILES)
-    set(mxcpu ${BUILD_LIMIT_PARALLEL_COMPILES}) # abbreviation
-
-    ## C++
-    # Disable "C4068: unknown pragma" warning.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4068") 
-    set(CMAKE_CXX_FLAGS_DEBUG
-    "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /bigobj /GS- ${CL_INST_SET}"
-        CACHE STRING "VC++ Debug build compile flags" FORCE)
-    set(CMAKE_CXX_FLAGS_RELEASE
-    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /bigobj /GS- ${CL_INST_SET}"
-        CACHE STRING "VC++ Release build compile flags" FORCE)
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
-    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /bigobj /GS- ${CL_INST_SET}"
-        CACHE STRING "VC++ RelWithDebInfo build compile flags" FORCE)
-    set(CMAKE_CXX_FLAGS_MINSIZEREL
-    "/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /bigobj /GS- ${CL_INST_SET}"
-        CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
-
-    ## C
-    set(CMAKE_C_FLAGS_DEBUG
-    "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /GS- ${CL_INST_SET}"
-        CACHE STRING "VC++ Debug build compile flags" FORCE)
-    set(CMAKE_C_FLAGS_RELEASE
-    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /GS- ${CL_INST_SET}"
-        CACHE STRING "VC++ Release build compile flags" FORCE)
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO
-    "/MP${mxcpu} /D NDEBUG /MD  /O2 /Ob2 /Oi /Zi /GS- ${CL_INST_SET}"
-        CACHE STRING "VC++ RelWithDebInfo build compile flags" FORCE)
-    set(CMAKE_C_FLAGS_MINSIZEREL
-    "/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- ${CL_INST_SET}"
-        CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
-
-endif()
-
 set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI or the Matlab wrapping; requires that you have SWIG and Java installed on your machine.)")
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
@@ -550,12 +433,24 @@ if(${BUILD_JAVA_WRAPPING})
 endif()
 
 if(${BUILD_PYTHON_WRAPPING})
-    set(required_python_version 3)
-    set(Python3_ROOT_DIR ""  CACHE PATH "Top level directory containing Python3. For conda environments, this can also be set to the top level directory for a specific environment.")
-    find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development NumPy)
+    # Default OPENSIM_USE_PYTHON_SABI is on and version 3.10 If you want to use the stable ABI, 
+    # you must use Python 3.8 or higher. If actual ABI version needs to be changed then
+    # modify the value of the Py_LIMITED_API definition in this file. If building wheels,
+    # you must modify the value of py_limited_api in setup.py as well.
+    option(OPENSIM_USE_PYTHON_SABI 
+        "Use the stable ABI for Python bindings" ON)
+
+    set(Python3_ROOT_DIR ""  CACHE PATH 
+        "Top level directory containing Python3. For conda environments, this can also be set to the top level directory for a specific environment.")
+    if(${OPENSIM_USE_PYTHON_SABI})
+        find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter Development.SABIModule NumPy)
+    else()
+        find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
+    endif()
     message("Python3_FOUND:${Python3_FOUND}")
     message("Python3_VERSION:${Python3_VERSION}")
     message("Python3_Development_FOUND:${Python3_Development_FOUND}")
+    message("Python_Development.SABIModule_FOUND:${Python3_Development_SABIModule_FOUND}")
     message("Python3_LIBRARIES:${Python3_LIBRARIES}")
     message("Python3_Numpy_Include:${Python3_NumPy_INCLUDE_DIRS}")
     message("Python3_Numpy_VERSION:${Python3_NumPy_VERSION}")
@@ -581,22 +476,11 @@ if(${BUILD_PYTHON_WRAPPING})
     endif()
 endif()
 
-if(WIN32)
-    add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
-endif()
-
 if (NOT OPENSIM_PYTHON_CONDA)
     include(InstallRequiredSystemLibraries)
 endif()
 
-# C++20
-# -----
-set(CMAKE_CXX_STANDARD 20)
-# Using C++20 is not optional.
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-
-## RPATH 
+## RPATH
 # If it is necessary to not put RPATHs in the installed binaries, set
 # CMAKE_SKIP_INSTALL_RPATH to ON.
 #set(OPENSIM_USE_INSTALL_RPATH FALSE)
@@ -690,10 +574,6 @@ else()
     unset(ezc3d_LIBRARY)
     unset(ezc3d_INCLUDE_DIR CACHE)
 endif()
-
-find_package(spdlog REQUIRED
-        HINTS "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
-
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
@@ -952,16 +832,13 @@ if(${OPENSIM_COPY_DEPENDENCIES})
         install(FILES ${ezc3d_desired_lib_files}
                 DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
-
-    # spdlog
-    # ------
-    install(DIRECTORY "${spdlog_DIR}/../../../"
-            DESTINATION "${OPENSIM_INSTALL_SPDLOGDIR}")
 endif()
 
 if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
     OpenSimInstallDependencyLibraries(SimTK "${Simbody_BIN_DIR}"
         "${Simbody_LIB_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+    OpenSimInstallVisualizer("${Simbody_BIN_DIR}"
+       "${Simbody_LIB_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
 endif()
 
 
@@ -999,33 +876,6 @@ file(APPEND  ${VERSION_FILE_PATH} "Platform=${PLATFORM_NAME}-${PLATFORM_ABI}")
 file(APPEND  ${VERSION_FILE_PATH} "\n")
 install(FILES ${VERSION_FILE_PATH} DESTINATION "${CMAKE_INSTALL_SYSCONFDIR}")
 
-
-# Preprocessor definitions.
-# -------------------------
-# These are used in OpenSim/version.h
-set(OPENSIM_SYSTEM_INFO ${CMAKE_SYSTEM})
-set(OPENSIM_OS_NAME ${CMAKE_SYSTEM_NAME})
-
-if( WIN32 )
-    if (NOT (MSVC_VERSION LESS 2000))
-        message(AUTHOR_WARNING "OpenSim::GetCompilerVersion() "
-            "in OpenSim/version.h does not handle this newer version "
-            "(v${MSVC_VERSION}) of Microsoft Visual C++. "
-            "Update OpenSim/version.h and the condition for this warning "
-            "in the root CMakeLists.txt.")
-    endif()
-    set(OPENSIM_COMPILER_INFO ${MSVC_VERSION})
-else()
-    set(OPENSIM_COMPILER_INFO ${CMAKE_CXX_COMPILER} )
-endif()
-
-add_definitions(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
-    -DOSIM_COMPILER_INFO=${OPENSIM_COMPILER_INFO}
-    -DOSIM_OS_NAME=${OPENSIM_OS_NAME}
-    -DOSIM_VERSION=${OPENSIM_QUALIFIED_VERSION})
-
-
-
 #-----------------------------------------------------------------------------
 
 # This directory contains files (e.g., .osim) that multiple tests may want to
@@ -1034,6 +884,8 @@ add_definitions(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
 set(OPENSIM_SHARED_TEST_FILES_DIR "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared")
 
 add_subdirectory(Vendors)
+
+add_subdirectory(tests)
 
 add_subdirectory(OpenSim)
 if(NOT BUILD_API_ONLY)

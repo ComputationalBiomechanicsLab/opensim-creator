@@ -138,6 +138,78 @@ function(OpenSimAddInstallRPATHAbsolute)
         "${CMAKE_INSTALL_PREFIX}/${OSIMRP_TO}")
 endfunction()
 
+# Sets compiler flags etc. on `target` according to OpenSim's standard
+# conventions.
+function(OpenSimConfigureTarget target)
+    # Ensure the target is compiled for C++20 with no extensions.
+    target_compile_features(${target} PUBLIC
+        cxx_std_20
+    )
+    set_target_properties(${target} PROPERTIES
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+
+    # Add compile options to the target (warnings handled below).
+    target_compile_options(${target} PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:
+            /bigobj  # Increase section table capacity (for heavy C++ templates)
+            /wd4068  # Always avoid "unknown pragma" warning (regardless of OPENSIM_ENABLE_WARNINGS)
+        >
+    )
+
+    # If requested, add warning-related compile options to the target.
+    if(OPENSIM_ENABLE_WARNINGS)
+        target_compile_options(${target} PRIVATE
+            # gcc OR clang OR apple clang flags
+            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+                -Wall
+                -Wextra
+
+                # Avoid "unused variable" warnings. These are sometimes necessary (e.g.
+                # when `assert` is dropped by a build configuration, or SWIG/Doxygen
+                # would benefit from a varname).
+                -Wno-unused-variable
+                -Wno-unused-parameter
+                -Wno-unused-but-set-variable
+                -Wno-unused-function
+
+                # Avoid warnings for `Object:Self` and `Object::Super` typedefs generated
+                # by OpenSim's macros
+                -Wno-unused-local-typedefs
+            >
+
+            $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+                # Warn when shortening integer conversions
+                # -Wshorten-64-to-32  # TODO: requires fixing a bunch of source locations
+
+                # Don't warn when a custom user-provided copy function is provided
+                -Wno-deprecated-copy-with-user-provided-copy
+            >
+
+            $<$<CXX_COMPILER_ID:GNU>:
+                # These produce false-positives in some versions of GCC
+                # (e.g. try removing it when GCC is >14).
+                -Wno-stringop-overflow
+                -Wno-array-bounds
+                -Wno-maybe-uninitialized
+            >
+        )
+    endif()
+
+    # Add compile definitions to the target.
+    target_compile_definitions(${target}
+        PRIVATE
+            $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_DEPRECATE>
+            $<$<BOOL:${OPENSIM_DISABLE_LOG_FILE}>:OPENSIM_DISABLE_LOG_FILE>
+            $<$<BOOL:${OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION}>:OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION>
+            OSIM_SYS_INFO=${CMAKE_SYSTEM}
+            OSIM_COMPILER_INFO=${CMAKE_CXX_COMPILER}
+            OSIM_OS_NAME=${CMAKE_SYSTEM_NAME}
+            OSIM_VERSION=${OPENSIM_QUALIFIED_VERSION}
+    )
+endfunction()
+
 # Create an OpenSim API library. Here are the arguments:
 # VENDORLIB: If this is a vendor library, specify "VENDORLIB" as the first
 #   argument. Otherwise, omit.
@@ -179,32 +251,29 @@ function(OpenSimAddLibrary)
     set(multiValueArgs LINKLIBS INCLUDES SOURCES TESTDIRS INCLUDEDIRS)
     cmake_parse_arguments(
         OSIMADDLIB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
     string(TOUPPER "${OSIMADDLIB_KIT}" OSIMADDLIB_UKIT)
 
-
-    # Version stuff.
-    # --------------
+    # Figure out library name (e.g. `osimActuators`)
     set(OSIMADDLIB_LIBRARY_NAME osim${OSIMADDLIB_KIT})
 
-    add_definitions(
-        -DOPENSIM_${OSIMADDLIB_UKIT}_LIBRARY_NAME=${OSIMADDLIB_LIBRARY_NAME}
-        -DOPENSIM_${OSIMADDLIB_UKIT}_MAJOR_VERSION=${OPENSIM_MAJOR_VERSION}
-        -DOPENSIM_${OSIMADDLIB_UKIT}_MINOR_VERSION=${OPENSIM_MINOR_VERSION}
-        -DOPENSIM_${OSIMADDLIB_UKIT}_BUILD_VERSION=${OPENSIM_PATCH_VERSION}
-        -DOPENSIM_${OSIMADDLIB_UKIT}_COPYRIGHT_YEARS="2005-2017"
-        -DOPENSIM_${OSIMADDLIB_UKIT}_AUTHORS="${AUTHORS}"
-        -DOPENSIM_${OSIMADDLIB_UKIT}_TYPE="Shared"
-        )
-
-
-    # Add the library.
-    # ----------------
-    # These next few lines are the most important:
-
     # Create the library using the provided source and include files.
-    add_library(${OSIMADDLIB_LIBRARY_NAME} SHARED
+    # No explicit SHARED/STATIC keyword -- respects BUILD_SHARED_LIBS.
+    add_library(${OSIMADDLIB_LIBRARY_NAME}
         ${OSIMADDLIB_SOURCES} ${OSIMADDLIB_INCLUDES})
+
+    # Configure the library target using common OpenSim configuration options
+    OpenSimConfigureTarget(${OSIMADDLIB_LIBRARY_NAME})
+
+    # Add target-specific definitions
+    target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME} PRIVATE
+        OPENSIM_${OSIMADDLIB_UKIT}_LIBRARY_NAME=${OSIMADDLIB_LIBRARY_NAME}
+        OPENSIM_${OSIMADDLIB_UKIT}_MAJOR_VERSION=${OPENSIM_MAJOR_VERSION}
+        OPENSIM_${OSIMADDLIB_UKIT}_MINOR_VERSION=${OPENSIM_MINOR_VERSION}
+        OPENSIM_${OSIMADDLIB_UKIT}_BUILD_VERSION=${OPENSIM_PATCH_VERSION}
+        OPENSIM_${OSIMADDLIB_UKIT}_COPYRIGHT_YEARS="2005-2026"
+        OPENSIM_${OSIMADDLIB_UKIT}_AUTHORS="${AUTHORS}"
+        OPENSIM_${OSIMADDLIB_UKIT}_TYPE="Shared"
+    )
 
     target_include_directories(${OSIMADDLIB_LIBRARY_NAME} 
         # Used when building this target:
@@ -227,16 +296,31 @@ function(OpenSimAddLibrary)
         )
     endif()
 
-    # This is for exporting classes on Windows.
+    # Regardless of whether the library is built STATIC or SHARED, emit
+    # position-independent code. SHARED plugins must always be link-able.
+    set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
+    )
+
+    # Set the `FOLDER` property of the library (used by IDEs).
     if(OSIMADDLIB_VENDORLIB)
         set(OSIMADDLIB_FOLDER "Vendor Libraries")
     else()
         set(OSIMADDLIB_FOLDER "Libraries")
     endif()
-    set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
-       DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
-       FOLDER "${OSIMADDLIB_FOLDER}" # For Visual Studio.
-    )
+    set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES FOLDER "${OSIMADDLIB_FOLDER}")
+
+    # Set DLL `__declspec` behavior based on target type.
+    get_target_property(lib_type ${OSIMADDLIB_LIBRARY_NAME} TYPE)
+    if(lib_type STREQUAL "SHARED_LIBRARY")
+        # Define `OSIM*_EXPORTS`, which emits `__declspec(dllexport)` on Windows.
+        # It shouldn't be defined in downstream builds (PRIVATE)
+        target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME} PRIVATE OSIM${OSIMADDLIB_UKIT}_EXPORTS)
+    elseif(lib_type STREQUAL "STATIC_LIBRARY")
+        # Define `OPENSIM_*_TYPE_STATIC`, which prevents `__declspec` emission on Windows.
+        # It should be defined in both this and downstream builds (PUBLIC).
+        target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME} PUBLIC OPENSIM_${OSIMADDLIB_UKIT}_TYPE_STATIC)
+    endif()
 
     # Install.
     # --------
@@ -328,84 +412,79 @@ function(OpenSimCopySharedTestFiles)
     endif()
 endfunction()
 
-# Create test targets for this directory.
-# TESTPROGRAMS: Names of test CPP files. One test will be created for each cpp
-#   of these files.
-# DATAFILES: Files necessary to run the test. These will be copied into the
-#   corresponding build directory.
+
+# Create an executable for the file ${OSIMTEST_NAME}.cpp, which depends on
+# libraries ${LINKLIBS}. Also, create a CTest test for this executable.
+#
+# RESOURCES: Files necessary to run the test. These will be symlinked into the
+#            corresponding build directory. Relative paths are interpreted
+#            relative to the current source directory.
 # LINKLIBS: Arguments to TARGET_LINK_LIBRARIES.
-# SOURCES: Extra source files for the executable.
+# EXTRA_SOURCES: Extra source files for the executable.
+# ENVIRONMENT: "NAME=VALUE" entries to add to the test's ENVIRONMENT property.
+# DISABLED: If TRUE, the test is still built and registered, but will be
+#           skipped by CTest instead of run.
 #
 # Here's an example:
-#   file(GLOB TEST_PROGRAMS "test*.cpp")
-#   file(GLOB DATA_FILES *.osim *.xml *.sto *.mot)
-#   OpenSimAddTests(
-#       TESTPROGRAMS ${TEST_PROGRAMS}
-#       DATAFILES ${DATA_FILES}
-#       LINKLIBS osimCommon osimSimulation osimAnalyses
-#       )
-function(OpenSimAddTests)
+#   OpenSimAddTest(NAME testMocoContact
+#       LINKLIBS osimMoco
+#       DISABLED ${MOCO_CASADI_TESTS_DISABLED}
+#       ENVIRONMENT "OPENSIM_MOCO_PARALLEL=0"
+#       RESOURCES resources/subject_20dof18musc_running.osim
+#                 resources/running_solution_full_stride.sto)
+#
+function(OpenSimAddTest)
 
     if(BUILD_TESTING)
 
         # Parse arguments.
         # ----------------
-        # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
         set(options)
-        set(oneValueArgs)
-        set(multiValueArgs TESTPROGRAMS DATAFILES LINKLIBS SOURCES)
-        cmake_parse_arguments(
-            OSIMADDTESTS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+        set(oneValueArgs NAME DISABLED)
+        set(multiValueArgs RESOURCES LINKLIBS EXTRA_SOURCES ENVIRONMENT)
+        cmake_parse_arguments(OSIMTEST
+                "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-        # If EXECUTABLE_OUTPUT_PATH is set, then that's where the tests will be
-        # located. Otherwise, they are located in the current binary directory.
-        if(EXECUTABLE_OUTPUT_PATH)
-            set(TEST_PATH "${EXECUTABLE_OUTPUT_PATH}")
-        else()
-            set(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+        add_executable(${OSIMTEST_NAME} ${OSIMTEST_NAME}.cpp
+                "${CMAKE_SOURCE_DIR}/tests/Testing.h" ${OSIMTEST_EXTRA_SOURCES})
+        OpenSimConfigureTarget(${OSIMTEST_NAME})
+        set_target_properties(${OSIMTEST_NAME} PROPERTIES FOLDER "Tests")
+        target_link_libraries(${OSIMTEST_NAME} ${OSIMTEST_LINKLIBS}
+                osimTesting Catch2::Catch2WithMain)
+
+        # Platform-specific test exclusion.
+        if(APPLE)
+            list(APPEND test_args "~[win]~[linux]~[win/linux]~[linux/win]")
+        endif()
+        if(LINUX)
+            list(APPEND test_args "~[win]~[mac]~[win/mac]~[mac/win]")
+        endif()
+        if(WIN32)
+            list(APPEND test_args "~[mac]~[linux]~[mac/linux]~[linux/mac]~[unix]")
         endif()
 
-        # Make test targets.
-        foreach(test_program ${OSIMADDTESTS_TESTPROGRAMS})
-            # NAME_WE stands for "name without extension"
-            get_filename_component(TEST_NAME ${test_program} NAME_WE)
+        # Add the test.
+        add_test(NAME ${OSIMTEST_NAME} COMMAND ${OSIMTEST_NAME} ${test_args})
 
-            add_executable(${TEST_NAME} ${test_program}
-                ${OSIMADDTESTS_SOURCES})
-            target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
-            set(test_args "")
-            if(APPLE)
-                list(APPEND test_args "~[win]~[linux]~[win/linux]~[linux/win]")
-            endif()
-            if(LINUX)
-                list(APPEND test_args "~[win]~[mac]~[win/mac]~[mac/win]")
-            endif()
-            if(WIN32)
-                list(APPEND test_args "~[mac]~[linux]~[mac/linux]~[linux/mac]~[unix]")
-            endif()
-            add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} ${test_args})
-            set_target_properties(${TEST_NAME} PROPERTIES
-                FOLDER "Tests"
-            )
+        # Skip this test, if required.
+        set_tests_properties(${OSIMTEST_NAME} PROPERTIES
+                DISABLED "${OSIMTEST_DISABLED}")
+
+        # Set any test-specific environment variables.
+        set_property(TEST ${OSIMTEST_NAME} APPEND PROPERTY
+                ENVIRONMENT ${OSIMTEST_ENVIRONMENT})
+
+        # Symlink test resources into the build directory.
+        foreach(resource ${OSIMTEST_RESOURCES})
+            get_filename_component(RESOURCE_PATH "${resource}" ABSOLUTE
+                    BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+            get_filename_component(RESOURCE_NAME "${resource}" NAME)
+            # Create the symlink, falling back to a plain file copy
+            # if the symlink fails.
+            file(CREATE_LINK "${RESOURCE_PATH}"
+                    "${CMAKE_CURRENT_BINARY_DIR}/${RESOURCE_NAME}"
+                    SYMBOLIC COPY_ON_ERROR)
         endforeach()
-
-        # Copy data files to build directory.
-        foreach(data_file ${OSIMADDTESTS_DATAFILES})
-            # This command symlinks the data files
-            # from the source directories into the running directory.
-            # This preserves changes to source files.
-            get_filename_component(FILENAME ${data_file} NAME)
-            add_custom_command(
-                TARGET ${TEST_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E create_symlink
-                    "${data_file}" 
-                    "${CMAKE_CURRENT_BINARY_DIR}/${FILENAME}")
-        endforeach()
-
-        #if(UNIX)
-        #  add_definitions(-fprofile-arcs -ftest-coverage)
-        #  link_libraries(gcov)
-        #endif(UNIX)
 
     endif()
 
@@ -433,6 +512,7 @@ function(OpenSimAddApplication)
     # Build.
     add_executable(${OSIMADDAPP_NAME} ${OSIMADDAPP_NAME}.cpp
                                       ${OSIMADDAPP_SOURCES})
+    OpenSimConfigureTarget(${OSIMADDAPP_NAME})
     target_link_libraries(${OSIMADDAPP_NAME} osimTools)
     set_target_properties(${OSIMADDAPP_NAME} PROPERTIES
         FOLDER "Applications")
@@ -475,6 +555,7 @@ function(OpenSimAddExampleCXX)
     # Build the example in the build tree.
     foreach(exe ${OSIMEX_EXECUTABLES})
         add_executable(${exe} ${exe}.cpp)
+        OpenSimConfigureTarget(${exe})
         set_target_properties(${exe} PROPERTIES FOLDER "Examples")
         target_link_libraries(${exe} osimTools osimExampleComponents osimMoco)
     endforeach()
@@ -534,6 +615,7 @@ function(OpenSimAddPluginExampleCXX)
             RegisterTypes_osim${OSIMEX_NAME}.h
             RegisterTypes_osim${OSIMEX_NAME}.cpp
             )
+    OpenSimConfigureTarget(osim${OSIMEX_NAME})
     set_target_properties(osim${OSIMEX_NAME} PROPERTIES
             FOLDER "Examples")
     target_link_libraries(osim${OSIMEX_NAME} osimTools osimExampleComponents
@@ -605,6 +687,25 @@ function(OpenSimInstallDependencyLibraries PREFIX DEP_LIBS_DIR_WIN
     install(FILES ${LIBS} DESTINATION "${OSIM_DESTINATION}")
 endfunction()
 
+# Function to install the Simbody visualizer on the target platform.
+function(OpenSimInstallVisualizer DEP_LIBS_DIR_WIN
+        DEP_LIBS_DIR_UNIX OSIM_DESTINATION)
+    if(WIN32)
+        set(simbody_visualizer "${DEP_LIBS_DIR_WIN}/simbody-visualizer.exe")
+        install(FILES ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}/bin")
+    else()
+        if (APPLE)
+            set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer.app")
+            install(DIRECTORY ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}")
+        else()
+            set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer")
+            install(FILES ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}")
+            # On Linux, the visualizer is a dynamically linked executable, we need fix rpath
+            execute_process(COMMAND bash "-c" "patchelf --set-rpath '$ORIGIN/:$ORIGIN/../../lib' '${simbody_visualizer}'" OUTPUT_VARIABLE res)
+            message(STATUS "patchelf --set-rpath '$ORIGIN/:.$ORIGIN/../../lib' '${simbody_visualizer}' '${res}'")
+        endif()
+    endif()
+endfunction()
 
 # Copy DLL files from a dependency's installation into the
 # build and install directories. This is a Windows-specific function enabled
@@ -697,4 +798,3 @@ macro(OpenSimFindSwigFileDependencies OSIMSWIGDEP_RETURNVAL
     unset(_successfully_got_dependencies)
 
 endmacro()
-

@@ -29,14 +29,18 @@ namespace
         const nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu>& destination_landmarks,
         double warping_penalty)
     {
-        OSC_ASSERT_ALWAYS(source_landmarks.size() == destination_landmarks.size() && "there must be an equal amount of source/destination landmarks");
-        OSC_ASSERT_ALWAYS(source_landmarks.size() != 0 && "at least one pair of landmarks must be provided");
+        OSC_ASSERT_ALWAYS(
+            source_landmarks.size() == destination_landmarks.size() &&
+            "there must be an equal amount of source/destination landmarks");
+        OSC_ASSERT_ALWAYS(
+            source_landmarks.size() != 0 && "at least one pair of landmarks must be provided");
 
         const auto source_landmarks_mdspan = to_mdspan(source_landmarks);
         const auto destination_landmarks_mdspan = to_mdspan(destination_landmarks);
 
         // Solve the coefficients
-        return std::make_unique<TPSCoefficients3D<double>>(tps3d_solve_coefficients(source_landmarks_mdspan, destination_landmarks_mdspan, warping_penalty));
+        return std::make_unique<TPSCoefficients3D<double>>(tps3d_solve_coefficients(
+            source_landmarks_mdspan, destination_landmarks_mdspan, warping_penalty));
     }
 
     nb::ndarray<double, nb::shape<3>, nb::device::cpu, nb::numpy> warp_point(
@@ -64,39 +68,41 @@ namespace
 void opyn::init_tps3d_submodule(nanobind::module_& tps3d_module)
 {
     // class: TPSCoefficients3D
-    nb::class_<TPSCoefficients3D<double>>(tps3d_module, "TPSCoefficients3D", "Represents Thin-Plate Spline (TPS) coefficients in 3D that were calculated from corresponding pairs of points.")
-        .def("__repr__",
-            [](const TPSCoefficients3D<double>& coefs) { return repr(coefs); }
-        )
-        .def_prop_ro("a1",
+    nb::class_<TPSCoefficients3D<double>>(
+        tps3d_module,
+        "TPSCoefficients3D",
+        "Represents Thin-Plate Spline (TPS) coefficients in 3D that were calculated from corresponding pairs of points.")
+        .def("__repr__", [](const TPSCoefficients3D<double>& coefs) { return repr(coefs); })
+        .def_prop_ro(
+            "a1",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a1); },
             nb::rv_policy::take_ownership,
             R"(
                 The first term of the warping equation (:math:`a_1`). This could be interpreted as the translation component of the warp.
-            )"
-        )
-        .def_prop_ro("a2",
+            )")
+        .def_prop_ro(
+            "a2",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a2); },
             nb::rv_policy::take_ownership,
             R"(
                 The second term of the warping equation (:math:`a_2`). This could be interpreted as the first column of a 3x3 linear transformation matrix (scale, rotation, and shear).
-            )"
-        )
-        .def_prop_ro("a3",
+            )")
+        .def_prop_ro(
+            "a3",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a3); },
             nb::rv_policy::take_ownership,
             R"(
                 The third term of the warping equation (:math:`a_3`). This could be interpreted as the second column of a 3x3 linear transformation matrix (scale, rotation, and shear).
-            )"
-        )
-        .def_prop_ro("a4",
+            )")
+        .def_prop_ro(
+            "a4",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a4); },
             nb::rv_policy::take_ownership,
             R"(
                 The fourth term of the warping equation (:math:`a_4`). This could be interpreted as the third column of a 3x3 linear transformation matrix (scale, rotation, and shear).
-            )"
-        )
-        .def("warp_point",
+            )")
+        .def(
+            "warp_point",
             warp_point,
             nb::arg("point"),
             R"(
@@ -107,8 +113,7 @@ void opyn::init_tps3d_submodule(nanobind::module_& tps3d_module)
 
                 Returns:
                     A 3-element ndarray that represents the warped point.
-            )"
-        )
+            )")
         .def("__eq__", std::equal_to<TPSCoefficients3D<double>>{});
 
     tps3d_module.def(
@@ -138,6 +143,5 @@ void opyn::init_tps3d_submodule(nanobind::module_& tps3d_module)
             Returns:
                 A :class:`TPSCoefficients3D` object that contains the calculated coefficients.
 
-        )"
-    );
+        )");
 }

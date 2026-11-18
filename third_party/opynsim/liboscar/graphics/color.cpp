@@ -34,8 +34,7 @@ float osc::to_linear_colorspace(float srgb_component_value)
 {
     if (srgb_component_value <= 0.04045f) {
         return srgb_component_value / 12.92f;
-    }
-    else {
+    } else {
         return pow((srgb_component_value + 0.055f) / 1.055f, 2.4f);
     }
 }
@@ -44,9 +43,8 @@ float osc::to_srgb_colorspace(float linear_component_value)
 {
     if (linear_component_value <= 0.0031308f) {
         return linear_component_value * 12.92f;
-    }
-    else {
-        return pow(linear_component_value, 1.0f/2.4f)*1.055f - 0.055f;
+    } else {
+        return pow(linear_component_value, 1.0f / 2.4f) * 1.055f - 0.055f;
     }
 }
 
@@ -97,29 +95,25 @@ std::optional<Color> osc::try_parse_html_color_string(std::string_view str)
         // RGB hex string (e.g. "ffaa88")
         Color rv = Color::black();
         for (size_t i = 0; i < 3; ++i) {
-            if (auto b = try_parse_hex_chars_as_byte(content[2*i], content[2*i + 1])) {
+            if (auto b = try_parse_hex_chars_as_byte(content[2 * i], content[(2 * i) + 1])) {
                 rv[i] = Unorm8{*b}.normalized_value();
-            }
-            else {
+            } else {
                 return std::nullopt;
             }
         }
         return rv;
-    }
-    else if (content.size() == 8) {
+    } else if (content.size() == 8) {
         // RGBA hex string (e.g. "ffaa8822")
         Color rv = Color::black();
         for (size_t i = 0; i < 4; ++i) {
-            if (auto b = try_parse_hex_chars_as_byte(content[2*i], content[2*i + 1])) {
+            if (auto b = try_parse_hex_chars_as_byte(content[2 * i], content[(2 * i) + 1])) {
                 rv[i] = Unorm8{*b}.normalized_value();
-            }
-            else {
+            } else {
                 return std::nullopt;
             }
         }
         return rv;
-    }
-    else {
+    } else {
         // invalid hex string
         return std::nullopt;
     }

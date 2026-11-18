@@ -90,7 +90,8 @@ namespace
 
 std::string opyn::to_string(const CSVParseWarning& warning)
 {
-    const size_t displayed_line_number = warning.line_number + 1;  // user-facing software (e.g. IDEs) start at 1
+    const size_t displayed_line_number =
+        warning.line_number + 1;  // user-facing software (e.g. IDEs) start at 1
     return std::format("line {}: {}", displayed_line_number, warning.message);
 }
 
@@ -100,13 +101,16 @@ void opyn::read_landmarks_from_csv(
     const std::function<void(CSVParseWarning)>& warning_consumer)
 {
     std::vector<std::string> cols;
-    for (size_t line = 0; osc::CSV::read_row_into_vector(in, cols); ++line)
-    {
-        std::visit(osc::Overload{
-            [&landmark_consumer](Landmark&& lm) { landmark_consumer(std::move(lm)); },
-            [&warning_consumer](CSVParseWarning&& warning) { warning_consumer(std::move(warning)); },
-            [](SkipRow) {}
-        }, parse_row(line, cols));
+    for (size_t line = 0; osc::CSV::read_row_into_vector(in, cols); ++line) {
+        std::visit(
+            osc::Overload{
+                [&landmark_consumer](Landmark&& lm) { landmark_consumer(std::move(lm)); },
+                [&warning_consumer](CSVParseWarning&& warning) {
+                    warning_consumer(std::move(warning));
+                },
+                [](SkipRow) {
+                }},
+            parse_row(line, cols));
     }
 }
 
@@ -115,7 +119,8 @@ std::vector<Landmark> opyn::read_landmarks_from_csv_into_vector_or_throw(
 {
     std::ifstream in{path};
     if (not in) {
-        throw osc::formatted_runtime_error("{}: cannot open landmarks file for reading", path.string());
+        throw osc::formatted_runtime_error(
+            "{}: cannot open landmarks file for reading", path.string());
     }
 
     std::vector<Landmark> rv;
@@ -129,7 +134,7 @@ void opyn::write_landmarks_to_csv(
     LandmarkCSVFlags flags)
 {
     // if applicable, emit header
-    if (not (flags & LandmarkCSVFlags::NoHeader)) {
+    if (not(flags & LandmarkCSVFlags::NoHeader)) {
         if (flags & LandmarkCSVFlags::NoNames) {
             osc::CSV::write_row(out, {{"x", "y", "z"}});
         } else {
@@ -147,14 +152,15 @@ void opyn::write_landmarks_to_csv(
         if (flags & LandmarkCSVFlags::NoNames) {
             osc::CSV::write_row(out, {{to_string(x), to_string(y), to_string(z)}});
         } else {
-            osc::CSV::write_row(out, {{lm->maybe_name.value_or("unnamed"), to_string(x), to_string(y), to_string(z)}});
+            osc::CSV::write_row(
+                out,
+                {{lm->maybe_name.value_or("unnamed"), to_string(x), to_string(y), to_string(z)}});
         }
     }
 }
 
 std::vector<NamedLandmark> opyn::generate_names(
-    std::span<const Landmark> lms,
-    std::string_view prefix)
+    std::span<const Landmark> lms, std::string_view prefix)
 {
     // collect up all already-named landmarks
     std::unordered_set<std::string_view> supplied_names;
@@ -165,13 +171,14 @@ std::vector<NamedLandmark> opyn::generate_names(
     }
 
     // helper: either get, or generate, a name for the given landmark
-    auto get_name = [&prefix, &supplied_names, i = 0](const Landmark& lm) mutable -> std::string
-    {
+    auto get_name = [&prefix, &supplied_names, i = 0](const Landmark& lm) mutable -> std::string {
         if (lm.maybe_name) {
             return *lm.maybe_name;
         }
 
-        auto next_name = [&prefix, &i] { return std::string{prefix} + std::to_string(i++); };
+        auto next_name = [&prefix, &i] {
+            return std::string{prefix} + std::to_string(i++);
+        };
         std::string name = next_name();
         while (supplied_names.contains(name)) {
             name = next_name();
@@ -202,15 +209,15 @@ void opyn::try_pairing_landmarks(
         if (it != b.end()) {
             consumer(MaybeNamedLandmarkPair{std::move(name), lm.position, it->position});
             b.erase(it);  // pop element from b
-        }
-        else {
+        } else {
             consumer(MaybeNamedLandmarkPair{std::move(name), lm.position, std::nullopt});
         }
     }
 
     // handle remaining (unpaired) elements in `b`
     for (auto& lm : b) {
-        std::string name = lm.maybe_name ? std::move(lm.maybe_name).value() : generate_name(num_unnamed++);
+        std::string name =
+            lm.maybe_name ? std::move(lm.maybe_name).value() : generate_name(num_unnamed++);
         consumer(MaybeNamedLandmarkPair{name, std::nullopt, lm.position});
     }
 }

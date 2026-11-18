@@ -19,101 +19,102 @@ using namespace osc;
 
 namespace
 {
-    Color CalcStatusColor(SimulationStatus status)
+    Color calc_status_color(SimulationStatus status)
     {
         switch (status) {
-        case SimulationStatus::Initializing: return Color::muted_blue();
-        case SimulationStatus::Running:      return Color::muted_blue();
-        case SimulationStatus::Completed:    return Color::dark_green();
-        case SimulationStatus::Cancelled:    return Color::red();
-        case SimulationStatus::Error:        return Color::red();
-        default:                             return ui::get_style_color(ui::ColorVar::Text);
+        case SimulationStatus::Initializing: [[fallthrough]];
+        case SimulationStatus::Running: return Color::muted_blue();
+        case SimulationStatus::Completed: return Color::dark_green();
+        case SimulationStatus::Cancelled: [[fallthrough]];
+        case SimulationStatus::Error: return Color::red();
+        default: return ui::get_style_color(ui::ColorVar::Text);
         }
     }
 }
-
 
 class osc::SimulationToolbar::Impl final {
 public:
     Impl(
         std::string_view label,
-        SimulatorUIAPI* simulatorAPI,
+        SimulatorUIAPI* simulator_api,
         std::shared_ptr<Simulation> simulation) :
 
-        m_Label{label},
-        m_SimulatorAPI{simulatorAPI},
-        m_Simulation{std::move(simulation)}
+        label_{label},
+        simulator_api_{simulator_api},
+        simulation_{std::move(simulation)}
     {}
 
-    void onDraw()
+    void on_draw()
     {
-        if (BeginToolbar(m_Label, Vector2{5.0f, 5.0f})) {
-            drawContent();
+        if (begin_toolbar(label_, Vector2{5.0f, 5.0f})) {
+            draw_content();
         }
         ui::end_panel();
     }
 
 private:
-    void drawContent()
+    void draw_content()
     {
-        drawScaleFactorGroup();
+        draw_scale_factor_group();
 
         ui::same_line();
         ui::draw_vertical_separator();
         ui::same_line();
 
-        m_Scrubber.onDraw();
+        scrubber_.on_draw();
 
         ui::same_line();
         ui::draw_vertical_separator();
         ui::same_line();
 
-        drawSimulationStatusGroup();
+        draw_simulation_status_group();
     }
 
-    void drawScaleFactorGroup()
+    void draw_scale_factor_group()
     {
         ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
         ui::draw_text(MSMICONS_EXPAND_ALT);
-        ui::draw_tooltip_if_item_hovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
+        ui::draw_tooltip_if_item_hovered(
+            "Scene Scale Factor",
+            "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
         ui::same_line();
 
         {
-            float scaleFactor = m_Simulation->getFixupScaleFactor();
+            float scale_factor = simulation_->get_fixup_scale_factor();
             ui::set_next_item_width(ui::calc_text_size("0.00000").x());
-            if (ui::draw_float_input("##scaleinput", &scaleFactor)) {
-                m_Simulation->setFixupScaleFactor(scaleFactor);
+            if (ui::draw_float_input("##scaleinput", &scale_factor)) {
+                simulation_->set_fixup_scale_factor(scale_factor);
             }
         }
         ui::pop_style_var();
     }
 
-    void drawSimulationStatusGroup()
+    void draw_simulation_status_group()
     {
-        const SimulationStatus status = m_Simulation->getStatus();
+        const SimulationStatus status = simulation_->get_status();
         ui::draw_text_disabled("simulator status:");
         ui::same_line();
-        ui::push_style_color(ui::ColorVar::Text, CalcStatusColor(status));
-        ui::draw_text(GetAllSimulationStatusStrings()[static_cast<size_t>(status)]);
+        ui::push_style_color(ui::ColorVar::Text, calc_status_color(status));
+        ui::draw_text(get_all_simulation_status_strings()[static_cast<size_t>(status)]);
         ui::pop_style_color();
     }
 
-    std::string m_Label;
-    SimulatorUIAPI* m_SimulatorAPI;
-    std::shared_ptr<Simulation> m_Simulation;
+    std::string label_;
+    SimulatorUIAPI* simulator_api_;
+    std::shared_ptr<Simulation> simulation_;
 
-    SimulationScrubber m_Scrubber{"##SimulationScrubber", m_SimulatorAPI, m_Simulation};
+    SimulationScrubber scrubber_{"##SimulationScrubber", simulator_api_, simulation_};
 };
 
-
 osc::SimulationToolbar::SimulationToolbar(
-    std::string_view label,
-    SimulatorUIAPI* simulatorAPI,
-    std::shared_ptr<Simulation> simulation) :
+    std::string_view label, SimulatorUIAPI* simulator_api, std::shared_ptr<Simulation> simulation) :
 
-    m_Impl{std::make_unique<Impl>(label, simulatorAPI, std::move(simulation))}
+    impl_{std::make_unique<Impl>(label, simulator_api, std::move(simulation))}
 {}
 osc::SimulationToolbar::SimulationToolbar(SimulationToolbar&&) noexcept = default;
 osc::SimulationToolbar& osc::SimulationToolbar::operator=(SimulationToolbar&&) noexcept = default;
 osc::SimulationToolbar::~SimulationToolbar() noexcept = default;
-void osc::SimulationToolbar::onDraw() { m_Impl->onDraw(); }
+void osc::SimulationToolbar::on_draw()
+{
+    impl_->on_draw();
+}

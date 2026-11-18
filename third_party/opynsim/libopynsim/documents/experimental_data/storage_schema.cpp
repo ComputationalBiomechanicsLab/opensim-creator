@@ -22,15 +22,16 @@ namespace
     // be used to materialize a series of datapoints of type `DataPointType`.
     class DataSeriesPattern final {
     public:
-
         // Returns a `DataSeriesPattern` for the given `DataType`.
         template<DataPointType DataType, typename... ColumnHeaderStrings>
-        requires
-            (sizeof...(ColumnHeaderStrings) == num_elements_in(DataType)) and
-            (std::constructible_from<osc::CStringView, ColumnHeaderStrings> && ...)
-            static DataSeriesPattern for_datatype(ColumnHeaderStrings&&... header_suffixes)
+        requires(sizeof...(ColumnHeaderStrings) == num_elements_in(DataType)) and
+                (std::constructible_from<osc::CStringView, ColumnHeaderStrings> && ...)
+        static DataSeriesPattern for_datatype(ColumnHeaderStrings&&... header_suffixes)
         {
-            return DataSeriesPattern{DataType, std::initializer_list<osc::CStringView>{osc::CStringView{std::forward<ColumnHeaderStrings>(header_suffixes)}...}};  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+            return DataSeriesPattern{
+                DataType,
+                std::initializer_list<osc::CStringView>{
+                    osc::CStringView{std::forward<ColumnHeaderStrings>(header_suffixes)}...}};
         }
 
         // Returns the `DataPointType` matched by this pattern.
@@ -62,8 +63,11 @@ namespace
             }
             return colum_header;  // couldn't remove it
         }
+
     private:
-        DataSeriesPattern(DataPointType type, std::initializer_list<osc::CStringView> header_suffxes) :
+        DataSeriesPattern(
+            DataPointType type, std::initializer_list<osc::CStringView> header_suffxes) :
+
             data_point_type_{type},
             header_suffixes_{header_suffxes}
         {}
@@ -79,17 +83,19 @@ namespace
     //       Experimental Data' part of the official OpenSim GUI.
     class DataSeriesPatterns final {
     public:
-
         // If the given headers matches a pattern, returns a pointer to the pattern. Otherwise,
         // returns `nullptr`.
         const DataSeriesPattern* try_match(std::span<const std::string> headers) const
         {
-            const auto it = rgs::find_if(patterns_, [&headers](const auto& pattern) { return pattern.matches(headers); });
+            const auto it = rgs::find_if(
+                patterns_, [&headers](const auto& pattern) { return pattern.matches(headers); });
             return it != patterns_.end() ? &(*it) : nullptr;
         }
+
     private:
         std::vector<DataSeriesPattern> patterns_ = {
-            DataSeriesPattern::for_datatype<DataPointType::ForcePoint>("_vx", "_vy", "_vz", "_px", "_py", "_pz"),
+            DataSeriesPattern::for_datatype<DataPointType::ForcePoint>(
+                "_vx", "_vy", "_vz", "_px", "_py", "_pz"),
             DataSeriesPattern::for_datatype<DataPointType::Point>("_vx", "_vy", "_vz"),
             DataSeriesPattern::for_datatype<DataPointType::Point>("_tx", "_ty", "_tz"),
             DataSeriesPattern::for_datatype<DataPointType::Point>("_px", "_py", "_pz"),
@@ -113,18 +119,18 @@ StorageSchema opyn::StorageSchema::parse(const OpenSim::Storage& storage)
     int offset = 1;  // offset 0 == "time" (skip it)
 
     while (offset < labels.size()) {
-        const std::span<std::string> remaining_labels{&labels[offset], static_cast<size_t>(labels.size()) - static_cast<size_t>(offset)};
+        const std::span<std::string> remaining_labels{
+            &labels[offset], static_cast<size_t>(labels.size()) - static_cast<size_t>(offset)};
         if (const DataSeriesPattern* pattern = patterns.try_match(remaining_labels)) {
             annotations.push_back({
-                .data_column_offset = offset-1,  // drop time for this index
+                .data_column_offset = offset - 1,  // drop time for this index
                 .label = std::string{pattern->remove_suffix(remaining_labels.front())},
                 .data_type = pattern->datatype(),
             });
             offset += static_cast<int>(num_elements_in(pattern->datatype()));
-        }
-        else {
+        } else {
             annotations.push_back({
-                .data_column_offset = offset-1,  // drop time for this index
+                .data_column_offset = offset - 1,  // drop time for this index
                 .label = remaining_labels.front(),
                 .data_type = DataPointType::Unknown,
             });

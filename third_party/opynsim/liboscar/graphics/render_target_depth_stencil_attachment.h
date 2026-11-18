@@ -8,7 +8,9 @@ namespace osc
 {
     struct RenderTargetDepthStencilAttachment final {
 
-        friend bool operator==(const RenderTargetDepthStencilAttachment&, const RenderTargetDepthStencilAttachment&) = default;
+        friend bool operator==(
+            const RenderTargetDepthStencilAttachment&,
+            const RenderTargetDepthStencilAttachment&) = default;
 
         SharedDepthStencilRenderBuffer buffer{};
         RenderBufferLoadAction load_action = RenderBufferLoadAction::Clear;

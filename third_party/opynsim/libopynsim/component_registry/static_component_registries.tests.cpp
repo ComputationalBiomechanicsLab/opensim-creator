@@ -70,7 +70,8 @@ TEST(ComponentRegistry, coords_have_expected_names)
         TestCase::create<OpenSim::GimbalJoint>("rx", "ry", "rz"),
         TestCase::create<OpenSim::PinJoint>("rz"),
         TestCase::create<OpenSim::PlanarJoint>("rz", "tx", "ty"),
-        TestCase::create<OpenSim::ScapulothoracicJoint>("rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"),
+        TestCase::create<OpenSim::ScapulothoracicJoint>(
+            "rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"),
         TestCase::create<OpenSim::SliderJoint>("tx"),
         TestCase::create<OpenSim::UniversalJoint>("rx", "ry"),
     };
@@ -82,10 +83,12 @@ TEST(ComponentRegistry, coords_have_expected_names)
         const auto& proto = get_component_registry<OpenSim::Joint>()[*tc.maybe_index].prototype();
         const auto& coord_prop = proto.getProperty_coordinates();
 
-        ASSERT_EQ(coord_prop.size(), tc.expected_names.size()) << tc.name <<  " has different number of coords from expected";
+        ASSERT_EQ(coord_prop.size(), tc.expected_names.size())
+            << tc.name << " has different number of coords from expected";
 
         for (int i = 0; i < coord_prop.size(); ++i) {
-            ASSERT_EQ(coord_prop.getValue(i).getName(), tc.expected_names[i]) << tc.name << " coordinate " << i << " has different name from expected";
+            ASSERT_EQ(coord_prop.getValue(i).getName(), tc.expected_names[i])
+                << tc.name << " coordinate " << i << " has different name from expected";
         }
     }
 }
@@ -199,8 +202,7 @@ TEST(ConstraintRegistry, can_add_any_constraint_without_a_segfault)
         try {
             model.finalizeFromProperties();
             model.buildSystem();
-        }
-        catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
+        } catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
             // ok: it might throw because the constraint might need more information
             //
             // (but it definitely shouldn't segfault etc. - the error should be recoverable)
@@ -227,8 +229,7 @@ TEST(ForceRegistry, can_add_any_force_without_a_segfault)
             model.addForce(force.release());  // finalizes, so can throw
             model.finalizeFromProperties();
             model.buildSystem();
-        }
-        catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
+        } catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
             // ok: it might throw because the constraint might need more information
             //
             // (but it definitely shouldn't segfault etc. - the error should be recoverable)
@@ -254,8 +255,7 @@ TEST(ControllerRegistry, can_add_any_controller_without_a_segfault)
         try {
             model.finalizeFromProperties();
             model.buildSystem();
-        }
-        catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
+        } catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
             // ok: it might throw because the controller might need more information
             //
             // (but it definitely shouldn't segfault etc. - the error should be recoverable)
@@ -302,8 +302,7 @@ TEST(UngroupedRegistry, can_add_any_ungrouped_component_without_a_segfault)
             model.addComponent(component.release());
             model.finalizeFromProperties();
             model.buildSystem();
-        }
-        catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
+        } catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
             // ok: it might throw because the component might need more information
             //
             // (but it definitely shouldn't segfault etc. - the error should be recoverable)

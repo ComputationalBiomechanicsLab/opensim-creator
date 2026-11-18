@@ -37,17 +37,14 @@ Table of Contents
     :caption: Concepts
 
     concepts/configuration
-    concepts/graphics
     concepts/modelling
     concepts/tps3d
-    concepts/ui
 
 .. toctree::
     :maxdepth: 1
     :caption: Examples
 
     examples/overlay-model-over-plot
-    examples/plot-model-output-vs-property
     examples/render-model-to-png
     examples/render-motion-to-video-file
     examples/show-model-in-state
@@ -67,12 +64,11 @@ Table of Contents
    :maxdepth: 2
    :caption: Development
 
-   development/architecture-overview
-   development/clion-setup
+   development/building-from-source
    development/opynsim-as-a-cpp-library
-   development/unofficial-doxygen-reference
+   development/cpp-api-reference
    development/opensim-interoperability
-   development/the-release-process
+   development/release-process
 
 .. toctree::
     :caption: Other Links

@@ -47,14 +47,20 @@ namespace opyn
         /// Appends a shared handle of `ModelState` to the end of the sequence.
         void handle_push_back(shared_handle handle) { states_.push_back(std::move(handle)); }
 
-        /// Returns a shared handle to the element at specified location `pos`, with bounds checking.
+        /// Returns a shared handle to the element at specified location `pos`, with bounds
+        /// checking.
         shared_handle handle_at(size_t pos) { return states_.at(pos); }
 
         /// Converts this `ModelStates` into a `std::vector` its `shared_handle`s.
         std::vector<shared_handle> to_handle_list() const { return states_; }
 
         /// Returns a view of references to each `ModelState` in `*this`.
-        auto reference_view() const { return states_ | std::views::transform([](const auto& handle) -> const_reference { return *handle; }); }
+        auto reference_view() const
+        {
+            return states_ |  //
+                   std::views::transform(
+                       [](const auto& handle) -> const_reference { return *handle; });
+        }
 
     private:
         std::vector<shared_handle> states_;

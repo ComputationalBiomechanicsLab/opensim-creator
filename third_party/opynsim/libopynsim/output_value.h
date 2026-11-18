@@ -7,10 +7,7 @@
 
 namespace opyn
 {
-    using SupportedOutputValueTypes = osc::Typelist<
-        double,
-        osc::Vector3d
-    >;
+    using SupportedOutputValueTypes = osc::Typelist<double, osc::Vector3d>;
 
     using OutputValue = osc::VariantOfTypelistElements<SupportedOutputValueTypes>;
 }

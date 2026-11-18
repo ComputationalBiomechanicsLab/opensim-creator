@@ -9,7 +9,10 @@
 
 #include <string_view>
 
-namespace osc { class AppSettings; }
+namespace osc
+{
+    class AppSettings;
+}
 
 namespace opyn
 {
@@ -26,15 +29,11 @@ namespace opyn
     };
 
     void upd_model_renderer_params_from(
-        const osc::AppSettings&,
-        std::string_view key_prefix,
-        ModelRendererParams& params
-    );
+        const osc::AppSettings&, std::string_view key_prefix, ModelRendererParams& params);
 
     void save_model_renderer_params_difference(
         const ModelRendererParams&,
         const ModelRendererParams&,
         std::string_view settings_key_prefix,
-        osc::AppSettings&
-    );
+        osc::AppSettings&);
 }

@@ -19,6 +19,7 @@ namespace osc
         using iterator = value_type*;
         using const_iterator = const value_type*;
 
+        // clang-format off
         static constexpr Rgb white()         { return {1.f,   1.f,   1.f  }; }
         static constexpr Rgb lightest_grey() { return {0.95f, 0.95f, 0.95f}; }
         static constexpr Rgb lighter_grey()  { return {0.85f, 0.85f, 0.85f}; }
@@ -40,14 +41,27 @@ namespace osc
         static constexpr Rgb yellow()        { return {1.f,   1.f,   0.f  }; }
         static constexpr Rgb orange()        { return {1.f,   0.65f, 0.f  }; }
         static constexpr Rgb purple()        { return {0.75f, 0.33f, 0.93f}; }
+        // clang-format on
 
         Rgb() = default;
 
-        explicit constexpr Rgb(value_type v) : r{v}, g{v}, b{v} {}
+        explicit constexpr Rgb(value_type v) :
+            r{v},
+            g{v},
+            b{v}
+        {}
 
-        constexpr Rgb(value_type r_, value_type g_, value_type b_) : r{r_}, g{g_}, b{b_} {}
+        constexpr Rgb(value_type r, value_type g, value_type b) :
+            r{r},
+            g{g},
+            b{b}
+        {}
 
-        explicit constexpr Rgb(const Vector<value_type, 3>& v) : r{v.x()}, g{v.y()}, b{v.z()} {}
+        explicit constexpr Rgb(const Vector<value_type, 3>& v) :
+            r{v.x()},
+            g{v.y()},
+            b{v.z()}
+        {}
 
         template<ColorComponent U>
         requires std::constructible_from<T, const U&>
@@ -59,22 +73,21 @@ namespace osc
 
         template<ColorComponent U>
         requires std::constructible_from<T, const U&>
-        explicit (not (std::convertible_to<U, T>))
-        constexpr Rgb(const Rgb<U>& v) :
+        explicit(not(std::convertible_to<U, T>)) constexpr Rgb(const Rgb<U>& v) :
             r{static_cast<T>(v.r)},
             g{static_cast<T>(v.g)},
             b{static_cast<T>(v.b)}
         {}
 
-        constexpr reference       operator[](size_type pos)       { return *(begin() + pos); }
+        constexpr reference operator[](size_type pos) { return *(begin() + pos); }
         constexpr const_reference operator[](size_type pos) const { return *(begin() + pos); }
 
         constexpr size_t size() const { return 3; }
 
-        constexpr iterator       begin()       { return &r; }
+        constexpr iterator begin() { return &r; }
         constexpr const_iterator begin() const { return &r; }
 
-        constexpr iterator       end()       { return &r + size(); }
+        constexpr iterator end() { return &r + size(); }
         constexpr const_iterator end() const { return &r + size(); }
 
         friend bool operator==(const Rgb&, const Rgb&) = default;
@@ -85,21 +98,33 @@ namespace osc
     };
 
     template<size_t I, typename T>
-    constexpr const T& get(const Rgb<T>& v) { return v[I]; }
+    constexpr const T& get(const Rgb<T>& v)
+    {
+        return v[I];
+    }
 
     template<size_t I, typename T>
-    constexpr T& get(Rgb<T>& v) { return v[I]; }
+    constexpr T& get(Rgb<T>& v)
+    {
+        return v[I];
+    }
 
     template<size_t I, typename T>
-    constexpr T&& get(Rgb<T>&& v) { return std::move(v[I]); }
+    constexpr T&& get(Rgb<T>&& v)
+    {
+        return std::move(v[I]);
+    }
 
     template<size_t I, typename T>
-    constexpr const T&& get(const Rgb<T>&& v) { return std::move(v[I]); }
+    constexpr const T&& get(const Rgb<T>&& v)
+    {
+        return std::move(v[I]);
+    }
 }
 
 template<osc::ColorComponent T>
 struct std::tuple_size<osc::Rgb<T>> {
-    static inline constexpr size_t value = 3;
+    static constexpr size_t value = 3;
 };
 
 template<size_t I, osc::ColorComponent T>

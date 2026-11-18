@@ -45,45 +45,21 @@ namespace osc
         constexpr CStringView& operator=(CStringView&&) noexcept = default;
         constexpr ~CStringView() noexcept = default;
 
-        constexpr size_type size() const
-        {
-            return size_;
-        }
+        constexpr size_type size() const { return size_; }
 
-        constexpr size_type length() const
-        {
-            return size_;
-        }
+        constexpr size_type length() const { return size_; }
 
-        [[nodiscard]] constexpr bool empty() const
-        {
-            return size_ == 0;
-        }
+        [[nodiscard]] constexpr bool empty() const { return size_ == 0; }
 
-        constexpr const value_type* c_str() const
-        {
-            return data_;
-        }
+        constexpr const value_type* c_str() const { return data_; }
 
-        constexpr operator std::string_view () const
-        {
-            return std::string_view{data_, size_};
-        }
+        constexpr operator std::string_view() const { return std::string_view{data_, size_}; }
 
-        constexpr const_iterator begin() const
-        {
-            return data_;
-        }
+        constexpr const_iterator begin() const { return data_; }
 
-        constexpr const_iterator end() const
-        {
-            return data_ + size_;
-        }
+        constexpr const_iterator end() const { return data_ + size_; }
 
-        constexpr const_pointer data() const
-        {
-            return data_;
-        }
+        constexpr const_pointer data() const { return data_; }
 
         constexpr friend bool operator==(const CStringView& lhs, const CStringView& rhs)
         {
@@ -93,6 +69,7 @@ namespace osc
         {
             return static_cast<std::string_view>(lhs) <=> static_cast<std::string_view>(rhs);
         }
+
     private:
         const value_type* data_ = "";
         size_type size_ = std::string_view{data_}.size();

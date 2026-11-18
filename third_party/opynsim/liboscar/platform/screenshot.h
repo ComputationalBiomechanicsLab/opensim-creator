@@ -11,9 +11,7 @@ namespace osc
 {
     class Screenshot final {
     public:
-        explicit Screenshot(
-            Texture2D texture,
-            std::vector<ScreenshotAnnotation> annotations) :
+        explicit Screenshot(Texture2D texture, std::vector<ScreenshotAnnotation> annotations) :
 
             texture_{std::move(texture)},
             annotations_{std::move(annotations)}

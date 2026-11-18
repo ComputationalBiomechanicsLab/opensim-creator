@@ -20,7 +20,7 @@ TEST(ScopedLifetime, can_default_construct)
 TEST(ScopedLifetime, can_copy_construct)
 {
     const ScopedLifetime scoped_lifetime;
-    [[maybe_unused]] const ScopedLifetime copy = scoped_lifetime;  // NOLINT(performance-unnecessary-copy-initialization)
+    [[maybe_unused]] const ScopedLifetime copy = scoped_lifetime;
 }
 
 TEST(ScopedLifetime, can_copy_assign)
@@ -54,7 +54,7 @@ TEST(ScopedLifetime, copying_scoped_lifetime_creates_unique_lifetime)
 
     LifetimeWatcher watcher;
     {
-        const ScopedLifetime second_lifetime = first_lifetime;  // NOLINT(performance-unnecessary-copy-initialization)
+        const ScopedLifetime second_lifetime = first_lifetime;
         watcher = second_lifetime.watch();
         ASSERT_FALSE(watcher.expired());
     }

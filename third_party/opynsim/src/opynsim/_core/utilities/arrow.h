@@ -3,6 +3,8 @@
 //     https://arrow.apache.org/docs/format/CDataInterface.html
 //     https://arrow.apache.org/docs/format/CStreamInterface.html
 
+// NOLINTBEGIN
+
 #include <cstdint>
 
 #ifndef ARROW_C_DATA_INTERFACE
@@ -64,3 +66,5 @@ struct ArrowArrayStream {
 };
 
 #endif  // ARROW_C_STREAM_INTERFACE
+
+// NOLINTEND

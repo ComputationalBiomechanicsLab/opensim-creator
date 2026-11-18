@@ -11,7 +11,8 @@ namespace osc
 {
     // returns a vector containing `op(xv)` for each `xv` in `x`
     template<typename T, size_t N, std::invocable<const T&> UnaryOperation>
-    constexpr auto map(const Vector<T, N>& x, UnaryOperation op) -> Vector<decltype(std::invoke(op, x[0])), N>
+    constexpr auto map(const Vector<T, N>& x, UnaryOperation op)
+        -> Vector<decltype(std::invoke(op, x[0])), N>
     {
         Vector<decltype(std::invoke(op, x[0])), N> rv{};
         for (size_t i = 0; i < N; ++i) {
@@ -22,7 +23,8 @@ namespace osc
 
     // returns a vector containing `op(xv, yv)` for each `(xv, yv)` in `x` and `y`
     template<typename T, size_t N, std::invocable<const T&, const T&> BinaryOperation>
-    constexpr auto map(const Vector<T, N>& x, const Vector<T, N>& y, BinaryOperation op) -> Vector<decltype(std::invoke(op, x[0], y[0])), N>
+    constexpr auto map(const Vector<T, N>& x, const Vector<T, N>& y, BinaryOperation op)
+        -> Vector<decltype(std::invoke(op, x[0], y[0])), N>
     {
         Vector<decltype(std::invoke(op, x[0], y[0])), N> rv{};
         for (size_t i = 0; i < N; ++i) {
@@ -33,7 +35,8 @@ namespace osc
 
     // returns a vector containing `op(xv, yv, zv)` for each `(xv, yv, zv)` in `x`, `y`, and `z`
     template<typename T, size_t N, std::invocable<const T&, const T&, const T&> TernaryOperation>
-    constexpr auto map(const Vector<T, N>& x, const Vector<T, N>& y, const Vector<T, N>& z, TernaryOperation op)
+    constexpr auto map(
+        const Vector<T, N>& x, const Vector<T, N>& y, const Vector<T, N>& z, TernaryOperation op)
         -> Vector<decltype(std::invoke(op, x[0], y[0], z[0])), N>
     {
         Vector<decltype(std::invoke(op, x[0], y[0], z[0])), N> rv{};

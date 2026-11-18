@@ -68,6 +68,32 @@ The following macros, types, and functions were renamed:
     - :cpp:class:`exception\<T\> <exception>`
 
 
+Porting one binding at a time
+-----------------------------
+
+A large project can move over gradually, with pybind11 and nanobind bindings
+living side by side in the same extension. In that case ``PYBIND11_MODULE``
+still provides the entry point, and the setup work that :c:macro:`NB_MODULE`
+normally performs must happen explicitly through
+:cpp:func:`register_module`:
+
+.. code-block:: cpp
+
+   PYBIND11_MODULE(my_ext, m) {
+       if (!nb::register_module(m.ptr()))
+           throw py::error_already_set();
+
+       nb::module_ nb_m = nb::borrow<nb::module_>(m.ptr());
+       nb::class_<MyType>(nb_m, "MyType");
+
+       // ... remaining pybind11 bindings ...
+   }
+
+Call this before any other part of the nanobind API. Note that the two
+frameworks do not know about each other's types: a function bound with
+nanobind cannot accept a type bound with pybind11, and vice versa. Types that
+cross this boundary must move together.
+
 None/null arguments
 -------------------
 
@@ -98,9 +124,9 @@ Shared pointers and holders
 When nanobind instantiates a C++ type within Python, the resulting instance
 data is stored *within* the created Python object ("``PyObject``").
 Alternatively, when an already existing C++ instance is transferred to Python
-via a function return value and :cpp:enumerator:`rv_policy::reference`,
-:cpp:enumerator:`rv_policy::reference_internal`, or
-:cpp:enumerator:`rv_policy::take_ownership`, nanobind creates a smaller wrapper
+via a function return value and :cpp:member:`rv_policy::reference`,
+:cpp:member:`rv_policy::reference_internal`, or
+:cpp:member:`rv_policy::take_ownership`, nanobind creates a smaller wrapper
 ``PyObject`` that only stores a pointer to the instance data.
 
 This is *very different* from pybind11, where the instance ``PyObject``
@@ -219,11 +245,9 @@ specify them within the constructor declaration:
 Trampoline classes
 ------------------
 Trampolines, i.e., polymorphic class implementations that forward virtual
-function calls to Python, now require an extra :c:macro:`NB_TRAMPOLINE(parent,
-size) <NB_TRAMPOLINE()>` declaration, where ``parent`` refers to the parent class
-and ``size`` is at least as big as the number of :c:macro:`NB_OVERRIDE_*() <NB_OVERRIDE>`
-calls. nanobind caches information to enable efficient function dispatch, for
-which it must know the number of trampoline "slots".
+function calls to Python, now require an extra
+:c:macro:`NB_TRAMPOLINE(parent) <NB_TRAMPOLINE()>` declaration, where
+``parent`` refers to the parent class.
 
 The macro ``PYBIND11_OVERRIDE_*(..)`` required the base type and return value
 as the first two arguments. This information is no longer needed in nanobind,
@@ -235,20 +259,12 @@ An example:
 .. code-block:: cpp
 
    struct PyAnimal : Animal {
-       NB_TRAMPOLINE(Animal, 1);
+       NB_TRAMPOLINE(Animal);
 
        std::string name() const override {
            NB_OVERRIDE(name);
        }
    };
-
-Trampoline declarations with an insufficient size may eventually trigger a
-Python ``RuntimeError`` exception with a descriptive label, e.g.:
-
-.. code-block:: text
-
-   nanobind::detail::get_trampoline('PyAnimal::what()'): the trampoline ran out of
-   slots (you will need to increase the value provided to the NB_TRAMPOLINE() macro)
 
 Iterator bindings
 -----------------
@@ -270,7 +286,7 @@ The API of custom type casters has changed *significantly*. The following
 changes are needed:
 
 - ``load()`` was renamed to ``from_python()``. The function now takes an extra
-  ``uint8_t flags`` parameter (instead ``bool convert``, which is now
+  ``uint32_t flags`` parameter (instead ``bool convert``, which is now
   represented by the flag ``nb::detail::cast_flags::convert``). A
   ``cleanup_list *`` pointer keeps track of Python temporaries that are created
   by the conversion, and which need to be deallocated after a function call has
@@ -327,9 +343,9 @@ uses the following symbols:
 
 Removed features include:
 
-- ○ **Multiple inheritance**: this feature was a persistent source of
-  complexity in pybind11 and it is one of the main casualties in creating
-  nanobind.
+- ○ **C++ multiple inheritance**: binding multiple C++ bases is unsupported
+  to keep nanobind's implementation simple. Python subclasses can combine one
+  nanobind base with additional :ref:`Python mixins <python_mixins>`.
 - ○ **Holders**: nanobind instances co-locate instance data with a Python
   object instead of accessing it via a holder type. This is a major difference
   compared to pybind11 and will require changes to binding code that used

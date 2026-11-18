@@ -22,13 +22,12 @@ namespace
 {
     template<typename StringLike>
     StringLike&& validate_as_classname(StringLike&& str)
-        requires std::constructible_from<std::string_view, StringLike&&>
+    requires std::constructible_from<std::string_view, StringLike&&>
     {
         if (not is_valid_identifier(str)) {
             throw formatted_runtime_error(
                 "{}: is not a valid class name: must be an 'identifier' (i.e. start with a letter/underscore, followed by letters/numbers/underscores)",
-                str
-            );
+                str);
         }
         return std::forward<StringLike>(str);
     }
@@ -53,8 +52,7 @@ namespace
             if (not rv.try_emplace(properties[i].name(), i).second) {
                 throw formatted_runtime_error(
                     "{}: duplicate property detected: each property of an object must be unique (incl. properties from the base class)",
-                    properties[i].name().name()
-                );
+                    properties[i].name().name());
             }
         }
         return rv;
@@ -101,17 +99,27 @@ osc::Class::Class()
 }
 
 osc::Class::Class(
-    std::string_view name,
-    const Class& parent_class,
-    std::span<const PropertyInfo> properties) :
+    std::string_view name, const Class& parent_class, std::span<const PropertyInfo> properties) :
 
     impl_{std::make_shared<Impl>(name, parent_class, properties)}
 {}
 
-const StringName& osc::Class::name() const { return impl_->name(); }
-std::optional<Class> osc::Class::parent_class() const { return impl_->parent_class(); }
-std::span<const PropertyInfo> osc::Class::properties() const { return impl_->properties(); }
-std::optional<size_t> osc::Class::property_index(const StringName& property_name) const { return impl_->property_index(property_name); }
+const StringName& osc::Class::name() const
+{
+    return impl_->name();
+}
+std::optional<Class> osc::Class::parent_class() const
+{
+    return impl_->parent_class();
+}
+std::span<const PropertyInfo> osc::Class::properties() const
+{
+    return impl_->properties();
+}
+std::optional<size_t> osc::Class::property_index(const StringName& property_name) const
+{
+    return impl_->property_index(property_name);
+}
 
 bool osc::operator==(const Class& a, const Class& b)
 {

@@ -38,12 +38,12 @@ TEST(TemporaryFile, file_stops_existing_once_temporary_file_drops_out_of_scope)
 
 TEST(TemporaryFile, filename_begins_with_prefix_when_constructed_with_a_prefix)
 {
-    const TemporaryFile temporary_file({ .prefix = "someprefix" });
+    const TemporaryFile temporary_file({.prefix = "someprefix"});
     ASSERT_TRUE(temporary_file.filename().string().starts_with("someprefix"));
 }
 
 TEST(TemporaryFile, filename_ends_with_suffix_when_constructed_with_a_suffix)
 {
-    const TemporaryFile temporary_file({ .suffix = "somesuffix" });
+    const TemporaryFile temporary_file({.suffix = "somesuffix"});
     ASSERT_TRUE(temporary_file.filename().string().ends_with("somesuffix"));
 }

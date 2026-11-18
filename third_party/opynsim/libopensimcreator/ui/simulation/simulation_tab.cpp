@@ -6,7 +6,6 @@
 #include <libopensimcreator/documents/simulation/simulation_model_state_pair.h>
 #include <libopensimcreator/documents/simulation/simulation_report.h>
 #include <libopensimcreator/platform/msmicons.h>
-#include <libopensimcreator/ui/events/open_component_context_menu_event.h>
 #include <libopensimcreator/ui/shared/component_context_menu.h>
 #include <libopensimcreator/ui/shared/coordinate_editor_panel.h>
 #include <libopensimcreator/ui/shared/model_status_bar.h>
@@ -14,6 +13,7 @@
 #include <libopensimcreator/ui/shared/model_viewer_panel_parameters.h>
 #include <libopensimcreator/ui/shared/model_viewer_panel_right_click_event.h>
 #include <libopensimcreator/ui/shared/navigator_panel.h>
+#include <libopensimcreator/ui/shared/open_component_context_menu_event.h>
 #include <libopensimcreator/ui/shared/properties_panel.h>
 #include <libopensimcreator/ui/simulation/simulator_ui_api.h>
 #include <libopensimcreator/ui/simulation/output_plots_panel.h>
@@ -59,122 +59,88 @@ using namespace osc;
 
 namespace
 {
-    int GetNextSimulationNumber()
+    int get_next_simulation_number()
     {
-        static std::atomic<int> s_SimulationNumber = 1;
-        return s_SimulationNumber++;
+        static std::atomic<int> s_simulation_number = 1;
+        return s_simulation_number++;
     }
 }
 
-class osc::SimulationTab::Impl final :
-    public TabPrivate,
-    public SimulatorUIAPI {
+class osc::SimulationTab::Impl final : public TabPrivate, public SimulatorUIAPI {
 public:
+    explicit Impl(SimulationTab& owner, Widget* parent, std::shared_ptr<Simulation> simulation) :
 
-    explicit Impl(
-        SimulationTab& owner,
-        Widget* parent_,
-        std::shared_ptr<Simulation> simulation_) :
-
-        TabPrivate{owner, parent_, MSMICONS_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
-        m_Simulation{std::move(simulation_)}
+        TabPrivate{
+            owner,
+            parent,
+            MSMICONS_PLAY " Simulation_" + std::to_string(get_next_simulation_number())},
+        simulation_{std::move(simulation)}
     {
-        m_PanelManager->register_toggleable_panel(
-            "Navigator",
-            [this](Widget* parent, std::string_view panelName)
-            {
+        panel_manager_->register_toggleable_panel(
+            "Navigator", [this](Widget* parent, std::string_view panel_name) {
                 return std::make_shared<NavigatorPanel>(
                     parent,
-                    panelName,
-                    m_ShownModelState,
-                    [this, parent](const OpenSim::ComponentPath& p)
-                    {
+                    panel_name,
+                    shown_model_state_,
+                    [this, parent](const OpenSim::ComponentPath& p) {
                         auto popup = std::make_shared<ComponentContextMenu>(
                             parent,
                             "##componentcontextmenu",
-                            m_ShownModelState,
+                            shown_model_state_,
                             p.toString(),
-                            ComponentContextMenuFlag::NoPlotVsCoordinate  // #922: shouldn't open in simulator screen
-                        );
+                            // #922: shouldn't open in simulator screen
+                            ComponentContextMenuFlag::NoPlotVsCoordinate);
                         popup->open();
-                        m_PopupManager.push_back(std::move(popup));
-                    }
-                );
-            }
-        );
-        m_PanelManager->register_toggleable_panel(
-            "Properties",
-            [this](Widget* parent, std::string_view panelName)
-            {
-                return std::make_shared<PropertiesPanel>(parent, panelName, m_ShownModelState);
-            }
-        );
-        m_PanelManager->register_toggleable_panel(
-            "Log",
-            [](Widget* parent, std::string_view panelName)
-            {
-                return std::make_shared<LogViewerPanel>(parent, panelName);
-            }
-        );
-        m_PanelManager->register_toggleable_panel(
-            "Coordinates",
-            [this](Widget* parent, std::string_view panelName)
-            {
-                return std::make_shared<CoordinateEditorPanel>(parent, panelName, m_ShownModelState);
-            }
-        );
-        m_PanelManager->register_toggleable_panel(
-            "Performance",
-            [](Widget* parent, std::string_view panelName)
-            {
-                return std::make_shared<PerfPanel>(parent, panelName);
-            }
-        );
-        m_PanelManager->register_toggleable_panel(
-            "Output Watches",
-            [this](Widget* parent, std::string_view panelName)
-            {
+                        popup_manager_.push_back(std::move(popup));
+                    });
+            });
+        panel_manager_->register_toggleable_panel(
+            "Properties", [this](Widget* parent, std::string_view panel_name) {
+                return std::make_shared<PropertiesPanel>(parent, panel_name, shown_model_state_);
+            });
+        panel_manager_->register_toggleable_panel(
+            "Log", [](Widget* parent, std::string_view panel_name) {
+                return std::make_shared<LogViewerPanel>(parent, panel_name);
+            });
+        panel_manager_->register_toggleable_panel(
+            "Coordinates", [this](Widget* parent, std::string_view panel_name) {
+                return std::make_shared<CoordinateEditorPanel>(
+                    parent, panel_name, shown_model_state_);
+            });
+        panel_manager_->register_toggleable_panel(
+            "Performance", [](Widget* parent, std::string_view panel_name) {
+                return std::make_shared<PerfPanel>(parent, panel_name);
+            });
+        panel_manager_->register_toggleable_panel(
+            "Output Watches", [this](Widget* parent, std::string_view panel_name) {
                 return std::make_shared<OutputPlotsPanel>(
-                    parent,
-                    panelName,
-                    m_Simulation->tryUpdEnvironment(),
-                    this
-                );
-            }
-        );
-        m_PanelManager->register_toggleable_panel(
-            "Simulation Details",
-            [this](Widget* parent, std::string_view panelName)
-            {
+                    parent, panel_name, simulation_->try_upd_environment(), this);
+            });
+        panel_manager_->register_toggleable_panel(
+            "Simulation Details", [this](Widget* parent, std::string_view panel_name) {
                 return std::make_shared<SimulationDetailsPanel>(
-                    parent,
-                    panelName,
-                    this,
-                    m_Simulation
-                );
-            }
-        );
-        m_PanelManager->register_spawnable_panel(
+                    parent, panel_name, this, simulation_);
+            });
+        panel_manager_->register_spawnable_panel(
             "viewer",
-            [this](Widget* parent, std::string_view panelName)
-            {
+            [this](Widget* parent, std::string_view panel_name) {
                 ModelViewerPanelParameters params{
-                    m_ShownModelState,
-                    [this, parent, menuName = std::string{panelName} + "_contextmenu"](const ModelViewerPanelRightClickEvent& e)
-                    {
+                    shown_model_state_,
+                    [this, parent, menu_name = std::string{panel_name} + "_contextmenu"](
+                        const ModelViewerPanelRightClickEvent& e) {
                         auto popup = std::make_shared<ComponentContextMenu>(
                             parent,
-                            menuName,
-                            m_ShownModelState,
-                            OpenSim::ComponentPath{e.componentAbsPathOrEmpty},
-                            ComponentContextMenuFlag::NoPlotVsCoordinate  // #922: shouldn't open in simulator screen
-                        );
+                            menu_name,
+                            shown_model_state_,
+                            OpenSim::ComponentPath{e.component_abs_path_or_empty},
+                            // #922: shouldn't open in simulator screen
+                            ComponentContextMenuFlag::NoPlotVsCoordinate);
                         popup->open();
-                        m_PopupManager.push_back(std::move(popup));
+                        popup_manager_.push_back(std::move(popup));
                     },
                 };
 
-                return std::make_shared<ModelViewerPanel>(parent, panelName, std::move(params));
+                return std::make_shared<ModelViewerPanel>(parent, panel_name, std::move(params));
             },
             1  // by default, open one viewer
         );
@@ -183,263 +149,244 @@ public:
     void on_mount()
     {
         App::upd().make_main_loop_waiting();
-        m_PopupManager.on_mount();
-        m_PanelManager->on_mount();
+        popup_manager_.on_mount();
+        panel_manager_->on_mount();
     }
 
     void on_unmount()
     {
-        m_PanelManager->on_unmount();
+        panel_manager_->on_unmount();
         App::upd().make_main_loop_polling();
     }
 
     void on_tick()
     {
-        if (m_PlaybackState == SimulationUIPlaybackState::Playing) {
+        if (playback_state_ == SimulationUIPlaybackState::Playing) {
 
-            const SimulationClock::time_point playbackPos = implGetSimulationScrubTime();
+            const SimulationClock::time_point playback_pos = impl_get_simulation_scrub_time();
 
-            if ((m_PlaybackSpeed >= 0.0f and playbackPos < m_Simulation->getEndTime()) ||
-                (m_PlaybackSpeed  < 0.0f and playbackPos > m_Simulation->getStartTime())) {
+            if ((playback_speed_ >= 0.0f and playback_pos < simulation_->get_end_time()) or
+                (playback_speed_ < 0.0f and playback_pos > simulation_->get_start_time())) {
 
-                // if there's still something to playback, ensure the screen is re-rendered to show it
+                // if there's still something to playback, ensure the screen is re-rendered to show
                 App::upd().request_redraw();
-            }
-            else if (m_LoopingState == SimulationUILoopingState::Looping) {
+            } else if (looping_state_ == SimulationUILoopingState::Looping) {
                 // there's nothing to playback, but the UI wants to loop the playback, so loop it
-                setSimulationScrubTime(m_Simulation->getStartTime());
-            }
-            else {
+                set_simulation_scrub_time(simulation_->get_start_time());
+            } else {
                 // there's nothing to playback, so put playback into the stopped state
-                m_PlaybackStartSimtime = playbackPos;
-                m_PlaybackState = SimulationUIPlaybackState::Stopped;
+                playback_start_simtime_ = playback_pos;
+                playback_state_ = SimulationUIPlaybackState::Stopped;
             }
         }
 
-        m_PanelManager->on_tick();
+        panel_manager_->on_tick();
     }
 
-    bool onEvent(Event& e)
+    bool on_event(Event& e)
     {
-        if (auto* openPopupEvent = dynamic_cast<OpenPopupEvent*>(&e)) {
-            if (openPopupEvent->has_popup()) {
-                auto popup = openPopupEvent->take_popup();
+        if (auto* open_popup_event = dynamic_cast<OpenPopupEvent*>(&e)) {
+            if (open_popup_event->has_popup()) {
+                auto popup = open_popup_event->take_popup();
                 popup->set_parent(&owner());
                 popup->open();
-                m_PopupManager.push_back(std::move(popup));
+                popup_manager_.push_back(std::move(popup));
                 return true;
             }
-        }
-        else if (const auto* namedPanel = dynamic_cast<OpenNamedPanelEvent*>(&e)) {
-            m_PanelManager->set_toggleable_panel_activated(namedPanel->panel_name(), true);
+        } else if (const auto* named_panel = dynamic_cast<OpenNamedPanelEvent*>(&e)) {
+            panel_manager_->set_toggleable_panel_activated(named_panel->panel_name(), true);
             return true;
-        }
-        else if (const auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
+        } else if (
+            const auto* context_menu_event = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
+
             auto popup = std::make_unique<ComponentContextMenu>(
                 &this->owner(),
                 "##componentcontextmenu",
-                m_ShownModelState,
-                contextMenuEvent->path().toString(),
-                ComponentContextMenuFlag::NoPlotVsCoordinate  // #922: shouldn't open in simulator screen
-            );
+                shown_model_state_,
+                context_menu_event->path().toString(),
+                // #922: shouldn't open in simulator screen
+                ComponentContextMenuFlag::NoPlotVsCoordinate);
             App::post_event<OpenPopupEvent>(owner(), std::move(popup));
             return true;
         }
 
         if (e.type() == EventType::KeyDown) {
             if (dynamic_cast<const KeyEvent&>(e).combination() == Key::Space) {
-                togglePlaybackMode();
+                toggle_playback_mode();
                 return true;
             }
         }
         return false;
     }
 
-    void onDrawMainMenu()
-    {
-        m_MainMenu.on_draw();
-    }
+    void on_draw_main_menu() { main_menu_.on_draw(); }
 
-    void onDraw()
+    void on_draw()
     {
         ui::enable_dockspace_over_main_window();
 
-        drawContent();
+        draw_content();
     }
 
 private:
-    void togglePlaybackMode()
+    void toggle_playback_mode()
     {
-        static_assert(num_options<SimulationUIPlaybackState>() == 2);
-        if (m_PlaybackState == SimulationUIPlaybackState::Playing) {
+        static_assert(num_options_v<SimulationUIPlaybackState> == 2);
+        if (playback_state_ == SimulationUIPlaybackState::Playing) {
             // pause
-            setSimulationPlaybackState(SimulationUIPlaybackState::Stopped);
-        }
-        else if (getSimulationScrubTime() >= m_Simulation->getEndTime()) {
+            set_simulation_playback_state(SimulationUIPlaybackState::Stopped);
+        } else if (get_simulation_scrub_time() >= simulation_->get_end_time()) {
             // replay
-            setSimulationScrubTime(m_Simulation->getStartTime());
-            setSimulationPlaybackState(SimulationUIPlaybackState::Playing);
-        }
-        else {
+            set_simulation_scrub_time(simulation_->get_start_time());
+            set_simulation_playback_state(SimulationUIPlaybackState::Playing);
+        } else {
             // unpause
-            setSimulationPlaybackState(SimulationUIPlaybackState::Playing);
+            set_simulation_playback_state(SimulationUIPlaybackState::Playing);
         }
     }
 
-    std::optional<SimulationReport> tryFindNthReportAfter(SimulationClock::time_point t, int offset = 0)
+    std::optional<SimulationReport> try_find_nth_report_after(
+        SimulationClock::time_point t, int offset = 0)
     {
-        const ptrdiff_t numSimulationReports = m_Simulation->getNumReports();
+        const ptrdiff_t num_simulation_reports = simulation_->get_num_reports();
 
-        if (numSimulationReports == 0) {
+        if (num_simulation_reports == 0) {
             return std::nullopt;
         }
 
-        ptrdiff_t zeroethReportIndex = static_cast<ptrdiff_t>(numSimulationReports) - 1;
-        for (ptrdiff_t i = 0; i < numSimulationReports; ++i) {
-            const SimulationReport r = m_Simulation->getSimulationReport(i);
-            if (r.getTime() >= t) {
-                zeroethReportIndex = i;
+        ptrdiff_t zeroeth_report_index = static_cast<ptrdiff_t>(num_simulation_reports) - 1;
+        for (ptrdiff_t i = 0; i < num_simulation_reports; ++i) {
+            const SimulationReport r = simulation_->get_simulation_report(i);
+            if (r.get_time() >= t) {
+                zeroeth_report_index = i;
                 break;
             }
         }
 
-        const ptrdiff_t reportIndex = zeroethReportIndex + offset;
-        if (0 <= reportIndex and reportIndex < numSimulationReports) {
-            return m_Simulation->getSimulationReport(reportIndex);
-        }
-        else {
+        const ptrdiff_t report_index = zeroeth_report_index + offset;
+        if (0 <= report_index and report_index < num_simulation_reports) {
+            return simulation_->get_simulation_report(report_index);
+        } else {
             return std::nullopt;
         }
     }
 
-    const AbstractSimulation& implGetSimulation() const final
+    const AbstractSimulation& impl_get_simulation() const override { return *simulation_; }
+
+    AbstractSimulation& impl_upd_simulation() override { return *simulation_; }
+
+    SimulationUIPlaybackState impl_get_simulation_playback_state() override
     {
-        return *m_Simulation;
+        return playback_state_;
     }
 
-    AbstractSimulation& implUpdSimulation() final
+    void impl_set_simulation_playback_state(SimulationUIPlaybackState new_state) override
     {
-        return *m_Simulation;
-    }
-
-    SimulationUIPlaybackState implGetSimulationPlaybackState() final
-    {
-        return m_PlaybackState;
-    }
-
-    void implSetSimulationPlaybackState(SimulationUIPlaybackState newState) final
-    {
-        if (newState == SimulationUIPlaybackState::Playing) {
-            m_PlaybackStartWallTime = std::chrono::steady_clock::now();
-            m_PlaybackState = newState;
-        }
-        else {
-            m_PlaybackStartSimtime = getSimulationScrubTime();
-            m_PlaybackState = newState;
+        if (new_state == SimulationUIPlaybackState::Playing) {
+            playback_start_wall_time_ = std::chrono::steady_clock::now();
+            playback_state_ = new_state;
+        } else {
+            playback_start_simtime_ = get_simulation_scrub_time();
+            playback_state_ = new_state;
         }
     }
 
-    SimulationUILoopingState implGetSimulationLoopingState() const final
+    SimulationUILoopingState impl_get_simulation_looping_state() const override
     {
-        return m_LoopingState;
+        return looping_state_;
     }
 
-    void implSetSimulationLoopingState(SimulationUILoopingState s) final
+    void impl_set_simulation_looping_state(SimulationUILoopingState s) override
     {
-        m_LoopingState = s;
+        looping_state_ = s;
     }
 
-    float implGetSimulationPlaybackSpeed() final
-    {
-        return m_PlaybackSpeed;
-    }
+    float impl_get_simulation_playback_speed() override { return playback_speed_; }
 
-    void implSetSimulationPlaybackSpeed(float v) final
-    {
-        m_PlaybackSpeed = v;
-    }
+    void impl_set_simulation_playback_speed(float v) override { playback_speed_ = v; }
 
-    SimulationClock::time_point implGetSimulationScrubTime() final
+    SimulationClock::time_point impl_get_simulation_scrub_time() override
     {
-        if (m_PlaybackState == SimulationUIPlaybackState::Stopped) {
-            return m_PlaybackStartSimtime;
+        if (playback_state_ == SimulationUIPlaybackState::Stopped) {
+            return playback_start_simtime_;
         }
 
         // else: map the computer's wall time onto simulation time
 
-        const ptrdiff_t nReports = m_Simulation->getNumReports();
-        if (nReports <= 0) {
-            return m_Simulation->getStartTime();
-        }
-        else {
-            const auto wallNow = std::chrono::steady_clock::now();
-            const auto wallDur = wallNow - m_PlaybackStartWallTime;
+        const ptrdiff_t n_reports = simulation_->get_num_reports();
+        if (n_reports <= 0) {
+            return simulation_->get_start_time();
+        } else {
+            const auto wall_now = std::chrono::steady_clock::now();
+            const auto wall_dur = wall_now - playback_start_wall_time_;
 
-            const SimulationClock::duration simDur = m_PlaybackSpeed * SimulationClock::duration{wallDur};
-            const SimulationClock::time_point simNow = m_PlaybackStartSimtime + simDur;
-            const SimulationClock::time_point simEarliest = m_Simulation->getSimulationReport(0).getTime();
-            const SimulationClock::time_point simLatest = m_Simulation->getSimulationReport(nReports - 1).getTime();
+            const SimulationClock::duration sim_dur =
+                playback_speed_ * SimulationClock::duration{wall_dur};
+            const SimulationClock::time_point sim_now = playback_start_simtime_ + sim_dur;
+            const SimulationClock::time_point sim_earliest =
+                simulation_->get_simulation_report(0).get_time();
+            const SimulationClock::time_point sim_latest =
+                simulation_->get_simulation_report(n_reports - 1).get_time();
 
-            if (simNow < simEarliest) {
-                return simEarliest;
+            if (sim_now < sim_earliest) {
+                return sim_earliest;
+            } else if (sim_now > sim_latest) {
+                return sim_latest;
+            } else {
+                return sim_now;
             }
-            else if (simNow > simLatest) {
-                return simLatest;
-            }
-            else {
-                return simNow;
-            }
         }
     }
 
-    void implSetSimulationScrubTime(SimulationClock::time_point t) final
+    void impl_set_simulation_scrub_time(SimulationClock::time_point t) override
     {
-        m_PlaybackStartSimtime = t;
-        m_PlaybackStartWallTime = std::chrono::steady_clock::now();
+        playback_start_simtime_ = t;
+        playback_start_wall_time_ = std::chrono::steady_clock::now();
     }
 
-    void implStepBack() final
+    void impl_step_back() override
     {
-        const std::optional<SimulationReport> maybePrev = tryFindNthReportAfter(getSimulationScrubTime(), -1);
-        if (maybePrev) {
-            setSimulationScrubTime(maybePrev->getTime());
+        const std::optional<SimulationReport> maybe_prev =
+            try_find_nth_report_after(get_simulation_scrub_time(), -1);
+        if (maybe_prev) {
+            set_simulation_scrub_time(maybe_prev->get_time());
         }
     }
 
-    void implStepForward() final
+    void impl_step_forward() override
     {
-        const std::optional<SimulationReport> maybeNext = tryFindNthReportAfter(getSimulationScrubTime(), 1);
-        if (maybeNext) {
-            setSimulationScrubTime(maybeNext->getTime());
+        const std::optional<SimulationReport> maybe_next =
+            try_find_nth_report_after(get_simulation_scrub_time(), 1);
+        if (maybe_next) {
+            set_simulation_scrub_time(maybe_next->get_time());
         }
     }
 
-    std::optional<SimulationReport> implTrySelectReportBasedOnScrubbing() final
+    std::optional<SimulationReport> impl_try_select_report_based_on_scrubbing() override
     {
-        return tryFindNthReportAfter(getSimulationScrubTime());
+        return try_find_nth_report_after(get_simulation_scrub_time());
     }
 
-    SimulationModelStatePair* implTryGetCurrentSimulationState() final
+    SimulationModelStatePair* impl_try_get_current_simulation_state() override
     {
-        return m_ShownModelState.get();
+        return shown_model_state_.get();
     }
 
-    void drawContent()
+    void draw_content()
     {
-        m_Toolbar.onDraw();
+        toolbar_.on_draw();
 
         // only draw content if a simulation report is available
-        const std::optional<SimulationReport> maybeReport = trySelectReportBasedOnScrubbing();
-        if (maybeReport) {
-            m_ShownModelState->setSimulation(m_Simulation);
-            m_ShownModelState->setSimulationReport(*maybeReport);
+        const std::optional<SimulationReport> maybe_report = try_select_report_based_on_scrubbing();
+        if (maybe_report) {
+            shown_model_state_->set_simulation(simulation_);
+            shown_model_state_->set_simulation_report(*maybe_report);
 
             OSC_PERF("draw simulation screen");
-            m_PanelManager->on_draw();
-            m_StatusBar.on_draw();
-            m_PopupManager.on_draw();
-        }
-        else {
+            panel_manager_->on_draw();
+            status_bar_.on_draw();
+            popup_manager_.on_draw();
+        } else {
             ui::begin_panel("Waiting for simulation");
             ui::draw_text_disabled("(waiting for first simulation state)");
             ui::end_panel();
@@ -454,42 +401,59 @@ private:
     }
 
     // underlying simulation being shown
-    std::shared_ptr<Simulation> m_Simulation;
+    std::shared_ptr<Simulation> simulation_;
 
     // the modelstate that's being shown in the UI, based on scrubbing etc.
     //
     // if possible (i.e. there's a simulation report available), will be set each frame
-    std::shared_ptr<SimulationModelStatePair> m_ShownModelState = std::make_shared<SimulationModelStatePair>();
+    std::shared_ptr<SimulationModelStatePair> shown_model_state_ =
+        std::make_shared<SimulationModelStatePair>();
 
     // scrubbing state
-    SimulationUIPlaybackState m_PlaybackState = SimulationUIPlaybackState::Playing;
-    SimulationUILoopingState m_LoopingState = SimulationUILoopingState::PlayOnce;
-    float m_PlaybackSpeed = 1.0f;
-    SimulationClock::time_point m_PlaybackStartSimtime = m_Simulation->getStartTime();
-    std::chrono::steady_clock::time_point m_PlaybackStartWallTime = std::chrono::steady_clock::now();
+    SimulationUIPlaybackState playback_state_ = SimulationUIPlaybackState::Playing;
+    SimulationUILoopingState looping_state_ = SimulationUILoopingState::PlayOnce;
+    float playback_speed_ = 1.0f;
+    SimulationClock::time_point playback_start_simtime_ = simulation_->get_start_time();
+    std::chrono::steady_clock::time_point playback_start_wall_time_ =
+        std::chrono::steady_clock::now();
 
     // manager for toggleable and spawnable UI panels
-    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>(&owner());
+    std::shared_ptr<PanelManager> panel_manager_ = std::make_shared<PanelManager>(&owner());
 
     // non-toggleable UI panels/menus/toolbars
-    SimulationTabMainMenu m_MainMenu{&owner(), m_Simulation, m_PanelManager};
-    SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
-    ModelStatusBar m_StatusBar{&owner(), m_ShownModelState};
+    SimulationTabMainMenu main_menu_{&owner(), simulation_, panel_manager_};
+    SimulationToolbar toolbar_{"##SimulationToolbar", this, simulation_};
+    ModelStatusBar status_bar_{&owner(), shown_model_state_};
 
     // manager for popups that are open in this tab
-    PopupManager m_PopupManager;
+    PopupManager popup_manager_;
 };
 
+osc::SimulationTab::SimulationTab(Widget* parent, std::shared_ptr<Simulation> simulation) :
 
-osc::SimulationTab::SimulationTab(
-    Widget* parent_,
-    std::shared_ptr<Simulation> simulation_) :
-
-    Tab{std::make_unique<Impl>(*this, parent_, std::move(simulation_))}
+    Tab{std::make_unique<Impl>(*this, parent, std::move(simulation))}
 {}
-void osc::SimulationTab::impl_on_mount() { private_data().on_mount(); }
-void osc::SimulationTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::SimulationTab::impl_on_event(Event& e) { return private_data().onEvent(e); }
-void osc::SimulationTab::impl_on_tick() { private_data().on_tick(); }
-void osc::SimulationTab::impl_on_draw_main_menu() { private_data().onDrawMainMenu(); }
-void osc::SimulationTab::impl_on_draw() { private_data().onDraw(); }
+void osc::SimulationTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::SimulationTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::SimulationTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::SimulationTab::impl_on_tick()
+{
+    private_data().on_tick();
+}
+void osc::SimulationTab::impl_on_draw_main_menu()
+{
+    private_data().on_draw_main_menu();
+}
+void osc::SimulationTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

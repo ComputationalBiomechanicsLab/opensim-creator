@@ -14,11 +14,9 @@ namespace osc
         {
             if constexpr (I >= std::variant_size_v<Variant>) {
                 return std::variant_size_v<Variant>;
-            }
-            else if constexpr (std::is_same_v<std::variant_alternative_t<I, Variant>, T>) {
+            } else if constexpr (std::is_same_v<std::variant_alternative_t<I, Variant>, T>) {
                 return I;
-            }
-            else {
+            } else {
                 return variant_index_impl<Variant, T, I + 1>();
             }
         }
@@ -35,5 +33,6 @@ namespace osc
     struct Overload : Ts... {
         using Ts::operator()...;
     };
-    template<typename... Ts> Overload(Ts...) -> Overload<Ts...>;
+    template<typename... Ts>
+    Overload(Ts...) -> Overload<Ts...>;
 }

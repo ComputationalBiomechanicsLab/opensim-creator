@@ -23,13 +23,13 @@
 #include <type_traits>
 #include <vector>
 
-namespace osc { struct AABB; }
-namespace osc { class SubMeshDescriptor; }
-namespace osc { struct Transform; }
-namespace osc { class VertexFormat; }
-
 namespace osc
 {
+    class SubMeshDescriptor;
+    class VertexFormat;
+    struct AABB;
+    struct Transform;
+
     class Mesh {
     public:
         Mesh();
@@ -79,10 +79,7 @@ namespace osc
         //            vertices (or zero, which means "clear them")
         std::vector<Color> colors() const;
         void set_colors(std::span<const Color>);
-        void set_colors(std::initializer_list<Color> il)
-        {
-            set_colors(std::span<const Color>{il});
-        }
+        void set_colors(std::initializer_list<Color> il) { set_colors(std::span<const Color>{il}); }
 
         // attribute: you can only set an equal amount of tangents to the number of
         //            vertices (or zero, which means "clear them")
@@ -100,10 +97,7 @@ namespace osc
         size_t num_indices() const;
         MeshIndicesView indices() const;
         void set_indices(MeshIndicesView, MeshUpdateFlags = MeshUpdateFlag::Default);
-        void set_indices(std::initializer_list<uint32_t> il)
-        {
-            set_indices(MeshIndicesView{il});
-        }
+        void set_indices(std::initializer_list<uint32_t> il) { set_indices(MeshIndicesView{il}); }
         void for_each_indexed_vertex(const std::function<void(Vector3)>&) const;
         void for_each_indexed_triangle(const std::function<void(Triangle)>&) const;
         Triangle get_triangle_at(size_t first_index_offset) const;
@@ -158,10 +152,12 @@ namespace osc
         const VertexFormat& vertex_format() const;
         void set_vertex_buffer_params(size_t num_vertices, const VertexFormat&);
         size_t vertex_buffer_stride() const;
-        void set_vertex_buffer_data(std::span<const uint8_t>, MeshUpdateFlags = MeshUpdateFlag::Default);
+        void set_vertex_buffer_data(
+            std::span<const uint8_t>, MeshUpdateFlags = MeshUpdateFlag::Default);
         template<std::ranges::contiguous_range Range>
         requires BitCastable<typename Range::value_type>
-        void set_vertex_buffer_data(const Range& range, MeshUpdateFlags flags = MeshUpdateFlag::Default)
+        void set_vertex_buffer_data(
+            const Range& range, MeshUpdateFlags flags = MeshUpdateFlag::Default)
         {
             std::span<const uint8_t> bytes = view_object_representations<uint8_t>(range);
             set_vertex_buffer_data(bytes, flags);
@@ -184,6 +180,7 @@ namespace osc
 
         friend bool operator==(const Mesh&, const Mesh&) = default;
         friend std::ostream& operator<<(std::ostream&, const Mesh&);
+
     private:
         friend class GraphicsBackend;
         friend struct std::hash<Mesh>;

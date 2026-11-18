@@ -14,17 +14,22 @@ namespace osc
         struct sqrt_epsilon_impl;
 
         template<>
-        struct sqrt_epsilon_impl<float> { static constexpr float value = 0.00034526698f; };
+        struct sqrt_epsilon_impl<float> {
+            static constexpr float value = 0.00034526698f;
+        };
 
         template<>
-        struct sqrt_epsilon_impl<double> { static constexpr double value = 0.000000014901161193847656; };
+        struct sqrt_epsilon_impl<double> {
+            static constexpr double value = 0.000000014901161193847656;
+        };
     }
 
     // the mathematical constant, pi
     template<std::floating_point T>
     inline constexpr T pi_v = std::numbers::pi_v<T>;
 
-    // the difference between `T{1}` and the next representable value of the given floating-point type
+    // the difference between `T{1}` and the next representable value of the given floating-point
+    // type
     template<std::floating_point T>
     inline constexpr T epsilon_v = std::numeric_limits<T>::epsilon();
 
@@ -47,5 +52,5 @@ namespace osc
     // The maximum absolute dot product between two unit vectors such that
     // normalizing their cross-product remains numerically stable.
     template<std::floating_point T>
-    inline constexpr T max_abs_dot_for_cross_v = T(1) - sqrt_epsilon_v<T>;
+    inline constexpr T max_abs_dot_for_cross_v = static_cast<T>(1) - sqrt_epsilon_v<T>;
 }

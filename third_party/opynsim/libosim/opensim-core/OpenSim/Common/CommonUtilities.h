@@ -23,8 +23,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimCommonDLL.h"
 #include "Assertion.h"
+#include "osimCommonDLL.h"
+
+#include <OpenSim/Common/Property.h>
+
+#include <SimTKcommon/internal/BigMatrix.h>
+
 #include <algorithm>
 #include <cmath>
 #include <condition_variable>
@@ -36,8 +41,6 @@
 #include <stack>
 #include <utility>
 #include <vector>
-
-#include <SimTKcommon/internal/BigMatrix.h>
 
 namespace OpenSim {
 
@@ -84,9 +87,9 @@ SimTK::Vector createVectorLinspace(int length, double start, double end);
  * This function generates a vector of length `length`, where each element
  * is calculated based on the starting value and the specified step size.
  * The elements are computed as:
- * 
+ *
  * output[i] = start + i * step_size
- * 
+ *
  * for i = 0, 1, 2, ..., length-1.
  *
  * @tparam T The type of the elements in the output vector. This can be any
@@ -176,7 +179,7 @@ std::string detectDelimiter(
  *       See https://mathworks.com/help/matlab/ref/isuniform.html for more details.
  */
 /// @ingroup commonutil
-template <typename T> 
+template <typename T>
 std::pair<bool, T> isUniform(const std::vector<T>& x) {
 
     // Initialize step as NaN
@@ -217,7 +220,7 @@ std::pair<bool, T> isUniform(const std::vector<T>& x) {
         // Now find the minimum element among the positive numbers
         if (end != results.begin()) { // Check if there are any positive numbers
             step = *std::min_element(results.begin(), end);
-        } 
+        }
     }
 
     return {tf, step};
@@ -317,26 +320,44 @@ private:
 OSIMCOMMON_API SimTK::Matrix computeKNearestNeighbors(const SimTK::Matrix& x,
         const SimTK::Matrix& y, int k = 1);
 
-/// Use non-negative matrix factorization to decompose an matrix A (NxM) for a 
-/// selected number of factors 'K' into two matrices W (NxK) and H (KxM) such 
-/// that A = W * H. The alternating least squares (ALS) algorithm is used to 
-/// solve for W and H by minimizing the Frobenius norm of the error between A 
+/// Use non-negative matrix factorization to decompose an matrix A (NxM) for a
+/// selected number of factors 'K' into two matrices W (NxK) and H (KxM) such
+/// that A = W * H. The alternating least squares (ALS) algorithm is used to
+/// solve for W and H by minimizing the Frobenius norm of the error between A
 /// and W * H. The matrices W and H are scaled assuming that the rows of H
 /// have magnitudes as if all elements in H were equal to 0.5, which prevents
-/// individual factors from being very large or very small. The algorithm 
-/// terminates when the change in the error norm is less than the specified 
+/// individual factors from being very large or very small. The algorithm
+/// terminates when the change in the error norm is less than the specified
 /// tolerance or the maximum number of iterations is reached.
 ///
 /// @returns The final Frobenius norm of the error between A and W * H.
 ///
 /// Reference
 /// ---------
-/// Berry, M. W., et al. (2007). Algorithms and Applications for Approximate 
-/// Nonnegative Matrix Factorization. Computational Statistics & Data Analysis, 
+/// Berry, M. W., et al. (2007). Algorithms and Applications for Approximate
+/// Nonnegative Matrix Factorization. Computational Statistics & Data Analysis,
 /// 52(1), 155-173. doi:10.1016/j.csda.2006.11.006.
-OSIMCOMMON_API double factorizeMatrixNonNegative(const SimTK::Matrix& A, 
-        int numFactors, int maxIterations, double tolerance, 
+OSIMCOMMON_API double factorizeMatrixNonNegative(const SimTK::Matrix& A,
+        int numFactors, int maxIterations, double tolerance,
         SimTK::Matrix& W, SimTK::Matrix& H);
+
+/**
+ * Generate the number of possible combinations of `k` elements from a set
+ * of `n` total elements.
+ */
+OSIMCOMMON_API int choose(int n, int k);
+
+namespace detail {
+/**
+ * Returns true if value is a valid name for a file.
+ */
+template <typename T> bool isValidFileName(const Property<T>& value) {
+    return false;
+}
+inline bool isValidFileName(const Property<std::string>& value) {
+    return !value.getValue().empty() && !value.getValueIsDefault();
+}
+} // namespace detail
 
 } // namespace OpenSim
 

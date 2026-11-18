@@ -32,18 +32,13 @@ namespace
     Material create_parallax_mapping_material(ResourceLoader& loader)
     {
         const Texture2D diffuse_map = Image::read_into_texture(
-            loader.open("oscar_demos/learnopengl/textures/bricks2.jpg"),
-            ColorSpace::sRGB
-        );
+            loader.open("oscar_demos/learnopengl/textures/bricks2.jpg"), ColorSpace::sRGB);
         const Texture2D normal_map = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/bricks2_normal.jpg"),
             ColorSpace::Linear,
-            ImageLoadingFlag::TreatComponentsAsSpatialVectors
-        );
+            ImageLoadingFlag::TreatComponentsAsSpatialVectors);
         const Texture2D displacement_map = Image::read_into_texture(
-            loader.open("oscar_demos/learnopengl/textures/bricks2_disp.jpg"),
-            ColorSpace::Linear
-        );
+            loader.open("oscar_demos/learnopengl/textures/bricks2_disp.jpg"), ColorSpace::Linear);
 
         Material rv{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/ParallaxMapping.vert"),
@@ -67,7 +62,10 @@ namespace
 
 class osc::LOGLParallaxMappingTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/ParallaxMapping"; }
+    static CStringView static_label()
+    {
+        return "oscar_demos/learnopengl/AdvancedLighting/ParallaxMapping";
+    }
 
     explicit Impl(LOGLParallaxMappingTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
@@ -87,10 +85,7 @@ public:
         camera_.on_unmount();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -110,10 +105,13 @@ public:
             render_queue_.emplace(cube_mesh_, light_transform_, light_cube_material_);
         }
 
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-            .clear_color = Color::darkest_grey(),
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+                .clear_color = Color::darkest_grey(),
+            });
         render_queue_.clear();
 
         ui::begin_panel("controls");
@@ -141,13 +139,27 @@ private:
     bool parallax_mapping_enabled_ = true;
 };
 
-
-CStringView osc::LOGLParallaxMappingTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLParallaxMappingTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLParallaxMappingTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLParallaxMappingTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLParallaxMappingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLParallaxMappingTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLParallaxMappingTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLParallaxMappingTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLParallaxMappingTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLParallaxMappingTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

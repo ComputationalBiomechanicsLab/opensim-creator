@@ -29,32 +29,51 @@ namespace osc
         {
             validate_or_throw();
         }
-        explicit RenderTarget(RenderTargetColorAttachment color_attachment, RenderTargetDepthStencilAttachment depth_attachment) :
+        explicit RenderTarget(
+            RenderTargetColorAttachment color_attachment,
+            RenderTargetDepthStencilAttachment depth_attachment) :
+
             colors_{std::move(color_attachment)},
             depth_{std::move(depth_attachment)}
         {
             validate_or_throw();
         }
-        explicit RenderTarget(RenderTargetColorAttachment color0_attachment, RenderTargetColorAttachment color1_attachment, RenderTargetDepthStencilAttachment depth_attachment) :
+        explicit RenderTarget(
+            RenderTargetColorAttachment color0_attachment,
+            RenderTargetColorAttachment color1_attachment,
+            RenderTargetDepthStencilAttachment depth_attachment) :
+
             colors_{std::move(color0_attachment), std::move(color1_attachment)},
             depth_{std::move(depth_attachment)}
         {
             validate_or_throw();
         }
-        explicit RenderTarget(RenderTargetColorAttachment color0_attachment, RenderTargetColorAttachment color1_attachment, RenderTargetColorAttachment color2_attachment, RenderTargetDepthStencilAttachment depth_attachment) :
-            colors_{std::move(color0_attachment), std::move(color1_attachment), std::move(color2_attachment)},
+        explicit RenderTarget(
+            RenderTargetColorAttachment color0_attachment,
+            RenderTargetColorAttachment color1_attachment,
+            RenderTargetColorAttachment color2_attachment,
+            RenderTargetDepthStencilAttachment depth_attachment) :
+
+            colors_{
+                std::move(color0_attachment),
+                std::move(color1_attachment),
+                std::move(color2_attachment)},
             depth_{std::move(depth_attachment)}
         {
             validate_or_throw();
         }
 
         std::span<const RenderTargetColorAttachment> color_attachments() const { return colors_; }
-        const std::optional<RenderTargetDepthStencilAttachment>& depth_attachment() const { return depth_; }
+        const std::optional<RenderTargetDepthStencilAttachment>& depth_attachment() const
+        {
+            return depth_;
+        }
 
         // Returns the dimensions of this `RenderTarget` in physical pixels.
         Vector2i pixel_dimensions() const
         {
-            return depth_ ? depth_->buffer.pixel_dimensions() : colors_.front().buffer.pixel_dimensions();
+            return depth_ ? depth_->buffer.pixel_dimensions()
+                          : colors_.front().buffer.pixel_dimensions();
         }
 
         // Returns the dimensions of this `RenderTarget` in device-independent pixels.
@@ -68,7 +87,10 @@ namespace osc
 
         // Sets the device-to-pixel ratio of this `RenderTarget, which has the effect
         // of scaling the `dimensions()`.
-        void set_device_pixel_ratio(float new_device_pixel_ratio) { device_pixel_ratio_ = new_device_pixel_ratio; }
+        void set_device_pixel_ratio(float new_device_pixel_ratio)
+        {
+            device_pixel_ratio_ = new_device_pixel_ratio;
+        }
 
         void validate_or_throw() const;
 

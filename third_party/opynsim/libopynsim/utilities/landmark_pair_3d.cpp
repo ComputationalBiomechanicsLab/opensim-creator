@@ -13,5 +13,11 @@ namespace
     }
 }
 
-std::ostream& opyn::operator<<(std::ostream& o, const LandmarkPair3D<float>& p) { return write_human_readable(o, p); }
-std::ostream& opyn::operator<<(std::ostream& o, const LandmarkPair3D<double>& p) { return write_human_readable(o, p); }
+std::ostream& opyn::operator<<(std::ostream& o, const LandmarkPair3D<float>& p)
+{
+    return write_human_readable(o, p);
+}
+std::ostream& opyn::operator<<(std::ostream& o, const LandmarkPair3D<double>& p)
+{
+    return write_human_readable(o, p);
+}

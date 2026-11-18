@@ -4,7 +4,10 @@
 #include <liboscar/maths/plane.h>
 #include <liboscar/maths/sphere.h>
 
-namespace osc { class Mesh; }
+namespace osc
+{
+    class Mesh;
+}
 
 namespace opyn
 {

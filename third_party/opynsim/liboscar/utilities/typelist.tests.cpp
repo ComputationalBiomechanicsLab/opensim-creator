@@ -34,11 +34,11 @@ TEST(Typelist, contains_returns_false_when_type_is_not_in_list)
 
 TEST(TypelistSizeV, returns_expected_values)
 {
-    static_assert(TypelistSizeV<Typelist<>> == 0);
-    static_assert(TypelistSizeV<Typelist<int>> == 1);
-    static_assert(TypelistSizeV<Typelist<int, float>> == 2);
-    static_assert(TypelistSizeV<Typelist<int, float, char>> == 3);
-    static_assert(TypelistSizeV<Typelist<int, float, char, int64_t>> == 4);
+    static_assert(typelist_size_v<Typelist<>> == 0);
+    static_assert(typelist_size_v<Typelist<int>> == 1);
+    static_assert(typelist_size_v<Typelist<int, float>> == 2);
+    static_assert(typelist_size_v<Typelist<int, float, char>> == 3);
+    static_assert(typelist_size_v<Typelist<int, float, char, int64_t>> == 4);
     // ... etc.
 }
 
@@ -52,6 +52,9 @@ TEST(TypeAtT, works_as_expected)
 
 TEST(VariantOfTypelistElements, works_as_expected)
 {
-    static_assert(std::is_same_v<VariantOfTypelistElements<Typelist<int64_t>>, std::variant<int64_t>>);
-    static_assert(std::is_same_v<VariantOfTypelistElements<Typelist<int, float, bool>>, std::variant<int, float, bool>>);
+    static_assert(
+        std::is_same_v<VariantOfTypelistElements<Typelist<int64_t>>, std::variant<int64_t>>);
+    static_assert(std::is_same_v<
+                  VariantOfTypelistElements<Typelist<int, float, bool>>,
+                  std::variant<int, float, bool>>);
 }

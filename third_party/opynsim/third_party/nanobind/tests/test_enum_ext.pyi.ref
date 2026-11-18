@@ -1,5 +1,5 @@
 import enum
-from typing import overload
+from typing import Final, overload
 
 
 class Enum(enum.Enum):
@@ -69,16 +69,16 @@ Item1: ClassicEnum = ClassicEnum.Item1
 Item2: ClassicEnum = ClassicEnum.Item2
 
 @overload
-def from_enum(arg: Enum) -> int: ...
+def from_enum(arg: Enum, /) -> int: ...
 
 @overload
-def from_enum(arg: Flag) -> int: ...
+def from_enum(arg: Flag, /) -> int: ...
 
 @overload
-def from_enum(arg: SEnum) -> int: ...
+def from_enum(arg: SEnum, /) -> int: ...
 
 @overload
-def from_enum(arg: UnsignedFlag) -> int: ...
+def from_enum(arg: UnsignedFlag, /) -> int: ...
 
 def to_enum(arg: int, /) -> Enum: ...
 
@@ -113,10 +113,10 @@ class OpaqueEnum:
     @overload
     def __init__(self, arg: str, /) -> None: ...
 
-    X: test_enum_ext.OpaqueEnum = ...
+    X: Final[OpaqueEnum] = ...
     """(arg: object, /) -> test_enum_ext.OpaqueEnum"""
 
-    Y: test_enum_ext.OpaqueEnum = ...
+    Y: Final[OpaqueEnum] = ...
     """(arg: object, /) -> test_enum_ext.OpaqueEnum"""
 
     def __eq__(self, arg: OpaqueEnum, /) -> bool: ...
@@ -129,3 +129,38 @@ class Item(enum.Enum):
     extra = 2
 
 def item_to_int(item: Item = Item.name) -> int: ...
+
+class EnumWrapper:
+    def __init__(self, arg: EnumWrapper.Value, /) -> None: ...
+
+    class Value(enum.Enum):
+        Alpha = 0
+
+        Beta = 1
+
+        Gamma = 2
+
+    Alpha: EnumWrapper.Value = EnumWrapper.Value.Alpha
+
+    Beta: EnumWrapper.Value = EnumWrapper.Value.Beta
+
+    Gamma: EnumWrapper.Value = EnumWrapper.Value.Gamma
+
+    def __eq__(self, arg: EnumWrapper.Value, /) -> bool: ...
+
+    def get_value(self) -> EnumWrapper.Value: ...
+
+class Color(enum.StrEnum):
+    """string-valued enum"""
+
+    Red = 'red'
+
+    Green = 'green'
+
+    Blue = 'blue'
+
+def from_color(arg: Color, /) -> int: ...
+
+def from_color_implicit(arg: Color, /) -> int: ...
+
+def to_color(arg: int, /) -> Color: ...

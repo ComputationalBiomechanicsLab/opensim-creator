@@ -6,9 +6,9 @@
 
 namespace opyn
 {
-    // A top-level message produced by validating an entire scaling document (not just `ScalingStep`s,
-    // but any top-level validation concerns also). In MVC parlance, this is the M - so it shouldn't
-    // directly use or refer to the UI.
+    // A top-level message produced by validating an entire scaling document (not just
+    // `ScalingStep`s, but any top-level validation concerns also). In MVC parlance, this is the M -
+    // so it shouldn't directly use or refer to the UI.
     struct ScalingDocumentValidationMessage {
         OpenSim::ComponentPath source_scaling_step_abs_path;
         ScalingStepValidationMessage payload;

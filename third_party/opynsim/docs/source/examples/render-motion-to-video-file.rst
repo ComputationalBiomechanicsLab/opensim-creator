@@ -2,13 +2,12 @@ Render Motion to Video File
 ===========================
 
 This example uses `Imageio <https://github.com/imageio/imageio>`_ (installed
-both ``imageio`` and ``imageio-ffmpeg``) to combine frames rendered by
-the :mod:`opynsim.graphics` module into a viewable ``.mp4`` file.
+both ``imageio`` and ``imageio-ffmpeg``) to combine frames rendered by OPynSim
+into a viewable ``.mp4`` file.
 
 .. code:: python
 
     import opynsim as opyn
-    import opynsim.graphics
     import imageio  # from `imageio` and `imageio-ffmpeg` packages
 
     # Load + compile an `opynsim.Model` from an `osim` file.
@@ -24,6 +23,6 @@ the :mod:`opynsim.graphics` module into a viewable ``.mp4`` file.
     with imageio.get_writer("output.mp4", fps=60) as writer:
         for state in states:
             model.realize(state, opyn.STAGE_REPORT) # Required for rendering
-            texture_2d = opyn.graphics.render_model_in_state(model, state)
+            texture_2d = opyn.render_model_in_state(model, state)
             pixels_ndarray = render.pixels_rgb24()
             writer.append_data(pixels_ndarray)

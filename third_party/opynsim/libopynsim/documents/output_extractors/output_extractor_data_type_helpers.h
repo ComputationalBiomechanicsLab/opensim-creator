@@ -12,8 +12,9 @@ namespace opyn
 {
     constexpr bool is_numeric(OutputExtractorDataType t)
     {
-        constexpr auto lut = []<OutputExtractorDataType... Types>(osc::OptionList<OutputExtractorDataType, Types...>) {
-            return std::to_array({ OutputExtractorDataTypeTraits<Types>::is_numeric... });
+        constexpr auto lut = []<OutputExtractorDataType... Types>(
+                                 osc::OptionList<OutputExtractorDataType, Types...>) {
+            return std::to_array({OutputExtractorDataTypeTraits<Types>::is_numeric...});
         }(OutputExtractorDataTypeList{});
 
         return lut.at(osc::to_index(t));

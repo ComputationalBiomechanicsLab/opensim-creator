@@ -93,7 +93,9 @@ TEST(RenderTexture, throws_if_given_non_square_pixel_dimensions_but_Cube_dimensi
     ASSERT_ANY_THROW(const RenderTexture render_texture(render_texture_params));
 }
 
-TEST(RenderTexture, set_dimensionality_throws_if_set_on_RenderTexture_with_non_square_pixel_dimensions)
+TEST(
+    RenderTexture,
+    set_dimensionality_throws_if_set_on_RenderTexture_with_non_square_pixel_dimensions)
 {
     RenderTexture render_texture;
     render_texture.set_pixel_dimensions({1, 2});  // not square
@@ -217,9 +219,9 @@ TEST(RenderTexture, dimensions_are_scaled_by_device_pixel_ratio)
 
     ASSERT_EQ(render_texture.dimensions(), Vector2(7.0f, 7.0f));
     render_texture.set_device_pixel_ratio(2.0f);
-    ASSERT_EQ(render_texture.dimensions(), Vector2(7.0f,7.0f)/2.0f);
+    ASSERT_EQ(render_texture.dimensions(), Vector2(7.0f, 7.0f) / 2.0f);
     render_texture.set_device_pixel_ratio(0.5f);
-    ASSERT_EQ(render_texture.dimensions(), Vector2(7.0f,7.0f)/0.5f);
+    ASSERT_EQ(render_texture.dimensions(), Vector2(7.0f, 7.0f) / 0.5f);
 }
 
 TEST(RenderTexture, device_pixel_ratio_is_initially_1)
@@ -254,5 +256,5 @@ TEST(RenderTexture, device_pixel_ratio_from_params_affects_dimensions)
     }};
     ASSERT_EQ(render_texture.pixel_dimensions(), Vector2i(13, 13));
     ASSERT_EQ(render_texture.device_pixel_ratio(), 2.5f);
-    ASSERT_EQ(render_texture.dimensions(), Vector2(13.0f, 13.0f)/2.5f);
+    ASSERT_EQ(render_texture.dimensions(), Vector2(13.0f, 13.0f) / 2.5f);
 }

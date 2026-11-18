@@ -16,7 +16,7 @@ using namespace osc;
 
 namespace
 {
-    bool DrawEditor(ParamBlock& b, int idx, double v)
+    bool draw_editor(ParamBlock& b, int idx, double v)
     {
         // note: the input prevision has to be quite high here, because the
         //       ParamBlockEditorPopup has to edit simulation parameters, and
@@ -27,32 +27,30 @@ namespace
 
         auto fv = static_cast<float>(v);
         if (ui::draw_float_input("##", &fv, 0.0f, 0.0f, "%.9f")) {
-            b.setValue(idx, static_cast<double>(fv));
+            b.set_value(idx, static_cast<double>(fv));
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    bool DrawEditor(ParamBlock& b, int idx, int v)
+    bool draw_editor(ParamBlock& b, int idx, int v)
     {
         if (ui::draw_int_input("##", &v)) {
-            b.setValue(idx, v);
+            b.set_value(idx, v);
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    bool DrawEditor(ParamBlock& b, int idx, opyn::IntegratorMethod im)
+    bool draw_editor(ParamBlock& b, int idx, opyn::IntegratorMethod im)
     {
         bool rv = false;
         if (ui::begin_combobox("##", opyn::label_for(im))) {
             for (opyn::IntegratorMethod m : osc::make_option_iterable<opyn::IntegratorMethod>()) {
                 if (ui::draw_selectable(opyn::label_for(m), m == im)) {
-                    b.setValue(idx, m);
+                    b.set_value(idx, m);
                     rv = true;
                 }
             }
@@ -61,43 +59,44 @@ namespace
         return rv;
     }
 
-    bool DrawEditor(ParamBlock& b, int idx)
+    bool draw_editor(ParamBlock& b, int idx)
     {
-        return std::visit(Overload{
-            [&b, idx](const auto& val) { return DrawEditor(b, idx, val); },
-        }, b.getValue(idx));
+        return std::visit(
+            Overload{
+                [&b, idx](const auto& val) { return draw_editor(b, idx, val); },
+            },
+            b.get_value(idx));
     }
 }
 
 class osc::ParamBlockEditorPopup::Impl final : public PopupPrivate {
 public:
-
     explicit Impl(
         ParamBlockEditorPopup& owner,
         Widget* parent,
-        std::string_view popupName,
-        ParamBlock* paramBlock) :
+        std::string_view popup_name,
+        ParamBlock* param_block) :
 
-        PopupPrivate{owner, parent, popupName, {512.0f, 0.0f}, ui::PanelFlag::AlwaysAutoResize},
-        m_OutputTarget{paramBlock},
-        m_LocalCopy{*m_OutputTarget}
+        PopupPrivate{owner, parent, popup_name, {512.0f, 0.0f}, ui::PanelFlag::AlwaysAutoResize},
+        output_target_{param_block},
+        local_copy_{*output_target_}
     {}
 
     void draw_content()
     {
-        m_WasEdited = false;
+        was_edited_ = false;
 
         ui::set_num_columns(2);
-        for (int i = 0, len = m_LocalCopy.size(); i < len; ++i) {
+        for (int i = 0, len = local_copy_.size(); i < len; ++i) {
             ui::push_id(i);
 
-            ui::draw_text(m_LocalCopy.getName(i));
+            ui::draw_text(local_copy_.get_name(i));
             ui::same_line();
-            ui::draw_help_marker(m_LocalCopy.getName(i), m_LocalCopy.getDescription(i));
+            ui::draw_help_marker(local_copy_.get_name(i), local_copy_.get_description(i));
             ui::next_column();
 
-            if (DrawEditor(m_LocalCopy, i)) {
-                m_WasEdited = true;
+            if (draw_editor(local_copy_, i)) {
+                was_edited_ = true;
             }
             ui::next_column();
 
@@ -105,10 +104,10 @@ public:
         }
         ui::set_num_columns();
 
-        ui::draw_vertical_spacer(1.0f/15.0f);
+        ui::draw_vertical_spacer(1.0f / 15.0f);
 
         if (ui::draw_button("save")) {
-            *m_OutputTarget = m_LocalCopy;
+            *output_target_ = local_copy_;
             request_close();
         }
         ui::same_line();
@@ -118,16 +117,17 @@ public:
     }
 
 private:
-    bool m_WasEdited = false;
-    ParamBlock* m_OutputTarget = nullptr;
-    ParamBlock m_LocalCopy;
+    bool was_edited_ = false;
+    ParamBlock* output_target_ = nullptr;
+    ParamBlock local_copy_;
 };
 
 osc::ParamBlockEditorPopup::ParamBlockEditorPopup(
-    Widget* parent,
-    std::string_view popupName,
-    ParamBlock* paramBlock) :
+    Widget* parent, std::string_view popup_name, ParamBlock* param_block) :
 
-    Popup{std::make_unique<Impl>(*this, parent, popupName, paramBlock)}
+    Popup{std::make_unique<Impl>(*this, parent, popup_name, param_block)}
 {}
-void osc::ParamBlockEditorPopup::impl_draw_content() { private_data().draw_content(); }
+void osc::ParamBlockEditorPopup::impl_draw_content()
+{
+    private_data().draw_content();
+}

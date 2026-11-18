@@ -7,14 +7,26 @@
 
 #include <memory>
 
-namespace OpenSim { class Component; }
-namespace OpenSim { class Model; }
-namespace osc { class Environment; }
-namespace osc { class Simulation; }
-namespace SimTK { class State; }
+namespace OpenSim
+{
+    class Component;
+}
+
+namespace OpenSim
+{
+    class Model;
+}
+
+namespace SimTK
+{
+    class State;
+}
 
 namespace osc
 {
+    class Environment;
+    class Simulation;
+
     // a readonly model+state pair from a particular step from a simulator
     class SimulationModelStatePair final : public ModelStatePairWithSharedEnvironment {
     public:
@@ -26,31 +38,31 @@ namespace osc
         SimulationModelStatePair& operator=(SimulationModelStatePair&&) noexcept;
         ~SimulationModelStatePair() noexcept override;
 
-        std::shared_ptr<Simulation> updSimulation();
-        void setSimulation(std::shared_ptr<Simulation>);
+        std::shared_ptr<Simulation> upd_simulation();
+        void set_simulation(std::shared_ptr<Simulation>);
 
-        SimulationReport getSimulationReport() const;
-        void setSimulationReport(SimulationReport);
+        SimulationReport get_simulation_report() const;
+        void set_simulation_report(SimulationReport);
 
     private:
-        const OpenSim::Model& impl_get_model() const final;
-        UID impl_get_model_version() const final;
+        const OpenSim::Model& impl_get_model() const override;
+        UID impl_get_model_version() const override;
 
-        const SimTK::State& impl_get_state() const final;
-        UID impl_get_state_version() const final;
+        const SimTK::State& impl_get_state() const override;
+        UID impl_get_state_version() const override;
 
-        const OpenSim::Component* impl_get_selected() const final;
-        void impl_set_selected(const OpenSim::Component*) final;
+        const OpenSim::Component* impl_get_selected() const override;
+        void impl_set_selected(const OpenSim::Component*) override;
 
-        const OpenSim::Component* impl_get_hovered() const final;
-        void impl_set_hovered(const OpenSim::Component*) final;
+        const OpenSim::Component* impl_get_hovered() const override;
+        void impl_set_hovered(const OpenSim::Component*) override;
 
-        float impl_get_fixup_scale_factor() const final;
-        void impl_set_fixup_scale_factor(float) final;
+        float impl_get_fixup_scale_factor() const override;
+        void impl_set_fixup_scale_factor(float) override;
 
-        std::shared_ptr<Environment> implUpdAssociatedEnvironment() const final;
+        std::shared_ptr<Environment> impl_upd_associated_environment() const override;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

@@ -18,11 +18,11 @@
 #include <string_view>
 #include <vector>
 
-namespace osc { class MiObjectFinder; }
-namespace osc { class MiClass; }
-
 namespace osc
 {
+    class MiClass;
+    class MiObjectFinder;
+
     // an object, as defined by the mesh importer
     class MiObject {
     protected:
@@ -31,193 +31,146 @@ namespace osc
         MiObject(MiObject&&) noexcept = default;
         MiObject& operator=(const MiObject&) = default;
         MiObject& operator=(MiObject&&) noexcept = default;
+
     public:
         virtual ~MiObject() noexcept = default;
 
-        const MiClass& getClass() const
+        const MiClass& get_class() const { return impl_get_class(); }
+
+        std::unique_ptr<MiObject> clone() const { return impl_clone(); }
+
+        MiVariantConstReference to_variant() const { return impl_to_variant(); }
+
+        MiVariantReference to_variant() { return impl_to_variant(); }
+
+        int get_num_cross_references() const
         {
-            return implGetClass();
+            return static_cast<int>(impl_get_cross_references().size());
         }
 
-        std::unique_ptr<MiObject> clone() const
+        UID get_cross_reference_connectee_id(int i) const
         {
-            return implClone();
+            return impl_get_cross_references().at(i).get_connectee_id();
         }
 
-        MiVariantConstReference toVariant() const
+        void set_cross_reference_connectee_id(int i, UID new_id)
         {
-            return implToVariant();
+            impl_set_cross_reference_connectee_id(i, new_id);
         }
 
-        MiVariantReference toVariant()
+        CStringView get_cross_reference_label(int i) const
         {
-            return implToVariant();
+            return impl_get_cross_references().at(i).get_label();
         }
 
-        int getNumCrossReferences() const
+        MiCrossrefDirection get_cross_reference_direction(int i) const
         {
-            return static_cast<int>(implGetCrossReferences().size());
+            return impl_get_cross_references().at(i).get_direction();
         }
 
-        UID getCrossReferenceConnecteeID(int i) const
+        UID get_id() const { return impl_get_id(); }
+
+        std::ostream& operator<<(std::ostream& o) const { return impl_write_to_stream(o); }
+
+        CStringView get_label() const { return impl_get_label(); }
+
+        void set_label(std::string_view new_label) { impl_set_label(new_label); }
+
+        Transform get_x_form(const MiObjectFinder& lookup) const { return impl_get_xform(lookup); }
+        void set_xform(const MiObjectFinder& lookup, const Transform& new_transform)
         {
-            return implGetCrossReferences().at(i).getConnecteeID();
+            impl_set_xform(lookup, new_transform);
         }
 
-        void setCrossReferenceConnecteeID(int i, UID newID)
+        Vector3 get_pos(const MiObjectFinder& lookup) const
         {
-            implSetCrossReferenceConnecteeID(i, newID);
+            return get_x_form(lookup).translation;
+        }
+        void set_pos(const MiObjectFinder& lookup, const Vector3& new_pos)
+        {
+            set_xform(lookup, get_x_form(lookup).with_translation(new_pos));
         }
 
-        CStringView getCrossReferenceLabel(int i) const
-        {
-            return implGetCrossReferences().at(i).getLabel();
-        }
+        Vector3 get_scale(const MiObjectFinder& lookup) const { return get_x_form(lookup).scale; }
 
-        MiCrossrefDirection getCrossReferenceDirection(int i) const
+        void set_scale(const MiObjectFinder& lookup, const Vector3& new_scale)
         {
-            return implGetCrossReferences().at(i).getDirection();
-        }
-
-        UID getID() const
-        {
-            return implGetID();
-        }
-
-        std::ostream& operator<<(std::ostream& o) const
-        {
-            return implWriteToStream(o);
-        }
-
-        CStringView getLabel() const
-        {
-            return implGetLabel();
-        }
-
-        void setLabel(std::string_view newLabel)
-        {
-            implSetLabel(newLabel);
-        }
-
-        Transform getXForm(const MiObjectFinder& lookup) const
-        {
-            return implGetXform(lookup);
-        }
-        void setXform(const MiObjectFinder& lookup, const Transform& newTransform)
-        {
-            implSetXform(lookup, newTransform);
-        }
-
-        Vector3 getPos(const MiObjectFinder& lookup) const
-        {
-            return getXForm(lookup).translation;
-        }
-        void setPos(const MiObjectFinder& lookup, const Vector3& newPos)
-        {
-            setXform(lookup, getXForm(lookup).with_translation(newPos));
-        }
-
-        Vector3 getScale(const MiObjectFinder& lookup) const
-        {
-            return getXForm(lookup).scale;
-        }
-
-        void setScale(const MiObjectFinder& lookup, const Vector3& newScale)
-        {
-            setXform(lookup, getXForm(lookup).with_scale(newScale));
+            set_xform(lookup, get_x_form(lookup).with_scale(new_scale));
         }
 
         Quaternion rotation(const MiObjectFinder& lookup) const
         {
-            return getXForm(lookup).rotation;
+            return get_x_form(lookup).rotation;
         }
 
-        void set_rotation(const MiObjectFinder& lookup, const Quaternion& newRotation)
+        void set_rotation(const MiObjectFinder& lookup, const Quaternion& new_rotation)
         {
-            setXform(lookup, getXForm(lookup).with_rotation(newRotation));
+            set_xform(lookup, get_x_form(lookup).with_rotation(new_rotation));
         }
 
-        std::optional<AABB> calcBounds(const MiObjectFinder& lookup) const
+        std::optional<AABB> calc_bounds(const MiObjectFinder& lookup) const
         {
-            return implCalcBounds(lookup);
+            return impl_calc_bounds(lookup);
         }
 
-        void applyTranslation(const MiObjectFinder& lookup, const Vector3& translation)
+        void apply_translation(const MiObjectFinder& lookup, const Vector3& translation)
         {
-            setPos(lookup, getPos(lookup) + translation);
+            set_pos(lookup, get_pos(lookup) + translation);
         }
 
-        void applyRotation(
+        void apply_rotation(
             const MiObjectFinder& lookup,
-            const EulerAngles& eulerAngles,
-            const Vector3& rotationCenter
-        );
+            const EulerAngles& euler_angles,
+            const Vector3& rotation_center);
 
-        void applyScale(const MiObjectFinder& lookup, const Vector3& scaleFactors)
+        void apply_scale(const MiObjectFinder& lookup, const Vector3& scale_factors)
         {
-            setScale(lookup, getScale(lookup) * scaleFactors);
+            set_scale(lookup, get_scale(lookup) * scale_factors);
         }
 
-        bool canChangeLabel() const
+        bool can_change_label() const { return impl_get_flags() & MiObjectFlags::CanChangeLabel; }
+
+        bool can_change_position() const
         {
-            return implGetFlags() & MiObjectFlags::CanChangeLabel;
+            return impl_get_flags() & MiObjectFlags::CanChangePosition;
         }
 
-        bool canChangePosition() const
+        bool can_change_rotation() const
         {
-            return implGetFlags() & MiObjectFlags::CanChangePosition;
+            return impl_get_flags() & MiObjectFlags::CanChangeRotation;
         }
 
-        bool canChangeRotation() const
-        {
-            return implGetFlags() & MiObjectFlags::CanChangeRotation;
-        }
+        bool can_change_scale() const { return impl_get_flags() & MiObjectFlags::CanChangeScale; }
 
-        bool canChangeScale() const
-        {
-            return implGetFlags() & MiObjectFlags::CanChangeScale;
-        }
+        bool can_delete() const { return impl_get_flags() & MiObjectFlags::CanDelete; }
 
-        bool canDelete() const
-        {
-            return implGetFlags() & MiObjectFlags::CanDelete;
-        }
+        bool can_select() const { return impl_get_flags() & MiObjectFlags::CanSelect; }
 
-        bool canSelect() const
-        {
-            return implGetFlags() & MiObjectFlags::CanSelect;
-        }
+        bool has_physical_size() const { return impl_get_flags() & MiObjectFlags::HasPhysicalSize; }
 
-        bool hasPhysicalSize() const
-        {
-            return implGetFlags() & MiObjectFlags::HasPhysicalSize;
-        }
-
-        bool isCrossReferencing(
-            UID id,
-            MiCrossrefDirection direction = MiCrossrefDirection::Both
-        ) const;
+        bool is_cross_referencing(
+            UID id, MiCrossrefDirection direction = MiCrossrefDirection::Both) const;
 
     private:
-        virtual const MiClass& implGetClass() const = 0;
-        virtual std::unique_ptr<MiObject> implClone() const = 0;
-        virtual MiVariantConstReference implToVariant() const = 0;
-        virtual MiVariantReference implToVariant() = 0;
-        virtual MiObjectFlags implGetFlags() const = 0;
+        virtual const MiClass& impl_get_class() const = 0;
+        virtual std::unique_ptr<MiObject> impl_clone() const = 0;
+        virtual MiVariantConstReference impl_to_variant() const = 0;
+        virtual MiVariantReference impl_to_variant() = 0;
+        virtual MiObjectFlags impl_get_flags() const = 0;
 
-        virtual std::vector<MiCrossrefDescriptor> implGetCrossReferences() const { return {}; }
-        virtual void implSetCrossReferenceConnecteeID(int, UID) {}
+        virtual std::vector<MiCrossrefDescriptor> impl_get_cross_references() const { return {}; }
+        virtual void impl_set_cross_reference_connectee_id(int, UID) {}
 
-        virtual std::ostream& implWriteToStream(std::ostream&) const = 0;
+        virtual std::ostream& impl_write_to_stream(std::ostream&) const = 0;
 
-        virtual UID implGetID() const = 0;
+        virtual UID impl_get_id() const = 0;
 
-        virtual CStringView implGetLabel() const = 0;
-        virtual void implSetLabel(std::string_view) {}
+        virtual CStringView impl_get_label() const = 0;
+        virtual void impl_set_label(std::string_view) {}
 
-        virtual Transform implGetXform(const MiObjectFinder&) const = 0;
-        virtual void implSetXform(const MiObjectFinder&, const Transform&) {}
+        virtual Transform impl_get_xform(const MiObjectFinder&) const = 0;
+        virtual void impl_set_xform(const MiObjectFinder&, const Transform&) {}
 
-        virtual std::optional<AABB> implCalcBounds(const MiObjectFinder&) const = 0;
+        virtual std::optional<AABB> impl_calc_bounds(const MiObjectFinder&) const = 0;
     };
 }

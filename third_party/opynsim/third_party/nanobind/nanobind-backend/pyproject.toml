@@ -1,0 +1,40 @@
+[build-system]
+requires = ["scikit-build-core >=0.10"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "nanobind-backend"
+version = "1.0.0"
+description = "Compiled nanobind backend for extensions built in split mode"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Wenzel Jakob", email = "wenzel.jakob@epfl.ch" },
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/wjakob/nanobind"
+Documentation = "https://nanobind.readthedocs.io/en/latest/split_mode.html"
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+build-dir = "build/{wheel_tag}"
+wheel.packages = ["src/nanobind_backend"]
+
+[tool.cibuildwheel]
+build = "cp3*-*"
+skip = "pp* *musllinux* *-win32 *_i686 cp310-win_arm64 cp313t-* cp314t-*"
+enable = ["cpython-prerelease"]
+build-verbosity = 1
+test-command = "python -c \"import nanobind_backend._nb_backend_v1\""
+
+[tool.cibuildwheel.macos.environment]
+MACOSX_DEPLOYMENT_TARGET = "10.14"

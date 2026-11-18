@@ -316,8 +316,8 @@ Any-typed return values
 The return value of a function can sometimes be unclear (dynamic), in which
 case it can be helpful to declare ``typing.Any`` as a pragmatic return type
 (this effectively disables analysis of the return value in static type
-checkers). nanobind provides a :py:class:`nb::any <any>` wrapper type that is
-equivalent to :py:class:`nb::object <object>` except that its type signature
+checkers). nanobind provides a :cpp:class:`nb::any <any>` wrapper type that is
+equivalent to :cpp:class:`nb::object <object>` except that its type signature
 renders as ``typing.Any`` to facilitate this.
 
 .. _stubs:
@@ -539,8 +539,9 @@ The program has the following command line options:
 
 .. code-block:: text
 
-   usage: python -m nanobind.stubgen [-h] [-o FILE] [-O PATH] [-i PATH] [-m MODULE]
-                                     [-r] [-M FILE] [-P] [-D] [--exclude-values] [-q]
+   usage: python -m nanobind.stubgen [-h] [-o FILE] [-O PATH] [-i PATH]
+                                     [-m MODULE] [-r] [-M FILE] [-p FILE] [-P]
+                                     [-D] [--exclude-values] [-q]
 
    Generate stubs for nanobind-based extensions.
 
@@ -555,7 +556,8 @@ The program has the following command line options:
      -r, --recursive               recursively process submodules
      -M FILE, --marker-file FILE   generate a marker file (usually named 'py.typed')
      -p FILE, --pattern-file FILE  apply the given patterns to the generated stub
-                                   (see the docs for syntax)
+                                   (see the docs for syntax, can specify multiple
+                                   times)
      -P, --include-private         include private members (with single leading or
                                    trailing underscore)
      -D, --exclude-docstrings      exclude docstrings from the generated stub
@@ -588,6 +590,31 @@ Note that for now, the ``nanobind.stubgen.StubGen`` API is considered
 experimental and not subject to the semantic versioning policy used by the
 nanobind project.
 
+.. _stubgen_detection:
+
+Detecting stub generation
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some extensions perform steps (e.g., initializing a GPU) that may be neither
+needed nor appropriate for stub generation. ``stubgen`` sets the environment
+variable ``NB_STUBGEN`` to ``"1"`` so that modules may skip such steps.
+
+.. code-block:: cpp
+
+   NB_MODULE(my_ext, m) {
+       const char *value = std::getenv("NB_STUBGEN");
+       bool stubgen = value && value[0] == '1';
+
+       if (!stubgen)
+           initialize_device();
+
+       // ...
+   }
+
+Use ``os.environ`` to query the variable iin Python Note that it is only set by
+the ``stubgen`` command line / CMake interface. Programs that drive the
+``StubGen`` class directly must set it themselves.
+
 .. _pattern_files:
 
 Pattern files
@@ -616,9 +643,13 @@ command.
 
    nanobind_add_stub(
      ...
-     PATTERN_FILE  <PATH>
+     PATTERN_FILE  <PATH> [<PATH> ...]
      ...
    )
+
+Multiple pattern files (for example, a hand-written one alongside a generated
+one) are merged in the order specified. Since the first matching rule wins,
+rules from earlier files take precedence.
 
 A pattern file contains sequence of patterns. Each pattern consists of a query
 and an indented replacement block to be applied when the query matches.
@@ -714,6 +745,45 @@ you may use the special ``\from`` escape code to import them:
        def lookup(array: Array[T], index: Literal[0] = 0) -> _Opt[T]:
            \doc
 
+If a replacement rule instead refers to a *whole module* (for example because
+the only use of that module in the stub is a qualified attribute access),
+use the ``\import`` escape code. It mirrors Python's ``import`` statement and
+accepts a comma-separated list of modules, with an optional ``as`` alias:
+
+.. code-block:: text
+
+   my_ext.import_me:
+       \import logging
+       \import collections.abc as cabc
+       def import_me(arg: logging.Logger) -> cabc.Iterable[int]: ...
+
 You may also add free-form text the beginning or the end of the generated stub
 module or of a class. To do so, add an entry that matches on ``name.__prefix__``
 or ``name.__suffix__`` where ``name`` is the name of the module or class.
+
+.. _stubgen_member_sig:
+
+Per-member signature overrides
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``stubgen`` renders data members by inspecting their runtime value. A value
+can instead dictate its own stub declaration by exposing a ``__nb_signature__``
+string on its *type*, which ``stubgen`` emits verbatim in place of the usual
+``name: type = value`` line. This is the data analogue of :cpp:class:`nb::sig
+<sig>`.
+
+.. code-block:: python
+
+   class _ConfigTable:
+       @property
+       def __nb_signature__(self):
+           return f"config: Config[{self.args}]"
+
+   config = _ConfigTable()
+
+The generated stub then reads ``config: Config[...]`` rather than ``config:
+_ConfigTable = ...``. The string may span several lines. Providing one also
+includes an otherwise private member in the stub, while ``stubgen`` continues
+to skip the private ``_ConfigTable`` class itself. The string is not processed
+further, so it must only reference names that the stub already imports (e.g.
+via a pattern file).

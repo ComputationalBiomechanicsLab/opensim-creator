@@ -81,18 +81,19 @@ public:
 
     void on_draw()
     {
-        for (size_t sub_mesh_index = 0; sub_mesh_index < mesh_with_sub_meshes_.num_submesh_descriptors(); ++sub_mesh_index) {
+        for (size_t sub_mesh_index = 0;
+             sub_mesh_index < mesh_with_sub_meshes_.num_submesh_descriptors();
+             ++sub_mesh_index) {
             render_queue_.emplace(
-                mesh_with_sub_meshes_,
-                identity<Transform>(),
-                material_,
-                sub_mesh_index
-            );
+                mesh_with_sub_meshes_, identity<Transform>(), material_, sub_mesh_index);
         }
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-            .clear_color = Color::white(),
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+                .clear_color = Color::white(),
+            });
         render_queue_.clear();
     }
 
@@ -103,9 +104,15 @@ private:
     Mesh mesh_with_sub_meshes_ = generate_mesh_with_sub_meshes();
 };
 
-CStringView osc::SubMeshDemo::id() { return Impl::static_label(); }
+CStringView osc::SubMeshDemo::id()
+{
+    return Impl::static_label();
+}
 
 osc::SubMeshDemo::SubMeshDemo(Widget* parent) :
     Widget{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::SubMeshDemo::impl_on_draw() { private_data().on_draw(); }
+void osc::SubMeshDemo::impl_on_draw()
+{
+    private_data().on_draw();
+}

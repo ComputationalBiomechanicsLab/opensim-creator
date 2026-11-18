@@ -9,7 +9,8 @@ namespace osc
 {
     struct RenderTargetColorAttachment final {
 
-        friend bool operator==(const RenderTargetColorAttachment&, const RenderTargetColorAttachment&) = default;
+        friend bool operator==(
+            const RenderTargetColorAttachment&, const RenderTargetColorAttachment&) = default;
 
         SharedColorRenderBuffer buffer{};
         RenderBufferLoadAction load_action = RenderBufferLoadAction::Clear;

@@ -16,7 +16,10 @@
 #include <utility>
 #include <vector>
 
-namespace OpenSim { class Component; }
+namespace OpenSim
+{
+    class Component;
+}
 
 namespace opyn
 {
@@ -26,9 +29,8 @@ namespace opyn
     // by other parts of osc (e.g. aggregators, plotters)
     class SharedOutputExtractor final {
     public:
-        template<typename ConcreteOutputExtractor>
-        explicit SharedOutputExtractor(ConcreteOutputExtractor&& output) :
-            output_{std::make_shared<ConcreteOutputExtractor>(std::forward<ConcreteOutputExtractor>(output))}
+        explicit SharedOutputExtractor(std::shared_ptr<const OutputExtractor> output) :
+            output_{std::move(output)}
         {}
 
         osc::CStringView name() const { return output_->name(); }
@@ -48,10 +50,9 @@ namespace opyn
         }
 
         template<typename T, std::ranges::forward_range R>
-        requires (
-            std::constructible_from<T, osc::Variant&&> and
-            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
-        )
+        requires(
+            std::constructible_from<T, osc::Variant &&> and
+            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>)
         void values(
             const OpenSim::Component& component,
             const R& states,
@@ -61,22 +62,22 @@ namespace opyn
         }
 
         template<typename T, std::ranges::forward_range R>
-        requires (
-            std::constructible_from<T, osc::Variant&&> and
-            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>
-        )
+        requires(
+            std::constructible_from<T, osc::Variant &&> and
+            std::convertible_to<std::ranges::range_value_t<R>, const StateViewWithMetadata&>)
         std::vector<T> slurp_values(const OpenSim::Component& component, const R& states) const
         {
             return output_->slurp_values<T>(component, states);
         }
 
-        operator const OutputExtractor& () const { return *output_; }
+        operator const OutputExtractor&() const { return *output_; }
         const OutputExtractor& inner() const { return *output_; }
 
         friend bool operator==(const SharedOutputExtractor& lhs, const SharedOutputExtractor& rhs)
         {
             return *lhs.output_ == *rhs.output_;
         }
+
     private:
         friend std::string to_string(const SharedOutputExtractor&);
         friend struct std::hash<SharedOutputExtractor>;
@@ -88,7 +89,8 @@ namespace opyn
     requires std::constructible_from<ConcreteOutputExtractor, Args&&...>
     SharedOutputExtractor make_output_extractor(Args&&... args)
     {
-        return SharedOutputExtractor{ConcreteOutputExtractor{std::forward<Args>(args)...}};
+        return SharedOutputExtractor{
+            std::make_shared<ConcreteOutputExtractor>(std::forward<Args>(args)...)};
     }
 
     std::ostream& operator<<(std::ostream&, const SharedOutputExtractor&);
@@ -97,8 +99,5 @@ namespace opyn
 
 template<>
 struct std::hash<opyn::SharedOutputExtractor> final {
-    size_t operator()(const opyn::SharedOutputExtractor& o) const
-    {
-        return o.output_->hash();
-    }
+    size_t operator()(const opyn::SharedOutputExtractor& o) const { return o.output_->hash(); }
 };

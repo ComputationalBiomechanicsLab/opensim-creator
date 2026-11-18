@@ -9,6 +9,7 @@
 
 #include <gtest/gtest.h>
 
+#include <format>
 #include <ranges>
 #include <vector>
 
@@ -19,7 +20,8 @@ TEST(Model, rotational_columns_in_returns_empty_if_given_empty_DataFrame)
 {
     opyn::init();
 
-    const Model model = read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
+    const Model model =
+        read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
     const DataFrame data_frame;
 
     ASSERT_TRUE(model.rotational_columns_in(data_frame).empty());
@@ -29,10 +31,13 @@ TEST(Model, rotational_columns_in_returns_rotational_columns_for_pendulum_input)
 {
     opyn::init();
 
-    const Model model = read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
-    const DataFrame data_frame = read_sto(opynsim_tests_resources_directory() / "pendulum/pendulum_trajectory.sto");
+    const Model model =
+        read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
+    const DataFrame data_frame =
+        read_sto(opynsim_tests_resources_directory() / "pendulum/pendulum_trajectory.sto");
     const std::unordered_set<std::string> got = model.rotational_columns_in(data_frame);
-    const std::unordered_set<std::string> expected = {"/jointset/pin/pin_coord_0/value", "/jointset/pin/pin_coord_0/speed"};
+    const std::unordered_set<std::string> expected = {
+        "/jointset/pin/pin_coord_0/value", "/jointset/pin/pin_coord_0/speed"};
 
     ASSERT_EQ(got, expected);
 }
@@ -41,7 +46,8 @@ TEST(Model, column_to_state_variable_mappings_returns_empty_map_when_given_empty
 {
     opyn::init();
 
-    const Model model = read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
+    const Model model =
+        read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
     const DataFrame data_frame;
 
     ASSERT_TRUE(model.column_to_state_variable_mappings(data_frame).empty());
@@ -51,9 +57,12 @@ TEST(Model, column_to_state_variable_mapping_returns_expected_result_for_basic_p
 {
     opyn::init();
 
-    const Model model = read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
-    const DataFrame data_frame = read_sto(opynsim_tests_resources_directory() / "pendulum/pendulum_trajectory.sto");
-    const std::unordered_map<std::string, Symbol> got = model.column_to_state_variable_mappings(data_frame);
+    const Model model =
+        read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
+    const DataFrame data_frame =
+        read_sto(opynsim_tests_resources_directory() / "pendulum/pendulum_trajectory.sto");
+    const std::unordered_map<std::string, Symbol> got =
+        model.column_to_state_variable_mappings(data_frame);
     const std::unordered_map<std::string, Symbol> expected = {
         {"/jointset/pin/pin_coord_0/value", Symbol{"/jointset/pin/pin_coord_0/value"}},
         {"/jointset/pin/pin_coord_0/speed", Symbol{"/jointset/pin/pin_coord_0/speed"}},
@@ -66,9 +75,12 @@ TEST(Model, column_to_state_variable_mapping_works_with_legacy_column_headers)
 {
     opyn::init();
 
-    const Model model = read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
-    const DataFrame data_frame = read_sto(opynsim_tests_resources_directory() / "pendulum/legacy_pendulum_trajectory.sto");
-    const std::unordered_map<std::string, Symbol> got = model.column_to_state_variable_mappings(data_frame);
+    const Model model =
+        read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
+    const DataFrame data_frame =
+        read_sto(opynsim_tests_resources_directory() / "pendulum/legacy_pendulum_trajectory.sto");
+    const std::unordered_map<std::string, Symbol> got =
+        model.column_to_state_variable_mappings(data_frame);
     const std::unordered_map<std::string, Symbol> expected = {
         {"pin_coord_0", Symbol{"/jointset/pin/pin_coord_0/value"}},
     };
@@ -80,8 +92,10 @@ TEST(Model, states_from_data_frame_works_for_basic_pendulum)
 {
     opyn::init();
 
-    const Model model = read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
-    const DataFrame data_frame = read_sto(opynsim_tests_resources_directory() / "pendulum/pendulum_trajectory.sto");
+    const Model model =
+        read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
+    const DataFrame data_frame =
+        read_sto(opynsim_tests_resources_directory() / "pendulum/pendulum_trajectory.sto");
     const ModelStates model_states = model.states_from_data_frame(data_frame);
 
     ASSERT_EQ(model_states.size(), data_frame.height());
@@ -104,7 +118,8 @@ TEST(Model, states_from_data_frame_works_for_basic_pendulum)
     // Spot-check some of the states: this is based on manually scrubbing
     // through the states in external software and reading out the outputs
     {
-        const double v = model.get_coordinate_value(model_states.at(0), Symbol{"/jointset/pin/pin_coord_0"});
+        const double v =
+            model.get_coordinate_value(model_states.at(0), Symbol{"/jointset/pin/pin_coord_0"});
         const double expected = osc::deg_to_rad_v<double> * 90.0;
         ASSERT_NEAR(v, expected, 0.00000000001);
     }
@@ -114,9 +129,12 @@ TEST(Model, states_from_data_frame_realized_to_works_as_intended)
 {
     opyn::init();
 
-    const Model model = read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
-    const DataFrame data_frame = read_sto(opynsim_tests_resources_directory() / "pendulum/pendulum_trajectory.sto");
-    const ModelStates model_states = model.states_from_data_frame(data_frame, ModelStateStage::acceleration);
+    const Model model =
+        read_osim(opynsim_tests_resources_directory() / "pendulum/pendulum.osim").compile();
+    const DataFrame data_frame =
+        read_sto(opynsim_tests_resources_directory() / "pendulum/pendulum_trajectory.sto");
+    const ModelStates model_states =
+        model.states_from_data_frame(data_frame, ModelStateStage::acceleration);
     return;
     for (const auto& model_state : model_states.reference_view()) {
         ASSERT_EQ(model_state.stage(), ModelStateStage::acceleration);
@@ -136,7 +154,8 @@ TEST(Model, initial_state_realized_to_realizes_state_to_specified_stage)
     opyn::init();
 
     const Model model = ModelSpecification{}.compile();
-    for (const auto& stage : {ModelStateStage::time, ModelStateStage::report, ModelStateStage::dynamics}) {
+    for (const auto& stage :
+         {ModelStateStage::time, ModelStateStage::report, ModelStateStage::dynamics}) {
         ASSERT_EQ(model.initial_state(stage).stage(), stage);
     }
 }
@@ -145,8 +164,12 @@ TEST(Model, convert_data_frame_to_radians_degrees_sto_file_to_radians)
 {
     opyn::init();
 
-    const Model model = read_osim(opynsim_tests_resources_directory() / "models/DoublePendulum/double_pendulum.osim").compile();
-    const DataFrame data_frame = read_sto(opynsim_tests_resources_directory() / "Documents/sto/double_pendulum_run.sto");
+    const Model model =
+        read_osim(
+            opynsim_tests_resources_directory() / "models/DoublePendulum/double_pendulum.osim")
+            .compile();
+    const DataFrame data_frame =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/double_pendulum_run.sto");
     const DataFrame rv = model.convert_data_frame_to_radians(data_frame);
 
     ASSERT_EQ(data_frame.get_attr("inDegrees"), "yes");
@@ -156,7 +179,8 @@ TEST(Model, convert_data_frame_to_radians_degrees_sto_file_to_radians)
         ASSERT_EQ(before.name(), after.name());
         ASSERT_EQ(before.shape(), after.shape());
         for (const auto& [before_val, after_val] : vws::zip(before, after)) {
-            ASSERT_NEAR(osc::deg_to_rad_v<double> * before_val, after_val, 0.00001) << before.name() << "-->" << after.name() << " failed";
+            ASSERT_NEAR(osc::deg_to_rad_v<double> * before_val, after_val, 0.00001)
+                << before.name() << "-->" << after.name() << " failed";
         }
     }
     ASSERT_TRUE(not rv.has_attr("inDegrees"));
@@ -238,5 +262,18 @@ TEST(Model, set_coordinate_speed_throws_when_given_bogus_coordiante)
     const Model model = examples::double_pendulum_model();
     ModelState model_state = model.initial_state();
 
-    ASSERT_ANY_THROW({ model.set_coordinate_speed(model_state, Symbol{"bogus/coordinate/path"}, 5.0); });
+    ASSERT_ANY_THROW(
+        { model.set_coordinate_speed(model_state, Symbol{"bogus/coordinate/path"}, 5.0); });
+}
+
+TEST(Model, can_be_formatted_to_a_string)
+{
+    opyn::init();
+
+    const Model model = examples::double_pendulum_model();
+    const std::string expected = std::format(
+        "Model(num_coordinates={}, num_outputs={})", model.num_coordinates(), model.num_outputs());
+    const std::string got = std::format("{}", model);
+
+    ASSERT_EQ(got, expected);
 }

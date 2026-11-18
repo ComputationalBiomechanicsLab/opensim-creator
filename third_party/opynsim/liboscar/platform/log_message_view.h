@@ -13,10 +13,7 @@ namespace osc
     public:
         LogMessageView() = default;
 
-        LogMessageView(
-            StringName const& logger_name,
-            CStringView payload,
-            LogLevel level) :
+        LogMessageView(StringName const& logger_name, CStringView payload, LogLevel level) :
 
             logger_name_{logger_name},
             time_{std::chrono::system_clock::now()},
@@ -33,6 +30,6 @@ namespace osc
         StringName logger_name_;
         std::chrono::system_clock::time_point time_;
         CStringView payload_;
-        LogLevel level_;
+        LogLevel level_ = LogLevel::DEFAULT;
     };
 }

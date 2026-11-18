@@ -24,7 +24,7 @@ TEST(VertexAttribute, order_matches_default_vertex_buffer_layout)
         VertexAttribute::Color,
         VertexAttribute::TexCoord0,
     });
-    static_assert(std::tuple_size_v<decltype(expected_order)> == num_options<VertexAttribute>());
+    static_assert(std::tuple_size_v<decltype(expected_order)> == num_options_v<VertexAttribute>);
 
     ASSERT_TRUE(rgs::is_sorted(expected_order));
 }

@@ -10,34 +10,31 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_SimulatorStatuses = std::to_array<SimulationStatus>(
-    {
+    constexpr auto c_simulator_statuses = std::to_array<SimulationStatus>({
         SimulationStatus::Initializing,
         SimulationStatus::Running,
         SimulationStatus::Completed,
         SimulationStatus::Cancelled,
         SimulationStatus::Error,
     });
-    static_assert(c_SimulatorStatuses.size() == num_options<SimulationStatus>());
+    static_assert(c_simulator_statuses.size() == num_options_v<SimulationStatus>);
 
-    constexpr auto c_SimulatorStatusStrings = std::to_array<CStringView>(
-    {
+    constexpr auto c_simulator_status_strings = std::to_array<CStringView>({
         "Initializing",
         "Running",
         "Completed",
         "Cancelled",
         "Error",
     });
-    static_assert(c_SimulatorStatusStrings.size() == num_options<SimulationStatus>());
+    static_assert(c_simulator_status_strings.size() == num_options_v<SimulationStatus>);
 }
 
-
-std::span<const SimulationStatus> osc::GetAllSimulationStatuses()
+std::span<const SimulationStatus> osc::get_all_simulation_statuses()
 {
-    return c_SimulatorStatuses;
+    return c_simulator_statuses;
 }
 
-std::span<const CStringView> osc::GetAllSimulationStatusStrings()
+std::span<const CStringView> osc::get_all_simulation_status_strings()
 {
-    return c_SimulatorStatusStrings;
+    return c_simulator_status_strings;
 }

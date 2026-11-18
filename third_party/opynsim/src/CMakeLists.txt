@@ -11,6 +11,16 @@ if(APPLE AND CMAKE_OSX_ARCHITECTURES)
     endif()
 endif()
 
+# Configure a pyproject.toml file for the built python package (installation/packaging)
+# is handled separately.
+if(TRUE)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/pyproject.toml"
+        @ONLY
+    )
+endif()
+
 # Copy the Python source code into build directory, so each build configuration
 # (Debug, Release, etc.) has its own unique staging directory.
 if(TRUE)
@@ -50,6 +60,7 @@ if(TRUE)
     set(OPYN_NANOBIND_ARGS
         NB_STATIC             # Compile the nanobind library as a static library
         NB_SUPPRESS_WARNINGS  # Mark nanobind/Python directories as SYSTEM and disable clang-tidying them
+        NOSTRIP               # Stripping is handled by CPack later on
     )
     if(OPYN_STABLE_ABI)
         list(APPEND OPYN_NANOBIND_ARGS STABLE_ABI)
@@ -58,7 +69,7 @@ if(TRUE)
     nanobind_add_module(_core ${OPYN_NANOBIND_ARGS} ${_core_sources})
     unset(_core_sources)
     target_include_directories(_core
-        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # so that `#include <opynsim/_core/...>` works
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # so that `#include <opynsim/_core/..>` works
     )
     target_compile_features(_core PUBLIC cxx_std_23)
     set_target_properties(_core PROPERTIES
@@ -66,8 +77,10 @@ if(TRUE)
         CXX_EXTENSIONS        OFF
     )
     if(OPYN_USE_STRICT_COMPILER_FLAGS)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
         opyn_add_strict_compiler_options_to(_core)
+    endif()
+    if(OPYN_ENABLE_SANITIZERS)
+        opyn_add_sanitizer_flags_to(_core)
     endif()
     target_link_libraries(_core PRIVATE opynsim)
     add_dependencies(_core opynsim_python_source_staging) # Dependent on the copied Python staging directory
@@ -195,32 +208,4 @@ if(TRUE)
             COMPONENT opynsim_python
         )
     endif()
-endif()
-
-# Development
-#
-# Development-specific nice-to-haves.
-if(TRUE)
-    # Find site-packages path for the current active Python interpreter.
-    execute_process(
-        COMMAND ${Python_EXECUTABLE} -c "import site; print(site.getsitepackages()[0])"
-        OUTPUT_VARIABLE PYTHON_SITE_PACKAGES
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    # Custom Target: links built `opynsim` to the currently-selected Python
-    # environment. Temporarily handy when writing Python scripts/tests and
-    # completion is desired.
-    add_custom_target(opynsim_site_packages_link
-        COMMAND ${CMAKE_COMMAND} -E echo "${CMAKE_CURRENT_BINARY_DIR}" > "${PYTHON_SITE_PACKAGES}/opynsim.pth"
-        COMMENT "Linking `opynsim` build directory (${CMAKE_CURRENT_BINARY_DIR}) to ${PYTHON_SITE_PACKAGES}"
-        VERBATIM
-    )
-
-    # Custom Target: undoes `opynsim_site_packages_link`
-    add_custom_target(opynsim_site_packages_unlink
-        COMMAND ${CMAKE_COMMAND} -E rm "${PYTHON_SITE_PACKAGES}/opynsim.pth"
-        COMMENT "Unlinking `opynsim` build directory (${CMAKE_CURRENT_BINARY_DIR}) from ${PYTHON_SITE_PACKAGES}"
-        VERBATIM
-    )
 endif()

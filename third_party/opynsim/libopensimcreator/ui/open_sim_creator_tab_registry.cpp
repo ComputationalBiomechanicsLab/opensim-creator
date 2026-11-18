@@ -4,10 +4,9 @@
 
 #include <liboscar/ui/tabs/tab_registry.h>
 
-void osc::RegisterOpenSimCreatorTabs(TabRegistry& registry)
+void osc::register_open_sim_creator_tabs(TabRegistry& registry)
 {
-    [&registry]<typename... Tabs>(Typelist<Tabs...>)
-    {
+    [&registry]<typename... Tabs>(Typelist<Tabs...>) {
         (registry.register_tab<Tabs>(), ...);
     }(OpenSimCreatorTabs{});
 }

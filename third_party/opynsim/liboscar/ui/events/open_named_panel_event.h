@@ -16,6 +16,7 @@ namespace osc
         }
 
         std::string_view panel_name() const { return panel_name_; }
+
     private:
         std::string panel_name_;
     };

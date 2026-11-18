@@ -10,51 +10,51 @@ namespace osc
 
     template<>
     struct VariantTypeTraits<VariantType::None> {
-        static inline constexpr CStringView name = "NoneType";
+        static constexpr CStringView name = "NoneType";
     };
 
     template<>
     struct VariantTypeTraits<VariantType::Bool> {
-        static inline constexpr CStringView name = "bool";
+        static constexpr CStringView name = "bool";
     };
 
     template<>
     struct VariantTypeTraits<VariantType::Color> {
-        static inline constexpr CStringView name = "Color";
+        static constexpr CStringView name = "Color";
     };
 
     template<>
     struct VariantTypeTraits<VariantType::Float> {
-        static inline constexpr CStringView name = "float";
+        static constexpr CStringView name = "float";
     };
 
     template<>
     struct VariantTypeTraits<VariantType::Int> {
-        static inline constexpr CStringView name = "int";
+        static constexpr CStringView name = "int";
     };
 
     template<>
     struct VariantTypeTraits<VariantType::String> {
-        static inline constexpr CStringView name = "String";
+        static constexpr CStringView name = "String";
     };
 
     template<>
     struct VariantTypeTraits<VariantType::StringName> {
-        static inline constexpr CStringView name = "StringName";
+        static constexpr CStringView name = "StringName";
     };
 
     template<>
     struct VariantTypeTraits<VariantType::Vector2> {
-        static inline constexpr CStringView name = "Vector2";
+        static constexpr CStringView name = "Vector2";
     };
 
     template<>
     struct VariantTypeTraits<VariantType::Vector3> {
-        static inline constexpr CStringView name = "Vector3";
+        static constexpr CStringView name = "Vector3";
     };
 
     template<>
     struct VariantTypeTraits<VariantType::VariantArray> {
-        static inline constexpr CStringView name = "VariantArray";
+        static constexpr CStringView name = "VariantArray";
     };
 }

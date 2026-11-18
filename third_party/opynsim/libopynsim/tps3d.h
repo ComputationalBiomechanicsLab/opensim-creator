@@ -31,11 +31,12 @@ namespace opyn
 
         TPSCoefficientSolverInputs3D() = default;
 
-        explicit TPSCoefficientSolverInputs3D(std::vector<LandmarkPair3D<T>> landmarks_) :
-            landmarks{std::move(landmarks_)}
+        explicit TPSCoefficientSolverInputs3D(std::vector<LandmarkPair3D<T>> landmarks) :
+            landmarks{std::move(landmarks)}
         {}
 
-        friend bool operator==(const TPSCoefficientSolverInputs3D&, const TPSCoefficientSolverInputs3D&) = default;
+        friend bool operator==(
+            const TPSCoefficientSolverInputs3D&, const TPSCoefficientSolverInputs3D&) = default;
 
         // A sequence of source-to-destination point pairs in 3D that the TPS
         // warping algorithm is trying to fit a warping equation to.
@@ -56,8 +57,9 @@ namespace opyn
         // The academic paper refers to it as "[TPS] bending strength was penalized" (p13). Whereas
         // the library calls it "regularization strength".
         //
-        // This can be a useful parameter to fiddle when working with some datasets (e.g. in the paper
-        // they used a `warping_penalty` of `0.001` for muscle points, determined experimentally.
+        // This can be a useful parameter to fiddle when working with some datasets (e.g. in the
+        // paper they used a `warping_penalty` of `0.001` for muscle points, determined
+        // experimentally.
         T warping_penalty{};  // By default, no penalty is applied.
 
         // Set this to `true` if the resulting warping equation should translate
@@ -101,11 +103,10 @@ namespace opyn
     struct TPSNonAffineTerm3D final {
 
         explicit TPSNonAffineTerm3D(
-            const SimTK::Vec<3, T>& weight_,
-            const SimTK::Vec<3, T>& control_point_) :
+            const SimTK::Vec<3, T>& weight, const SimTK::Vec<3, T>& control_point) :
 
-            weight{weight_},
-            control_point{control_point_}
+            weight{weight},
+            control_point{control_point}
         {}
 
         friend bool operator==(const TPSNonAffineTerm3D&, const TPSNonAffineTerm3D&) = default;
@@ -163,26 +164,27 @@ namespace opyn
     // This enables providing the point data from arbitrary third-party representations,
     // such as the buffer layout of a Python scripting environment.
     TPSCoefficients3D<double> tps3d_solve_coefficients(
-        cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> source_landmarks,
-        cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks,
-        double warping_penalty = 0.0
-    );
+        cpp23::mdspan<
+            const double,
+            cpp23::extents<size_t, std::dynamic_extent, 3>,
+            cpp23::layout_stride> source_landmarks,
+        cpp23::mdspan<
+            const double,
+            cpp23::extents<size_t, std::dynamic_extent, 3>,
+            cpp23::layout_stride> destination_landmarks,
+        double warping_penalty = 0.0);
 
     // Returns a warped point computed by evaluating a 3D Thin-Plate Spline (TPS)
     // warping equation with `p`, which should be a point in the source coordinate
     // system.
-    SimTK::Vec<3, float>  tps3d_warp_point(
-        const TPSCoefficients3D<float>&,
-        const SimTK::Vec<3, float>& p
-    );
+    SimTK::Vec<3, float> tps3d_warp_point(
+        const TPSCoefficients3D<float>&, const SimTK::Vec<3, float>& p);
 
     // Returns a warped point computed by evaluating a 3D Thin-Plate Spline (TPS)
     // warping equation with `p`, which should be a point in the source coordinate
     // system.
     SimTK::Vec<3, double> tps3d_warp_point(
-        const TPSCoefficients3D<double>&,
-        const SimTK::Vec<3, double>&
-    );
+        const TPSCoefficients3D<double>&, const SimTK::Vec<3, double>&);
 
     // Returns a point that is linearly interpolated between `p` and a warped point
     // computed by evaluating a 3D Thin-Plate Spline (TPS) warping equation with `p`
@@ -194,28 +196,18 @@ namespace opyn
     //   `p`, `1.0` means "the warped point". Values outside [0.0, 1.0] are
     //   linearly extrapolated.
     SimTK::Vec<3, float> tps3d_warp_point(
-        const TPSCoefficients3D<float>&,
-        const SimTK::Vec<3, float>& p,
-        float linear_interpolant
-    );
+        const TPSCoefficients3D<float>&, const SimTK::Vec<3, float>& p, float linear_interpolant);
 
     // returns points that are the equivalent of applying the 3D TPS warp to each input point
     std::vector<SimTK::Vec<3, float>> tps3d_warp_points(
         const TPSCoefficients3D<float>&,
         std::span<const SimTK::Vec<3, float>>,
-        float linear_interpolant
-    );
+        float linear_interpolant);
 
     // applies the 3D TPS warp in-place to each SimTK::Vec3 in the provided span
     void tps3d_warp_points_in_place(
-        const TPSCoefficients3D<float>&,
-        std::span<SimTK::Vec<3, float>>,
-        float linear_interpolant
-    );
+        const TPSCoefficients3D<float>&, std::span<SimTK::Vec<3, float>>, float linear_interpolant);
 
     osc::Mesh tps3d_warp_mesh(
-        TPSCoefficients3D<float>&,
-        const osc::Mesh&,
-        float linear_interpolant
-    );
+        TPSCoefficients3D<float>&, const osc::Mesh&, float linear_interpolant);
 }

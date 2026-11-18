@@ -85,7 +85,38 @@ NB_MODULE(test_chrono_ext, m) {
         .def_rw("timestamp_ms", &different_resolutions::timestamp_ms)
         .def_rw("timestamp_us", &different_resolutions::timestamp_us);
 
-#if defined(Py_LIMITED_API) || defined(PYPY_VERSION)
+    // Round trip an object through the 'datetime_unpack'/'datetime_pack'
+    // backend slots, including the 'fold' field that the std::chrono
+    // caster does not use
+    m.def("test_datetime_fields", [](nanobind::object o) {
+        using nanobind::detail::datetime_kind;
+        constexpr uint32_t accept =
+            (uint32_t) datetime_kind::datetime | (uint32_t) datetime_kind::date |
+            (uint32_t) datetime_kind::time | (uint32_t) datetime_kind::timedelta;
+        int32_t parts[8];
+        int kind = NB_CALL(datetime_unpack)(NB_CTX, o.ptr(), accept, parts);
+        if (kind < 0)
+            throw nanobind::python_error();
+        if (kind == 0)
+            throw nanobind::type_error("expected a datetime type");
+        PyObject *result = NB_CALL(datetime_pack)(NB_CTX, (uint32_t) kind, parts);
+        if (!result)
+            throw nanobind::python_error();
+        return nanobind::steal(result);
+    });
+
+    // Reading a float as a number of seconds is an implicit conversion, so a
+    // caller that forbids one must not receive a duration
+    m.def("test_duration_noconvert",
+          [](std::chrono::milliseconds d) { return d.count(); },
+          nanobind::arg().noconvert());
+
+    // The duration overload comes first, but a float matches 'double' without
+    // a conversion, so the second overload must win
+    m.def("test_duration_overload", [](std::chrono::milliseconds) { return 1; });
+    m.def("test_duration_overload", [](double) { return 2; });
+
+#if !defined(NB_BACKEND_MODULE) && (defined(Py_LIMITED_API) || defined(PYPY_VERSION))
     m.attr("access_via_python") = true;
 #else
     m.attr("access_via_python") = false;

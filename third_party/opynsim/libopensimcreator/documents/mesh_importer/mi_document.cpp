@@ -6,5 +6,5 @@
 #include <liboscar/utilities/clone_ptr.h>
 
 osc::MiDocument::MiDocument() :
-    m_Objects{{MiIDs::Ground(), make_cloneable<MiGround>()}}
+    objects_{{MiIDs::ground(), make_cloneable<MiGround>()}}
 {}

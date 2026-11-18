@@ -27,7 +27,8 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    std::filesystem::path convert_sdl_filepath_to_std_filepath(CStringView method_name, const char* p)
+    std::filesystem::path convert_sdl_filepath_to_std_filepath(
+        CStringView method_name, const char* p)
     {
         // nullptr disallowed
         if (p == nullptr) {
@@ -43,7 +44,7 @@ namespace
 
         // remove trailing slash: it interferes with `std::filesystem::path`
         if (sv.back() == '/' or sv.back() == '\\') {
-            sv = sv.substr(0, sv.size()-1);
+            sv = sv.substr(0, sv.size() - 1);
         }
 
         return std::filesystem::weakly_canonical(sv);
@@ -83,8 +84,7 @@ std::filesystem::path osc::current_executable_directory()
 }
 
 std::filesystem::path osc::user_data_directory(
-    std::string_view organization_name,
-    std::string_view application_name)
+    std::string_view organization_name, std::string_view application_name)
 {
     const std::string organization_name_str{organization_name};
     const std::string application_name_str{application_name};
@@ -107,8 +107,7 @@ void osc::open_url_in_os_default_web_browser(std::string_view url_view)
     const std::string url{url_view};
     if (SDL_OpenURL(url.c_str())) {
         log_info("opened {}", url);
-    }
-    else {
+    } else {
         log_error("could not open '{}': {}", url, SDL_GetError());
     }
 }
@@ -116,10 +115,11 @@ void osc::open_url_in_os_default_web_browser(std::string_view url_view)
 std::string osc::get_clipboard_text()
 {
     if (char* str = SDL_GetClipboardText()) {
-        const ScopeExit guard{[str]() { SDL_free(str); }};
+        const ScopeExit guard{[str] {
+            SDL_free(str);
+        }};
         return std::string{str};
-    }
-    else {
+    } else {
         return {};
     }
 }
@@ -134,9 +134,7 @@ namespace
     constexpr std::string_view c_valid_dynamic_characters = "abcdefghijklmnopqrstuvwxyz0123456789";
 
     std::filesystem::path generate_tempfile_name(
-        std::default_random_engine& s_prng,
-        std::string_view suffix,
-        std::string_view prefix)
+        std::default_random_engine& s_prng, std::string_view suffix, std::string_view prefix)
     {
         std::array<char, 8> chars{};
         rgs::sample(c_valid_dynamic_characters, chars.begin(), chars.size(), s_prng);
@@ -144,22 +142,25 @@ namespace
     }
 }
 
-std::pair<std::fstream, std::filesystem::path> osc::mkstemp(std::string_view suffix, std::string_view prefix)
+std::pair<std::fstream, std::filesystem::path> osc::mkstemp(
+    std::string_view suffix, std::string_view prefix)
 {
     std::default_random_engine prng{std::random_device{}()};
     const std::filesystem::path tmpdir = std::filesystem::temp_directory_path();
     for (size_t attempt = 0; attempt < 100; ++attempt) {
         std::filesystem::path attempt_path = tmpdir / generate_tempfile_name(prng, suffix, prefix);
-        // TODO: remove these `pragma`s once the codebase is upgraded to C++23, because it has `std::ios_base::noreplace` support
-#pragma warning(push)
-#pragma warning(suppress : 4996)
-        if (auto fd = std::fopen(attempt_path.string().c_str(), "w+x"); fd != nullptr) {  // TODO: replace with `std::ios_base::noreplace` in C++23 (waiting on XCode16)
-            std::fclose(fd);
-            return {std::fstream{attempt_path, std::ios_base::in | std::ios_base::out | std::ios_base::binary}, std::move(attempt_path)};
+        const auto flags = std::ios_base::in |     //
+                           std::ios_base::out |    //
+                           std::ios_base::trunc |  //
+                           std::ios_base::noreplace;
+        std::fstream fs{attempt_path, flags};
+        if (fs.is_open()) {
+            return {std::move(fs), std::move(attempt_path)};
         }
-#pragma warning(pop)
+        // Else: the file already exists (std::ios_base::noreplace): make another attempt
     }
-    throw std::runtime_error{"Failed to create a unique temporary filename after 100 attempts - you might be creating too many temporary files/directories"};
+    throw std::runtime_error{
+        "Failed to create a unique temporary filename after 100 attempts - you might be creating too many temporary files/directories"};
 }
 
 std::filesystem::path osc::mkdtemp(std::string_view suffix, std::string_view prefix)
@@ -169,11 +170,14 @@ std::filesystem::path osc::mkdtemp(std::string_view suffix, std::string_view pre
 
     for (size_t attempt = 0; attempt < 100; ++attempt) {
         std::filesystem::path attempt_path = tmpdir / generate_tempfile_name(prng, suffix, prefix);
-        if (std::filesystem::create_directory(attempt_path)) {  // Throwing `std::filesystem::filesystem_error` is ok: permissions errors etc. should be propagated.
+        // Throwing `std::filesystem::filesystem_error` is ok: permissions errors etc. should be
+        // propagated.
+        if (std::filesystem::create_directory(attempt_path)) {
             return attempt_path;
         }
         // Else: the directory already exists: make another attempt
     }
 
-    throw std::runtime_error{"Failed to create a unique temporary directory name after 100 attempts - you might be creating too many temporary files/directories"};
+    throw std::runtime_error{
+        "Failed to create a unique temporary directory name after 100 attempts - you might be creating too many temporary files/directories"};
 }

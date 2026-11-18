@@ -48,7 +48,8 @@ TEST(TypeInfoReference, operator_less_than_calls_before)
 TEST(TypeInfoReference, is_hashable)
 {
     const auto h = std::hash<TypeInfoReference>{}(TypeInfoReference{typeid(double)});
-    ASSERT_NE(h, 0) << "hopefully, the hash of a `double` typeid is non-zero (it could be zero, though - remove this if it is ;))";
+    ASSERT_NE(h, 0)
+        << "hopefully, the hash of a `double` typeid is non-zero (it could be zero, though - remove this if it is ;))";
 }
 
 TEST(TypeInfoReference, can_be_used_in_a_set)

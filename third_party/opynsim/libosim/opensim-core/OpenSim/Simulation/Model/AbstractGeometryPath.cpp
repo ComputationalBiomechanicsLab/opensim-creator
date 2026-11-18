@@ -26,6 +26,8 @@
 #include <OpenSim/Simulation/Model/ForceApplier.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <optional>
+
 #include <functional>
 #include <optional>
 #include <vector>
@@ -98,19 +100,25 @@ void AbstractGeometryPath::setPreScaleLength(const SimTK::State&,
 
 void AbstractGeometryPath::forEachDecorativePathPoint(
     const SimTK::State& state,
+    const ModelDisplayHints& modelDisplayHints,
     const std::function<void(const DecorativePathPoint&)>& callback) const
 {
-    implForEachDecorativePathPoint(state, callback);
+    implForEachDecorativePathPoint(state, modelDisplayHints, callback);
 }
 
-std::vector<AbstractGeometryPath::DecorativePathPoint> AbstractGeometryPath::getDecorativePathPoints(
-    const SimTK::State& state) const
+std::vector<AbstractGeometryPath::DecorativePathPoint>
+AbstractGeometryPath::getDecorativePathPoints(
+    const SimTK::State& state,
+    const ModelDisplayHints& modelDisplayHints) const
 {
     std::vector<AbstractGeometryPath::DecorativePathPoint> rv;
-    forEachDecorativePathPoint(state, [&rv](const DecorativePathPoint& dp) { rv.push_back(dp); });
+    forEachDecorativePathPoint(
+        state,
+        modelDisplayHints,
+        [&rv](const DecorativePathPoint& dp) { rv.push_back(dp); }
+    );
     return rv;
 }
-
 
 void AbstractGeometryPath::generateDecorations(
     bool fixed,
@@ -122,7 +130,9 @@ void AbstractGeometryPath::generateDecorations(
         return;
     }
     if (not get_Appearance().get_visible()) {
-        return;  // Don't render a path that's hidden (opensim-creator#1166)
+        // Don't render a path that's hidden
+        // (ComputationalBiomechanicsLab/opensim-creator#1166)
+        return;
     }
 
     const bool showPathPoints = hints.get_show_path_points();
@@ -132,13 +142,11 @@ void AbstractGeometryPath::generateDecorations(
 
     int index = 0;
     std::optional<DecorativePathPoint> previous;
-    forEachDecorativePathPoint(s, [&](const DecorativePathPoint& dpp)
+    forEachDecorativePathPoint(s, hints, [&](const DecorativePathPoint& dpp)
     {
-        if (previous) {
-            // Emit line between points
-            geoms.push_back(SimTK::DecorativeLine(previous->getLocationInGround(), dpp.getLocationInGround())
-                .setLineThickness(4)
-                .setScaleFactors(SimTK::Vec3{1.0})
+        if (showPathPoints) {
+            geoms.push_back(SimTK::DecorativeSphere(0.005)
+                .setTransform(dpp.getLocationInGround())
                 .setColor(color)
                 .setOpacity(opacity)
                 .setRepresentation(representation)
@@ -146,10 +154,13 @@ void AbstractGeometryPath::generateDecorations(
                 .setIndexOnBody(index++)
             );
         }
-        if (showPathPoints) {
-            geoms.push_back(SimTK::DecorativeSphere(0.005)
-                .setTransform(dpp.getLocationInGround())
-                .setScaleFactors(SimTK::Vec3{1.0})
+
+        if (previous) {
+            // Emit line between points
+            const SimTK::Vec3& p1 = previous->getLocationInGround();
+            const SimTK::Vec3& p2 = dpp.getLocationInGround();
+            geoms.push_back(SimTK::DecorativeLine(p1, p2)
+                .setLineThickness(4)
                 .setColor(color)
                 .setOpacity(opacity)
                 .setRepresentation(representation)

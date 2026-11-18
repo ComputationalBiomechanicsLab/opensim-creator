@@ -175,6 +175,9 @@ annotation can be omitted:
 
    m.def("bark", &bark, nb::arg("dog") = nb::none());
 
+This shortcut requires that the default value is literally spelled
+``nb::none()`` or ``nullptr``, since nanobind detects it at compile time.
+
 Note that passing values *by pointer* (including null pointers) is only
 supported for :ref:`bound <bindings>` types. :ref:`Type casters <type_casters>`
 and :ref:`wrappers <wrappers>` cannot be used in such cases and will produce
@@ -427,6 +430,12 @@ would avoid the problem altogether).
 See the definition of :cpp:class:`nb::keep_alive <keep_alive>` for further
 discussion and limitations of this method.
 
+The annotation is a thin layer over the functions :cpp:func:`nb::keep_alive_obj()
+<keep_alive_obj>` and :cpp:func:`nb::keep_alive_cb() <keep_alive_cb>`, which
+establish the same kind of dependency from arbitrary C++ code. The latter
+variant invokes a callback with a user-provided pointer when the nurse
+expires, which is useful to tie a C++ allocation to a Python object.
+
 .. _call_guards:
 
 Call guards
@@ -580,12 +589,10 @@ This is because ``f1``:
 
    - **Default argument values**, e.g., :cpp:func:`nb::arg() = 0 <arg::operator=>` or ``"name"_a = false``.
 
-   - **Nullability** or **implicit conversion** flags, e.g.,
-     :cpp:func:`nb::arg().none() <arg::none>` or :cpp:func:`"name"_a.noconvert()
-     <arg::noconvert>`.
+   - **Nullability** flags, e.g., :cpp:func:`nb::arg().none() <arg::none>`.
 
-2. Has no :cpp:class:`nb::keep_alive\<Nurse, Patient\>() <keep_alive>`
-   annotations.
+2. Has no :cpp:class:`nb::keep_alive\<Nurse, Patient\>() <keep_alive>` or
+   :cpp:class:`nb::call_policy\<Policy\>() <call_policy>` annotations.
 
 3. Takes no variable-length positional (:cpp:class:`nb::args <args>`) or keyword
    (:cpp:class:`nb::kwargs <kwargs>`) arguments.
@@ -594,9 +601,11 @@ This is because ``f1``:
 
 If all of the above conditions are satisfied, nanobind switches to a
 specialized dispatcher that is optimized to handle a small number of positional
-arguments. Otherwise, it uses the default dispatcher that works in any
-situation. It is also worth noting that functions with many overloads generally
-execute more slowly, since nanobind must first select a suitable one.
+arguments. Violating points 1 or 2 selects a somewhat slower dispatcher that
+handles named and default arguments, and violating points 3 or 4 falls back to
+the fully general one. It is also worth noting that functions with many
+overloads generally execute more slowly, since nanobind must first select a
+suitable one.
 
 These differences are mainly of interest when a function that does *very
 little* is called at a *very high rate*, in which case binding overheads can

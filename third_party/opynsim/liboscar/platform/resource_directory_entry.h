@@ -15,11 +15,13 @@ namespace osc
             is_directory_{is_directory}
         {}
 
-        friend bool operator==(const ResourceDirectoryEntry&, const ResourceDirectoryEntry&) = default;
+        friend bool operator==(const ResourceDirectoryEntry&, const ResourceDirectoryEntry&) =
+            default;
 
         const ResourcePath& path() const { return path_; }
-        operator const ResourcePath& () const { return path_; }
+        operator const ResourcePath&() const { return path_; }
         bool is_directory() const { return is_directory_; }
+
     private:
         ResourcePath path_;
         bool is_directory_;

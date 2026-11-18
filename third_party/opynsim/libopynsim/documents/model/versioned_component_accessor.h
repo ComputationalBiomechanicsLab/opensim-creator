@@ -11,7 +11,8 @@ namespace opyn
         void set_component_version(osc::UID id) { impl_set_component_version(id); }
 
     private:
-        // Implementors may return a `UID` that uniquely identifies the current version of the component.
+        // Implementors may return a `UID` that uniquely identifies the current version of the
+        // component.
         virtual osc::UID impl_get_component_version() const
         {
             // assume the version always changes, unless the concrete implementation
@@ -19,7 +20,8 @@ namespace opyn
             return osc::UID{};
         }
 
-        // Implementors may use this to manually set the version of the component (sometimes useful for caching)
+        // Implementors may use this to manually set the version of the component (sometimes useful
+        // for caching)
         virtual void impl_set_component_version(osc::UID) {}
     };
 }

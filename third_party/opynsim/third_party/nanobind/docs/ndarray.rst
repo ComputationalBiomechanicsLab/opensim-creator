@@ -8,7 +8,8 @@ The ``nb::ndarray<..>`` class
 nanobind can exchange n-dimensional arrays (henceforth "**nd-arrays**") with
 popular array programming frameworks including `NumPy <https://numpy.org>`__,
 `PyTorch <https://pytorch.org>`__, `TensorFlow <https://www.tensorflow.org>`__,
-`JAX <https://jax.readthedocs.io>`__, and `CuPy <https://cupy.dev>`_. It
+`JAX <https://jax.readthedocs.io>`__, `CuPy <https://cupy.dev>`__, and
+`MLX <https://ml-explore.github.io/mlx>`__. It
 supports *zero-copy* exchange using two protocols:
 
 -  The classic `buffer
@@ -259,7 +260,7 @@ In this case:
 Data *ownership* is an important aspect of this two-step process: because the
 NumPy array points directly into the storage of another object, nanobind must
 keep the ``Matrix4f`` instance alive as long as the NumPy array exists, which
-the :cpp:enumerator:`reference_internal <rv_policy::reference_internal>` return
+the :cpp:member:`reference_internal <rv_policy::reference_internal>` return
 value policy signals to nanobind. More generally, wrapping an existing memory
 region without copying requires that that this memory region remains valid
 throughout the lifetime of the created array (more on this point :ref:`shortly
@@ -272,16 +273,18 @@ desired Python type.
 
 - :cpp:class:`nb::numpy <numpy>`: create a ``numpy.ndarray``.
 - :cpp:class:`nb::pytorch <pytorch>`: create a ``torch.Tensor``.
-- :cpp:class:`nb::tensorflow <tensorflow>`: create a ``tensorflow.python.framework.ops.EagerTensor``.
-- :cpp:class:`nb::jax <jax>`: create a ``jaxlib.xla_extension.DeviceArray``.
+- :cpp:class:`nb::tensorflow <tensorflow>`: create a ``tensorflow.Tensor``.
+- :cpp:class:`nb::jax <jax>`: create a ``jaxlib._jax.ArrayImpl``.
 - :cpp:class:`nb::cupy <cupy>`: create a ``cupy.ndarray``.
+- :cpp:class:`nb::mlx <mlx>`: create an Apple ``mlx.core.array``.
 - :cpp:class:`nb::memview <memview>`: create a Python ``memoryview``.
 - :cpp:class:`nb::array_api <array_api>`: create an object that supports the
   Python buffer protocol (i.e., is accepted as an argument to ``memoryview()``)
   and also has the DLPack attributes  ``__dlpack__`` and ``__dlpack_device__``
   (i.e., it is accepted as an argument to a framework's ``from_dlpack()``
   function).
-- No framework annotation. In this case, nanobind will create a raw Python
+- :cpp:class:`nb::no_framework <no_framework>` (the default when no framework
+  annotation is given). In this case, nanobind will create a raw Python
   ``dltensor`` `capsule <https://docs.python.org/3/c-api/capsule.html>`__
   representing the `DLPack <https://github.com/dmlc/dlpack>`__ metadata of
   a ``DLManagedTensor``.
@@ -376,7 +379,8 @@ constructor and then decrease it again when the created NumPy array expires.
 
 The above example binding returns a *new* memory region that should be deleted
 when it is no longer in use. This is done by creating a
-:cpp:class:`nb::capsule`, an opaque pointer with a destructor callback that
+:cpp:class:`nb::capsule <capsule>`, an opaque pointer with a destructor
+callback that
 runs at this point and takes care of cleaning things up.
 
 If there is already an existing Python object, whose existence guarantees that
@@ -385,7 +389,7 @@ pass this object as the ``owner``---nanobind will make sure that this object
 isn't deleted as long as the created array exists. If the owner is a C++ object
 with an associated Python instance, you may use :cpp:func:`nb::find() <find>`
 to look up the associated Python object. When binding methods, you can use the
-:cpp:enumerator:`reference_internal <rv_policy::reference_internal>` return
+:cpp:member:`reference_internal <rv_policy::reference_internal>` return
 value policy to specify the implicit ``self`` argument as the ``owner`` upon
 return, which was done in the earlier ``Matrix4f`` :ref:`example
 <matrix4f-example>`.
@@ -393,7 +397,7 @@ return, which was done in the earlier ``Matrix4f`` :ref:`example
 .. warning::
 
    If you do not specify an owner and use a return value policy like
-   :cpp:enumerator:`rv_policy::reference` (see also the the section on
+   :cpp:member:`rv_policy::reference` (see also the the section on
    :ref:`nd-array return value policies <ndarray_rvp>`), nanobind will assume
    that the array storage **remains valid forever**.
 
@@ -444,32 +448,35 @@ Function bindings that return nd-arrays can specify return value policy
 annotations to determine whether or not a copy should be made. They are
 interpreted as follows:
 
-- The default :cpp:enumerator:`rv_policy::automatic` and
-  :cpp:enumerator:`rv_policy::automatic_reference` policies cause the array to
+- The default :cpp:member:`rv_policy::automatic` and
+  :cpp:member:`rv_policy::automatic_reference` policies cause the array to
   be copied when it has no owner and when it is not already associated with a
   Python object.
 
-- The policy :cpp:enumerator:`rv_policy::reference` references an existing
+- The policy :cpp:member:`rv_policy::reference` references an existing
   memory region and never copies.
 
-- :cpp:enumerator:`rv_policy::copy` always copies.
+- :cpp:member:`rv_policy::copy` always copies.
 
-- :cpp:enumerator:`rv_policy::none` refuses the cast unless the array is
+- :cpp:member:`rv_policy::none` refuses the cast unless the array is
   already associated with an existing Python object (e.g. a NumPy array), in
   which case that object is returned.
 
-- :cpp:enumerator:`rv_policy::reference_internal` retroactively sets the
+- :cpp:member:`rv_policy::reference_internal` retroactively sets the
   nd-array's ``owner`` field to a method's ``self`` argument. It fails with an
   error if there is already a different owner.
 
-- :cpp:enumerator:`rv_policy::move` is unsupported and demoted to
-  :cpp:enumerator:`rv_policy::copy`.
+- :cpp:member:`rv_policy::move` is unsupported and demoted to
+  :cpp:member:`rv_policy::copy`.
 
 Note that when a copy is returned, the copy is made by the framework, not by
 nanobind itself.
 For example, ``numpy.array()`` is passed the keyword argument ``copy`` with
 value ``True``, or the PyTorch tensor's ``clone()`` method is immediately
 called to create the copy.
+MLX is a special case: ``mlx.core.array()`` always copies into a unified-memory
+buffer (and provides no ``copy()``/``clone()`` method), so a requested copy is
+satisfied inherently without an extra step.
 This design has a couple of advantages.
 First, nanobind does not have a build-time dependency on the libraries and
 frameworks (NumPy, PyTorch, CUDA, etc.) that would otherwise be necessary
@@ -541,12 +548,12 @@ Nonstandard arithmetic types
 ----------------------------
 
 Low or extended-precision arithmetic types (e.g., ``int128``, ``float16``,
-``bfloat16``) are sometimes used but don't have standardized C++ equivalents.
+``bfloat16``) are sometimes used, though they are not standardized in C++17.
 If you wish to exchange arrays based on such types, you must register a partial
 overload of ``nanobind::detail::dtype_traits`` to inform nanobind about it.
 
 You are expressively allowed to create partial overloads of this class despite
-it being in the ``nanobind::detail`` namespace.
+its being in the ``nanobind::detail`` namespace.
 
 For example, the following snippet makes ``_Float16`` (half-precision type that
 is natively supported on some hardware) available by providing
@@ -561,11 +568,35 @@ is natively supported on some hardware) available by providing
            static constexpr dlpack::dtype value {
                (uint8_t) dlpack::dtype_code::Float, // type code
                16, // size in bits
-               1   // lanes (simd), usually set to 1
+               1   // lanes (simd), usually always set to 1
            };
            static constexpr auto name = const_name("float16");
        };
    }
+
+For complex numbers, nanobind assumes the ``T`` in ``std::complex<T>`` is an
+IEEE floating-point type.  Thus, above, it is not also necessary to specialize
+``dtype_traits<std::complex<_Float16>>``.
+
+To use ``bfloat16`` complex numbers, specialize ``dtype_traits`` for both the
+real and complex C++ types:
+
+.. code-block:: cpp
+
+   namespace nanobind::detail {
+   template<> struct dtype_traits<__bf16> {
+       static constexpr dlpack::dtype value{
+               /*code=*/static_cast<uint8_t>(dlpack::dtype_code::Bfloat),
+               /*bits=*/16, /*lanes=*/1};
+       static constexpr auto name = const_name("bfloat16");
+   };
+   template<> struct dtype_traits<std::complex<__bf16>> {
+       static constexpr dlpack::dtype value{
+               /*code=*/static_cast<uint8_t>(dlpack::dtype_code::Bcomplex),
+               /*bits=*/32, /*lanes=*/1};
+       static constexpr auto name = const_name("bcomplex32");
+   };
+   }  // namespace nanobind::detail
 
 .. _ndarray-views:
 
@@ -738,6 +769,25 @@ used to support additional parameters (e.g., to allow the caller to request a
 copy).  See
 `__dlpack__() <https://data-apis.org/array-api/latest/API_specification/generated/array_api.array.__dlpack__.html>`__
 in the Python array API standard for details.
+
+**Stream synchronization.** The array API's ``__dlpack__`` accepts a ``stream``
+argument through which a *consumer* asks the *producer* to make the array safe
+to access on a particular compute stream (for example, via a cross-stream wait
+on CUDA or ROCm). The object nanobind returns for :cpp:class:`nb::array_api
+<array_api>` accepts this argument but performs no synchronization. nanobind has
+no build-time dependency on CUDA, ROCm, or any other backend and treats the
+device as mere metadata, so it knows neither the stream that produced the data
+nor the runtime needed to act on it. This is harmless when the memory is
+host-resident or when the producing computations are inherently serialized with
+respect to the consumer (for example, by running on CUDA's default "null"
+stream). If you instead export device memory still being produced asynchronously
+on a separate stream, you must handle synchronization yourself. Expose your own
+object providing ``__dlpack__`` and ``__dlpack_device__`` methods. The
+``__dlpack__`` method should inspect ``stream``, perform the wait via your
+backend's API, and then return a DLPack capsule, which can be obtained by
+casting an :cpp:class:`nb::ndarray\<\> <ndarray>` that has no framework
+annotation. The ``__dlpack_device__`` method should report the device as a
+``(device_type, device_id)`` pair.
 
 
 Frequently asked questions

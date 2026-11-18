@@ -15,14 +15,14 @@ TEST(OpenSimDecorationOptions, RemembersColorScaling)
     OpenSimDecorationOptions opts;
     opts.set_muscle_color_source_scaling(MuscleColorSourceScaling::ModelWide);
     bool emitted = false;
-    opts.for_each_option_as_app_setting_value([&emitted](std::string_view k, const osc::Variant& v)
-    {
-        // Yep, this is hard-coded: it's just here as a sanity check: change/remove
-        // it if it's causing trouble.
-        if (k == "muscle_color_scaling" and to<std::string>(v) == "model_wide") {
-            emitted = true;
-        }
-    });
+    opts.for_each_option_as_app_setting_value(
+        [&emitted](std::string_view k, const osc::Variant& v) {
+            // Yep, this is hard-coded: it's just here as a sanity check: change/remove
+            // it if it's causing trouble.
+            if (k == "muscle_color_scaling" and to<std::string>(v) == "model_wide") {
+                emitted = true;
+            }
+        });
     ASSERT_TRUE(emitted);
 }
 

@@ -54,7 +54,8 @@ namespace opyn
         {
             auto i = index_of(*this, class_name);
             if (not i) {
-                throw std::out_of_range{"attempted to get an element from a component registry that does not exist"};
+                throw std::out_of_range{
+                    "attempted to get an element from a component registry that does not exist"};
             }
             return (*this)[*i];
         }

@@ -30,24 +30,33 @@ TEST(NonTypelist, can_have_two_members)
 
 TEST(NonTypelist, head_retrieves_first_element)
 {
-    static_assert(NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second>::head == SomeEnum::First);
+    static_assert(
+        NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second>::head == SomeEnum::First);
 }
 
 TEST(NonTypelist, tail_retrieves_last_element)
 {
-    static_assert(NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second>::tails::head == SomeEnum::Second);
+    static_assert(
+        NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second>::tails::head == SomeEnum::Second);
 }
 
 TEST(NonTypelist, NonTypeListSizeV_returns_expected_results)
 {
-    static_assert(NonTypelistSizeV<NonTypelist<SomeEnum>> == 0);
-    static_assert(NonTypelistSizeV<NonTypelist<SomeEnum, SomeEnum::First>> == 1);
-    static_assert(NonTypelistSizeV<NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second>> == 2);
+    static_assert(non_typelist_size_v<NonTypelist<SomeEnum>> == 0);
+    static_assert(non_typelist_size_v<NonTypelist<SomeEnum, SomeEnum::First>> == 1);
+    static_assert(
+        non_typelist_size_v<NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second>> == 2);
 }
 
 TEST(NonTypelist, NonTypeAt_works_as_expected)
 {
-    static_assert(NonTypeAt<NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second, SomeEnum::Third>, 0>::value == SomeEnum::First);
-    static_assert(NonTypeAt<NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second, SomeEnum::Third>, 1>::value == SomeEnum::Second);
-    static_assert(NonTypeAt<NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second, SomeEnum::Third>, 2>::value == SomeEnum::Third);
+    static_assert(
+        NonTypeAt<NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second, SomeEnum::Third>, 0>::
+            value == SomeEnum::First);
+    static_assert(
+        NonTypeAt<NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second, SomeEnum::Third>, 1>::
+            value == SomeEnum::Second);
+    static_assert(
+        NonTypeAt<NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second, SomeEnum::Third>, 2>::
+            value == SomeEnum::Third);
 }

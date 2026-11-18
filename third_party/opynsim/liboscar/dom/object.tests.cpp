@@ -175,7 +175,8 @@ TEST(Object, MinimalObjectImplTrySetPropertyValueReturnsFalseyForNonExistentProp
 
 TEST(Object, MinimalObjectImplSetPropertyValueThrowsForNonExistentPropertyName)
 {
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.set_property_value_or_throw("non-existent", Variant{false}); });
+    ASSERT_ANY_THROW({ MinimalObjectImpl{}.set_property_value_or_throw("non-existent",
+Variant{false}); });
 }
 
 TEST(Object, MinimalObjectToStringFreeFunctionReturnsSameAsToStringMemberFunction)
@@ -270,7 +271,8 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSameDefaultValues)
 
     for (PropertyInfo const& description : descriptions)
     {
-        ASSERT_EQ(clone->property_default_value_or_throw(description.name()), description.default_value());
+        ASSERT_EQ(clone->property_default_value_or_throw(description.name()),
+description.default_value());
     }
 }
 

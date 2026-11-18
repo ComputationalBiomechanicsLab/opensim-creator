@@ -6,8 +6,7 @@
 using namespace opyn;
 
 void opyn::ComponentAbsPathDecorationTagger::operator()(
-    const OpenSim::Component& component,
-    osc::SceneDecoration& decoration)
+    const OpenSim::Component& component, osc::SceneDecoration& decoration)
 {
     if (&component != last_component_) {
         id_ = get_absolute_path_string_name(component);

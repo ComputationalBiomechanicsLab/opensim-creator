@@ -23,18 +23,19 @@ using namespace osc;
 namespace
 {
     constexpr auto c_light_positions = std::to_array<Vector3>({
-        {-10.0f,  10.0f, 10.0f},
-        { 10.0f,  10.0f, 10.0f},
+        {-10.0f, 10.0f, 10.0f},
+        {10.0f, 10.0f, 10.0f},
         {-10.0f, -10.0f, 10.0f},
-        { 10.0f, -10.0f, 10.0f},
+        {10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vector3, c_light_positions.size()> c_light_radiances = std::to_array<Vector3>({
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
-        {300.0f, 300.0f, 300.0f},
-    });
+    constexpr std::array<Vector3, c_light_positions.size()> c_light_radiances =
+        std::to_array<Vector3>({
+            {300.0f, 300.0f, 300.0f},
+            {300.0f, 300.0f, 300.0f},
+            {300.0f, 300.0f, 300.0f},
+            {300.0f, 300.0f, 300.0f},
+        });
 
     constexpr int c_num_rows = 7;
     constexpr int c_num_cols = 7;
@@ -53,25 +54,20 @@ namespace
     {
         const Texture2D albedo = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/albedo.jpg"),
-            ColorSpace::sRGB
-        );
+            ColorSpace::sRGB);
         const Texture2D normal = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/normal.jpg"),
             ColorSpace::Linear,
-            ImageLoadingFlag::TreatComponentsAsSpatialVectors
-        );
+            ImageLoadingFlag::TreatComponentsAsSpatialVectors);
         const Texture2D metallic = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/metallic.jpg"),
-            ColorSpace::Linear
-        );
+            ColorSpace::Linear);
         const Texture2D roughness = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/roughness.jpg"),
-            ColorSpace::Linear
-        );
+            ColorSpace::Linear);
         const Texture2D ao = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/ao.jpg"),
-            ColorSpace::Linear
-        );
+            ColorSpace::Linear);
 
         Material rv{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
@@ -110,10 +106,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -130,10 +123,13 @@ private:
         draw_spheres();
         draw_lights();
 
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-            .clear_color = {0.1f, 1.0f},
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+                .clear_color = {0.1f, 1.0f},
+            });
         render_queue_.clear();
     }
 
@@ -141,8 +137,10 @@ private:
     {
         for (int row = 0; row < c_num_rows; ++row) {
             for (int col = 0; col < c_num_cols; ++col) {
-                const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
-                const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
+                const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols) / 2.0f) *
+                                c_cell_spacing;
+                const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows) / 2.0f) *
+                                c_cell_spacing;
                 render_queue_.emplace(sphere_mesh_, {.translation = {x, y, 0.0f}}, pbr_material_);
             }
         }
@@ -151,7 +149,10 @@ private:
     void draw_lights()
     {
         for (const Vector3& light_position : c_light_positions) {
-            render_queue_.emplace(sphere_mesh_, {.scale = Vector3{0.5f}, .translation = light_position}, pbr_material_);
+            render_queue_.emplace(
+                sphere_mesh_,
+                {.scale = Vector3{0.5f}, .translation = light_position},
+                pbr_material_);
         }
     }
 
@@ -163,13 +164,27 @@ private:
     PerfPanel perf_panel_{&owner()};
 };
 
-
-CStringView osc::LOGLPBRLightingTexturedTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLPBRLightingTexturedTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLPBRLightingTexturedTab::LOGLPBRLightingTexturedTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLPBRLightingTexturedTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLPBRLightingTexturedTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLPBRLightingTexturedTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLPBRLightingTexturedTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLPBRLightingTexturedTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLPBRLightingTexturedTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLPBRLightingTexturedTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLPBRLightingTexturedTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

@@ -13,7 +13,7 @@ import os
 import re
 
 _blacklisted_directories = {'resources', 'opensim-core', 'simbody', '__pycache__', '_static'}
-_blacklisted_filenames = {re.compile(p) for p in [r'.*\.so$', r'METADATA.in', r'.*\.ico$', r'.*\.icns$', r'.*\.png$', r'.*\.bmp$']}
+_blacklisted_filenames = {re.compile(p) for p in [r'.*\.so$', r'METADATA.in', r'.*\.ico$', r'.*\.icns$', r'.*\.png$', r'.*\.bmp$', ".formatted"]}
 _default_directories = ['libopynsim', 'libosim', 'src', 'hellooscar', 'liboscar', 'liboscar-demos', "opynsim_debugger", "oscar_demo_viewer", 'scripts', 'docs', 'libopensimcreator', '.github', 'cmake', 'docker', 'osc', 'packaging', 'requirements']
 
 def num_leading_tabs(s):

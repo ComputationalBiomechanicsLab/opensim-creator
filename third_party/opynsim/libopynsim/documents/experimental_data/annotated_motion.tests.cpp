@@ -21,5 +21,6 @@ TEST(AnnotatedMotion, can_load_trc_file_containing_superfulous_markers)
         std::filesystem::path{OPYNSIM_TESTS_RESOURCES_DIR} / "opensim-creator_1068_repro.trc";
 
     const AnnotatedMotion motion(repro_file);  // shouldn't throw
-    ASSERT_EQ(motion.get_num_data_series(), 60) << "if this is 63, then maybe you have a problem - or coerced the marker names :-)";
+    ASSERT_EQ(motion.get_num_data_series(), 60)
+        << "if this is 63, then maybe you have a problem - or coerced the marker names :-)";
 }

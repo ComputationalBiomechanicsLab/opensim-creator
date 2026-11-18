@@ -2,10 +2,10 @@
 
 #include <liboscar/utilities/c_string_view.h>
 
-namespace osc { class StringName; }
-
 namespace osc
 {
+    class StringName;
+
     /// Represents a single named element of the mesh warper document.
     class MwDocumentElement {
     protected:
@@ -14,11 +14,13 @@ namespace osc
         MwDocumentElement(MwDocumentElement&&) noexcept = default;
         MwDocumentElement& operator=(const MwDocumentElement&) = default;
         MwDocumentElement& operator=(MwDocumentElement&&) noexcept = default;
+
     public:
         virtual ~MwDocumentElement() noexcept = default;
 
-        CStringView getName() const { return implGetName(); }
+        CStringView get_name() const { return impl_get_name(); }
+
     private:
-        virtual CStringView implGetName() const = 0;
+        virtual CStringView impl_get_name() const = 0;
     };
 }

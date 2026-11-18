@@ -4,16 +4,16 @@
 
 #include <exception>
 
-namespace osc { class Widget; }
-
 namespace osc
 {
+    class Widget;
+
     class ErrorTab final : public Tab {
     public:
         explicit ErrorTab(Widget&, const std::exception&);
 
     private:
-        void impl_on_draw() final;
+        void impl_on_draw() override;
 
         class Impl;
         OSC_WIDGET_DATA_GETTERS(Impl);

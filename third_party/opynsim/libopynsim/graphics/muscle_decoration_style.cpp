@@ -28,7 +28,7 @@ namespace
             MuscleDecorationStyle::Hidden,
         },
     });
-    static_assert(c_metadata.size() == osc::num_options<MuscleDecorationStyle>());
+    static_assert(c_metadata.size() == osc::num_options_v<MuscleDecorationStyle>);
 }
 
 std::span<const MuscleDecorationStyleMetadata> opyn::get_all_muscle_decoration_style_metadata()
@@ -41,7 +41,8 @@ ptrdiff_t opyn::get_index_of(MuscleDecorationStyle s)
     return static_cast<ptrdiff_t>(s);
 }
 
-const MuscleDecorationStyleMetadata& opyn::get_muscle_decoration_style_metadata(MuscleDecorationStyle s)
+const MuscleDecorationStyleMetadata& opyn::get_muscle_decoration_style_metadata(
+    MuscleDecorationStyle s)
 {
     return get_all_muscle_decoration_style_metadata()[get_index_of(s)];
 }

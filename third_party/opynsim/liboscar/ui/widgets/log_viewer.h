@@ -10,7 +10,7 @@ namespace osc
 
     private:
         // assumes caller handles `ui::begin_panel(panel_name, nullptr, `ui::PanelFlag::MenuBar`)`
-        void impl_on_draw() final;
+        void impl_on_draw() override;
 
         class Impl;
         OSC_WIDGET_DATA_GETTERS(Impl);

@@ -32,9 +32,9 @@ namespace
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
         }};
 
-        material.set("uTexture", SVG::read_into_texture(
-            loader.open("oscar_demos/learnopengl/textures/uv_checker.svg")
-        ));
+        material.set(
+            "uTexture",
+            SVG::read_into_texture(loader.open("oscar_demos/learnopengl/textures/uv_checker.svg")));
 
         return material;
     }
@@ -51,7 +51,10 @@ namespace
 
 class osc::LOGLFaceCullingTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedOpenGL/FaceCulling"; }
+    static CStringView static_label()
+    {
+        return "oscar_demos/learnopengl/AdvancedOpenGL/FaceCulling";
+    }
 
     explicit Impl(LOGLFaceCullingTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
@@ -69,10 +72,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -85,10 +85,13 @@ private:
     void draw_scene()
     {
         render_queue_.emplace(cube_, material_);
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-            .clear_color = {0.1f, 1.0f},
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+                .clear_color = {0.1f, 1.0f},
+            });
         render_queue_.clear();
     }
 
@@ -114,12 +117,26 @@ private:
     RenderQueue render_queue_;
 };
 
-
-CStringView osc::LOGLFaceCullingTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLFaceCullingTab::id()
+{
+    return Impl::static_label();
+}
 osc::LOGLFaceCullingTab::LOGLFaceCullingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLFaceCullingTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLFaceCullingTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLFaceCullingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLFaceCullingTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLFaceCullingTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLFaceCullingTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLFaceCullingTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLFaceCullingTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

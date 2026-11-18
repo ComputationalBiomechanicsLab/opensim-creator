@@ -34,14 +34,11 @@ namespace
     Material create_normal_mapping_material(ResourceLoader& loader)
     {
         const Texture2D diffuse_map = Image::read_into_texture(
-            loader.open("oscar_demos/learnopengl/textures/brickwall.jpg"),
-            ColorSpace::sRGB
-        );
+            loader.open("oscar_demos/learnopengl/textures/brickwall.jpg"), ColorSpace::sRGB);
         const Texture2D normal_map = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/brickwall_normal.jpg"),
             ColorSpace::Linear,
-            ImageLoadingFlag::TreatComponentsAsSpatialVectors
-        );
+            ImageLoadingFlag::TreatComponentsAsSpatialVectors);
 
         Material rv{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
@@ -64,7 +61,10 @@ namespace
 
 class osc::LOGLNormalMappingTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/NormalMapping"; }
+    static CStringView static_label()
+    {
+        return "oscar_demos/learnopengl/AdvancedLighting/NormalMapping";
+    }
 
     explicit Impl(LOGLNormalMappingTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
@@ -84,10 +84,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_tick()
     {
@@ -116,10 +113,13 @@ public:
             render_queue_.emplace(cube_mesh_, light_transform_, light_cube_material_);
         }
 
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-            .clear_color = Color::darkest_grey(),
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+                .clear_color = Color::darkest_grey(),
+            });
         render_queue_.clear();
 
         ui::begin_panel("controls");
@@ -147,14 +147,31 @@ private:
     bool normal_mapping_enabled_ = true;
 };
 
-
-CStringView osc::LOGLNormalMappingTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLNormalMappingTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLNormalMappingTab::LOGLNormalMappingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLNormalMappingTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLNormalMappingTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLNormalMappingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLNormalMappingTab::impl_on_tick() { private_data().on_tick(); }
-void osc::LOGLNormalMappingTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLNormalMappingTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLNormalMappingTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLNormalMappingTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLNormalMappingTab::impl_on_tick()
+{
+    private_data().on_tick();
+}
+void osc::LOGLNormalMappingTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

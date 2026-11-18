@@ -4,16 +4,16 @@
 
 #include <memory>
 
-namespace osc { class PanelManager; }
-
 namespace osc
 {
+    class PanelManager;
+
     class WindowMenu final : public Widget {
     public:
         explicit WindowMenu(Widget* parent, std::shared_ptr<PanelManager>);
 
     private:
-        void impl_on_draw() final;
+        void impl_on_draw() override;
         void draw_content();
 
         std::shared_ptr<PanelManager> panel_manager_;

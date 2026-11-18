@@ -8,9 +8,9 @@ namespace osc
 
         RayCollision() = default;
 
-        RayCollision(float distance_, const Vector3& position_) :
-            distance{distance_},
-            position{position_}
+        RayCollision(float distance, const Vector3& position) :
+            distance{distance},
+            position{position}
         {}
 
         float distance{};

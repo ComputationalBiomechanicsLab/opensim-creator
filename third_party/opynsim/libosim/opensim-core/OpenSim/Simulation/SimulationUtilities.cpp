@@ -370,7 +370,7 @@ std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
             if (nc == 1) {
                 controlIndices[actuPath] = i;
             } else {
-                controlIndices[fmt::format("{}_{}", actuPath, j)] = i;
+                controlIndices[std::format("{}_{}", actuPath, j)] = i;
             }
             ++i;
         }
@@ -456,7 +456,7 @@ void OpenSim::appendCoupledCoordinateValues(TimeSeriesTable& table,
         const Coordinate& coordinate = coordinateSet.get(
                 couplerConstraint.getDependentCoordinateName());
         const std::string& coupledCoordinatePath =
-                fmt::format("{}/value", coordinate.getAbsolutePathString());
+                std::format("{}/value", coordinate.getAbsolutePathString());
         if (table.hasColumn(coupledCoordinatePath)) {
             if (overwriteExistingColumns) {
                 table.removeColumn(coupledCoordinatePath);
@@ -473,7 +473,7 @@ void OpenSim::appendCoupledCoordinateValues(TimeSeriesTable& table,
             const Coordinate& independentCoordinate = coordinateSet.get(
                     independentCoordinateNames[i]);
             independentCoordinatePaths.push_back(
-                    fmt::format("{}/value",
+                    std::format("{}/value",
                         independentCoordinate.getAbsolutePathString()));
             OPENSIM_THROW_IF(
                     !table.hasColumn(independentCoordinatePaths.back()),
@@ -522,7 +522,7 @@ void OpenSim::appendCoordinateValueDerivativesAsSpeeds(TimeSeriesTable& table,
             if (!model.hasComponent<Coordinate>(valuePath)) {
                 continue;
             }
-            speedPath = fmt::format("{}/speed", valuePath);
+            speedPath = std::format("{}/speed", valuePath);
         } else {
             continue;
         }
@@ -545,4 +545,82 @@ void OpenSim::appendCoordinateValueDerivativesAsSpeeds(TimeSeriesTable& table,
         table.appendColumn(speedPath, speed);
     }
 
+}
+
+std::vector<SimTK::ReferencePtr<const Joint>>
+OpenSim::findJointsBetweenPhysicalFrames(const Model& model,
+        const std::string& firstFramePath, const std::string& secondFramePath) {
+
+    // Get the frames from the model.
+    OPENSIM_THROW_IF(
+            !model.hasComponent<PhysicalFrame>(firstFramePath), Exception,
+            "Expected the model to contain a PhysicalFrame with path '{}', "
+            "but no such component was found.",
+            firstFramePath);
+    OPENSIM_THROW_IF(
+            !model.hasComponent<PhysicalFrame>(secondFramePath), Exception,
+            "Expected the model to contain a PhysicalFrame with path '{}', "
+            "but no such component was found.",
+            secondFramePath);
+    const auto& firstFrame = model.getComponent<PhysicalFrame>(firstFramePath);
+    const auto& secondFrame = model.getComponent<PhysicalFrame>(secondFramePath);
+    const std::string firstPath =
+            firstFrame.findBaseFrame().getAbsolutePathString();
+    const std::string secondPath =
+            secondFrame.findBaseFrame().getAbsolutePathString();
+
+    // Build a map between the model's joints and the base frames of the joint
+    // child frames.
+    std::unordered_map<std::string, const Joint*> childBodyToJoint;
+    for (const auto& joint : model.getComponentList<Joint>()) {
+        const auto& childBase = joint.getChildFrame().findBaseFrame();
+        childBodyToJoint[childBase.getAbsolutePathString()] = &joint;
+    }
+
+    // A helper function to trace from a starting frame to a target frame,
+    // populating a list of joints along the way and returning whether the
+    // target frame was found. If the target frame is not found, the list of
+    // joints will contain the path from the starting frame to the ground frame.
+    auto traceTowardGround = [&](const std::string& startBasePath,
+            const std::string& targetBasePath,
+            std::vector<SimTK::ReferencePtr<const Joint>>& joints) -> bool {
+        const Frame* current = &model.getComponent<PhysicalFrame>(startBasePath);
+        while (true) {
+            if (current->getAbsolutePathString() == targetBasePath) {
+                return true;
+            }
+            auto it = childBodyToJoint.find(current->getAbsolutePathString());
+            if (it == childBodyToJoint.end()) break; // reached ground
+            joints.emplace_back(it->second);
+            current = &it->second->getParentFrame().findBaseFrame();
+        }
+        return false;
+    };
+
+    std::vector<SimTK::ReferencePtr<const Joint>> firstJoints;
+    bool firstFoundTarget = traceTowardGround(firstPath, secondPath, firstJoints);
+    if (firstFoundTarget) {
+        // Reverse the order of the joints so they are returned in root-to-leaf
+        // order.
+        std::reverse(firstJoints.begin(), firstJoints.end());
+        return firstJoints;
+    }
+
+    std::vector<SimTK::ReferencePtr<const Joint>> secondJoints;
+    bool secondFoundTarget = traceTowardGround(secondPath, firstPath, secondJoints);
+    if (secondFoundTarget) {
+        // Reverse the order of the joints so they are returned in root-to-leaf
+        // order.
+        std::reverse(secondJoints.begin(), secondJoints.end());
+        return secondJoints;
+    }
+
+    // Combine the first list of joints with the reverse of the second list of
+    // joints.
+    std::reverse(secondJoints.begin(), secondJoints.end());
+    for (const auto& joint : secondJoints) {
+        firstJoints.emplace_back(joint.get());
+    }
+
+    return firstJoints;
 }

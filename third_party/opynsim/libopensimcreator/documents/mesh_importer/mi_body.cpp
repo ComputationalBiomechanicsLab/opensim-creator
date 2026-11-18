@@ -14,39 +14,34 @@
 
 using osc::MiClass;
 
-osc::MiBody::MiBody(
-    UID id,
-    const std::string& name,
-    const Transform& xform) :
+osc::MiBody::MiBody(UID id, const std::string& name, const Transform& xform) :
 
-    m_ID{id},
-    m_Name{opyn::sanitize_to_open_sim_component_name(name)},
-    m_Xform{xform}
+    id_{id},
+    name_{opyn::sanitize_to_open_sim_component_name(name)},
+    xform_{xform}
+{}
+
+void osc::MiBody::impl_set_label(std::string_view sv)
 {
+    name_ = opyn::sanitize_to_open_sim_component_name(sv);
 }
 
-void osc::MiBody::implSetLabel(std::string_view sv)
+MiClass osc::MiBody::create_class()
 {
-    m_Name = opyn::sanitize_to_open_sim_component_name(sv);
-}
-
-MiClass osc::MiBody::CreateClass()
-{
-    return
-    {
-        MiStrings::c_BodyLabel,
-        MiStrings::c_BodyLabelPluralized,
-        MiStrings::c_BodyLabelOptionallyPluralized,
+    return {
+        MiStrings::c_body_label,
+        MiStrings::c_body_label_pluralized,
+        MiStrings::c_body_label_optionally_pluralized,
         MSMICONS_CIRCLE,
-        MiStrings::c_BodyDescription,
+        MiStrings::c_body_description,
     };
 }
 
-std::ostream& osc::MiBody::implWriteToStream(std::ostream& o) const
+std::ostream& osc::MiBody::impl_write_to_stream(std::ostream& o) const
 {
-    return o << "MiBody(ID = " << m_ID
-        << ", Name = " << m_Name
-        << ", m_Transform = " << m_Xform
-        << ", Mass = " << Mass
-        << ')';
+    return o << "MiBody(ID = " << id_         //
+             << ", Name = " << name_          //
+             << ", m_Transform = " << xform_  //
+             << ", Mass = " << mass_          //
+             << ')';
 }

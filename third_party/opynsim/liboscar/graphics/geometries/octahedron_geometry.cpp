@@ -18,16 +18,17 @@ namespace
         //
         // https://threejs.org/docs/#api/en/geometries/OctahedronGeometry
 
+        // clang-format off
         constexpr auto vertices = std::to_array<Vector3>({
             {1.0f,  0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f,  0.0f},
             {0.0f, -1.0f, 0.0f}, { 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f},
         });
-
         constexpr auto indices = std::to_array<uint32_t>({
             0, 2, 4,    0, 4, 3,    0, 3, 5,
             0, 5, 2,    1, 2, 5,    1, 5, 3,
             1, 3, 4,    1, 4, 2
         });
+        // clang-format on
 
         return PolyhedronGeometry{vertices, indices, p.radius, p.detail};
     }

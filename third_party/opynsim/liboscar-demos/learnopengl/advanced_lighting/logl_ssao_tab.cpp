@@ -51,8 +51,8 @@ namespace
         rv.reserve(num_samples);
         for (size_t i = 0; i < num_samples; ++i) {
             // scale such that they are more aligned to the center of the kernel
-            float scale = static_cast<float>(i)/static_cast<float>(num_samples);
-            scale = lerp(0.1f, 1.0f, scale*scale);
+            float scale = static_cast<float>(i) / static_cast<float>(num_samples);
+            scale = lerp(0.1f, 1.0f, scale * scale);
 
             Vector3 sample = {minus_one_to_one(rng), minus_one_to_one(rng), minus_one_to_one(rng)};
             sample = normalize(sample);
@@ -65,7 +65,8 @@ namespace
         return rv;
     }
 
-    std::vector<Color> generate_noise_texture_pixels(size_t num_pixels) {
+    std::vector<Color> generate_noise_texture_pixels(size_t num_pixels)
+    {
         std::default_random_engine rng{std::random_device{}()};
         std::uniform_real_distribution<float> minus_one_to_one{-1.0f, 1.0f};
 
@@ -158,10 +159,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -182,10 +180,14 @@ private:
         {
             constexpr AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel::none();
 
-            gbuffer_state_.reformat(workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
-            ssao_state_.reformat(workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
-            blur_state_.reformat(workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
-            lighting_state_.reformat(workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
+            gbuffer_state_.reformat(
+                workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
+            ssao_state_.reformat(
+                workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
+            blur_state_.reformat(
+                workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
+            lighting_state_.reformat(
+                workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
         }
 
         render_geometry_pass_to_gbuffers();
@@ -204,23 +206,23 @@ private:
             render_queue_.emplace(
                 cube_mesh_,
                 {.scale = Vector3{7.5f}, .translation = {0.0f, 7.0f, 0.0f}},
-                gbuffer_state_.material
-            );
+                gbuffer_state_.material);
         }
 
         // render sphere
         {
             gbuffer_state_.material.set("uInvertedNormals", false);
             render_queue_.emplace(
-                sphere_mesh_,
-                {.translation = {0.0f, 0.5f, 0.0f}},
-                gbuffer_state_.material
-            );
+                sphere_mesh_, {.translation = {0.0f, 0.5f, 0.0f}}, gbuffer_state_.material);
         }
 
-        graphics::render_to(gbuffer_state_.render_target, render_queue_, camera_, {
-            .clear_color = Color::black(),
-        });
+        graphics::render_to(
+            gbuffer_state_.render_target,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = Color::black(),
+            });
         render_queue_.clear();
     }
 
@@ -236,9 +238,13 @@ private:
         ssao_state_.material.set("uBias", 0.125f);
 
         render_queue_.emplace(quad_mesh_, ssao_state_.material);
-        graphics::render_to(ssao_state_.output_texture, render_queue_, camera_, {
-            .clear_color = Color::black(),
-        });
+        graphics::render_to(
+            ssao_state_.output_texture,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = Color::black(),
+            });
         render_queue_.clear();
 
         ssao_state_.material.unset("uPositionTex");
@@ -250,9 +256,13 @@ private:
         blur_state_.material.set("uSSAOTex", ssao_state_.output_texture);
 
         render_queue_.emplace(quad_mesh_, blur_state_.material);
-        graphics::render_to(blur_state_.output_texture, render_queue_, camera_, {
-            .clear_color = Color::black(),
-        });
+        graphics::render_to(
+            blur_state_.output_texture,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = Color::black(),
+            });
         render_queue_.clear();
 
         blur_state_.material.unset("uSSAOTex");
@@ -270,9 +280,13 @@ private:
         lighting_state_.material.set("uLightQuadratic", 0.032f);
 
         render_queue_.emplace(quad_mesh_, lighting_state_.material);
-        graphics::render_to(lighting_state_.output_texture, render_queue_, camera_, {
-            .clear_color = Color::black(),
-        });
+        graphics::render_to(
+            lighting_state_.output_texture,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = Color::black(),
+            });
         render_queue_.clear();
 
         lighting_state_.material.unset("uPositionTex");
@@ -295,10 +309,12 @@ private:
 
         const Vector2 viewport_top_left = viewport_screen_space_rect.ypu_top_left();
         for (size_t i = 0; i < textures.size(); ++i) {
-            const float offset = static_cast<float>(i)*overlay_size;
-            const Vector2 overlay_bottom_left = {viewport_top_left.x() + offset, viewport_top_left.y() - overlay_size};
+            const float offset = static_cast<float>(i) * overlay_size;
+            const Vector2 overlay_bottom_left = {
+                viewport_top_left.x() + offset, viewport_top_left.y() - overlay_size};
             const Vector2 overlay_top_right = overlay_bottom_left + Vector2{overlay_size};
-            graphics::blit_to_main_window(*textures[i], Rect::from_corners(overlay_bottom_left, overlay_top_right));
+            graphics::blit_to_main_window(
+                *textures[i], Rect::from_corners(overlay_bottom_left, overlay_top_right));
         }
     }
 
@@ -317,9 +333,12 @@ private:
     // rendering state
     struct GBufferRenderingState final {
         Material material = load_gbuffer_material(App::resource_loader());
-        RenderTexture albedo = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_SRGB);
-        RenderTexture normal = render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
-        RenderTexture position = render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
+        RenderTexture albedo =
+            render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_SRGB);
+        RenderTexture normal =
+            render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
+        RenderTexture position =
+            render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
         RenderTarget render_target{
             RenderTargetColorAttachment{
                 albedo.upd_color_buffer(),
@@ -346,7 +365,8 @@ private:
             },
         };
 
-        void reformat(Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
+        void reformat(
+            Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
                 texture_ptr->reformat({
@@ -361,9 +381,11 @@ private:
 
     struct SSAORenderingState final {
         Material material = load_ssao_material(App::resource_loader());
-        RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8_UNORM);
+        RenderTexture output_texture =
+            render_texture_with_color_format(ColorRenderBufferFormat::R8_UNORM);
 
-        void reformat(Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
+        void reformat(
+            Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);
@@ -373,9 +395,11 @@ private:
 
     struct BlurRenderingState final {
         Material material = load_blur_material(App::resource_loader());
-        RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8_UNORM);
+        RenderTexture output_texture =
+            render_texture_with_color_format(ColorRenderBufferFormat::R8_UNORM);
 
-        void reformat(Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
+        void reformat(
+            Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);
@@ -385,9 +409,11 @@ private:
 
     struct LightingRenderingState final {
         Material material = load_lighting_material(App::resource_loader());
-        RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_SRGB);
+        RenderTexture output_texture =
+            render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_SRGB);
 
-        void reformat(Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
+        void reformat(
+            Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);
@@ -398,12 +424,26 @@ private:
     PerfPanel perf_panel_{&owner()};
 };
 
-
-CStringView osc::LOGLSSAOTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLSSAOTab::id()
+{
+    return Impl::static_label();
+}
 osc::LOGLSSAOTab::LOGLSSAOTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLSSAOTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLSSAOTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLSSAOTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLSSAOTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLSSAOTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLSSAOTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLSSAOTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLSSAOTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

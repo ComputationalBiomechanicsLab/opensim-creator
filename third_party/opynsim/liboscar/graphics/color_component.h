@@ -14,11 +14,7 @@ namespace osc
     //     Color{}.r   = 1.2f;         // the normalized float means "more than white" (i.e. HDR)
     //     Color var = Color32{0xff};  // should be possible
     template<typename T>
-    concept ColorComponent =
-        std::floating_point<T> or
-        (
-            std::constructible_from<T, float> and
-            std::assignable_from<T&, float> and
-            std::constructible_from<float, const T&>
-        );
+    concept ColorComponent = std::floating_point<T> or (std::constructible_from<T, float> and
+                                                        std::assignable_from<T&, float> and
+                                                        std::constructible_from<float, const T&>);
 }

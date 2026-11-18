@@ -7,27 +7,31 @@
 #include <memory>
 #include <vector>
 
-namespace opyn { class ModelStatePair; }
-namespace osc { class Widget; }
+namespace opyn
+{
+    class ModelStatePair;
+}
 
 namespace osc
 {
+    class Widget;
+
     class MainMenuFileTab final : public Widget {
     public:
         explicit MainMenuFileTab(Widget* parent);
 
-        void onDraw(std::shared_ptr<opyn::ModelStatePair> = nullptr);
+        void on_draw(std::shared_ptr<opyn::ModelStatePair> = nullptr);
 
-        std::vector<std::filesystem::path> exampleOsimFiles;
+        std::vector<std::filesystem::path> example_osim_files;
 
     private:
-        void impl_on_draw() final { onDraw(); }
+        void impl_on_draw() override { on_draw(); }
     };
 
     class MainMenuAboutTab final {
     public:
-        MainMenuAboutTab() {}
+        MainMenuAboutTab() = default;
 
-        void onDraw();
+        void on_draw();
     };
 }

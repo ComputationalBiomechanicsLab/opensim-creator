@@ -16,25 +16,22 @@ namespace osc
     class MiGround final : public MiObjectCRTP<MiGround> {
     private:
         friend class MiObjectCRTP<MiGround>;
-        static MiClass CreateClass();
+        static MiClass create_class();
 
-        MiObjectFlags implGetFlags() const final
-        {
-            return MiObjectFlags::None;
-        }
+        MiObjectFlags impl_get_flags() const override { return MiObjectFlags::None; }
 
-        UID implGetID() const final;
+        UID impl_get_id() const override;
 
-        std::ostream& implWriteToStream(std::ostream&) const final;
+        std::ostream& impl_write_to_stream(std::ostream&) const override;
 
-        CStringView implGetLabel() const final;
+        CStringView impl_get_label() const override;
 
-        Transform implGetXform(const MiObjectFinder&) const final
+        Transform impl_get_xform(const MiObjectFinder&) const override
         {
             return identity<Transform>();
         }
 
-        std::optional<AABB> implCalcBounds(const MiObjectFinder&) const final
+        std::optional<AABB> impl_calc_bounds(const MiObjectFinder&) const override
         {
             return std::nullopt;
         }

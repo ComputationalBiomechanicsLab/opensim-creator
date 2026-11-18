@@ -12,20 +12,20 @@ namespace osc
     struct ModelViewerPanelRightClickEvent final {
 
         ModelViewerPanelRightClickEvent(
-            std::string sourcePanelName_,
-            const Rect& viewportScreenRect_,
-            std::string componentAbsPathOrEmpty_,
-            std::optional<Vector3> maybeClickPositionInGround_) :
+            std::string source_panel_name,
+            const Rect& viewport_screen_rect,
+            std::string component_abs_path_or_empty,
+            std::optional<Vector3> maybe_click_position_in_ground) :
 
-            sourcePanelName{std::move(sourcePanelName_)},
-            viewportScreenRect{viewportScreenRect_},
-            componentAbsPathOrEmpty{std::move(componentAbsPathOrEmpty_)},
-            maybeClickPositionInGround{maybeClickPositionInGround_}
+            source_panel_name{std::move(source_panel_name)},
+            viewport_screen_rect{viewport_screen_rect},
+            component_abs_path_or_empty{std::move(component_abs_path_or_empty)},
+            maybe_click_position_in_ground{maybe_click_position_in_ground}
         {}
 
-        std::string sourcePanelName;
-        Rect viewportScreenRect;
-        std::string componentAbsPathOrEmpty;
-        std::optional<Vector3> maybeClickPositionInGround;
+        std::string source_panel_name;
+        Rect viewport_screen_rect;
+        std::string component_abs_path_or_empty;
+        std::optional<Vector3> maybe_click_position_in_ground;
     };
 }

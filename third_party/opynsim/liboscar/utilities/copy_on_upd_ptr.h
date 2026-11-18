@@ -12,12 +12,14 @@ namespace osc
     // be mutated via `upd()`, results in the following happening:
     //
     // - if there is one owner, provides mutable access to the object
-    // - if there are multiple owners, copies the object and provides single-owner mutable access to the copy
+    // - if there are multiple owners, copies the object and provides single-owner mutable access to
+    // the copy
     //
     // The object is destroyed and its memory deallocated when either of the following happens:
     //
     // - the last remaining `CopyOnUpdPtr` owning the object is destroyed
-    // - the last remaining `CopyOnUpdPtr` owning the object is assigned another pointer via `operator=` or `reset()`
+    // - the last remaining `CopyOnUpdPtr` owning the object is assigned another pointer via
+    // `operator=` or `reset()`
     template<typename T>
     class CopyOnUpdPtr final {
     private:
@@ -27,14 +29,12 @@ namespace osc
         explicit CopyOnUpdPtr(std::shared_ptr<T> ptr) :
             ptr_{std::move(ptr)}
         {}
+
     public:
         using pointer = T*;
         using element_type = std::remove_extent_t<T>;
 
-        const element_type* get() const noexcept
-        {
-            return ptr_.get();
-        }
+        const element_type* get() const noexcept { return ptr_.get(); }
 
         element_type* upd()
         {
@@ -44,20 +44,11 @@ namespace osc
             return ptr_.get();
         }
 
-        const T& operator*() const noexcept
-        {
-            return *ptr_;
-        }
+        const T& operator*() const noexcept { return *ptr_; }
 
-        const T* operator->() const noexcept
-        {
-            return get();
-        }
+        const T* operator->() const noexcept { return get(); }
 
-        friend void swap(CopyOnUpdPtr& a, CopyOnUpdPtr& b) noexcept
-        {
-            swap(a.ptr_, b.ptr_);
-        }
+        friend void swap(CopyOnUpdPtr& a, CopyOnUpdPtr& b) noexcept { swap(a.ptr_, b.ptr_); }
 
         template<typename U>
         friend bool operator==(const CopyOnUpdPtr& lhs, const CopyOnUpdPtr<U>& rhs)

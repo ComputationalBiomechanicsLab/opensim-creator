@@ -1,8 +1,6 @@
 import pytest
-import gc
 import itertools
 import re
-import sys
 
 try:
     import numpy as np
@@ -141,8 +139,15 @@ def test04_matrix():
 @pytest.mark.parametrize("rowStep", (1, 2, -2))
 @pytest.mark.parametrize("colStep", (1, 3, -3))
 @pytest.mark.parametrize("transpose", (False, True))
-def test05_matrix_large_nonsymm(rowStart, colStart, rowStep, colStep, transpose):
-    A = np.uint32(np.vander(np.arange(80)))
+@pytest.mark.parametrize("vector", (False, True))
+def test05_matrix_large_nonsymm(rowStart, colStart, rowStep, colStep, transpose, vector):
+    if vector:
+        if colStart != 0 or colStep != 1:
+            pytest.skip("This test permutation is not sensible.")
+        # Use ndim=2 but with shape=(80, 1) -- suitable for any Ref storage order.
+        A = np.uint32(np.arange(80).reshape((-1, 1)))
+    else:
+        A = np.uint32(np.vander(np.arange(80)))
     if rowStep < 0:
         rowStart = -rowStart - 1
     if colStep < 0:
@@ -216,8 +221,6 @@ def test06_map():
             assert dm[i, j] == i*3+j
     del dm
     del b
-    gc.collect()
-    gc.collect()
     for i in range(10):
         for j in range(3):
             assert m[i, j] == i*3+j
@@ -229,6 +232,37 @@ def test07_mutate_arg():
     A2 = A.copy()
     t.mutate_DRefMXuC(A)
     assert_array_equal(A, 2*A2)
+
+
+@needs_numpy_and_eigen
+def test07b_dref1():
+    # DRef1 fixes the inner stride to 1. It binds zero-copy when the layout
+    # matches the storage order, copies (const) or rejects (mutable) otherwise.
+    base = np.uint32(np.vander(np.arange(10)))
+    A_c = np.ascontiguousarray(base)   # C-contiguous  -> row-major
+    A_f = np.asfortranarray(base)      # F-contiguous  -> column-major
+    A_s = base[:, ::2]                 # strided inner  -> neither
+    expected = base + base
+
+    # const: correct for every layout (copying where needed)
+    assert_array_equal(t.addDRef1MXuRR(A_c, A_c), expected)
+    assert_array_equal(t.addDRef1MXuCC(A_f, A_f), expected)
+    assert_array_equal(t.addDRef1MXuRR(A_f, A_f), expected)        # copy fallback
+    assert_array_equal(t.addDRef1MXuRR(A_s, A_s), base[:, ::2] * 2)  # copy fallback
+
+    # mutable: zero-copy write-back on a matching layout
+    M = A_c.copy()
+    t.mutate_DRef1MXuR(M)
+    assert_array_equal(M, 2 * A_c)
+    Mf = A_f.copy(order='F')
+    t.mutate_DRef1MXuC(Mf)
+    assert_array_equal(Mf, 2 * A_f)
+
+    # mutable: a mismatched layout is rejected rather than silently copied
+    with pytest.raises(TypeError, match="incompatible function arguments"):
+        t.mutate_DRef1MXuR(A_f)
+    with pytest.raises(TypeError, match="incompatible function arguments"):
+        t.mutate_DRef1MXuC(A_c)
 
 
 def create_spmat_unsorted():
@@ -291,8 +325,28 @@ def test08_sparse():
 
 
 @needs_numpy_and_eigen
-def test09_sparse_failures():
-    sp = pytest.importorskip("scipy.sparse")
+def test08b_sparse_noconvert():
+    scipy = pytest.importorskip("scipy")
+    import scipy.sparse
+
+    dense = np.asfortranarray(np.eye(3, dtype=np.float32))
+
+    # A '.noconvert()' sparse parameter must reject a dense array, but still
+    # accept an exact csc_matrix instance.
+    with pytest.raises(TypeError):
+        t.sparse_noconvert_c(dense)
+    csc = scipy.sparse.csc_matrix(dense)
+    assert_array_equal(t.sparse_noconvert_c(csc).toarray(), dense)
+
+    # A dense array must not be greedily claimed by an earlier sparse overload
+    # during the dispatcher's no-convert pass; it should reach the dense one.
+    assert t.sparse_or_dense(dense) == 2
+    assert t.sparse_or_dense(csc) == 1
+
+
+@needs_numpy_and_eigen
+def test09_sparse_uncompressed():
+    pytest.importorskip("scipy.sparse")
 
     with pytest.raises(
         ValueError,
@@ -302,27 +356,6 @@ def test09_sparse_failures():
     ):
         t.sparse_r_uncompressed()
 
-    csr_matrix = sp.csr_matrix
-    sp.csr_matrix = None
-    with pytest.raises(TypeError, match=re.escape("'NoneType' object is not callable")):
-        t.sparse_r()
-
-    del sp.csr_matrix
-    with pytest.raises(
-        AttributeError,
-        match=re.escape("'scipy.sparse' has no attribute 'csr_matrix'"),
-    ):
-        t.sparse_r()
-
-    sys_path = sys.path
-    sys.path = []
-    del sys.modules["scipy"]
-    with pytest.raises(ModuleNotFoundError, match=re.escape("No module named 'scipy'")):
-        t.sparse_r()
-
-    # undo sabotage of the module
-    sys.path = sys_path
-    sp.csr_matrix = csr_matrix
 
 @needs_numpy_and_eigen
 def test10_eigen_scalar_default():
@@ -344,15 +377,11 @@ def test11_prop():
                 ref[0, 0] = 10
             assert_array_equal(member, ref)
             del member
-            gc.collect()
-            gc.collect()
 
         member = c.member
         assert_array_equal(c.member_ro_ref, ref)
         assert_array_equal(c.member_ro_copy, ref)
         del c
-        gc.collect()
-        gc.collect()
         assert_array_equal(member, ref)
 
 @needs_numpy_and_eigen
@@ -379,6 +408,13 @@ def test12_cast():
     for v in vec, vec2, vecf:
         with pytest.raises(RuntimeError, match='bad[_ ]cast'):
             t.castToRef03CnstVXi(v)
+
+@needs_numpy_and_eigen
+def test12b_cast_reference_internal_no_parent():
+    # Single-argument nb::cast() with reference_internal lacks a parent;
+    # this must fail gracefully rather than crash.
+    with pytest.raises(RuntimeError, match='bad[_ ]cast'):
+        t.castRefInternalNoParent()
 
 @needs_numpy_and_eigen
 def test13_mutate_python():
@@ -482,4 +518,41 @@ def test18_zero_size_vec():
     c = np.zeros(0, dtype=np.int32)
     assert_array_equal(t.castToRefVXi(c), c)
     assert_array_equal(t.castToMapCnstVXi(c), c)
+    assert_array_equal(t.castToDRefCnstVXi(c), c)
+
+    # Empty 1-D arrays with a dynamic-stride Map/Ref caster must not produce an
+    # invalid (Eigen::Dynamic) inner stride.
+    d = np.zeros(0, dtype=np.float32)
+    assert_array_equal(t.passDMapCnstVXf(d), d)
+    assert_array_equal(t.passDMapCnstVXf(np.array([1, 2, 3], dtype=np.float32)),
+                       np.array([1, 2, 3], dtype=np.float32))
+
+
+@needs_numpy_and_eigen
+def test19_sparse_move():
+    # Returning a sparse matrix by value should move (steal) its buffers into
+    # the resulting scipy array rather than performing a deep copy.
+    pytest.importorskip("scipy")
+
+    h = t.SparseHolder()
+    ptr = h.data_ptr()
+    mat = h.move_out()
+    assert mat.data.__array_interface__["data"][0] == ptr
+
+
+@needs_numpy_and_eigen
+def test20_sparse_bad_attr():
+    # An object whose 'has_sorted_indices' is not a strict bool must be rejected
+    # cleanly (TypeError) rather than aborting the process. nb::cast<bool>()
+    # raises cast_error, which the noexcept from_python() must also handle.
+    scipy = pytest.importorskip("scipy")
+
+    m = scipy.sparse.csr_matrix(np.eye(2, dtype=np.float32))
+    orig = type(m).has_sorted_indices
+    type(m).has_sorted_indices = property(lambda self: np.bool_(True))
+    try:
+        with pytest.raises(TypeError):
+            t.sparse_map_r(m)
+    finally:
+        type(m).has_sorted_indices = orig
 

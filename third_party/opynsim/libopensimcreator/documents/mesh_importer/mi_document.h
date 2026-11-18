@@ -52,40 +52,35 @@ namespace osc
             using InternalIterator = std::conditional_t<
                 std::is_const_v<T>,
                 ObjectLookup::const_iterator,
-                ObjectLookup::iterator
-            >;
+                ObjectLookup::iterator>;
 
             Iterator() = default;
 
-            Iterator(InternalIterator pos_, InternalIterator end_) :
-                m_Pos{pos_},
-                m_End{end_}
+            Iterator(InternalIterator pos, InternalIterator end) :
+                pos_{pos},
+                end_{end}
             {
                 // ensure iterator initially points at an object with the correct type
-                while (m_Pos != m_End)
-                {
-                    if (dynamic_cast<const_pointer>(m_Pos->second.get()))
-                    {
+                while (pos_ != end_) {
+                    if (dynamic_cast<const_pointer>(pos_->second.get())) {
                         break;
                     }
-                    ++m_Pos;
+                    ++pos_;
                 }
             }
 
             // conversion to a const version of the iterator
             explicit operator Iterator<const value_type>() const
             {
-                return Iterator<const value_type>{m_Pos, m_End};
+                return Iterator<const value_type>{pos_, end_};
             }
 
             // LegacyIterator
 
             Iterator& operator++()
             {
-                while (++m_Pos != m_End)
-                {
-                    if (dynamic_cast<const_pointer>(m_Pos->second.get()))
-                    {
+                while (++pos_ != end_) {
+                    if (dynamic_cast<const_pointer>(pos_->second.get())) {
                         break;
                     }
                 }
@@ -99,10 +94,7 @@ namespace osc
                 return copy;
             }
 
-            reference operator*() const
-            {
-                return dynamic_cast<reference>(*m_Pos->second);
-            }
+            reference operator*() const { return dynamic_cast<reference>(*pos_->second); }
 
             // EqualityComparable
 
@@ -110,118 +102,105 @@ namespace osc
 
             // LegacyInputIterator
 
-            pointer operator->() const
-            {
-
-                return &dynamic_cast<reference>(*m_Pos->second);
-            }
+            pointer operator->() const { return &dynamic_cast<reference>(*pos_->second); }
 
         private:
-            InternalIterator m_Pos{};
-            InternalIterator m_End{};
+            InternalIterator pos_{};
+            InternalIterator end_{};
         };
 
         // helper class for an iterable object with a beginning + end
         template<std::derived_from<MiObject> T>
         class Iterable final {
         public:
-            using MapRef = std::conditional_t<std::is_const_v<T>, const ObjectLookup&, ObjectLookup&>;
+            using MapRef =
+                std::conditional_t<std::is_const_v<T>, const ObjectLookup&, ObjectLookup&>;
 
             explicit Iterable(MapRef objects) :
-                m_Begin{objects.begin(), objects.end()},
-                m_End{objects.end(), objects.end()}
-            {
-            }
+                begin_{objects.begin(), objects.end()},
+                end_{objects.end(), objects.end()}
+            {}
 
-            Iterator<T> begin() const { return m_Begin; }
-            Iterator<T> end() const { return m_End; }
+            Iterator<T> begin() const { return begin_; }
+            Iterator<T> end() const { return end_; }
 
         private:
-            Iterator<T> m_Begin;
-            Iterator<T> m_End;
+            Iterator<T> begin_;
+            Iterator<T> end_;
         };
 
     public:
-
         MiDocument();
 
         template<std::derived_from<MiObject> T = MiObject>
-        T* tryUpdByID(UID id)
+        T* try_upd_by_id(UID id)
         {
-            return findByID<T>(m_Objects, id);
+            return find_by_id<T>(objects_, id);
         }
 
         template<std::derived_from<MiObject> T = MiObject>
-        const T* tryGetByID(UID id) const
+        const T* try_get_by_id(UID id) const
         {
-            return findByID<T>(m_Objects, id);
+            return find_by_id<T>(objects_, id);
         }
 
         template<std::derived_from<MiObject> T = MiObject>
-        T& updByID(UID id)
+        T& upd_by_id(UID id)
         {
-            return findByIDOrThrow<T>(m_Objects, id);
+            return find_by_id_or_throw<T>(objects_, id);
         }
 
         template<std::derived_from<MiObject> T = MiObject>
-        const T& getByID(UID id) const
+        const T& get_by_id(UID id) const
         {
-            return findByIDOrThrow<T>(m_Objects, id);
+            return find_by_id_or_throw<T>(objects_, id);
         }
 
-        CStringView getLabelByID(UID id) const
-        {
-            return getByID(id).getLabel();
-        }
+        CStringView get_label_by_id(UID id) const { return get_by_id(id).get_label(); }
 
-        Transform getXFormByID(UID id) const
-        {
-            return getByID(id).getXForm(*this);
-        }
+        Transform get_x_form_by_id(UID id) const { return get_by_id(id).get_x_form(*this); }
 
-        Vector3 getPosByID(UID id) const
-        {
-            return getByID(id).getPos(*this);
-        }
+        Vector3 get_pos_by_id(UID id) const { return get_by_id(id).get_pos(*this); }
 
         template<std::derived_from<MiObject> T = MiObject>
         bool contains(UID id) const
         {
-            return tryGetByID<T>(id);
+            return try_get_by_id<T>(id);
         }
 
         template<std::derived_from<MiObject> T = MiObject>
         bool contains(const MiObject& e) const
         {
-            return contains<T>(e.getID());
+            return contains<T>(e.get_id());
         }
 
         template<std::derived_from<MiObject> T = MiObject>
         Iterable<T> iter()
         {
-            return Iterable<T>{m_Objects};
+            return Iterable<T>{objects_};
         }
 
         template<std::derived_from<MiObject> T = MiObject>
         Iterable<const T> iter() const
         {
-            return Iterable<const T>{m_Objects};
+            return Iterable<const T>{objects_};
         }
 
         MiObject& insert(std::unique_ptr<MiObject> obj)
         {
             // ensure object connects to things that already exist in the document
-            for (int i = 0, len = obj->getNumCrossReferences(); i < len; ++i)
-            {
-                if (!contains(obj->getCrossReferenceConnecteeID(i)))
-                {
+            for (int i = 0, len = obj->get_num_cross_references(); i < len; ++i) {
+                if (!contains(obj->get_cross_reference_connectee_id(i))) {
                     std::stringstream ss;
-                    ss << "cannot add '" << obj->getLabel() << "' (ID = " << obj->getID() << ") to the document because it contains a cross reference (label = " << obj->getCrossReferenceLabel(i) << ") to another object that does not exist in the document";
+                    ss << "cannot add '" << obj->get_label() << "' (ID = " << obj->get_id()
+                       << ") to the document because it contains a cross reference (label = "
+                       << obj->get_cross_reference_label(i)
+                       << ") to another object that does not exist in the document";
                     throw std::runtime_error{std::move(ss).str()};
                 }
             }
 
-            return *m_Objects.emplace(obj->getID(), std::move(obj)).first->second;
+            return *objects_.emplace(obj->get_id(), std::move(obj)).first->second;
         }
 
         template<std::derived_from<MiObject> T, typename... Args>
@@ -231,178 +210,129 @@ namespace osc
             return static_cast<T&>(insert(std::make_unique<T>(std::forward<Args>(args)...)));
         }
 
-        bool deleteByID(UID id)
+        bool delete_by_id(UID id)
         {
-            const MiObject* const obj = tryGetByID(id);
-            if (!obj)
-            {
+            const MiObject* const obj = try_get_by_id(id);
+            if (!obj) {
                 return false;  // ID doesn't exist in the document
             }
 
             // collect all to-be-deleted objects into one deletion set so that the deletion
             // happens in separate phase from the "search for things to delete" phase
-            std::unordered_set<UID> deletionSet;
-            populateDeletionSet(*obj, deletionSet);
+            std::unordered_set<UID> deletion_set;
+            populate_deletion_set(*obj, deletion_set);
 
-            for (UID deletedID : deletionSet)
-            {
-                deSelect(deletedID);
+            for (UID deleted_id : deletion_set) {
+                de_select(deleted_id);
 
                 // move object into deletion set, rather than deleting it immediately,
                 // so that code that relies on references to the to-be-deleted object
-                // still works until an explicit `.GarbageCollect()` call
-                if (const auto it = m_Objects.find(deletedID); it != m_Objects.end())
-                {
-                    m_DeletedObjects.push_back(std::move(it->second));
-                    m_Objects.erase(it);
+                // still works until an explicit `.garbage_collect()` call
+                if (const auto it = objects_.find(deleted_id); it != objects_.end()) {
+                    deleted_objects_.push_back(std::move(it->second));
+                    objects_.erase(it);
                 }
             }
 
-            return !deletionSet.empty();
+            return !deletion_set.empty();
         }
 
-        void garbageCollect()
-        {
-            m_DeletedObjects.clear();
-        }
-
+        void garbage_collect() { deleted_objects_.clear(); }
 
         // selection logic
 
-        bool hasSelection() const
-        {
-            return !m_SelectedObjectIDs.empty();
-        }
+        bool has_selection() const { return !selected_object_ids_.empty(); }
 
-        const std::unordered_set<UID>& getSelected() const
-        {
-            return m_SelectedObjectIDs;
-        }
+        const std::unordered_set<UID>& get_selected() const { return selected_object_ids_; }
 
-        bool isSelected(UID id) const
-        {
-            return m_SelectedObjectIDs.contains(id);
-        }
+        bool is_selected(UID id) const { return selected_object_ids_.contains(id); }
 
-        bool isSelected(const MiObject& obj) const
-        {
-            return isSelected(obj.getID());
-        }
+        bool is_selected(const MiObject& obj) const { return is_selected(obj.get_id()); }
 
         void select(UID id)
         {
-            const MiObject* const e = tryGetByID(id);
+            const MiObject* const e = try_get_by_id(id);
 
-            if (e && e->canSelect())
-            {
-                m_SelectedObjectIDs.insert(id);
+            if (e && e->can_select()) {
+                selected_object_ids_.insert(id);
             }
         }
 
-        void select(const MiObject& obj)
-        {
-            select(obj.getID());
-        }
+        void select(const MiObject& obj) { select(obj.get_id()); }
 
-        void selectOnly(const MiObject& obj)
+        void select_only(const MiObject& obj)
         {
-            deSelectAll();
+            de_select_all();
             select(obj);
         }
 
-        void deSelect(UID id)
-        {
-            m_SelectedObjectIDs.erase(id);
-        }
+        void de_select(UID id) { selected_object_ids_.erase(id); }
 
-        void deSelect(const MiObject& obj)
-        {
-            deSelect(obj.getID());
-        }
+        void de_select(const MiObject& obj) { de_select(obj.get_id()); }
 
-        void selectAll()
+        void select_all()
         {
-            for (const MiObject& obj : iter())
-            {
-                if (obj.canSelect())
-                {
-                    m_SelectedObjectIDs.insert(obj.getID());
+            for (const MiObject& obj : iter()) {
+                if (obj.can_select()) {
+                    selected_object_ids_.insert(obj.get_id());
                 }
             }
         }
 
-        void deSelectAll()
-        {
-            m_SelectedObjectIDs.clear();
-        }
+        void de_select_all() { selected_object_ids_.clear(); }
 
-        void deleteSelected()
+        void delete_selected()
         {
             // copy deletion set to ensure iterator can't be invalidated by deletion
-            std::unordered_set<UID> selected = getSelected();
+            std::unordered_set<UID> selected = get_selected();
 
-            for (UID id : selected)
-            {
-                deleteByID(id);
+            for (UID id : selected) {
+                delete_by_id(id);
             }
 
-            deSelectAll();
+            de_select_all();
         }
+
     private:
-        template<
-            std::derived_from<MiObject> T = MiObject,
-            typename AssociativeContainer
-        >
-        static T* findByID(AssociativeContainer& container, UID id)
+        template<std::derived_from<MiObject> T = MiObject, typename AssociativeContainer>
+        static T* find_by_id(AssociativeContainer& container, UID id)
         {
             const auto it = container.find(id);
 
-            if (it == container.end())
-            {
+            if (it == container.end()) {
                 return nullptr;
             }
 
-            if constexpr (std::is_same_v<T, MiObject>)
-            {
+            if constexpr (std::is_same_v<T, MiObject>) {
                 return it->second.get();
-            }
-            else
-            {
+            } else {
                 return dynamic_cast<T*>(it->second.get());
             }
         }
 
-        template<
-            std::derived_from<MiObject> T = MiObject,
-            typename AssociativeContainer
-        >
-        static T& findByIDOrThrow(AssociativeContainer& container, UID id)
+        template<std::derived_from<MiObject> T = MiObject, typename AssociativeContainer>
+        static T& find_by_id_or_throw(AssociativeContainer& container, UID id)
         {
-            T* ptr = findByID<T>(container, id);
-            if (!ptr)
-            {
+            T* ptr = find_by_id<T>(container, id);
+            if (!ptr) {
                 std::stringstream msg;
-                msg << "could not find an object of type " << typeid(T).name() << " with ID = " << id;
+                msg << "could not find an object of type " << typeid(T).name()
+                    << " with ID = " << id;
                 throw std::runtime_error{std::move(msg).str()};
             }
 
             return *ptr;
         }
 
-        const MiObject* implFind(UID id) const final
-        {
-            return findByID(m_Objects, id);
-        }
+        const MiObject* impl_find(UID id) const override { return find_by_id(objects_, id); }
 
-        void populateDeletionSet(const MiObject& deletionTarget, std::unordered_set<UID>& out)
+        void populate_deletion_set(const MiObject& deletion_target, std::unordered_set<UID>& out)
         {
-            const UID deletedID = deletionTarget.getID();
+            const UID deleted_id = deletion_target.get_id();
 
             // add the deletion target to the deletion set (if applicable)
-            if (deletionTarget.canDelete())
-            {
-                if (!out.emplace(deletedID).second)
-                {
+            if (deletion_target.can_delete()) {
+                if (!out.emplace(deleted_id).second) {
                     throw std::runtime_error{"cannot populate deletion set - cycle detected"};
                 }
             }
@@ -410,17 +340,15 @@ namespace osc
             // iterate over everything else in the document and look for things
             // that cross-reference the to-be-deleted object - those things should
             // also be deleted
-            for (const MiObject& obj : iter())
-            {
-                if (obj.isCrossReferencing(deletedID))
-                {
-                    populateDeletionSet(obj, out);
+            for (const MiObject& obj : iter()) {
+                if (obj.is_cross_referencing(deleted_id)) {
+                    populate_deletion_set(obj, out);
                 }
             }
         }
 
-        ObjectLookup m_Objects;
-        std::unordered_set<UID> m_SelectedObjectIDs;
-        std::vector<ClonePtr<MiObject>> m_DeletedObjects;
+        ObjectLookup objects_;
+        std::unordered_set<UID> selected_object_ids_;
+        std::vector<ClonePtr<MiObject>> deleted_objects_;
     };
 }

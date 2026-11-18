@@ -19,12 +19,17 @@ namespace
         // https://threejs.org/docs/#api/en/geometries/TetrahedronGeometry
 
         constexpr auto vertices = std::to_array<Vector3>({
-            {1.0f, 1.0f, 1.0f}, {-1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f}, {1.0f, -1.0f, -1.0f},
+            {1.0f, 1.0f, 1.0f},
+            {-1.0f, -1.0f, 1.0f},
+            {-1.0f, 1.0f, -1.0f},
+            {1.0f, -1.0f, -1.0f},
         });
 
+        // clang-format off
         constexpr auto indices = std::to_array<uint32_t>({
             2, 1, 0,    0, 3, 2,    1, 3, 0,    2, 3, 1
         });
+        // clang-format on
 
         return PolyhedronGeometry{vertices, indices, p.radius, p.detail_level};
     }

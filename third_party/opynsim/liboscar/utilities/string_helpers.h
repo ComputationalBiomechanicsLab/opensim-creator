@@ -50,14 +50,13 @@ namespace osc
 
     // returns the end of the string between the last occurrence of `delimiter` and
     // the end of `sv`, or `sv` if `delimiter` does not occur within `sv`.
-    std::string_view substring_after_last(std::string_view sv, std::string_view::value_type delimiter);
+    std::string_view substring_after_last(
+        std::string_view sv, std::string_view::value_type delimiter);
 
     // Splits `sv` on the last occurrence of `delimiter` and returns the prefix
     // before `delimiter` and suffix after `delimiter`.
     std::optional<std::pair<std::string_view, std::string_view>> rsplit_once(
-        std::string_view sv,
-        std::string_view::value_type delimiter
-    );
+        std::string_view sv, std::string_view::value_type delimiter);
 
     // converts the given byte into a 2-length hex character representation
     //
@@ -69,7 +68,7 @@ namespace osc
 
     // satisfied if `T` can be written to a `std::ostream`
     template<typename T>
-    concept OutputStreamable = requires (T v, std::ostream& o) {
+    concept OutputStreamable = requires(T v, std::ostream& o) {
         { o << v } -> std::same_as<std::ostream&>;
     };
 
@@ -90,7 +89,7 @@ namespace osc
     {
         std::stringstream ss;
         std::string_view prefix_delimiter;
-        for (auto&& el : r) {
+        for (auto&& el : std::forward<R>(r)) {
             ss << prefix_delimiter;
             ss << el;
             prefix_delimiter = delimiter;

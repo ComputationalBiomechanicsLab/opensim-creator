@@ -54,16 +54,21 @@ public:
         material_.set("uNumIterations", num_iterations_);
 
         render_queue_.emplace(quad_mesh_, identity<Transform>(), material_);
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            });
         render_queue_.clear();
     }
 
 private:
     bool on_keyup(const KeyEvent& e)
     {
-        if (e.combination() == Key::UpArrow and num_iterations_ < std::numeric_limits<decltype(num_iterations_)>::max()) {
+        if (e.combination() == Key::UpArrow and
+            num_iterations_ < std::numeric_limits<decltype(num_iterations_)>::max()) {
+
             num_iterations_ *= 2;
             return true;
         }
@@ -85,11 +90,19 @@ private:
     RenderQueue render_queue_;
 };
 
-
-CStringView osc::MandelbrotTab::id() { return Impl::static_label(); }
+CStringView osc::MandelbrotTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::MandelbrotTab::MandelbrotTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-bool osc::MandelbrotTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::MandelbrotTab::impl_on_draw() { private_data().on_draw(); }
+bool osc::MandelbrotTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::MandelbrotTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

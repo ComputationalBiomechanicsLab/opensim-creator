@@ -3,6 +3,7 @@ import sys
 import platform
 
 import test_stl_bind_map_ext as t
+from common import collect
 
 
 def test_map_string_double(capfd):
@@ -99,7 +100,7 @@ def test_map_string_double(capfd):
 
     assert t.MapStringDouble.__init__.__doc__ == \
 """__init__(self) -> None
-__init__(self, arg: test_stl_bind_map_ext.MapStringDouble) -> None
+__init__(self, arg: test_stl_bind_map_ext.MapStringDouble, /) -> None
 __init__(self, arg: %s[str, float], /) -> None
 
 Overloaded function.
@@ -108,7 +109,7 @@ Overloaded function.
 
 Default constructor
 
-2. ``__init__(self, arg: test_stl_bind_map_ext.MapStringDouble) -> None``
+2. ``__init__(self, arg: test_stl_bind_map_ext.MapStringDouble, /) -> None``
 
 Copy constructor
 
@@ -197,6 +198,20 @@ def test_maps_with_noncopyable_values():
     assert vsum == 7500
 
 
+def test_map_self_update():
+    # Regression: m.update(m) must be a correct no-op even for a
+    # non-copy-assignable value type ('double const' exercises the
+    # emplace/erase/re-emplace path in map_set and previously dangled).
+    m = t.MapStringDoubleConst()
+    for i in range(1, 6):
+        m[str(i)] = 10.0 * i
+
+    m.update(m)
+    assert sorted(k for k in m) == ["1", "2", "3", "4", "5"]
+    for i in range(1, 6):
+        assert m[str(i)] == 10.0 * i
+
+
 def test_map_delitem():
     mm = t.MapStringDouble()
     mm["a"] = 1
@@ -217,3 +232,73 @@ def test_map_delitem():
     del um["ua"]
     assert sorted(list(um)) == ["ub"]
     assert sorted(list(um.items())) == [("ub", 2.6)]
+
+
+def test_map_init_partial_cleanup():
+    # When the dict constructor throws partway through, the partially
+    # constructed map must still be destroyed (no leaked elements).
+    keep = t.MapCnt()
+    collect()
+    base = t.cnt_alive()
+    for _ in range(100):
+        with pytest.raises(Exception):
+            t.MapIntCnt({1: t.MapCnt(), 2: t.MapCnt(), 3: "not a MapCnt"})
+    collect()
+    assert t.cnt_alive() == base
+    del keep
+
+
+def test_map_iterator_modification():
+    # Map iterators re-derive their position by key on every step and raise
+    # RuntimeError when they detect a modification, like a dict iterator
+    for cls in (t.MapStringDouble, t.UnorderedMapStringDouble):
+        m = cls()
+        for i in range(10):
+            m[str(i)] = float(i)
+
+        with pytest.raises(RuntimeError, match="changed size"):
+            for k in m:
+                m["x"] = 1.0
+        del m["x"]
+
+        # Removing and adding a key between steps keeps the size constant.
+        # The disappearance of the cursor key reveals the modification anyway.
+        with pytest.raises(RuntimeError, match="keys changed"):
+            for k in m:
+                del m[k]
+                m[k + "y"] = 1.0
+
+        # Replacing the value of an existing key is legal during iteration
+        for k in m:
+            m[k] = 0.0
+        assert set(m.values()) == {0.0}
+
+        # The views iterate with the same protection
+        with pytest.raises(RuntimeError, match="changed size"):
+            for v in m.values():
+                m["x"] = 1.0
+        del m["x"]
+        with pytest.raises(RuntimeError, match="changed size"):
+            for kv in m.items():
+                m["x"] = 1.0
+        del m["x"]
+
+        # Like a dict iterator, an iterator that has observed a modification
+        # stays in the failed state even if the map is restored
+        it = iter(m)
+        next(it)
+        m["x"] = 1.0
+        with pytest.raises(RuntimeError, match="changed size"):
+            next(it)
+        del m["x"]
+        with pytest.raises(RuntimeError, match="changed size"):
+            next(it)
+
+        # Like a dict iterator, an exhausted iterator stays exhausted even if
+        # the map changes afterwards
+        it = iter(m)
+        for _ in it:
+            pass
+        m["x"] = 1.0
+        with pytest.raises(StopIteration):
+            next(it)

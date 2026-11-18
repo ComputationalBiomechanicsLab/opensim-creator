@@ -13,9 +13,6 @@ namespace osc
         using duration = std::chrono::duration<rep, period>;
         using time_point = std::chrono::time_point<SimulationClock>;
 
-        static time_point start()
-        {
-            return time_point(duration{0.0});
-        }
+        static time_point start() { return time_point(duration{0.0}); }
     };
 }

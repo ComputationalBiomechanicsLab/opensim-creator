@@ -9,16 +9,16 @@ namespace opyn
 
     template<>
     struct OutputExtractorDataTypeTraits<OutputExtractorDataType::Float> {
-        static inline constexpr bool is_numeric = true;
+        static constexpr bool is_numeric = true;
     };
 
     template<>
     struct OutputExtractorDataTypeTraits<OutputExtractorDataType::Vector2> {
-        static inline constexpr bool is_numeric = true;
+        static constexpr bool is_numeric = true;
     };
 
     template<>
     struct OutputExtractorDataTypeTraits<OutputExtractorDataType::String> {
-        static inline constexpr bool is_numeric = false;
+        static constexpr bool is_numeric = false;
     };
 }

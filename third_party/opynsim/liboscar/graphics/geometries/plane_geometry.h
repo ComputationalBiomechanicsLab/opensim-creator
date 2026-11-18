@@ -24,7 +24,8 @@ namespace osc
         Vector3 normal() const { return {0.0f, 0.0f, 1.0f}; }
 
         const Mesh& mesh() const { return mesh_; }
-        operator const Mesh& () const { return mesh_; }
+        operator const Mesh&() const { return mesh_; }
+
     private:
         Mesh mesh_;
     };

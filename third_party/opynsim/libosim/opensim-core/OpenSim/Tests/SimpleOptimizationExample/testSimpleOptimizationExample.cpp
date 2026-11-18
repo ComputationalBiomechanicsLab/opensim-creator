@@ -22,7 +22,8 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/OpenSim.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 
@@ -142,5 +143,5 @@ TEST_CASE("testSimpleOptimizationExample") {
     // Optimize it!
     f = opt.optimize(controls);
 
-    ASSERT_EQUAL(f, -0.049390, 1e-5);
+    OpenSim_CHECK_EQUAL(f, -0.049390, 1e-5);
 }

@@ -13,11 +13,13 @@
 
 #include <array>
 
-namespace osc { struct Circle; }
-namespace osc { struct Disc; }
-namespace osc { struct Plane; }
-namespace osc { struct LineSegment; }
-namespace osc { struct Tetrahedron; }
+namespace osc
+{
+    struct Circle;
+    struct Disc;
+    struct LineSegment;
+    struct Tetrahedron;
+}
 
 // math helpers: generally handy math functions that aren't attached to a particular
 //               osc struct
@@ -26,7 +28,8 @@ namespace osc
     // ----- Visualization helpers -----
 
     // computes horizontal FoV for a given vertical FoV + aspect ratio
-    Radians vertical_to_horizontal_field_of_view(Radians vertical_field_of_view, float aspect_ratio);
+    Radians vertical_to_horizontal_field_of_view(
+        Radians vertical_field_of_view, float aspect_ratio);
 
     // returns a normalized device coordinate-like (NDC-like) point converted from a point
     // defined in a normalized y-points-down space.
@@ -34,14 +37,16 @@ namespace osc
     // - input point should have origin in top-left, Y goes down
     // - input point should have normalized range: (0, 0) is top-left, (+1, +1) is bottom-right
     // - output point's origin will be in the middle of the input space, Y goes up
-    // - output point's range will be origin-centered: (-1, -1) is bottom-left, (+1, +1) is top-right
+    // - output point's range will be origin-centered: (-1, -1) is bottom-left, (+1, +1) is
+    // top-right
     Vector2 topleft_normalized_point_to_ndc(Vector2 normalized_point);
 
     // returns a normalized y-points-down point converted from a point defined in a
     // normalized device coordinate-like (NDC-like) space.
     //
     // - input point should have origin in the middle, Y goes up
-    // - input point should have an origin-centered range: (-1, -1) is bottom-left, (+1, +1) is top-right
+    // - input point should have an origin-centered range: (-1, -1) is bottom-left, (+1, +1) is
+    // top-right
     // - output point origin will have an origin in the top-left, Y goes down
     // - output point has range: (0, 0) for top-left, (1, 1) for bottom-right
     Vector2 ndc_point_to_topleft_normalized(Vector2 ndc_point);
@@ -66,8 +71,7 @@ namespace osc
     Vector3 topleft_normalized_point_to_world_znear(
         Vector2 normalized_point,
         const Matrix4x4& camera_view_matrix,
-        const Matrix4x4& camera_proj_matrix
-    );
+        const Matrix4x4& camera_proj_matrix);
 
     // "un-project" a point defined in a normalized y-points-down space into world
     // space, assuming a perspective projection
@@ -81,8 +85,7 @@ namespace osc
         Vector2 normalized_point,
         Vector3 camera_world_space_origin,
         const Matrix4x4& camera_view_matrix,
-        const Matrix4x4& camera_proj_matrix
-    );
+        const Matrix4x4& camera_proj_matrix);
 
     // returns a rectangular region defined in, and bounded by, normalized device coordinates
     // (NDCs) mapped from a region defined in a normalized y-points-down space bounded
@@ -95,22 +98,18 @@ namespace osc
         const Vector3& world_space_position,
         const Matrix4x4& view_matrix,
         const Matrix4x4& projection_matrix,
-        const Rect& viewport_rect
-    );
+        const Rect& viewport_rect);
 
     // returns arrays that transforms cube faces from world space to projection
     // space such that the observer is looking at each face of the cube from
     // the center of the cube
     std::array<Matrix4x4, 6> calc_cubemap_view_proj_matrices(
-        const Matrix4x4& projection_matrix,
-        Vector3 cube_center
-    );
+        const Matrix4x4& projection_matrix, Vector3 cube_center);
 
     // ----- `Disc` helpers -----
 
     // returns a `Mat4` that maps one `Disc` to another `Disc`
     Matrix4x4 matrix4x4_transform_between(const Disc&, const Disc&);
-
 
     // ----- `Segment` helpers -----
 
@@ -120,15 +119,18 @@ namespace osc
     // returns a `Transform` that maps a path segment to another path segment
     Transform transform_between(const LineSegment&, const LineSegment&);
 
-    // returns a `Transform` that maps a Y-to-Y (bottom-to-top) cylinder to a segment with the given radius
+    // returns a `Transform` that maps a Y-to-Y (bottom-to-top) cylinder to a segment with the given
+    // radius
     Transform cylinder_to_line_segment_transform(const LineSegment&, float radius);
 
-    // returns a `Transform` that maps a Y-to-Y (bottom-to-top) cone to a segment with the given radius
+    // returns a `Transform` that maps a Y-to-Y (bottom-to-top) cone to a segment with the given
+    // radius
     Transform y_to_y_cone_to_segment_transform(const LineSegment&, float radius);
 
     // ----- Vector/Matrix helpers -----
 
-    // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
+    // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then
+    // Z
     EulerAngles extract_eulers_xyz(const Quaternion&);
 
     // returns a `Quaternion` equivalent to the given euler angles
@@ -138,8 +140,7 @@ namespace osc
     void apply_world_space_rotation(
         Transform& application_target,
         const EulerAngles& euler_angles,
-        const Vector3& rotation_center
-    );
+        const Vector3& rotation_center);
 
     // returns the volume of a given tetrahedron, defined as 4 points in space
     float volume_of(const Tetrahedron&);

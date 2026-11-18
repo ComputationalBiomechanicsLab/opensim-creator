@@ -11,7 +11,7 @@ using namespace osc;
 
 TEST(MeshTopology, can_be_written_to_a_std_ostream)
 {
-    for (size_t i = 0; i < num_options<MeshTopology>(); ++i) {
+    for (size_t i = 0; i < num_options_v<MeshTopology>; ++i) {
         const auto topology = static_cast<MeshTopology>(i);
 
         std::stringstream ss;

@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINTBEGIN(readability-*)
+
 namespace osc::cpp23
 {
     template<typename O, typename T>
@@ -8,3 +10,5 @@ namespace osc::cpp23
         T value;
     };
 }
+
+// NOLINTEND(readability-*)

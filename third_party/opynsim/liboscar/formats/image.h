@@ -17,24 +17,14 @@ namespace osc
         // Throws if the image data isn't representable as a GPU texture (e.g. because it has
         // an incorrect number of components).
         static Texture2D read_into_texture(
-            std::istream&,
-            std::string_view input_name,
-            ColorSpace,
-            ImageLoadingFlags = {}
-        );
+            std::istream&, std::string_view input_name, ColorSpace, ImageLoadingFlags = {});
 
         template<NamedInputStream Stream>
         static Texture2D read_into_texture(
-            Stream&& stream,
-            ColorSpace color_space,
-            ImageLoadingFlags flags = {})
+            Stream&& stream, ColorSpace color_space, ImageLoadingFlags flags = {})
         {
             return read_into_texture(
-                std::forward<Stream>(stream),
-                stream.name(),
-                color_space,
-                flags
-            );
+                std::forward<Stream>(stream), stream.name(), color_space, flags);
         }
     };
 

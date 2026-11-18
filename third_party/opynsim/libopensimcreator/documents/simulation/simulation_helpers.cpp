@@ -11,7 +11,7 @@
 #include <ostream>
 #include <span>
 
-void osc::WriteOutputsAsCSV(
+void osc::write_outputs_as_csv(
     const OpenSim::Component& root,
     std::span<const opyn::SharedOutputExtractor> outputs,
     std::span<const SimulationReport> reports,
@@ -20,12 +20,11 @@ void osc::WriteOutputsAsCSV(
     // header line
     out << "time";
     for (const opyn::SharedOutputExtractor& o : outputs) {
-        static_assert(num_options<opyn::OutputExtractorDataType>() == 3);
+        static_assert(num_options_v<opyn::OutputExtractorDataType> == 3);
         if (o.output_type() == opyn::OutputExtractorDataType::Vector2) {
             out << ',' << o.name() << "/0";
             out << ',' << o.name() << "/1";
-        }
-        else {
+        } else {
             out << ',' << o.name();
         }
     }
@@ -35,12 +34,11 @@ void osc::WriteOutputsAsCSV(
     for (const SimulationReport& report : reports) {
         out << report.state().getTime();  // time column
         for (const opyn::SharedOutputExtractor& o : outputs) {
-            static_assert(num_options<opyn::OutputExtractorDataType>() == 3);
+            static_assert(num_options_v<opyn::OutputExtractorDataType> == 3);
             if (o.output_type() == opyn::OutputExtractorDataType::Vector2) {
                 const auto v = o.value<Vector2>(root, report);
                 out << ',' << v.x() << ',' << v.y();
-            }
-            else {
+            } else {
                 out << ',' << o.value<float>(root, report);
             }
         }

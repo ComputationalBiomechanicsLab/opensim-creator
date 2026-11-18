@@ -26,8 +26,7 @@ Texture2D osc::SVG::read_into_texture(std::istream& in, float scale, float devic
     std::copy(
         std::istreambuf_iterator{in},
         std::istreambuf_iterator<std::istream::char_type>{},
-        std::back_inserter(data)
-    );
+        std::back_inserter(data));
 
     // parse the `std::string` as an SVG document
     const std::unique_ptr<lunasvg::Document> svg_document = lunasvg::Document::loadFromData(data);
@@ -36,12 +35,18 @@ Texture2D osc::SVG::read_into_texture(std::istream& in, float scale, float devic
     // when rendering the document's contents, flip Y so that Y=0 represents the bottom of the image
     // and Y=H represents the top (i.e. a right-handed coordinate system that matches `Texture2D`).
     const float pixel_scale = scale * device_pixel_ratio;
-    const lunasvg::Matrix transform{pixel_scale, 0.0f, 0.0f, -pixel_scale, 0.0f, std::ceil(pixel_scale*svg_document->height())};
+    const lunasvg::Matrix transform{
+        pixel_scale,
+        0.0f,
+        0.0f,
+        -pixel_scale,
+        0.0f,
+        std::ceil(pixel_scale * svg_document->height())};
 
     // create a `lunasvg::Bitmap` that lunasvg can render into
     lunasvg::Bitmap bitmap{
-        static_cast<int>(std::ceil(pixel_scale*svg_document->width())),
-        static_cast<int>(std::ceil(pixel_scale*svg_document->height())),
+        static_cast<int>(std::ceil(pixel_scale * svg_document->width())),
+        static_cast<int>(std::ceil(pixel_scale * svg_document->height())),
     };
     bitmap.clear(0x00000000);  // ensure the bitmap is cleared before rendering
     svg_document->render(bitmap, transform);
@@ -55,7 +60,9 @@ Texture2D osc::SVG::read_into_texture(std::istream& in, float scale, float devic
         TextureWrapMode::Clamp,
         TextureFilterMode::Nearest,
     };
-    rv.set_pixel_data({bitmap.data(), static_cast<size_t>(bitmap.width())*static_cast<size_t>(bitmap.height())*4uz});
+    rv.set_pixel_data(
+        {bitmap.data(),
+         static_cast<size_t>(bitmap.width()) * static_cast<size_t>(bitmap.height()) * 4uz});
     rv.set_device_pixel_ratio(device_pixel_ratio);
     return rv;
 }

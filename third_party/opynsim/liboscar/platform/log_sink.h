@@ -2,10 +2,10 @@
 
 #include <liboscar/platform/log_level.h>
 
-namespace osc { class LogMessageView; }
-
 namespace osc
 {
+    class LogMessageView;
+
     // An abstract base class for an object that can receive (sink) log
     // messages from a `Logger`.
     class LogSink {
@@ -15,6 +15,7 @@ namespace osc
         LogSink(LogSink&&) noexcept = default;
         LogSink& operator=(const LogSink&) = default;
         LogSink& operator=(LogSink&&) noexcept = default;
+
     public:
         virtual ~LogSink() noexcept = default;
 

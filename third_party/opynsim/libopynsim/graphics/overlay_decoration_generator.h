@@ -2,13 +2,17 @@
 
 #include <functional>
 
-namespace opyn { class OverlayDecorationOptions; }
-namespace osc { class BVH; }
-namespace osc { struct SceneDecoration; }
-namespace osc { class SceneCache; }
+namespace osc
+{
+    class BVH;
+    class SceneCache;
+    struct SceneDecoration;
+}
 
 namespace opyn
 {
+    class OverlayDecorationOptions;
+
     // generates 3D overlays for the given options and passes them to the
     // output consumer
     void generate_overlay_decorations(
@@ -16,6 +20,5 @@ namespace opyn
         const OverlayDecorationOptions&,
         const osc::BVH& scene_bvh,
         float fixup_scale_factor,
-        const std::function<void(osc::SceneDecoration&&)>& out
-    );
+        const std::function<void(osc::SceneDecoration&&)>& out);
 }

@@ -51,14 +51,18 @@ TEST(PropertyInfo, compares_not_equal_to_another_PropertyInfo_with_a_different_n
     ASSERT_NE(a, b);
 }
 
-TEST(PropertyInfo, compares_not_equal_to_another_PropertyInfo_with_same_name_but_different_default_value)
+TEST(
+    PropertyInfo,
+    compares_not_equal_to_another_PropertyInfo_with_same_name_but_different_default_value)
 {
     const PropertyInfo a{"name", Variant{1.0f}};
     const PropertyInfo b{"name", Variant{2.0f}};
     ASSERT_NE(a, b);
 }
 
-TEST(PropertyInfo, compares_not_equal_to_another_PropertyInfo_with_same_name_but_different_default_value_type)
+TEST(
+    PropertyInfo,
+    compares_not_equal_to_another_PropertyInfo_with_same_name_but_different_default_value_type)
 {
     const PropertyInfo a{"name", Variant{1.0f}};
     const PropertyInfo b{"name", Variant{"different type"}};
@@ -84,11 +88,11 @@ TEST(PropertyInfo, constructor_throws_an_exception_if_name_contains_whitespace)
 
 TEST(PropertyInfo, constructor_throws_exception_if_name_contains_any_ASCII_control_characters)
 {
-    const auto test = [](char c)
-    {
+    const auto test = [](char c) {
         ASSERT_ANY_THROW({ PropertyInfo(std::string{c} + std::string("leading"), Variant(true)); });
         ASSERT_ANY_THROW({ PropertyInfo(std::string("trailing") + c, Variant(true)); });
-        ASSERT_ANY_THROW({ PropertyInfo(std::string("inner") + c + std::string("usage"), Variant{true}); });
+        ASSERT_ANY_THROW(
+            { PropertyInfo(std::string("inner") + c + std::string("usage"), Variant{true}); });
     };
 
     constexpr char c_last_ascii_control_character = 0x1F;

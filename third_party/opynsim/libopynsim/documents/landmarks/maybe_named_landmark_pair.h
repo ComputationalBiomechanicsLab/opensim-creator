@@ -29,7 +29,10 @@ namespace opyn
         osc::CStringView name() const { return name_; }
 
         template<std::convertible_to<std::string_view> StringLike>
-        void set_name(StringLike&& new_name) { name_ = std::forward<StringLike>(new_name); }
+        void set_name(StringLike&& new_name)
+        {
+            name_ = std::forward<StringLike>(new_name);
+        }
 
         bool has_source() const { return maybe_source_position_.has_value(); }
         bool has_destination() const { return maybe_destination_position_.has_value(); }
@@ -37,14 +40,16 @@ namespace opyn
         std::optional<opyn::LandmarkPair3D<float>> try_get_paired_locations() const
         {
             if (maybe_source_position_ && maybe_destination_position_) {
-                return opyn::LandmarkPair3D<float>{osc::to<SimTK::fVec3>(*maybe_source_position_), osc::to<SimTK::fVec3>(*maybe_destination_position_)};
-            }
-            else {
+                return opyn::LandmarkPair3D<float>{
+                    osc::to<SimTK::fVec3>(*maybe_source_position_),
+                    osc::to<SimTK::fVec3>(*maybe_destination_position_)};
+            } else {
                 return std::nullopt;
             }
         }
 
         void set_destination(std::optional<osc::Vector3> p) { maybe_destination_position_ = p; }
+
     private:
         std::string name_;
         std::optional<osc::Vector3> maybe_source_position_;

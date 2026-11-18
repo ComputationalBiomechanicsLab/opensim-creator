@@ -1,0 +1,27 @@
+Patches out OpenSim's automatic `DefaultLogSink` initialization, because it's
+hard to remove downstream and causes the process to unconditionally log stuff
+
+---
+
+diff --git a/OpenSim/Common/Logger.cpp b/OpenSim/Common/Logger.cpp
+index cdfe5ff5..20b7d14e 100644
+--- a/OpenSim/Common/Logger.cpp
++++ b/OpenSim/Common/Logger.cpp
+@@ -171,6 +171,8 @@ namespace
+             return LoggerImpl{std::make_shared<T>(std::forward<Args>(args)...)};
+         }
+ 
++        LoggerImpl() = default;
++
+         LogLevel getLevel() const { return level_; }
+         void setLevel(LogLevel level) { level_ = level; }
+ 
+@@ -238,7 +240,7 @@ namespace
+ 
+     /// Returns a reference to the "global" logger state. Initialized on first-use.
+     LoggerImpl& getGlobalLogger() {
+-        static LoggerImpl s_GlobalLogState = LoggerImpl::with_sink<DefaultLogSink>();
++        static LoggerImpl s_GlobalLogState;
+         return s_GlobalLogState;
+     }
+ 

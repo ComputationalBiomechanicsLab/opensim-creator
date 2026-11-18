@@ -7,6 +7,7 @@
 # storage (e.g. a keychain).
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -16,6 +17,9 @@ def main():
     parser.add_argument("wheel_files", nargs="+")
     parser.add_argument("--test", action="store_true")
     args = parser.parse_args()
+
+    assert "TWINE_USERNAME" in os.environ, "Must set TWINE_USERNAME (probably in a developer's encrypted password vault)."
+    assert "TWINE_PASSWORD" in os.environ, "Must set TWINE_PASSWORD (probably in a developer's encrypted password vault)."
 
     twine_args = [sys.executable, "-m", "twine", "upload", "--non-interactive", "--verbose"]
     if args.test:

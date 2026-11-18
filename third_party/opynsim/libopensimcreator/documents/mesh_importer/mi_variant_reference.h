@@ -16,8 +16,7 @@ namespace osc
         std::reference_wrapper<const MiMesh>,
         std::reference_wrapper<const MiBody>,
         std::reference_wrapper<const MiJoint>,
-        std::reference_wrapper<const MiStation>
-    >;
+        std::reference_wrapper<const MiStation>>;
 
     // a variant for storing a non-`const` reference to a non-`const` object
     using MiVariantReference = std::variant<
@@ -25,6 +24,5 @@ namespace osc
         std::reference_wrapper<MiMesh>,
         std::reference_wrapper<MiBody>,
         std::reference_wrapper<MiJoint>,
-        std::reference_wrapper<MiStation>
-    >;
+        std::reference_wrapper<MiStation>>;
 }

@@ -10,7 +10,7 @@ using namespace osc;
 
 TEST(CubemapFace, contains_6_options)
 {
-    static_assert(num_options<CubemapFace>() == 6);
+    static_assert(num_options_v<CubemapFace> == 6);
 }
 
 TEST(CubemapFace, options_are_in_same_order_as_OpenGL_TEXTURE_CUBE_MAP)

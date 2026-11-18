@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINTBEGIN(readability-*)
+
 #include <liboscar/shims/cpp20/stop_token.h>
 
 #include <version>  // __cpp_lib_jthread
@@ -81,3 +83,5 @@ namespace osc::cpp20
     };
 #endif
 }
+
+// NOLINTEND(readability-*)

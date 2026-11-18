@@ -10,7 +10,10 @@
 #include <cstddef>
 #include <string>
 
-namespace OpenSim { class Component; }
+namespace OpenSim
+{
+    class Component;
+}
 
 namespace opyn
 {

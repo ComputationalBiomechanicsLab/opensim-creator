@@ -12,7 +12,7 @@ namespace osc
 
         template<typename... Args>
         requires std::constructible_from<T, Args&&...>
-        explicit DefaultConstructOnCopy(Args&& ...args) :
+        explicit DefaultConstructOnCopy(Args&&... args) :
             value_{std::forward<Args>(args)...}
         {}
 

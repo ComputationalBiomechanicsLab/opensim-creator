@@ -13,7 +13,9 @@ TEST(Converter, automatically_defined_for_language_type_thats_implicitly_convert
 TEST(Converter, automatically_defined_if_implicit_construction_already_defined)
 {
     struct A {};
-    struct B { B(A) {} };  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+    struct B {
+        B(A) {}
+    };  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
     Converter<A, B>{}(A{});  // should compile
 }
@@ -21,7 +23,9 @@ TEST(Converter, automatically_defined_if_implicit_construction_already_defined)
 TEST(Converter, automatically_defined_if_explicit_construction_already_defined)
 {
     struct A {};
-    struct B { explicit B(A) {} };
+    struct B {
+        explicit B(A) {}
+    };
 
     Converter<A, B>{}(A{});  // should compile
 }
@@ -29,18 +33,27 @@ TEST(Converter, automatically_defined_if_explicit_construction_already_defined)
 TEST(Converter, automatically_defined_if_user_defined_conversion_operator_defined)
 {
     struct B {};
-    struct A { operator B() const { return B{}; } };  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+    struct A {
+        operator B() const { return B{}; }
+    };  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
     Converter<A, B>{}(A{});  // should compile
 }
 
 TEST(Converter, automatically_defined_implementation_uses_ideal_constructor)
 {
-    enum class ConstructionMethod { Copy, Move };
+    enum class ConstructionMethod {
+        Copy,
+        Move,
+    };
     struct A {};
     struct B {
-        explicit B([[maybe_unused]] A&&) : method{ConstructionMethod::Move} {}
-        explicit B([[maybe_unused]] const A&) : method{ConstructionMethod::Copy} {}
+        explicit B([[maybe_unused]] A&&) :
+            method{ConstructionMethod::Move}
+        {}
+        explicit B([[maybe_unused]] const A&) :
+            method{ConstructionMethod::Copy}
+        {}
 
         ConstructionMethod method;
     };
@@ -54,11 +67,18 @@ TEST(Converter, automatically_defined_implementation_uses_ideal_constructor)
 
 TEST(Converter, to_correctly_uses_lvalues_and_rvalues)
 {
-    enum class ConstructionMethod { Copy, Move };
+    enum class ConstructionMethod {
+        Copy,
+        Move,
+    };
     struct A {};
     struct B {
-        explicit B([[maybe_unused]] A&&) : method{ConstructionMethod::Move} {}
-        explicit B([[maybe_unused]] const A&) : method{ConstructionMethod::Copy} {}
+        explicit B([[maybe_unused]] A&&) :
+            method{ConstructionMethod::Move}
+        {}
+        explicit B([[maybe_unused]] const A&) :
+            method{ConstructionMethod::Copy}
+        {}
 
         ConstructionMethod method;
     };

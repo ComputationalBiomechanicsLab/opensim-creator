@@ -22,6 +22,8 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Actuators/ModelFactory.h>
+#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
+#include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
@@ -30,6 +32,8 @@
 #include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 
 #include <OpenSim/Simulation/VisualizerUtilities.h>
 
@@ -145,6 +149,7 @@ TEST_CASE("Suspended pendulum") {
 
     // Set the path's origin and insertion.
     Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
+    path.setUseWarmStart(true);
     path.appendPathPoint(model.getGround(), SimTK::Vec3(-0.1, 0, 0));
 
     // Check that pendulum is at rest with the expected length.
@@ -595,6 +600,7 @@ TEST_CASE("Path with all surfaces and a via point") {
 
     // Create the path object.
     Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
+    path->setUseWarmStart(true);
     path->appendPathPoint(*originBody, SimTK::Vec3(0.));
 
     // Add the first torus obstacle.
@@ -744,28 +750,28 @@ TEST_CASE("Touchdown and liftoff") {
         const SimTK::Vec3& sceneOffset) {
 
         auto* originBody = new Body(
-            fmt::format("{}_origin_body", name), 1.0, SimTK::Vec3(0),
+            std::format("{}_origin_body", name), 1.0, SimTK::Vec3(0),
             SimTK::Inertia(1.0));
         model.addComponent(originBody);
-        auto* originJoint = new FreeJoint(fmt::format("{}_origin_joint", name),
+        auto* originJoint = new FreeJoint(std::format("{}_origin_joint", name),
             model.getGround(), sceneOffset + originShift, SimTK::Vec3(0),
             *originBody, SimTK::Vec3(0), SimTK::Vec3(0));
         model.addComponent(originJoint);
 
         // Termination body and joint.
         auto* terminationBody = new Body(
-            fmt::format("{}_termination_body", name), 1.0, SimTK::Vec3(0),
+            std::format("{}_termination_body", name), 1.0, SimTK::Vec3(0),
             SimTK::Inertia(1.0));
         model.addComponent(terminationBody);
         auto* terminationJoint = new FreeJoint(
-            fmt::format("{}_termination_joint", name),
+            std::format("{}_termination_joint", name),
             model.getGround(), sceneOffset + terminationShift, SimTK::Vec3(0),
             *terminationBody, SimTK::Vec3(0), SimTK::Vec3(0));
         model.addComponent(terminationJoint);
 
         // Create the path object.
         Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
-        path->setName(fmt::format("{}_path", name));
+        path->setName(std::format("{}_path", name));
         path->appendPathPoint(*originBody, SimTK::Vec3(0.));
         path->appendObstacle(obstacle, SimTK::Vec3(SimTK::NaN));
         path->appendPathPoint(*terminationBody, SimTK::Vec3(0.));
@@ -963,4 +969,176 @@ TEST_CASE("Changing contact geometry properties") {
     // Check that the path lengths are longer than the original lengths.
     CHECK(newLength1 > length1);
     CHECK(newLength2 > length2);
+}
+
+TEST_CASE("Scaling updates muscle properties") {
+
+    // Create a simple model with a slider joint actuated by a muscle.
+    Model model;
+    model.setName("isometric_muscle");
+    auto* body = new Body("body", 0.5, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body);
+
+    auto* joint = new SliderJoint("joint",
+        model.getGround(), SimTK::Vec3(0), SimTK::Vec3(0),
+        *body, SimTK::Vec3(0.2, 0, 0), SimTK::Vec3(0));
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("slider");
+    model.addComponent(joint);
+
+    auto* muscle = new Millard2012EquilibriumMuscle();
+    muscle->setName("muscle");
+    muscle->set_path(Scholz2015GeometryPath());
+    muscle->set_optimal_fiber_length(0.1);
+    muscle->set_tendon_slack_length(0.1);
+    model.addComponent(muscle);
+
+    // Define the muscle path.
+    Scholz2015GeometryPath& path = muscle->updPath<Scholz2015GeometryPath>();
+    path.appendPathPoint(model.getGround(), SimTK::Vec3(0));
+    path.appendPathPoint(*body, SimTK::Vec3(0));
+
+    model.finalizeConnections();
+    SimTK::State state = model.initSystem();
+    model.realizePosition(state);
+
+    // Scale the model along the x-axis.
+    ScaleSet scaleSet;
+    Scale scale;
+    scale.setSegmentName("body");
+    scale.setScaleFactors(SimTK::Vec3(1.23, 1.0, 1.0));
+    scaleSet.cloneAndAppend(scale);
+    scaleSet.get(scaleSet.getSize() - 1).setName("body");
+    model.scale(state, scaleSet, true);
+    model.finalizeConnections();
+    model.initSystem();
+
+    // Check that the muscle's optimal fiber length and tendon slack length were
+    // scaled.
+    const auto& scaledMuscle = model.getComponent<Muscle>("/muscle");
+    CHECK(scaledMuscle.get_optimal_fiber_length() == 0.123);
+    CHECK(scaledMuscle.get_tendon_slack_length() == 0.123);
+}
+
+TEST_CASE("Disabling warm starts unifies moment arm calculations") {
+    using DataPoints = std::vector<std::pair<double, double>>;
+
+    // A simple pendulum model with a path wrapping over an ellipsoid obstacle.
+    // The model is designed so that, depending on the choice of the default
+    // value for the 'angle' coordinate, moment arm calculations may differ when
+    // using the warm start feature of Scholz2015GeometryPath.
+    auto buildModel = [](bool warmStart, double defaultAngle) {
+        Model model;
+        model.setName("pendulum");
+
+        // Define the pendulum bodies: base and head.
+        auto* base = new Body("pendulum_base", 1.0, SimTK::Vec3(0),
+                SimTK::Inertia(1));
+        model.addBody(base);
+        auto* head = new Body("pendulum_head", 1.0, SimTK::Vec3(0),
+                SimTK::Inertia(1));
+        model.addBody(head);
+
+        // Base welded 1.5 m above ground.
+        auto* weld = new WeldJoint("ground_base",
+                model.getGround(), SimTK::Vec3(0, 1.5, 0), SimTK::Vec3(0),
+                *base, SimTK::Vec3(0), SimTK::Vec3(0));
+        model.addJoint(weld);
+
+        // Add a PinJoint between the base and head driven by the coordinate
+        // 'angle'.
+        auto* pin = new PinJoint("base_to_head",
+                *base, SimTK::Vec3(0), SimTK::Vec3(0),
+                *head, SimTK::Vec3(0, 1, 0), SimTK::Vec3(0));
+        auto& angle = pin->updCoordinate();
+        angle.setName("angle");
+        angle.setRangeMin(-0.5);
+        angle.setRangeMax(0.5);
+        angle.setDefaultValue(defaultAngle);
+        model.addJoint(pin);
+
+        // Attach a contact ellipsoid to the base which the muscle path will
+        // wrap over.
+        auto* ellipsoid = new ContactEllipsoid(
+                SimTK::Vec3(0.1, 0.1, 0.5),
+                SimTK::Vec3(-0.01, -0.25, -0.035),
+                SimTK::Vec3(0.25, -0.29, 0.075),
+                *base);
+        ellipsoid->setName("ellipsoid");
+        model.addComponent(ellipsoid);
+
+        // Add muscle with a path between the head and base, wrapping over the
+        // ellipsoid.
+        auto* muscle = new Millard2012EquilibriumMuscle();
+        muscle->setName("muscle");
+        muscle->set_path(Scholz2015GeometryPath());
+        model.addForce(muscle);
+        auto& path = muscle->updPath<Scholz2015GeometryPath>();
+        path.appendPathPoint(*head, SimTK::Vec3(0));
+        path.appendObstacle(*ellipsoid, SimTK::Vec3(0.10, 0, 0));
+        path.appendPathPoint(*base, SimTK::Vec3(0));
+        path.setUseWarmStart(warmStart);
+        return model;
+    };
+
+    // Sweep over the range of motion of the 'angle' coordinate, computing the
+    // moment arm of the muscle path at each point. This replicates the
+    // behavior of OpenSim Creator's moment arm plotting functionality, where
+    // the underlying bug was originally discovered.
+    auto computeDataPoints = [&](bool warmStart, double defaultAngle)
+            -> DataPoints {
+        Model model = buildModel(warmStart, defaultAngle);
+        SimTK::State state = model.initSystem();
+        const Coordinate& coordinate =
+                model.getComponent<Coordinate>("/jointset/base_to_head/angle");
+        const Muscle& muscle = model.getComponent<Muscle>("/forceset/muscle");
+        const double start = coordinate.getRangeMin();
+        const double end = coordinate.getRangeMax();
+        SimTK::Vector x = createVectorLinspace(202, start, end);
+        DataPoints data_points;
+        for (int i = 0; i < x.size(); ++i) {
+            coordinate.setValue(state, x[i]);
+            model.equilibrateMuscles(state);
+            model.realizeReport(state);
+            const double y = muscle.getPath().computeMomentArm(state,
+                coordinate);
+            data_points.emplace_back(x[i], y);
+        }
+        return data_points;
+    };
+
+    // Compare two sets of data points sampled at the same coordinate values,
+    // checking that the moment arm agrees at every point across the range of
+    // motion.
+    auto compareDataPoints = [](const DataPoints& lhs, const DataPoints& rhs,
+            double tolerance, bool useWarmStart = false) {
+        REQUIRE(lhs.size() == rhs.size());
+        SimTK::Vector error(static_cast<int>(lhs.size()), 0.0);
+        for (int i = 0; i < static_cast<int>(lhs.size()); ++i) {
+            error[i] = std::abs(lhs[i].second - rhs[i].second);
+        }
+
+        // If using a warm start, we expect the error to be non-zero (i.e., the
+        // moment arm curves different) when using different default values for
+        // 'angle'.
+        if (useWarmStart) {
+            CHECK_THAT(error.norm(),
+                       !Catch::Matchers::WithinAbs(0.0, tolerance));
+        } else {
+            CHECK_THAT(error.norm(),
+                       Catch::Matchers::WithinAbs(0.0, tolerance));
+        }
+
+        CAPTURE(error);
+    };
+
+    // Test that the moment arm curves are identical when using different
+    // default values for the 'angle' coordinate, when warm starts are disabled.
+    // Conversely, when warm starts are enabled, the moment arm curves should
+    // differ depending on the default value of 'angle'.
+    bool useWarmStart = GENERATE(false, true);
+    CAPTURE(useWarmStart);
+    auto lhs = computeDataPoints(useWarmStart, 0.0);
+    auto rhs = computeDataPoints(useWarmStart, 0.45);
+    compareDataPoints(lhs, rhs, 1e-6, useWarmStart);
 }

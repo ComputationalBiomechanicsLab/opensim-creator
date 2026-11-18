@@ -9,7 +9,10 @@
 #include <memory>
 #include <unordered_map>
 
-namespace SimTK { class State; }
+namespace SimTK
+{
+    class State;
+}
 
 namespace osc
 {
@@ -18,22 +21,23 @@ namespace osc
     public:
         SimulationReport();
         explicit SimulationReport(SimTK::State&&);
-        SimulationReport(SimTK::State&&, std::unordered_map<UID, float> auxiliaryValues);
+        SimulationReport(SimTK::State&&, std::unordered_map<UID, float> auxiliary_values);
         SimulationReport(const SimulationReport&);
         SimulationReport(SimulationReport&&) noexcept;
         SimulationReport& operator=(const SimulationReport&);
         SimulationReport& operator=(SimulationReport&&) noexcept;
-        ~SimulationReport() noexcept;
+        ~SimulationReport() noexcept override;
 
-        SimulationClock::time_point getTime() const;
-        SimTK::State& updStateHACK();  // necessary because of a bug in OpenSim PathWrap
+        SimulationClock::time_point get_time() const;
+        SimTK::State& upd_state_hack();  // necessary because of a bug in OpenSim PathWrap
 
         friend bool operator==(const SimulationReport&, const SimulationReport&) = default;
+
     private:
-        const SimTK::State& impl_get_state() const final;
-        std::optional<float> impl_get_auxiliary_value(UID) const final;
+        const SimTK::State& impl_get_state() const override;
+        std::optional<float> impl_get_auxiliary_value(UID) const override;
 
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        std::shared_ptr<Impl> impl_;
     };
 }

@@ -106,5 +106,7 @@ namespace osc
 
     [[nodiscard]] LogLevel global_get_traceback_level();
     void global_set_traceback_level(LogLevel);
-    [[nodiscard]] SynchronizedValue<CircularBuffer<LogMessage, detail::c_max_log_traceback_messages>>& global_get_traceback_log();
+    [[nodiscard]] SynchronizedValue<
+        CircularBuffer<LogMessage, detail::c_max_log_traceback_messages>>&
+    global_get_traceback_log();
 }

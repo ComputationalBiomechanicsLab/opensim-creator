@@ -11,7 +11,7 @@ namespace osc
         bool exists;
 
         // unix timestamp of when it was last opened
-        std::chrono::seconds lastOpenedUnixTimestamp;
+        std::chrono::seconds last_opened_unix_timestamp;
 
         // absolute path to the file
         std::filesystem::path path;

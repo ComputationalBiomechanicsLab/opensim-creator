@@ -50,8 +50,7 @@ namespace
         size_t pos = 0;
         try {
             return std::stof(s, &pos);
-        }
-        catch (const std::exception&) {
+        } catch (const std::exception&) {
             return 0.0f;
         }
     }
@@ -69,9 +68,10 @@ namespace
     }
 }
 
+// clang-format off
 osc::Variant::Variant() : data_{std::monostate{}}
 {
-    static_assert(std::variant_size_v<decltype(data_)> == num_options<VariantType>());
+    static_assert(std::variant_size_v<decltype(data_)> == num_options_v<VariantType>);
 }
 osc::Variant::Variant(const Variant&) = default;
 osc::Variant::Variant(Variant&&) noexcept = default;
@@ -81,10 +81,13 @@ osc::Variant::Variant(float v) : data_{v} {}
 osc::Variant::Variant(int v) : data_{v} {}
 osc::Variant::Variant(std::string v) : data_{std::move(v)} {}
 osc::Variant::Variant(std::string_view v) : data_{std::string{v}} {}
+osc::Variant::Variant(const char* ptr) : Variant{std::string_view{ptr}} {}
+osc::Variant::Variant(CStringView cstring_view) : Variant{std::string_view{cstring_view}} {}
 osc::Variant::Variant(const StringName& v) : data_{v} {}
 osc::Variant::Variant(Vector2 v) : data_{v} {}
 osc::Variant::Variant(Vector3 v) : data_{v} {}
 osc::Variant::Variant(std::vector<Variant> ary) : data_{std::move(ary)} {}
+// clang-format on
 
 osc::Variant::~Variant() noexcept = default;
 
@@ -93,6 +96,7 @@ Variant& osc::Variant::operator=(Variant&&) noexcept = default;
 
 VariantType osc::Variant::type() const
 {
+    // clang-format off
     return std::visit(Overload{
         [](const std::monostate&)       { return VariantType::None; },
         [](const bool&)                 { return VariantType::Bool; },
@@ -105,10 +109,12 @@ VariantType osc::Variant::type() const
         [](const Vector3&)              { return VariantType::Vector3; },
         [](const std::vector<Variant>&) { return VariantType::VariantArray; },
     }, data_);
+    // clang-format on
 }
 
 osc::Variant::operator bool() const
 {
+    // clang-format off
     return std::visit(Overload{
         [](const std::monostate&)           { return false; },
         [](const bool& v)                   { return v; },
@@ -120,10 +126,12 @@ osc::Variant::operator bool() const
         [](const Vector3& v)                { return v.x() != 0.0f; },
         [](const std::vector<Variant>& ary) { return not ary.empty(); },
     }, data_);
+    // clang-format on
 }
 
 osc::Variant::operator osc::Color() const
 {
+    // clang-format off
     return std::visit(Overload{
         [](const std::monostate&) { return Color::black(); },
         [](const bool& v)         { return v ? Color::white() : Color::black(); },
@@ -146,10 +154,12 @@ osc::Variant::operator osc::Color() const
             return rv;
         }
     }, data_);
+    // clang-format on
 }
 
 osc::Variant::operator float() const
 {
+    // clang-format off
     return std::visit(Overload{
         [](const std::monostate&)           { return 0.0f; },
         [](const bool& v)                   { return v ? 1.0f : 0.0f; },
@@ -161,10 +171,12 @@ osc::Variant::operator float() const
         [](const Vector3& v)                { return v.x(); },
         [](const std::vector<Variant>& ary) { return ary.empty() ? 0.0f : static_cast<float>(ary.front()); },
     }, data_);
+    // clang-format on
 }
 
 osc::Variant::operator int() const
 {
+    // clang-format off
     return std::visit(Overload{
         [](const std::monostate&)           { return 0; },
         [](const bool& v)                   { return v ? 1 : 0; },
@@ -176,12 +188,14 @@ osc::Variant::operator int() const
         [](const Vector3& v)                { return static_cast<int>(v.x()); },
         [](const std::vector<Variant>& ary) { return ary.empty() ? 0 : static_cast<int>(ary.front()); },
     }, data_);
+    // clang-format off
 }
 
 osc::Variant::operator std::string() const
 {
     using namespace std::literals::string_literals;
 
+    // clang-format off
     return std::visit(Overload{
         [](const std::monostate&)           { return "<null>"s; },
         [](const bool& v)                   { return v ? "true"s : "false"s; },
@@ -211,19 +225,23 @@ osc::Variant::operator std::string() const
             return std::move(ss).str();
         },
     }, data_);
+    // clang-format off
 }
 
 osc::Variant::operator osc::StringName() const
 {
+    // clang-format off
     return std::visit(Overload{
         [](const std::string& str) { return StringName{str}; },
         [](const StringName& sn)   { return sn; },
         [this](const auto&)        { return StringName{std::string{*this}}; },
     }, data_);
+    // clang-format on
 }
 
 osc::Variant::operator osc::Vector2() const
 {
+    // clang-format off
     return std::visit(Overload{
         [](const std::monostate&) { return Vector2{}; },
         [](const bool& v)         { return v ? Vector2{1.0f, 1.0f} : Vector2{}; },
@@ -242,10 +260,12 @@ osc::Variant::operator osc::Vector2() const
             return rv;
         }
     }, data_);
+    // clang-format on
 }
 
 osc::Variant::operator osc::Vector3() const
 {
+    // clang-format off
     return std::visit(Overload{
         [](const std::monostate&) { return Vector3{}; },
         [](const bool& v)         { return v ? Vector3{1.0f, 1.0f, 1.0f} : Vector3{}; },
@@ -264,10 +284,12 @@ osc::Variant::operator osc::Vector3() const
             return rv;
         }
     }, data_);
+    // clang-format on
 }
 
 osc::Variant::operator std::vector<Variant>() const
 {
+    // clang-format off
     return std::visit(Overload{
         [](const std::monostate&)           { return std::vector<Variant>{}; },
         [](const bool& v)                   { return std::vector<Variant>{Variant{v}}; },
@@ -279,12 +301,13 @@ osc::Variant::operator std::vector<Variant>() const
         [](const Vector3& v)                { return std::vector<Variant>{Variant{v.x()}, Variant{v.y()}, Variant{v.z()}}; },
         [](const std::vector<Variant>& ary) { return ary; },
     }, data_);
+    // clang-format off
 }
 
 bool osc::operator==(const Variant& lhs, const Variant& rhs)
 {
     if (lhs.data_ == rhs.data_) {
-        return true;   // same type, same value
+        return true;  // same type, same value
     }
 
     if (lhs.data_.index() == rhs.data_.index()) {
@@ -329,5 +352,11 @@ size_t std::hash<osc::Variant>::operator()(const Variant& variant) const
     //
     //     `hash_of(Variant) == hash_of(std::string) == hash_of(std::string_view) == hash_of(StringName)...`
 
-    return std::visit(Overload{[](const auto& inner) { return hash_of(inner); }}, variant.data_);
+    return std::visit(
+        Overload{
+            [](const auto& inner) {
+                return hash_of(inner);
+            },
+        },
+        variant.data_);
 }

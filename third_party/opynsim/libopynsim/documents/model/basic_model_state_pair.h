@@ -6,8 +6,15 @@
 
 #include <filesystem>
 
-namespace OpenSim { class Model; }
-namespace SimTK { class State; }
+namespace OpenSim
+{
+    class Model;
+}
+
+namespace SimTK
+{
+    class State;
+}
 
 namespace opyn
 {
@@ -33,11 +40,11 @@ namespace opyn
         ~BasicModelStatePair() noexcept override;
 
     private:
-        const OpenSim::Model& impl_get_model() const final;
-        const SimTK::State& impl_get_state() const final;
+        const OpenSim::Model& impl_get_model() const override;
+        const SimTK::State& impl_get_state() const override;
 
-        float impl_get_fixup_scale_factor() const final;
-        void impl_set_fixup_scale_factor(float) final;
+        float impl_get_fixup_scale_factor() const override;
+        void impl_set_fixup_scale_factor(float) override;
 
         class Impl;
         osc::ClonePtr<Impl> impl_;

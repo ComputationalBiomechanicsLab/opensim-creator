@@ -5,14 +5,17 @@
 
 #include <optional>
 
-namespace osc { class Rect; }
-namespace osc { struct AABB; }
-namespace osc { struct Disc; }
-namespace osc { struct FrustumPlanes;}
-namespace osc { struct Ray; }
-namespace osc { struct Plane; }
-namespace osc { struct Sphere; }
-namespace osc { struct Triangle; }
+namespace osc
+{
+    class Rect;
+    struct AABB;
+    struct Disc;
+    struct FrustumPlanes;
+    struct Plane;
+    struct Ray;
+    struct Sphere;
+    struct Triangle;
+}
 
 namespace osc
 {

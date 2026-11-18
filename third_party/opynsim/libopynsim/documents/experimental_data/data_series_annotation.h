@@ -5,9 +5,18 @@
 #include <string>
 #include <vector>
 
-namespace OpenSim { class Storage; }
-namespace SimTK { template<class, class> class Array_; }
-namespace SimTK { class DecorativeGeometry; }
+namespace OpenSim
+{
+    class Storage;
+}
+
+namespace SimTK
+{
+    template<class, class>
+    class Array_;  // NOLINT(readability-identifier-naming)
+
+    class DecorativeGeometry;
+}
 
 namespace opyn
 {
@@ -21,15 +30,11 @@ namespace opyn
 
     // Returns the elements associated with one datapoint (e.g. [x, y, z])
     std::vector<double> extract_data_point(
-        double time,
-        const OpenSim::Storage&,
-        const DataSeriesAnnotation&
-    );
+        double time, const OpenSim::Storage&, const DataSeriesAnnotation&);
 
     void generate_decorations(
         double time,
         const OpenSim::Storage&,
         const DataSeriesAnnotation&,
-        SimTK::Array_<SimTK::DecorativeGeometry, unsigned>& out
-    );
+        SimTK::Array_<SimTK::DecorativeGeometry, unsigned>& out);
 }

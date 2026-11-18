@@ -3,10 +3,13 @@
 #include <memory>
 #include <span>
 
-namespace osc { class RenderTexture; }
-namespace osc { struct SceneDecoration; }
-namespace osc { class SceneCache; }
-namespace osc { struct SceneRendererParams; }
+namespace osc
+{
+    class RenderTexture;
+    class SceneCache;
+    struct SceneDecoration;
+    struct SceneRendererParams;
+}
 
 namespace osc
 {

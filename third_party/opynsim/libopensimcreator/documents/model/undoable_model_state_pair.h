@@ -8,17 +8,24 @@
 #include <memory>
 #include <string_view>
 
-namespace OpenSim { class Model; }
-namespace OpenSim { class Component; }
-namespace osc { class ModelStateCommit; }
-namespace SimTK { class State; }
+namespace OpenSim
+{
+    class Component;
+    class Model;
+}
+
+namespace SimTK
+{
+    class State;
+}
 
 namespace osc
 {
+    class ModelStateCommit;
+
     // `UndoableModelStatePair` is an `ModelStatePair` that's designed for immediate UI usage.
     class UndoableModelStatePair final : public ModelStatePairWithSharedEnvironment {
     public:
-
         // constructs a blank model
         UndoableModelStatePair();
 
@@ -29,7 +36,7 @@ namespace osc
         explicit UndoableModelStatePair(std::unique_ptr<OpenSim::Model> model);
 
         // construct a model by loading an existing on-disk osim file
-        explicit UndoableModelStatePair(const std::filesystem::path& osimPath);
+        explicit UndoableModelStatePair(const std::filesystem::path& osim_path);
 
         // copy-construct a new UndoableUiModel
         UndoableModelStatePair(const UndoableModelStatePair&);
@@ -49,59 +56,59 @@ namespace osc
         // returns `true` if the current model commit is up to date with its on-disk representation
         //
         // returns `false` if the model has no on-disk location
-        bool isUpToDateWithFilesystem() const;
+        bool is_up_to_date_with_filesystem() const;
 
         // gets the last time when the model was set as up to date with the filesystem
-        std::filesystem::file_time_type getLastFilesystemWriteTime() const;
+        std::filesystem::file_time_type get_last_filesystem_write_time() const;
 
-        // returns latest *comitted* model state (i.e. not the one being actively edited, but the one saved into
-        // the safer undo/redo buffer)
-        ModelStateCommit getLatestCommit() const;
+        // returns latest *comitted* model state (i.e. not the one being actively edited, but the
+        // one saved into the safer undo/redo buffer)
+        ModelStateCommit get_latest_commit() const;
 
         // manipulate undo/redo state
-        bool canUndo() const;
-        void doUndo();
-        bool canRedo() const;
-        void doRedo();
+        bool can_undo() const;
+        void do_undo();
+        bool can_redo() const;
+        void do_redo();
 
         // try to rollback the model to a recent-as-possible state
         void rollback();
 
         // try to checkout the given commit as the latest commit
-        bool tryCheckout(const ModelStateCommit&);
+        bool try_checkout(const ModelStateCommit&);
 
         // read/manipulate underlying OpenSim::Model
-        void setModel(std::unique_ptr<OpenSim::Model>);
-        void resetModel();
-        void loadModel(const std::filesystem::path&);
+        void set_model(std::unique_ptr<OpenSim::Model>);
+        void reset_model();
+        void load_model(const std::filesystem::path&);
 
     private:
-        const OpenSim::Model& impl_get_model() const final;
-        const SimTK::State& impl_get_state() const final;
+        const OpenSim::Model& impl_get_model() const override;
+        const SimTK::State& impl_get_state() const override;
 
-        bool impl_can_upd_model() const final { return true; }
-        OpenSim::Model& impl_upd_model() final;
+        bool impl_can_upd_model() const override { return true; }
+        OpenSim::Model& impl_upd_model() override;
 
-        void impl_commit(std::string_view) final;
+        void impl_commit(std::string_view) override;
 
-        UID impl_get_model_version() const final;
-        void impl_set_model_version(UID) final;
-        UID impl_get_state_version() const final;
+        UID impl_get_model_version() const override;
+        void impl_set_model_version(UID) override;
+        UID impl_get_state_version() const override;
 
-        float impl_get_fixup_scale_factor() const final;
-        void impl_set_fixup_scale_factor(float) final;
+        float impl_get_fixup_scale_factor() const override;
+        void impl_set_fixup_scale_factor(float) override;
 
-        const OpenSim::Component* impl_get_selected() const final;
-        void impl_set_selected(const OpenSim::Component* c) final;
+        const OpenSim::Component* impl_get_selected() const override;
+        void impl_set_selected(const OpenSim::Component* c) override;
 
-        const OpenSim::Component* impl_get_hovered() const final;
-        void impl_set_hovered(const OpenSim::Component* c) final;
+        const OpenSim::Component* impl_get_hovered() const override;
+        void impl_set_hovered(const OpenSim::Component* c) override;
 
-        std::shared_ptr<Environment> implUpdAssociatedEnvironment() const final;
+        std::shared_ptr<Environment> impl_upd_associated_environment() const override;
 
-        void impl_set_up_to_date_with_filesystem(std::filesystem::file_time_type) final;
+        void impl_set_up_to_date_with_filesystem(std::filesystem::file_time_type) override;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

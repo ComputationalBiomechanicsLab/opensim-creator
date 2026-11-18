@@ -16,27 +16,27 @@ namespace osc
 
         friend bool operator==(const SceneDecoration&, const SceneDecoration&) = default;
 
-        // returns a copy of this `SceneDecoration` with `position` set the provided position
-        SceneDecoration with_translation(const Vector3& position_) const
+        // returns a copy of this `SceneDecoration` with `translation` set the provided point.
+        SceneDecoration with_translation(const Vector3& translation) const
         {
             SceneDecoration copy{*this};
-            copy.transform.translation = position_;
+            copy.transform.translation = translation;
             return copy;
         }
 
         // returns a copy of this `SceneDecoration` with `transform` set to the provided transform
-        SceneDecoration with_transform(const Transform& transform_) const
+        SceneDecoration with_transform(const Transform& new_transform) const
         {
             SceneDecoration copy{*this};
-            copy.transform = transform_;
+            copy.transform = new_transform;
             return copy;
         }
 
         // returns a copy of this `SceneDecoration` with `shading` set to the provided color
-        SceneDecoration with_color(const Color& color_) const
+        SceneDecoration with_color(const Color& color) const
         {
             SceneDecoration copy{*this};
-            copy.shading = color_;
+            copy.shading = color;
             return copy;
         }
 

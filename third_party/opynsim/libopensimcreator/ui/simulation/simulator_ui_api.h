@@ -11,12 +11,16 @@
 #include <optional>
 #include <span>
 
-namespace opyn { class SharedOutputExtractor; }
-namespace osc { class SimulationModelStatePair; }
-namespace osc { class AbstractSimulation; }
+namespace opyn
+{
+    class SharedOutputExtractor;
+}
 
 namespace osc
 {
+    class AbstractSimulation;
+    class SimulationModelStatePair;
+
     // virtual API for the simulator UI (e.g. the simulator tab)
     //
     // this is how individual widgets within a simulator UI communicate with the simulator UI
@@ -27,55 +31,85 @@ namespace osc
         SimulatorUIAPI(SimulatorUIAPI&&) noexcept = default;
         SimulatorUIAPI& operator=(const SimulatorUIAPI&) = default;
         SimulatorUIAPI& operator=(SimulatorUIAPI&&) noexcept = default;
+
     public:
         virtual ~SimulatorUIAPI() noexcept = default;
 
-        const AbstractSimulation& getSimulation() const { return implGetSimulation(); }
-        AbstractSimulation& updSimulation() { return implUpdSimulation(); }
+        const AbstractSimulation& get_simulation() const { return impl_get_simulation(); }
+        AbstractSimulation& upd_simulation() { return impl_upd_simulation(); }
 
-        SimulationUIPlaybackState getSimulationPlaybackState() { return implGetSimulationPlaybackState(); }
-        void setSimulationPlaybackState(SimulationUIPlaybackState s) { implSetSimulationPlaybackState(s); }
-
-        virtual SimulationUILoopingState getSimulationLoopingState() const { return implGetSimulationLoopingState(); }
-        virtual void setSimulationLoopingState(SimulationUILoopingState s) { implSetSimulationLoopingState(s); }
-
-        float getSimulationPlaybackSpeed() { return implGetSimulationPlaybackSpeed(); }
-        void setSimulationPlaybackSpeed(float v) { implSetSimulationPlaybackSpeed(v); }
-
-        SimulationClock::time_point getSimulationScrubTime() { return implGetSimulationScrubTime(); }
-
-        void stepBack() { implStepBack(); }
-        void stepForward() { implStepForward(); }
-
-        void setSimulationScrubTime(SimulationClock::time_point t) { implSetSimulationScrubTime(t); }
-
-        std::optional<SimulationReport> trySelectReportBasedOnScrubbing() { return implTrySelectReportBasedOnScrubbing(); }
-
-        void tryPromptToSaveOutputsAsCSV(std::span<const opyn::SharedOutputExtractor>, bool openInDefaultApp) const;
-        void tryPromptToSaveOutputsAsCSV(std::initializer_list<opyn::SharedOutputExtractor> il, bool openInDefaultApp) const
+        SimulationUIPlaybackState get_simulation_playback_state()
         {
-            tryPromptToSaveOutputsAsCSV(std::span<const opyn::SharedOutputExtractor>{il}, openInDefaultApp);
+            return impl_get_simulation_playback_state();
         }
-        void tryPromptToSaveAllOutputsAsCSV(std::span<const opyn::SharedOutputExtractor>, bool andOpenInDefaultApp = false) const;
+        void set_simulation_playback_state(SimulationUIPlaybackState s)
+        {
+            impl_set_simulation_playback_state(s);
+        }
 
-        SimulationModelStatePair* tryGetCurrentSimulationState() { return implTryGetCurrentSimulationState(); }
+        virtual SimulationUILoopingState get_simulation_looping_state() const
+        {
+            return impl_get_simulation_looping_state();
+        }
+        virtual void set_simulation_looping_state(SimulationUILoopingState s)
+        {
+            impl_set_simulation_looping_state(s);
+        }
+
+        float get_simulation_playback_speed() { return impl_get_simulation_playback_speed(); }
+        void set_simulation_playback_speed(float v) { impl_set_simulation_playback_speed(v); }
+
+        SimulationClock::time_point get_simulation_scrub_time()
+        {
+            return impl_get_simulation_scrub_time();
+        }
+
+        void step_back() { impl_step_back(); }
+        void step_forward() { impl_step_forward(); }
+
+        void set_simulation_scrub_time(SimulationClock::time_point t)
+        {
+            impl_set_simulation_scrub_time(t);
+        }
+
+        std::optional<SimulationReport> try_select_report_based_on_scrubbing()
+        {
+            return impl_try_select_report_based_on_scrubbing();
+        }
+
+        void try_prompt_to_save_outputs_as_csv(
+            std::span<const opyn::SharedOutputExtractor>, bool open_in_default_app) const;
+        void try_prompt_to_save_outputs_as_csv(
+            std::initializer_list<opyn::SharedOutputExtractor> il, bool open_in_default_app) const
+        {
+            try_prompt_to_save_outputs_as_csv(
+                std::span<const opyn::SharedOutputExtractor>{il}, open_in_default_app);
+        }
+        void try_prompt_to_save_all_outputs_as_csv(
+            std::span<const opyn::SharedOutputExtractor>,
+            bool and_open_in_default_app = false) const;
+
+        SimulationModelStatePair* try_get_current_simulation_state()
+        {
+            return impl_try_get_current_simulation_state();
+        }
 
     private:
-        virtual const AbstractSimulation& implGetSimulation() const = 0;
-        virtual AbstractSimulation& implUpdSimulation() = 0;
+        virtual const AbstractSimulation& impl_get_simulation() const = 0;
+        virtual AbstractSimulation& impl_upd_simulation() = 0;
 
-        virtual SimulationUIPlaybackState implGetSimulationPlaybackState() = 0;
-        virtual void implSetSimulationPlaybackState(SimulationUIPlaybackState) = 0;
-        virtual SimulationUILoopingState implGetSimulationLoopingState() const = 0;
-        virtual void implSetSimulationLoopingState(SimulationUILoopingState) = 0;
-        virtual float implGetSimulationPlaybackSpeed() = 0;
-        virtual void implSetSimulationPlaybackSpeed(float) = 0;
-        virtual SimulationClock::time_point implGetSimulationScrubTime() = 0;
-        virtual void implSetSimulationScrubTime(SimulationClock::time_point) = 0;
-        virtual void implStepBack() = 0;
-        virtual void implStepForward() = 0;
-        virtual std::optional<SimulationReport> implTrySelectReportBasedOnScrubbing() = 0;
+        virtual SimulationUIPlaybackState impl_get_simulation_playback_state() = 0;
+        virtual void impl_set_simulation_playback_state(SimulationUIPlaybackState) = 0;
+        virtual SimulationUILoopingState impl_get_simulation_looping_state() const = 0;
+        virtual void impl_set_simulation_looping_state(SimulationUILoopingState) = 0;
+        virtual float impl_get_simulation_playback_speed() = 0;
+        virtual void impl_set_simulation_playback_speed(float) = 0;
+        virtual SimulationClock::time_point impl_get_simulation_scrub_time() = 0;
+        virtual void impl_set_simulation_scrub_time(SimulationClock::time_point) = 0;
+        virtual void impl_step_back() = 0;
+        virtual void impl_step_forward() = 0;
+        virtual std::optional<SimulationReport> impl_try_select_report_based_on_scrubbing() = 0;
 
-        virtual SimulationModelStatePair* implTryGetCurrentSimulationState() = 0;
+        virtual SimulationModelStatePair* impl_try_get_current_simulation_state() = 0;
     };
 }

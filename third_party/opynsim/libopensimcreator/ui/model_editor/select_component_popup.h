@@ -6,9 +6,16 @@
 #include <memory>
 #include <string_view>
 
-namespace OpenSim { class Component; }
-namespace OpenSim { class ComponentPath; }
-namespace opyn { class ModelStatePair; }
+namespace OpenSim
+{
+    class Component;
+    class ComponentPath;
+}
+
+namespace opyn
+{
+    class ModelStatePair;
+}
 
 namespace osc
 {
@@ -17,14 +24,13 @@ namespace osc
     public:
         explicit SelectComponentPopup(
             Widget* parent,
-            std::string_view popupName,
+            std::string_view popup_name,
             std::shared_ptr<const opyn::ModelStatePair>,
-            std::function<void(const OpenSim::ComponentPath&)> onSelection,
-            std::function<bool(const OpenSim::Component&)> filter
-        );
+            std::function<void(const OpenSim::ComponentPath&)> on_selection,
+            std::function<bool(const OpenSim::Component&)> filter);
 
     private:
-        void impl_draw_content() final;
+        void impl_draw_content() override;
 
         class Impl;
         OSC_WIDGET_DATA_GETTERS(Impl);

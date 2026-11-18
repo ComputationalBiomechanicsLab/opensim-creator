@@ -6,7 +6,10 @@
 #include <filesystem>
 #include <memory>
 
-namespace OpenSim { class Storage; }
+namespace OpenSim
+{
+    class Storage;
+}
 
 namespace opyn
 {
@@ -17,8 +20,8 @@ namespace opyn
     //       between OSC's 'Preview Experimental Data' workflow and OpenSim GUI's.
     class AnnotatedMotion final : public OpenSim::ModelComponent {
         OpenSim_DECLARE_CONCRETE_OBJECT(AnnotatedMotion, OpenSim::ModelComponent)
-    public:
 
+    public:
         // Constructs an `AnnotationMotion` that was loaded from the given filesystem
         // path, or throws an `std::exception` if any error occurs.
         explicit AnnotatedMotion(const std::filesystem::path& path);
@@ -28,8 +31,10 @@ namespace opyn
 
         // Returns the time range (first, last) of the loaded motion.
         osc::ClosedInterval<float> time_range() const;
+
     private:
-        static std::shared_ptr<OpenSim::Storage> load_path_into_storage(const std::filesystem::path&);
+        static std::shared_ptr<OpenSim::Storage> load_path_into_storage(
+            const std::filesystem::path&);
         explicit AnnotatedMotion(std::shared_ptr<OpenSim::Storage>);
 
         std::shared_ptr<OpenSim::Storage> storage_;

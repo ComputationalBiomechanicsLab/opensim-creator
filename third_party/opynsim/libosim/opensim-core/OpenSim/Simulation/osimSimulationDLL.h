@@ -38,12 +38,12 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#if defined(OPENSIM_USE_STATIC_LIBRARIES)
-    #define OSIMSIMULATION_API
+#if defined(OPENSIM_SIMULATION_TYPE_STATIC)
+#define OSIMSIMULATION_API
 #elif defined(OSIMSIMULATION_EXPORTS)
-    #define OSIMSIMULATION_API __declspec(dllexport)
+#define OSIMSIMULATION_API __declspec(dllexport)
 #else
-    #define OSIMSIMULATION_API __declspec(dllimport)
+#define OSIMSIMULATION_API __declspec(dllimport)
 #endif
 
 #endif // PLATFORM

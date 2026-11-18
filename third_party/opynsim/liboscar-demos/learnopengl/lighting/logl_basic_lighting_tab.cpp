@@ -48,10 +48,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -72,10 +69,13 @@ public:
         render_queue_.emplace(cube_mesh_, light_transform_, light_cube_material_);
 
         // render to output (window)
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-            .clear_color = {0.1f, 1.0f},
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+                .clear_color = {0.1f, 1.0f},
+            });
         render_queue_.clear();
 
         // render auxiliary UI
@@ -118,13 +118,27 @@ private:
     float specular_strength_ = 1.0f;
 };
 
-
-CStringView osc::LOGLBasicLightingTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLBasicLightingTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLBasicLightingTab::LOGLBasicLightingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLBasicLightingTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLBasicLightingTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLBasicLightingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLBasicLightingTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLBasicLightingTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLBasicLightingTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLBasicLightingTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLBasicLightingTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

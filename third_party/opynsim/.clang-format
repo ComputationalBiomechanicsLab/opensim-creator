@@ -1,0 +1,52 @@
+# Control where the colon goes (e.g. Keep it on the constructor line or properly indented)
+BreakConstructorInitializers: AfterColon # or BeforeComma
+# Ensure constructor initializer lists don't indent wildly relative to the constructor name
+# Do not bin-pack arguments into columns, keeping them on separate lines with clean indents
+BinPackArguments: false
+BinPackParameters: false
+PackConstructorInitializers: Never
+# Prevent constructor/braced initializers from aligning to arbitrary argument columns
+Cpp11BracedListStyle: true
+AlignAfterOpenBracket: AlwaysBreak
+AlwaysBreakAfterReturnType: None
+BreakStringLiterals: false
+PenaltyReturnTypeOnItsOwnLine: 1000
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+LambdaBodyIndentation: Signature  # Options: Signature (default) or OuterScope
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortLambdasOnASingleLine: Inline
+AllowShortCaseLabelsOnASingleLine: true
+SpaceAfterTemplateKeyword: false
+SpaceBeforeParens: ControlStatements
+PointerAlignment: Left
+BreakBeforeTernaryOperators: true
+BreakTemplateDeclarations: Leave
+AccessModifierOffset: -4
+SpacesBeforeTrailingComments: 2
+BasedOnStyle: LLVM
+IndentWidth: 4
+IndentRequiresClause: false # or true depending on your preference, but 'false' keeps it left-aligned/closer
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+SortIncludes: false
+DerivePointerAlignment: true
+NamespaceIndentation: All
+FixNamespaceComments: false
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterNamespace: true
+  AfterStruct: false
+  AfterUnion: false
+  BeforeCatch: false
+  BeforeElse: false
+  SplitEmptyFunction: false
+  BeforeLambdaBody: false
+StatementMacros:
+  - OpenSim_DECLARE_CONCRETE_OBJECT
+  - OpenSim_DECLARE_ABSTRACT_OBJECT

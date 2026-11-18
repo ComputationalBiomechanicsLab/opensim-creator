@@ -132,11 +132,11 @@ namespace
 INSTANTIATE_TEST_SUITE_P(
     CoordinateAxisParsingTest,
     CoordinateAxisParsingTestFixture,
-    testing::ValuesIn(c_parsing_test_cases)
-);
+    testing::ValuesIn(c_parsing_test_cases));
 
 TEST_P(CoordinateAxisParsingTestFixture, Check)
 {
-    const ParsingTestCase test_case =  GetParam();
-    ASSERT_EQ(CoordinateAxis::try_parse(test_case.input), test_case.expected) << "input = " << test_case.input;
+    const ParsingTestCase test_case = GetParam();
+    ASSERT_EQ(CoordinateAxis::try_parse(test_case.input), test_case.expected)
+        << "input = " << test_case.input;
 }

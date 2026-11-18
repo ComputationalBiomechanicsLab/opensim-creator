@@ -6,17 +6,14 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class PanelPrivate; }
-
 namespace osc
 {
+    class PanelPrivate;
+
     class Panel : public Widget {
     public:
         explicit Panel(
-            Widget* parent = nullptr,
-            std::string_view panel_name = "unnamed",
-            ui::PanelFlags = {}
-        );
+            Widget* parent = nullptr, std::string_view panel_name = "unnamed", ui::PanelFlags = {});
 
         bool is_open() const;
         void open();
@@ -26,7 +23,7 @@ namespace osc
         explicit Panel(std::unique_ptr<PanelPrivate>&&);
 
     private:
-        void impl_on_draw() final;  // `Panel` handles drawing the outer panel decorations etc.
+        void impl_on_draw() override;  // `Panel` handles drawing the outer panel decorations etc.
         virtual void impl_before_imgui_begin() {}
         virtual void impl_after_imgui_begin() {}
         virtual void impl_draw_content() {}

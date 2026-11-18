@@ -92,10 +92,7 @@ public:
 
         if (viewer_.is_hovered()) {
             const bool modified = ui::update_orbit_controller_from_mouse_inputs(
-                camera_controller_,
-                camera_,
-                ui::get_main_window_workspace_dimensions()
-            );
+                camera_controller_, camera_, ui::get_main_window_workspace_dimensions());
             if (modified) {
                 camera_controller_.update_camera(camera_);
             }
@@ -114,10 +111,13 @@ public:
             const Rect viewport_ui_rect = ui::get_content_region_available_ui_rect();
             const Vector2 viewport_dimensions = viewport_ui_rect.dimensions();
             render_params_.dimensions = elementwise_max(viewport_dimensions, {0.0f, 0.0f});
-            render_params_.device_pixel_ratio = App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
+            render_params_.device_pixel_ratio =
+                App::settings().get_value<float>("graphics/render_scale", 1.0f) *
+                App::get().main_window_device_pixel_ratio(),
             render_params_.anti_aliasing_level = App::get().anti_aliasing_level();
             render_params_.light_direction = recommended_light_direction(camera_);
-            render_params_.projection_matrix = camera_.projection_matrix(aspect_ratio_of(render_params_.dimensions));
+            render_params_.projection_matrix =
+                camera_.projection_matrix(aspect_ratio_of(render_params_.dimensions));
             render_params_.view_matrix = camera_.view_matrix();
             render_params_.viewer_position = camera_.position();
             render_params_.near_clipping_plane = camera_.near_clipping_plane();
@@ -125,14 +125,18 @@ public:
             render_params_.draw_floor = false;
             render_params_.draw_mesh_normals = true;
 
-            viewer_.on_draw({{SceneDecoration{
-                .mesh = all_meshes_[current_mesh_],
-                .shading = Color::white(),
-                .flags = draw_wireframe_ ? SceneDecorationFlag::WireframeOverlayedDefault : SceneDecorationFlag::Default,
-            }}}, render_params_);
+            viewer_.on_draw(
+                {{SceneDecoration{
+                    .mesh = all_meshes_[current_mesh_],
+                    .shading = Color::white(),
+                    .flags = draw_wireframe_ ? SceneDecorationFlag::WireframeOverlayedDefault
+                                             : SceneDecorationFlag::Default,
+                }}},
+                render_params_);
 
             // Draw camera manipulator
-            ui::set_cursor_ui_position(viewport_ui_rect.ypd_top_right() - Vector2{camera_axes_ui_.dimensions().x(), 0.0f});
+            ui::set_cursor_ui_position(
+                viewport_ui_rect.ypd_top_right() - Vector2{camera_axes_ui_.dimensions().x(), 0.0f});
             if (camera_axes_ui_.draw(camera_controller_, camera_)) {
                 camera_controller_.update_camera(camera_);
             }
@@ -152,10 +156,15 @@ private:
     CameraViewAxes camera_axes_ui_;
 };
 
-
-CStringView osc::MeshGenTestTab::id() { return Impl::static_label(); }
+CStringView osc::MeshGenTestTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::MeshGenTestTab::MeshGenTestTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::MeshGenTestTab::impl_on_draw() { private_data().on_draw(); }
+void osc::MeshGenTestTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

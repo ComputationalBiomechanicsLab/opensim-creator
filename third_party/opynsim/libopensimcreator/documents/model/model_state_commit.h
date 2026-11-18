@@ -7,9 +7,18 @@
 #include <memory>
 #include <string_view>
 
-namespace OpenSim { class ComponentPath; }
-namespace OpenSim { class Model; }
-namespace opyn { class ModelStatePair; }
+namespace OpenSim
+{
+    class ComponentPath;
+}
+namespace OpenSim
+{
+    class Model;
+}
+namespace opyn
+{
+    class ModelStatePair;
+}
 
 namespace osc
 {
@@ -20,17 +29,18 @@ namespace osc
         ModelStateCommit(const opyn::ModelStatePair&, std::string_view message);
         ModelStateCommit(const opyn::ModelStatePair&, std::string_view message, UID parent);
 
-        UID getID() const;
-        bool hasParent() const;
-        UID getParentID() const;
-        CStringView getCommitMessage() const;
-        SynchronizedValueGuard<const OpenSim::Model> getModel() const;
-        UID getModelVersion() const;
-        float getFixupScaleFactor() const;
+        UID get_id() const;
+        bool has_parent() const;
+        UID get_parent_id() const;
+        CStringView get_commit_message() const;
+        SynchronizedValueGuard<const OpenSim::Model> get_model() const;
+        UID get_model_version() const;
+        float get_fixup_scale_factor() const;
 
         friend bool operator==(const ModelStateCommit&, const ModelStateCommit&) = default;
+
     private:
         class Impl;
-        std::shared_ptr<const Impl> m_Impl;
+        std::shared_ptr<const Impl> impl_;
     };
 }

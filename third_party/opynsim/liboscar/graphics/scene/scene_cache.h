@@ -9,10 +9,13 @@
 #include <type_traits>
 #include <typeinfo>
 
-namespace osc { class BVH; }
-namespace osc { class MeshBasicMaterial; }
-namespace osc { class ResourceLoader; }
-namespace osc { class Shader; }
+namespace osc
+{
+    class BVH;
+    class MeshBasicMaterial;
+    class ResourceLoader;
+    class Shader;
+}
 
 namespace osc
 {
@@ -61,26 +64,26 @@ namespace osc
 
         // returns a `Shader` loaded via the `ResourceLoader` that was provided to the constructor
         const Shader& get_shader(
-            const ResourcePath& vertex_shader_path,
-            const ResourcePath& fragment_shader_path
-        );
+            const ResourcePath& vertex_shader_path, const ResourcePath& fragment_shader_path);
 
         // returns a `Shader` loaded via the `ResourceLoader` that was provided to the constructor
         const Shader& get_shader(
             const ResourcePath& vertex_shader_path,
             const ResourcePath& geometry_shader_path,
-            const ResourcePath& fragment_shader_path
-        );
+            const ResourcePath& fragment_shader_path);
 
         // Returns an object with the given type via `typeid`, default-constructing it if it isn't
         // already in the cache
         //
-        // - `T` must be exactly the required type, not something derived from it (it's typeid-based)
-        // - If an instance of `T` doesn't already exist in this cache, it will be default-constructed
+        // - `T` must be exactly the required type, not something derived from it (it's
+        // typeid-based)
+        // - If an instance of `T` doesn't already exist in this cache, it will be
+        // default-constructed
         //   and placed in the cache.
-        // - This typeid-based caching mechanism is independent of other caching methods. E.g. if some
-        //   other member method of the cache returns an instance of `T` then it operates independently
-        //   of this method.
+        // - This typeid-based caching mechanism is independent of other caching methods. E.g. if
+        // some
+        //   other member method of the cache returns an instance of `T` then it operates
+        //   independently of this method.
         template<typename T>
         requires std::is_default_constructible_v<T> and std::is_destructible_v<T>
         const T& get()

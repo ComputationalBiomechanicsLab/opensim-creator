@@ -12,7 +12,7 @@
 #include <vector>
 
 using namespace osc;
-using std::literals::string_view_literals::operator ""sv;
+using std::literals::string_view_literals::operator""sv;
 
 TEST(contains_case_insensitive, returns_true_if_search_string_is_empty)
 {
@@ -82,8 +82,7 @@ namespace
     {
         if (maybe_float) {
             o << "Some(" << *maybe_float << ')';
-        }
-        else {
+        } else {
             o << "None";
         }
         return o;
@@ -100,14 +99,9 @@ namespace
         rv.reserve(str.size());
         for (auto c : str) {
             switch (c) {
-            case '\n':
-                rv += "\\n";
-                break;
-            case '\r':
-                rv += "\\r";
-                break;
-            default:
-                rv += c;
+            case '\n': rv += "\\n"; break;
+            case '\r': rv += "\\r"; break;
+            default: rv += c;
             }
         }
         return rv;
@@ -119,15 +113,8 @@ namespace
         //       when they have to print test names containing control
         //       characters
         const std::string sanitized_input = with_escaped_control_characters(test_case.input);
-        return o << "TestCase(input = " << sanitized_input << ", expected_output = " << test_case.expected_output << ')';
-    }
-
-    void PrintTo(const TestCase& test_case, std::ostream* o)  // NOLINT(readability-identifier-naming)
-    {
-        // this teaches googletest to pretty-print a std::optional<float>
-        //
-        // see: googletest/include/gtest/gtest-printers.h `PrintTo`
-        *o << test_case;
+        return o << "TestCase(input = " << sanitized_input
+                 << ", expected_output = " << test_case.expected_output << ')';
     }
 
     constexpr auto c_test_cases = std::to_array<TestCase>({
@@ -169,15 +156,11 @@ namespace
     });
 
     // see: googletest/docs/advanced.md "How to write value-parameterized tests"
-    class FromCharsStripWhitespace : public testing::TestWithParam<TestCase> {
-    };
+    class FromCharsStripWhitespace : public testing::TestWithParam<TestCase> {};
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    FromCharsStripWhitespaceChecks,
-    FromCharsStripWhitespace,
-    testing::ValuesIn(c_test_cases)
-);
+    FromCharsStripWhitespaceChecks, FromCharsStripWhitespace, testing::ValuesIn(c_test_cases));
 
 TEST_P(FromCharsStripWhitespace, Check)
 {
@@ -191,10 +174,10 @@ TEST(to_hex_chars, returns_expected_results_when_compared_to_alternative_impleme
     for (size_t i = 0; i <= static_cast<size_t>(std::numeric_limits<uint8_t>::max()); ++i) {
         const auto v = static_cast<uint8_t>(i);
 
-        const uint8_t msn = (v>>4) & 0xf;
+        const uint8_t msn = (v >> 4) & 0xf;
         const uint8_t lsn = v & 0xf;
-        const char msc = static_cast<char>(msn <= 9 ? '0' + msn : 'a' + (msn-10));
-        const char lsc = static_cast<char>(lsn <= 9 ? '0' + lsn : 'a' + (lsn-10));
+        const char msc = static_cast<char>(msn <= 9 ? '0' + msn : 'a' + (msn - 10));
+        const char lsc = static_cast<char>(lsn <= 9 ? '0' + lsn : 'a' + (lsn - 10));
 
         const auto [a, b] = to_hex_chars(v);
 
@@ -301,8 +284,7 @@ TEST(is_valid_identifier, returns_false_if_given_an_empty_string)
 
 TEST(is_valid_identifier, return_false_when_given_identifiers_with_invalid_ASCII_characters)
 {
-    const auto assert_char_cannot_be_used_in_identifier = [](char c)
-    {
+    const auto assert_char_cannot_be_used_in_identifier = [](char c) {
         {
             const std::string leading = c + std::string{"leading"};
             ASSERT_FALSE(is_valid_identifier(leading)) << leading;
@@ -318,13 +300,13 @@ TEST(is_valid_identifier, return_false_when_given_identifiers_with_invalid_ASCII
     };
 
     constexpr auto invalid_ascii_ranges = std::to_array<std::pair<int, int>>({
-        {0, 0x1F},    // control chars
-        {0x20, 0x2F}, // SPC ! " # $ % & ' ( ) * +  ' - /
-        {0x3A, 0x40}, // : ; < = > ? @
-        {0x5B, 0x5E}, // [ \ ] ^
+        {0, 0x1F},     // control chars
+        {0x20, 0x2F},  // SPC ! " # $ % & ' ( ) * +  ' - /
+        {0x3A, 0x40},  // : ; < = > ? @
+        {0x5B, 0x5E},  // [ \ ] ^
         // skip 0x5F (_)
-        {0x60, 0x60}, // `
-        {0x7B, 0x7F}, // { | } ~ DEL
+        {0x60, 0x60},  // `
+        {0x7B, 0x7F},  // { | } ~ DEL
     });
 
     for (auto [min, max] : invalid_ascii_ranges) {
@@ -363,12 +345,14 @@ TEST(replace, works_as_intended)
         std::string_view to;
         std::string_view expected_output;
     };
+    // clang-format off
     constexpr auto test_cases = std::to_array<TestCase>({
         // input             // search string  // replacement  // expected result
         {"hello, ${var}!" ,  "${var}",         "world",        "hello, world!" },
         {"${var}, ${var}!",  "${var}",         "hello",        "hello, ${var}!"},  // i.e. it replaces the first instance, it isn't `replace_all`
         {"hello, world!"  ,  "unused",         "nope" ,        "hello, world!" },
     });
+    // clang-format on
     for (const auto& test_case : test_cases) {
         const std::string output = replace(test_case.str, test_case.from, test_case.to);
         ASSERT_EQ(output, test_case.expected_output);
@@ -382,12 +366,14 @@ TEST(rsplit_once, works_as_intended)
         std::string_view::value_type delimiter;
         std::optional<std::pair<std::string_view, std::string_view>> expected_output;
     };
+    // clang-format off
     constexpr auto test_cases = std::to_array<TestCase>({
         {"a/b/c", '/', std::pair{"a/b"sv, "c"sv}},
         {"a/b.c", '.', std::pair{"a/b"sv, "c"sv}},
         {"",      '/', std::nullopt},
         {"/",     '/', std::pair{""sv, ""sv}},
     });
+    // clang-format on
     for (const auto& [input, delimiter, expected_output] : test_cases) {
         const auto output = rsplit_once(input, delimiter);
         ASSERT_EQ(output, expected_output);

@@ -34,6 +34,7 @@ namespace osc
         auto begin() const { return filelist_.begin(); }
         auto end() const { return filelist_.end(); }
         const std::filesystem::path& front() const { return *begin(); }
+
     private:
         std::string error_;
         std::vector<std::filesystem::path> filelist_;

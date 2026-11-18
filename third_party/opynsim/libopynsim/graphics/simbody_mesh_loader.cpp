@@ -24,7 +24,8 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr auto c_supported_mesh_extensions = std::to_array({"obj"sv, "vtp"sv, "stl"sv, "stla"sv});
+    constexpr auto c_supported_mesh_extensions =
+        std::to_array({"obj"sv, "vtp"sv, "stl"sv, "stla"sv});
 
     std::span<const osc::FileDialogFilter> get_file_dialog_filters()
     {
@@ -52,16 +53,13 @@ namespace
             const int num_face_verts = mesh.getNumVerticesForFace(i);
             if (num_face_verts < 3) {
                 continue;  // ignore lines/points
-            }
-            else if (num_face_verts == 3) {
+            } else if (num_face_verts == 3) {
                 rv.numIndices += 3;
-            }
-            else if (num_face_verts == 4) {
+            } else if (num_face_verts == 4) {
                 rv.numIndices += 6;
-            }
-            else {
+            } else {
                 rv.numVertices += 1;  // triangulation
-                rv.numIndices += static_cast<size_t>(3*(num_face_verts-2));
+                rv.numIndices += static_cast<size_t>(3 * (num_face_verts - 2));
             }
         }
         return rv;
@@ -79,8 +77,7 @@ osc::Mesh opyn::to_osc_mesh(const SimTK::PolygonalMesh& mesh)
     indices.reserve(metrics.numIndices);
 
     // helper: validate+push triangle into the index list
-    const auto push_triangle = [&indices, &vertices](uint32_t a, uint32_t b, uint32_t c)
-    {
+    const auto push_triangle = [&indices, &vertices](uint32_t a, uint32_t b, uint32_t c) {
         if (a >= vertices.size() || b >= vertices.size() || c >= vertices.size()) {
             return;  // index out-of-bounds
         }
@@ -110,16 +107,14 @@ osc::Mesh opyn::to_osc_mesh(const SimTK::PolygonalMesh& mesh)
         if (num_face_verts == 2) {
             // line (ignore)
             continue;
-        }
-        else if (num_face_verts == 3) {
+        } else if (num_face_verts == 3) {
             // triangle
             const auto a = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
             const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, 1));
             const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, 2));
 
             push_triangle(a, b, c);
-        }
-        else if (num_face_verts == 4) {
+        } else if (num_face_verts == 4) {
             // quad (emit as two triangles)
             const auto a = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
             const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, 1));
@@ -128,8 +123,7 @@ osc::Mesh opyn::to_osc_mesh(const SimTK::PolygonalMesh& mesh)
 
             push_triangle(a, b, c);
             push_triangle(a, c, d);
-        }
-        else {
+        } else {
             // polygon: triangulate each edge with a centroid
 
             // compute+add centroid vertex
@@ -142,15 +136,15 @@ osc::Mesh opyn::to_osc_mesh(const SimTK::PolygonalMesh& mesh)
             vertices.push_back(centroid_of);
 
             // triangulate polygon loop
-            for (int vert = 0; vert < num_face_verts-1; ++vert) {
+            for (int vert = 0; vert < num_face_verts - 1; ++vert) {
                 const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, vert));
-                const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, vert+1));
+                const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, vert + 1));
 
                 push_triangle(centroid_idx, b, c);
             }
 
             // (complete the loop)
-            const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, num_face_verts-1));
+            const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, num_face_verts - 1));
             const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
             push_triangle(centroid_idx, b, c);
         }
@@ -180,7 +174,10 @@ osc::Mesh opyn::load_mesh_via_simbody(const std::filesystem::path& p)
     return to_osc_mesh(mesh);
 }
 
-void opyn::assign_indexed_verts(SimTK::PolygonalMesh& mesh, std::span<const osc::Vector3> vertices, osc::MeshIndicesView indices)
+void opyn::assign_indexed_verts(
+    SimTK::PolygonalMesh& mesh,
+    std::span<const osc::Vector3> vertices,
+    osc::MeshIndicesView indices)
 {
     mesh.clear();
 

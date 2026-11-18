@@ -3,14 +3,18 @@
 #include <liboscar/graphics/texture2d.h>
 #include <liboscar/maths/vector.h>
 
-namespace opyn { class OPynSimApp; }
-namespace opyn { class Model; }
-namespace opyn { class ModelState; }
-namespace osc { class SceneCache; }
-namespace osc { class Camera; }
+namespace osc
+{
+    class Camera;
+    class SceneCache;
+}
 
 namespace opyn
 {
+    class Model;
+    class ModelState;
+    class OPynSimApp;
+
     osc::Texture2D render_model_in_state(
         OPynSimApp&,
         const Model&,
@@ -19,6 +23,5 @@ namespace opyn
         osc::Color background_color,
         bool draw_floor,
         osc::SceneCache* scene_cache,
-        const osc::Camera* camera
-    );
+        const osc::Camera* camera);
 }

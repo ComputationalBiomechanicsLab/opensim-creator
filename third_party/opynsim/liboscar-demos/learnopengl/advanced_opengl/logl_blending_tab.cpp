@@ -26,14 +26,15 @@ namespace
 {
     constexpr auto c_window_positions = std::to_array<Vector3>({
         {-1.5f, 0.0f, -0.48f},
-        { 1.5f, 0.0f,  0.51f},
-        { 0.0f, 0.0f,  0.7f},
+        {1.5f, 0.0f, 0.51f},
+        {0.0f, 0.0f, 0.7f},
         {-0.3f, 0.0f, -2.3f},
-        { 0.5f, 0.0f, -0.6},
+        {0.5f, 0.0f, -0.6},
     });
 
     Mesh generate_plane()
     {
+        // clang-format off
         Mesh mesh;
         mesh.set_vertices({
             { 5.0f, -0.5f,  5.0f},
@@ -54,11 +55,13 @@ namespace
             {2.0f, 2.0f},
         });
         mesh.set_indices({0, 2, 1, 3, 5, 4});
+        // clang-format on
         return mesh;
     }
 
     Mesh generate_transparent()
     {
+        // clang-format off
         Mesh mesh;
         mesh.set_vertices({
             {0.0f,  0.5f, 0.0f},
@@ -79,6 +82,7 @@ namespace
             {1.0f, 0.0f},
         });
         mesh.set_indices({0, 1, 2, 3, 4, 5});
+        // clang-format on
         return mesh;
     }
 
@@ -116,10 +120,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -129,15 +130,9 @@ public:
         {
             opaque_material_.set("uTexture", marble_texture_);
             render_queue_.emplace(
-                cube_mesh_,
-                {.translation = {-1.0f, 0.0f, -1.0f}},
-                opaque_material_
-            );
+                cube_mesh_, {.translation = {-1.0f, 0.0f, -1.0f}}, opaque_material_);
             render_queue_.emplace(
-                cube_mesh_,
-                {.translation = { 1.0f, 0.0f, -1.0f}},
-                opaque_material_
-            );
+                cube_mesh_, {.translation = {1.0f, 0.0f, -1.0f}}, opaque_material_);
         }
 
         // floor
@@ -151,17 +146,17 @@ public:
             blending_material_.set("uTexture", window_texture_);
             for (const Vector3& window_position : c_window_positions) {
                 render_queue_.emplace(
-                    transparent_mesh_,
-                    {.translation = window_position},
-                    blending_material_
-                );
+                    transparent_mesh_, {.translation = window_position}, blending_material_);
             }
         }
 
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-            .clear_color = {0.1f, 1.0f},
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+                .clear_color = {0.1f, 1.0f},
+            });
         render_queue_.clear();
 
         // auxiliary UI
@@ -182,28 +177,36 @@ private:
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
     RenderQueue render_queue_;
     Texture2D marble_texture_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/marble.jpg"),
-        ColorSpace::sRGB
-    );
+        loader_.open("oscar_demos/learnopengl/textures/marble.jpg"), ColorSpace::sRGB);
     Texture2D metal_texture_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/metal.jpg"),
-        ColorSpace::sRGB
-    );
+        loader_.open("oscar_demos/learnopengl/textures/metal.jpg"), ColorSpace::sRGB);
     Texture2D window_texture_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/window.png"),
-        ColorSpace::sRGB
-    );
+        loader_.open("oscar_demos/learnopengl/textures/window.png"), ColorSpace::sRGB);
     LogViewerPanel log_viewer_{&owner()};
     PerfPanel perf_panel_{&owner()};
 };
 
-
-CStringView osc::LOGLBlendingTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLBlendingTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLBlendingTab::LOGLBlendingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLBlendingTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLBlendingTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLBlendingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLBlendingTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLBlendingTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLBlendingTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLBlendingTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLBlendingTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

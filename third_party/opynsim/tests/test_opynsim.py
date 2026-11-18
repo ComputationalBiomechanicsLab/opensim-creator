@@ -70,6 +70,10 @@ def test_root_directory_can_be_changed():
     model_specification.root_directory = "some/dir"
     assert model_specification.root_directory == Path("some/dir")
 
+def test_model_pretty_prints_to_something_useful():
+    model = opynsim.examples.double_pendulum_model()
+    assert repr(model) == f"Model(num_coordinates={model.num_coordinates}, num_outputs={model.num_outputs})"
+
 def test_model_initial_state_state_defaults_to_instance():
     model = opynsim.ModelSpecification().compile()
     assert model.initial_state().stage == opynsim.STAGE_INSTANCE
@@ -77,6 +81,11 @@ def test_model_initial_state_state_defaults_to_instance():
 def test_model_initial_state_realize_to_realizes_model_to_state():
     model = opynsim.ModelSpecification().compile()
     assert model.initial_state(realized_to=opynsim.STAGE_ACCELERATION).stage == opynsim.STAGE_ACCELERATION
+
+def test_model_initial_state_pretty_prints_as_expected():
+    model = opynsim.ModelSpecification().compile()
+    state = model.initial_state(realized_to=opynsim.STAGE_DYNAMICS)
+    assert repr(state) == f"ModelState(time=0, stage={repr(opynsim.STAGE_DYNAMICS)})"
 
 def test_bake_station_defined_frames_works():
     model_specification = opynsim.read_osim(Path(__file__).resolve().parent / "resources/StationDefinedFrameExample.osim")
@@ -551,3 +560,39 @@ def test_model_state_stage_is_value_comparable():
     assert      opynsim.STAGE_REPORT   >= opynsim.STAGE_REPORT
     assert not (opynsim.STAGE_REPORT   >  opynsim.STAGE_REPORT)
     assert      opynsim.STAGE_REPORT   >  opynsim.STAGE_ACCELERATION
+
+def test_model_states_are_value_comparable():
+    # Two independently-constructed `opynsim.ModelState`s should compare equal
+    # if their contents are equal (i.e. value-comparison, not reference-comparison).
+
+    model = opynsim.examples.pendulum_model()
+    state_a = model.initial_state()
+    state_b = model.initial_state()
+
+    assert state_a == state_b
+
+def test_model_states_realized_to_different_stages_compare_non_equal():
+    model = opynsim.examples.pendulum_model()
+    state_a = model.initial_state(realized_to=opynsim.STAGE_VELOCITY)
+    state_b = model.initial_state(realized_to=opynsim.STAGE_REPORT)
+
+    assert state_a != state_b
+
+def test_render_model_in_state_has_expected_background_color():
+    import numpy as np
+
+    model = opynsim.examples.pendulum_model()
+    state = model.initial_state(realized_to=opynsim.STAGE_REPORT)
+    render = opynsim.render_model_in_state(model, state, background_color=opynsim.Color(1.0, 0.0, 0.0, 1.0))
+    top_left_pixel = render.pixels_rgba32()[0, 0]
+    expected_pixel = np.array([255, 0, 0, 255], dtype=np.uint8)
+    assert np.array_equal(top_left_pixel, expected_pixel)
+
+def test_render_model_in_state_can_be_given_a_scene_cache():
+    model = opynsim.examples.pendulum_model()
+    state = model.initial_state(realized_to=opynsim.STAGE_REPORT)
+    scene_cache = opynsim.SceneCache()
+
+    # i.e. it can be reused
+    opynsim.render_model_in_state(model, state, background_color=opynsim.Color(1.0, 0.0, 0.0, 1.0), scene_cache=scene_cache)
+    opynsim.render_model_in_state(model, state, background_color=opynsim.Color(0.0, 1.0, 0.0, 1.0), scene_cache=scene_cache)

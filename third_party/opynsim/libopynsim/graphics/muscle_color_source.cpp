@@ -38,7 +38,7 @@ namespace
             MuscleColorSource::FiberLength,
         },
     });
-    static_assert(c_metadata.size() == osc::num_options<MuscleColorSource>());
+    static_assert(c_metadata.size() == osc::num_options_v<MuscleColorSource>);
 }
 
 std::span<const MuscleColorSourceMetadata> opyn::get_all_possible_muscle_coloring_sources_metadata()

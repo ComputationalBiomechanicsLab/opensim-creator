@@ -29,7 +29,8 @@ TEST(SharedDepthStencilRenderBuffer, default_constructed_has_Default_format)
 
 TEST(SharedDepthStencilRenderBuffer, can_construct_depth_buffer)
 {
-    [[maybe_unused]] const SharedDepthStencilRenderBuffer depth_buffer{DepthStencilRenderBufferParams{}};
+    [[maybe_unused]] const SharedDepthStencilRenderBuffer depth_buffer{
+        DepthStencilRenderBufferParams{}};
 }
 
 TEST(SharedDepthStencilRenderBuffer, dimensionality_defaults_to_Tex2D)
@@ -39,28 +40,28 @@ TEST(SharedDepthStencilRenderBuffer, dimensionality_defaults_to_Tex2D)
 
 TEST(SharedDepthStencilRenderBuffer, dimensionality_is_based_on_parameters)
 {
-    const SharedDepthStencilRenderBuffer buffer{DepthStencilRenderBufferParams{.dimensionality = TextureDimensionality::Cube}};
+    const SharedDepthStencilRenderBuffer buffer{
+        DepthStencilRenderBufferParams{.dimensionality = TextureDimensionality::Cube}};
     ASSERT_EQ(buffer.dimensionality(), TextureDimensionality::Cube);
 }
 
 TEST(SharedDepthStencilRenderBuffer, pixel_dimensions_is_based_on_parameters)
 {
-    const SharedDepthStencilRenderBuffer buffer{DepthStencilRenderBufferParams{.pixel_dimensions = Vector2i(3, 5)}};
-    ASSERT_EQ(buffer.pixel_dimensions(), Vector2i(3,5));
+    const SharedDepthStencilRenderBuffer buffer{
+        DepthStencilRenderBufferParams{.pixel_dimensions = Vector2i(3, 5)}};
+    ASSERT_EQ(buffer.pixel_dimensions(), Vector2i(3, 5));
 }
 
 TEST(SharedDepthStencilRenderBuffer, anti_aliasing_level_is_based_on_parameters)
 {
-    const SharedDepthStencilRenderBuffer buffer{DepthStencilRenderBufferParams{
-        .anti_aliasing_level = AntiAliasingLevel{4}
-    }};
+    const SharedDepthStencilRenderBuffer buffer{
+        DepthStencilRenderBufferParams{.anti_aliasing_level = AntiAliasingLevel{4}}};
     ASSERT_EQ(buffer.anti_aliasing_level(), AntiAliasingLevel{4});
 }
 
 TEST(SharedDepthStencilRenderBuffer, format_is_based_on_parameters)
 {
-    const SharedDepthStencilRenderBuffer buffer{DepthStencilRenderBufferParams{
-        .format = DepthStencilRenderBufferFormat::D32_SFloat
-    }};
+    const SharedDepthStencilRenderBuffer buffer{
+        DepthStencilRenderBufferParams{.format = DepthStencilRenderBufferFormat::D32_SFloat}};
     ASSERT_EQ(buffer.format(), DepthStencilRenderBufferFormat::D32_SFloat);
 }

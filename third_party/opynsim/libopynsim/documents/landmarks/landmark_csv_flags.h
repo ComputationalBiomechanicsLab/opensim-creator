@@ -5,9 +5,9 @@
 namespace opyn
 {
     enum class LandmarkCSVFlags {
-        None     = 0,
-        NoHeader = 1<<0,
-        NoNames  = 1<<1,
+        None = 0,
+        NoHeader = 1 << 0,
+        NoNames = 1 << 1,
     };
 
     constexpr LandmarkCSVFlags operator|(LandmarkCSVFlags lhs, LandmarkCSVFlags rhs)

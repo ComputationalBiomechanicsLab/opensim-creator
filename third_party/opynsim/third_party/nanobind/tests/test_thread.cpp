@@ -1,7 +1,12 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/shared_ptr.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/stl/bind_map.h>
+#include <nanobind/stl/bind_vector.h>
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace nb = nanobind;
@@ -87,7 +92,10 @@ NB_MODULE(test_thread_ext, m) {
         shared_ints.push_back(std::make_shared<AnInt>(i));
     }
     m.def("fetch_shared_int", [shared_ints](int i) {
-        return shared_ints.at(i);
+        return shared_ints.at((size_t) i);
     });
     m.def("consume_an_int", [](AnInt* p) { return p->value; });
+
+    nb::bind_vector<std::vector<int64_t>>(m, "IntVector");
+    nb::bind_map<std::map<std::string, int64_t>>(m, "StringIntMap");
 }

@@ -9,7 +9,10 @@
 #include <string_view>
 #include <unordered_map>
 
-namespace osc { struct SceneRendererParams; }
+namespace osc
+{
+    struct SceneRendererParams;
+}
 
 namespace opyn
 {
@@ -35,12 +38,15 @@ namespace opyn
         bool get_order_independent_transparency() const;
         void set_order_independent_transparency(bool);
 
-        void for_each_option_as_app_setting_value(const std::function<void(std::string_view, const osc::Variant&)>&) const;
-        void try_upd_from_values(std::string_view key_prefix, const std::unordered_map<std::string, osc::Variant>&);
+        void for_each_option_as_app_setting_value(
+            const std::function<void(std::string_view, const osc::Variant&)>&) const;
+        void try_upd_from_values(
+            std::string_view key_prefix, const std::unordered_map<std::string, osc::Variant>&);
 
         void apply_to(osc::SceneRendererParams&) const;
 
-        friend bool operator==(const CustomRenderingOptions&, const CustomRenderingOptions&) = default;
+        friend bool operator==(const CustomRenderingOptions&, const CustomRenderingOptions&) =
+            default;
 
     private:
         CustomRenderingOptionFlags flags_ = CustomRenderingOptionFlags::Default;

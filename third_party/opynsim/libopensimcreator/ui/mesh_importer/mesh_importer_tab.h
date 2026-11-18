@@ -7,10 +7,10 @@
 #include <future>
 #include <vector>
 
-namespace osc { class Widget; }
-
 namespace osc
 {
+    class Widget;
+
     class MeshImporterTab final : public Tab {
     public:
         static CStringView id() { return "OpenSim/MeshImporter"; }
@@ -19,14 +19,14 @@ namespace osc
         explicit MeshImporterTab(Widget*, std::vector<std::filesystem::path>);
 
     private:
-        bool impl_is_unsaved() const final;
-        std::future<TabSaveResult> impl_try_save() final;
-        void impl_on_mount() final;
-        void impl_on_unmount() final;
-        bool impl_on_event(Event&) final;
-        void impl_on_tick() final;
-        void impl_on_draw_main_menu() final;
-        void impl_on_draw() final;
+        bool impl_is_unsaved() const override;
+        std::future<TabSaveResult> impl_try_save() override;
+        void impl_on_mount() override;
+        void impl_on_unmount() override;
+        bool impl_on_event(Event&) override;
+        void impl_on_tick() override;
+        void impl_on_draw_main_menu() override;
+        void impl_on_draw() override;
 
         class Impl;
         OSC_WIDGET_DATA_GETTERS(Impl);

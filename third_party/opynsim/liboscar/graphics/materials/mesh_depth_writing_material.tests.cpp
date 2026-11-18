@@ -14,19 +14,14 @@ namespace
 
     class MeshDepthWritingMaterialFixture : public ::testing::Test {
     protected:
-        static void SetUpTestSuite()
-        {
-            g_app = std::make_unique<App>();
-        }
+        static void SetUpTestSuite() { g_app = std::make_unique<App>(); }
 
-        static void TearDownTestSuite()
-        {
-            g_app.reset();
-        }
+        static void TearDownTestSuite() { g_app.reset(); }
     };
 }
 
 TEST_F(MeshDepthWritingMaterialFixture, works)
 {
-    [[maybe_unused]] const MeshDepthWritingMaterial default_constructed;  // should compile, run, etc.
+    [[maybe_unused]] const MeshDepthWritingMaterial
+        default_constructed;  // should compile, run, etc.
 }

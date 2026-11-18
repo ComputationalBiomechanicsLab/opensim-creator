@@ -8,7 +8,10 @@
 
 #include <cstddef>
 
-namespace OpenSim { class Force; }
+namespace OpenSim
+{
+    class Force;
+}
 
 namespace opyn
 {
@@ -16,10 +19,7 @@ namespace opyn
     // record values.
     class ForceRecordOutputExtractor final : public OutputExtractor {
     public:
-        explicit ForceRecordOutputExtractor(
-            const OpenSim::Force&,
-            int record_index
-        );
+        explicit ForceRecordOutputExtractor(const OpenSim::Force&, int record_index);
         ForceRecordOutputExtractor(const ForceRecordOutputExtractor&);
         ForceRecordOutputExtractor(ForceRecordOutputExtractor&&) noexcept;
         ForceRecordOutputExtractor& operator=(const ForceRecordOutputExtractor&);
@@ -27,12 +27,12 @@ namespace opyn
         ~ForceRecordOutputExtractor() noexcept override;
 
     private:
-        osc::CStringView impl_name() const final;
-        osc::CStringView impl_description() const final;
-        OutputExtractorDataType impl_output_type() const final;
-        OutputValueExtractor impl_output_value_extractor(const OpenSim::Component&) const final;
-        size_t impl_hash() const final;
-        bool impl_equals(const OutputExtractor&) const final;
+        osc::CStringView impl_name() const override;
+        osc::CStringView impl_description() const override;
+        OutputExtractorDataType impl_output_type() const override;
+        OutputValueExtractor impl_output_value_extractor(const OpenSim::Component&) const override;
+        size_t impl_hash() const override;
+        bool impl_equals(const OutputExtractor&) const override;
 
         class Impl;
         osc::ClonePtr<Impl> impl_;

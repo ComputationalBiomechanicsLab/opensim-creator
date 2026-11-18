@@ -15,64 +15,54 @@
 #include <string_view>
 #include <vector>
 
-using osc::MiCrossrefDescriptor;
 using osc::MiClass;
+using osc::MiCrossrefDescriptor;
 
 osc::MiStation::MiStation(
-    UID id,
-    UID attachment,
-    const Vector3& position,
-    const std::string& name) :
+    UID id, UID attachment, const Vector3& position, const std::string& name) :
 
-    m_ID{id},
-    m_Attachment{attachment},
-    m_Position{position},
-    m_Name{opyn::sanitize_to_open_sim_component_name(name)}
+    id_{id},
+    attachment_{attachment},
+    position_{position},
+    name_{opyn::sanitize_to_open_sim_component_name(name)}
+{}
+
+osc::MiStation::MiStation(UID attachment, const Vector3& position, const std::string& name) :
+
+    attachment_{attachment},
+    position_{position},
+    name_{opyn::sanitize_to_open_sim_component_name(name)}
+{}
+
+MiClass osc::MiStation::create_class()
 {
-}
-
-osc::MiStation::MiStation(
-    UID attachment,
-    const Vector3& position,
-    const std::string& name) :
-
-    m_Attachment{attachment},
-    m_Position{position},
-    m_Name{opyn::sanitize_to_open_sim_component_name(name)}
-{
-}
-
-MiClass osc::MiStation::CreateClass()
-{
-    return
-    {
-        MiStrings::c_StationLabel,
-        MiStrings::c_StationLabelPluralized,
-        MiStrings::c_StationLabelOptionallyPluralized,
+    return {
+        MiStrings::c_station_label,
+        MiStrings::c_station_label_pluralized,
+        MiStrings::c_station_label_optionally_pluralized,
         MSMICONS_MAP_PIN,
-        MiStrings::c_StationDescription,
+        MiStrings::c_station_description,
     };
 }
 
-std::vector<MiCrossrefDescriptor> osc::MiStation::implGetCrossReferences() const
+std::vector<MiCrossrefDescriptor> osc::MiStation::impl_get_cross_references() const
 {
-    return
-    {
-        {m_Attachment, MiStrings::c_StationParentCrossrefName, MiCrossrefDirection::ToParent},
+    return {
+        {attachment_, MiStrings::c_station_parent_crossref_name, MiCrossrefDirection::ToParent},
     };
 }
 
-std::ostream& osc::MiStation::implWriteToStream(std::ostream& o) const
+std::ostream& osc::MiStation::impl_write_to_stream(std::ostream& o) const
 {
-    return o << "MiStation("
-        << "ID = " << m_ID
-        << ", Attachment = " << m_Attachment
-        << ", Position = " << m_Position
-        << ", Name = " << m_Name
-        << ')';
+    return o << "MiStation("                      //
+             << "ID = " << id_                    //
+             << ", Attachment = " << attachment_  //
+             << ", Position = " << position_      //
+             << ", Name = " << name_              //
+             << ')';
 }
 
-void osc::MiStation::implSetLabel(std::string_view sv)
+void osc::MiStation::impl_set_label(std::string_view sv)
 {
-    m_Name = opyn::sanitize_to_open_sim_component_name(sv);
+    name_ = opyn::sanitize_to_open_sim_component_name(sv);
 }

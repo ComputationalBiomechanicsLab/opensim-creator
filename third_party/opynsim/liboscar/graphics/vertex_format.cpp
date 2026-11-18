@@ -19,13 +19,15 @@ osc::VertexFormat::VertexFormat(std::span<const VertexAttributeDescriptor> descr
     }
 
     if (attribute_descriptions_.front().attribute() != VertexAttribute::Position) {
-        throw std::runtime_error{"Invalid `VertexFormat`, a `VertexFormat` should always contain at least `VertexAttribute::Position`"};
+        throw std::runtime_error{
+            "Invalid `VertexFormat`, a `VertexFormat` should always contain at least `VertexAttribute::Position`"};
     }
 
     const auto end = attribute_descriptions_.end();
     for (auto it = attribute_descriptions_.begin(); it != end; ++it) {
-        if (cpp23::contains(it+1, end, it->attribute(), &VertexAttributeDescriptor::attribute)) {
-            throw std::runtime_error{"Duplicate `VertexAttribute`s were passed to a `VertexFormat` each `VertexAttribute` must be unique"};
+        if (cpp23::contains(it + 1, end, it->attribute(), &VertexAttributeDescriptor::attribute)) {
+            throw std::runtime_error{
+                "Duplicate `VertexAttribute`s were passed to a `VertexFormat` each `VertexAttribute` must be unique"};
         }
     }
 
@@ -38,11 +40,11 @@ void osc::VertexFormat::insert(const VertexAttributeDescriptor& desc)
         return;
     }
 
-    const auto it = rgs::find(attribute_descriptions_, desc.attribute(), &VertexAttributeDescriptor::attribute);
+    const auto it =
+        rgs::find(attribute_descriptions_, desc.attribute(), &VertexAttributeDescriptor::attribute);
     if (it != attribute_descriptions_.end()) {
         *it = desc;
-    }
-    else {
+    } else {
         attribute_descriptions_.push_back(desc);
     }
 
@@ -57,7 +59,8 @@ void osc::VertexFormat::erase(VertexAttribute attribute)
         return;
     }
 
-    const auto it = rgs::find(attribute_descriptions_, attribute, &VertexAttributeDescriptor::attribute);
+    const auto it =
+        rgs::find(attribute_descriptions_, attribute, &VertexAttributeDescriptor::attribute);
     if (it != attribute_descriptions_.end()) {
         attribute_descriptions_.erase(it);
         stride_ = calc_stride();

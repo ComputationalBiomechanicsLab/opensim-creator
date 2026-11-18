@@ -2,11 +2,11 @@
 // look for (e.g.) `python313_d.lib` if building in debug mode, which won't
 // work for typical installs of python
 #ifdef _DEBUG
-    #undef _DEBUG
-    #include <Python.h>
-    #define _DEBUG
+#undef _DEBUG
+#include <Python.h>
+#define _DEBUG
 #else
-    #include <Python.h>
+#include <Python.h>
 #endif
 
 #include <cstdlib>
@@ -21,7 +21,7 @@ namespace
     // Helper: slurp a file into a `std::string`
     std::string read_file(const std::filesystem::path& path)
     {
-        std::ifstream file(path, std::ios::binary); // binary avoids newline translation
+        std::ifstream file(path, std::ios::binary);  // binary avoids newline translation
         if (not file) {
             throw std::runtime_error("Cannot open file: " + path.string());
         }
@@ -35,7 +35,7 @@ namespace
         const std::string env = name + '=' + value;
         _putenv(env.c_str());
 #else
-        setenv(name.c_str(), value.c_str(), 1); // NOLINT(concurrency-mt-unsafe)
+        setenv(name.c_str(), value.c_str(), 1);  // NOLINT(concurrency-mt-unsafe)
 #endif
     }
 
@@ -62,7 +62,7 @@ namespace
 int main()  // NOLINT(bugprone-exception-escape)
 {
     // Set PYTHONPATH to the local virtual environment and `opynsim`
-    set_pythonpath({ R"(@Python_SITELIB@)", R"(@OPYN_CORE_DIRECTORY@/..)" });
+    set_pythonpath({R"(@Python_SITELIB@)", R"(@OPYN_CORE_DIRECTORY@/..)"});
 
     // Set the current working directory to the debugger's source directory (it's where
     // developers will probably dump data files etc. during development).

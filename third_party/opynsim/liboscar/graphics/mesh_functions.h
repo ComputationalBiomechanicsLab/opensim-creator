@@ -32,8 +32,7 @@ namespace osc
         std::span<const Vector3> vertices,
         std::span<const Vector3> normals,
         std::span<const Vector2> tex_coords,
-        const MeshIndicesView&
-    );
+        const MeshIndicesView&);
 
     // returns the bounding sphere of the given mesh
     std::optional<Sphere> bounding_sphere_of(const Mesh&);

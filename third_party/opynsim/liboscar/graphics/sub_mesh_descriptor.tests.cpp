@@ -33,7 +33,8 @@ TEST(SubMeshDescriptor, index_count_returns_second_constructor_argument)
 TEST(SubMeshDescriptor, topology_returns_third_constructor_argument)
 {
     ASSERT_EQ(SubMeshDescriptor(0, 2, MeshTopology::Lines).topology(), MeshTopology::Lines);
-    ASSERT_EQ(SubMeshDescriptor(73, 489, MeshTopology::Triangles).topology(), MeshTopology::Triangles);
+    ASSERT_EQ(
+        SubMeshDescriptor(73, 489, MeshTopology::Triangles).topology(), MeshTopology::Triangles);
 }
 
 TEST(SubMeshDescriptor, base_vertex_returns_fourth_constructor_argument)

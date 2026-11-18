@@ -18,6 +18,7 @@ namespace osc
 
         bool has_popup() const { return popup_to_open_ != nullptr; }
         std::unique_ptr<Popup> take_popup() { return std::move(popup_to_open_); }
+
     private:
         std::unique_ptr<Popup> popup_to_open_;
     };

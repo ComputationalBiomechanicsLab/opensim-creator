@@ -55,6 +55,7 @@ namespace opyn
         /// Returns a new `Series` with the same `name` as `*this`, but with
         /// each data value replaced by `f(value)`.
         Series map_elements(const std::function<double(double)>& f) const;
+
     private:
         friend bool operator==(const Series&, const Series&);
         friend Series operator*(double, const Series&);

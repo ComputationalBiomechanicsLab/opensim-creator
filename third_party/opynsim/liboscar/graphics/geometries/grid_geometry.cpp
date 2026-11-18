@@ -12,8 +12,8 @@ using namespace osc;
 
 osc::GridGeometry::GridGeometry(const Params& p)
 {
-    const float min = -0.5f*p.size;
-    const float max =  0.5f*p.size;
+    const float min = -0.5f * p.size;
+    const float max = 0.5f * p.size;
 
     const float step_size = (max - min) / static_cast<float>(p.num_divisions);
 
@@ -27,8 +27,7 @@ osc::GridGeometry::GridGeometry(const Params& p)
     normals.reserve(4 * num_lines);
     uint32_t index = 0;
 
-    auto push = [&index, &vertices, &indices, &normals](const Vector3& vertex)
-    {
+    auto push = [&index, &vertices, &indices, &normals](const Vector3& vertex) {
         vertices.push_back(vertex);
         indices.push_back(index++);
         normals.emplace_back(0.0f, 0.0f, 1.0f);

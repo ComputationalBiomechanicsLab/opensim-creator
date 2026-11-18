@@ -42,10 +42,11 @@ namespace
     {
         out(SceneDecoration{
             .mesh = cache.grid_mesh(),
-            .transform = {
-                .scale = Vector3{50.0f, 50.0f, 1.0f},
-                .rotation = rotation,
-            },
+            .transform =
+                {
+                    .scale = Vector3{50.0f, 50.0f, 1.0f},
+                    .rotation = rotation,
+                },
             .shading = Color::light_grey().with_alpha(0.15f),
             .flags = SceneDecorationFlag::AnnotationElement,
         });
@@ -53,28 +54,25 @@ namespace
 }
 
 void osc::draw_bvh(
-    SceneCache& cache,
-    const BVH& scene_bvh,
-    const std::function<void(SceneDecoration&&)>& out)
+    SceneCache& cache, const BVH& scene_bvh, const std::function<void(SceneDecoration&&)>& out)
 {
-    scene_bvh.for_each_leaf_or_inner_node([cube = cache.cube_wireframe_mesh(), &out](const BVHNode& node)
-    {
-        out(SceneDecoration{
-            .mesh = cube,
-            .transform = {
-                .scale = half_widths_of(node.bounds()),
-                .translation = centroid_of(node.bounds()),
-            },
-            .shading = Color::black(),
-            .flags = SceneDecorationFlag::AnnotationElement,
+    scene_bvh.for_each_leaf_or_inner_node(
+        [cube = cache.cube_wireframe_mesh(), &out](const BVHNode& node) {
+            out(SceneDecoration{
+                .mesh = cube,
+                .transform =
+                    {
+                        .scale = half_widths_of(node.bounds()),
+                        .translation = centroid_of(node.bounds()),
+                    },
+                .shading = Color::black(),
+                .flags = SceneDecorationFlag::AnnotationElement,
+            });
         });
-    });
 }
 
 void osc::draw_aabb(
-    SceneCache& cache,
-    const AABB& aabb,
-    const std::function<void(SceneDecoration&&)>& out)
+    SceneCache& cache, const AABB& aabb, const std::function<void(SceneDecoration&&)>& out)
 {
     draw_aabbs(cache, {{aabb}}, out);
 }
@@ -88,10 +86,11 @@ void osc::draw_aabbs(
     for (const AABB& aabb : aabbs) {
         out(SceneDecoration{
             .mesh = cube,
-            .transform = {
-                .scale = half_widths_of(aabb),
-                .translation = centroid_of(aabb),
-            },
+            .transform =
+                {
+                    .scale = half_widths_of(aabb),
+                    .translation = centroid_of(aabb),
+                },
             .shading = Color::black(),
             .flags = SceneDecorationFlag::AnnotationElement,
         });
@@ -99,30 +98,25 @@ void osc::draw_aabbs(
 }
 
 void osc::draw_bvh_leaf_nodes(
-    SceneCache& cache,
-    const BVH& bvh,
-    const std::function<void(SceneDecoration&&)>& out)
+    SceneCache& cache, const BVH& bvh, const std::function<void(SceneDecoration&&)>& out)
 {
-    bvh.for_each_leaf_node([&cache, &out](const BVHNode& node)
-    {
-        draw_aabb(cache, node.bounds(), out);
-    });
+    bvh.for_each_leaf_node(
+        [&cache, &out](const BVHNode& node) { draw_aabb(cache, node.bounds(), out); });
 }
 
 void osc::draw_xz_floor_lines(
-    SceneCache& cache,
-    const std::function<void(SceneDecoration&&)>& out,
-    float scale)
+    SceneCache& cache, const std::function<void(SceneDecoration&&)>& out, float scale)
 {
     const Mesh y_line = cache.yline_mesh();
 
     // X line
     out(SceneDecoration{
         .mesh = y_line,
-        .transform = {
-            .scale = Vector3{scale},
-            .rotation = angle_axis(90_deg, Vector3{0.0f, 0.0f, 1.0f}),
-        },
+        .transform =
+            {
+                .scale = Vector3{scale},
+                .rotation = angle_axis(90_deg, Vector3{0.0f, 0.0f, 1.0f}),
+            },
         .shading = Color::red(),
         .flags = SceneDecorationFlag::AnnotationElement,
     });
@@ -130,33 +124,28 @@ void osc::draw_xz_floor_lines(
     // Z line
     out(SceneDecoration{
         .mesh = y_line,
-        .transform = {
-            .scale = Vector3{scale},
-            .rotation = angle_axis(90_deg, Vector3{1.0f, 0.0f, 0.0f}),
-        },
+        .transform =
+            {
+                .scale = Vector3{scale},
+                .rotation = angle_axis(90_deg, Vector3{1.0f, 0.0f, 0.0f}),
+            },
         .shading = Color::blue(),
         .flags = SceneDecorationFlag::AnnotationElement,
     });
 }
 
-void osc::draw_xz_grid(
-    SceneCache& cache,
-    const std::function<void(SceneDecoration&&)>& out)
+void osc::draw_xz_grid(SceneCache& cache, const std::function<void(SceneDecoration&&)>& out)
 {
     const Quaternion rotation = angle_axis(90_deg, Vector3{1.0f, 0.0f, 0.0f});
     draw_grid(cache, rotation, out);
 }
 
-void osc::draw_xy_grid(
-    SceneCache& cache,
-    const std::function<void(SceneDecoration&&)>& out)
+void osc::draw_xy_grid(SceneCache& cache, const std::function<void(SceneDecoration&&)>& out)
 {
     draw_grid(cache, identity<Quaternion>(), out);
 }
 
-void osc::draw_yz_grid(
-    SceneCache& cache,
-    const std::function<void(SceneDecoration&&)>& out)
+void osc::draw_yz_grid(SceneCache& cache, const std::function<void(SceneDecoration&&)>& out)
 {
     const Quaternion rotation = angle_axis(90_deg, Vector3{0.0f, 1.0f, 0.0f});
     draw_grid(cache, rotation, out);
@@ -172,7 +161,7 @@ void osc::draw_arrow(
     if (isnan(total_length) or equal_within_epsilon(total_length, 0.0f)) {
         return;  // edge-case: caller passed junk vectors to this implementation
     }
-    const Vector3 direction = start_to_end/total_length;
+    const Vector3 direction = start_to_end / total_length;
 
     // draw the arrow from tip-to-base, because the neck might be
     // excluded in the case where the total length of the arrow is
@@ -182,7 +171,8 @@ void osc::draw_arrow(
     // emit tip cone
     out(SceneDecoration{
         .mesh = cache.cone_mesh(),
-        .transform = cylinder_to_line_segment_transform({tip_start, props.end}, props.head_thickness),
+        .transform =
+            cylinder_to_line_segment_transform({tip_start, props.end}, props.head_thickness),
         .shading = props.color,
         .flags = props.decoration_flags,
     });
@@ -191,7 +181,8 @@ void osc::draw_arrow(
     if (total_length > props.tip_length) {
         out(SceneDecoration{
             .mesh = cache.cylinder_mesh(),
-            .transform = cylinder_to_line_segment_transform({props.start, tip_start}, props.neck_thickness),
+            .transform =
+                cylinder_to_line_segment_transform({props.start, tip_start}, props.neck_thickness),
             .shading = props.color,
             .flags = props.decoration_flags,
         });
@@ -232,28 +223,29 @@ void osc::for_each_ray_collision_with_scene(
     const Ray& world_space_ray,
     const std::function<void(SceneCollision&&)>& out)
 {
-    scene_bvh.for_each_ray_aabb_collision(world_space_ray, [&cache, &decorations, &world_space_ray, &out](const BVHCollision& scene_collision)
-    {
-        // perform ray-triangle intersection tests on the scene collisions
-        const SceneDecoration& decoration = at(decorations, scene_collision.id);
-        const BVH& decoration_triangle_bvh = cache.get_bvh(decoration.mesh);
+    scene_bvh.for_each_ray_aabb_collision(
+        world_space_ray,
+        [&cache, &decorations, &world_space_ray, &out](const BVHCollision& scene_collision) {
+            // perform ray-triangle intersection tests on the scene collisions
+            const SceneDecoration& decoration = at(decorations, scene_collision.id);
+            const BVH& decoration_triangle_bvh = cache.get_bvh(decoration.mesh);
 
-        const std::optional<RayCollision> maybe_triangle_collision = get_closest_world_space_ray_triangle_collision(
-            decoration.mesh,
-            decoration_triangle_bvh,
-            decoration.transform,
-            world_space_ray
-        );
+            const std::optional<RayCollision> maybe_triangle_collision =
+                get_closest_world_space_ray_triangle_collision(
+                    decoration.mesh,
+                    decoration_triangle_bvh,
+                    decoration.transform,
+                    world_space_ray);
 
-        if (maybe_triangle_collision) {
-            out({
-                .decoration_id = decoration.id,
-                .decoration_index = static_cast<size_t>(scene_collision.id),
-                .world_position = maybe_triangle_collision->position,
-                .world_distance_from_ray_origin = maybe_triangle_collision->distance,
-            });
-        }
-    });
+            if (maybe_triangle_collision) {
+                out({
+                    .decoration_id = decoration.id,
+                    .decoration_index = static_cast<size_t>(scene_collision.id),
+                    .world_position = maybe_triangle_collision->position,
+                    .world_distance_from_ray_origin = maybe_triangle_collision->distance,
+                });
+            }
+        });
 }
 
 std::vector<SceneCollision> osc::get_all_ray_collisions_with_scene(
@@ -263,10 +255,10 @@ std::vector<SceneCollision> osc::get_all_ray_collisions_with_scene(
     const Ray& world_space_ray)
 {
     std::vector<SceneCollision> rv;
-    for_each_ray_collision_with_scene(scene_bvh, cache, decorations, world_space_ray, [&rv](SceneCollision&& scene_collision)
-    {
-        rv.push_back(std::move(scene_collision));
-    });
+    for_each_ray_collision_with_scene(
+        scene_bvh, cache, decorations, world_space_ray, [&rv](SceneCollision&& scene_collision) {
+            rv.push_back(std::move(scene_collision));
+        });
     return rv;
 }
 
@@ -285,20 +277,25 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
 
     // then perform a ray-AABB (of triangles) collision
     std::optional<RayCollision> rv;
-    triangle_bvh.for_each_ray_aabb_collision(modespace_ray, [&mesh, &transform, &world_space_ray, &modespace_ray, &rv](BVHCollision model_space_bvh_collision)
-    {
-        // then perform a ray-triangle collision
-        if (auto model_space_triangle_collision = find_collision(modespace_ray, mesh.get_triangle_at(model_space_bvh_collision.id))) {
-            // map it back into world space and check if it's closer
-            const Vector3 world_space_position = transform * model_space_triangle_collision->position;
-            const float distance = length(world_space_position - world_space_ray.origin);
+    triangle_bvh.for_each_ray_aabb_collision(
+        modespace_ray,
+        [&mesh, &transform, &world_space_ray, &modespace_ray, &rv](
+            BVHCollision model_space_bvh_collision) {
+            // then perform a ray-triangle collision
+            if (auto model_space_triangle_collision = find_collision(
+                    modespace_ray, mesh.get_triangle_at(model_space_bvh_collision.id))) {
 
-            if (not rv or rv->distance > distance) {
-                // if it's closer, update the return value
-                rv = RayCollision{distance, world_space_position};
+                // map it back into world space and check if it's closer
+                const Vector3 world_space_position =
+                    transform * model_space_triangle_collision->position;
+                const float distance = length(world_space_position - world_space_ray.origin);
+
+                if (not rv or rv->distance > distance) {
+                    // if it's closer, update the return value
+                    rv = RayCollision{distance, world_space_position};
+                }
             }
-        }
-    });
+        });
     return rv;
 }
 
@@ -309,24 +306,14 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
     const Rect& screen_render_rect,
     Vector2 mouse_screen_position)
 {
-    const Ray world_ray = camera.ui_to_world(
-        mouse_screen_position,
-        screen_render_rect
-    );
+    const Ray world_ray = camera.ui_to_world(mouse_screen_position, screen_render_rect);
 
     return get_closest_world_space_ray_triangle_collision(
-        mesh,
-        triangle_bvh,
-        identity<Transform>(),
-        world_ray
-    );
+        mesh, triangle_bvh, identity<Transform>(), world_ray);
 }
 
 SceneRendererParams osc::calc_standard_dark_scene_render_params(
-    const Camera& camera,
-    AntiAliasingLevel aa_level,
-    Vector2 dimensions,
-    float device_pixel_ratio)
+    const Camera& camera, AntiAliasingLevel aa_level, Vector2 dimensions, float device_pixel_ratio)
 {
     const auto clipping_planes = camera.clipping_planes();
     return SceneRendererParams{
@@ -359,9 +346,8 @@ BVH osc::create_triangle_bvh(const Mesh& mesh)
     }
 
     if (indices.is_uint32()) {
-        rv.build_from_indexed_triangles(mesh.vertices() , indices.to_uint32_span());
-    }
-    else {
+        rv.build_from_indexed_triangles(mesh.vertices(), indices.to_uint32_span());
+    } else {
         rv.build_from_indexed_triangles(mesh.vertices(), indices.to_uint16_span());
     }
     return rv;
@@ -380,6 +366,7 @@ FrustumPlanes osc::calc_frustum_planes(const Camera& camera, float aspect_ratio)
     const Vector3 front_mult_near = z_near * front;
     const Vector3 front_mult_far = z_far * front;
 
+    // clang-format off
     return {
                           // origin              // normal
         to_analytic_plane(pos + front_mult_near, -front                                                   ),  // near
@@ -389,6 +376,7 @@ FrustumPlanes osc::calc_frustum_planes(const Camera& camera, float aspect_ratio)
         to_analytic_plane(pos                  , -normalize(cross(right, front_mult_far - up*half_v_size))),  // top
         to_analytic_plane(pos                  , -normalize(cross(front_mult_far + up*half_v_size, right))),  // bottom
     };
+    // clang-format on
 }
 
 Vector3 osc::recommended_light_direction(const Camera& camera)

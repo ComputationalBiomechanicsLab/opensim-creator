@@ -2,8 +2,15 @@
 
 #include <liboscar/graphics/scene/scene_decoration_flags.h>
 
-namespace OpenSim { class Component; }
-namespace osc { struct SceneDecoration; }
+namespace OpenSim
+{
+    class Component;
+}
+
+namespace osc
+{
+    struct SceneDecoration;
+}
 
 namespace opyn
 {
@@ -11,11 +18,10 @@ namespace opyn
     class ComponentSceneDecorationFlagsTagger final {
     public:
         ComponentSceneDecorationFlagsTagger(
-            const OpenSim::Component* selected,
-            const OpenSim::Component* hovered
-        );
+            const OpenSim::Component* selected, const OpenSim::Component* hovered);
 
         void operator()(const OpenSim::Component&, osc::SceneDecoration&);
+
     private:
         osc::SceneDecorationFlags compute_flags(const OpenSim::Component&) const;
 

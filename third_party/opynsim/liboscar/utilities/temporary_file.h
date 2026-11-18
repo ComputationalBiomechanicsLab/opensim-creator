@@ -15,7 +15,8 @@ namespace osc
     // - The name of the file begins with `prefix`, ends with `suffix`, and the characters
     //   between the prefix and suffix are chosen to result in a new, unique, filename, throwing
     //   otherwise.
-    // - The file will be deleted from the filesystem upon destruction of the `TemporaryFile` object.
+    // - The file will be deleted from the filesystem upon destruction of the `TemporaryFile`
+    // object.
     class TemporaryFile final {
     public:
         // Constructs a `TemporaryFile` with the given parameters.
@@ -37,8 +38,8 @@ namespace osc
         // Returns the underlying stream that is connected to the temporary file.
         std::fstream& stream() { return handle_; }
 
-        // Closes the handle that this `TemporaryFile` has to the underlying file, but does not delete
-        // the underlying file (the destructor still deletes it, though)
+        // Closes the handle that this `TemporaryFile` has to the underlying file, but does not
+        // delete the underlying file (the destructor still deletes it, though)
         void close() { handle_.close(); }
 
     private:

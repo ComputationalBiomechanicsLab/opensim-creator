@@ -26,124 +26,105 @@
 
 using namespace osc;
 
-bool osc::IsAChildAttachmentInAnyJoint(const MiDocument& doc, const MiObject& obj)
+bool osc::is_a_child_attachment_in_any_joint(const MiDocument& doc, const MiObject& obj)
 {
-    return cpp23::contains(doc.iter<MiJoint>(), obj.getID(), &MiJoint::getChildID);
+    return cpp23::contains(doc.iter<MiJoint>(), obj.get_id(), &MiJoint::get_child_id);
 }
 
-bool osc::IsGarbageJoint(const MiDocument& doc, const MiJoint& joint)
+bool osc::is_garbage_joint(const MiDocument& doc, const MiJoint& joint)
 {
-    if (joint.getChildID() == MiIDs::Ground())
-    {
+    if (joint.get_child_id() == MiIDs::ground()) {
         return true;  // ground cannot be a child in a joint
     }
 
-    if (joint.getParentID() == joint.getChildID())
-    {
+    if (joint.get_parent_id() == joint.get_child_id()) {
         return true;  // is directly attached to itself
     }
 
-    if (joint.getParentID() != MiIDs::Ground() && !doc.contains<MiBody>(joint.getParentID()))
-    {
+    if (joint.get_parent_id() != MiIDs::ground() && !doc.contains<MiBody>(joint.get_parent_id())) {
         return true;  // has a parent ID that's invalid for this document
     }
 
-    if (!doc.contains<MiBody>(joint.getChildID()))
-    {
+    if (!doc.contains<MiBody>(joint.get_child_id())) {
         return true;  // has a child ID that's invalid for this document
     }
 
     return false;
 }
 
-bool osc::IsJointAttachedToGround(
-    const MiDocument& doc,
-    const MiJoint& joint,
-    std::unordered_set<UID>& previousVisits)
+bool osc::is_joint_attached_to_ground(
+    const MiDocument& doc, const MiJoint& joint, std::unordered_set<UID>& previous_visits)
 {
-    OSC_ASSERT_ALWAYS(!IsGarbageJoint(doc, joint));
+    OSC_ASSERT_ALWAYS(!is_garbage_joint(doc, joint));
 
-    if (joint.getParentID() == MiIDs::Ground())
-    {
+    if (joint.get_parent_id() == MiIDs::ground()) {
         return true;  // it's directly attached to ground
     }
 
-    const auto* const parent = doc.tryGetByID<MiBody>(joint.getParentID());
-    if (!parent)
-    {
+    const auto* const parent = doc.try_get_by_id<MiBody>(joint.get_parent_id());
+    if (!parent) {
         return false;  // joint's parent is garbage
     }
 
     // else: recurse to parent
-    return IsBodyAttachedToGround(doc, *parent, previousVisits);
+    return is_body_attached_to_ground(doc, *parent, previous_visits);
 }
 
-bool osc::IsBodyAttachedToGround(
-    const MiDocument& doc,
-    const MiBody& body,
-    std::unordered_set<UID>& previouslyVisitedJoints)
+bool osc::is_body_attached_to_ground(
+    const MiDocument& doc, const MiBody& body, std::unordered_set<UID>& previously_visited_joints)
 {
-    bool childInAtLeastOneJoint = false;
+    bool child_in_at_least_one_joint = false;
 
-    for (const MiJoint& joint : doc.iter<MiJoint>())
-    {
-        OSC_ASSERT(!IsGarbageJoint(doc, joint));
+    for (const MiJoint& joint : doc.iter<MiJoint>()) {
+        OSC_ASSERT(!is_garbage_joint(doc, joint));
 
-        if (joint.getChildID() == body.getID())
-        {
-            childInAtLeastOneJoint = true;
+        if (joint.get_child_id() == body.get_id()) {
+            child_in_at_least_one_joint = true;
 
-            const bool alreadyVisited = !previouslyVisitedJoints.emplace(joint.getID()).second;
-            if (alreadyVisited)
-            {
+            const bool already_visited = !previously_visited_joints.emplace(joint.get_id()).second;
+            if (already_visited) {
                 continue;  // skip this joint: was previously visited
             }
 
-            if (IsJointAttachedToGround(doc, joint, previouslyVisitedJoints))
-            {
+            if (is_joint_attached_to_ground(doc, joint, previously_visited_joints)) {
                 return true;  // recurse
             }
         }
     }
 
-    return !childInAtLeastOneJoint;
+    return !child_in_at_least_one_joint;
 }
 
-bool osc::GetIssues(
-    const MiDocument& doc,
-    std::vector<std::string>& issuesOut)
+bool osc::get_issues(const MiDocument& doc, std::vector<std::string>& issues_out)
 {
-    issuesOut.clear();
+    issues_out.clear();
 
-    for (const MiJoint& joint : doc.iter<MiJoint>())
-    {
-        if (IsGarbageJoint(doc, joint))
-        {
+    for (const MiJoint& joint : doc.iter<MiJoint>()) {
+        if (is_garbage_joint(doc, joint)) {
             std::stringstream ss;
-            ss << joint.getLabel() << ": joint is garbage (this is an implementation error)";
+            ss << joint.get_label() << ": joint is garbage (this is an implementation error)";
             throw std::runtime_error{std::move(ss).str()};
         }
     }
 
-    for (const MiBody& body : doc.iter<MiBody>())
-    {
-        std::unordered_set<UID> previouslyVisitedJoints;
-        if (!IsBodyAttachedToGround(doc, body, previouslyVisitedJoints))
-        {
+    for (const MiBody& body : doc.iter<MiBody>()) {
+        std::unordered_set<UID> previously_visited_joints;
+        if (!is_body_attached_to_ground(doc, body, previously_visited_joints)) {
             std::stringstream ss;
-            ss << body.getLabel() << ": body is not attached to ground: it is connected by a joint that, itself, does not connect to ground";
-            issuesOut.push_back(std::move(ss).str());
+            ss << body.get_label()
+               << ": body is not attached to ground: it is connected by a joint that, itself, does "
+                  "not connect to ground";
+            issues_out.push_back(std::move(ss).str());
         }
     }
 
-    return !issuesOut.empty();
+    return !issues_out.empty();
 }
 
-std::string osc::GetContextMenuSubHeaderText(
-    const MiDocument& doc,
-    const MiObject& obj)
+std::string osc::get_context_menu_sub_header_text(const MiDocument& doc, const MiObject& obj)
 {
     std::stringstream ss;
+    // clang-format off
     std::visit(Overload
     {
         [&ss](const MiGround&)
@@ -152,115 +133,95 @@ std::string osc::GetContextMenuSubHeaderText(
         },
         [&ss, &doc](const MiMesh& m)
         {
-            ss << '(' << m.getClass().getName() << ", " << m.getPath().filename().string() << ", attached to " << doc.getLabelByID(m.getParentID()) << ')';
+            ss << '(' << MiMesh::get_class().get_name() << ", " << m.get_path().filename().string() << ", attached to " << doc.get_label_by_id(m.get_parent_id()) << ')';
         },
-        [&ss](const MiBody& b)
+        [&ss](const MiBody&)
         {
-            ss << '(' << b.getClass().getName() << ')';
+            ss << '(' << MiBody::get_class().get_name() << ')';
         },
         [&ss, &doc](const MiJoint& j)
         {
-            ss << '(' << j.getSpecificTypeName() << ", " << doc.getLabelByID(j.getChildID()) << " --> " << doc.getLabelByID(j.getParentID()) << ')';
+            ss << '(' << j.get_specific_type_name() << ", " << doc.get_label_by_id(j.get_child_id()) << " --> " << doc.get_label_by_id(j.get_parent_id()) << ')';
         },
         [&ss, &doc](const MiStation& s)
         {
-            ss << '(' << s.getClass().getName() << ", attached to " << doc.getLabelByID(s.getParentID()) << ')';
+            ss << '(' << MiStation::get_class().get_name() << ", attached to " << doc.get_label_by_id(s.get_parent_id()) << ')';
         },
-    }, obj.toVariant());
+    }, obj.to_variant());
+    // clang-format on
     return std::move(ss).str();
 }
 
-bool osc::IsInSelectionGroupOf(
-    const MiDocument& doc,
-    UID parent,
-    UID id)
+bool osc::is_in_selection_group_of(const MiDocument& doc, UID parent, UID id)
 {
-    if (id == MiIDs::Empty() || parent == MiIDs::Empty())
-    {
+    if (id == MiIDs::empty() || parent == MiIDs::empty()) {
         return false;
     }
 
-    if (id == parent)
-    {
+    if (id == parent) {
         return true;
     }
 
     const MiBody* body = nullptr;
-    if (const auto* be = doc.tryGetByID<MiBody>(parent))
-    {
+    if (const auto* be = doc.try_get_by_id<MiBody>(parent)) {
         body = be;
-    }
-    else if (const auto* me = doc.tryGetByID<MiMesh>(parent))
-    {
-        body = doc.tryGetByID<MiBody>(me->getParentID());
+    } else if (const auto* me = doc.try_get_by_id<MiMesh>(parent)) {
+        body = doc.try_get_by_id<MiBody>(me->get_parent_id());
     }
 
-    if (!body)
-    {
+    if (!body) {
         return false;  // parent isn't attached to any body (or isn't a body)
     }
 
-    if (const auto* be = doc.tryGetByID<MiBody>(id))
-    {
-        return be->getID() == body->getID();
-    }
-    else if (const auto* me = doc.tryGetByID<MiMesh>(id))
-    {
-        return me->getParentID() == body->getID();
-    }
-    else
-    {
+    if (const auto* be = doc.try_get_by_id<MiBody>(id)) {
+        return be->get_id() == body->get_id();
+    } else if (const auto* me = doc.try_get_by_id<MiMesh>(id)) {
+        return me->get_parent_id() == body->get_id();
+    } else {
         return false;
     }
 }
 
-void osc::SelectAnythingGroupedWith(MiDocument& doc, UID id)
+void osc::select_anything_grouped_with(MiDocument& doc, UID id)
 {
-    ForEachIDInSelectionGroup(doc, id, [&doc](UID other)
-    {
-        doc.select(other);
-    });
+    for_each_id_in_selection_group(doc, id, [&doc](UID other) { doc.select(other); });
 }
 
-UID osc::GetStationAttachmentParent(const MiDocument& doc, const MiObject& obj)
+UID osc::get_station_attachment_parent(const MiDocument& doc, const MiObject& obj)
 {
+    // clang-format off
     return std::visit(Overload
     {
-        [](const MiGround&) { return MiIDs::Ground(); },
-        [&doc](const MiMesh& meshEl) { return doc.contains<MiBody>(meshEl.getParentID()) ? meshEl.getParentID() : MiIDs::Ground(); },
-        [](const MiBody& bodyEl) { return bodyEl.getID(); },
-        [](const MiJoint&) { return MiIDs::Ground(); },
-        [](const MiStation&) { return MiIDs::Ground(); },
-    }, obj.toVariant());
+        [](const MiGround&) { return MiIDs::ground(); },
+        [&doc](const MiMesh& mesh_el) { return doc.contains<MiBody>(mesh_el.get_parent_id()) ? mesh_el.get_parent_id() : MiIDs::ground(); },
+        [](const MiBody& body_el) { return body_el.get_id(); },
+        [](const MiJoint&) { return MiIDs::ground(); },
+        [](const MiStation&) { return MiIDs::ground(); },
+    }, obj.to_variant());
+    // clang-format on
 }
 
-void osc::point_axis_towards(
-    MiDocument& doc,
-    UID id,
-    int axis,
-    UID other)
+void osc::point_axis_towards(MiDocument& doc, UID id, int axis, UID other)
 {
-    const Vector3 choicePos = doc.getPosByID(other);
-    const Transform sourceXform = {.translation = doc.getPosByID(id)};
+    const Vector3 choice_pos = doc.get_pos_by_id(other);
+    const Transform source_xform = {.translation = doc.get_pos_by_id(id)};
 
-    doc.updByID(id).setXform(doc, point_axis_towards(sourceXform, axis, choicePos));
+    doc.upd_by_id(id).set_xform(doc, point_axis_towards(source_xform, axis, choice_pos));
 }
 
-SceneDecorationFlags osc::computeFlags(
-    const MiDocument& doc,
-    UID id,
-    std::optional<UID> maybeHoverID)
+SceneDecorationFlags osc::compute_flags(
+    const MiDocument& doc, UID id, std::optional<UID> maybe_hover_id)
 {
-    if (id == MiIDs::Empty()) {
+    if (id == MiIDs::empty()) {
         return SceneDecorationFlag::Default;
     }
 
-    const UID hoverID = maybeHoverID ? *maybeHoverID : MiIDs::Empty();
+    const UID hover_id = maybe_hover_id ? *maybe_hover_id : MiIDs::empty();
     SceneDecorationFlags rv = SceneDecorationFlag::Default;
-    if (doc.isSelected(id)) {
+    if (doc.is_selected(id)) {
         rv |= SceneDecorationFlag::RimHighlight0;
     }
-    if (id == hoverID or IsInSelectionGroupOf(doc, hoverID, id)) {
+    if (id == hover_id or is_in_selection_group_of(doc, hover_id, id)) {
         rv |= SceneDecorationFlag::RimHighlight1;
     }
     return rv;

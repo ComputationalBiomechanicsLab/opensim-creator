@@ -11,10 +11,5 @@ void osc::detail::on_assertion_failure(
     unsigned int file_line)
 {
     throw formatted_runtime_error(
-        "{}:{}:{}: OSC_ASSERT({}) failed",
-        file_name,
-        function_name,
-        file_line,
-        failing_code
-    );
+        "{}:{}:{}: OSC_ASSERT({}) failed", file_name, function_name, file_line, failing_code);
 }

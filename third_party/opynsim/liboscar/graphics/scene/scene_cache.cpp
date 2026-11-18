@@ -52,9 +52,7 @@ namespace
     // parameters for a shader, to be used as a key into the shader cache
     struct ShaderLookupKey final {
 
-        ShaderLookupKey(
-            ResourcePath vertex_shader_path,
-            ResourcePath fragment_shader_path) :
+        ShaderLookupKey(ResourcePath vertex_shader_path, ResourcePath fragment_shader_path) :
 
             vertex_shader_path{std::move(vertex_shader_path)},
             fragment_shader_path{std::move(fragment_shader_path)}
@@ -84,7 +82,9 @@ namespace
         Mesh rv;
         rv.set_topology(MeshTopology::Lines);
         rv.set_vertices({{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}});
-        rv.set_normals({{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}});  // just give them *something* in-case they are rendered through a shader that requires normals
+        // Just give the line *something* in-case they are rendered through a
+        // shader that requires normals.
+        rv.set_normals({{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}});
         rv.set_indices({0, 1});
         return rv;
     }
@@ -93,10 +93,7 @@ namespace
 template<>
 struct std::hash<ShaderLookupKey> final {
 
-    size_t operator()(const ShaderLookupKey& inputs) const noexcept
-    {
-        return inputs.hash;
-    }
+    size_t operator()(const ShaderLookupKey& inputs) const noexcept { return inputs.hash; }
 };
 
 template<>
@@ -124,9 +121,7 @@ public:
         torus_cache_.lock()->clear();
     }
 
-    Mesh get_mesh(
-        const std::string& key,
-        const std::function<Mesh()>& getter)
+    Mesh get_mesh(const std::string& key, const std::function<Mesh()>& getter)
     {
         auto guard = mesh_cache_.lock();
 
@@ -156,13 +151,14 @@ public:
         auto guard = torus_cache_.lock();
         auto [it, inserted] = guard->try_emplace(key, cube_);
         if (inserted) {
-            it->second = TorusGeometry{{
-                .tube_center_radius = key.tube_center_radius,
-                .tube_radius = key.tube_radius,
-                .num_radial_segments = 12,
-                .num_tubular_segments = 12,
-                .arc = Degrees{360},
-            }}.mesh();
+            it->second = TorusGeometry{
+                {
+                    .tube_center_radius = key.tube_center_radius,
+                    .tube_radius = key.tube_radius,
+                    .num_radial_segments = 12,
+                    .num_tubular_segments = 12,
+                    .arc = Degrees{360},
+                }}.mesh();
         }
 
         return it->second;
@@ -180,8 +176,7 @@ public:
     }
 
     const Shader& load(
-        const ResourcePath& vertex_shader_path,
-        const ResourcePath& fragment_shader_path)
+        const ResourcePath& vertex_shader_path, const ResourcePath& fragment_shader_path)
     {
         const ShaderLookupKey key{vertex_shader_path, fragment_shader_path};
 
@@ -189,11 +184,12 @@ public:
         const auto it = guard->find(key);
         if (it != guard->end()) {
             return it->second;
-        }
-        else {
+        } else {
             const std::string vertex_shader_src = resource_loader_.slurp(key.vertex_shader_path);
-            const std::string fragment_shader_src = resource_loader_.slurp(key.fragment_shader_path);
-            return guard->emplace_hint(it, key, Shader{vertex_shader_src, fragment_shader_src})->second;
+            const std::string fragment_shader_src =
+                resource_loader_.slurp(key.fragment_shader_path);
+            return guard->emplace_hint(it, key, Shader{vertex_shader_src, fragment_shader_src})
+                ->second;
         }
     }
     const Shader& load(
@@ -207,12 +203,16 @@ public:
         const auto it = guard->find(key);
         if (it != guard->end()) {
             return it->second;
-        }
-        else {
+        } else {
             const std::string vertex_shader_src = resource_loader_.slurp(key.vertex_shader_path);
-            const std::string geometry_shader_src = resource_loader_.slurp(key.geometry_shader_path);
-            const std::string fragment_shader_src = resource_loader_.slurp(key.fragment_shader_path);
-            return guard->emplace_hint(it, key, Shader{vertex_shader_src, geometry_shader_src, fragment_shader_src})->second;
+            const std::string geometry_shader_src =
+                resource_loader_.slurp(key.geometry_shader_path);
+            const std::string fragment_shader_src =
+                resource_loader_.slurp(key.fragment_shader_path);
+            return guard
+                ->emplace_hint(
+                    it, key, Shader{vertex_shader_src, geometry_shader_src, fragment_shader_src})
+                ->second;
         }
     }
 
@@ -221,8 +221,7 @@ public:
         const auto guard = generic_objects_.lock();
         if (const auto it = guard->find(type_info); it != guard->end()) {
             return it->second.get();
-        }
-        else {
+        } else {
             return nullptr;
         }
     }
@@ -232,10 +231,7 @@ public:
         generic_objects_.lock()->insert_or_assign(type_info, ptr);
     }
 
-    const MeshBasicMaterial& basic_material()
-    {
-        return basic_material_.emplace();
-    }
+    const MeshBasicMaterial& basic_material() { return basic_material_.emplace(); }
 
     const MeshBasicMaterial& wireframe_material()
     {
@@ -260,7 +256,8 @@ private:
     }};
     Mesh circle_ = CircleGeometry{{.radius = 1.0f, .num_segments = 16}};
     Mesh cylinder_ = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16}};
-    Mesh uncapped_cylinder_ = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16, .open_ended = true}};
+    Mesh uncapped_cylinder_ =
+        CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16, .open_ended = true}};
     Mesh cube_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
     Mesh cone_ = ConeGeometry{{.radius = 1.0f, .height = 2.0f, .num_radial_segments = 16}};
     Mesh floor_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
@@ -280,7 +277,8 @@ private:
     std::optional<MeshBasicMaterial> wireframe_material_;
 
     // typeid (generic) cache
-    SynchronizedValue<ankerl::unordered_dense::map<TypeInfoReference, std::shared_ptr<void>>> generic_objects_;
+    SynchronizedValue<ankerl::unordered_dense::map<TypeInfoReference, std::shared_ptr<void>>>
+        generic_objects_;
 };
 
 osc::SceneCache::SceneCache() :
@@ -298,24 +296,55 @@ void osc::SceneCache::clear_meshes()
     impl_->clear_meshes();
 }
 
-Mesh osc::SceneCache::get_mesh(
-    const std::string& key,
-    const std::function<Mesh()>& getter)
+Mesh osc::SceneCache::get_mesh(const std::string& key, const std::function<Mesh()>& getter)
 {
     return impl_->get_mesh(key, getter);
 }
 
-Mesh osc::SceneCache::sphere_mesh() { return impl_->sphere_mesh(); }
-Mesh osc::SceneCache::circle_mesh() { return impl_->circle_mesh(); }
-Mesh osc::SceneCache::cylinder_mesh() { return impl_->cylinder_mesh(); }
-Mesh osc::SceneCache::uncapped_cylinder_mesh() { return impl_->uncapped_cylinder_mesh(); }
-Mesh osc::SceneCache::brick_mesh() { return impl_->brick_mesh(); }
-Mesh osc::SceneCache::cone_mesh() { return impl_->cone_mesh(); }
-Mesh osc::SceneCache::floor_mesh() { return impl_->floor_mesh(); }
-Mesh osc::SceneCache::grid_mesh() { return impl_->grid_mesh(); }
-Mesh osc::SceneCache::cube_wireframe_mesh() { return impl_->cube_wireframe_mesh(); }
-Mesh osc::SceneCache::yline_mesh() { return impl_->yline_mesh(); }
-Mesh osc::SceneCache::quad_mesh() { return impl_->quad_mesh(); }
+Mesh osc::SceneCache::sphere_mesh()
+{
+    return impl_->sphere_mesh();
+}
+Mesh osc::SceneCache::circle_mesh()
+{
+    return impl_->circle_mesh();
+}
+Mesh osc::SceneCache::cylinder_mesh()
+{
+    return impl_->cylinder_mesh();
+}
+Mesh osc::SceneCache::uncapped_cylinder_mesh()
+{
+    return impl_->uncapped_cylinder_mesh();
+}
+Mesh osc::SceneCache::brick_mesh()
+{
+    return impl_->brick_mesh();
+}
+Mesh osc::SceneCache::cone_mesh()
+{
+    return impl_->cone_mesh();
+}
+Mesh osc::SceneCache::floor_mesh()
+{
+    return impl_->floor_mesh();
+}
+Mesh osc::SceneCache::grid_mesh()
+{
+    return impl_->grid_mesh();
+}
+Mesh osc::SceneCache::cube_wireframe_mesh()
+{
+    return impl_->cube_wireframe_mesh();
+}
+Mesh osc::SceneCache::yline_mesh()
+{
+    return impl_->yline_mesh();
+}
+Mesh osc::SceneCache::quad_mesh()
+{
+    return impl_->quad_mesh();
+}
 Mesh osc::SceneCache::torus_mesh(float tube_center_radius, float tube_radius)
 {
     return impl_->torus_mesh(tube_center_radius, tube_radius);
@@ -331,8 +360,7 @@ const BVH& osc::SceneCache::get_bvh(const Mesh& mesh)
 }
 
 const Shader& osc::SceneCache::get_shader(
-    const ResourcePath& vertex_shader_path,
-    const ResourcePath& fragment_shader_path)
+    const ResourcePath& vertex_shader_path, const ResourcePath& fragment_shader_path)
 {
     return impl_->load(vertex_shader_path, fragment_shader_path);
 }

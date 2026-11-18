@@ -7,6 +7,6 @@ namespace opyn
         Float,
         Vector2,
         String,
-        NUM_OPTIONS
+        NUM_OPTIONS,
     };
 }

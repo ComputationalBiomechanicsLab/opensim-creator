@@ -25,8 +25,8 @@ TEST(SceneCache, get_bvh_on_nonempty_mesh_returns_expected_root_node)
 {
     constexpr auto pyramid_vertices = std::to_array<Vector3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
-        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
-        { 0.0f,  1.0f, 0.0f},  // base: top-middle
+        {+1.0f, -1.0f, 0.0f},  // base: bottom-right
+        {+0.0f, +1.0f, 0.0f},  // base: top-middle
     });
     constexpr auto pyramid_indices = std::to_array<uint16_t>({0, 1, 2});
 

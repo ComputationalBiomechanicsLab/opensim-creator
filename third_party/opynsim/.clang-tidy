@@ -1,4 +1,5 @@
 ---
+HeaderFilterRegex: 'hellooscar|libopensimcreator|libopynsim|liboscar|liboscar-demos|opynsim_debugger|osc|oscar_demo_viewer|src'
 Checks: >
   clang-analyzer-*,
   -clang-analyzer-optin.core.EnumCastOutOfRange,
@@ -7,18 +8,26 @@ Checks: >
   -bugprone-narrowing-conversions,
   -bugprone-easily-swappable-parameters,
   -bugprone-unchecked-optional-access,
+  -bugprone-branch-clone,
+  -bugprone-macro-parentheses,
+  -bugprone-unhandled-self-assignment,
   misc-*,
   -misc-no-recursion,
   -misc-include-cleaner,
   -misc-const-correctness,
+  -misc-override-with-different-visibility,
+  -misc-non-private-member-variables-in-classes,
+  -misc-unconventional-assign-operator,
   concurrency-*,
   modernize-*,
   -modernize-loop-convert,
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
   -modernize-pass-by-value,
+  -modernize-avoid-c-arrays,
   cppcoreguidelines-*,
   -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-narrowing-conversions,
@@ -27,21 +36,39 @@ Checks: >
   -cppcoreguidelines-pro-type-vararg,
   -cppcoreguidelines-avoid-do-while,
   -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-special-member-functions,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-rvalue-reference-param-not-moved,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-c-copy-assignment-signature,
   performance-*,
   -performance-avoid-endl,
   -performance-enum-size,
+  -performance-unnecessary-copy-initialization,
+  -performance-unnecessary-value-param,
+  -performance-move-constructor-init,
+  -performance-move-const-arg,
   portability-*,
   google-*,
   -google-readability-namespace-comments,
   -google-readability-todo,
   -google-build-using-namespace,
   -google-readability-avoid-underscore-in-googletest-name,
+  -google-explicit-constructor,
   hicpp-*,
   -hicpp-uppercase-literal-suffix,
   -hicpp-signed-bitwise,
   -hicpp-vararg,
   -hicpp-named-parameter,
+  -hicpp-explicit-conversions,
+  -hicpp-no-array-decay,
+  -hicpp-special-member-functions,
+  -hicpp-avoid-c-arrays,
+  -hicpp-move-const-arg,
   readability-*,
+  -readability-redundant-member-init,
   -readability-magic-numbers,
   -readability-identifier-length,
   -readability-uppercase-literal-suffix,
@@ -53,8 +80,12 @@ Checks: >
   -readability-avoid-nested-conditional-operator,
   -readability-simplify-boolean-expr,
   -readability-make-member-function-const,
-  cert-*
-  -cert-dcl21-cpp
+  -readability-redundant-casting,
+  cert-*,
+  -cert-dcl21-cpp,
+  -cert-oop54-cpp,
+  -cert-oop11-cpp,
+  -cert-dcl58-cpp
 
 CheckOptions:
   - key: readability-implicit-bool-conversion.AllowPointerConditions
@@ -122,8 +153,5 @@ CheckOptions:
     value: lower_case
 #  - key: readability-identifier-naming.EnumConstantCase
 #    value: lower_case
-  - key: readability-identifier-naming.NamespaceCase
-    value: lower_case
-
-WarningsAsErrors: '*'
-
+#  - key: readability-identifier-naming.NamespaceCase
+#    value: lower_case

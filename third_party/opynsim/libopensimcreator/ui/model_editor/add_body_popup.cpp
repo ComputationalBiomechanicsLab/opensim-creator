@@ -28,22 +28,21 @@
 #include <string_view>
 #include <utility>
 
-
 class osc::AddBodyPopup::Impl final : public PopupPrivate {
 public:
     Impl(
         AddBodyPopup& owner,
         Widget* parent,
-        std::string_view popupName,
-        std::shared_ptr<opyn::ModelStatePair> modelState) :
+        std::string_view popup_name,
+        std::shared_ptr<opyn::ModelStatePair> model_state) :
 
-        PopupPrivate{owner, parent, popupName},
-        m_Model{std::move(modelState)}
+        PopupPrivate{owner, parent, popup_name},
+        model_{std::move(model_state)}
     {}
 
     void draw_content()
     {
-        if (m_Model->is_readonly()) {
+        if (model_->is_readonly()) {
             ui::draw_text_centered(MSMICONS_LOCK " cannot edit the model - it is locked");
             if (ui::draw_button("cancel")) {
                 request_close();
@@ -51,13 +50,14 @@ public:
             return;
         }
 
-        const OpenSim::Model& model = m_Model->get_model();
+        const OpenSim::Model& model = model_->get_model();
 
-        const auto* selectedPf = opyn::find_component<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
-        if (not selectedPf) {
+        const auto* selected_pf = opyn::find_component<OpenSim::PhysicalFrame>(
+            model, body_details_.parent_frame_abs_path);
+        if (not selected_pf) {
             // if nothing selected (or not found), coerce the initial selection to ground
-            selectedPf = &model.getGround();
-            m_BodyDetails.parentFrameAbsPath = opyn::get_absolute_path_string(*selectedPf);
+            selected_pf = &model.getGround();
+            body_details_.parent_frame_abs_path = opyn::get_absolute_path_string(*selected_pf);
         }
 
         ui::set_num_columns(2);
@@ -70,10 +70,11 @@ public:
 
             ui::draw_text("body name");
             ui::same_line();
-            ui::draw_help_marker("The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
+            ui::draw_help_marker(
+                "The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
             ui::next_column();
             ui::set_next_item_width(ui::get_content_region_available().x());
-            ui::draw_string_input("##bodyname", m_BodyDetails.bodyName);
+            ui::draw_string_input("##bodyname", body_details_.body_name);
             ui::add_screenshot_annotation_to_last_drawn_item("AddBodyPopup::BodyNameInput");
             ui::next_column();
         }
@@ -85,7 +86,7 @@ public:
             ui::draw_help_marker("The mass of the body in kilograms");
             ui::next_column();
             ui::set_next_item_width(ui::get_content_region_available().x());
-            ui::draw_float_kilogram_input("##mass", m_BodyDetails.mass);
+            ui::draw_float_kilogram_input("##mass", body_details_.mass);
             ui::next_column();
         }
 
@@ -96,7 +97,7 @@ public:
             ui::draw_help_marker("The location of the mass center in the body frame.");
             ui::next_column();
             ui::set_next_item_width(ui::get_content_region_available().x());
-            ui::draw_float3_meters_input("##comeditor", m_BodyDetails.centerOfMass);
+            ui::draw_float3_meters_input("##comeditor", body_details_.center_of_mass);
             ui::next_column();
         }
 
@@ -104,10 +105,11 @@ public:
         {
             ui::draw_text("inertia (tensor)");
             ui::same_line();
-            ui::draw_help_marker("The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz]. These are measured about the center of mass, *not* the center of the body frame.");
+            ui::draw_help_marker(
+                "The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz]. These are measured about the center of mass, *not* the center of the body frame.");
             ui::next_column();
             ui::set_next_item_width(ui::get_content_region_available().x());
-            ui::draw_float3_meters_input("##inertiaeditor", m_BodyDetails.inertia);
+            ui::draw_float3_meters_input("##inertiaeditor", body_details_.inertia);
             ui::next_column();
         }
 
@@ -115,24 +117,30 @@ public:
         {
             ui::draw_text("join to");
             ui::same_line();
-            ui::draw_help_marker("What the added body will be joined to. All bodies in an OpenSim model are connected to other bodies, or the ground, by joints. This is true even if the joint is unconstrained and does nothing (e.g. an OpenSim::FreeJoint) or if the joint constrains motion in all direcctions (e.g. an OpenSim::WeldJoint).");
+            ui::draw_help_marker(
+                "What the added body will be joined to. All bodies in an OpenSim model are connected to other bodies, or the ground, by joints. This is true even if the joint is unconstrained and does nothing (e.g. an OpenSim::FreeJoint) or if the joint constrains motion in all direcctions (e.g. an OpenSim::WeldJoint).");
             ui::next_column();
 
             // show a search bar that the user can type into in order to filter through
             // the available frame list (can contain many items in large models, #21).
             ui::set_next_item_width(ui::get_content_region_available().x());
-            DrawSearchBar(m_JoinToSearchFilter);
+            draw_search_bar(join_to_search_filter_);
 
-            ui::begin_child_panel("join targets", Vector2{0, 128.0f}, ui::ChildPanelFlag::Border, ui::PanelFlag::HorizontalScrollbar);
+            ui::begin_child_panel(
+                "join targets",
+                Vector2{0, 128.0f},
+                ui::ChildPanelFlag::Border,
+                ui::PanelFlag::HorizontalScrollbar);
             for (const auto& pf : model.getComponentList<OpenSim::PhysicalFrame>()) {
-                if (not contains_case_insensitive(pf.getName(), m_JoinToSearchFilter)) {
+                if (not contains_case_insensitive(pf.getName(), join_to_search_filter_)) {
                     continue;
                 }
-                if (ui::draw_selectable(pf.getName(), &pf == selectedPf)) {
-                    selectedPf = &pf;
-                    m_BodyDetails.parentFrameAbsPath = opyn::get_absolute_path_string(*selectedPf);
+                if (ui::draw_selectable(pf.getName(), &pf == selected_pf)) {
+                    selected_pf = &pf;
+                    body_details_.parent_frame_abs_path =
+                        opyn::get_absolute_path_string(*selected_pf);
                 }
-                if (&pf == selectedPf) {
+                if (&pf == selected_pf) {
                     ui::add_screenshot_annotation_to_last_drawn_item(pf.getName());
                 }
             }
@@ -144,16 +152,16 @@ public:
         {
             ui::draw_text("joint type");
             ui::same_line();
-            ui::draw_help_marker("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
+            ui::draw_help_marker(
+                "The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
             ui::next_column();
             {
                 const auto& registry = opyn::get_component_registry<OpenSim::Joint>();
                 ui::draw_combobox(
                     "##jointtype",
-                    &m_BodyDetails.jointTypeIndex,
+                    &body_details_.joint_type_index,
                     registry.size(),
-                    [&registry](size_t i) { return registry[i].name(); }
-                );
+                    [&registry](size_t i) { return registry[i].name(); });
                 ui::add_screenshot_annotation_to_last_drawn_item("AddBodyPopup::JointTypeInput");
             }
             ui::next_column();
@@ -163,10 +171,11 @@ public:
         {
             ui::draw_text("joint name");
             ui::same_line();
-            ui::draw_help_marker("The name of the OpenSim::Joint that will join the new body to the existing frame specified above");
+            ui::draw_help_marker(
+                "The name of the OpenSim::Joint that will join the new body to the existing frame specified above");
             ui::next_column();
             ui::set_next_item_width(ui::get_content_region_available().x());
-            ui::draw_string_input("##jointnameinput", m_BodyDetails.jointName);
+            ui::draw_string_input("##jointnameinput", body_details_.joint_name);
             ui::add_screenshot_annotation_to_last_drawn_item("AddBodyPopup::JointNameInput");
             ui::next_column();
         }
@@ -175,9 +184,10 @@ public:
         {
             ui::draw_text("add offset frames");
             ui::same_line();
-            ui::draw_help_marker("Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
+            ui::draw_help_marker(
+                "Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
             ui::next_column();
-            ui::draw_checkbox("##addoffsetframescheckbox", &m_BodyDetails.addOffsetFrames);
+            ui::draw_checkbox("##addoffsetframescheckbox", &body_details_.add_offset_frames);
             ui::add_screenshot_annotation_to_last_drawn_item("AddBodyPopup::AddOffsetFramesInput");
             ui::next_column();
         }
@@ -186,10 +196,14 @@ public:
         {
             ui::draw_text("geometry");
             ui::same_line();
-            ui::draw_help_marker("Attaches visual geometry to the new body. This is what the OpenSim::Body looks like in the UI. The geometry is purely cosmetic and does not affect the simulation");
+            ui::draw_help_marker(
+                "Attaches visual geometry to the new body. This is what the OpenSim::Body looks like in the UI. The geometry is purely cosmetic and does not affect the simulation");
             ui::next_column();
             {
-                const std::string label = m_BodyDetails.maybeGeometry ? opyn::get_display_name(*m_BodyDetails.maybeGeometry) : std::string{"attach"};
+                const std::string label =
+                    body_details_.maybe_geometry
+                        ? opyn::get_display_name(*body_details_.maybe_geometry)
+                        : std::string{"attach"};
 
                 if (ui::draw_button(label)) {
                     // open geometry selection popup
@@ -197,8 +211,7 @@ public:
                         &owner(),
                         "addbody_attachgeometry",
                         App::resource_filepath("geometry"),
-                        [this](auto ptr) { onGeometrySelection(std::move(ptr)); }
-                    );
+                        [this](auto ptr) { on_geometry_selection(std::move(ptr)); });
                     App::post_event<OpenPopupEvent>(owner(), std::move(popup));
                 }
                 ui::add_screenshot_annotation_to_last_drawn_item("AddBodyPopup::GeometryButton");
@@ -217,39 +230,42 @@ public:
         ui::same_line();
 
         if (ui::draw_button(MSMICONS_PLUS " add body")) {
-            ActionAddBodyToModel(*m_Model, m_BodyDetails);
+            action_add_body_to_model(*model_, body_details_);
             request_close();
         }
     }
 
-    void on_close()
-    {
-        m_BodyDetails = BodyDetails{};
-    }
+    void on_close() { body_details_ = BodyDetails{}; }
+
 private:
-    void onGeometrySelection(std::unique_ptr<OpenSim::Geometry> ptr)
+    void on_geometry_selection(std::unique_ptr<OpenSim::Geometry> ptr)
     {
-        m_BodyDetails.maybeGeometry = std::move(ptr);
+        body_details_.maybe_geometry = std::move(ptr);
     }
 
     // the model that the body will be added to
-    std::shared_ptr<opyn::ModelStatePair> m_Model;
+    std::shared_ptr<opyn::ModelStatePair> model_;
 
     // a user-enacted search string that should be used to filter through available
     // frames that can be joined to (#21).
-    std::string m_JoinToSearchFilter;
+    std::string join_to_search_filter_;
 
     // details of the to-be-added body
-    BodyDetails m_BodyDetails;
+    BodyDetails body_details_;
 };
-
 
 osc::AddBodyPopup::AddBodyPopup(
     Widget* parent,
-    std::string_view popupName,
-    std::shared_ptr<opyn::ModelStatePair> modelState) :
+    std::string_view popup_name,
+    std::shared_ptr<opyn::ModelStatePair> model_state) :
 
-    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(modelState))}
+    Popup{std::make_unique<Impl>(*this, parent, popup_name, std::move(model_state))}
 {}
-void osc::AddBodyPopup::impl_draw_content() { private_data().draw_content(); }
-void osc::AddBodyPopup::impl_on_close() { private_data().on_close(); }
+void osc::AddBodyPopup::impl_draw_content()
+{
+    private_data().draw_content();
+}
+void osc::AddBodyPopup::impl_on_close()
+{
+    private_data().on_close();
+}

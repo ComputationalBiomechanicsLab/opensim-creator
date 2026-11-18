@@ -27,24 +27,39 @@ namespace osc
         void clear();
         [[nodiscard]] bool empty() const;
 
-        template<MaterialPropertyValue T> std::optional<T> get(std::string_view property_name) const;
-        template<MaterialPropertyValue T> std::optional<T> get(const StringName& property_name) const;
-        template<MaterialPropertyValue T> void set(std::string_view property_name, const T& value);
-        template<MaterialPropertyValue T> void set(const StringName& property_name, const T& value);
-        template<MaterialPropertyValue T> std::optional<std::span<const T>> get_array(std::string_view property_name) const;
-        template<MaterialPropertyValue T> std::optional<std::span<const T>> get_array(const StringName& property_name) const;
-        template<MaterialPropertyValue T> void set_array(std::string_view property_name, std::span<const T> values);
-        template<MaterialPropertyValue T> void set_array(const StringName& property_name, std::span<const T> values);
+        template<MaterialPropertyValue T>
+        std::optional<T> get(std::string_view property_name) const;
+
+        template<MaterialPropertyValue T>
+        std::optional<T> get(const StringName& property_name) const;
+
+        template<MaterialPropertyValue T>
+        void set(std::string_view property_name, const T& value);
+
+        template<MaterialPropertyValue T>
+        void set(const StringName& property_name, const T& value);
+
+        template<MaterialPropertyValue T>
+        std::optional<std::span<const T>> get_array(std::string_view property_name) const;
+
+        template<MaterialPropertyValue T>
+        std::optional<std::span<const T>> get_array(const StringName& property_name) const;
+
+        template<MaterialPropertyValue T>
+        void set_array(std::string_view property_name, std::span<const T> values);
+
+        template<MaterialPropertyValue T>
+        void set_array(const StringName& property_name, std::span<const T> values);
 
         // calling `set_array` without a type argument (e.g. `set_array(prop, some_range)`) deduces
         // the type from the range in order to call `set_array<T>(prop, some_range)`
         template<
             std::convertible_to<std::string_view> StringLike,
-            std::ranges::contiguous_range Range
-        >
+            std::ranges::contiguous_range Range>
         void set_array(StringLike&& property_name, Range&& values)
         {
-            set_array<std::ranges::range_value_t<Range>>(std::forward<StringLike>(property_name), std::forward<Range>(values));
+            set_array<std::ranges::range_value_t<Range>>(
+                std::forward<StringLike>(property_name), std::forward<Range>(values));
         }
 
         void unset(std::string_view property_name);

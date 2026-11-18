@@ -25,8 +25,10 @@ unset(_osc_extra_sources)
 set_target_properties(testopensimcreator PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(testopensimcreator PUBLIC cxx_std_23)
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/opynsim_strict_compiler_options.cmake)
-    opyn_add_strict_compiler_options_to(opynsim)
+    opyn_add_strict_compiler_options_to(testopensimcreator)
+endif()
+if(OPYN_ENABLE_SANITIZERS)
+    opyn_add_sanitizer_flags_to(testopensimcreator)
 endif()
 target_include_directories(testopensimcreator
     # so that `#include <libopensimcreator/tests/testopensimcreatorconfig.h>` works

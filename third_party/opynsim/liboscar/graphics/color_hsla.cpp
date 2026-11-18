@@ -12,13 +12,7 @@ using namespace osc;
 
 namespace
 {
-    float calc_normalized_hsla_hue(
-        float r,
-        float g,
-        float b,
-        float,
-        float max,
-        float delta)
+    float calc_normalized_hsla_hue(float r, float g, float b, float, float max, float delta)
     {
         if (delta == 0.0f) {
             return 0.0f;
@@ -28,19 +22,17 @@ namespace
         float segment = 0.0f;
         float shift = 0.0f;
         if (max == r) {
-            segment = (g - b)/delta;
-            shift = (segment < 0.0f ? 360.0f/60.0f : 0.0f);
-        }
-        else if (max == g) {
-            segment = (b - r)/delta;
-            shift = 120.0f/60.0f;
-        }
-        else {  // max == b
-            segment = (r - g)/delta;
-            shift = 240.0f/60.0f;
+            segment = (g - b) / delta;
+            shift = (segment < 0.0f ? 360.0f / 60.0f : 0.0f);
+        } else if (max == g) {
+            segment = (b - r) / delta;
+            shift = 120.0f / 60.0f;
+        } else {  // max == b
+            segment = (r - g) / delta;
+            shift = 240.0f / 60.0f;
         }
 
-        return (segment + shift)/6.0f;  // normalize
+        return (segment + shift) / 6.0f;  // normalize
     }
 
     float calc_hsla_saturation(float lightness, float min, float max)
@@ -49,10 +41,10 @@ namespace
             return 0.0f;
         }
         if (lightness <= 0.5f) {
-            return 0.5f * (max - min)/lightness;
+            return 0.5f * (max - min) / lightness;
         }
         if (lightness < 1.0f) {
-            return 0.5f * (max - min)/(1.0f - lightness);
+            return 0.5f * (max - min) / (1.0f - lightness);
         }
         // else: lightness == 1.0f
         return 0.0f;
@@ -71,7 +63,7 @@ osc::ColorHSLA::ColorHSLA(const Color& color)
     const float delta = max - min;
 
     this->hue = calc_normalized_hsla_hue(c.r, c.g, c.b, min, max, delta);
-    this->lightness = 0.5f*(min + max);  // NOLINT(cppcoreguidelines-prefer-member-initializer)
+    this->lightness = 0.5f * (min + max);  // NOLINT(cppcoreguidelines-prefer-member-initializer)
     this->saturation = calc_hsla_saturation(lightness, min, max);
     this->alpha = c.a;  // NOLINT(cppcoreguidelines-prefer-member-initializer)
 }
@@ -90,14 +82,14 @@ osc::ColorHSLA::operator Color() const
         return Color::white();
     }
 
-    const float hp = mod(6.0f*h, 6.0f);
+    const float hp = mod(6.0f * h, 6.0f);
     const float c1 = floor(hp);
     const float c2 = hp - c1;
-    const float d  = l <= 0.5f ? s*l : s*(1.0f - l);
+    const float d = l <= 0.5f ? s * l : s * (1.0f - l);
     const float u1 = l + d;
     const float u2 = l - d;
-    const float u3 = u1 - (u1 - u2)*c2;
-    const float u4 = u2 + (u1 - u2)*c2;
+    const float u3 = u1 - (u1 - u2) * c2;
+    const float u4 = u2 + (u1 - u2) * c2;
 
     switch (static_cast<int>(c1)) {
     case 0: return {u1, u4, u2, a};
@@ -112,5 +104,6 @@ osc::ColorHSLA::operator Color() const
 
 std::ostream& osc::operator<<(std::ostream& color, const ColorHSLA& c)
 {
-    return color << "ColorHSLA(h = " << c.hue << ", s = " << c.saturation << ", l = " << c.lightness << ", a = " << c.alpha << ')';
+    return color << "ColorHSLA(h = " << c.hue << ", s = " << c.saturation << ", l = " << c.lightness
+                 << ", a = " << c.alpha << ')';
 }

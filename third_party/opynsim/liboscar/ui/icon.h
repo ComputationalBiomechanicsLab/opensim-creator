@@ -10,9 +10,7 @@ namespace osc
 {
     class Icon final {
     public:
-        explicit Icon(
-            Texture2D texture,
-            const Rect& texture_coordinates) :
+        explicit Icon(Texture2D texture, const Rect& texture_coordinates) :
 
             texture_{std::move(texture)},
             texture_coordinates_{texture_coordinates}

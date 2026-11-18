@@ -44,40 +44,40 @@ public:
 
         const Matrix4x4 view_matrix = camera.view_matrix();
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
-        const Matrix4x4 projection_matrix = camera.projection_matrix(aspect_ratio_of(workspace_screen_space_rect));
+        const Matrix4x4 projection_matrix =
+            camera.projection_matrix(aspect_ratio_of(workspace_screen_space_rect));
 
         // Render 3D scene: a grid floor and a cube that has a different color per face
         {
             for (size_t i = 0; i < 6; ++i) {
                 // axis-aligned vector
                 Vector3 v;
-                v[i % 3] = (i/3) ? -1.0f : 1.0f;
+                v[i % 3] = (i / 3) ? -1.0f : 1.0f;
 
-                const Matrix4x4 xform = model_matrix_ * translate(identity<Matrix4x4>(), 0.5f*v) * matrix4x4_cast(rotation(plane_.normal(), v));
+                const Matrix4x4 xform = model_matrix_ * translate(identity<Matrix4x4>(), 0.5f * v) *
+                                        matrix4x4_cast(rotation(plane_.normal(), v));
                 const Color color = Color{0.4f}.with_element(i % 3, 0.8f);
                 render_queue_.emplace(
-                    plane_.mesh(),
-                    xform,
-                    basic_material_,
-                    MeshBasicMaterial::PropertyBlock{color}
-                );
+                    plane_.mesh(), xform, basic_material_, MeshBasicMaterial::PropertyBlock{color});
             }
             basic_material_.set_color(Color::white());
             render_queue_.emplace(
                 grid_,
                 {.rotation = rotation(grid_.normal(), {0.0f, 1.0f, 0.0f})},
                 basic_material_,
-                MeshBasicMaterial::PropertyBlock{Color::white().with_alpha(0.1f)}
-            );
+                MeshBasicMaterial::PropertyBlock{Color::white().with_alpha(0.1f)});
 
-            graphics::render_to_main_window(render_queue_, camera, {
-                .viewport_rect = workspace_screen_space_rect,
-            });
+            graphics::render_to_main_window(
+                render_queue_,
+                camera,
+                {
+                    .viewport_rect = workspace_screen_space_rect,
+                });
             render_queue_.clear();
         }
 
-        // Draw UI overlays (incl. gizmo)
-        #pragma warning(suppress : 6001)
+// Draw UI overlays (incl. gizmo)
+#pragma warning(suppress : 6001)
         const auto bounds = AABB{.min = Vector3{-0.5f}, .max = Vector3{0.5f}};
         gizmo_.draw_to_foreground(
             model_matrix_,
@@ -85,8 +85,7 @@ public:
             projection_matrix,
             ui::get_main_window_workspace_ui_rect(),
             &snap_,
-            bounding_box_ ? &bounds : nullptr
-        );
+            bounding_box_ ? &bounds : nullptr);
         ui::draw_gizmo_mode_selector(gizmo_);
         ui::draw_gizmo_operation_selector(gizmo_);
         {
@@ -95,8 +94,7 @@ public:
             if (ui::draw_checkbox("snap position", &position_snap)) {
                 if (position_snap) {
                     snap_.position.emplace();
-                }
-                else {
+                } else {
                     snap_.position.reset();
                 }
             }
@@ -110,8 +108,7 @@ public:
             if (ui::draw_checkbox("snap rotation", &rotation_snap)) {
                 if (rotation_snap) {
                     snap_.rotation.emplace();
-                }
-                else {
+                } else {
                     snap_.rotation.reset();
                 }
             }
@@ -125,8 +122,7 @@ public:
             if (ui::draw_checkbox("snap scale", &scale_snap)) {
                 if (scale_snap) {
                     snap_.scale.emplace();
-                }
-                else {
+                } else {
                     snap_.scale.reset();
                 }
             }
@@ -148,10 +144,15 @@ private:
     bool bounding_box_ = false;
 };
 
-
-CStringView osc::ImGuizmoDemoTab::id() { return Impl::static_label(); }
+CStringView osc::ImGuizmoDemoTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::ImGuizmoDemoTab::ImGuizmoDemoTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::ImGuizmoDemoTab::impl_on_draw() { private_data().on_draw(); }
+void osc::ImGuizmoDemoTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

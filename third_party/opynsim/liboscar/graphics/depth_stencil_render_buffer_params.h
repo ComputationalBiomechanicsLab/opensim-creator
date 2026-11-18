@@ -9,7 +9,8 @@ namespace osc
 {
     struct DepthStencilRenderBufferParams final {
 
-        friend bool operator==(const DepthStencilRenderBufferParams&, const DepthStencilRenderBufferParams&) = default;
+        friend bool operator==(
+            const DepthStencilRenderBufferParams&, const DepthStencilRenderBufferParams&) = default;
 
         Vector2i pixel_dimensions = {1, 1};
         TextureDimensionality dimensionality = TextureDimensionality::Tex2D;

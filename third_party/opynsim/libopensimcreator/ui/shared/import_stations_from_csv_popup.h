@@ -16,20 +16,19 @@ namespace osc
     class ImportStationsFromCSVPopup final : public Popup {
     public:
         struct ImportedData final {
-            std::optional<std::string> maybeLabel;
+            std::optional<std::string> maybe_label;
             std::vector<opyn::NamedLandmark> landmarks;
-            std::optional<std::string> maybeTargetComponentAbsPath;
+            std::optional<std::string> maybe_target_component_abs_path;
         };
 
         explicit ImportStationsFromCSVPopup(
             Widget* parent,
             std::string_view,
-            std::function<void(ImportedData)> onImport,
-            std::shared_ptr<const opyn::ModelStatePair> maybeAssociatedModel = {}
-        );
+            std::function<void(ImportedData)> on_import,
+            std::shared_ptr<const opyn::ModelStatePair> maybe_associated_model = {});
 
     private:
-        void impl_draw_content() final;
+        void impl_draw_content() override;
 
         class Impl;
         OSC_WIDGET_DATA_GETTERS(Impl);

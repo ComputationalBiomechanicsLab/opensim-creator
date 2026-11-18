@@ -44,7 +44,7 @@ TEST(Mesh, can_be_default_constructed)
 TEST(Mesh, can_be_copy_constructed)
 {
     const Mesh mesh;
-    [[maybe_unused]] const Mesh copy{mesh};  // NOLINT(performance-unnecessary-copy-initialization)
+    [[maybe_unused]] const Mesh copy{mesh};
 }
 
 TEST(Mesh, can_be_move_constructed)
@@ -324,7 +324,8 @@ TEST(Mesh, transform_certices_makes_vertices_return_transformed_vertices)
     const auto original_vertices = generate_vertices(30);
 
     // create "transformed" version of the vertices
-    const auto new_vertices = project_into_vector(original_vertices, [](const Vector3& v) { return v + 1.0f; });
+    const auto new_vertices =
+        project_into_vector(original_vertices, [](const Vector3& v) { return v + 1.0f; });
 
     // sanity check that `set_vertices` works as expected
     ASSERT_FALSE(mesh.has_vertices());
@@ -333,18 +334,15 @@ TEST(Mesh, transform_certices_makes_vertices_return_transformed_vertices)
 
     // the vertices passed to `transform_vertices` should match those returned by `vertices()`
     std::vector<Vector3> vertices_passed_to_transform_vertices;
-    mesh.transform_vertices([&vertices_passed_to_transform_vertices](Vector3 v)
-    {
+    mesh.transform_vertices([&vertices_passed_to_transform_vertices](Vector3 v) {
         vertices_passed_to_transform_vertices.push_back(v);
         return v;
     });
     ASSERT_EQ(vertices_passed_to_transform_vertices, original_vertices);
 
     // applying the transformation should return the transformed vertices
-    mesh.transform_vertices([&new_vertices, i = 0](Vector3) mutable
-    {
-        return new_vertices.at(i++);
-    });
+    mesh.transform_vertices(
+        [&new_vertices, i = 0](Vector3) mutable { return new_vertices.at(i++); });
     ASSERT_EQ(mesh.vertices(), new_vertices);
 }
 
@@ -354,7 +352,8 @@ TEST(Mesh, transform_vertices_causes_transformed_Mesh_to_compare_not_equal_to_or
     Mesh copy{mesh};
 
     ASSERT_EQ(mesh, copy);
-    copy.transform_vertices(std::identity{});  // noop transform also triggers this (meshes aren't value-comparable)
+    // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transform_vertices(std::identity{});
     ASSERT_NE(mesh, copy);
 }
 
@@ -371,7 +370,8 @@ TEST(Mesh, transform_vertices_with_Transform_applies_Transform_to_each_vertex)
     const auto original = generate_vertices(30);
 
     // precompute "expected" vertices
-    const auto expected = project_into_vector(original, [&transform](const auto& p) { return transform_point(transform, p); });
+    const auto expected = project_into_vector(
+        original, [&transform](const auto& p) { return transform_point(transform, p); });
 
     // create mesh with "original" vertices
     Mesh mesh;
@@ -384,29 +384,34 @@ TEST(Mesh, transform_vertices_with_Transform_applies_Transform_to_each_vertex)
     ASSERT_EQ(mesh.vertices(), expected);
 }
 
-TEST(Mesh, transform_vertices_with_identity_transform_causes_transformed_mesh_to_compare_not_equal_to_original_Mesh)
+TEST(
+    Mesh,
+    transform_vertices_with_identity_transform_causes_transformed_mesh_to_compare_not_equal_to_original_Mesh)
 {
     const Mesh m;
     Mesh copy{m};
 
     ASSERT_EQ(m, copy);
-    copy.transform_vertices(identity<Transform>());  // noop transform also triggers this (meshes aren't value-comparable)
+    // noop transform also triggers this (meshes aren't value-comparable)
+    copy.transform_vertices(identity<Transform>());
     ASSERT_NE(m, copy);
 }
 
 TEST(Mesh, transform_vertices_with_Matrix4x4_applies_transform_to_vertices)
 {
-    const Matrix4x4 mat = matrix4x4_cast(Transform{
-        .scale = Vector3{0.25f},
-        .rotation = to_world_space_rotation_quaternion(EulerAngles{90_deg, 0_deg, 0_deg}),
-        .translation = {1.0f, 0.25f, 0.125f},
-    });
+    const Matrix4x4 mat = matrix4x4_cast(
+        Transform{
+            .scale = Vector3{0.25f},
+            .rotation = to_world_space_rotation_quaternion(EulerAngles{90_deg, 0_deg, 0_deg}),
+            .translation = {1.0f, 0.25f, 0.125f},
+        });
 
     // generate "original" vertices
     const auto original = generate_vertices(30);
 
     // precompute "expected" vertices
-    const auto expected = project_into_vector(original, [&mat](const auto& p) { return transform_point(mat, p); });
+    const auto expected =
+        project_into_vector(original, [&mat](const auto& p) { return transform_point(mat, p); });
 
     // create mesh with "original" vertices
     Mesh mesh;
@@ -419,14 +424,17 @@ TEST(Mesh, transform_vertices_with_Matrix4x4_applies_transform_to_vertices)
     ASSERT_EQ(mesh.vertices(), expected);
 }
 
-TEST(Mesh, transform_vertices_with_identity_Matrix4x4_causes_transformed_mesh_to_compare_not_equal_to_original_mesh)
+TEST(
+    Mesh,
+    transform_vertices_with_identity_Matrix4x4_causes_transformed_mesh_to_compare_not_equal_to_original_mesh)
 {
     const Mesh mesh;
     Mesh copy{mesh};
 
     ASSERT_EQ(mesh, copy);
     copy.transform_vertices(identity<Matrix4x4>());  // noop
-    ASSERT_NE(mesh, copy) << "should be non-equal because mesh equality is reference-based (if it becomes value-based, delete this test)";
+    ASSERT_NE(mesh, copy)
+        << "should be non-equal because mesh equality is reference-based (if it becomes value-based, delete this test)";
 }
 
 TEST(Mesh, has_normals_returns_false_on_default_construction)
@@ -438,7 +446,8 @@ TEST(Mesh, set_normals_on_Mesh_with_no_vertices_makes_has_normals_still_return_f
 {
     Mesh mesh;
     mesh.set_normals(generate_normals(6));
-    ASSERT_FALSE(mesh.has_normals()) << "shouldn't have any normals, because the caller didn't first assign any vertices";
+    ASSERT_FALSE(mesh.has_normals())
+        << "shouldn't have any normals, because the caller didn't first assign any vertices";
 }
 
 TEST(Mesh, set_normals_on_an_empty_Mesh_makes_has_normals_still_return_false)
@@ -455,7 +464,8 @@ TEST(Mesh, set_normals_followed_by_set_vertices_makes_normal_assignment_still_fa
     Mesh mesh;
     mesh.set_normals(generate_normals(9));
     mesh.set_vertices(generate_vertices(9));
-    ASSERT_FALSE(mesh.has_normals()) << "shouldn't have any normals, because the caller assigned the vertices _after_ assigning the normals (must be first)";
+    ASSERT_FALSE(mesh.has_normals())
+        << "shouldn't have any normals, because the caller assigned the vertices _after_ assigning the normals (must be first)";
 }
 
 TEST(Mesh, set_vertices_followed_by_set_normals_makes_has_normals_return_true)
@@ -463,7 +473,8 @@ TEST(Mesh, set_vertices_followed_by_set_normals_makes_has_normals_return_true)
     Mesh mesh;
     mesh.set_vertices(generate_vertices(6));
     mesh.set_normals(generate_normals(6));
-    ASSERT_TRUE(mesh.has_normals()) << "this should work: the caller assigned vertices (good) _and then_ normals (also good)";
+    ASSERT_TRUE(mesh.has_normals())
+        << "this should work: the caller assigned vertices (good) _and then_ normals (also good)";
 }
 
 TEST(Mesh, clear_makes_has_normals_return_false)
@@ -480,7 +491,8 @@ TEST(Mesh, has_normals_returns_false_if_only_vertices_are_set)
 {
     Mesh mesh;
     mesh.set_vertices(generate_vertices(3));
-    ASSERT_FALSE(mesh.has_normals()) << "shouldn't have normals: the caller didn't assign any vertices first";
+    ASSERT_FALSE(mesh.has_normals())
+        << "shouldn't have normals: the caller didn't assign any vertices first";
 }
 
 TEST(Mesh, normals_returns_empty_on_default_construction)
@@ -494,7 +506,8 @@ TEST(Mesh, set_normals_on_Mesh_with_no_vertices_makes_get_normals_return_nothing
     Mesh mesh;
     mesh.set_normals(generate_normals(3));
 
-    ASSERT_TRUE(mesh.normals().empty()) << "should be empty, because the caller didn't first assign any vertices";
+    ASSERT_TRUE(mesh.normals().empty())
+        << "should be empty, because the caller didn't first assign any vertices";
 }
 
 TEST(Mesh, set_normals_on_Mesh_with_vertices_behaves_as_expected)
@@ -505,7 +518,8 @@ TEST(Mesh, set_normals_on_Mesh_with_vertices_behaves_as_expected)
     mesh.set_vertices(generate_vertices(3));
     mesh.set_normals(normals);
 
-    ASSERT_EQ(mesh.normals(), normals) << "should assign the normals: the caller did what's expected";
+    ASSERT_EQ(mesh.normals(), normals)
+        << "should assign the normals: the caller did what's expected";
 }
 
 TEST(Mesh, set_normals_with_fewer_normals_than_vertices_assigns_no_normals)
@@ -537,7 +551,9 @@ TEST(Mesh, sucessfully_calling_set_normals_changes_mesh_equality)
 
 TEST(Mesh, transform_normals_applies_transform_function_to_each_normal)
 {
-    const auto transform = [](Vector3 n) { return -n; };
+    const auto transform = [](Vector3 n) {
+        return -n;
+    };
     const auto original = generate_normals(16);
     auto expected{original};
     rgs::transform(expected, expected.begin(), transform);
@@ -569,7 +585,8 @@ TEST(Mesh, set_tex_coords_followed_by_set_vertices_causes_get_tex_coords_to_retu
     Mesh mesh;
     mesh.set_tex_coords(generate_texture_coordinates(3));
     mesh.set_vertices(generate_vertices(3));
-    ASSERT_FALSE(mesh.has_tex_coords()) << "texture coordinates not assigned: assigned in the wrong order";
+    ASSERT_FALSE(mesh.has_tex_coords())
+        << "texture coordinates not assigned: assigned in the wrong order";
 }
 
 TEST(Mesh, set_vertices_followed_by_set_tex_coords_makes_has_tex_coords_return_true)
@@ -641,7 +658,9 @@ TEST(Mesh, sucessful_set_tex_coords_causes_copied_Mesh_to_compare_not_equal_to_o
 
 TEST(Mesh, transform_tex_coords_applies_provided_function_to_each_tex_coord)
 {
-    const auto transform = [](Vector2 uv) { return 0.287f * uv; };
+    const auto transform = [](Vector2 uv) {
+        return 0.287f * uv;
+    };
     const auto original = generate_texture_coordinates(3);
     auto expected{original};
     rgs::transform(expected, expected.begin(), transform);
@@ -785,7 +804,8 @@ TEST(Mesh, set_indices_throws_if_an_index_is_out_of_bounds_for_the_vertices)
 {
     Mesh m;
     m.set_vertices(generate_vertices(3));
-    ASSERT_ANY_THROW({ m.set_indices(iota_index_range(3, 6)); }) << "should throw: indices are out-of-bounds";
+    ASSERT_ANY_THROW({ m.set_indices(iota_index_range(3, 6)); })
+        << "should throw: indices are out-of-bounds";
 }
 
 TEST(Mesh, set_indices_with_u16_integers_works_with_empty_vector)
@@ -806,11 +826,17 @@ TEST(Mesh, set_indices_with_u32_integers_works_with_empty_vector)
     ASSERT_TRUE(m.indices().empty());
 }
 
-TEST(Mesh, set_indices_with_DontValidateIndices_and_DontRecalculateBounds_does_not_throw_with_invalid_indices)
+TEST(
+    Mesh,
+    set_indices_with_DontValidateIndices_and_DontRecalculateBounds_does_not_throw_with_invalid_indices)
 {
     Mesh m;
     m.set_vertices(generate_vertices(3));
-    ASSERT_NO_THROW({ m.set_indices(iota_index_range(3, 6), {MeshUpdateFlag::DontValidateIndices, MeshUpdateFlag::DontRecalculateBounds}); }) << "shouldn't throw: we explicitly asked the engine to not check indices";
+    ASSERT_NO_THROW({
+        m.set_indices(
+            iota_index_range(3, 6),
+            {MeshUpdateFlag::DontValidateIndices, MeshUpdateFlag::DontRecalculateBounds});
+    }) << "shouldn't throw: we explicitly asked the engine to not check indices";
 }
 
 TEST(Mesh, set_indices_recalculates_Mesh_bounds)
@@ -832,7 +858,8 @@ TEST(Mesh, set_indices_with_DontRecalculateBounds_does_not_recalculate_bounds)
     m.set_vertices(triangle);
     ASSERT_EQ(m.bounds(), std::nullopt);
     m.set_indices(iota_index_range(0, 3), MeshUpdateFlag::DontRecalculateBounds);
-    ASSERT_EQ(m.bounds(), std::nullopt) << "bounds shouldn't update: we explicitly asked for the engine to skip it";
+    ASSERT_EQ(m.bounds(), std::nullopt)
+        << "bounds shouldn't update: we explicitly asked for the engine to skip it";
 }
 
 TEST(Mesh, for_each_indexed_vertex_is_not_called_when_given_empty_Mesh)
@@ -946,7 +973,7 @@ TEST(Mesh, get_triangle_at_returns_triangle_indexed_by_indices_at_provided_offse
     const Triangle b = generate<Triangle>();
 
     Mesh m;
-    m.set_vertices({a[0], a[1], a[2], b[0], b[1], b[2]});             // stored as  [a, b]
+    m.set_vertices({a[0], a[1], a[2], b[0], b[1], b[2]});        // stored as  [a, b]
     m.set_indices(std::to_array<uint16_t>({3, 4, 5, 0, 1, 2}));  // indexed as [b, a]
 
     ASSERT_EQ(m.get_triangle_at(0), b) << "the provided arg is an offset into the _indices_";
@@ -957,7 +984,13 @@ TEST(Mesh, get_triangle_at_throws_exception_if_called_on_non_triangular_mesh_top
 {
     Mesh m;
     m.set_topology(MeshTopology::Lines);
-    m.set_vertices({generate<Vector3>(), generate<Vector3>(), generate<Vector3>(), generate<Vector3>(), generate<Vector3>(), generate<Vector3>()});
+    m.set_vertices(
+        {generate<Vector3>(),
+         generate<Vector3>(),
+         generate<Vector3>(),
+         generate<Vector3>(),
+         generate<Vector3>(),
+         generate<Vector3>()});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2, 3, 4, 5}));
 
     ASSERT_ANY_THROW({ m.get_triangle_at(0); }) << "incorrect topology";
@@ -998,7 +1031,8 @@ TEST(Mesh, indexed_vertices_only_returns_the_indexed_vertices)
     m.set_vertices(all_vertices);
     m.set_indices(sub_indices);
 
-    const auto expected = project_into_vector(std::span{all_vertices}.subspan(5, 3), std::identity{});
+    const auto expected =
+        project_into_vector(std::span{all_vertices}.subspan(5, 3), std::identity{});
     const auto got = m.indexed_vertices();
 
     ASSERT_EQ(m.indexed_vertices(), expected);
@@ -1014,22 +1048,23 @@ TEST(Mesh, bounds_on_Mesh_without_indices_returns_std_nullopt)
 {
     constexpr auto pyramid_vertices = std::to_array<Vector3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
-        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
-        { 0.0f,  1.0f, 0.0f},  // base: top-middle
-        { 0.0f,  0.0f, 1.0f},  // tip
+        {+1.0f, -1.0f, 0.0f},  // base: bottom-right
+        {+0.0f, +1.0f, 0.0f},  // base: top-middle
+        {+0.0f, +0.0f, 1.0f},  // tip
     });
 
     Mesh m;
     m.set_vertices(pyramid_vertices);
-    ASSERT_EQ(m.bounds(), std::nullopt) << "should be std::nullopt, because the caller forgot to provide indices";
+    ASSERT_EQ(m.bounds(), std::nullopt)
+        << "should be std::nullopt, because the caller forgot to provide indices";
 }
 
 TEST(Mesh, bounds_on_correctly_initialized_Mesh_returns_expected_AABB)
 {
     constexpr auto triangle_vertices = std::to_array<Vector3>({
         {-1.0f, -1.0f, 0.0f},  // bottom-left
-        { 1.0f, -1.0f, 0.0f},  // bottom-right
-        { 0.0f,  1.0f, 0.0f},  // top-middle
+        {+1.0f, -1.0f, 0.0f},  // bottom-right
+        {+0.0f, +1.0f, 0.0f},  // top-middle
     });
     constexpr auto triangle_indices = std::to_array<uint16_t>({0, 1, 2});
 
@@ -1047,28 +1082,33 @@ TEST(Mesh, centroid_of_empty_Mesh_returns_std_nullopt)
 TEST(Mesh, centroid_of_Mesh_without_indicies_returns_std_nullopt)
 {
     constexpr auto square_vertices = std::to_array<Vector3>({
-        {-1.0f,  1.0f, 0.0f},  // top-left
+        {-1.0f, +1.0f, 0.0f},  // top-left
         {-1.0f, -1.0f, 0.0f},  // bottom-left
-        { 1.0f, -1.0f, 0.0f},  // bottom-right
-        { 1.0f,  1.0f, 0.0f},  // top-right
+        {+1.0f, -1.0f, 0.0f},  // bottom-right
+        {+1.0f, +1.0f, 0.0f},  // top-right
     });
 
     Mesh m;
     m.set_vertices(square_vertices);
-    ASSERT_EQ(m.centroid(), std::nullopt) << "should be std::nullopt, because the caller forgot to provide indices";
+    ASSERT_EQ(m.centroid(), std::nullopt)
+        << "should be std::nullopt, because the caller forgot to provide indices";
 }
 
 TEST(Mesh, centroid_of_correctly_initialized_Mesh_returns_centroid_of_bounds)
 {
     constexpr auto square_vertices = std::to_array<Vector3>({
-        {-1.0f,  1.0f, 0.0f},  // top-left
+        {-1.0f, +1.0f, 0.0f},  // top-left
         {-1.0f, -1.0f, 0.0f},  // bottom-left
-        { 1.0f, -1.0f, 0.0f},  // bottom-right
-        { 1.0f,  1.0f, 0.0f},  // top-right
+        {+1.0f, -1.0f, 0.0f},  // bottom-right
+        {+1.0f, +1.0f, 0.0f},  // top-right
     });
     constexpr auto square_indices = std::to_array<uint16_t>({
-        0, 1, 3,  // bottom-left triangle
-        1, 2, 3,  // bottom-right triangle
+        0,
+        1,
+        3,  // bottom-left triangle
+        1,
+        2,
+        3,  // bottom-right triangle
     });
 
     Mesh m;
@@ -1080,17 +1120,12 @@ TEST(Mesh, centroid_of_correctly_initialized_Mesh_returns_centroid_of_bounds)
 TEST(Mesh, centroid_of_works_with_line_topology_Mesh)
 {
     constexpr auto square_vertices = std::to_array<Vector3>({
-        {-1.0f,  1.0f, 0.0f},  // top-left
+        {-1.0f, +1.0f, 0.0f},  // top-left
         {-1.0f, -1.0f, 0.0f},  // bottom-left
-        { 1.0f, -1.0f, 0.0f},  // bottom-right
-        { 1.0f,  1.0f, 0.0f},  // top-right
+        {+1.0f, -1.0f, 0.0f},  // bottom-right
+        {+1.0f, +1.0f, 0.0f},  // top-right
     });
-    constexpr auto square_edge_indices = std::to_array<uint16_t>({
-        0, 1,
-        1, 2,
-        2, 3,
-        3, 0
-    });
+    constexpr auto square_edge_indices = std::to_array<uint16_t>({0, 1, 1, 2, 2, 3, 3, 0});
 
     Mesh m;
     m.set_topology(MeshTopology::Lines);
@@ -1107,7 +1142,7 @@ TEST(Mesh, can_be_compared_for_equality)
 TEST(Mesh, unmodified_copies_are_equivalent)
 {
     const Mesh m;
-    const Mesh copy{m};  // NOLINT(performance-unnecessary-copy-initialization)
+    const Mesh copy{m};
 
     ASSERT_EQ(m, copy);
 }
@@ -1136,8 +1171,8 @@ TEST(Mesh, num_submesh_descriptors_returns_zero_for_Mesh_with_data_but_no_descri
 {
     constexpr auto pyramid_vertices = std::to_array<Vector3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
-        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
-        { 0.0f,  1.0f, 0.0f},  // base: top-middle
+        {+1.0f, -1.0f, 0.0f},  // base: bottom-right
+        {+0.0f, +1.0f, 0.0f},  // base: top-middle
     });
     constexpr auto pyramid_indices = std::to_array<uint16_t>({0, 1, 2});
 
@@ -1322,7 +1357,7 @@ TEST(Mesh, num_vertex_attributes_returns_1_after_setting_and_then_clearing_textu
     m.set_vertices(generate_vertices(6));
     m.set_tex_coords(generate_texture_coordinates(6));
     ASSERT_EQ(m.num_vertex_attributes(), 2);
-    m.set_tex_coords({}); // clear them
+    m.set_tex_coords({});  // clear them
     ASSERT_EQ(m.num_vertex_attributes(), 1);
 }
 
@@ -1472,7 +1507,7 @@ TEST(Mesh, vertex_format_returns_expected_format_when_vertices_and_normals_are_s
 
     const VertexFormat expected = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
-        {VertexAttribute::Normal,   VertexAttributeFormat::Float32x3},
+        {VertexAttribute::Normal, VertexAttributeFormat::Float32x3},
     };
 
     ASSERT_EQ(m.vertex_format(), expected);
@@ -1500,7 +1535,7 @@ TEST(Mesh, vertex_format_returns_expected_format_when_vertices_and_colors_are_se
 
     const VertexFormat expected = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
-        {VertexAttribute::Color,    VertexAttributeFormat::Float32x4},
+        {VertexAttribute::Color, VertexAttributeFormat::Float32x4},
     };
 
     ASSERT_EQ(m.vertex_format(), expected);
@@ -1514,7 +1549,7 @@ TEST(Mesh, vertex_format_returns_expected_format_when_vertices_and_tangents_are_
 
     const VertexFormat expected = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
-        {VertexAttribute::Tangent,  VertexAttributeFormat::Float32x4},
+        {VertexAttribute::Tangent, VertexAttributeFormat::Float32x4},
     };
 
     ASSERT_EQ(m.vertex_format(), expected);
@@ -1529,8 +1564,8 @@ TEST(Mesh, vertex_format_returns_expected_formats_for_various_combinations)
 
     {
         const VertexFormat expected = {
-            {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
-            {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Normal, VertexAttributeFormat::Float32x3},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
         };
         ASSERT_EQ(m.vertex_format(), expected);
@@ -1540,10 +1575,10 @@ TEST(Mesh, vertex_format_returns_expected_formats_for_various_combinations)
 
     {
         const VertexFormat expected = {
-            {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
-            {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Normal, VertexAttributeFormat::Float32x3},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
-            {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Color, VertexAttributeFormat::Float32x4},
         };
         ASSERT_EQ(m.vertex_format(), expected);
     }
@@ -1552,11 +1587,11 @@ TEST(Mesh, vertex_format_returns_expected_formats_for_various_combinations)
 
     {
         const VertexFormat expected = {
-            {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
-            {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Normal, VertexAttributeFormat::Float32x3},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
-            {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
-            {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Color, VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Tangent, VertexAttributeFormat::Float32x4},
         };
         ASSERT_EQ(m.vertex_format(), expected);
     }
@@ -1565,10 +1600,10 @@ TEST(Mesh, vertex_format_returns_expected_formats_for_various_combinations)
 
     {
         const VertexFormat expected = {
-            {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
-            {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Normal, VertexAttributeFormat::Float32x3},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
-            {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Tangent, VertexAttributeFormat::Float32x4},
         };
         ASSERT_EQ(m.vertex_format(), expected);
     }
@@ -1578,11 +1613,11 @@ TEST(Mesh, vertex_format_returns_expected_formats_for_various_combinations)
     // check that ordering is based on when it was set
     {
         const VertexFormat expected = {
-            {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
-            {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Normal, VertexAttributeFormat::Float32x3},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
-            {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
-            {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Tangent, VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Color, VertexAttributeFormat::Float32x4},
         };
         ASSERT_EQ(m.vertex_format(), expected);
     }
@@ -1591,10 +1626,10 @@ TEST(Mesh, vertex_format_returns_expected_formats_for_various_combinations)
 
     {
         const VertexFormat expected = {
-            {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
-            {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
-            {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Tangent, VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Color, VertexAttributeFormat::Float32x4},
         };
         ASSERT_EQ(m.vertex_format(), expected);
     }
@@ -1603,10 +1638,10 @@ TEST(Mesh, vertex_format_returns_expected_formats_for_various_combinations)
 
     {
         const VertexFormat expected = {
-            {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
-            {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
-            {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Tangent, VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Color, VertexAttributeFormat::Float32x4},
         };
         ASSERT_EQ(copy.vertex_format(), expected);
     }
@@ -1637,7 +1672,8 @@ TEST(Mesh, set_vertex_buffer_params_with_empty_descriptor_ignores_N_arg)
 
     m.set_vertex_buffer_params(15, {});  // i.e. no data, incl. positions
 
-    ASSERT_EQ(m.num_vertices(), 0);  // i.e. the 15 was effectively ignored, because there's no attributes
+    // i.e. the 15 was effectively ignored, because there's no attributes
+    ASSERT_EQ(m.num_vertices(), 0);
     ASSERT_EQ(m.num_vertex_attributes(), 0);
 }
 
@@ -1663,9 +1699,8 @@ TEST(Mesh, set_vertex_buffer_params_with_larger_N_expands_positions_with_zeroed_
 
     Mesh mesh;
     mesh.set_vertices(vertices);
-    mesh.set_vertex_buffer_params(12, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x3}
-    });
+    mesh.set_vertex_buffer_params(
+        12, {{VertexAttribute::Position, VertexAttributeFormat::Float32x3}});
 
     auto expected_vertices{vertices};
     expected_vertices.resize(12, Vector3{});
@@ -1679,9 +1714,8 @@ TEST(Mesh, set_vertex_buffer_params_with_smaller_N_shrinks_existing_data)
 
     Mesh mesh;
     mesh.set_vertices(vertices);
-    mesh.set_vertex_buffer_params(6, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x3}
-    });
+    mesh.set_vertex_buffer_params(
+        6, {{VertexAttribute::Position, VertexAttributeFormat::Float32x3}});
 
     auto expected_vertices{vertices};
     expected_vertices.resize(6);
@@ -1695,11 +1729,14 @@ TEST(Mesh, set_vertex_buffer_params_when_dimensionality_of_vertices_is_2_zeroes_
 
     Mesh mesh;
     mesh.set_vertices(vertices);
-    mesh.set_vertex_buffer_params(6, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x2},  // 2D storage
-    });
+    mesh.set_vertex_buffer_params(
+        6,
+        {
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x2},  // 2D storage
+        });
 
-    const auto expected_vertices = project_into_vector(vertices, [](const Vector3& v) { return Vector3{v.x(), v.y(), 0.0f}; });
+    const auto expected_vertices =
+        project_into_vector(vertices, [](const Vector3& v) { return Vector3{v.x(), v.y(), 0.0f}; });
 
     ASSERT_EQ(mesh.vertices(), expected_vertices);
 }
@@ -1716,11 +1753,13 @@ TEST(Mesh, set_vertex_buffer_params_can_be_used_to_remove_a_particular_attribute
 
     ASSERT_EQ(mesh.num_vertex_attributes(), 3);
 
-    mesh.set_vertex_buffer_params(6, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
-        {VertexAttribute::Tangent,  VertexAttributeFormat::Float32x4},
-        // i.e. remove the normals from the vertex buffer
-    });
+    mesh.set_vertex_buffer_params(
+        6,
+        {
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Tangent, VertexAttributeFormat::Float32x4},
+            // i.e. remove the normals from the vertex buffer
+        });
 
     ASSERT_EQ(mesh.num_vertices(), 6);
     ASSERT_EQ(mesh.num_vertex_attributes(), 2);
@@ -1739,15 +1778,17 @@ TEST(Mesh, set_vertex_buffer_params_can_be_used_to_add_a_particular_attribute_as
 
     ASSERT_EQ(mesh.num_vertex_attributes(), 2);
 
-    mesh.set_vertex_buffer_params(6, {
-        // existing
-        {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
-        {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
+    mesh.set_vertex_buffer_params(
+        6,
+        {
+            // existing
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Tangent, VertexAttributeFormat::Float32x4},
 
-        // new (i.e. add these to the vertex buffer as zero vectors)
-        {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
-        {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
-    });
+            // new (i.e. add these to the vertex buffer as zero vectors)
+            {VertexAttribute::Color, VertexAttributeFormat::Float32x4},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
+        });
 
     ASSERT_EQ(mesh.vertices(), vertices);
     ASSERT_EQ(mesh.tangents(), tangents);
@@ -1761,7 +1802,8 @@ TEST(Mesh, set_vertex_buffer_params_throws_if_it_causes_Mesh_indices_to_go_out_o
     mesh.set_vertices(generate_vertices(6));
     mesh.set_indices(iota_index_range(0, 6));
 
-    ASSERT_ANY_THROW({ mesh.set_vertex_buffer_params(3, mesh.vertex_format()); })  << "should throw because indices are now OOB";
+    ASSERT_ANY_THROW({ mesh.set_vertex_buffer_params(3, mesh.vertex_format()); })
+        << "should throw because indices are now OOB";
 }
 
 TEST(Mesh, set_vertex_buffer_params_can_be_used_to_reformat_a_float_attribute_to_Unorm8)
@@ -1774,17 +1816,18 @@ TEST(Mesh, set_vertex_buffer_params_can_be_used_to_reformat_a_float_attribute_to
 
     ASSERT_EQ(mesh.colors(), colors);
 
-    mesh.set_vertex_buffer_params(9, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
-        {VertexAttribute::Color,    VertexAttributeFormat::Unorm8x4},
-    });
+    mesh.set_vertex_buffer_params(
+        9,
+        {
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+            {VertexAttribute::Color, VertexAttributeFormat::Unorm8x4},
+        });
 
     // i.e. the expectation is that the vertex buffer implementation converts the color
     // to Unorm8x4 (osc::Color32) for storage but, on retrieval, converts it back to Float32x4
     // (osc::Color).
-    const auto expected_colors = project_into_vector(colors, [](const Color& c) {
-        return Color{Color32{c}};
-    });
+    const auto expected_colors =
+        project_into_vector(colors, [](const Color& c) { return Color{Color32{c}}; });
 
     ASSERT_EQ(mesh.colors(), expected_colors);
 }
@@ -1794,56 +1837,71 @@ TEST(Mesh, get_vertex_buffer_stride_returns_expected_results)
     Mesh mesh;
     ASSERT_EQ(mesh.vertex_buffer_stride(), 0);
 
-    mesh.set_vertex_buffer_params(3, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
-    });
-    ASSERT_EQ(mesh.vertex_buffer_stride(), 3*sizeof(float));
+    mesh.set_vertex_buffer_params(
+        3,
+        {
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+        });
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 3 * sizeof(float));
 
-    mesh.set_vertex_buffer_params(3, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
-    });
-    ASSERT_EQ(mesh.vertex_buffer_stride(), 2*sizeof(float));
+    mesh.set_vertex_buffer_params(
+        3,
+        {
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
+        });
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 2 * sizeof(float));
 
-    mesh.set_vertex_buffer_params(3, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
-        {VertexAttribute::Color,    VertexAttributeFormat::Float32x4},
-    });
-    ASSERT_EQ(mesh.vertex_buffer_stride(), 2*sizeof(float)+4*sizeof(float));
+    mesh.set_vertex_buffer_params(
+        3,
+        {
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
+            {VertexAttribute::Color, VertexAttributeFormat::Float32x4},
+        });
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 2 * sizeof(float) + 4 * sizeof(float));
 
-    mesh.set_vertex_buffer_params(3, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
-        {VertexAttribute::Color,    VertexAttributeFormat::Unorm8x4},
-    });
-    ASSERT_EQ(mesh.vertex_buffer_stride(), 2*sizeof(float)+4);
+    mesh.set_vertex_buffer_params(
+        3,
+        {
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
+            {VertexAttribute::Color, VertexAttributeFormat::Unorm8x4},
+        });
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 2 * sizeof(float) + 4);
 
-    mesh.set_vertex_buffer_params(3, {
-        {VertexAttribute::Position, VertexAttributeFormat::Unorm8x4},
-        {VertexAttribute::Color,    VertexAttributeFormat::Unorm8x4},
-    });
-    ASSERT_EQ(mesh.vertex_buffer_stride(), 4+4);
+    mesh.set_vertex_buffer_params(
+        3,
+        {
+            {VertexAttribute::Position, VertexAttributeFormat::Unorm8x4},
+            {VertexAttribute::Color, VertexAttributeFormat::Unorm8x4},
+        });
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 4 + 4);
 
-    mesh.set_vertex_buffer_params(3, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
-        {VertexAttribute::Tangent,  VertexAttributeFormat::Float32x4},
-        {VertexAttribute::Color,    VertexAttributeFormat::Unorm8x4},
-    });
-    ASSERT_EQ(mesh.vertex_buffer_stride(), 2*sizeof(float) + 4 + 4*sizeof(float));
+    mesh.set_vertex_buffer_params(
+        3,
+        {
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
+            {VertexAttribute::Tangent, VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Color, VertexAttributeFormat::Unorm8x4},
+        });
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 2 * sizeof(float) + 4 + 4 * sizeof(float));
 }
 
 TEST(Mesh, set_vertex_buffer_data_works_for_simplest_case_of_just_positional_data)
 {
     class Entry final {
     public:
-        const Vector3& vertex() const { return vertex_;  }
+        const Vector3& vertex() const { return vertex_; }
+
     private:
         Vector3 vertex_ = generate<Vector3>();
     };
     const std::vector<Entry> data(12);
 
     Mesh mesh;
-    mesh.set_vertex_buffer_params(12, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
-    });
+    mesh.set_vertex_buffer_params(
+        12,
+        {
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+        });
     mesh.set_vertex_buffer_data(data);
 
     const auto expected_vertices = project_into_vector(data, &Entry::vertex);
@@ -1859,9 +1917,12 @@ TEST(Mesh, set_vertex_buffer_data_fails_in_simple_case_if_data_mismatche_VertexF
     const std::vector<Entry> data(12);
 
     Mesh mesh;
-    mesh.set_vertex_buffer_params(12, {
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x2},  // uh oh: wrong dimensionality for `Entry`
-    });
+    mesh.set_vertex_buffer_params(
+        12,
+        {
+            {VertexAttribute::Position,
+             VertexAttributeFormat::Float32x2},  // uh oh: wrong dimensionality for `Entry`
+        });
     ASSERT_ANY_THROW({ mesh.set_vertex_buffer_data(data); });
 }
 
@@ -1873,9 +1934,12 @@ TEST(Mesh, set_vertex_buffer_data_fails_in_simple_case_if_N_mismatches)
     const std::vector<Entry> data(12);
 
     Mesh mesh;
-    mesh.set_vertex_buffer_params(6, {  // uh oh: wrong N for the given number of entries
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
-    });
+    mesh.set_vertex_buffer_params(
+        6,
+        {
+            // uh oh: wrong N for the given number of entries
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
+        });
     ASSERT_ANY_THROW({ mesh.set_vertex_buffer_data(data); });
 }
 
@@ -1887,10 +1951,17 @@ TEST(Mesh, set_vertex_buffer_data_doesnt_fail_if_caller_luckily_has_same_layout)
     const std::vector<Entry> data(12);
 
     Mesh mesh;
-    mesh.set_vertex_buffer_params(24, {  // uh oh
-        {VertexAttribute::Position, VertexAttributeFormat::Float32x2},  // ah, but, the total size will now luckily match...
-    });
-    ASSERT_NO_THROW({ mesh.set_vertex_buffer_data(data); });  // and it won't throw because the API cannot know any better...
+    mesh.set_vertex_buffer_params(
+        24,
+        {
+            // uh oh
+            {VertexAttribute::Position,
+             // ah, but, the total size will now luckily match...
+             VertexAttributeFormat::Float32x2},
+        });
+    ASSERT_NO_THROW({
+        mesh.set_vertex_buffer_data(data);
+    });  // and it won't throw because the API cannot know any better...
 }
 
 TEST(Mesh, set_vertex_buffer_data_throws_if_no_layout_provided)
@@ -1901,7 +1972,8 @@ TEST(Mesh, set_vertex_buffer_data_throws_if_no_layout_provided)
     const std::vector<Entry> data(12);
 
     Mesh mesh;
-    ASSERT_ANY_THROW({ mesh.set_vertex_buffer_data(data); }) << "should throw: caller didn't call 'set_vertex_buffer_params' first";
+    ASSERT_ANY_THROW({ mesh.set_vertex_buffer_data(data); })
+        << "should throw: caller didn't call 'set_vertex_buffer_params' first";
 }
 
 TEST(Mesh, set_vertex_buffer_data_works_as_expected_for_ImGui_style_case)
@@ -1915,16 +1987,21 @@ TEST(Mesh, set_vertex_buffer_data_works_as_expected_for_ImGui_style_case)
         Vector2 uv = generate<Vector2>();
     };
     const std::vector<SimilarToImGuiVert> data(16);
-    const auto expected_vertices = project_into_vector(data, [](const auto& v) { return Vector3{v.pos, 0.0f}; });
-    const auto expected_colors = project_into_vector(data, [](const auto& v) { return Color(v.col); });
-    const auto expected_texture_coordinates = project_into_vector(data, [](const auto& v) { return v.uv; });
+    const auto expected_vertices =
+        project_into_vector(data, [](const auto& v) { return Vector3{v.pos, 0.0f}; });
+    const auto expected_colors =
+        project_into_vector(data, [](const auto& v) { return Color(v.col); });
+    const auto expected_texture_coordinates =
+        project_into_vector(data, [](const auto& v) { return v.uv; });
 
     Mesh mesh;
-    mesh.set_vertex_buffer_params(16, {
-        {VertexAttribute::Position,  VertexAttributeFormat::Float32x2},
-        {VertexAttribute::Color,     VertexAttributeFormat::Unorm8x4},
-        {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
-    });
+    mesh.set_vertex_buffer_params(
+        16,
+        {
+            {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
+            {VertexAttribute::Color, VertexAttributeFormat::Unorm8x4},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
+        });
 
     // directly set vertex buffer data
     ASSERT_EQ(mesh.vertex_buffer_stride(), sizeof(SimilarToImGuiVert));
@@ -1942,7 +2019,9 @@ TEST(Mesh, set_vertex_buffer_data_works_as_expected_for_ImGui_style_case)
 TEST(Mesh, set_vertex_buffer_data_recalculates_Mesh_bounds)
 {
     auto first_vertices = generate_vertices(6);
-    auto second_vertices = project_into_vector(first_vertices, [](const auto& v) { return 2.0f*v; });  // i.e. has different bounds
+    // i.e. has different bounds
+    auto second_vertices =
+        project_into_vector(first_vertices, [](const auto& v) { return 2.0f * v; });
 
     Mesh mesh;
     mesh.set_vertices(first_vertices);
@@ -1968,7 +2047,8 @@ TEST(Mesh, recalculate_normals_does_nothing_if_Mesh_topology_is_Lines)
 TEST(Mesh, recalculate_normals_assigns_normals_if_none_exist)
 {
     Mesh mesh;
-    mesh.set_vertices({  // i.e. triangle that's wound to point in +Z
+    mesh.set_vertices({
+        // i.e. triangle that's wound to point in +Z
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
@@ -1980,8 +2060,10 @@ TEST(Mesh, recalculate_normals_assigns_normals_if_none_exist)
 
     const auto normals = mesh.normals();
     ASSERT_EQ(normals.size(), 3);
-    ASSERT_TRUE(rgs::all_of(normals, [first = normals.front()](const Vector3& normal){ return normal == first; }));
-    ASSERT_TRUE(all_of(equal_within_absdiff(normals.front(), Vector3(0.0f, 0.0f, 1.0f), epsilon_v<float>)));
+    ASSERT_TRUE(rgs::all_of(normals, [first = normals.front()](const Vector3& normal) {
+        return normal == first;
+    }));
+    OSC_ASSERT_VECTOR_NEAR(normals.front(), Vector3(0.0f, 0.0f, 1.0f), epsilon_v<float>);
 }
 
 TEST(Mesh, recalculate_normals_averages_normals_of_shared_vertices)
@@ -1994,35 +2076,35 @@ TEST(Mesh, recalculate_normals_averages_normals_of_shared_vertices)
     // triangle's normals (which point outwards at an angle)
 
     const auto vertices = std::to_array<Vector3>({
-        {-1.0f, 0.0f,  0.0f},  // bottom-left "pin"
-        { 0.0f, 1.0f,  1.0f},  // front of "top"
-        { 0.0f, 1.0f, -1.0f},  // back of "top"
-        { 1.0f, 0.0f,  0.0f},  // bottom-right "pin"
+        {-1.0f, 0.0f, +0.0f},  // bottom-left "pin"
+        {+0.0f, 1.0f, +1.0f},  // front of "top"
+        {+0.0f, 1.0f, -1.0f},  // back of "top"
+        {+1.0f, 0.0f, +0.0f},  // bottom-right "pin"
     });
 
     Mesh mesh;
     mesh.set_vertices(vertices);
-    mesh.set_indices({0, 1, 2,   3, 2, 1});  // shares two vertices per triangle
+    mesh.set_indices({0, 1, 2, 3, 2, 1});  // shares two vertices per triangle
 
-    const Vector3 lhs_normal = triangle_normal({ vertices[0], vertices[1], vertices[2] });
-    const Vector3 rhs_normal = triangle_normal({ vertices[3], vertices[2], vertices[1] });
+    const Vector3 lhs_normal = triangle_normal({vertices[0], vertices[1], vertices[2]});
+    const Vector3 rhs_normal = triangle_normal({vertices[3], vertices[2], vertices[1]});
     const Vector3 mixed_normal = normalize(midpoint(lhs_normal, rhs_normal));
 
     mesh.recalculate_normals();
 
     const auto normals = mesh.normals();
     ASSERT_EQ(normals.size(), 4);
-    ASSERT_TRUE(all_of(equal_within_absdiff(normals[0], lhs_normal, epsilon_v<float>)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(normals[1], mixed_normal, epsilon_v<float>)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(normals[2], mixed_normal, epsilon_v<float>)));
-    ASSERT_TRUE(all_of(equal_within_absdiff(normals[3], rhs_normal, epsilon_v<float>)));
+    OSC_ASSERT_VECTOR_NEAR(normals[0], lhs_normal, epsilon_v<float>);
+    OSC_ASSERT_VECTOR_NEAR(normals[1], mixed_normal, epsilon_v<float>);
+    OSC_ASSERT_VECTOR_NEAR(normals[2], mixed_normal, epsilon_v<float>);
+    OSC_ASSERT_VECTOR_NEAR(normals[3], rhs_normal, epsilon_v<float>);
 }
 
 TEST(Mesh, recalculate_tangents_does_nothing_if_Mesh_topology_is_Lines)
 {
     Mesh mesh;
     mesh.set_topology(MeshTopology::Lines);
-    mesh.set_vertices({ generate<Vector3>(), generate<Vector3>() });
+    mesh.set_vertices({generate<Vector3>(), generate<Vector3>()});
     mesh.set_normals(generate_normals(2));
     mesh.set_tex_coords(generate_texture_coordinates(2));
 
@@ -2034,7 +2116,8 @@ TEST(Mesh, recalculate_tangents_does_nothing_if_Mesh_topology_is_Lines)
 TEST(Mesh, recalculate_tangents_does_nothing_if_Mesh_has_no_normals)
 {
     Mesh mesh;
-    mesh.set_vertices({  // i.e. triangle that's wound to point in +Z
+    mesh.set_vertices({
+        // i.e. triangle that's wound to point in +Z
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
@@ -2054,7 +2137,8 @@ TEST(Mesh, recalculate_tangents_does_nothing_if_Mesh_has_no_normals)
 TEST(Mesh, recalculate_tangents_does_nothing_if_Mesh_has_no_texture_coordinates)
 {
     Mesh mesh;
-    mesh.set_vertices({  // i.e. triangle that's wound to point in +Z
+    mesh.set_vertices({
+        // i.e. triangle that's wound to point in +Z
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
@@ -2075,7 +2159,8 @@ TEST(Mesh, recalculate_tangents_does_nothing_if_Mesh_has_no_texture_coordinates)
 TEST(Mesh, recalculate_tangents_does_nothing_if_indices_are_not_assigned)
 {
     Mesh mesh;
-    mesh.set_vertices({  // i.e. triangle that's wound to point in +Z
+    mesh.set_vertices({
+        // i.e. triangle that's wound to point in +Z
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
@@ -2094,13 +2179,15 @@ TEST(Mesh, recalculate_tangents_does_nothing_if_indices_are_not_assigned)
 
     ASSERT_TRUE(mesh.tangents().empty());
     mesh.recalculate_tangents();
-    ASSERT_TRUE(mesh.tangents().empty()) << "cannot recalculate tangents if there are no indices (needed to figure out what's a triangle, etc.)";
+    ASSERT_TRUE(mesh.tangents().empty())
+        << "cannot recalculate tangents if there are no indices (needed to figure out what's a triangle, etc.)";
 }
 
 TEST(Mesh, recalculate_tangents_creates_tangents_if_none_exist)
 {
     Mesh mesh;
-    mesh.set_vertices({  // i.e. triangle that's wound to point in +Z
+    mesh.set_vertices({
+        // i.e. triangle that's wound to point in +Z
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
@@ -2125,7 +2212,8 @@ TEST(Mesh, recalculate_tangents_creates_tangents_if_none_exist)
 TEST(Mesh, recalculate_tangents_gives_expected_results_in_basic_case)
 {
     Mesh mesh;
-    mesh.set_vertices({  // i.e. triangle that's wound to point in +Z
+    mesh.set_vertices({
+        // i.e. triangle that's wound to point in +Z
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},

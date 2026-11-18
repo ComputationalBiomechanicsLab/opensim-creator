@@ -39,24 +39,16 @@ namespace osc
 
         friend auto operator<=>(const Unorm&, const Unorm&) = default;
 
-        explicit constexpr operator float() const
-        {
-            return normalized_value();
-        }
+        explicit constexpr operator float() const { return normalized_value(); }
 
-        explicit constexpr operator T() const
-        {
-            return raw_value();
-        }
+        explicit constexpr operator T() const { return raw_value(); }
 
-        constexpr T raw_value() const
-        {
-            return value_;
-        }
+        constexpr T raw_value() const { return value_; }
 
         constexpr float normalized_value() const
         {
-            return (1.0f/static_cast<float>(std::numeric_limits<T>::max())) * static_cast<float>(value_);
+            return (1.0f / static_cast<float>(std::numeric_limits<T>::max())) *
+                   static_cast<float>(value_);
         }
 
     private:

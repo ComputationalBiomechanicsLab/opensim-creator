@@ -14,26 +14,30 @@ namespace osc
     public:
         Environment();
 
-        const ParamBlock& getSimulationParams() const { return m_ParamBlock; }
-        ParamBlock& updSimulationParams() { return m_ParamBlock; }
+        const ParamBlock& get_simulation_params() const { return param_block_; }
+        ParamBlock& upd_simulation_params() { return param_block_; }
 
-        int getNumUserOutputExtractors() const { return static_cast<int>(m_OutputExtractors.size()); }
-        const opyn::SharedOutputExtractor& getUserOutputExtractor(int index) const;
-        void addUserOutputExtractor(const opyn::SharedOutputExtractor& extractor);
-        void removeUserOutputExtractor(int index);
-        bool hasUserOutputExtractor(const opyn::SharedOutputExtractor& extractor) const;
-        bool removeUserOutputExtractor(const opyn::SharedOutputExtractor& extractor);
-        bool overwriteOrAddNewUserOutputExtractor(const opyn::SharedOutputExtractor& old, const opyn::SharedOutputExtractor& newer);
+        int get_num_user_output_extractors() const
+        {
+            return static_cast<int>(output_extractors_.size());
+        }
+        const opyn::SharedOutputExtractor& get_user_output_extractor(int index) const;
+        void add_user_output_extractor(const opyn::SharedOutputExtractor& extractor);
+        void remove_user_output_extractor(int index);
+        bool has_user_output_extractor(const opyn::SharedOutputExtractor& extractor) const;
+        bool remove_user_output_extractor(const opyn::SharedOutputExtractor& extractor);
+        bool overwrite_or_add_new_user_output_extractor(
+            const opyn::SharedOutputExtractor& old, const opyn::SharedOutputExtractor& newer);
 
-        std::vector<opyn::SharedOutputExtractor> getAllUserOutputExtractors() const;
+        std::vector<opyn::SharedOutputExtractor> get_all_user_output_extractors() const;
 
     private:
         // simulation params: dictates how the next simulation shall be ran
-        ParamBlock m_ParamBlock;
+        ParamBlock param_block_;
 
         // user-initiated output extractors
         //
         // simulators should try to hook into these, if the component exists
-        std::vector<opyn::SharedOutputExtractor> m_OutputExtractors;
+        std::vector<opyn::SharedOutputExtractor> output_extractors_;
     };
 }

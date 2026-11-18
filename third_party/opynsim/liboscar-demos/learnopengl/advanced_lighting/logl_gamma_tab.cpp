@@ -25,8 +25,8 @@ namespace
     constexpr auto c_light_positions = std::to_array<Vector3>({
         {-3.0f, 0.0f, 0.0f},
         {-1.0f, 0.0f, 0.0f},
-        { 1.0f, 0.0f, 0.0f},
-        { 3.0f, 0.0f, 0.0f},
+        {+1.0f, 0.0f, 0.0f},
+        {+3.0f, 0.0f, 0.0f},
     });
 
     constexpr auto c_light_colors = std::to_array<Color>({
@@ -38,6 +38,7 @@ namespace
 
     Mesh generate_plane()
     {
+        // clang-format off
         Mesh mesh;
         mesh.set_vertices({
             { 10.0f, -0.5f,  10.0f},
@@ -67,6 +68,7 @@ namespace
             {0.0f, 1.0f, 0.0f},
         });
         mesh.set_indices({0, 2, 1, 3, 5, 4});
+        // clang-format on
         return mesh;
     }
 
@@ -82,9 +84,7 @@ namespace
     Material create_floor_material(ResourceLoader& loader)
     {
         const Texture2D wood_texture = Image::read_into_texture(
-            loader.open("oscar_demos/learnopengl/textures/wood.jpg"),
-            ColorSpace::sRGB
-        );
+            loader.open("oscar_demos/learnopengl/textures/wood.jpg"), ColorSpace::sRGB);
 
         Material material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/Gamma.vert"),
@@ -117,10 +117,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -135,10 +132,13 @@ private:
         material_.set("uViewPos", camera_.position());
 
         render_queue_.emplace(plane_mesh_, material_);
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-            .clear_color = {0.1f, 1.0f},
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+                .clear_color = {0.1f, 1.0f},
+            });
         render_queue_.clear();
     }
 
@@ -155,13 +155,27 @@ private:
     RenderQueue render_queue_;
 };
 
-
-CStringView osc::LOGLGammaTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLGammaTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLGammaTab::LOGLGammaTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLGammaTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLGammaTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLGammaTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLGammaTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLGammaTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLGammaTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLGammaTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLGammaTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

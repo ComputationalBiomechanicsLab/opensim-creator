@@ -75,7 +75,7 @@ TEST(Rgb, operator_bracket_works_as_expected)
 TEST(Rgb, const_iterators_work_as_expected_with_algorithms)
 {
     const auto values = std::to_array({0.1f, 0.2f, 0.3f});
-    const auto rgb    =     Rgb<float>{0.1f, 0.2f, 0.3f};
+    const auto rgb = Rgb<float>{values[0], values[1], values[2]};
 
     ASSERT_TRUE(rgs::equal(values, rgb));
 }
@@ -86,7 +86,7 @@ TEST(Rgb, mutable_iterators_work_as_expected)
     for (auto& component : rgb) {
         component *= 2.0f;
     }
-    ASSERT_EQ(rgb, Rgb<float>(2.0f*0.1f, 2.0f*0.2f, 2.0f*0.3f));
+    ASSERT_EQ(rgb, Rgb<float>(2.0f * 0.1f, 2.0f * 0.2f, 2.0f * 0.3f));
 }
 
 TEST(Rgb, size_is_3)
@@ -101,7 +101,7 @@ TEST(Rgb, tuple_size_is_3)
 
 TEST(Rgb, structured_bindings_work_as_expected)
 {
-    const auto [r, g, b] = Rgb<float>{2.0f, 2.5f, 3.0f};
+    const auto& [r, g, b] = Rgb<float>{2.0f, 2.5f, 3.0f};
     ASSERT_EQ(r, 2.0f);
     ASSERT_EQ(g, 2.5f);
     ASSERT_EQ(b, 3.0f);

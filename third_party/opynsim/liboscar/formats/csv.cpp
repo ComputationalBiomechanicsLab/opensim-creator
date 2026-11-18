@@ -17,7 +17,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr auto c_special_csv_chars = std::to_array({ ',', '\r', '\n', '"'});
+    constexpr auto c_special_csv_chars = std::to_array({',', '\r', '\n', '"'});
 
     constexpr bool should_be_quoted(std::string_view str)
     {
@@ -25,8 +25,7 @@ namespace
     }
 }
 
-std::optional<std::vector<std::string>> osc::CSV::read_row(
-    std::istream& in)
+std::optional<std::vector<std::string>> osc::CSV::read_row(std::istream& in)
 {
     std::optional<std::vector<std::string>> columns;
     columns.emplace();
@@ -37,9 +36,7 @@ std::optional<std::vector<std::string>> osc::CSV::read_row(
     return columns;
 }
 
-bool osc::CSV::read_row_into_vector(
-    std::istream& in,
-    std::vector<std::string>& r_columns)
+bool osc::CSV::read_row_into_vector(std::istream& in, std::vector<std::string>& r_columns)
 {
     if (in.eof()) {
         return false;
@@ -101,15 +98,12 @@ bool osc::CSV::read_row_into_vector(
     if (not columns.empty()) {
         r_columns = std::move(columns);
         return true;
-    }
-    else {
+    } else {
         return false;
     }
 }
 
-void osc::CSV::write_row(
-    std::ostream& out,
-    std::span<const std::string> columns)
+void osc::CSV::write_row(std::ostream& out, std::span<const std::string> columns)
 {
     std::string_view delimiter;
     for (const auto& column : columns) {
@@ -123,8 +117,7 @@ void osc::CSV::write_row(
         for (auto c : column) {
             if (c != '"') {
                 out << c;
-            }
-            else {
+            } else {
                 out << '"' << '"';
             }
         }

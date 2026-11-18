@@ -23,106 +23,73 @@ namespace osc
     public:
         MiMesh(
             UID id,
-            UID attachment,  // can be MiIDs::Ground()
-            osc::Mesh meshData,
-            std::filesystem::path path
-        );
+            UID attachment,  // can be MiIDs::ground()
+            Mesh mesh_data,
+            std::filesystem::path path);
 
-        const osc::Mesh& getMeshData() const
-        {
-            return m_MeshData;
-        }
+        const Mesh& get_mesh_data() const { return mesh_data_; }
 
-        const std::filesystem::path& getPath() const
-        {
-            return m_Path;
-        }
+        const std::filesystem::path& get_path() const { return path_; }
 
-        UID getParentID() const
-        {
-            return m_Attachment;
-        }
+        UID get_parent_id() const { return attachment_; }
 
-        void setParentID(UID newParent)
-        {
-            m_Attachment = newParent;
-        }
+        void set_parent_id(UID new_parent) { attachment_ = new_parent; }
 
-        Transform getXForm() const
-        {
-            return m_Transform;
-        }
+        Transform get_x_form() const { return transform_; }
 
-        void setXform(const Transform& t)
-        {
-            m_Transform = t;
-        }
+        void set_xform(const Transform& t) { transform_ = t; }
 
-        std::optional<AABB> calcBounds() const;
+        std::optional<AABB> calc_bounds() const;
 
-        void reloadMeshDataFromDisk();
+        void reload_mesh_data_from_disk();
 
     private:
         friend class MiObjectCRTP<MiMesh>;
-        static MiClass CreateClass();
+        static MiClass create_class();
 
-        std::vector<MiCrossrefDescriptor> implGetCrossReferences() const final;
+        std::vector<MiCrossrefDescriptor> impl_get_cross_references() const override;
 
-        void implSetCrossReferenceConnecteeID(int i, UID id) final
+        void impl_set_cross_reference_connectee_id(int i, UID id) override
         {
-            if (i != 0)
-            {
+            if (i != 0) {
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
-            m_Attachment = id;
+            attachment_ = id;
         }
 
-        MiObjectFlags implGetFlags() const final
+        MiObjectFlags impl_get_flags() const override
         {
-            return
-                MiObjectFlags::CanChangeLabel |
-                MiObjectFlags::CanChangePosition |
-                MiObjectFlags::CanChangeRotation |
-                MiObjectFlags::CanChangeScale |
-                MiObjectFlags::CanDelete |
-                MiObjectFlags::CanSelect |
-                MiObjectFlags::HasPhysicalSize;
+            return MiObjectFlags::CanChangeLabel |     //
+                   MiObjectFlags::CanChangePosition |  //
+                   MiObjectFlags::CanChangeRotation |  //
+                   MiObjectFlags::CanChangeScale |     //
+                   MiObjectFlags::CanDelete |          //
+                   MiObjectFlags::CanSelect |          //
+                   MiObjectFlags::HasPhysicalSize;
         }
 
-        UID implGetID() const final
+        UID impl_get_id() const override { return id_; }
+
+        std::ostream& impl_write_to_stream(std::ostream&) const override;
+
+        CStringView impl_get_label() const override { return name_; }
+
+        void impl_set_label(std::string_view sv) override;
+
+        Transform impl_get_xform(const MiObjectFinder&) const override { return get_x_form(); }
+
+        void impl_set_xform(const MiObjectFinder&, const Transform& t) override { set_xform(t); }
+
+        std::optional<AABB> impl_calc_bounds(const MiObjectFinder&) const override
         {
-            return m_ID;
+            return calc_bounds();
         }
 
-        std::ostream& implWriteToStream(std::ostream&) const final;
-
-        CStringView implGetLabel() const final
-        {
-            return m_Name;
-        }
-
-        void implSetLabel(std::string_view sv) final;
-
-        Transform implGetXform(const MiObjectFinder&) const final
-        {
-            return getXForm();
-        }
-
-        void implSetXform(const MiObjectFinder&, const Transform& t) final
-        {
-            setXform(t);
-        }
-
-        std::optional<AABB> implCalcBounds(const MiObjectFinder&) const final
-        {
-            return calcBounds();
-        }
-
-        UID m_ID;
-        UID m_Attachment;  // can be MiIDs::Ground()
-        Transform m_Transform;
-        osc::Mesh m_MeshData;
-        std::filesystem::path m_Path;
-        std::string m_Name;
+        UID id_;
+        UID attachment_;  // can be MiIDs::ground()
+        Transform transform_;
+        osc::Mesh mesh_data_;
+        std::filesystem::path path_;
+        std::string name_;
     };
 }

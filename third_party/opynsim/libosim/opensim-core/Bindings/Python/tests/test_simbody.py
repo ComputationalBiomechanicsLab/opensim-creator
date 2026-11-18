@@ -9,8 +9,8 @@ import numpy as np
 
 import opensim as osim
 
-test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
-                        'tests')
+resources_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                             'tests', 'resources')
 
 # Silence warning messages if mesh (.vtp) files cannot be found.
 osim.Model.setDebugLevel(0)
@@ -44,6 +44,33 @@ class TestSimbody(unittest.TestCase):
             osim.Vec3.createFromMat(np.array([5, 1]))
         with self.assertRaises(RuntimeError):
             osim.Vec3.createFromMat(np.array([5, 1, 6, 3]))
+
+        # Incorrect number of args for `Vec2`.
+        osim.Vec2(1.0, 2.0)  # This is fine
+        with self.assertRaises(TypeError):
+            osim.Vec2(1.0, 2.0, 3.0)
+        with self.assertRaises(TypeError):
+            osim.Vec2(1.0, 2.0, 3.0, 4.0)
+
+        # Incorrect number of args for `Vec3`.
+        with self.assertRaises(TypeError):
+            osim.Vec3(1.0, 2.0)
+        osim.Vec3(1.0, 2.0, 3.0)  # This is fine
+        with self.assertRaises(TypeError):
+            osim.Vec3(1.0, 2.0, 3.0, 4.0)
+        with self.assertRaises(TypeError):
+            osim.Vec3(1.0, 2.0, 3.0, 4.0, 5.0)
+
+        # Incorrect number of args for `Vec4`.
+        with self.assertRaises(TypeError):
+            osim.Vec4(1.0, 2.0)
+        with self.assertRaises(TypeError):
+            osim.Vec4(1.0, 2.0, 3.0)
+        osim.Vec4(1.0, 2.0, 3.0, 4.0)  # This is fine
+        with self.assertRaises(TypeError):
+            osim.Vec4(1.0, 2.0, 3.0, 4.0, 5.0)
+        with self.assertRaises(TypeError):
+            osim.Vec4(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
 
     def test_vec3_operators(self):
         v1 = osim.Vec3(1, 2, 3)
@@ -192,7 +219,7 @@ class TestSimbody(unittest.TestCase):
         assert v2.__str__() == "~[3 3 3 3 3 3 3]"
 
     def test_SimbodyMatterSubsystem(self):
-        model = osim.Model(os.path.join(test_dir,
+        model = osim.Model(os.path.join(resources_dir,
             "gait10dof18musc_subject01.osim"))
         s = model.initSystem()
         smss = model.getMatterSubsystem()

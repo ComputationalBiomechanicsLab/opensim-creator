@@ -56,7 +56,7 @@ nanobind specifically. There are two solutions:
 
    Depending on the flags provided to :cmake:command:`nanobind_add_module()`,
    the shared library component may have a different name following the pattern
-   ``nanobind[-abi3][-lto]``.
+   ``nanobind[-static][-abi3][-ft][-ps]``.
 
    The following CMake commands may be useful to adjust the build and install
    `rpath <https://en.wikipedia.org/wiki/Rpath>`_ of the extension:
@@ -293,11 +293,52 @@ Can I make stable ABI extensions for pre-3.12 Python?
 -----------------------------------------------------
 
 Stable ABI extensions are convenient because they can be reused across Python
-versions, but this unfortunately only works on Python 3.12 and newer. Nanobind
-crucially depends on several `features
+versions, but in the linked build modes this only works on Python 3.12 and
+newer. Nanobind crucially depends on several `features
 <https://docs.python.org/3/whatsnew/3.12.html#c-api-changes>`__ that were added
 in version 3.12 (specifically, ``PyType_FromMetaclass()`` and limited API
 bindings of the vector call protocol).
+
+:ref:`Split mode <split-mode>` drops the floor to Python 3.10: the parts of
+nanobind that need those interfaces then live in a backend module that is
+built per Python version, and only the extension itself must stay within the
+limited API.
+
+.. _abi_compatibility:
+
+What does the term "ABI compatible" mean in this project?
+---------------------------------------------------------
+
+An `Application Binary Interface
+<https://en.wikipedia.org/wiki/Application_binary_interface>`__ (ABI) is a
+convention enabling libraries and programs to communicate with each other.
+ABI compatibility determines whether two nanobind extensions loaded into the
+same Python process have mutual visibility of each other's C++ ↔ Python type
+bindings.
+
+For example, suppose that an extension ``A`` binds a type ``MyType``, while an
+**ABI-incompatible** extension ``B`` binds a function ``void f(MyType &)``. The
+Python expression ``B.f(A.MyType())`` must fail with a ``TypeError``. ``B``
+cannot communicate with the ABI-incompatible extension ``A``, therefore it does
+not know whether the provided input is truly a ``MyType`` instance.
+
+To avoid such isolation, the following must be matched:
+
+1. **Platform ABI**. nanobind isolates extensions with an incompatible
+   *platform ABI* tag (computed in ``nb_platform.h``). The tag encodes the
+   compiler family, C++ standard library and ABI variant, MSVC CRT flavor, and
+   debug mode flag. Calls between ABI-mismatched libraries is undefined
+   behavior and could crash the process.
+
+2. **Internal ABI**. nanobind releases further specify an *internal ABI version* in
+   their :ref:`changelog <changelog>` entry or inherit that of the preceding
+   release. This number versions the internal data structures that are needed
+   for safe inter-extension communication.
+
+**Split mode**: Extensions using :ref:`split mode <split-mode>` relax these
+constraints. In split mode, nanobind internals are packaged into a separate
+backend package (the official one is called ``nanobind-backend``). All extensions
+sharing a backend have full mutual visibility of type bindings.
 
 Policy on Clang-Tidy, ``-Wpedantic``, etc.
 ------------------------------------------
@@ -369,8 +410,8 @@ build system compatible with another tool that is sufficiently
 feature-complete, then please file an issue and I am happy to reference it in
 the documentation.
 
-Is there a way to pass ``JSON`` objects between Python and C++? 
--------------------------------------------------
+Is there a way to pass ``JSON`` objects between Python and C++?
+---------------------------------------------------------------
 Yes, an unofficial, currently maintained, package supporting that can be found `here
 <https://github.com/Griger5/nanobind_json>`_. It is based on a similar package for 
 ``pybind11`` called ``pybind11_json``.
@@ -387,6 +428,16 @@ Powered by srcML (srcml.org), a high-performance, multi-language parsing tool,
 litgen takes a developer-centric approach.
 The C++ API to be exposed to Python must be C++14 compatible, although the
 implementation can leverage more modern C++ features.
+
+Policy on AI-assisted contributions
+-----------------------------------
+
+AI-assisted contributions are permitted, but you must understand and review the
+output line by line before opening a pull request. The raw output of current
+models remains below the quality bar of this project. Text written for humans
+(docstrings, comments, commit/PR messages) needs careful review and will often
+have to be rewritten from scratch by a human. I close PRs when it is apparent
+that nobody reviewed the output.
 
 How to cite this project?
 -------------------------

@@ -34,6 +34,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
+    // clang-format off
     constexpr CStringView c_config_file_header =
 R"(# configuration options
 #
@@ -44,6 +45,7 @@ R"(# configuration options
 # beware: this file is overwritten by the application when it detects that you have made changes
 
 )";
+    // clang-format on
 
     // a value stored in the AppSettings lookup table
     class AppSettingsLookupValue final {
@@ -68,8 +70,7 @@ R"(# configuration options
         {
             if (const auto v = lookup_or_nullptr(hashmap_, key)) {
                 return v->value();
-            }
-            else {
+            } else {
                 return std::nullopt;
             }
         }
@@ -89,37 +90,35 @@ R"(# configuration options
         {
             if (const auto v = lookup_or_nullptr(hashmap_, key)) {
                 return v->scope();
-            }
-            else {
+            } else {
                 return std::nullopt;
             }
         }
 
         auto begin() const { return hashmap_.begin(); }
         auto end() const { return hashmap_.end(); }
-    private:
 
-        using Storage = ankerl::unordered_dense::map<
-            std::string,
-            AppSettingsLookupValue,
-            TransparentStringHasher,
-            std::equal_to<>
-        >;
+    private:
+        using Storage = ankerl::unordered_dense::
+            map<std::string, AppSettingsLookupValue, TransparentStringHasher, std::equal_to<>>;
         Storage hashmap_;
     };
 
     // if available, returns the path to the system-wide configuration file
-    std::optional<std::filesystem::path>  try_get_system_config_path(
+    std::optional<std::filesystem::path> try_get_system_config_path(
         std::string_view application_config_file_name)
     {
-        for (std::filesystem::path p = current_executable_directory(); p != p.root_path(); p = p.parent_path()) {
-            if (auto dir_path = p / application_config_file_name; std::filesystem::exists(dir_path)) {
+        for (std::filesystem::path p = current_executable_directory(); p != p.root_path();
+             p = p.parent_path()) {
+
+            if (auto dir_path = p / application_config_file_name;
+                std::filesystem::exists(dir_path)) {
                 return dir_path;  // e.g. `C:/Program Files/App/config.toml`
-            }
-            else if (auto resources_path_capped = p / "Resources" / application_config_file_name; std::filesystem::exists(resources_path_capped)) {
+            } else if (auto resources_path_capped = p / "Resources" / application_config_file_name;
+                       std::filesystem::exists(resources_path_capped)) {
                 return resources_path_capped;  // e.g. `/Applications/App.app/Resources/config.toml`
-            }
-            else if (auto resources_path = p / "resources" / application_config_file_name; std::filesystem::exists(resources_path)) {
+            } else if (auto resources_path = p / "resources" / application_config_file_name;
+                       std::filesystem::exists(resources_path)) {
                 return resources_path;  // e.g. `/opt/app/resources/config.toml`
             }
         }
@@ -139,12 +138,11 @@ R"(# configuration options
 
         if (std::filesystem::exists(full_path)) {
             return full_path;
-        }
-        else if (auto new_user_file_stream = std::ofstream{full_path}) {  // create blank user file
+        } else if (auto new_user_file_stream = std::ofstream{full_path}) {
+            // create blank user file
             new_user_file_stream << c_config_file_header;
             return full_path;
-        }
-        else {
+        } else {
             return std::nullopt;
         }
     }
@@ -153,10 +151,10 @@ R"(# configuration options
     {
         try {
             return toml::parse_file(path.string());
-        }
-        catch (const std::exception& ex) {
+        } catch (const std::exception& ex) {
             log_warn("error parsing {}: {}", path.string(), ex.what());
-            log_warn("the application will skip loading this configuration file, but you might want to fix it");
+            log_warn(
+                "the application will skip loading this configuration file, but you might want to fix it");
             return toml::table{};
         }
     }
@@ -164,9 +162,7 @@ R"(# configuration options
     // loads application settings, located at `config_path` into the given lookup (`out`)
     // at the given `scope` level
     void load_app_settings_from_disk_into_lookup(
-        const std::filesystem::path& config_path,
-        AppSettingScope scope,
-        AppSettingsLookup& out)
+        const std::filesystem::path& config_path, AppSettingScope scope, AppSettingsLookup& out)
     {
         const toml::table config = parse_toml_file_or_log_warning(config_path);
 
@@ -186,12 +182,11 @@ R"(# configuration options
         //
         // - every section acts as a key prefix of `$section1/$section2/$key`
         std::vector<StackElement> stack;
-        stack.reserve(16);  // guess
+        stack.reserve(16);                // guess
         stack.emplace_back("", &config);  // required for .begin()+1
         while (not stack.empty()) {
 
-            const std::string key_prefix = [&stack]()
-            {
+            const std::string key_prefix = [&stack] {
                 std::string rv;
                 for (auto it = stack.begin() + 1; it != stack.end(); ++it) {
                     rv += it->table_name;
@@ -210,17 +205,20 @@ R"(# configuration options
                     recursing = true;
                     ++cur.iterator;
                     break;
-                }
-                else if (const auto* int_value = node.as_integer()) {
-                    out.set_value(key_prefix + std::string{k.str()}, scope, Variant{static_cast<int>(**int_value)});
-                }
-                else if (const auto* float_value = node.as_floating_point()) {
-                    out.set_value(key_prefix + std::string{k.str()}, scope, Variant{static_cast<float>(**float_value)});
-                }
-                else if (const auto* string_value = node.as_string()) {
-                    out.set_value(key_prefix + std::string{k.str()}, scope, Variant{**string_value});
-                }
-                else if (auto const* bool_value = node.as_boolean()) {
+                } else if (const auto* int_value = node.as_integer()) {
+                    out.set_value(
+                        key_prefix + std::string{k.str()},
+                        scope,
+                        Variant{static_cast<int>(**int_value)});
+                } else if (const auto* float_value = node.as_floating_point()) {
+                    out.set_value(
+                        key_prefix + std::string{k.str()},
+                        scope,
+                        Variant{static_cast<float>(**float_value)});
+                } else if (const auto* string_value = node.as_string()) {
+                    out.set_value(
+                        key_prefix + std::string{k.str()}, scope, Variant{**string_value});
+                } else if (auto const* bool_value = node.as_boolean()) {
                     out.set_value(key_prefix + std::string{k.str()}, scope, Variant{**bool_value});
                 }
             }
@@ -238,10 +236,12 @@ R"(# configuration options
     {
         AppSettingsLookup rv;
         if (maybe_system_config_path) {
-            load_app_settings_from_disk_into_lookup(*maybe_system_config_path, AppSettingScope::System, rv);
+            load_app_settings_from_disk_into_lookup(
+                *maybe_system_config_path, AppSettingScope::System, rv);
         }
         if (maybe_user_config_path) {
-            load_app_settings_from_disk_into_lookup(*maybe_user_config_path, AppSettingScope::User, rv);
+            load_app_settings_from_disk_into_lookup(
+                *maybe_user_config_path, AppSettingScope::User, rv);
         }
         return rv;
     }
@@ -250,9 +250,8 @@ R"(# configuration options
     std::pair<std::string_view, std::string_view> split_at_last_element(std::string_view key)
     {
         if (auto const pos = key.rfind('/'); pos != std::string_view::npos) {
-            return std::pair{key.substr(0, pos), key.substr(pos+1)};
-        }
-        else {
+            return std::pair{key.substr(0, pos), key.substr(pos + 1)};
+        } else {
             return std::pair{std::string_view{}, key};
         }
     }
@@ -284,46 +283,35 @@ R"(# configuration options
             if (auto* t = dynamic_cast<toml::table*>(n)) {
                 it->second = t;
                 current_table = it->second;
-            }
-            else {
+            } else {
                 // edge-case: it already exists in the TOML document as a non-table node,
                 //            which can happen if (e.g.) a user defines setting values with
                 //            both 'a/b' and 'a/b/c'
                 //
                 //            in this case, overwrite the value with a LUT (it's a user/app error)
-                it->second = dynamic_cast<toml::table*>(&current_table->insert_or_assign(name, toml::table{}).first->second);
-                current_table =  it->second;
+                it->second = dynamic_cast<toml::table*>(
+                    &current_table->insert_or_assign(name, toml::table{}).first->second);
+                current_table = it->second;
             }
 
-            current_path = table_path.substr(0, table_path.find('/', current_path.size()+1));
+            current_path = table_path.substr(0, table_path.find('/', current_path.size() + 1));
         }
         return *current_table;
     }
 
-    void insert_into_toml_table(
-        toml::table& table,
-        std::string_view key,
-        const Variant& value)
+    void insert_into_toml_table(toml::table& table, std::string_view key, const Variant& value)
     {
-        static_assert(num_options<VariantType>() == 10);
+        static_assert(num_options_v<VariantType> == 10);
 
         switch (value.type()) {
         case VariantType::None:
-        case VariantType::Bool:
-            table.insert(key, to<bool>(value));
-            break;
-        case VariantType::Float:
-            table.insert(key, to<float>(value));
-            break;
-        case VariantType::Int:
-            table.insert(key, to<int>(value));
-            break;
+        case VariantType::Bool: table.insert(key, to<bool>(value)); break;
+        case VariantType::Float: table.insert(key, to<float>(value)); break;
+        case VariantType::Int: table.insert(key, to<int>(value)); break;
         case VariantType::Color:
         case VariantType::String:
         case VariantType::StringName:
-        default:
-            table.insert(key, to<std::string>(value));
-            break;
+        default: table.insert(key, to<std::string>(value)); break;
         }
     }
 
@@ -333,7 +321,7 @@ R"(# configuration options
         std::unordered_map<std::string, toml::table*> node_lookup;
         for (const auto& [key, value] : app_settings_lookup) {
 
-            static_assert(num_options<AppSettingScope>() == 2);
+            static_assert(num_options_v<AppSettingScope> == 2);
             if (value.scope() != AppSettingScope::User) {
                 continue;  // skip non-user-enacted values
             }
@@ -357,7 +345,8 @@ R"(# configuration options
             std::string_view application_config_file_name) :
 
             system_config_path_{try_get_system_config_path(application_config_file_name)},
-            user_config_path_{try_get_user_config_path(organization_name, application_name, application_config_file_name)}
+            user_config_path_{try_get_user_config_path(
+                organization_name, application_name, application_config_file_name)}
         {}
 
         std::optional<std::filesystem::path> system_configuration_file_location() const
@@ -391,11 +380,11 @@ R"(# configuration options
                 return std::nullopt;
             }
 
-            static_assert(num_options<AppSettingScope>() == 2);
+            static_assert(num_options_v<AppSettingScope> == 2);
             switch (*scope) {
             case AppSettingScope::System: return system_config_path_;
-            case AppSettingScope::User:   return user_config_path_;
-            default:                      std::unreachable();
+            case AppSettingScope::User: return user_config_path_;
+            default: std::unreachable();
             }
         }
 
@@ -408,8 +397,10 @@ R"(# configuration options
 
             if (not user_config_path_) {
                 if (not std::exchange(warning_already_issued_missing_user_config_, true)) {
-                    log_warn("application settings could not be synchronized: could not find a user configuration file path");
-                    log_warn("this can happen if (e.g.) your user data directory has incorrect permissions");
+                    log_warn(
+                        "application settings could not be synchronized: could not find a user configuration file path");
+                    log_warn(
+                        "this can happen if (e.g.) your user data directory has incorrect permissions");
                 }
                 return;
             }
@@ -417,7 +408,9 @@ R"(# configuration options
             std::ofstream config_stream{*user_config_path_};
             if (not config_stream) {
                 if (not std::exchange(warning_already_issued_cannot_open_user_config_file_, true)) {
-                    log_warn("{}: could not open for writing: user settings will not be saved", user_config_path_->string());
+                    log_warn(
+                        "{}: could not open for writing: user settings will not be saved",
+                        user_config_path_->string());
                 }
                 return;
             }
@@ -433,7 +426,8 @@ R"(# configuration options
     private:
         std::optional<std::filesystem::path> system_config_path_;
         std::optional<std::filesystem::path> user_config_path_;
-        AppSettingsLookup app_settings_lookup_ = load_app_settings_lookup_from_disk(system_config_path_, user_config_path_);
+        AppSettingsLookup app_settings_lookup_ =
+            load_app_settings_lookup_from_disk(system_config_path_, user_config_path_);
         bool is_dirty_ = false;
         bool warning_already_issued_missing_user_config_ = false;
         bool warning_already_issued_cannot_open_user_config_file_ = false;
@@ -470,16 +464,12 @@ public:
         guarded_data_.lock()->set_value_if_not_found(key, std::move(value), scope);
     }
 
-    std::optional<std::filesystem::path> find_value_filesystem_source(
-        std::string_view key) const
+    std::optional<std::filesystem::path> find_value_filesystem_source(std::string_view key) const
     {
         return guarded_data_.lock()->find_value_filesystem_source(key);
     }
 
-    void sync()
-    {
-        guarded_data_.lock()->sync();
-    }
+    void sync() { guarded_data_.lock()->sync(); }
 
 private:
     SynchronizedValue<ThreadUnsafeAppSettings> guarded_data_;
@@ -503,12 +493,15 @@ namespace
             std::string_view application_name,
             std::string_view application_config_file_name)
         {
-            auto [it, inserted] = data_.try_emplace(Key{organization_name, application_name, application_config_file_name});
+            auto [it, inserted] = data_.try_emplace(
+                Key{organization_name, application_name, application_config_file_name});
             if (inserted) {
-                it->second = std::make_shared<AppSettings::Impl>(organization_name, application_name, application_config_file_name);
+                it->second = std::make_shared<AppSettings::Impl>(
+                    organization_name, application_name, application_config_file_name);
             }
             return it->second;
         }
+
     private:
         using Key = std::tuple<std::string, std::string, std::string>;
 
@@ -528,7 +521,8 @@ namespace
         std::string_view application_config_file_name)
     {
         static SynchronizedValue<GlobalAppSettingsLookup> s_global_settings_lookup;
-        return s_global_settings_lookup.lock()->get(organization_name, application_name, application_config_file_name);
+        return s_global_settings_lookup.lock()->get(
+            organization_name, application_name, application_config_file_name);
     }
 }
 
@@ -537,7 +531,8 @@ osc::AppSettings::AppSettings(
     std::string_view application_name,
     std::string_view application_config_file_name) :
 
-    impl_{get_globally_shared_settings_impl(organization_name, application_name, application_config_file_name)}
+    impl_{get_globally_shared_settings_impl(
+        organization_name, application_name, application_config_file_name)}
 {}
 osc::AppSettings::AppSettings(const AppSettings&) = default;
 osc::AppSettings::AppSettings(AppSettings&&) noexcept = default;
@@ -553,24 +548,18 @@ std::optional<std::filesystem::path> osc::AppSettings::system_configuration_file
     return impl_->system_configuration_file_location();
 }
 
-std::optional<Variant> osc::AppSettings::find_value(
-    std::string_view key) const
+std::optional<Variant> osc::AppSettings::find_value(std::string_view key) const
 {
     return impl_->find_value(key);
 }
 
-void osc::AppSettings::set_value(
-    std::string_view key,
-    Variant value,
-    AppSettingScope scope)
+void osc::AppSettings::set_value(std::string_view key, Variant value, AppSettingScope scope)
 {
     impl_->set_value(key, std::move(value), scope);
 }
 
 void osc::AppSettings::set_value_if_not_found(
-    std::string_view key,
-    Variant value,
-    AppSettingScope scope)
+    std::string_view key, Variant value, AppSettingScope scope)
 {
     impl_->set_value_if_not_found(key, std::move(value), scope);
 }

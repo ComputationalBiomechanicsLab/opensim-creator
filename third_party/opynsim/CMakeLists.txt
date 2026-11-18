@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(opynsim VERSION 0.0.8 LANGUAGES CXX C)
+project(opynsim VERSION 0.1.0 LANGUAGES CXX C)
 
 option(BUILD_TESTING                          "Build test suites"                                                  ON)
 option(OPYN_BUILD_DOCS                        "Build documentation"                                                OFF)
@@ -18,7 +18,13 @@ option(OPYN_RUNTIME_PERF_MEASUREMENTS_ENABLED "Enable whether the `OSC_PERF` mac
 option(OPYN_STABLE_ABI                        "Perform a python stable ABI build"                                  ON)
 option(OPYN_STRICT_ABI_CHECKS                 "Check OPynSim has specified ABI"                                    ${OPYN_STABLE_ABI})
 option(OPYN_USE_STRICT_COMPILER_FLAGS         "Add stricter compilation flags to targets"                          OFF)
+option(OPYN_ENABLE_SANITIZERS                 "Enable sanitizers (libASAN, libUBSAN)"                              OFF)
 set   (OPYN_VENV "" CACHE PATH                "Optional path to a Python virtual environment the build should use")
+set(   OPYN_BUILD_INTERFACE_INCLUDE_DIR                                                                            "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# Add custom function definitions
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/opynsim_strict_compiler_options.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/opynsim_add_sanitizer_flags_to.cmake)
 
 # Configure Python (if necessary)
 if(OPYN_BUILD_PYTHON_BINDINGS OR OPYN_BUILD_DOCS)

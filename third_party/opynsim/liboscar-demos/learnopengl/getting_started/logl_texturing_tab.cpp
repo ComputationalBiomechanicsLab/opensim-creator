@@ -40,9 +40,7 @@ namespace
         // set uTexture1
         {
             Texture2D container = Image::read_into_texture(
-                loader.open("oscar_demos/learnopengl/textures/container.jpg"),
-                ColorSpace::sRGB
-            );
+                loader.open("oscar_demos/learnopengl/textures/container.jpg"), ColorSpace::sRGB);
             container.set_wrap_mode(TextureWrapMode::Clamp);
 
             rv.set("uTexture1", container);
@@ -51,9 +49,7 @@ namespace
         // set uTexture2
         {
             const Texture2D face = Image::read_into_texture(
-                loader.open("oscar_demos/learnopengl/textures/awesomeface.png"),
-                ColorSpace::sRGB
-            );
+                loader.open("oscar_demos/learnopengl/textures/awesomeface.png"), ColorSpace::sRGB);
 
             rv.set("uTexture2", face);
         }
@@ -81,9 +77,12 @@ public:
     void on_draw()
     {
         render_queue_.emplace(mesh_, identity<Transform>(), material_);
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            });
         render_queue_.clear();
     }
 
@@ -95,10 +94,15 @@ private:
     RenderQueue render_queue_;
 };
 
-
-CStringView osc::LOGLTexturingTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLTexturingTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLTexturingTab::LOGLTexturingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLTexturingTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLTexturingTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

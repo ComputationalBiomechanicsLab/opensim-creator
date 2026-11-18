@@ -19,9 +19,9 @@ namespace rgs = std::ranges;
 namespace
 {
     template<class T, size_t N, size_t M>
-    auto concat(const std::array<T, N>& a1, const std::array<T, M>& a2) -> std::array<T, N+M>
+    auto concat(const std::array<T, N>& a1, const std::array<T, M>& a2) -> std::array<T, N + M>
     {
-        std::array<T, N+M> rv;
+        std::array<T, N + M> rv;
         rgs::copy(a1, rv.begin());
         rgs::copy(a2, rv.begin() + N);
         return rv;
@@ -79,15 +79,13 @@ TEST(Class, constructor_throws_if_given_PropertyInfo_that_is_duplicated_in_paren
         }),
     };
 
-    ASSERT_ANY_THROW(
-    {
+    ASSERT_ANY_THROW({
         const Class child_class(
             "ChildClass",
             parent_class,
             std::to_array({
                 PropertyInfo{"parentprop", Variant{"should-throw"}},
-            })
-        );
+            }));
     });
 }
 
@@ -109,15 +107,13 @@ TEST(Class, constructor_throws_if_given_PropertyInfo_that_is_duplicated_in_grand
         }),
     };
 
-    ASSERT_ANY_THROW(
-    {
+    ASSERT_ANY_THROW({
         const Class child_class(
             "ChildClass",
             parent_class,
             std::to_array({
                 PropertyInfo{"grandparentProp", Variant{"should-throw"}},
-            })
-        );
+            }));
     });
 }
 
@@ -162,7 +158,8 @@ TEST(Class, properties_returns_union_of_parent_properties_and_properties_provide
     });
     const Class derived_class{"DerivedClass", base_class, derived_properties};
 
-    ASSERT_TRUE(rgs::equal(derived_class.properties(), concat(base_properties, derived_properties)));
+    ASSERT_TRUE(
+        rgs::equal(derived_class.properties(), concat(base_properties, derived_properties)));
 }
 
 TEST(Class, property_index_returns_indices_in_expected_order)
@@ -205,7 +202,9 @@ TEST(Class, equality_returns_true_when_comparing_two_Class_instances_with_same_n
     ASSERT_EQ(Class(class_name, parent), Class(class_name, parent));
 }
 
-TEST(Class, equality_returns_true_when_comparing_two_Class_instances_with_same_name_and_same_parent_and_same_properties)
+TEST(
+    Class,
+    equality_returns_true_when_comparing_two_Class_instances_with_same_name_and_same_parent_and_same_properties)
 {
     const StringName class_name{"SomeClass"};
     const Class parent{"ParentClass"};
@@ -227,7 +226,7 @@ TEST(Class, equality_returns_true_when_comparing_copied_class_instances)
     });
 
     const Class klass{class_name, parent, properties};
-    const Class klass_copy = klass;  // NOLINT(performance-unnecessary-copy-initialization)
+    const Class klass_copy = klass;
 
     ASSERT_EQ(klass_copy, klass);
 }
@@ -237,13 +236,17 @@ TEST(Class, equality_returns_false_when_comparing_Class_instances_with_different
     ASSERT_NE(Class("SomeName"), Class("SomeDifferentName"));
 }
 
-TEST(Class, equality_returns_false_when_comparing_Class_instances_with_same_name_but_different_parent)
+TEST(
+    Class,
+    equality_returns_false_when_comparing_Class_instances_with_same_name_but_different_parent)
 {
     const StringName class_name{"SomeClass"};
     ASSERT_NE(Class(class_name, Class("FirstParent")), Class(class_name, Class("SecondParent")));
 }
 
-TEST(Class, equality_returns_false_when_comparing_Class_instances_with_same_name_and_same_parent_but_different_properties)
+TEST(
+    Class,
+    equality_returns_false_when_comparing_Class_instances_with_same_name_and_same_parent_but_different_properties)
 {
     const StringName class_name{"SomeClass"};
     const Class parent{"ParentClass"};

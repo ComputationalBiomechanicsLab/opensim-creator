@@ -21,7 +21,8 @@ using namespace osc;
 
 namespace
 {
-    std::unique_ptr<App> g_shader_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    std::unique_ptr<App>
+        g_shader_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     class ShaderTest : public ::testing::Test {
     protected:
@@ -33,10 +34,7 @@ namespace
             g_shader_app = std::make_unique<App>(metadata);
         }
 
-        static void TearDownTestSuite()
-        {
-            g_shader_app.reset();
-        }
+        static void TearDownTestSuite() { g_shader_app.reset(); }
     };
 
     constexpr CStringView c_vertex_shader_src = R"(
@@ -178,8 +176,7 @@ namespace
         "uFar",
     });
 
-    constexpr std::array<ShaderPropertyType, 14> c_expected_property_types = std::to_array(
-    {
+    constexpr std::array<ShaderPropertyType, 14> c_expected_property_types = std::to_array({
         ShaderPropertyType::Matrix4x4,
         ShaderPropertyType::Matrix4x4,
         ShaderPropertyType::Vector3,
@@ -352,13 +349,14 @@ TEST_F(ShaderTest, can_be_constructed_from_vertex_and_fragment_shader_source_cod
 
 TEST_F(ShaderTest, can_be_constructed_from_vertex_geometry_and_fragment_shader_source_code)
 {
-    const Shader shader{c_geometry_shader_vert_src, c_geometry_shader_geom_src, c_geometry_shader_frag_src};
+    const Shader shader{
+        c_geometry_shader_vert_src, c_geometry_shader_geom_src, c_geometry_shader_frag_src};
 }
 
 TEST_F(ShaderTest, can_be_copy_constructed)
 {
     const Shader shader{c_vertex_shader_src, c_fragment_shader_src};
-    const Shader copy{shader};  // NOLINT(performance-unnecessary-copy-initialization)
+    const Shader copy{shader};
 }
 
 TEST_F(ShaderTest, can_be_move_constructed)
@@ -386,12 +384,13 @@ TEST_F(ShaderTest, can_be_move_assigned)
 TEST_F(ShaderTest, copy_constructed_instance_compares_equivalent_to_copied_instance)
 {
     const Shader shader{c_vertex_shader_src, c_fragment_shader_src};
-    const Shader copy{shader}; // NOLINT(performance-unnecessary-copy-initialization)
+    const Shader copy{shader};
 
     ASSERT_EQ(shader, copy);
 }
 
-TEST_F(ShaderTest, difference_shader_instances_compare_not_equal_even_if_they_have_the_same_sourcecode)
+TEST_F(
+    ShaderTest, difference_shader_instances_compare_not_equal_even_if_they_have_the_same_sourcecode)
 {
     // i.e. equality is reference equality, not value equality (this could be improved ;))
 
@@ -445,11 +444,13 @@ TEST_F(ShaderTest, num_properties_returns_expected_number_of_properties)
 
 TEST_F(ShaderTest, property_name_can_be_used_to_retrieve_all_property_names)
 {
-    static_assert(std::is_same_v<decltype(std::declval<Shader>().property_name(0)), std::string_view>);
+    static_assert(
+        std::is_same_v<decltype(std::declval<Shader>().property_name(0)), std::string_view>);
 
     const Shader shader{c_vertex_shader_src, c_fragment_shader_src};
 
-    const std::unordered_set<std::string_view> expected_names(c_expected_property_names.begin(), c_expected_property_names.end());
+    const std::unordered_set<std::string_view> expected_names(
+        c_expected_property_names.begin(), c_expected_property_names.end());
 
     std::unordered_set<std::string_view> returned_names;
     returned_names.reserve(shader.num_properties());
@@ -474,8 +475,10 @@ TEST_F(ShaderTest, property_name_returns_property_name_at_given_index)
 TEST_F(ShaderTest, property_name_still_works_if_the_property_is_an_array)
 {
     const Shader shader{c_vertex_shader_with_array, c_fragment_shader_with_array};
-    ASSERT_FALSE(shader.property_index("uFragColor[0]").has_value()) << "shouldn't expose 'raw' name";
-    ASSERT_TRUE(shader.property_index("uFragColor").has_value()) << "should work, because the backend should normalize array-like uniforms to the original name (not uFragColor[0])";
+    ASSERT_FALSE(shader.property_index("uFragColor[0]").has_value())
+        << "shouldn't expose 'raw' name";
+    ASSERT_TRUE(shader.property_index("uFragColor").has_value())
+        << "should work, because the backend should normalize array-like uniforms to the original name (not uFragColor[0])";
 }
 
 TEST_F(ShaderTest, propety_type_returns_expected_type)

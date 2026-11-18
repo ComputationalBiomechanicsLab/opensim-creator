@@ -115,8 +115,7 @@ namespace
     }
 
     std::vector<const OpenSim::Component*> get_any_components_connected_via_socket_to(
-        const OpenSim::Component& root,
-        const OpenSim::Component& component)
+        const OpenSim::Component& root, const OpenSim::Component& component)
     {
         std::vector<const OpenSim::Component*> rv;
 
@@ -134,15 +133,14 @@ namespace
     }
 
     std::vector<const OpenSim::Component*> get_any_non_children_components_connected_via_socket_to(
-        const OpenSim::Component& root,
-        const OpenSim::Component& component)
+        const OpenSim::Component& root, const OpenSim::Component& component)
     {
-        std::vector<const OpenSim::Component*> all_connectees = get_any_components_connected_via_socket_to(root, component);
-        std::erase_if(all_connectees, [&root, &component](const OpenSim::Component* connectee)
-        {
-            return
-                is_inclusive_child_of(&component, connectee) &&
-                get_any_components_connected_via_socket_to(root, *connectee).empty();  // care: the child may, itself, have things connected to it
+        std::vector<const OpenSim::Component*> all_connectees =
+            get_any_components_connected_via_socket_to(root, component);
+        std::erase_if(all_connectees, [&root, &component](const OpenSim::Component* connectee) {
+            // care: the child may, itself, have things connected to it
+            return is_inclusive_child_of(&component, connectee) &&
+                   get_any_components_connected_via_socket_to(root, *connectee).empty();
         });
         return all_connectees;
     }
@@ -166,11 +164,10 @@ namespace
         // move forward through the PFD sequence until a different frame is found
         //
         // the PFD before that one is the effective origin
-        const auto it = find_if(
-            pfds.begin() + 1,
-            pfds.end(),
-            [&first = pfds.front()](const auto& pfd) { return pfd.frame != first.frame; }
-        );
+        const auto it =
+            find_if(pfds.begin() + 1, pfds.end(), [&first = pfds.front()](const auto& pfd) {
+                return pfd.frame != first.frame;
+            });
         return std::distance(pfds.begin(), it) - 1;
     }
 
@@ -182,22 +179,24 @@ namespace
         // move backward through the PFD sequence until a different frame is found
         //
         // the PFD after that one is the effective insertion
-        const auto rit = find_if(
-            pfds.rbegin() + 1,
-            pfds.rend(),
-            [&last = pfds.back()](const auto& pfd) { return pfd.frame != last.frame; }
-        );
+        const auto rit =
+            find_if(pfds.rbegin() + 1, pfds.rend(), [&last = pfds.back()](const auto& pfd) {
+                return pfd.frame != last.frame;
+            });
         return std::distance(pfds.begin(), rit.base());
     }
 
     // returns an index range into the provided array that contains only
-    // effective attachment points? (see: https://github.com/modenaxe/MuscleForceDirection/blob/master/CPP/MuscleForceDirection/MuscleForceDirection.cpp)
-    std::pair<ptrdiff_t, ptrdiff_t> get_effective_attachment_indices(std::span<const PointForceV2> pfds)
+    // effective attachment points? (see:
+    // https://github.com/modenaxe/MuscleForceDirection/blob/master/CPP/MuscleForceDirection/MuscleForceDirection.cpp)
+    std::pair<ptrdiff_t, ptrdiff_t> get_effective_attachment_indices(
+        std::span<const PointForceV2> pfds)
     {
         return {get_effective_origin(pfds), get_effective_insertion(pfds)};
     }
 
-    std::pair<ptrdiff_t, ptrdiff_t> get_anatomical_attachment_indices(std::span<const PointForceV2> pfds)
+    std::pair<ptrdiff_t, ptrdiff_t> get_anatomical_attachment_indices(
+        std::span<const PointForceV2> pfds)
     {
         OSC_ASSERT(!pfds.empty());
 
@@ -211,13 +210,12 @@ namespace
     };
 
     std::optional<LinesOfAction> try_get_lines_of_action(
-        const OpenSim::Muscle& muscle,
-        const SimTK::State& st,
-        const LinesOfActionConfig& config)
+        const OpenSim::Muscle& muscle, const SimTK::State& st, const LinesOfActionConfig& config)
     {
         class VectorForceConsumer final : public OpenSim::ForceConsumer {
         public:
             const std::vector<PointForceV2>& forces() const { return accumulator_; }
+
         private:
             void implConsumePointForce(
                 const SimTK::State&,
@@ -225,7 +223,7 @@ namespace
                 const SimTK::Vec3& point,
                 const SimTK::Vec3& force) override
             {
-                accumulator_.push_back({ .frame = &frame, .point = point, .force = force });
+                accumulator_.push_back({.frame = &frame, .point = point, .force = force});
             }
 
             std::vector<PointForceV2> accumulator_;
@@ -238,24 +236,33 @@ namespace
             return std::nullopt;  // not enough PFDs to compute a line of action
         }
 
-        const std::pair<ptrdiff_t, ptrdiff_t> attachment_index_range = config.useEffectiveInsertion ?
-            get_effective_attachment_indices(consumer.forces()) :
-            get_anatomical_attachment_indices(consumer.forces());
+        const std::pair<ptrdiff_t, ptrdiff_t> attachment_index_range =
+            config.useEffectiveInsertion ? get_effective_attachment_indices(consumer.forces())
+                                         : get_anatomical_attachment_indices(consumer.forces());
 
-        OSC_ASSERT_ALWAYS(0 <= attachment_index_range.first && attachment_index_range.first < std::ssize(consumer.forces()));
-        OSC_ASSERT_ALWAYS(0 <= attachment_index_range.second && attachment_index_range.second < std::ssize(consumer.forces()));
+        OSC_ASSERT_ALWAYS(
+            0 <= attachment_index_range.first &&
+            attachment_index_range.first < std::ssize(consumer.forces()));
+        OSC_ASSERT_ALWAYS(
+            0 <= attachment_index_range.second &&
+            attachment_index_range.second < std::ssize(consumer.forces()));
 
         if (attachment_index_range.first >= attachment_index_range.second) {
             return std::nullopt;  // not enough *unique* PFDs to compute a line of action
         }
 
-        const osc::Vector3 origin_pos = consumer.forces().at(attachment_index_range.first).location_in_ground(st);
-        const osc::Vector3 point_after_origin_pos = consumer.forces().at(attachment_index_range.first + 1).location_in_ground(st);
+        const osc::Vector3 origin_pos =
+            consumer.forces().at(attachment_index_range.first).location_in_ground(st);
+        const osc::Vector3 point_after_origin_pos =
+            consumer.forces().at(attachment_index_range.first + 1).location_in_ground(st);
         const osc::Vector3 origin_dir = normalize(point_after_origin_pos - origin_pos);
 
-        const osc::Vector3 insertion_pos = consumer.forces().at(attachment_index_range.second).location_in_ground(st);
-        const osc::Vector3 point_after_insertion_pos = consumer.forces().at(attachment_index_range.second - 1).location_in_ground(st);
-        const osc::Vector3 insertion_dir = osc::normalize(point_after_insertion_pos - insertion_pos);
+        const osc::Vector3 insertion_pos =
+            consumer.forces().at(attachment_index_range.second).location_in_ground(st);
+        const osc::Vector3 point_after_insertion_pos =
+            consumer.forces().at(attachment_index_range.second - 1).location_in_ground(st);
+        const osc::Vector3 insertion_dir =
+            osc::normalize(point_after_insertion_pos - insertion_pos);
 
         return LinesOfAction{
             osc::Ray{origin_pos, origin_dir},
@@ -263,25 +270,24 @@ namespace
         };
     }
 
-    bool try_connect_to(
-        OpenSim::AbstractSocket& socket,
-        const OpenSim::Component& c)
+    bool try_connect_to(OpenSim::AbstractSocket& socket, const OpenSim::Component& c)
     {
         if (socket.canConnectTo(c)) {
             socket.connect(c);
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    OpenSim::Component& get_or_upd_component(OpenSim::Component& c, const OpenSim::ComponentPath& cp)
+    OpenSim::Component& get_or_upd_component(
+        OpenSim::Component& c, const OpenSim::ComponentPath& cp)
     {
         return c.updComponent(cp);
     }
 
-    const OpenSim::Component& get_or_upd_component(const OpenSim::Component& c, const OpenSim::ComponentPath& cp)
+    const OpenSim::Component& get_or_upd_component(
+        const OpenSim::Component& c, const OpenSim::ComponentPath& cp)
     {
         return c.getComponent(cp);
     }
@@ -295,22 +301,20 @@ namespace
 
         try {
             return &get_or_upd_component(c, cp);
-        }
-        catch (const OpenSim::Exception&) {
+        } catch (const OpenSim::Exception&) {
             return nullptr;
         }
     }
 }
 
-
-// public API
-
-bool opyn::is_concrete_class_name_lexicographically_lower_than(const OpenSim::Component& a, const OpenSim::Component& b)
+bool opyn::is_concrete_class_name_lexicographically_lower_than(
+    const OpenSim::Component& a, const OpenSim::Component& b)
 {
     return a.getConcreteClassName() < b.getConcreteClassName();
 }
 
-bool opyn::is_name_lexicographically_lower_than(const OpenSim::Component& a, const OpenSim::Component& b)
+bool opyn::is_name_lexicographically_lower_than(
+    const OpenSim::Component& a, const OpenSim::Component& b)
 {
     return a.getName() < b.getName();
 }
@@ -319,8 +323,7 @@ OpenSim::Component* opyn::upd_owner(OpenSim::Component& root, const OpenSim::Com
 {
     if (const auto* const_owner = get_owner(c)) {
         return find_component_mut(root, get_absolute_path(*const_owner));
-    }
-    else {
+    } else {
         return nullptr;
     }
 }
@@ -344,7 +347,8 @@ const OpenSim::Component& opyn::get_owner_or_throw(const OpenSim::Component& c)
     return c.getOwner();
 }
 
-const OpenSim::Component& opyn::get_owner_or(const OpenSim::Component& c, const OpenSim::Component& fallback)
+const OpenSim::Component& opyn::get_owner_or(
+    const OpenSim::Component& c, const OpenSim::Component& fallback)
 {
     return c.hasOwner() ? c.getOwner() : fallback;
 }
@@ -399,8 +403,7 @@ std::vector<const OpenSim::Component*> opyn::get_path_elements(const OpenSim::Co
 }
 
 void opyn::for_each_component(
-    const OpenSim::Component& component,
-    const std::function<void(const OpenSim::Component&)>& f)
+    const OpenSim::Component& component, const std::function<void(const OpenSim::Component&)>& f)
 {
     for (const OpenSim::Component& c : component.getComponentList()) {
         f(c);
@@ -408,8 +411,7 @@ void opyn::for_each_component(
 }
 
 void opyn::for_each_component_inclusive(
-    const OpenSim::Component& component,
-    const std::function<void(const OpenSim::Component&)>& f)
+    const OpenSim::Component& component, const std::function<void(const OpenSim::Component&)>& f)
 {
     f(component);
     for_each_component(component, f);
@@ -441,7 +443,8 @@ bool opyn::is_inclusive_child_of(const OpenSim::Component* parent, const OpenSim
     return false;
 }
 
-const OpenSim::Component* opyn::is_inclusive_child_of(std::span<const OpenSim::Component*> parents, const OpenSim::Component* c)
+const OpenSim::Component* opyn::is_inclusive_child_of(
+    std::span<const OpenSim::Component*> parents, const OpenSim::Component* c)
 {
     for (; c; c = get_owner(*c)) {
         if (auto it = rgs::find(parents, c); it != parents.end()) {
@@ -451,7 +454,8 @@ const OpenSim::Component* opyn::is_inclusive_child_of(std::span<const OpenSim::C
     return nullptr;
 }
 
-const OpenSim::Component* opyn::find_first_ancestor_inclusive(const OpenSim::Component* c, bool(*pred)(const OpenSim::Component*))
+const OpenSim::Component* opyn::find_first_ancestor_inclusive(
+    const OpenSim::Component* c, bool (*pred)(const OpenSim::Component*))
 {
     for (; c; c = get_owner(*c)) {
         if (pred(c)) {
@@ -462,20 +466,17 @@ const OpenSim::Component* opyn::find_first_ancestor_inclusive(const OpenSim::Com
 }
 
 const OpenSim::Component* opyn::find_first_descendent_inclusive(
-    const OpenSim::Component& component,
-    bool(*predicate)(const OpenSim::Component&))
+    const OpenSim::Component& component, bool (*predicate)(const OpenSim::Component&))
 {
     if (predicate(component)) {
         return &component;
-    }
-    else {
+    } else {
         return find_first_descendent(component, predicate);
     }
 }
 
 const OpenSim::Component* opyn::find_first_descendent(
-    const OpenSim::Component& component,
-    bool(*predicate)(const OpenSim::Component&))
+    const OpenSim::Component& component, bool (*predicate)(const OpenSim::Component&))
 {
     for (const OpenSim::Component& descendent : component.getComponentList()) {
         if (predicate(descendent)) {
@@ -486,8 +487,7 @@ const OpenSim::Component* opyn::find_first_descendent(
 }
 
 OpenSim::Component* opyn::find_first_descendent_mut(
-    OpenSim::Component& component,
-    bool(*predicate)(const OpenSim::Component&))
+    OpenSim::Component& component, bool (*predicate)(const OpenSim::Component&))
 {
     for (OpenSim::Component& descendent : component.updComponentList()) {
         if (predicate(descendent)) {
@@ -505,8 +505,7 @@ std::vector<const OpenSim::Coordinate*> opyn::get_coordinates_in_model(const Ope
 }
 
 void opyn::get_coordinates_in_model(
-    const OpenSim::Model& m,
-    std::vector<const OpenSim::Coordinate*>& out)
+    const OpenSim::Model& m, std::vector<const OpenSim::Coordinate*>& out)
 {
     const OpenSim::CoordinateSet& s = m.getCoordinateSet();
     out.reserve(out.size() + size(s));
@@ -516,7 +515,8 @@ void opyn::get_coordinates_in_model(
     }
 }
 
-std::vector<OpenSim::Coordinate*> opyn::upd_default_locked_coordinates_in_model(OpenSim::Model& model)
+std::vector<OpenSim::Coordinate*> opyn::upd_default_locked_coordinates_in_model(
+    OpenSim::Model& model)
 {
     std::vector<OpenSim::Coordinate*> rv;
     for (auto& c : model.updComponentList<OpenSim::Coordinate>()) {
@@ -526,7 +526,6 @@ std::vector<OpenSim::Coordinate*> opyn::upd_default_locked_coordinates_in_model(
     }
     return rv;
 }
-
 
 float opyn::convert_coord_value_to_display_value(const OpenSim::Coordinate& c, double v)
 {
@@ -553,12 +552,9 @@ double opyn::convert_coord_display_value_to_storage_value(const OpenSim::Coordin
 osc::CStringView opyn::get_coord_display_value_units_string(const OpenSim::Coordinate& c)
 {
     switch (c.getMotionType()) {
-    case OpenSim::Coordinate::MotionType::Translational:
-        return "m";
-    case OpenSim::Coordinate::MotionType::Rotational:
-        return "deg";
-    default:
-        return {};
+    case OpenSim::Coordinate::MotionType::Translational: return "m";
+    case OpenSim::Coordinate::MotionType::Rotational: return "deg";
+    default: return {};
     }
 }
 
@@ -584,7 +580,7 @@ namespace
     enum class GraphEdgeType { parent_child, socket };
 
     struct GraphEdge final {
-        friend auto operator<=>(const GraphEdge&, const GraphEdge&) = default;  // NOLINT(hicpp-use-nullptr,modernize-use-nullptr)
+        friend auto operator<=>(const GraphEdge&, const GraphEdge&) = default;
 
         std::string sourceAbsPath;
         std::string destinationAbsPath;
@@ -592,17 +588,14 @@ namespace
         GraphEdgeType type = GraphEdgeType::parent_child;
     };
 
-    void emit_graph(
-        const std::set<GraphEdge>& edges,
-        std::ostream& out)
+    void emit_graph(const std::set<GraphEdge>& edges, std::ostream& out)
     {
         out << "digraph Component {\n";
         for (const auto& edge : edges) {
             out << "    \"" << edge.sourceAbsPath << "\" -> \"" << edge.destinationAbsPath << '"';
             if (edge.type == GraphEdgeType::parent_child) {
                 out << " [color=grey];";
-            }
-            else if (edge.type == GraphEdgeType::socket) {
+            } else if (edge.type == GraphEdgeType::socket) {
                 out << " [label=\"" << edge.name << "\"];";
             }
             out << '\n';
@@ -612,8 +605,7 @@ namespace
 }
 
 void opyn::write_component_topology_graph_as_dot_viz(
-    const OpenSim::Component& root,
-    std::ostream& out)
+    const OpenSim::Component& root, std::ostream& out)
 {
     std::set<GraphEdge> edges;
 
@@ -630,11 +622,11 @@ void opyn::write_component_topology_graph_as_dot_viz(
     }
 
     // helper: extract all socket edges leaving the given component
-    auto extract_socket_edges = [&edges](const OpenSim::Component& c)
-    {
+    auto extract_socket_edges = [&edges](const OpenSim::Component& c) {
         auto source_abs_path = get_absolute_path_string(c);
         for (const OpenSim::AbstractSocket* sock : get_all_sockets(c)) {
-            if (const auto* connectee = dynamic_cast<const OpenSim::Component*>(&sock->getConnecteeAsObject())) {
+            if (const auto* connectee =
+                    dynamic_cast<const OpenSim::Component*>(&sock->getConnecteeAsObject())) {
                 edges.insert({
                     .sourceAbsPath = source_abs_path,
                     .destinationAbsPath = get_absolute_path_string(*connectee),
@@ -655,17 +647,18 @@ void opyn::write_component_topology_graph_as_dot_viz(
 }
 
 void opyn::write_model_multibody_system_graph_as_dot_viz(
-    const OpenSim::Model& model,
-    std::ostream& out)
+    const OpenSim::Model& model, std::ostream& out)
 {
     std::set<GraphEdge> edges;
     for (const auto& joint : model.getComponentList<OpenSim::Joint>()) {
-        edges.insert(GraphEdge{
-            .sourceAbsPath = joint.getChildFrame().findBaseFrame().getAbsolutePathString(),
-            .destinationAbsPath = joint.getParentFrame().findBaseFrame().getAbsolutePathString(),
-            .name = joint.getAbsolutePathString(),
-            .type = GraphEdgeType::socket,
-        });
+        edges.insert(
+            GraphEdge{
+                .sourceAbsPath = joint.getChildFrame().findBaseFrame().getAbsolutePathString(),
+                .destinationAbsPath =
+                    joint.getParentFrame().findBaseFrame().getAbsolutePathString(),
+                .name = joint.getAbsolutePathString(),
+                .type = GraphEdgeType::socket,
+            });
     }
     emit_graph(edges, out);
 }
@@ -682,82 +675,65 @@ std::vector<OpenSim::AbstractSocket*> opyn::upd_all_sockets(OpenSim::Component& 
 }
 
 const OpenSim::Component* opyn::find_component(
-    const OpenSim::Component& root,
-    const OpenSim::ComponentPath& cp)
+    const OpenSim::Component& root, const OpenSim::ComponentPath& cp)
 {
     return find_component_generic(root, cp);
 }
 
 const OpenSim::Component* opyn::find_component(
-    const OpenSim::Model& model,
-    const std::string& abs_path)
+    const OpenSim::Model& model, const std::string& abs_path)
 {
     return find_component(model, OpenSim::ComponentPath{abs_path});
 }
 
 const OpenSim::Component* opyn::find_component(
-    const OpenSim::Model& model,
-    const osc::StringName& abs_path)
+    const OpenSim::Model& model, const osc::StringName& abs_path)
 {
     return find_component(model, std::string{abs_path});
 }
 
 OpenSim::Component* opyn::find_component_mut(
-    OpenSim::Component& root,
-    const OpenSim::ComponentPath& cp)
+    OpenSim::Component& root, const OpenSim::ComponentPath& cp)
 {
     return find_component_generic(root, cp);
 }
 
-bool opyn::contains_component(
-    const OpenSim::Component& root,
-    const OpenSim::ComponentPath& cp)
+bool opyn::contains_component(const OpenSim::Component& root, const OpenSim::ComponentPath& cp)
 {
     return find_component(root, cp) != nullptr;
 }
 
 const OpenSim::AbstractSocket* opyn::find_socket(
-    const OpenSim::Component& c,
-    const std::string& name)
+    const OpenSim::Component& c, const std::string& name)
 {
     try {
         return &c.getSocket(name);
-    }
-    catch (const OpenSim::SocketNotFound&) {
+    } catch (const OpenSim::SocketNotFound&) {
         return nullptr;  // :(
     }
 }
 
-OpenSim::AbstractSocket* opyn::find_socket_mut(
-    OpenSim::Component& c,
-    const std::string& name)
+OpenSim::AbstractSocket* opyn::find_socket_mut(OpenSim::Component& c, const std::string& name)
 {
     try {
         return &c.updSocket(name);
-    }
-    catch (const OpenSim::SocketNotFound&) {
+    } catch (const OpenSim::SocketNotFound&) {
         return nullptr;  // :(
     }
 }
 
-bool opyn::is_connected_to(
-    const OpenSim::AbstractSocket& s,
-    const OpenSim::Component& c)
+bool opyn::is_connected_to(const OpenSim::AbstractSocket& s, const OpenSim::Component& c)
 {
     return &s.getConnecteeAsObject() == &c;
 }
 
-bool opyn::is_able_to_connect_to(
-    const OpenSim::AbstractSocket& s,
-    const OpenSim::Component& c)
+bool opyn::is_able_to_connect_to(const OpenSim::AbstractSocket& s, const OpenSim::Component& c)
 {
     return s.canConnectTo(c);
 }
 
 void opyn::recursively_reassign_all_sockets(
-    OpenSim::Component& root,
-    const OpenSim::Component& from,
-    const OpenSim::Component& to)
+    OpenSim::Component& root, const OpenSim::Component& from, const OpenSim::Component& to)
 {
     for (OpenSim::Component& c : root.updComponentList()) {
         for (OpenSim::AbstractSocket* socket : upd_all_sockets(c)) {
@@ -770,7 +746,9 @@ void opyn::recursively_reassign_all_sockets(
 
 std::ostream& opyn::operator<<(std::ostream& os, const ComponentConnectionView& view)
 {
-    return os << "ComponentConnectionView{source = " << view.source().getName() << ", target = " << view.target().getName() << ", socketName = " << view.socket_name() << '}';
+    return os << "ComponentConnectionView{source = " << view.source().getName()
+              << ", target = " << view.target().getName() << ", socketName = " << view.socket_name()
+              << '}';
 }
 
 osc::cpp23::generator<ComponentConnectionView> opyn::for_each_inbound_connection(
@@ -789,7 +767,7 @@ osc::cpp23::generator<ComponentConnectionView> opyn::for_each_inbound_connection
                         co_yield ComponentConnectionView{
                             subcomponent,  // source
                             *c,            // target
-                            socket_name,    // connection name
+                            socket_name,   // connection name
                         };
                     }
                 }
@@ -798,22 +776,18 @@ osc::cpp23::generator<ComponentConnectionView> opyn::for_each_inbound_connection
     }
 }
 
-OpenSim::AbstractProperty* opyn::find_property_mut(
-    OpenSim::Component& c,
-    const std::string& name)
+OpenSim::AbstractProperty* opyn::find_property_mut(OpenSim::Component& c, const std::string& name)
 {
     return c.hasProperty(name) ? &c.updPropertyByName(name) : nullptr;
 }
 
 const OpenSim::AbstractOutput* opyn::find_output(
-    const OpenSim::Component& c,
-    const std::string& output_name)
+    const OpenSim::Component& c, const std::string& output_name)
 {
     const OpenSim::AbstractOutput* rv = nullptr;
     try {
         rv = &c.getOutput(output_name);
-    }
-    catch (const OpenSim::Exception&) {  // NOLINT(bugprone-empty-catch)
+    } catch (const OpenSim::Exception&) {  // NOLINT(bugprone-empty-catch)
         // OpenSim, innit :(
     }
     return rv;
@@ -852,35 +826,31 @@ std::string opyn::recommended_document_name(const OpenSim::Model& model)
 {
     if (auto input_file = try_find_input_file(model)) {
         return input_file->filename().string();
-    }
-    else {
+    } else {
         return "untitled.osim";
     }
 }
 
 std::optional<std::filesystem::path> opyn::find_geometry_file_abs_path(
-    const OpenSim::Model& model,
-    const OpenSim::Mesh& mesh)
+    const OpenSim::Model& model, const OpenSim::Mesh& mesh)
 {
-    // this implementation is designed to roughly mimic how OpenSim::Mesh::extendFinalizeFromProperties works
+    // this implementation is designed to roughly mimic how
+    // OpenSim::Mesh::extendFinalizeFromProperties works
 
     const std::string& file_prop = mesh.get_mesh_file();
     const std::filesystem::path file_prop_path{file_prop};
 
     bool is_absolute = file_prop_path.is_absolute();
     SimTK::Array_<std::string> attempts;
-    const bool found = OpenSim::ModelVisualizer::findGeometryFile(
-        model,
-        file_prop,
-        is_absolute,
-        attempts
-    );
+    const bool found =
+        OpenSim::ModelVisualizer::findGeometryFile(model, file_prop, is_absolute, attempts);
 
     if (!found || attempts.empty()) {
         return std::nullopt;
     }
 
-    return std::optional<std::filesystem::path>{std::filesystem::weakly_canonical({attempts.back()})};
+    return std::optional<std::filesystem::path>{
+        std::filesystem::weakly_canonical({attempts.back()})};
 }
 
 std::string opyn::get_mesh_file_name(const OpenSim::Mesh& mesh)
@@ -918,15 +888,19 @@ bool opyn::try_delete_component_from_model(OpenSim::Model& m, OpenSim::Component
 
     // check if anything connects to the component as a non-child (i.e. non-hierarchically)
     // via a socket to the component, which may break the other component (so halt deletion)
-    if (auto connectees = get_any_non_children_components_connected_via_socket_to(m, c); !connectees.empty())
-    {
+    if (auto connectees = get_any_non_children_components_connected_via_socket_to(m, c);
+        not connectees.empty()) {
+
         std::stringstream ss;
         osc::CStringView delim;
         for (const OpenSim::Component* connectee : connectees) {
             ss << delim << connectee->getName();
             delim = ", ";
         }
-        osc::log_error("cannot delete {}: the following components connect to it via sockets: {}", c.getName(), std::move(ss).str());
+        osc::log_error(
+            "cannot delete {}: the following components connect to it via sockets: {}",
+            c.getName(),
+            std::move(ss).str());
         return false;
     }
 
@@ -936,7 +910,10 @@ bool opyn::try_delete_component_from_model(OpenSim::Model& m, OpenSim::Component
     // fixed in OpenSim itself
     for (const OpenSim::PathWrap& pw : m.getComponentList<OpenSim::PathWrap>()) {
         if (pw.getWrapObject() == &c) {
-            osc::log_error("cannot delete {}: it is used in a path wrap ({})", c.getName(), get_absolute_path_string(pw));
+            osc::log_error(
+                "cannot delete {}: it is used in a path wrap ({})",
+                c.getName(),
+                get_absolute_path_string(pw));
             return false;
         }
     }
@@ -954,41 +931,31 @@ bool opyn::try_delete_component_from_model(OpenSim::Model& m, OpenSim::Component
     //    rv = try_delete_item_from_set(*js, dynamic_cast<OpenSim::Joint*>(&c));
     // }
     if (auto* component_set = dynamic_cast<OpenSim::ComponentSet*>(owner)) {
-        rv = try_delete_item_from_set<OpenSim::ModelComponent, OpenSim::ModelComponent>(*component_set, dynamic_cast<OpenSim::ModelComponent*>(&c));
-    }
-    else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner)) {
+        rv = try_delete_item_from_set<OpenSim::ModelComponent, OpenSim::ModelComponent>(
+            *component_set, dynamic_cast<OpenSim::ModelComponent*>(&c));
+    } else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner)) {
         rv = try_delete_item_from_set(*bs, dynamic_cast<OpenSim::Body*>(&c));
-    }
-    else if (auto* wos = dynamic_cast<OpenSim::WrapObjectSet*>(owner)) {
+    } else if (auto* wos = dynamic_cast<OpenSim::WrapObjectSet*>(owner)) {
         rv = try_delete_item_from_set(*wos, dynamic_cast<OpenSim::WrapObject*>(&c));
-    }
-    else if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(owner)) {
+    } else if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(owner)) {
         rv = try_delete_item_from_set(*cs, dynamic_cast<OpenSim::Controller*>(&c));
-    }
-    else if (auto* conss = dynamic_cast<OpenSim::ConstraintSet*>(owner)) {
+    } else if (auto* conss = dynamic_cast<OpenSim::ConstraintSet*>(owner)) {
         rv = try_delete_item_from_set(*conss, dynamic_cast<OpenSim::Constraint*>(&c));
-    }
-    else if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(owner)) {
+    } else if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(owner)) {
         rv = try_delete_item_from_set(*fs, dynamic_cast<OpenSim::Force*>(&c));
-    }
-    else if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(owner)) {
+    } else if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(owner)) {
         rv = try_delete_item_from_set(*ms, dynamic_cast<OpenSim::Marker*>(&c));
-    }
-    else if (auto* cgs = dynamic_cast<OpenSim::ContactGeometrySet*>(owner); cgs) {
+    } else if (auto* cgs = dynamic_cast<OpenSim::ContactGeometrySet*>(owner); cgs) {
         rv = try_delete_item_from_set(*cgs, dynamic_cast<OpenSim::ContactGeometry*>(&c));
-    }
-    else if (auto* ps = dynamic_cast<OpenSim::ProbeSet*>(owner)) {
+    } else if (auto* ps = dynamic_cast<OpenSim::ProbeSet*>(owner)) {
         rv = try_delete_item_from_set(*ps, dynamic_cast<OpenSim::Probe*>(&c));
-    }
-    else if (auto* gp = dynamic_cast<OpenSim::GeometryPath*>(owner)) {
+    } else if (auto* gp = dynamic_cast<OpenSim::GeometryPath*>(owner)) {
         if (const auto* app = dynamic_cast<OpenSim::AbstractPathPoint*>(&c)) {
             rv = try_delete_item_from_set(gp->updPathPointSet(), app);
-        }
-        else if (const auto* pw = dynamic_cast<OpenSim::PathWrap*>(&c)) {
+        } else if (const auto* pw = dynamic_cast<OpenSim::PathWrap*>(&c)) {
             rv = try_delete_item_from_set(gp->updWrapSet(), pw);
         }
-    }
-    else if (const auto* geom = dynamic_cast<OpenSim::Geometry*>(&c)) {
+    } else if (const auto* geom = dynamic_cast<OpenSim::Geometry*>(&c)) {
         // delete an OpenSim::Geometry from its owning OpenSim::Frame
 
         if (auto* frame = dynamic_cast<OpenSim::Frame*>(owner)) {
@@ -1001,7 +968,8 @@ bool opyn::try_delete_component_from_model(OpenSim::Model& m, OpenSim::Component
             // to support list element deletion, but does support full
             // assignment
 
-            auto& prop = dynamic_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(frame->updProperty_attached_geometry());
+            auto& prop = dynamic_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(
+                frame->updProperty_attached_geometry());
             auto copy = clone(prop);
             copy->clear();
 
@@ -1015,13 +983,15 @@ bool opyn::try_delete_component_from_model(OpenSim::Model& m, OpenSim::Component
 
             rv = true;
         }
-    }
-    else if (owner->removeComponent(&c)) {
+    } else if (owner->removeComponent(&c)) {
         rv = true;
     }
 
     if (!rv) {
-        osc::log_error("cannot delete {}: OpenSim Creator doesn't know how to delete a {} from its parent (maybe it can't?)", c.getName(), c.getConcreteClassName());
+        osc::log_error(
+            "cannot delete {}: OpenSim Creator doesn't know how to delete a {} from its parent (maybe it can't?)",
+            c.getName(),
+            c.getConcreteClassName());
     }
 
     return rv;
@@ -1034,10 +1004,13 @@ void opyn::copy_common_joint_properties(const OpenSim::Joint& src, OpenSim::Join
     // copy owned frames
     dest.updProperty_frames().assign(src.getProperty_frames());
 
-    // copy parent frame socket *path* (note: don't use connectSocket, pointers are evil in model manipulations)
-    dest.updSocket("parent_frame").setConnecteePath(src.getSocket("parent_frame").getConnecteePath());
+    // copy parent frame socket *path* (note: don't use connectSocket, pointers are evil in model
+    // manipulations)
+    dest.updSocket("parent_frame")
+        .setConnecteePath(src.getSocket("parent_frame").getConnecteePath());
 
-    // copy child socket *path* (note: don't use connectSocket, pointers are evil in model manipulations)
+    // copy child socket *path* (note: don't use connectSocket, pointers are evil in model
+    // manipulations)
     dest.updSocket("child_frame").setConnecteePath(src.getSocket("child_frame").getConnecteePath());
 }
 
@@ -1069,7 +1042,8 @@ bool opyn::activate_all_wrap_objects_in(OpenSim::Model& m)
     return rv;
 }
 
-std::vector<const OpenSim::WrapObject*> opyn::get_all_wrap_objects_referenced_by(const OpenSim::GeometryPath& gp)
+std::vector<const OpenSim::WrapObject*> opyn::get_all_wrap_objects_referenced_by(
+    const OpenSim::GeometryPath& gp)
 {
     const auto& wrap_set = gp.getWrapSet();
 
@@ -1108,17 +1082,20 @@ std::unique_ptr<OpenSim::Model> opyn::load_model(const std::filesystem::path& pa
 void opyn::initialize_model(OpenSim::Model& model)
 {
     OSC_PERF("osc::InitializeModel");
-    model.finalizeFromProperties();  // clears potentially-stale member components (required for `clearConnections`)
-    model.clearConnections();        // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see opensim-creator/#263)
-    model.buildSystem();             // creates a new underlying physics system
+    // clears potentially-stale member components (required for `clearConnections`)
+    model.finalizeFromProperties();
+    // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see
+    // opensim-creator/#263)
+    model.clearConnections();
+    // creates a new underlying physics system
+    model.buildSystem();
 }
 
 void opyn::try_equilibrate_muscles_or_log_warning(OpenSim::Model& model, SimTK::State& state)
 {
     try {
         model.equilibrateMuscles(state);
-    }
-    catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         osc::log_warn("Cannot equilibrate model's muscles: {}", ex.what());
     }
 }
@@ -1160,8 +1137,7 @@ std::string opyn::get_display_name(const OpenSim::Geometry& g)
 {
     if (const auto* mesh = dynamic_cast<const OpenSim::Mesh*>(&g); mesh) {
         return std::filesystem::path{mesh->getGeometryFilename()}.filename().string();
-    }
-    else {
+    } else {
         return g.getConcreteClassName();
     }
 }
@@ -1169,14 +1145,10 @@ std::string opyn::get_display_name(const OpenSim::Geometry& g)
 osc::CStringView opyn::get_motion_type_display_name(const OpenSim::Coordinate& c)
 {
     switch (c.getMotionType()) {
-    case OpenSim::Coordinate::MotionType::Rotational:
-        return "Rotational";
-    case OpenSim::Coordinate::MotionType::Translational:
-        return "Translational";
-    case OpenSim::Coordinate::MotionType::Coupled:
-        return "Coupled";
-    default:
-        return "Unknown";
+    case OpenSim::Coordinate::MotionType::Rotational: return "Rotational";
+    case OpenSim::Coordinate::MotionType::Translational: return "Translational";
+    case OpenSim::Coordinate::MotionType::Coupled: return "Coupled";
+    default: return "Unknown";
     }
 }
 
@@ -1187,7 +1159,8 @@ const OpenSim::Appearance* opyn::try_get_appearance(const OpenSim::Component& co
     }
 
     const OpenSim::AbstractProperty& abstract_property = component.getPropertyByName("Appearance");
-    const auto* maybe_appearance_property = dynamic_cast<const OpenSim::Property<OpenSim::Appearance>*>(&abstract_property);
+    const auto* maybe_appearance_property =
+        dynamic_cast<const OpenSim::Property<OpenSim::Appearance>*>(&abstract_property);
 
     return maybe_appearance_property ? &maybe_appearance_property->getValue() : nullptr;
 }
@@ -1199,7 +1172,8 @@ OpenSim::Appearance* opyn::try_upd_appearance(OpenSim::Component& component)
     }
 
     OpenSim::AbstractProperty& abstract_property = component.updPropertyByName("Appearance");
-    auto* maybe_appearance_property = dynamic_cast<OpenSim::Property<OpenSim::Appearance>*>(&abstract_property);
+    auto* maybe_appearance_property =
+        dynamic_cast<OpenSim::Property<OpenSim::Appearance>*>(&abstract_property);
 
     return maybe_appearance_property ? &maybe_appearance_property->updValue() : nullptr;
 }
@@ -1209,8 +1183,7 @@ bool opyn::try_set_appearance_property_is_visible_to(OpenSim::Component& c, bool
     if (OpenSim::Appearance* appearance = try_upd_appearance(c)) {
         appearance->set_visible(v);
         return true;
-    }
-    else {
+    } else {
         return false;
     }
 }
@@ -1230,7 +1203,7 @@ osc::Color opyn::to_color(const OpenSim::Appearance& appearance)
 
 osc::Color opyn::get_suggested_bone_color()
 {
-    const osc::Color usual_default = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
+    const osc::Color usual_default = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f / 255.0f, 1.0f};
     const float brighten_amount = 0.1f;
     return lerp(usual_default, osc::Color::white(), brighten_amount);
 }
@@ -1335,7 +1308,7 @@ void opyn::get_absolute_path_string(const OpenSim::Component& c, std::string& ou
 
     // and assign it
     size_t loc = 0;
-    for (ptrdiff_t i = n_els-1; i >= 0; --i) {
+    for (ptrdiff_t i = n_els - 1; i >= 0; --i) {
         out[loc++] = '/';
         const std::string& name = els[i]->getName();
         rgs::copy(name, out.begin() + loc);
@@ -1364,15 +1337,13 @@ OpenSim::ComponentPath opyn::get_absolute_path_or_empty(const OpenSim::Component
 {
     if (c) {
         return get_absolute_path(*c);
-    }
-    else {
+    } else {
         return OpenSim::ComponentPath{};
     }
 }
 
 std::optional<LinesOfAction> opyn::get_effective_lines_of_action_in_ground(
-    const OpenSim::Muscle& muscle,
-    const SimTK::State& state)
+    const OpenSim::Muscle& muscle, const SimTK::State& state)
 {
     LinesOfActionConfig config;
     config.useEffectiveInsertion = true;
@@ -1380,8 +1351,7 @@ std::optional<LinesOfAction> opyn::get_effective_lines_of_action_in_ground(
 }
 
 std::optional<LinesOfAction> opyn::get_anatomical_lines_of_action_in_ground(
-    const OpenSim::Muscle& muscle,
-    const SimTK::State& state)
+    const OpenSim::Muscle& muscle, const SimTK::State& state)
 {
     LinesOfActionConfig config;
     config.useEffectiveInsertion = false;
@@ -1398,11 +1368,11 @@ namespace
     // returns the first ContactHalfSpace found within the given HuntCrossleyForce's parameters, or
     // nullptr, if no ContactHalfSpace could be found
     std::optional<FirstContactHalfSpaceInHCF> find_first_contact_half_space_in_hcf(
-        const OpenSim::Model& model,
-        const OpenSim::HuntCrossleyForce& hcf)
+        const OpenSim::Model& model, const OpenSim::HuntCrossleyForce& hcf)
     {
         // get contact parameters (i.e. where the contact geometry is stored)
-        const OpenSim::HuntCrossleyForce::ContactParametersSet& param_set = hcf.get_contact_parameters();
+        const OpenSim::HuntCrossleyForce::ContactParametersSet& param_set =
+            hcf.get_contact_parameters();
         if (empty(param_set)) {
             return std::nullopt;  // edge-case: the force has no parameters
         }
@@ -1414,11 +1384,13 @@ namespace
 
             for (size_t j = 0; j < size(geom_property); ++j) {
                 const std::string& geom_name_or_path = at(geom_property, j);
-                if (const auto* found_via_abs_path = find_component<OpenSim::ContactHalfSpace>(model, geom_name_or_path)) {
+                if (const auto* found_via_abs_path =
+                        find_component<OpenSim::ContactHalfSpace>(model, geom_name_or_path)) {
                     // found it as an abspath within the model
                     return FirstContactHalfSpaceInHCF{.ptr = found_via_abs_path, .index = j};
-                }
-                else if (const auto* found_via_relative_path = find_component<OpenSim::ContactHalfSpace>(model.getContactGeometrySet(), geom_name_or_path)) {
+                } else if (
+                    const auto* found_via_relative_path = find_component<OpenSim::ContactHalfSpace>(
+                        model.getContactGeometrySet(), geom_name_or_path)) {
                     // found it as a relative path/name within the contactgeometryset
                     return FirstContactHalfSpaceInHCF{.ptr = found_via_relative_path, .index = j};
                 }
@@ -1437,19 +1409,19 @@ namespace
         size_t first_contact_half_space_index,
         const SimTK::State& state)
     {
-        const int offset = static_cast<int>(6*first_contact_half_space_index);
+        const int offset = static_cast<int>(6 * first_contact_half_space_index);
 
         const OpenSim::Array<double> forces = hcf.getRecordValues(state);
         if (forces.size() < offset + 6) {
             return std::nullopt;  // edge-case: OpenSim didn't report the expected forces
         }
 
-        const osc::Vector3 force(-forces[offset+0], -forces[offset+1], -forces[offset+2]);
+        const osc::Vector3 force(-forces[offset + 0], -forces[offset + 1], -forces[offset + 2]);
         if (osc::length2(force) < osc::epsilon_v<float>) {
             return std::nullopt;  // edge-case: no force is actually being exerted
         }
 
-        const osc::Vector3 torque(-forces[offset+3], -forces[offset+4], -forces[offset+5]);
+        const osc::Vector3 torque(-forces[offset + 3], -forces[offset + 4], -forces[offset + 5]);
 
         return ForceTorque{force, torque};
     }
@@ -1458,27 +1430,27 @@ namespace
     //         etc. into a simpler "plane in ground-space" representation that's more useful
     //         for rendering
     osc::Plane to_point_normal_plane_in_ground(
-        const OpenSim::ContactHalfSpace& half_space,
-        const SimTK::State& state)
+        const OpenSim::ContactHalfSpace& half_space, const SimTK::State& state)
     {
         // go through the contact geometries that are attached to the force
         //
         // - if there's a plane, then the plane's location+normal are needed in order
         //   to figure out where the force is exerted
-        const auto parent2ground = osc::to<osc::Transform>(half_space.getFrame().getTransformInGround(state));
+        const auto parent2ground =
+            osc::to<osc::Transform>(half_space.getFrame().getTransformInGround(state));
         const auto halfspace2parent = osc::to<osc::Transform>(half_space.getTransform());
 
         return osc::Plane{
             .origin = parent2ground * halfspace2parent.translation,
-            .normal = parent2ground.rotation * halfspace2parent.rotation * c_contact_half_space_upwards_normal,
+            .normal = parent2ground.rotation * halfspace2parent.rotation *
+                      c_contact_half_space_upwards_normal,
         };
     }
 
     // helper: returns the location of the center of pressure of a force+torque on a plane, or
     //         std::nullopt if the to-be-drawn force vector is too small
     std::optional<osc::Vector3> calc_center_of_pressure(
-        const osc::Plane& plane,
-        const ForceTorque& force_torque_in_g)
+        const osc::Plane& plane, const ForceTorque& force_torque_in_g)
     {
         const auto& [force, torque] = force_torque_in_g;
         if (osc::abs(osc::dot(plane.normal, force)) < osc::epsilon_v<float>) {
@@ -1491,15 +1463,13 @@ namespace
         osc::Vector3 delta_pos = pos0 - plane.origin;
         double p1 = dot(delta_pos, plane.normal);
         double p2 = dot(force, plane.normal);
-        auto pos = pos0 - (p1/p2) * force;
+        auto pos = pos0 - (p1 / p2) * force;
         return pos;
     }
 }
 
 std::optional<ForcePoint> opyn::try_get_contact_force_in_ground(
-    const OpenSim::Model& model,
-    const SimTK::State& state,
-    const OpenSim::HuntCrossleyForce& hcf)
+    const OpenSim::Model& model, const SimTK::State& state, const OpenSim::HuntCrossleyForce& hcf)
 {
     // Find the first `OpenSim::ContactHalfSpace` in the HCF's contact set.
     auto const contact_half_space = find_first_contact_half_space_in_hcf(model, hcf);
@@ -1508,16 +1478,19 @@ std::optional<ForcePoint> opyn::try_get_contact_force_in_ground(
     }
 
     // Calculate the equivalent point-normal `Plane` for the `OpenSim::ContactHalfSpace`.
-    const osc::Plane contact_plane_in_g = to_point_normal_plane_in_ground(*contact_half_space->ptr, state);
+    const osc::Plane contact_plane_in_g =
+        to_point_normal_plane_in_ground(*contact_half_space->ptr, state);
 
     // Extract the force+torque that the HCF is applying to the `OpenSim::ContactHalfSpace`.
-    const auto force_torque_applied_to_plane = calc_hcf_force_on_contact_half_space(hcf, contact_half_space->index, state);
+    const auto force_torque_applied_to_plane =
+        calc_hcf_force_on_contact_half_space(hcf, contact_half_space->index, state);
     if (not force_torque_applied_to_plane) {
         return std::nullopt;  // couldn't extract force+torque from the HCF
     }
 
     // Use the force+torque applied to the `Plane`'s origin to calculate the center of pressure.
-    const auto contact_plane_cop = calc_center_of_pressure(contact_plane_in_g, *force_torque_applied_to_plane);
+    const auto contact_plane_cop =
+        calc_center_of_pressure(contact_plane_in_g, *force_torque_applied_to_plane);
     if (not contact_plane_cop) {
         return std::nullopt;  // the resulting force is too small
     }
@@ -1526,19 +1499,18 @@ std::optional<ForcePoint> opyn::try_get_contact_force_in_ground(
 }
 
 const OpenSim::PhysicalFrame& opyn::get_frame_using_external_force_lookup_heuristic(
-    const OpenSim::Model& model,
-    const std::string& body_name_or_path)
+    const OpenSim::Model& model, const std::string& body_name_or_path)
 {
     // this tries to match the implementation that's hidden inside
     // of `ExternalForce.cpp` from OpenSim
 
     if (const auto* direct = find_component<OpenSim::PhysicalFrame>(model, body_name_or_path)) {
         return *direct;
-    }
-    else if (const auto* shimmed = find_component<OpenSim::PhysicalFrame>(model, "./bodyset/" + body_name_or_path)) {
+    } else if (
+        const auto* shimmed =
+            find_component<OpenSim::PhysicalFrame>(model, "./bodyset/" + body_name_or_path)) {
         return *shimmed;
-    }
-    else {
+    } else {
         return model.getGround();
     }
 }
@@ -1549,8 +1521,7 @@ bool opyn::can_extract_point_info_from(const OpenSim::Component& c, const SimTK:
 }
 
 std::optional<PointInfo> opyn::try_extract_point_info(
-    const OpenSim::Component& c,
-    const SimTK::State& st)
+    const OpenSim::Component& c, const SimTK::State& st)
 {
     if (dynamic_cast<const OpenSim::PathWrapPoint*>(&c)) {
         // HACK: path wrap points don't update the cache correctly?
@@ -1591,7 +1562,8 @@ std::optional<PointInfo> opyn::try_extract_point_info(
     return std::nullopt;
 }
 
-OpenSim::Component& opyn::add_component_to_appropriate_set(OpenSim::Model& m, std::unique_ptr<OpenSim::Component> c)
+OpenSim::Component& opyn::add_component_to_appropriate_set(
+    OpenSim::Model& m, std::unique_ptr<OpenSim::Component> c)
 {
     if (c == nullptr) {
         throw std::runtime_error{"nullptr passed to AddComponentToAppropriateSet"};
@@ -1601,43 +1573,37 @@ OpenSim::Component& opyn::add_component_to_appropriate_set(OpenSim::Model& m, st
 
     if (dynamic_cast<OpenSim::Body*>(c.get())) {
         m.addBody(dynamic_cast<OpenSim::Body*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Joint*>(c.get())) {
+    } else if (dynamic_cast<OpenSim::Joint*>(c.get())) {
         m.addJoint(dynamic_cast<OpenSim::Joint*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Constraint*>(c.get())) {
+    } else if (dynamic_cast<OpenSim::Constraint*>(c.get())) {
         m.addConstraint(dynamic_cast<OpenSim::Constraint*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Force*>(c.get())) {
+    } else if (dynamic_cast<OpenSim::Force*>(c.get())) {
         m.addForce(dynamic_cast<OpenSim::Force*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Probe*>(c.get())) {
+    } else if (dynamic_cast<OpenSim::Probe*>(c.get())) {
         m.addProbe(dynamic_cast<OpenSim::Probe*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::ContactGeometry*>(c.get())) {
+    } else if (dynamic_cast<OpenSim::ContactGeometry*>(c.get())) {
         m.addContactGeometry(dynamic_cast<OpenSim::ContactGeometry*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Marker*>(c.get())) {
+    } else if (dynamic_cast<OpenSim::Marker*>(c.get())) {
         m.addMarker(dynamic_cast<OpenSim::Marker*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Controller*>(c.get())) {
+    } else if (dynamic_cast<OpenSim::Controller*>(c.get())) {
         m.addController(dynamic_cast<OpenSim::Controller*>(c.release()));
-    }
-    else {
+    } else {
         m.addComponent(c.release());
     }
 
     return rv;
 }
 
-OpenSim::ModelComponent& opyn::add_model_component(OpenSim::Model& model, std::unique_ptr<OpenSim::ModelComponent>&& p)
+OpenSim::ModelComponent& opyn::add_model_component(
+    OpenSim::Model& model, std::unique_ptr<OpenSim::ModelComponent>&& p)
 {
     OpenSim::ModelComponent& rv = *p;
     model.addModelComponent(std::move(p).release());
     return rv;
 }
 
-OpenSim::Component& opyn::add_component(OpenSim::Component& c, std::unique_ptr<OpenSim::Component>&& p)
+OpenSim::Component& opyn::add_component(
+    OpenSim::Component& c, std::unique_ptr<OpenSim::Component>&& p)
 {
     OpenSim::Component& rv = *p;
     c.addComponent(std::move(p).release());
@@ -1658,7 +1624,8 @@ OpenSim::Joint& opyn::add_joint(OpenSim::Model& model, std::unique_ptr<OpenSim::
     return rv;
 }
 
-OpenSim::Constraint& opyn::add_constraint(OpenSim::Model& model, std::unique_ptr<OpenSim::Constraint> constraint)
+OpenSim::Constraint& opyn::add_constraint(
+    OpenSim::Model& model, std::unique_ptr<OpenSim::Constraint> constraint)
 {
     OpenSim::Constraint& rv = *constraint;
     model.addConstraint(constraint.release());
@@ -1672,21 +1639,24 @@ OpenSim::Marker& opyn::add_marker(OpenSim::Model& model, std::unique_ptr<OpenSim
     return rv;
 }
 
-OpenSim::PhysicalOffsetFrame& opyn::add_frame(OpenSim::Joint& joint, std::unique_ptr<OpenSim::PhysicalOffsetFrame> frame)
+OpenSim::PhysicalOffsetFrame& opyn::add_frame(
+    OpenSim::Joint& joint, std::unique_ptr<OpenSim::PhysicalOffsetFrame> frame)
 {
     OpenSim::PhysicalOffsetFrame& rv = *frame;
     joint.addFrame(frame.release());
     return rv;
 }
 
-OpenSim::WrapObject& opyn::add_wrap_object(OpenSim::PhysicalFrame& physical_frame, std::unique_ptr<OpenSim::WrapObject> wrap_obj)
+OpenSim::WrapObject& opyn::add_wrap_object(
+    OpenSim::PhysicalFrame& physical_frame, std::unique_ptr<OpenSim::WrapObject> wrap_obj)
 {
     OpenSim::WrapObject& rv = *wrap_obj;
     physical_frame.addWrapObject(wrap_obj.release());
     return rv;
 }
 
-OpenSim::Geometry& opyn::attach_geometry(OpenSim::Frame& frame, std::unique_ptr<OpenSim::Geometry> p)
+OpenSim::Geometry& opyn::attach_geometry(
+    OpenSim::Frame& frame, std::unique_ptr<OpenSim::Geometry> p)
 {
     OpenSim::Geometry& rv = *p;
     frame.attachGeometry(p.release());
@@ -1700,11 +1670,15 @@ void opyn::overwrite_geometry(
 {
     new_geometry->set_scale_factors(old_geometry.get_scale_factors());
     new_geometry->set_Appearance(old_geometry.get_Appearance());
-    new_geometry->updSocket("frame").setConnecteePath(old_geometry.getSocket("frame").getConnecteePath());
+    new_geometry->updSocket("frame").setConnecteePath(
+        old_geometry.getSocket("frame").getConnecteePath());
     new_geometry->setName(old_geometry.getName());
     OpenSim::Component* owner = upd_owner(model, old_geometry);
-    OSC_ASSERT_ALWAYS(owner && "the mesh being replaced has no owner? cannot overwrite a root component");
-    OSC_ASSERT_ALWAYS(try_delete_component_from_model(model, old_geometry) && "cannot delete old mesh from model during warping");
+    OSC_ASSERT_ALWAYS(
+        owner && "the mesh being replaced has no owner? cannot overwrite a root component");
+    OSC_ASSERT_ALWAYS(
+        try_delete_component_from_model(model, old_geometry) &&
+        "cannot delete old mesh from model during warping");
     initialize_model(model);
     initialize_state(model);
     // HACK: prefer `<attachedGeometry>` block when overwriting meshes defined
@@ -1712,38 +1686,33 @@ void opyn::overwrite_geometry(
     // component list (yet) opensim-creator/#1003.
     if (auto* fr = dynamic_cast<OpenSim::Frame*>(owner)) {
         fr->attachGeometry(new_geometry.release());
-    }
-    else {
+    } else {
         owner->addComponent(new_geometry.release());
     }
 
     finalize_connections(model);
 }
 
-const OpenSim::PhysicalFrame* opyn::try_get_parent_to_ground_frame(const OpenSim::Component& component)
+const OpenSim::PhysicalFrame* opyn::try_get_parent_to_ground_frame(
+    const OpenSim::Component& component)
 {
     if (const auto* station = dynamic_cast<const OpenSim::Station*>(&component)) {
         return &station->getParentFrame();
-    }
-    else if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&component)) {
+    } else if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&component)) {
         return &pp->getParentFrame();
-    }
-    else if (const auto* pof = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&component)) {
+    } else if (const auto* pof = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&component)) {
         return &pof->getParentFrame();
-    }
-    else {
+    } else {
         return nullptr;
     }
 }
 
 std::optional<SimTK::Transform> opyn::try_get_parent_to_ground_transform(
-    const OpenSim::Component& component,
-    const SimTK::State& state)
+    const OpenSim::Component& component, const SimTK::State& state)
 {
     if (const OpenSim::PhysicalFrame* frame = try_get_parent_to_ground_frame(component)) {
         return frame->getTransformInGround(state);
-    }
-    else {
+    } else {
         return std::nullopt;
     }
 }
@@ -1753,14 +1722,11 @@ std::optional<std::string> opyn::try_get_positional_property_name(
 {
     if (const auto* station = dynamic_cast<const OpenSim::Station*>(&component)) {
         return station->getProperty_location().getName();
-    }
-    else if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&component)) {
+    } else if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&component)) {
         return pp->getProperty_location().getName();
-    }
-    else if (const auto* pof = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&component)) {
+    } else if (const auto* pof = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&component)) {
         return pof->getProperty_translation().getName();
-    }
-    else {
+    } else {
         return std::nullopt;
     }
 }
@@ -1770,8 +1736,7 @@ std::optional<std::string> opyn::try_get_orientational_property_name(
 {
     if (const auto* pof = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&component)) {
         return pof->getProperty_orientation().getName();
-    }
-    else {
+    } else {
         return std::nullopt;
     }
 }
@@ -1785,16 +1750,14 @@ const OpenSim::Frame* opyn::try_get_parent_frame(const OpenSim::Frame& frame)
 }
 
 std::optional<ComponentSpatialRepresentation> opyn::try_get_spatial_representation(
-    const OpenSim::Component& component,
-    const SimTK::State& state)
+    const OpenSim::Component& component, const SimTK::State& state)
 {
     if (auto xform = try_get_parent_to_ground_transform(component, state)) {
         if (auto pos_prop = try_get_positional_property_name(component)) {
             return ComponentSpatialRepresentation{
                 *xform,
                 std::move(pos_prop).value(),
-                try_get_orientational_property_name(component)
-            };
+                try_get_orientational_property_name(component)};
         }
     }
     return std::nullopt;
@@ -1802,10 +1765,8 @@ std::optional<ComponentSpatialRepresentation> opyn::try_get_spatial_representati
 
 bool opyn::is_valid_open_sim_component_name_character(char c)
 {
-    return
-        std::isalpha(static_cast<unsigned char>(c)) != 0 ||
-        ('0' <= c && c <= '9') ||
-        (c == '-' || c == '_');
+    return std::isalpha(static_cast<unsigned char>(c)) != 0 || ('0' <= c && c <= '9') ||
+           (c == '-' || c == '_');
 }
 
 std::string opyn::sanitize_to_open_sim_component_name(std::string_view sv)
@@ -1838,8 +1799,7 @@ std::unique_ptr<OpenSim::Storage> opyn::load_storage(
 }
 
 std::unordered_map<int, int> opyn::create_storage_index_to_model_statevar_mapping_with_warnings(
-    const OpenSim::Model& model,
-    const OpenSim::Storage& storage)
+    const OpenSim::Model& model, const OpenSim::Storage& storage)
 {
     auto mapping = create_storage_index_to_model_statevar_mapping(model, storage);
     if (not mapping.state_variables_missing_in_storage.empty()) {
@@ -1851,25 +1811,28 @@ std::unordered_map<int, int> opyn::create_storage_index_to_model_statevar_mappin
             delimiter = ", ";
         }
         osc::log_warn(std::move(ss).str());
-        osc::log_warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
-        osc::log_warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
+        osc::log_warn(
+            "The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
+        osc::log_warn(
+            "Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
     }
     return std::move(mapping.storage_index_to_model_state_var_index);
 }
 
 StorageIndexToModelStateVarMappingResult opyn::create_storage_index_to_model_statevar_mapping(
-    const OpenSim::Model& model,
-    const OpenSim::Storage& storage)
+    const OpenSim::Model& model, const OpenSim::Storage& storage)
 {
     // ensure the `OpenSim::Storage` holds a time sequence.
     if (not osc::is_equal_case_insensitive(storage.getColumnLabels()[0], "time")) {
-        throw std::runtime_error{"the provided motion data does not contain a 'time' column as its first column: it cannot be processed"};
+        throw std::runtime_error{
+            "the provided motion data does not contain a 'time' column as its first column: it cannot be processed"};
     }
 
     // get+validate column headers from the `OpenSim::Storage`.
     const OpenSim::Array<std::string>& storage_columns_including_time = storage.getColumnLabels();
     if (not is_all_elements_unique(storage_columns_including_time)) {
-        throw std::runtime_error{"the provided motion data contains multiple columns with the same name. This creates ambiguities that OpenSim Creator can't handle"};
+        throw std::runtime_error{
+            "the provided motion data contains multiple columns with the same name. This creates ambiguities that OpenSim Creator can't handle"};
     }
 
     // get the state variable labels from the `OpenSim::Model`
@@ -1886,13 +1849,14 @@ StorageIndexToModelStateVarMappingResult opyn::create_storage_index_to_model_sta
     //       strings carefully onto the model state variables.
     for (int model_index = 0; model_index < model_state_vars.size(); ++model_index) {
         const std::string& model_state_varname = model_state_vars[model_index];
-        const int storage_index = OpenSim::TableUtilities::findStateLabelIndex(storage_columns_including_time, model_state_varname);
-        const int value_index = storage_index - 1;  // the column labels include 'time', which isn't in the data elements
+        const int storage_index = OpenSim::TableUtilities::findStateLabelIndex(
+            storage_columns_including_time, model_state_varname);
+        // the column labels include 'time', which isn't in the data elements
+        const int value_index = storage_index - 1;
 
         if (value_index >= 0) {
             rv.storage_index_to_model_state_var_index[value_index] = model_index;
-        }
-        else {
+        } else {
             rv.state_variables_missing_in_storage.push_back(model_state_varname);
         }
     }
@@ -1911,14 +1875,17 @@ void opyn::update_state_variables_from_storage_row(
     OpenSim::StateVector* sv = storage.getStateVector(row);
     const OpenSim::Array<double>& cols = sv->getData();
 
-    // copy + update the `OpenSim::Model`'s state vector with state variables from the `OpenSim::Storage`
+    // copy + update the `OpenSim::Model`'s state vector with state variables from the
+    // `OpenSim::Storage`
     SimTK::Vector state_vals_buf = model.getStateVariableValues(state);
     for (auto [valueIdx, modelIdx] : column_index_to_model_state_var_index) {
-        if (0 <= valueIdx && valueIdx < cols.size() && 0 <= modelIdx && modelIdx < state_vals_buf.size()) {
+        if (0 <= valueIdx && valueIdx < cols.size() && 0 <= modelIdx &&
+            modelIdx < state_vals_buf.size()) {
+
             state_vals_buf[modelIdx] = cols[valueIdx];
-        }
-        else {
-            throw std::runtime_error{"an index in the storage lookup was invalid: this is probably a developer error that needs to be investigated (report it)"};
+        } else {
+            throw std::runtime_error{
+                "an index in the storage lookup was invalid: this is probably a developer error that needs to be investigated (report it)"};
         }
     }
 
@@ -1937,7 +1904,8 @@ void opyn::update_state_from_storage_time(
     const OpenSim::Storage& storage,
     double time)
 {
-    update_state_variables_from_storage_row(model, state, column_index_to_model_state_var_index, storage, storage.findIndex(time));
+    update_state_variables_from_storage_row(
+        model, state, column_index_to_model_state_var_index, storage, storage.findIndex(time));
 }
 
 std::string opyn::write_object_xml_to_string(const OpenSim::Object& obj)
@@ -1949,21 +1917,19 @@ std::string opyn::write_object_xml_to_string(const OpenSim::Object& obj)
         SimTK::String str;
         el.element_begin()->writeToString(str);
         return str;
-    }
-    else {
+    } else {
         return {};
     }
 }
 
 void opyn::scale_model_mass_preserve_mass_distribution(
-    OpenSim::Model& model,
-    const SimTK::State& state,
-    double new_mass)
+    OpenSim::Model& model, const SimTK::State& state, double new_mass)
 {
     // This is a simplified version of part of `OpenSim::Model::scale`
 
     const double model_mass = model.getTotalMass(state);
-    OSC_ASSERT_ALWAYS(model_mass != 0.0 && "Cannot scale the mass of a model that has a mass of zero");
+    OSC_ASSERT_ALWAYS(
+        model_mass != 0.0 && "Cannot scale the mass of a model that has a mass of zero");
 
     const double factor = new_mass / model_mass;
     for (OpenSim::Body& body : model.updComponentList<OpenSim::Body>()) {
@@ -1999,7 +1965,7 @@ void opyn::bake_station_defined_frames(OpenSim::Model& model)
         model.updComponent(sdf.getAbsolutePath().getParentPath()).addComponent(pof.release());
         pof_ptr.finalizeConnections(model);
         // Reassign anything pointing to the SDF to instead point to the POF
-        recursively_reassign_all_sockets(model,sdf, pof_ptr);
+        recursively_reassign_all_sockets(model, sdf, pof_ptr);
         sdfs_to_delete.push_back(&sdf);
         pofs_to_rename.push_back(&pof_ptr);
     }

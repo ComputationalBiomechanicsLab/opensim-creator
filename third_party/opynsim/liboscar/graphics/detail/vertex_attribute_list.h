@@ -5,11 +5,11 @@
 
 namespace osc::detail
 {
-    using VertexAttributeList = OptionList<VertexAttribute,
+    using VertexAttributeList = OptionList<
+        VertexAttribute,
         VertexAttribute::Position,
         VertexAttribute::Normal,
         VertexAttribute::Tangent,
         VertexAttribute::Color,
-        VertexAttribute::TexCoord0
-    >;
+        VertexAttribute::TexCoord0>;
 }

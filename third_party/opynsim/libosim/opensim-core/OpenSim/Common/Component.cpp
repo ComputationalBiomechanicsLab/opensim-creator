@@ -26,6 +26,7 @@
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
 #include "XMLDocument.h"
+#include "Detail/SimbodyFormatterShims.h"
 
 #include <regex>
 #include <unordered_map>
@@ -1923,7 +1924,7 @@ void Component::AddedStateVariable::
 
 
 void Component::printSocketInfo() const {
-    std::string str = fmt::format("Sockets for component {} of type [{}] along "
+    std::string str = std::format("Sockets for component {} of type [{}] along "
                                   "with connectee paths:", getName(),
                                   getConcreteClassName());
     if (getNumSockets() == 0)
@@ -1944,8 +1945,8 @@ void Component::printSocketInfo() const {
     for (const auto& it : _socketsTable) {
         const auto& socket = it.second;
         // Right-justify the connectee type names and socket names.
-        str = fmt::format("{:>{}} {:>{}} : ",
-                          fmt::format("[{}]", socket->getConnecteeTypeName()),
+        str = std::format("{:>{}} {:>{}} : ",
+                          std::format("[{}]", socket->getConnecteeTypeName()),
                           maxlenTypeName,
                           socket->getName(), maxlenSockName);
         if (socket->getNumConnectees() == 0) {
@@ -1956,14 +1957,14 @@ void Component::printSocketInfo() const {
                 connecteePaths.push_back(socket->getConnecteePath(i));
             }
             // Join the connectee paths with spaces in between.
-            str += fmt::format("{}", fmt::join(connecteePaths, " "));
+            str += std::format("{}", detail::join(connecteePaths, " "));
         }
         log_cout(str);
     }
 }
 
 void Component::printInputInfo() const {
-    std::string str = fmt::format("Inputs for component {} of type [{}] along "
+    std::string str = std::format("Inputs for component {} of type [{}] along "
                                   "with connectee paths:",
                                   getName(), getConcreteClassName());
     if (getNumInputs() == 0)
@@ -1983,8 +1984,8 @@ void Component::printInputInfo() const {
     for (const auto& it : _inputsTable) {
         const auto& input = it.second;
         // Right-justify the connectee type names and input names.
-        str = fmt::format("{:>{}} {:>{}} : ",
-                          fmt::format("[{}]", input->getConnecteeTypeName()),
+        str = std::format("{:>{}} {:>{}} : ",
+                          std::format("[{}]", input->getConnecteeTypeName()),
                           maxlenTypeName,
                           input->getName(), maxlenInputName);
         if (input->getNumConnectees() == 0 ||
@@ -1998,7 +1999,7 @@ void Component::printInputInfo() const {
                 // std::cout << " (alias: " << input.getAlias(i) << ") ";
             }
             // Join the connectee paths with spaces in between.
-            str += fmt::format("{}", fmt::join(connecteePaths, " "));
+            str += std::format("{}", detail::join(connecteePaths, " "));
         }
         log_cout(str);
     }
@@ -2012,7 +2013,7 @@ void Component::printOutputInfo(const bool includeDescendants) const {
 
     // Do not display header for Components with no outputs.
     if (getNumOutputs() > 0) {
-        std::string msg = fmt::format("Outputs from {} [{}]",
+        std::string msg = std::format("Outputs from {} [{}]",
                                       getAbsolutePathString(),
                                       getConcreteClassName());
         msg += "\n" + std::string(msg.size(), '=');
@@ -2027,7 +2028,7 @@ void Component::printOutputInfo(const bool includeDescendants) const {
         for(const auto& output : outputs) {
             const auto& name = output.second->getTypeName();
             log_cout("{:>{}}  {}",
-                     fmt::format("[{}]", output.second->getTypeName()),
+                     std::format("[{}]", output.second->getTypeName()),
                      maxlen, output.first);
         }
         log_cout("");

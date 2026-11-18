@@ -5,6 +5,6 @@ namespace osc
     enum class SimulationUIPlaybackState {
         Playing,
         Stopped,
-        NUM_OPTIONS
+        NUM_OPTIONS,
     };
 }

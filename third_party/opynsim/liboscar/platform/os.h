@@ -20,9 +20,7 @@ namespace osc
 
     // returns the full path to the user's data directory
     std::filesystem::path user_data_directory(
-        std::string_view organization_name,
-        std::string_view application_name
-    );
+        std::string_view organization_name, std::string_view application_name);
 
     // tries to open the specified filepath in the OS's default application for opening
     // a path (usually, based on its extension)
@@ -39,29 +37,26 @@ namespace osc
     // tries to open the specified URL in the OS's default browser
     void open_url_in_os_default_web_browser(std::string_view);
 
-    // returns the contents of the clipboard as text, or an empty string if nothing's in the clipboard
+    // returns the contents of the clipboard as text, or an empty string if nothing's in the
+    // clipboard
     std::string get_clipboard_text();
 
     // returns `true` if `content` was successfully copied to the user's clipboard
     bool set_clipboard_text(std::string_view);
 
     // creates a temporary file in the most secure manner possible. There are no race conditions
-    // in the file's creation - assuming that the operating system properly implements the `os.O_EXCL`
-    // flag
+    // in the file's creation - assuming that the operating system properly implements the
+    // `os.O_EXCL` flag
     //
     // the caller is responsible for deleting the temporary file once it is no longer needed
     //
-    // returns an open handle to the file (opened with `w+b`) and the absolute path to the temporary file
+    // returns an open handle to the file (opened with `w+b`) and the absolute path to the temporary
+    // file
     std::pair<std::fstream, std::filesystem::path> mkstemp(
-        std::string_view suffix = {},
-        std::string_view prefix = {}
-    );
+        std::string_view suffix = {}, std::string_view prefix = {});
 
     // Creates a temporary directory in the most secure manner possible.
     //
     // The caller is responsible for deleting the temporary directory once it is no longer needed.
-    std::filesystem::path mkdtemp(
-        std::string_view suffix = {},
-        std::string_view prefix = {}
-    );
+    std::filesystem::path mkdtemp(std::string_view suffix = {}, std::string_view prefix = {});
 }

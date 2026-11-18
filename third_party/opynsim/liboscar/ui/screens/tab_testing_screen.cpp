@@ -40,10 +40,7 @@ public:
         return handled;
     }
 
-    void on_tick()
-    {
-        current_tab_->on_tick();
-    }
+    void on_tick() { current_tab_->on_tick(); }
 
     void on_draw()
     {
@@ -53,8 +50,7 @@ public:
         ui_context_.render();
 
         ++frames_shown_;
-        if (frames_shown_ >= min_frames_shown_ and
-            App::get().frame_start_time() >= close_time_) {
+        if (frames_shown_ >= min_frames_shown_ and App::get().frame_start_time() >= close_time_) {
 
             App::upd().request_quit();
         }
@@ -73,8 +69,23 @@ private:
 osc::TabTestingScreen::TabTestingScreen(const TabRegistryEntry& registry_entry) :
     Widget{std::make_unique<Impl>(*this, registry_entry)}
 {}
-void osc::TabTestingScreen::impl_on_mount() { private_data().on_mount(); }
-void osc::TabTestingScreen::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::TabTestingScreen::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::TabTestingScreen::impl_on_tick() { private_data().on_tick(); }
-void osc::TabTestingScreen::impl_on_draw() { private_data().on_draw(); }
+void osc::TabTestingScreen::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::TabTestingScreen::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::TabTestingScreen::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::TabTestingScreen::impl_on_tick()
+{
+    private_data().on_tick();
+}
+void osc::TabTestingScreen::impl_on_draw()
+{
+    private_data().on_draw();
+}

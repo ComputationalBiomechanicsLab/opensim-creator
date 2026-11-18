@@ -6,18 +6,15 @@
 #include <string>
 #include <string_view>
 
-namespace osc { struct SceneDecoration; }
-
 namespace osc
 {
+    struct SceneDecoration;
+
     struct DAEMetadata final {
 
         explicit DAEMetadata();
 
-        explicit DAEMetadata(
-            std::string_view author_,
-            std::string_view authoring_tool_
-        );
+        explicit DAEMetadata(std::string_view author, std::string_view authoring_tool);
 
         std::string author;
         std::string authoring_tool;
@@ -28,9 +25,6 @@ namespace osc
     class DAE final {
     public:
         static void write(
-            std::ostream&,
-            std::span<const SceneDecoration>,
-            const DAEMetadata& = DAEMetadata{}
-        );
+            std::ostream&, std::span<const SceneDecoration>, const DAEMetadata& = DAEMetadata{});
     };
 }

@@ -20,8 +20,9 @@ namespace
         // https://threejs.org/docs/#api/en/geometries/DodecahedronGeometry
 
         const float t = 0.5f * (1.0f + sqrt(5.0f));
-        const float r = 1.0f/t;
+        const float r = 1.0f / t;
 
+        // clang-format off
         const auto vertices = std::to_array<Vector3>({
             {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f,  1.0f},
             {-1.0f,  1.0f, -1.0f}, {-1.0f,  1.0f,  1.0f},
@@ -52,6 +53,7 @@ namespace
             19, 5, 14, 	19, 14, 4, 	19, 4, 17,
             1, 12, 14, 	1, 14, 5, 	1, 5, 9
         });
+        // clang-format on
 
         return PolyhedronGeometry{vertices, indices, p.radius, p.detail};
     }

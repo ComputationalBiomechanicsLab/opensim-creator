@@ -28,7 +28,8 @@ using namespace osc;
 
 namespace
 {
-    std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(const std::filesystem::path& p)
+    std::unique_ptr<UndoableModelStatePair> load_osim_into_undoable_model(
+        const std::filesystem::path& p)
     {
         return std::make_unique<UndoableModelStatePair>(p);
     }
@@ -36,38 +37,35 @@ namespace
 
 class osc::LoadingTab::Impl final : public TabPrivate {
 public:
+    explicit Impl(LoadingTab& owner, Widget* parent, std::filesystem::path path) :
 
-    explicit Impl(
-        LoadingTab& owner,
-        Widget* parent_,
-        std::filesystem::path path_) :
-
-        TabPrivate{owner, parent_, "LoadingTab"},
-        m_OsimPath{std::move(path_)},
-        m_LoadingResult{std::async(std::launch::async, LoadOsimIntoUndoableModel, m_OsimPath)}
+        TabPrivate{owner, parent, "LoadingTab"},
+        osim_path_{std::move(path)},
+        loading_result_{std::async(std::launch::async, load_osim_into_undoable_model, osim_path_)}
     {}
 
-    bool isFinishedLoading() const { return m_IsFinishedLoading; }
+    bool is_finished_loading() const { return is_finished_loading_; }
 
     void on_tick()
     {
         const auto dt = static_cast<float>(App::get().frame_delta_since_last_frame().count());
 
         // tick the progress bar up a little bit
-        m_LoadingProgress += (dt * (1.0f - m_LoadingProgress))/2.0f;
+        loading_progress_ += (dt * (1.0f - loading_progress_)) / 2.0f;
 
         // if there's an error, then the result came through (it's an error)
         // and this screen should just continuously show the error until the
         // user decides to transition back
-        if (not m_LoadingErrorMsg.empty()) {
+        if (not loading_error_msg_.empty()) {
             return;
         }
 
         // if there's no error, but the loading result is invalid, then something
         // has already sucessfully taken the result away (below), but `on_tick` was
         // called again
-        if (not m_LoadingResult.valid()) {
-            m_LoadingErrorMsg = "attempted to call `on_tick` on the loading screen after loading has finished";
+        if (not loading_result_.valid()) {
+            loading_error_msg_ =
+                "attempted to call `on_tick` on the loading screen after loading has finished";
             return;
         }
 
@@ -75,59 +73,61 @@ public:
         // up from the background thread
         std::unique_ptr<UndoableModelStatePair> result = nullptr;
         try {
-            if (m_LoadingResult.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
-                result = m_LoadingResult.get();
+            if (loading_result_.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
+                result = loading_result_.get();
             }
-        }
-        catch (const std::exception& ex) {
-            log_error("LoadingScreen::on_tick: exception thrown while loading model: {}", ex.what());
-            m_LoadingErrorMsg = ex.what();
-            m_IsFinishedLoading = true;
+        } catch (const std::exception& ex) {
+            log_error(
+                "LoadingScreen::on_tick: exception thrown while loading model: {}", ex.what());
+            loading_error_msg_ = ex.what();
+            is_finished_loading_ = true;
             return;
         }
 
         // if there was a result (a newly-loaded model), handle it
         if (result) {
             // add newly-loaded model to the "Recent Files" list
-            App::singleton<RecentFiles>()->push_back(m_OsimPath);
+            App::singleton<RecentFiles>()->push_back(osim_path_);
 
             // Post relevant "loaded" events to this widget, which should
             // propagate up to something that can handle them.
-            App::post_event<OpenTabEvent>(owner(), std::make_unique<ModelEditorTab>(&owner(), std::move(result)));
+            App::post_event<OpenTabEvent>(
+                owner(), std::make_unique<ModelEditorTab>(&owner(), std::move(result)));
             App::post_event<CloseTabEvent>(owner(), id());
-            m_IsFinishedLoading = true;
+            is_finished_loading_ = true;
         }
     }
 
-    void onDraw()
+    void on_draw()
     {
-        const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
-        const Vector2 workspaceDims = workspaceUIRect.dimensions();
-        const Vector2 menuDimsGuess = {0.3f * workspaceDims.x(), 6.0f * ui::get_font_base_size()};
+        const Rect workspace_ui_rect = ui::get_main_window_workspace_ui_rect();
+        const Vector2 workspace_dims = workspace_ui_rect.dimensions();
+        const Vector2 menu_dims_guess = {
+            0.3f * workspace_dims.x(), 6.0f * ui::get_font_base_size()};
 
         // center the menu
         {
-            const Vector2 menuTopLeft = 0.5f * (workspaceDims - menuDimsGuess);
-            ui::set_next_panel_ui_position(workspaceUIRect.ypd_top_left() + menuTopLeft);
-            ui::set_next_panel_size({menuDimsGuess.x(), -1.0f});
+            const Vector2 menu_top_left = 0.5f * (workspace_dims - menu_dims_guess);
+            ui::set_next_panel_ui_position(workspace_ui_rect.ypd_top_left() + menu_top_left);
+            ui::set_next_panel_size({menu_dims_guess.x(), -1.0f});
         }
 
-        if (m_LoadingErrorMsg.empty()) {
+        if (loading_error_msg_.empty()) {
             if (ui::begin_panel("Loading Message", nullptr, ui::PanelFlag::NoTitleBar)) {
-                ui::draw_text("loading: {}", m_OsimPath.string());
-                ui::draw_progress_bar(m_LoadingProgress);
+                ui::draw_text("loading: {}", osim_path_.string());
+                ui::draw_progress_bar(loading_progress_);
             }
             ui::end_panel();
-        }
-        else {
+        } else {
             if (ui::begin_panel("Error Message", nullptr, ui::PanelFlag::NoTitleBar)) {
                 ui::draw_text_wrapped("An error occurred while loading the file:");
-                ui::draw_vertical_spacer(5.0f/15.0f);
-                ui::draw_text_wrapped(m_LoadingErrorMsg);
-                ui::draw_vertical_spacer(5.0f/15.0f);
+                ui::draw_vertical_spacer(5.0f / 15.0f);
+                ui::draw_text_wrapped(loading_error_msg_);
+                ui::draw_vertical_spacer(5.0f / 15.0f);
 
                 if (ui::draw_button("try again")) {
-                    App::post_event<OpenTabEvent>(*parent(), std::make_unique<LoadingTab>(parent(), m_OsimPath));
+                    App::post_event<OpenTabEvent>(
+                        *parent(), std::make_unique<LoadingTab>(parent(), osim_path_));
                     App::post_event<CloseTabEvent>(*parent(), id());
                 }
             }
@@ -135,37 +135,42 @@ public:
         }
     }
 
-
 private:
     // filesystem path to the osim being loaded
-    std::filesystem::path m_OsimPath;
+    std::filesystem::path osim_path_;
 
     // future that lets the UI thread poll the loading thread for
     // the loaded model
-    std::future<std::unique_ptr<UndoableModelStatePair>> m_LoadingResult;
+    std::future<std::unique_ptr<UndoableModelStatePair>> loading_result_;
 
     // if not empty, any error encountered by the loading thread
-    std::string m_LoadingErrorMsg;
+    std::string loading_error_msg_;
 
     // a fake progress indicator that never quite reaches 100 %
     //
     // this might seem evil, but its main purpose is to ensure the
     // user that *something* is happening - even if that "something"
     // is "the background thread is deadlocked" ;)
-    float m_LoadingProgress = 0.0f;
+    float loading_progress_ = 0.0f;
 
     // set after the file has either finished loading or there was
     // an error (exception) loading it
-    bool m_IsFinishedLoading = false;
+    bool is_finished_loading_ = false;
 };
 
+osc::LoadingTab::LoadingTab(Widget* parent, std::filesystem::path path) :
 
-osc::LoadingTab::LoadingTab(
-    Widget* parent_,
-    std::filesystem::path path_) :
-
-    Tab{std::make_unique<Impl>(*this, parent_, std::move(path_))}
+    Tab{std::make_unique<Impl>(*this, parent, std::move(path))}
 {}
-bool osc::LoadingTab::isFinishedLoading() const { return private_data().isFinishedLoading(); }
-void osc::LoadingTab::impl_on_tick() { private_data().on_tick(); }
-void osc::LoadingTab::impl_on_draw() { private_data().onDraw(); }
+bool osc::LoadingTab::is_finished_loading() const
+{
+    return private_data().is_finished_loading();
+}
+void osc::LoadingTab::impl_on_tick()
+{
+    private_data().on_tick();
+}
+void osc::LoadingTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

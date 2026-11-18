@@ -16,12 +16,12 @@ namespace osc
     public:
         /// Constructs a `ScopeExit` from a function or function object.
         template<typename Fn>
-        requires (
-            std::destructible<EF> and
-            std::is_constructible_v<EF, Fn> and
-            not std::same_as<std::remove_cvref_t<Fn>, ScopeExit>
-        )
-        explicit ScopeExit(Fn&& fn) : exit_function_{std::forward<Fn>(fn)} {}
+        requires(
+            std::destructible<EF> and std::is_constructible_v<EF, Fn> and
+            not std::same_as<std::remove_cvref_t<Fn>, ScopeExit>)
+        explicit ScopeExit(Fn&& fn) :
+            exit_function_{std::forward<Fn>(fn)}
+        {}
 
         ScopeExit(const ScopeExit&) = delete;
 
@@ -30,15 +30,17 @@ namespace osc
         /// is active. After successful move construction, `tmp` becomes
         /// inactive.
         ScopeExit(ScopeExit&& tmp) noexcept
-        requires (std::is_nothrow_move_constructible_v<EF>) :
+        requires(std::is_nothrow_move_constructible_v<EF>)
+            :
             exit_function_{std::move(tmp.exit_function_)},
             is_active_{std::exchange(tmp.is_active_, false)}
         {}
 
         /// \copydoc ScopeExit::ScopeExit(ScopeExit&&)
         ScopeExit(ScopeExit&& tmp) noexcept(std::is_nothrow_copy_constructible_v<EF>)
-        requires (not std::is_nothrow_move_constructible_v<EF> and std::is_copy_constructible_v<EF>) :
-            exit_function_{tmp.exit_function_},  // NOLINT(performance-move-constructor-init)
+        requires(not std::is_nothrow_move_constructible_v<EF> and std::is_copy_constructible_v<EF>)
+            :
+            exit_function_{tmp.exit_function_},
             is_active_{std::exchange(tmp.is_active_, false)}
         {}
 
@@ -58,9 +60,9 @@ namespace osc
         /// Once a `ScopeExit` is inactive, it cannot become active again.
         void release() noexcept { is_active_ = false; }
 
-        private:
-            EF exit_function_;
-            bool is_active_ = true;
+    private:
+        EF exit_function_;
+        bool is_active_ = true;
     };
 
     /// One template deduction guide permits the deduction of an argument of function

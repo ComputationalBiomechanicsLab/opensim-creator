@@ -9,7 +9,8 @@
 namespace osc
 {
     struct CylinderGeometryParams final {
-        friend bool operator==(const CylinderGeometryParams&, const CylinderGeometryParams&) = default;
+        friend bool operator==(const CylinderGeometryParams&, const CylinderGeometryParams&) =
+            default;
 
         float radius_top = 1.0f;
         float radius_bottom = 1.0f;
@@ -30,7 +31,8 @@ namespace osc
         explicit CylinderGeometry(const Params& = {});
 
         const Mesh& mesh() const { return mesh_; }
-        operator const Mesh& () const { return mesh_; }
+        operator const Mesh&() const { return mesh_; }
+
     private:
         Mesh mesh_;
     };

@@ -59,7 +59,7 @@ namespace
 
         auto rng = std::default_random_engine{std::random_device{}()};
         auto dist = std::normal_distribution{0.3f, 0.2f};
-        const AABB grid_bounds = {{-5.0f,  0.0f, -5.0f}, {5.0f, 0.0f, 5.0f}};
+        const AABB grid_bounds = {{-5.0f, 0.0f, -5.0f}, {5.0f, 0.0f, 5.0f}};
         const Vector3 grid_dimensions = dimensions_of(grid_bounds);
         const Vector2uz num_grid_cells = {10, 10};
 
@@ -69,29 +69,35 @@ namespace
         for (size_t x = 0; x < num_grid_cells.x(); ++x) {
             for (size_t y = 0; y < num_grid_cells.y(); ++y) {
 
-                const Vector3 cell_pos = grid_bounds.min + grid_dimensions * (Vector3{x, 0.0f, y} / Vector3{num_grid_cells.x() - 1uz, 1, num_grid_cells.y() - 1uz});
+                const Vector3 cell_pos =
+                    grid_bounds.min +
+                    grid_dimensions *
+                        (Vector3{x, 0.0f, y} /
+                         Vector3{num_grid_cells.x() - 1uz, 1, num_grid_cells.y() - 1uz});
                 Mesh mesh;
                 rgs::sample(possible_geometries, &mesh, 1, rng);
 
-                rv.push_back(TransformedMesh{
-                    .mesh = mesh,
-                    .transform = {
-                        .scale = Vector3{abs(dist(rng))},
-                        .translation = cell_pos,
-                    }
-                });
+                rv.push_back(
+                    TransformedMesh{
+                        .mesh = mesh,
+                        .transform = {
+                            .scale = Vector3{abs(dist(rng))},
+                            .translation = cell_pos,
+                        }});
             }
         }
 
         // also, add a floor plane
-        rv.push_back(TransformedMesh{
-            .mesh = PlaneGeometry{},
-            .transform = {
-                .scale = {10.0f, 10.0f, 1.0f},
-                .rotation = angle_axis(-90_deg, CoordinateDirection::x()),
-                .translation = {0.0f, -1.0f, 0.0f},
-            },
-        });
+        rv.push_back(
+            TransformedMesh{
+                .mesh = PlaneGeometry{},
+                .transform =
+                    {
+                        .scale = {10.0f, 10.0f, 1.0f},
+                        .rotation = angle_axis(-90_deg, CoordinateDirection::x()),
+                        .translation = {0.0f, -1.0f, 0.0f},
+                    },
+            });
 
         return rv;
     }
@@ -122,20 +128,20 @@ namespace
 
     // the distance of each plane (incl. the near place) as a normalized range [0.0f, 1.0f], where
     // 0.0f means `znear` and 1.0f means `zfar`.
-    constexpr auto c_normalized_cascade_planes = std::to_array({0.0f, 10.0f/100.0f, 50.0f/100.0f, 100.0f/100.0f});
+    constexpr auto c_normalized_cascade_planes =
+        std::to_array({0.0f, 10.0f / 100.0f, 50.0f / 100.0f, 100.0f / 100.0f});
 
     // returns orthogonal projection information for each cascade
     std::vector<OrthogonalProjectionParameters> calculate_light_source_orthographic_projections(
-        const Camera& camera,
-        float aspect_ratio,
-        Vector3 light_world_direction)
+        const Camera& camera, float aspect_ratio, Vector3 light_world_direction)
     {
         // most of the maths/logic here was ported from an excellently-written ogldev tutorial:
         //
         // - https://ogldev.org/www/tutorial49/tutorial49.html
 
         // precompute transforms
-        const Matrix4x4 world_to_light = look_at({0.0f, 0.0f, 0.0f}, Vector3{light_world_direction}, {0.0f, 1.0f, 0.0f});
+        const Matrix4x4 world_to_light =
+            look_at({0.0f, 0.0f, 0.0f}, Vector3{light_world_direction}, {0.0f, 1.0f, 0.0f});
         const Matrix4x4 view_to_world = camera.inverse_view_matrix();
         const Matrix4x4 view_to_light = world_to_light * view_to_world;
 
@@ -149,21 +155,24 @@ namespace
         // calculate `OrthogonalProjectionParameters` for each cascade
         std::vector<OrthogonalProjectionParameters> rv;
         rv.reserve(c_normalized_cascade_planes.size() - 1);
-        for (size_t i = 0; i < c_normalized_cascade_planes.size()-1; ++i) {
-            const float view_cascade_znear = lerp(view_znear, view_zfar, c_normalized_cascade_planes[i]);
-            const float view_cascade_zfar = lerp(view_znear, view_zfar, c_normalized_cascade_planes[i+1]);
+        for (size_t i = 0; i < c_normalized_cascade_planes.size() - 1; ++i) {
+            const float view_cascade_znear =
+                lerp(view_znear, view_zfar, c_normalized_cascade_planes[i]);
+            const float view_cascade_zfar =
+                lerp(view_znear, view_zfar, c_normalized_cascade_planes[i + 1]);
 
             // imagine a triangle with a point where the viewer is (0,0,0 in view space) and another
-            // point thats znear along the minus Z axis (i.e. moving away from the front of the viewer
-            // in a right-handed coordinate system). The FOV dictates the angle of the corner
+            // point thats znear along the minus Z axis (i.e. moving away from the front of the
+            // viewer in a right-handed coordinate system). The FOV dictates the angle of the corner
             // that originates from the viewer.
             const float view_cascade_xnear = view_cascade_znear * view_tan_half_hfov;
-            const float view_cascade_xfar  = view_cascade_zfar  * view_tan_half_hfov;
+            const float view_cascade_xfar = view_cascade_zfar * view_tan_half_hfov;
             const float view_cascade_ynear = view_cascade_znear * view_tan_half_vfov;
-            const float view_cascade_yfar  = view_cascade_zfar  * view_tan_half_vfov;
+            const float view_cascade_yfar = view_cascade_zfar * view_tan_half_vfov;
 
-            // note: Z points opposite to the viewing direction in a right-handed system, so we negate
-            // all the Zs here.
+            // note: Z points opposite to the viewing direction in a right-handed system, so we
+            // negate all the Zs here.
+            // clang-format off
             const auto view_frustum_corners = std::to_array<Vector3>({
                 // near face
                 { view_cascade_xnear,  view_cascade_ynear, -view_cascade_znear},  // top-right
@@ -177,24 +186,27 @@ namespace
                 { view_cascade_xfar,  -view_cascade_yfar,  -view_cascade_zfar},   // bottom-right
                 {-view_cascade_xfar,  -view_cascade_yfar,  -view_cascade_zfar},   // bottom-left
             });
+            // clang-format on
 
             // compute the bounds of the frustum in light space (the perspective of the light) by
             // projecting each frustum corner into light-space.
-            const AABB light_bounds = bounding_aabb_of(view_frustum_corners, [&view_to_light](const Vector3& frustum_corner)
-            {
-                return transform_point(view_to_light, frustum_corner);
-            });
+            const AABB light_bounds = bounding_aabb_of(
+                view_frustum_corners, [&view_to_light](const Vector3& frustum_corner) {
+                    return transform_point(view_to_light, frustum_corner);
+                });
 
             // because the light source is directional, the bounds of the corners in light space are
             // give-or-take equivalent to the bounds of the orthogonal projection cube corners.
-            rv.push_back(OrthogonalProjectionParameters{
-                .left   = light_bounds.min.x(),
-                .right  = light_bounds.max.x(),
-                .bottom = light_bounds.min.y(),
-                .top    = light_bounds.max.y(),
-                .near   = light_bounds.max.z(),  // note: Z points opposite to the viewing direction
-                .far    = light_bounds.min.z(),
-            });
+            rv.push_back(
+                OrthogonalProjectionParameters{
+                    .left = light_bounds.min.x(),
+                    .right = light_bounds.max.x(),
+                    .bottom = light_bounds.min.y(),
+                    .top = light_bounds.max.y(),
+                    .near =
+                        light_bounds.max.z(),  // note: Z points opposite to the viewing direction
+                    .far = light_bounds.min.z(),
+                });
         }
         return rv;
     }
@@ -209,11 +221,13 @@ namespace
         const float n = p.near;
         const float f = p.far;
 
-        // Create a transform that maps the edges of the orthogonal proection to NDC (i.e. [-1.0, +1.0])
-        return matrix4x4_cast(Transform{
-            .scale       = {  2.0f/(r - l)  ,   2.0f/(t - b)  ,   2.0f/(f - n)  },
-            .translation = {-(r + l)/(r - l), -(t + b)/(t - b), -(f + n)/(f - n)},
-        });
+        // Create a transform that maps the edges of the orthogonal proection to NDC (i.e. [-1.0,
+        // +1.0])
+        return matrix4x4_cast(
+            Transform{
+                .scale = {2.0f / (r - l), 2.0f / (t - b), 2.0f / (f - n)},
+                .translation = {-(r + l) / (r - l), -(t + b) / (t - b), -(f + n) / (f - n)},
+            });
     }
 }
 
@@ -243,17 +257,15 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return user_camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return user_camera_.on_event(e); }
 
     void on_draw()
     {
         // update state from user inputs, window size, etc.
         user_camera_.on_draw();
 
-        const auto cascade_projections = render_cascades(ui::get_main_window_workspace_aspect_ratio());
+        const auto cascade_projections =
+            render_cascades(ui::get_main_window_workspace_aspect_ratio());
         render_scene_with_cascaded_shadow_mapping(cascade_projections);
         draw_debug_overlays();
 
@@ -264,16 +276,19 @@ private:
     std::vector<Matrix4x4> render_cascades(float user_aspect_ratio)
     {
         // calculate how each cascade maps from the user's camera to light-space
-        const auto cascade_projections = calculate_light_source_orthographic_projections(user_camera_, user_aspect_ratio, light_direction_);
+        const auto cascade_projections = calculate_light_source_orthographic_projections(
+            user_camera_, user_aspect_ratio, light_direction_);
 
         // for each of those mappings, render a cascade
         OSC_ASSERT_ALWAYS(cascade_projections.size() == cascade_rasters_.size());
-        const Matrix4x4 world_to_light = look_at({0.0f, 0.0f, 0.0f}, Vector3{light_direction_}, {0.0f, 1.0f, 0.0f});
+        const Matrix4x4 world_to_light =
+            look_at({0.0f, 0.0f, 0.0f}, Vector3{light_direction_}, {0.0f, 1.0f, 0.0f});
 
         std::vector<Matrix4x4> rv;
         rv.reserve(cascade_projections.size());
         for (size_t i = 0; i < cascade_projections.size(); ++i) {
-            const Matrix4x4 cascade_projection_matrix = to_matrix4x4(cascade_projections[i]) * world_to_light;
+            const Matrix4x4 cascade_projection_matrix =
+                to_matrix4x4(cascade_projections[i]) * world_to_light;
 
             Camera camera;
             camera.set_view_matrix_override(identity<Matrix4x4>());
@@ -281,10 +296,7 @@ private:
 
             for (const auto& decoration : decorations_) {
                 render_queue_.emplace(
-                    decoration.mesh,
-                    decoration.transform,
-                    shadow_mapping_material_
-                );
+                    decoration.mesh, decoration.transform, shadow_mapping_material_);
             }
 
             graphics::render_to(cascade_rasters_[i], render_queue_, camera);
@@ -313,11 +325,13 @@ private:
 
         // TODO: the clip space maths feels a bit wrong compared to just doing it in NDC?
         std::vector<float> ends;
-        ends.reserve(c_normalized_cascade_planes.size()-1);
+        ends.reserve(c_normalized_cascade_planes.size() - 1);
         for (size_t i = 1; i < c_normalized_cascade_planes.size(); ++i) {
             const auto [near, far] = user_camera_.clipping_planes();
-            const Vector4 viewer_position = {0.0f, 0.0f, -lerp(near, far, c_normalized_cascade_planes[i]), 1.0f};
-            const Matrix4x4 proj = user_camera_.projection_matrix(ui::get_main_window_workspace_aspect_ratio());
+            const Vector4 viewer_position = {
+                0.0f, 0.0f, -lerp(near, far, c_normalized_cascade_planes[i]), 1.0f};
+            const Matrix4x4 proj =
+                user_camera_.projection_matrix(ui::get_main_window_workspace_aspect_ratio());
             const Vector4 proj_pos = (proj * viewer_position);
             ends.push_back(proj_pos.z());
         }
@@ -326,9 +340,12 @@ private:
         for (const auto& decoration : decorations_) {
             render_queue_.emplace(decoration.mesh, decoration.transform, csm_material_);
         }
-        graphics::render_to_main_window(render_queue_, user_camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            user_camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            });
         render_queue_.clear();
     }
 
@@ -338,7 +355,8 @@ private:
 
         Vector2 cursor = {0.0f, 0.0f};
         for ([[maybe_unused]] const auto& cascade_raster : cascade_rasters_) {
-            // graphics::blit_to_screen(cascade_raster, Rect{cursor, cursor + overlay_dimensions});  // TODO
+            // graphics::blit_to_screen(cascade_raster, Rect{cursor, cursor + overlay_dimensions});
+            // // TODO
             cursor.x() += overlay_dimensions.x();
         }
     }
@@ -359,12 +377,26 @@ private:
     LogViewerPanel log_viewer_{&owner()};
 };
 
-
-osc::CStringView osc::LOGLCSMTab::id() { return Impl::static_label(); }
+osc::CStringView osc::LOGLCSMTab::id()
+{
+    return Impl::static_label();
+}
 osc::LOGLCSMTab::LOGLCSMTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLCSMTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLCSMTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLCSMTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLCSMTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLCSMTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLCSMTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLCSMTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLCSMTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

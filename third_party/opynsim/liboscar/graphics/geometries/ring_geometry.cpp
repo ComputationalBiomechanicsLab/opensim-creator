@@ -31,20 +31,19 @@ osc::RingGeometry::RingGeometry(const Params& p)
     std::vector<Vector2> uvs;
 
     float radius = p.inner_radius;
-    const float radius_step = (p.outer_radius - p.inner_radius)/fnum_phi_segments;
+    const float radius_step = (p.outer_radius - p.inner_radius) / fnum_phi_segments;
 
     // generate vertices, normals, and uvs
     for (size_t j = 0; j <= num_phi_segments; ++j) {
         for (size_t i = 0; i <= num_theta_segments; ++i) {
             const auto fi = static_cast<float>(i);
-            const Radians segment = p.theta_start + (fi/fnum_theta_segments * p.theta_length);
+            const Radians segment = p.theta_start + (fi / fnum_theta_segments * p.theta_length);
 
-            const Vector3& v = vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
+            const Vector3& v =
+                vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
             normals.emplace_back(0.0f, 0.0f, 1.0f);
             uvs.emplace_back(
-                (v.x()/p.outer_radius + 1.0f) / 2.0f,
-                (v.y()/p.outer_radius + 1.0f) / 2.0f
-            );
+                (v.x() / p.outer_radius + 1.0f) / 2.0f, (v.y() / p.outer_radius + 1.0f) / 2.0f);
         }
         radius += radius_step;
     }

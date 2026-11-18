@@ -53,6 +53,48 @@ def _set_log_level_then_assert_python_logger_has_the_level():
 def test_set_log_level_makes_associated_python_logger_also_return_new_log_level():
     execute_forked(_set_log_level_then_assert_python_logger_has_the_level)
 
+class AppendingLogHandler(logging.Handler):
+
+    def __init__(self, level: int = logging.NOTSET):
+      super().__init__(level)
+      self.records: List[logging.LogRecord] = []
+
+    def emit(self, record: logging.LogRecord) -> None:
+      # Format if you need the rendered string, or store the raw record
+      self.records.append(record)
+
+    def clear(self) -> None:
+      self.records.clear()
+
+def _check_can_use_custom_logging_handler():
+    # Setup custom handler.
+    opyn.config.set_log_level(logging.DEBUG)
+    handler = AppendingLogHandler(logging.DEBUG)
+    logger = logging.getLogger("opynsim")
+    logger.addHandler(handler)
+
+    # Log stuff (note: OpenSim logs a bunch of output whenever it reads files).
+    custom_message = "Ensure this propagates"
+    logger.info(custom_message)
+    model_path = Path(__file__).resolve().parent / "../libopynsim/tests/resources/pendulum/pendulum.osim"
+    opyn.read_osim(model_path).compile()
+
+    # Check handler contains expected messages.
+    propagates_found = any(
+        record.levelno == logging.INFO and custom_message in record.getMessage()
+        for record in handler.records
+    )
+    assert propagates_found, f"Expected INFO log message '{custom_message}' was not emitted."
+
+    model_path_found = any(
+        record.levelno == logging.INFO and str(model_path) in record.getMessage()
+        for record in handler.records
+    )
+    assert model_path_found, f"Expected INFO log message containing '{model_path}' was not emitted."
+
+def test_can_use_custom_logging_handler():
+    execute_forked(_check_can_use_custom_logging_handler)
+
 def test_get_search_paths_contains_expected_defaults():
     search_paths = opyn.config.get_search_paths()
 

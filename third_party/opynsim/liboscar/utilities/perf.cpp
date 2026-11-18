@@ -15,21 +15,22 @@ using namespace osc;
 namespace
 {
     size_t generate_perf_measurement_id(
-        std::string_view label,
-        std::string_view filename,
-        unsigned int line)
+        std::string_view label, std::string_view filename, unsigned int line)
     {
         return hash_of(label, filename, line);
     }
 
-    SynchronizedValue<ankerl::unordered_dense::map<size_t, PerfMeasurement>>& get_global_perf_measurement_storage()
+    SynchronizedValue<ankerl::unordered_dense::map<size_t, PerfMeasurement>>&
+    get_global_perf_measurement_storage()
     {
-        static SynchronizedValue<ankerl::unordered_dense::map<size_t, PerfMeasurement>> s_measurement_storage;
+        static SynchronizedValue<ankerl::unordered_dense::map<size_t, PerfMeasurement>>
+            s_measurement_storage;
         return s_measurement_storage;
     }
 }
 
-size_t osc::detail::allocate_perf_mesurement_id(std::string_view label, std::string_view filename, unsigned int line)
+size_t osc::detail::allocate_perf_mesurement_id(
+    std::string_view label, std::string_view filename, unsigned int line)
 {
     size_t id = generate_perf_measurement_id(label, filename, line);
     auto metadata = std::make_shared<PerfMeasurementMetadata>(id, label, filename, line);
@@ -39,7 +40,8 @@ size_t osc::detail::allocate_perf_mesurement_id(std::string_view label, std::str
     return id;
 }
 
-void osc::detail::submit_perf_measurement(size_t id, PerfClock::time_point start, PerfClock::time_point end)
+void osc::detail::submit_perf_measurement(
+    size_t id, PerfClock::time_point start, PerfClock::time_point end)
 {
     auto guard = get_global_perf_measurement_storage().lock();
 

@@ -8,10 +8,10 @@
 #include <span>
 #include <string_view>
 
-namespace osc { class StringName; }
-
 namespace osc
 {
+    class StringName;
+
     // Represents the shared aspects of `Object`s that are instances on this class.
     //
     // In oscar's runtime engine foundation systems, C++ classes should have
@@ -30,8 +30,7 @@ namespace osc
         explicit Class(
             std::string_view name,
             const Class& parent_class = Class{},
-            std::span<const PropertyInfo> properties = std::span<const PropertyInfo>{}
-        );
+            std::span<const PropertyInfo> properties = std::span<const PropertyInfo>{});
 
         // Returns the concrete classname of the `Class`.
         const StringName& name() const;

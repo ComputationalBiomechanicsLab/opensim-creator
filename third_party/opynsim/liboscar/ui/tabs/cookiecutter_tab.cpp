@@ -23,14 +23,35 @@ public:
     void on_draw() {}
 };
 
-osc::CStringView osc::CookiecutterTab::id() { return Impl::static_label(); }
+osc::CStringView osc::CookiecutterTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::CookiecutterTab::CookiecutterTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::CookiecutterTab::impl_on_mount() { private_data().on_mount(); }
-void osc::CookiecutterTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::CookiecutterTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::CookiecutterTab::impl_on_tick() { private_data().on_tick(); }
-void osc::CookiecutterTab::impl_on_draw_main_menu() { private_data().on_draw_main_menu(); }
-void osc::CookiecutterTab::impl_on_draw() { private_data().on_draw(); }
+void osc::CookiecutterTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::CookiecutterTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::CookiecutterTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::CookiecutterTab::impl_on_tick()
+{
+    private_data().on_tick();
+}
+void osc::CookiecutterTab::impl_on_draw_main_menu()
+{
+    private_data().on_draw_main_menu();
+}
+void osc::CookiecutterTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

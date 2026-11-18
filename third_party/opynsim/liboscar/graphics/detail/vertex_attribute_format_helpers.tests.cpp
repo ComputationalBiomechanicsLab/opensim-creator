@@ -9,7 +9,7 @@ using namespace osc::detail;
 
 TEST(stride_of, works_as_expected)
 {
-    static_assert(stride_of(VertexAttributeFormat::Float32x2) == 2*sizeof(float));
+    static_assert(stride_of(VertexAttributeFormat::Float32x2) == 2 * sizeof(float));
 }
 
 TEST(num_components_in, works_as_expected)

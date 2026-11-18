@@ -2,11 +2,11 @@
 
 #include <liboscar/maths/vector.h>
 
-namespace osc { class Camera; }
-namespace osc { struct OrbitCameraController; }
-
 namespace osc
 {
+    class Camera;
+    struct OrbitCameraController;
+
     class CameraViewAxes final {
     public:
         Vector2 dimensions() const;

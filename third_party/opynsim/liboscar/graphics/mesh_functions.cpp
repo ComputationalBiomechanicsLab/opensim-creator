@@ -24,8 +24,7 @@ Vector3 osc::average_centroid_of(const Mesh& mesh)
 {
     Vector3d accumulator{};
     size_t i = 0;
-    mesh.for_each_indexed_vertex([&accumulator, &i](Vector3 v)
-    {
+    mesh.for_each_indexed_vertex([&accumulator, &i](Vector3 v) {
         accumulator += v;
         ++i;
     });
@@ -53,9 +52,7 @@ std::vector<Vector4> osc::calc_tangent_vectors(
 
     // edge-case: there's insufficient topological/normal/coordinate data, so
     //            return fallback-filled ({1,0,0,1}) vector
-    if (topology != MeshTopology::Triangles or
-        normals.empty() or
-        tex_coords.empty() or
+    if (topology != MeshTopology::Triangles or normals.empty() or tex_coords.empty() or
         indices.size() < 3) {
 
         rv.assign(vertices.size(), {1.0f, 0.0f, 0.0f, 1.0f});
@@ -65,10 +62,14 @@ std::vector<Vector4> osc::calc_tangent_vectors(
     // else: there must be enough data to compute the tangents
     //
     // (but, just to keep sane, assert that the mesh data is actually valid)
-    OSC_ASSERT_ALWAYS(ranges::all_of(indices, [&vertices, &normals, &tex_coords](auto index)
-    {
-        return index < vertices.size() and index < normals.size() and index < tex_coords.size();
-    }) && "the provided mesh contains invalid indices");
+    OSC_ASSERT_ALWAYS(
+        ranges::all_of(
+            indices,
+            [&vertices, &normals, &tex_coords](auto index) {
+                return index < vertices.size() and index < normals.size() and
+                       index < tex_coords.size();
+            }) &&
+        "the provided mesh contains invalid indices");
 
     // for smooth shading, vertices, normals, texture coordinates, and tangents
     // may be shared by multiple triangles. In this case, the tangents must be
@@ -77,41 +78,54 @@ std::vector<Vector4> osc::calc_tangent_vectors(
     // - initialize all tangent vectors to `{0,0,0,0}`s
     // - initialize a weights vector filled with `0`s
     // - every time a tangent vector is computed:
-    //     - accumulate a new average: `tangents[i] = (weights[i]*tangents[i] + new_tangent)/weights[i]+1;`
+    //     - accumulate a new average: `tangents[i] = (weights[i]*tangents[i] +
+    //     new_tangent)/weights[i]+1;`
     //     - increment weight: `weights[i]++`
     rv.assign(vertices.size(), Vector4{});
     std::vector<uint16_t> weights(vertices.size());
-    const auto accumulate_tangent = [&rv, &weights](auto i, const Vector4& new_tangent)
-    {
-        rv[i] = (static_cast<float>(weights[i])*rv[i] + new_tangent)/(static_cast<float>(weights[i]+1));
+    const auto accumulate_tangent = [&rv, &weights](auto i, const Vector4& new_tangent) {
+        rv[i] = (static_cast<float>(weights[i]) * rv[i] + new_tangent) /
+                (static_cast<float>(weights[i] + 1));
         ++weights[i];
     };
 
     // compute tangent vectors from triangle primitives
-    OSC_ASSERT(indices.size() >= 3 && "insufficient indices provided to compute triangle tangents");  // checked above
-    for (size_t triangle_begin = 0, triangle_end = indices.size()-2; triangle_begin < triangle_end; triangle_begin += 3) {
+    OSC_ASSERT(
+        indices.size() >= 3 &&
+        "insufficient indices provided to compute triangle tangents");  // checked above
+    for (size_t triangle_begin = 0, triangle_end = indices.size() - 2;
+         triangle_begin < triangle_end;
+         triangle_begin += 3) {
 
         // compute edge vectors in object and tangent (UV) space
-        const Vector3 e1 = vertices[indices[triangle_begin+1]] - vertices[indices[triangle_begin+0]];
-        const Vector3 e2 = vertices[indices[triangle_begin+2]] - vertices[indices[triangle_begin+0]];
-        const Vector2 delta_uv1 = tex_coords[indices[triangle_begin+1]] - tex_coords[indices[triangle_begin+0]];
-        const Vector2 delta_uv2 = tex_coords[indices[triangle_begin+2]] - tex_coords[indices[triangle_begin+0]];
+        const Vector3 e1 =
+            vertices[indices[triangle_begin + 1]] - vertices[indices[triangle_begin + 0]];
+        const Vector3 e2 =
+            vertices[indices[triangle_begin + 2]] - vertices[indices[triangle_begin + 0]];
+        const Vector2 delta_uv1 =
+            tex_coords[indices[triangle_begin + 1]] - tex_coords[indices[triangle_begin + 0]];
+        const Vector2 delta_uv2 =
+            tex_coords[indices[triangle_begin + 2]] - tex_coords[indices[triangle_begin + 0]];
 
         // this is effectively inline-ing a matrix inversion + multiplication, see:
         //
-        // - https://www.cs.utexas.edu/~fussell/courses/cs384g-spring2016/lectures/normal_mapping_tangent.pdf
+        // -
+        // https://www.cs.utexas.edu/~fussell/courses/cs384g-spring2016/lectures/normal_mapping_tangent.pdf
         // - https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-        const float inv_determinant = 1.0f/(delta_uv1.x()*delta_uv2.y() - delta_uv2.x()*delta_uv1.y());
-        const Vector3 tangent = inv_determinant * Vector3{
-            delta_uv2.y()*e1.x() - delta_uv1.y()*e2.x(),
-            delta_uv2.y()*e1.y() - delta_uv1.y()*e2.y(),
-            delta_uv2.y()*e1.z() - delta_uv1.y()*e2.z(),
-        };
-        const Vector3 bitangent = inv_determinant * Vector3{
-            -delta_uv2.x()*e1.x() + delta_uv1.x()*e2.x(),
-            -delta_uv2.x()*e1.y() + delta_uv1.x()*e2.y(),
-            -delta_uv2.x()*e1.z() + delta_uv1.x()*e2.z(),
-        };
+        const float inv_determinant =
+            1.0f / (delta_uv1.x() * delta_uv2.y() - delta_uv2.x() * delta_uv1.y());
+        const Vector3 tangent =
+            inv_determinant * Vector3{
+                                  delta_uv2.y() * e1.x() - delta_uv1.y() * e2.x(),
+                                  delta_uv2.y() * e1.y() - delta_uv1.y() * e2.y(),
+                                  delta_uv2.y() * e1.z() - delta_uv1.y() * e2.z(),
+                              };
+        const Vector3 bitangent =
+            inv_determinant * Vector3{
+                                  -delta_uv2.x() * e1.x() + delta_uv1.x() * e2.x(),
+                                  -delta_uv2.x() * e1.y() + delta_uv1.x() * e2.y(),
+                                  -delta_uv2.x() * e1.z() + delta_uv1.x() * e2.z(),
+                              };
 
         // care: due to smooth shading, each normal may not actually be orthogonal
         // to the triangle's surface
@@ -120,8 +134,10 @@ std::vector<Vector4> osc::calc_tangent_vectors(
 
             // Gram-Schmidt orthogonalization (w.r.t. the stored normal)
             const Vector3 normal = normalize(normals[triangle_vertex_index]);
-            const Vector3 ortho_tangent = normalize(tangent - dot(normal, tangent)*normal);
-            const Vector3 ortho_bitangent = normalize(bitangent - (dot(ortho_tangent, bitangent)*ortho_tangent) - (dot(normal, bitangent)*normal));
+            const Vector3 ortho_tangent = normalize(tangent - dot(normal, tangent) * normal);
+            const Vector3 ortho_bitangent = normalize(
+                bitangent - (dot(ortho_tangent, bitangent) * ortho_tangent) -
+                (dot(normal, bitangent) * normal));
 
             // this algorithm doesn't produce bitangents. Instead, it writes the
             // "direction" (flip) of the bitangent w.r.t. `cross(normal, tangent)`
@@ -137,7 +153,8 @@ std::vector<Vector4> osc::calc_tangent_vectors(
 
 Vector3 osc::mass_center_of(const Mesh& mesh)
 {
-    // hastily implemented from: http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
+    // hastily implemented from:
+    // http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
     //
     // effectively:
     //
@@ -157,8 +174,7 @@ Vector3 osc::mass_center_of(const Mesh& mesh)
 
     double total_volume = 0.0f;
     Vector3d weighted_com{};
-    mesh.for_each_indexed_triangle([&total_volume, &weighted_com](Triangle t)
-    {
+    mesh.for_each_indexed_triangle([&total_volume, &weighted_com](Triangle t) {
         const Vector3 reference_point{};
         const Tetrahedron tetrahedron{reference_point, t.p0, t.p1, t.p2};
         const double v = volume_of(tetrahedron);

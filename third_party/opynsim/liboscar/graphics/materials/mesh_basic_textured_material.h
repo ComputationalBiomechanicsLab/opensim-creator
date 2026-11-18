@@ -3,10 +3,14 @@
 #include <liboscar/graphics/material.h>
 #include <liboscar/graphics/texture2d.h>
 
+#include <utility>
+
 namespace osc
 {
     struct MeshBasicTexturedMaterialParams final {
-        friend bool operator==(const MeshBasicTexturedMaterialParams&, const MeshBasicTexturedMaterialParams&) = default;
+        friend bool operator==(
+            const MeshBasicTexturedMaterialParams&,
+            const MeshBasicTexturedMaterialParams&) = default;
 
         Texture2D texture;
     };
@@ -18,7 +22,7 @@ namespace osc
 
         explicit MeshBasicTexturedMaterial(const Params& = {});
         explicit MeshBasicTexturedMaterial(Texture2D texture) :
-            MeshBasicTexturedMaterial{Params{.texture = texture}}
+            MeshBasicTexturedMaterial{Params{.texture = std::move(texture)}}
         {}
 
         Texture2D texture() const;

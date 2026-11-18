@@ -42,11 +42,11 @@ namespace
 
         void accumulate(AppClock::duration dur)
         {
-            mean = (dur + mean*count)/static_cast<double>(count+1);
+            mean = (dur + mean * count) / static_cast<double>(count + 1);
             ++count;
         }
 
-        float fps() const { return 1.0f/static_cast<float>(mean.count()); }
+        float fps() const { return 1.0f / static_cast<float>(mean.count()); }
 
         void reset() { *this = {}; }
     };
@@ -57,122 +57,137 @@ public:
     Impl(RendererPerfTestingTab& owner, Widget* parent) :
         TabPrivate{owner, parent, "RendererPerfTesting"}
     {
-        generateDecorations();
+        generate_decorations();
     }
 
     void on_mount()
     {
-        m_WasVSyncEnabled = App::get().vsync_enabled();
+        was_v_sync_enabled_ = App::get().vsync_enabled();
         App::upd().set_vsync_enabled(false);
     }
 
-    void on_unmount() const
-    {
-        App::upd().set_vsync_enabled(m_WasVSyncEnabled);
-    }
+    void on_unmount() const { App::upd().set_vsync_enabled(was_v_sync_enabled_); }
 
     void on_tick()
     {
         const auto dt = App::get().frame_delta_since_last_frame();
-        if (not m_Paused) {
-            m_OrbitCameraController.theta = mod(m_OrbitCameraController.theta + 90_deg*dt.count(), 360_deg);
-            m_OrbitCameraController.update_camera(m_ModelRendererParams.camera);
-            m_FrameTimeAccumulator.accumulate(dt);
+        if (not paused_) {
+            orbit_camera_controller_.theta =
+                mod(orbit_camera_controller_.theta + (90_deg * dt.count()), 360_deg);
+            orbit_camera_controller_.update_camera(model_renderer_params_.camera);
+            frame_time_accumulator_.accumulate(dt);
         }
     }
 
     void on_draw()
     {
-        const Rect workspaceScreenRect = ui::get_main_window_workspace_screen_space_rect();
+        const Rect workspace_screen_rect = ui::get_main_window_workspace_screen_space_rect();
 
-        if (m_RegenerateDecorationsEachFrame) {
-            generateDecorations();
+        if (regenerate_decorations_each_frame_) {
+            generate_decorations();
         }
-        if (std::exchange(m_FirstFrame, false)) {
-            if (const std::optional<AABB> sceneAABB = bounding_aabb_of(m_Decorations, &SceneDecoration::world_space_bounds)) {
-                m_OrbitCameraController.focus_on(*sceneAABB, m_ModelRendererParams.camera, aspect_ratio_of(workspaceScreenRect));
-                m_OrbitCameraController.update_camera(m_ModelRendererParams.camera);
+        if (std::exchange(first_frame_, false)) {
+            if (const std::optional<AABB> scene_aabb =
+                    bounding_aabb_of(decorations_, &SceneDecoration::world_space_bounds)) {
+                orbit_camera_controller_.focus_on(
+                    *scene_aabb,
+                    model_renderer_params_.camera,
+                    aspect_ratio_of(workspace_screen_rect));
+                orbit_camera_controller_.update_camera(model_renderer_params_.camera);
             }
         }
 
-        const SceneRendererParams params = calcParams(workspaceScreenRect);
-        m_Renderer.render(m_Decorations, params);
-        RenderTexture& sceneTexture = m_Renderer.upd_render_texture();
-        graphics::blit_to_main_window(sceneTexture, workspaceScreenRect);
+        const SceneRendererParams params = calc_params(workspace_screen_rect);
+        renderer_.render(decorations_, params);
+        RenderTexture& scene_texture = renderer_.upd_render_texture();
+        graphics::blit_to_main_window(scene_texture, workspace_screen_rect);
 
         ui::begin_panel("stats");
-        ui::draw_checkbox("paused", &m_Paused);
-        ui::draw_checkbox("regenerate decorations each frame", &m_RegenerateDecorationsEachFrame);
-        ui::draw_text("{}", m_FrameTimeAccumulator.fps());
+        ui::draw_checkbox("paused", &paused_);
+        ui::draw_checkbox("regenerate decorations each frame", &regenerate_decorations_each_frame_);
+        ui::draw_text("{}", frame_time_accumulator_.fps());
         ui::same_line();
         if (ui::draw_small_button("reset")) {
-            m_FrameTimeAccumulator.reset();
+            frame_time_accumulator_.reset();
         }
-        if (DrawViewerTopButtonRow(m_ModelRendererParams, m_Decorations, *m_IconCache)) {
-            generateDecorations();
+        if (draw_viewer_top_button_row(model_renderer_params_, decorations_, *icon_cache_)) {
+            generate_decorations();
         }
         ui::end_panel();
     }
 
 private:
-    SceneRendererParams calcParams(const Rect& workspaceScreenRect) const
+    SceneRendererParams calc_params(const Rect& workspace_screen_rect) const
     {
         return opyn::calc_scene_renderer_params(
-            m_ModelRendererParams,
-            workspaceScreenRect.dimensions(),
-            App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
+            model_renderer_params_,
+            workspace_screen_rect.dimensions(),
+            App::settings().get_value<float>("graphics/render_scale", 1.0f) *
+                App::get().main_window_device_pixel_ratio(),
             App::get().anti_aliasing_level(),
-            1.0f
-        );
+            1.0f);
     }
 
-    void generateDecorations()
+    void generate_decorations()
     {
-        m_Decorations = generate_model_decorations(
-            m_SceneCache,
-            m_Model,
-            m_ModelRendererParams.decoration_options
-        );
+        decorations_ = generate_model_decorations(
+            scene_cache_, model_, model_renderer_params_.decoration_options);
     }
 
-    bool m_FirstFrame = true;
-    bool m_WasVSyncEnabled = false;
-    FrameTimeAccumulator m_FrameTimeAccumulator;
-    bool m_Paused = false;
-    bool m_RegenerateDecorationsEachFrame = false;
+    bool first_frame_ = true;
+    bool was_v_sync_enabled_ = false;
+    FrameTimeAccumulator frame_time_accumulator_;
+    bool paused_ = false;
+    bool regenerate_decorations_each_frame_ = false;
 
-    SceneCache m_SceneCache{App::resource_loader()};
-    SceneRenderer m_Renderer{m_SceneCache};
-    opyn::ModelRendererParams m_ModelRendererParams;
-    OrbitCameraController m_OrbitCameraController;
-    std::vector<SceneDecoration> m_Decorations;
+    SceneCache scene_cache_{App::resource_loader()};
+    SceneRenderer renderer_{scene_cache_};
+    opyn::ModelRendererParams model_renderer_params_;
+    OrbitCameraController orbit_camera_controller_;
+    std::vector<SceneDecoration> decorations_;
 
-    UndoableModelStatePair m_Model = []()
-    {
+    UndoableModelStatePair model_ = [] {
         UndoableModelStatePair msp;
-        const ResourcePath rajagopalPath{"OpenSimCreator/models/RajagopalModel/Rajagopal2016.osim"};
-        if (const auto rajagopal = App::resource_filepath(rajagopalPath)) {
+        const ResourcePath rajagopal_path{
+            "OpenSimCreator/models/RajagopalModel/Rajagopal2016.osim"};
+        if (const auto rajagopal = App::resource_filepath(rajagopal_path)) {
             msp = UndoableModelStatePair{*rajagopal};
         } else {
-            log_error("{}: no such resource found: falling back to a blank model", rajagopalPath.string());
+            log_error(
+                "{}: no such resource found: falling back to a blank model",
+                rajagopal_path.string());
         }
-        ActionEnableAllWrappingSurfaces(msp);
+        action_enable_all_wrapping_surfaces(msp);
         return msp;
     }();
 
-    std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
+    std::shared_ptr<IconCache> icon_cache_ = App::singleton<IconCache>(
         App::resource_loader().with_prefix("OpenSimCreator/icons/"),
-        ui::get_font_base_size()/128.0f,
-        App::get().highest_device_pixel_ratio()
-    );
+        ui::get_font_base_size() / 128.0f,
+        App::get().highest_device_pixel_ratio());
 };
 
-CStringView osc::RendererPerfTestingTab::id() { return "OpenSimCreator/RendererPerfTesting"; }
+CStringView osc::RendererPerfTestingTab::id()
+{
+    return "OpenSimCreator/RendererPerfTesting";
+}
 
 osc::RendererPerfTestingTab::RendererPerfTestingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::RendererPerfTestingTab::impl_on_mount() { private_data().on_mount(); }
-void osc::RendererPerfTestingTab::impl_on_unmount() { private_data().on_unmount(); }
-void osc::RendererPerfTestingTab::impl_on_tick() { private_data().on_tick(); }
-void osc::RendererPerfTestingTab::impl_on_draw() { private_data().on_draw(); }
+void osc::RendererPerfTestingTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::RendererPerfTestingTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+void osc::RendererPerfTestingTab::impl_on_tick()
+{
+    private_data().on_tick();
+}
+void osc::RendererPerfTestingTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

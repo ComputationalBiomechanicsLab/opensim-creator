@@ -15,14 +15,15 @@
 #include <string_view>
 #include <unordered_map>
 
-namespace osc { class AppSettingValue; }
+namespace osc
+{
+    class AppSettingValue;
+}
 
 namespace opyn
 {
     class OpenSimDecorationOptions final {
     public:
-        OpenSimDecorationOptions();
-
         MuscleDecorationStyle get_muscle_decoration_style() const;
         void set_muscle_decoration_style(MuscleDecorationStyle);
 
@@ -80,16 +81,19 @@ namespace opyn
 
         void set_should_show_everything(bool);
 
-        void for_each_option_as_app_setting_value(const std::function<void(std::string_view, const osc::Variant&)>&) const;
-        void try_upd_from_values(std::string_view keyPrefix, const std::unordered_map<std::string, osc::Variant>&);
+        void for_each_option_as_app_setting_value(
+            const std::function<void(std::string_view, const osc::Variant&)>&) const;
+        void try_upd_from_values(
+            std::string_view key_prefix, const std::unordered_map<std::string, osc::Variant>&);
 
-        friend bool operator==(const OpenSimDecorationOptions&, const OpenSimDecorationOptions&) = default;
+        friend bool operator==(const OpenSimDecorationOptions&, const OpenSimDecorationOptions&) =
+            default;
 
     private:
-        MuscleDecorationStyle muscle_decoration_style_;
-        MuscleColorSource muscle_color_source_;
-        MuscleSizingStyle muscle_sizing_style_;
-        MuscleColorSourceScaling muscle_colour_source_scaling_;
-        OpenSimDecorationOptionFlags flags_;
+        MuscleDecorationStyle muscle_decoration_style_ = MuscleDecorationStyle::Default;
+        MuscleColorSource muscle_color_source_ = MuscleColorSource::Default;
+        MuscleSizingStyle muscle_sizing_style_ = MuscleSizingStyle::Default;
+        MuscleColorSourceScaling muscle_colour_source_scaling_ = MuscleColorSourceScaling::Default;
+        OpenSimDecorationOptionFlags flags_ = OpenSimDecorationOptionFlag::Default;
     };
 }

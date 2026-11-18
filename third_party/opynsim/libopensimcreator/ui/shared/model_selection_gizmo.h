@@ -4,12 +4,16 @@
 
 #include <memory>
 
-namespace opyn { class ModelStatePair; }
-namespace osc { class Camera; }
-namespace osc { class Rect; }
+namespace opyn
+{
+    class ModelStatePair;
+}
 
 namespace osc
 {
+    class Camera;
+    class Rect;
+
     class ModelSelectionGizmo final {
     public:
         explicit ModelSelectionGizmo(std::shared_ptr<opyn::ModelStatePair>);
@@ -19,22 +23,22 @@ namespace osc
         ModelSelectionGizmo& operator=(ModelSelectionGizmo&&) noexcept;
         ~ModelSelectionGizmo() noexcept;
 
-        bool isUsing() const { return m_Gizmo.is_using(); }
-        bool isOver() const { return m_Gizmo.is_over(); }
+        bool is_using() const { return gizmo_.is_using(); }
+        bool is_over() const { return gizmo_.is_over(); }
 
-        bool handleKeyboardInputs() { return m_Gizmo.handle_keyboard_inputs(); }
-        void onDraw(const Rect& screenRect, const Camera&);
+        bool handle_keyboard_inputs() { return gizmo_.handle_keyboard_inputs(); }
+        void on_draw(const Rect& screen_rect, const Camera&);
 
-        ui::GizmoOperation getOperation() const { return m_Gizmo.operation(); }
-        void setOperation(ui::GizmoOperation op) { m_Gizmo.set_operation(op); }
+        ui::GizmoOperation get_operation() const { return gizmo_.operation(); }
+        void set_operation(ui::GizmoOperation op) { gizmo_.set_operation(op); }
 
-        ui::GizmoMode getMode() { return m_Gizmo.mode(); }
-        void setMode(ui::GizmoMode mode) { m_Gizmo.set_mode(mode); }
+        ui::GizmoMode get_mode() { return gizmo_.mode(); }
+        void set_mode(ui::GizmoMode mode) { gizmo_.set_mode(mode); }
 
-        operator ui::Gizmo& () { return m_Gizmo; }
+        operator ui::Gizmo&() { return gizmo_; }
 
     private:
-        std::shared_ptr<opyn::ModelStatePair> m_Model;
-        ui::Gizmo m_Gizmo;
+        std::shared_ptr<opyn::ModelStatePair> model_;
+        ui::Gizmo gizmo_;
     };
 }

@@ -97,6 +97,7 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h>
+%include <OpenSim/Simulation/SimbodyEngine/CantileverFreeBeamJoint.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
@@ -116,6 +117,8 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ExternalLoads.h>
 %include <OpenSim/Simulation/Model/PrescribedForce.h>
 %include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
+%include <OpenSim/Simulation/Model/ExponentialCoordinateLimitForce.h>
+%include <OpenSim/Simulation/Model/CoordinateLinearStopForce.h>
 
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
 %template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry, OpenSim::ModelComponent>;
@@ -126,8 +129,6 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 %include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 %include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
-%include <OpenSim/Simulation/Model/MeyerFregly2016Force.h>
-%include <OpenSim/Simulation/Model/ExponentialContactForce.h>
 
 %include <OpenSim/Simulation/Model/Actuator.h>
 %template(SetActuators) OpenSim::Set<OpenSim::Actuator, OpenSim::Object>;
@@ -147,9 +148,6 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Control/InputController.h>
 %include <OpenSim/Simulation/Control/SynergyController.h>
 
-%include <OpenSim/Simulation/Manager/Manager.h>
-%include <OpenSim/Simulation/Model/AbstractTool.h>
-
 %include <OpenSim/Simulation/Model/Point.h>
 %include <OpenSim/Simulation/Model/Station.h>
 %include <OpenSim/Simulation/Model/Point.h>
@@ -157,6 +155,11 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %template(SetMarkers) OpenSim::Set<OpenSim::Marker, OpenSim::ModelComponent>;
 %template(ModelComponentSetMarkers) OpenSim::ModelComponentSet<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
+
+// These contact force elements depend on Station, so we
+// need to include them after Station.
+%include <OpenSim/Simulation/Model/MeyerFregly2016Force.h>
+%include <OpenSim/Simulation/Model/ExponentialContactForce.h>
 
 // WrapObject is included up above.
 %include <OpenSim/Simulation/Wrap/WrapSphere.h>
@@ -183,6 +186,16 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %copyctor OpenSim::Model;
 %include <OpenSim/Simulation/Model/Model.h>
+
+%include <OpenSim/Simulation/StatesDocument.h>
+%include <OpenSim/Simulation/StatesTrajectory.h>
+// This enables iterating using the getBetween() method.
+%template(IteratorRangeStatesTrajectoryIterator)
+    SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
+%include <OpenSim/Simulation/StatesTrajectoryReporter.h>
+
+%include <OpenSim/Simulation/Manager/Manager.h>
+%include <OpenSim/Simulation/Model/AbstractTool.h>
 
 %include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 %include <OpenSim/Simulation/Model/PathPoint.h>
@@ -255,12 +268,6 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %template(StdVectorIMUs) std::vector< OpenSim::IMU* >;
 
-%include <OpenSim/Simulation/StatesDocument.h>
-%include <OpenSim/Simulation/StatesTrajectory.h>
-// This enables iterating using the getBetween() method.
-%template(IteratorRangeStatesTrajectoryIterator)
-    SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
-%include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 %include <OpenSim/Simulation/PositionMotion.h>
 %include <OpenSim/Simulation/SimulationUtilities.h>
 %template(analyze) OpenSim::analyze<double>;

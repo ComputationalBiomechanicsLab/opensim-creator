@@ -12,6 +12,8 @@
 #include <liboscar/maths/vector.h>
 #include <liboscar/platform/key.h>
 #include <liboscar/platform/key_combination.h>
+#include <liboscar/platform/mouse_button.h>
+#include <liboscar/platform/mouse_combination.h>
 #include <liboscar/platform/resource_path.h>
 #include <liboscar/utilities/copy_on_upd_ptr.h>
 #include <liboscar/utilities/c_string_view.h>
@@ -30,12 +32,15 @@
 #include <string_view>
 #include <utility>
 
-namespace osc { class App; }
-namespace osc { class Camera; }
-namespace osc { class Event; }
-namespace osc { struct OrbitCameraController; }
-namespace osc { class RenderTexture; }
-namespace osc { class Texture2D; }
+namespace osc
+{
+    class App;
+    class Camera;
+    class Event;
+    class RenderTexture;
+    class Texture2D;
+    struct OrbitCameraController;
+}
 
 struct ImDrawList;
 
@@ -58,10 +63,10 @@ namespace osc::ui
         void set_main_font_as_standard_plus_icon_font(
             ResourcePath main_font_ttf_path,
             ResourcePath icon_font_ttf_path,
-            ClosedInterval<char16_t> codepoint_range
-        );
+            ClosedInterval<char16_t> codepoint_range);
 
         class Impl;
+
     private:
         friend class Context;
         CopyOnUpdPtr<Impl> impl() const { return impl_; }
@@ -96,12 +101,14 @@ namespace osc::ui
 
         // Should be called at the end of each frame (e.g. the end of `Widget::on_draw()`).
         void render();
+
     private:
         void init(App&, const CopyOnUpdPtr<ui::ContextConfiguration::Impl>&);
         void shutdown(App*);
     };
 
-    // vertically align upcoming text baseline to FramePadding.y so that it will align properly to regularly framed items (call if you have text on a line before a framed item)
+    // vertically align upcoming text baseline to FramePadding.y so that it will align properly to
+    // regularly framed items (call if you have text on a line before a framed item)
     void align_text_to_frame_padding();
 
     void draw_text(std::string_view);
@@ -131,14 +138,18 @@ namespace osc::ui
     void draw_bullet_point();
 
     enum class TreeNodeFlag : unsigned {
-        None             = 0,
-        DefaultOpen      = 1<<0,
-        OpenOnArrow      = 1<<1,  // only open when clicking on the arrow part
-        Leaf             = 1<<2,  // no collapsing, no arrow (use as a convenience for leaf nodes)
-        Bullet           = 1<<3,  // display a bullet instead of arrow. IMPORTANT: node can still be marked open/close if you don't also set the `Leaf` flag!
-        DrawLinesToNodes = 1<<4,
-        DrawLinesFull    = 1<<5,
-        NUM_FLAGS        =    6,
+        None = 0,
+        DefaultOpen = 1 << 0,
+        // only open when clicking on the arrow part
+        OpenOnArrow = 1 << 1,
+        // no collapsing, no arrow (use as a convenience for leaf nodes)
+        Leaf = 1 << 2,
+        // display a bullet instead of arrow. IMPORTANT: node can still be marked open/close if you
+        // don't also set the `Leaf` flag!
+        Bullet = 1 << 3,
+        DrawLinesToNodes = 1 << 4,
+        DrawLinesFull = 1 << 5,
+        NUM_FLAGS = 6,
     };
     using TreeNodeFlags = Flags<TreeNodeFlag>;
 
@@ -155,28 +166,40 @@ namespace osc::ui
 
     bool draw_menu_item(
         CStringView label,
-        std::optional<KeyCombination> shortcut = {},
+        std::nullopt_t = std::nullopt,
         bool selected = false,
-        bool enabled = true
-    );
-
+        bool enabled = true);
+    bool draw_menu_item(
+        CStringView label,
+        std::optional<KeyCombination> shortcut,
+        bool selected = false,
+        bool enabled = true);
     bool draw_menu_item(
         CStringView label,
         std::optional<KeyCombination> shortcut,
         bool* p_selected,
-        bool enabled = true
-    );
+        bool enabled = true);
+    bool draw_menu_item(
+        CStringView label,
+        std::optional<MouseCombination> shortcut,
+        bool selected = false,
+        bool enabled = true);
 
     bool begin_tab_bar(CStringView str_id);
     void end_tab_bar();
 
     enum class TabItemFlag : unsigned {
-        None            = 0,
-        NoReorder       = 1<<0,  // disable reordering this tab or having another tab cross over this tab
-        NoCloseButton   = 1<<1,  // track whether `p_open` was set or not (we'll need this info on the next frame to recompute ContentWidth during layout)
-        UnsavedDocument = 1<<2,  // display a dot next to the title + (internally) set `ImGuiTabItemFlags_NoAssumedClosure`
-        SetSelected     = 1<<3,  // trigger flag to programmatically make the tab selected when calling `begin_tab_item`
-        NUM_FLAGS       =    4,
+        None = 0,
+        // disable reordering this tab or having another tab cross over this tab
+        NoReorder = 1 << 0,
+        // track whether `p_open` was set or not (we'll need this info on the next frame to
+        // recompute ContentWidth during layout)
+        NoCloseButton = 1 << 1,
+        // display a dot next to the title + (internally) set `ImGuiTabItemFlags_NoAssumedClosure`
+        UnsavedDocument = 1 << 2,
+        // trigger flag to programmatically make the tab selected when calling `begin_tab_item`
+        SetSelected = 1 << 3,
+        NUM_FLAGS = 4,
     };
     using TabItemFlags = Flags<TabItemFlag>;
 
@@ -185,7 +208,8 @@ namespace osc::ui
 
     bool draw_tab_item_button(CStringView label);
 
-    void set_num_columns(int count = 1, std::optional<CStringView> id = std::nullopt, bool border = true);
+    void set_num_columns(
+        int count = 1, std::optional<CStringView> id = std::nullopt, bool border = true);
     float get_column_width(int column_index = -1);
     void next_column();
 
@@ -193,19 +217,15 @@ namespace osc::ui
     // offset/spacing in device-independent pixels.
     void same_line(float offset_from_start_x = 0.0f, float spacing = -1.0f);
 
-    enum class MouseButton {
-        Left,
-        Right,
-        Middle,
-        NUM_OPTIONS,
-    };
-
     struct ID final {
     public:
         explicit ID() = default;
-        explicit ID(unsigned int value) : value_{value} {}
+        explicit ID(unsigned int value) :
+            value_{value}
+        {}
 
         unsigned int value() const { return value_; }
+
     private:
         unsigned int value_ = 0;  // defaults to "no ID"
     };
@@ -217,56 +237,89 @@ namespace osc::ui
     bool is_mouse_dragging(MouseButton, float lock_threshold = -1.0f);
 
     enum class SliderFlag : unsigned {
-        None        = 0,
-        Logarithmic = 1<<0,
-        AlwaysClamp = 1<<1,
-        NoInput     = 1<<2,
-        NUM_FLAGS   =    3,
+        None = 0,
+        Logarithmic = 1 << 0,
+        AlwaysClamp = 1 << 1,
+        NoInput = 1 << 2,
+        NUM_FLAGS = 3,
     };
     using SliderFlags = Flags<SliderFlag>;
 
     enum class DataType {
         Float,
-        NUM_OPTIONS
+        NUM_OPTIONS,
     };
 
     enum class TextInputFlag : unsigned {
-        None             = 0,
-        ReadOnly         = 1<<0,
-        EnterReturnsTrue = 1<<1,
-        NUM_FLAGS        = 2,
+        None = 0,
+        ReadOnly = 1 << 0,
+        EnterReturnsTrue = 1 << 1,
+        NUM_FLAGS = 2,
     };
     using TextInputFlags = Flags<TextInputFlag>;
 
     bool draw_selectable(CStringView label, bool* p_selected);
     bool draw_selectable(CStringView label, bool selected = false);
     bool draw_checkbox(CStringView label, bool* v);
-    bool draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format = "%.3f", SliderFlags = {});
-    bool draw_scalar_input(CStringView label, DataType data_type, void* p_data, const void* p_step = nullptr, const void* p_step_fast = nullptr, const char* format = nullptr, TextInputFlags = {});
-    bool draw_int_input(CStringView label, int* v, int step = 1, int step_fast = 100, TextInputFlags = {});
-    bool draw_size_t_input(CStringView label, size_t* v, size_t step = 1, size_t step_fast = 100, TextInputFlags = {});
-    bool draw_double_input(CStringView label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", TextInputFlags = {});
-    bool draw_float_input(CStringView label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", TextInputFlags = {});
-    bool draw_float3_input(CStringView label, float v[3], const char* format = "%.3f", TextInputFlags = {});
-    bool draw_vector3_input(CStringView label, Vector3& v, const char* format = "%.3f", TextInputFlags = {});
+    bool draw_float_slider(
+        CStringView label,
+        float* v,
+        float v_min,
+        float v_max,
+        const char* format = "%.3f",
+        SliderFlags = {});
+    bool draw_scalar_input(
+        CStringView label,
+        DataType data_type,
+        void* p_data,
+        const void* p_step = nullptr,
+        const void* p_step_fast = nullptr,
+        const char* format = nullptr,
+        TextInputFlags = {});
+    bool draw_int_input(
+        CStringView label, int* v, int step = 1, int step_fast = 100, TextInputFlags = {});
+    bool draw_size_t_input(
+        CStringView label, size_t* v, size_t step = 1, size_t step_fast = 100, TextInputFlags = {});
+    bool draw_double_input(
+        CStringView label,
+        double* v,
+        double step = 0.0,
+        double step_fast = 0.0,
+        const char* format = "%.6f",
+        TextInputFlags = {});
+    bool draw_float_input(
+        CStringView label,
+        float* v,
+        float step = 0.0f,
+        float step_fast = 0.0f,
+        const char* format = "%.3f",
+        TextInputFlags = {});
+    bool draw_float3_input(
+        CStringView label, float* v, const char* format = "%.3f", TextInputFlags = {});
+    bool draw_vector3_input(
+        CStringView label, Vector3& v, const char* format = "%.3f", TextInputFlags = {});
     bool draw_rgb_color_editor(CStringView label, Color& color);
     bool draw_rgba_color_editor(CStringView label, Color& color);
-    // Draws an interactive button with the given label and with a given size in device-independent pixels.
+    // Draws an interactive button with the given label and with a given size in device-independent
+    // pixels.
     bool draw_button(CStringView label, const Vector2& size = {});
     bool draw_small_button(CStringView label);
     bool draw_arrow_down_button(CStringView label);
-    // Draws an interactive, but invisible, button with the given label and the given size in device-independent pixels.
+    // Draws an interactive, but invisible, button with the given label and the given size in
+    // device-independent pixels.
     bool draw_invisible_button(CStringView label, Vector2 size = {});
     bool draw_radio_button(CStringView label, bool active);
     bool draw_collapsing_header(CStringView label, TreeNodeFlags = {});
-    // Draws an invisible, non-interactive "dummy" element in the UI with the given size in device-independent pixels.
+    // Draws an invisible, non-interactive "dummy" element in the UI with the given size in
+    // device-independent pixels.
     void draw_dummy(const Vector2& size);
-    // Draws an invisible, non-interactive "dummy" element that is `num_lines` * text line height high.
+    // Draws an invisible, non-interactive "dummy" element that is `num_lines` * text line height
+    // high.
     void draw_vertical_spacer(float num_lines);
 
     enum class ComboFlag : unsigned {
         None = 0,
-        NoArrowButton = 1<<0,
+        NoArrowButton = 1 << 0,
         NUM_FLAGS = 1,
     };
     using ComboFlags = Flags<ComboFlag>;
@@ -279,6 +332,7 @@ namespace osc::ui
 
     void enable_dockspace_over_main_window();
 
+    // clang-format off
     enum class PanelFlag : unsigned {
         None                    = 0,
 
@@ -302,19 +356,25 @@ namespace osc::ui
         NUM_FLAGS               = 15,
     };
     using PanelFlags = Flags<PanelFlag>;
+    // clang-format on
 
     bool begin_panel(CStringView name, bool* p_open = nullptr, PanelFlags = {});
     void end_panel();
 
     enum class ChildPanelFlag : unsigned {
-        None   = 0,
-        Border = 1<<0,
+        None = 0,
+        Border = 1 << 0,
         NUM_FLAGS = 1,
     };
     using ChildPanelFlags = Flags<ChildPanelFlag>;
 
-    // Begins a child panel within a parent panel with the given ID, device-independent pixel size, and flags.
-    bool begin_child_panel(CStringView str_id, const Vector2& size = {}, ChildPanelFlags child_flags = {}, PanelFlags panel_flags = {});
+    // Begins a child panel within a parent panel with the given ID, device-independent pixel size,
+    // and flags.
+    bool begin_child_panel(
+        CStringView str_id,
+        const Vector2& size = {},
+        ChildPanelFlags child_flags = {},
+        PanelFlags panel_flags = {});
     void end_child_panel();
 
     void close_current_popup();
@@ -376,6 +436,7 @@ namespace osc::ui
 
     void set_next_panel_bg_alpha(float alpha);
 
+    // clang-format off
     enum class HoveredFlag : unsigned {
         None                         = 0,
         AllowWhenDisabled            = 1<<0,
@@ -389,6 +450,7 @@ namespace osc::ui
         NUM_FLAGS                    =    8,
     };
     using HoveredFlags = Flags<HoveredFlag>;
+    // clang-format on
 
     bool is_panel_hovered(HoveredFlags = {});
 
@@ -400,7 +462,11 @@ namespace osc::ui
 
     void push_id(UID);
     void push_id(int);
-    template<std::integral T> void push_id(T number) { push_id(static_cast<int>(number)); }
+    template<std::integral T>
+    void push_id(T number)
+    {
+        push_id(static_cast<int>(number));
+    }
     void push_id(std::string_view);
     void push_id(const void*);
 
@@ -409,10 +475,10 @@ namespace osc::ui
     ID get_id(std::string_view);
 
     enum class ItemFlag : unsigned {
-        None      = 0,
-        Disabled  = 1<<0,
-        Inputable = 1<<1,
-        NUM_FLAGS =    2,
+        None = 0,
+        Disabled = 1 << 0,
+        Inputable = 1 << 1,
+        NUM_FLAGS = 2,
     };
     using ItemFlags = Flags<ItemFlag>;
 
@@ -477,16 +543,17 @@ namespace osc::ui
     void pop_style_var(int count = 1);
 
     enum class PopupFlag : unsigned {
-        None             = 0,
-        MouseButtonLeft  = 1<<0,
-        MouseButtonRight = 1<<1,
-        NUM_FLAGS        =    2,
+        None = 0,
+        MouseButtonLeft = 1 << 0,
+        MouseButtonRight = 1 << 1,
+        NUM_FLAGS = 2,
     };
     using PopupFlags = Flags<PopupFlag>;
 
     void open_popup(CStringView str_id, PopupFlags = {});
     bool begin_popup(CStringView str_id, PanelFlags = {});
-    bool begin_popup_context_menu(CStringView str_id = {}, PopupFlags = PopupFlag::MouseButtonRight);
+    bool begin_popup_context_menu(
+        CStringView str_id = {}, PopupFlags = PopupFlag::MouseButtonRight);
     bool begin_popup_modal(CStringView name, bool* p_open = nullptr, PanelFlags = {});
     void end_popup();
 
@@ -507,6 +574,7 @@ namespace osc::ui
     bool is_item_hovered(HoveredFlags = {});
     bool is_item_deactivated_after_edit();
 
+    // clang-format off
     enum class TableFlag : unsigned {
         None              = 0,
         BordersInner      = 1<<0,
@@ -522,11 +590,17 @@ namespace osc::ui
         NUM_FLAGS         =    10,
     };
     using TableFlags = Flags<TableFlag>;
+    // clang-format on
 
     Rect get_item_ui_rect();
     Vector2 get_item_top_left_ui_position();
     Vector2 get_item_bottom_right_ui_position();
-    bool begin_table(CStringView str_id, int column, TableFlags = {}, const Vector2& outer_size = {}, float inner_width = 0.0f);
+    bool begin_table(
+        CStringView str_id,
+        int column,
+        TableFlags = {},
+        const Vector2& outer_size = {},
+        float inner_width = 0.0f);
     void table_setup_scroll_freeze(int cols, int rows);
 
     enum class SortDirection {
@@ -547,17 +621,18 @@ namespace osc::ui
     std::vector<TableColumnSortSpec> get_table_column_sort_specs();
 
     enum class ColumnFlag : unsigned {
-        None         = 0,
-        NoSort       = 1<<0,
-        WidthStretch = 1<<1,
-        NUM_FLAGS    =    2,
+        None = 0,
+        NoSort = 1 << 0,
+        WidthStretch = 1 << 1,
+        NUM_FLAGS = 2,
     };
     using ColumnFlags = Flags<ColumnFlag>;
 
     void table_headers_row();
     bool table_set_column_index(int column_n);
     void table_next_row();
-    void table_setup_column(CStringView label, ColumnFlags = {}, float init_width_or_weight = 0.0f, ID = ID{});
+    void table_setup_column(
+        CStringView label, ColumnFlags = {}, float init_width_or_weight = 0.0f, ID = ID{});
     void end_table();
 
     void push_style_color(ColorVar, const Color&);
@@ -582,20 +657,32 @@ namespace osc::ui
         DrawListAPI(DrawListAPI&&) noexcept = default;
         DrawListAPI& operator=(const DrawListAPI&) = default;
         DrawListAPI& operator=(DrawListAPI&&) noexcept = default;
+
     public:
         virtual ~DrawListAPI() noexcept = default;
 
-        void add_rect(const Rect& ui_rect, const Color& color, float rounding = 0.0f, float thickness = 1.0f);
+        void add_rect(
+            const Rect& ui_rect, const Color& color, float rounding = 0.0f, float thickness = 1.0f);
         void add_rect_filled(const Rect& ui_rect, const Color& color, float rounding = 0.0f);
-        void add_circle(const Circle& ui_circle, const Color& color, int num_segments = 0, float thickness = 1.0f);
+        void add_circle(
+            const Circle& ui_circle,
+            const Color& color,
+            int num_segments = 0,
+            float thickness = 1.0f);
         void add_circle_filled(const Circle& ui_circle, const Color& color, int num_segments = 0);
         void add_text(const Vector2& ui_position, const Color& color, CStringView text);
-        void add_line(const Vector2& ui_start, const Vector2& ui_end, const Color& color, float thickness = 1.0f);
-        void add_triangle_filled(const Vector2 ui_p0, const Vector2& ui_p1, const Vector2& ui_p2, const Color& color);
+        void add_line(
+            const Vector2& ui_start,
+            const Vector2& ui_end,
+            const Color& color,
+            float thickness = 1.0f);
+        void add_triangle_filled(
+            const Vector2& ui_p0, const Vector2& ui_p1, const Vector2& ui_p2, const Color& color);
         void push_clip_rect(const Rect&, bool intersect_with_currect_clip_rect = false);
         void pop_clip_rect();
 
         void render_to(RenderTexture&);
+
     private:
         virtual ImDrawList& impl_get_drawlist() = 0;
     };
@@ -605,8 +692,9 @@ namespace osc::ui
         explicit DrawListView(ImDrawList* inner_list) :
             inner_list_{inner_list}
         {}
+
     private:
-        ImDrawList& impl_get_drawlist() final { return *inner_list_; }
+        ImDrawList& impl_get_drawlist() override { return *inner_list_; }
 
         ImDrawList* inner_list_;
     };
@@ -620,10 +708,10 @@ namespace osc::ui
         DrawList& operator=(DrawList&&) noexcept;
         ~DrawList() noexcept override;
 
-        operator DrawListView () { return DrawListView{underlying_drawlist_.get()}; }
+        operator DrawListView() { return DrawListView{underlying_drawlist_.get()}; }
 
     private:
-        ImDrawList& impl_get_drawlist() final { return *underlying_drawlist_; }
+        ImDrawList& impl_get_drawlist() override { return *underlying_drawlist_; }
 
         std::unique_ptr<ImDrawList> underlying_drawlist_;
     };
@@ -641,21 +729,16 @@ namespace osc::ui
         OrbitCameraController&,
         const Camera& associated_camera,
         const Rect& viewport_rect,
-        std::optional<AABB> maybe_scene_world_space_aabb
-    );
+        std::optional<AABB> maybe_scene_world_space_aabb);
 
     // updates an orbit controller from UI input state (all)
     bool update_orbit_controller_from_all_inputs(
         OrbitCameraController&,
         const Camera& associated_camera,
         const Rect& viewport_rect,
-        std::optional<AABB> maybe_scene_world_space_aabb
-    );
+        std::optional<AABB> maybe_scene_world_space_aabb);
 
-    void update_camera_from_all_inputs(
-        Camera&,
-        EulerAngles&
-    );
+    void update_camera_from_all_inputs(Camera&, EulerAngles&);
 
     // returns the UI content region available in ui space as a `Rect`
     Rect get_content_region_available_ui_rect();
@@ -672,37 +755,20 @@ namespace osc::ui
     void draw_image(
         const Texture2D& texture,
         std::optional<Vector2> dimensions = std::nullopt,
-        const Rect& region_uv_coordinates = Rect::from_corners({0.0f, 0.0f}, {1.0f, 1.0f})
-    );
-    void draw_image(
-        const RenderTexture&
-    );
-    void draw_image(
-        const RenderTexture&,
-        Vector2 dimensions
-    );
+        const Rect& region_uv_coordinates = Rect::from_corners({0.0f, 0.0f}, {1.0f, 1.0f}));
+    void draw_image(const RenderTexture&);
+    void draw_image(const RenderTexture&, Vector2 dimensions);
 
     // returns the dimensions of a button with the given content
     Vector2 calc_button_size(CStringView);
     float calc_button_width(CStringView);
 
-    bool draw_button_nobg(
-        CStringView,
-        Vector2 dimensions = {0.0f, 0.0f}
-    );
+    bool draw_button_nobg(CStringView, Vector2 dimensions = {0.0f, 0.0f});
 
     // draws a texture within the UI as a clickable button
     bool draw_image_button(
-        CStringView,
-        const Texture2D&,
-        Vector2 dimensions,
-        const Rect& texture_coordinates
-    );
-    bool draw_image_button(
-        CStringView,
-        const Texture2D&,
-        Vector2 dimensions
-    );
+        CStringView, const Texture2D&, Vector2 dimensions, const Rect& texture_coordinates);
+    bool draw_image_button(CStringView, const Texture2D&, Vector2 dimensions);
 
     // returns the ui space bounding rectangle of the last-drawn item in
     // device-independent pixels.
@@ -715,7 +781,8 @@ namespace osc::ui
     // adds a screenshot annotation around the last drawn item to the
     // application-level annotation collector
     //
-    // equivalent to: `App::upd().add_main_window_frame_annotation(label, get_last_drawn_item_screen_rect());`
+    // equivalent to: `App::upd().add_main_window_frame_annotation(label,
+    // get_last_drawn_item_screen_rect());`
     void add_screenshot_annotation_to_last_drawn_item(std::string_view label);
 
     // hittest the last-drawn item in the UI
@@ -773,19 +840,14 @@ namespace osc::ui
 
     // draws an overlay tooltip (content only) if the last item is hovered
     void draw_tooltip_body_only_if_item_hovered(
-        CStringView,
-        HoveredFlags = HoveredFlag::ForTooltip
-    );
+        CStringView, HoveredFlags = HoveredFlag::ForTooltip);
 
     // draws an overlay tooltip with a header and description
     void draw_tooltip(CStringView header, CStringView description = {});
 
     // equivalent to `if (ui::is_item_hovered(flags)) draw_tooltip(header, description);`
     void draw_tooltip_if_item_hovered(
-        CStringView header,
-        CStringView description = {},
-        HoveredFlags = HoveredFlag::ForTooltip
-    );
+        CStringView header, CStringView description = {}, HoveredFlags = HoveredFlag::ForTooltip);
 
     // draws a help text marker `"(?)"` and display a tooltip when the user hovers over it
     void draw_help_marker(CStringView header, CStringView description);
@@ -794,19 +856,11 @@ namespace osc::ui
     void draw_help_marker(CStringView);
 
     // draws a text input that manipulates a `std::string`
-    bool draw_string_input(
-        CStringView label,
-        std::string& edited_string,
-        TextInputFlags = {}
-    );
+    bool draw_string_input(CStringView label, std::string& edited_string, TextInputFlags = {});
 
     // draws a text input that contains `hint` as a placeholder and manipulates a `std::string`
     bool draw_string_input_with_hint(
-        CStringView label,
-        CStringView hint,
-        std::string& edited_string,
-        TextInputFlags = {}
-    );
+        CStringView label, CStringView hint, std::string& edited_string, TextInputFlags = {});
 
     // behaves like `ui::draw_float_input`, but understood to manipulate the scene scale
     bool draw_float_meters_input(
@@ -814,24 +868,14 @@ namespace osc::ui
         float& v,
         float step = 0.0f,
         float step_fast = 0.0f,
-        TextInputFlags = {}
-    );
+        TextInputFlags = {});
 
     // behaves like `ui::draw_float3_input`, but understood to manipulate the scene scale
-    bool draw_float3_meters_input(
-        CStringView label,
-        Vector3&,
-        TextInputFlags = {}
-    );
+    bool draw_float3_meters_input(CStringView label, Vector3&, TextInputFlags = {});
 
     // behaves like `ui::draw_float_slider`, but understood to manipulate the scene scale
     bool draw_float_meters_slider(
-        CStringView label,
-        float& v,
-        float v_min,
-        float v_max,
-        SliderFlags flags = {}
-    );
+        CStringView label, float& v, float v_min, float v_max, SliderFlags flags = {});
 
     // behaves like `ui::draw_float_input`, but edits the given value as a mass (kg)
     bool draw_float_kilogram_input(
@@ -839,31 +883,19 @@ namespace osc::ui
         float& v,
         float step = 0.0f,
         float step_fast = 0.0f,
-        TextInputFlags = {}
-    );
+        TextInputFlags = {});
 
     // behaves like `ui::draw_float_input`, but edits the given angular value in degrees
-    bool draw_angle_input(
-        CStringView label,
-        Radians& v
-    );
+    bool draw_angle_input(CStringView label, Radians& v);
 
     // behaves like `ui::draw_float3_input`, but edits the given angular value in degrees
-    bool draw_angle3_input(
-        CStringView label,
-        Vector<Radians, 3>&,
-        CStringView format = "%.3f"
-    );
+    bool draw_angle3_input(CStringView label, Vector<Radians, 3>&, CStringView format = "%.3f");
 
     // behaves like `ui::draw_float_slider`, but edits the given angular value as degrees
-    bool draw_angle_slider(
-        CStringView label,
-        Radians& v,
-        Radians min,
-        Radians max
-    );
+    bool draw_angle_slider(CStringView label, Radians& v, Radians min, Radians max);
 
-    // returns "minimal" panel flags (i.e. no title bar, can't move the panel - ideal for images etc.)
+    // returns "minimal" panel flags (i.e. no title bar, can't move the panel - ideal for images
+    // etc.)
     PanelFlags get_minimal_panel_flags();
 
     // returns `true` if the area of the main window's workspace is greater than zero.
@@ -897,18 +929,19 @@ namespace osc::ui
     // of the current workspace area in the main application window
     float get_main_window_workspace_aspect_ratio();
 
-    // returns `true` if the user's mouse is within the current workspace area of the main application
-    // window
+    // returns `true` if the user's mouse is within the current workspace area of the main
+    // application window
     bool is_mouse_in_main_window_workspace();
 
-    // begin a menu that's attached to the top of the main application window, end it with `ui::end_panel()`
+    // begin a menu that's attached to the top of the main application window, end it with
+    // `ui::end_panel()`
     bool begin_main_window_top_bar(
         CStringView label,
         float height = ui::get_frame_height(),
-        PanelFlags = {PanelFlag::NoScrollbar, PanelFlag::NoSavedSettings, PanelFlag::MenuBar}
-    );
+        PanelFlags = {PanelFlag::NoScrollbar, PanelFlag::NoSavedSettings, PanelFlag::MenuBar});
 
-    // begin a menu that's attached to the bottom of the main application window, end it with `ui::end_panel()`
+    // begin a menu that's attached to the bottom of the main application window, end it with
+    // `ui::end_panel()`
     bool begin_main_window_bottom_bar(CStringView);
 
     // behaves like `ui::draw_button`, but is centered on the current line
@@ -917,13 +950,15 @@ namespace osc::ui
     // behaves like `ui::draw_text`, but is centered on the current line
     void draw_text_centered(CStringView);
 
-    // behaves like `ui::draw_text`, but is vertically and horizontally centered in the remaining content of the current panel
+    // behaves like `ui::draw_text`, but is vertically and horizontally centered in the remaining
+    // content of the current panel
     void draw_text_panel_centered(CStringView);
 
     // behaves like `ui::draw_text`, but with a disabled style and centered on the current line
     void draw_text_disabled_and_centered(CStringView);
 
-    // behaves like `ui::draw_text`, but with a disabled style and centered in the remaining content of the current panel
+    // behaves like `ui::draw_text`, but with a disabled style and centered in the remaining content
+    // of the current panel
     void draw_text_disabled_and_panel_centered(CStringView);
 
     // behaves like `ui::draw_text`, but centered in the current table column
@@ -948,14 +983,9 @@ namespace osc::ui
         CStringView label,
         size_t* current,
         size_t size,
-        const std::function<CStringView(size_t)>& accessor
-    );
+        const std::function<CStringView(size_t)>& accessor);
 
-    bool draw_combobox(
-        CStringView label,
-        size_t* current,
-        std::span<const CStringView> items
-    );
+    bool draw_combobox(CStringView label, size_t* current, std::span<const CStringView> items);
 
     void draw_vertical_separator();
     void draw_same_line_with_vertical_separator();
@@ -966,25 +996,21 @@ namespace osc::ui
         float min,
         float max,
         CStringView format = "%.3f",
-        SliderFlags = {}
-    );
+        SliderFlags = {});
 
     // updates an `OrbitController`'s rotation, position, etc. from UI mouse input
     // state, assuming the viewport it's connected to has the given device-independent
     // pixel dimensions.
     bool update_orbit_controller_from_mouse_inputs(
-        OrbitCameraController&,
-        const Camera& associated_camera,
-        Vector2 viewport_dimensions
-    );
+        OrbitCameraController&, const Camera& associated_camera, Vector2 viewport_dimensions);
 
     // an operation that a ui `Gizmo` shall perform
     enum class GizmoOperation : unsigned {
-        None         = 0,
-        Translate    = 1<<0,
-        Rotate       = 1<<1,
-        Scale        = 1<<2,
-        NUM_FLAGS    = 3,
+        None = 0,
+        Translate = 1 << 0,
+        Rotate = 1 << 1,
+        Scale = 1 << 2,
+        NUM_FLAGS = 3,
     };
     using GizmoOperations = Flags<GizmoOperation>;
 
@@ -1003,10 +1029,10 @@ namespace osc::ui
         std::optional<Vector3> position;
     };
 
-    // a UI gizmo that manipulates the given model matrix using user-interactable drag handles, arrows, etc.
+    // a UI gizmo that manipulates the given model matrix using user-interactable drag handles,
+    // arrows, etc.
     class Gizmo final {
     public:
-
         // if the user manipulated the gizmo, updates `model_matrix` to match the
         // post-manipulation transform and returns a world space transform that
         // represents the "difference" added by the user's manipulation. I.e.:
@@ -1023,8 +1049,7 @@ namespace osc::ui
             const Matrix4x4& projection_matrix,
             const Rect& ui_rect,
             const GizmoOperationSnappingSteps* snap = nullptr,
-            const AABB* local_bounds = nullptr
-        );
+            const AABB* local_bounds = nullptr);
 
         // same as `draw`, but draws to the foreground draw list, rather than the
         // draw list of the currently active panel
@@ -1034,8 +1059,7 @@ namespace osc::ui
             const Matrix4x4& projection_matrix,
             const Rect& ui_rect,
             const GizmoOperationSnappingSteps* snap = nullptr,
-            const AABB* local_bounds = nullptr
-        );
+            const AABB* local_bounds = nullptr);
 
         bool is_using() const;
         bool was_using() const { return was_using_last_frame_; }
@@ -1047,6 +1071,7 @@ namespace osc::ui
 
         // updates the gizmo based on keyboard inputs (e.g. pressing `G` enables grab mode)
         bool handle_keyboard_inputs();
+
     private:
         std::optional<Transform> draw_to(
             Matrix4x4& model_matrix,
@@ -1055,8 +1080,7 @@ namespace osc::ui
             const Rect& ui_rect,
             ImDrawList* draw_list,
             const GizmoOperationSnappingSteps*,
-            const AABB* local_bounds
-        );
+            const AABB* local_bounds);
 
         UID id_;
         GizmoOperation operation_ = GizmoOperation::Translate;
@@ -1069,13 +1093,9 @@ namespace osc::ui
         return 15.0f;
     }
 
-    bool draw_gizmo_mode_selector(
-        Gizmo&
-    );
+    bool draw_gizmo_mode_selector(Gizmo&);
 
-    bool draw_gizmo_mode_selector(
-        GizmoMode&
-    );
+    bool draw_gizmo_mode_selector(GizmoMode&);
 
     bool draw_gizmo_operation_selector(
         Gizmo&,
@@ -1084,8 +1104,7 @@ namespace osc::ui
         bool can_scale = true,
         CStringView translate_button_text = "T",
         CStringView rotate_button_text = "R",
-        CStringView scale_button_text = "S"
-    );
+        CStringView scale_button_text = "S");
 
     bool draw_gizmo_operation_selector(
         GizmoOperation&,
@@ -1094,8 +1113,7 @@ namespace osc::ui
         bool can_scale = true,
         CStringView translate_button_text = "T",
         CStringView rotate_button_text = "R",
-        CStringView scale_button_text = "S"
-    );
+        CStringView scale_button_text = "S");
 
     // oscar bindings for `ImPlot`
     //
@@ -1104,24 +1122,28 @@ namespace osc::ui
     namespace plot
     {
         enum class PlotFlags {
-            None        = 0,
-            NoTitle     = 1<<0,
-            NoLegend    = 1<<1,
-            NoMouseText = 1<<2,
-            NoInputs    = 1<<3,
-            NoMenus     = 1<<4,
-            NoBoxSelect = 1<<5,
-            NoFrame     = 1<<6,
+            None = 0,
+            NoTitle = 1 << 0,
+            NoLegend = 1 << 1,
+            NoMouseText = 1 << 2,
+            NoInputs = 1 << 3,
+            NoMenus = 1 << 4,
+            NoBoxSelect = 1 << 5,
+            NoFrame = 1 << 6,
 
-            Default     = None,
+            Default = None,
         };
         constexpr PlotFlags operator|(PlotFlags lhs, PlotFlags rhs)
         {
-            return static_cast<PlotFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+            return static_cast<PlotFlags>(
+                std::to_underlying(lhs) |
+                std::to_underlying(rhs));  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
         }
         constexpr PlotFlags operator^(PlotFlags lhs, PlotFlags rhs)
         {
-            return static_cast<PlotFlags>(std::to_underlying(lhs) ^ std::to_underlying(rhs));  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+            return static_cast<PlotFlags>(
+                std::to_underlying(lhs) ^
+                std::to_underlying(rhs));  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
         }
         constexpr bool operator&(PlotFlags lhs, PlotFlags rhs)
         {
@@ -1129,10 +1151,12 @@ namespace osc::ui
         }
 
         enum class PlotStyleVar {
-            // `Vector2`: additional fit padding as a percentage of the fit extents (e.g. Vector2{0.1, 0.2} would add 10 % to the X axis and 20 % to the Y axis)
+            // `Vector2`: additional fit padding as a percentage of the fit extents (e.g.
+            // Vector2{0.1, 0.2} would add 10 % to the X axis and 20 % to the Y axis)
             FitPadding,
 
-            // `Vector2`: padding between the item frame and plot area, labels, or outside legends (i.e. main padding)
+            // `Vector2`: padding between the item frame and plot area, labels, or outside legends
+            // (i.e. main padding)
             PlotPadding,
 
             // `float`: thickness of the border around plot area
@@ -1161,6 +1185,7 @@ namespace osc::ui
             NUM_OPTIONS,
         };
 
+        // clang-format off
         enum class AxisFlags {
             None         = 0,
             NoLabel      = 1<<0,
@@ -1176,15 +1201,20 @@ namespace osc::ui
             Lock = LockMin | LockMax,
             NoDecorations = NoLabel | NoGridLines | NoTickMarks | NoTickLabels,
         };
+        // clang-format on
 
         constexpr AxisFlags operator|(AxisFlags lhs, AxisFlags rhs)
         {
-            return static_cast<AxisFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+            return static_cast<AxisFlags>(
+                std::to_underlying(lhs) |
+                std::to_underlying(rhs));  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
         }
 
         enum class Condition {
-            Always,  // unconditional, i.e. the function should always do what is being asked
-            Once,    // only perform the action once per runtime session (only the first call will succeed)
+            // unconditional, i.e. the function should always do what is being asked
+            Always,
+            // only perform the action once per runtime session (only the first call will succeed)
+            Once,
             NUM_OPTIONS,
         };
 
@@ -1195,10 +1225,10 @@ namespace osc::ui
         };
 
         enum class DragToolFlag : uint8_t {
-            None      = 0,
-            NoFit     = 1<<1,
-            NoInputs  = 1<<2,
-            NUM_FLAGS =    2,
+            None = 0,
+            NoFit = 1 << 1,
+            NoInputs = 1 << 2,
+            NUM_FLAGS = 2,
 
             Default = None,
         };
@@ -1220,8 +1250,8 @@ namespace osc::ui
         };
 
         enum class LegendFlags {
-            None    = 0,
-            Outside = 1<<4,
+            None = 0,
+            Outside = 1 << 4,
 
             Default = None,
         };
@@ -1253,29 +1283,44 @@ namespace osc::ui
         // this must be called if `plot::begin` returns `true`
         void end();
 
-        // temporarily modifies a style variable of `float` type. Must be paired with `pop_style_var`
+        // temporarily modifies a style variable of `float` type. Must be paired with
+        // `pop_style_var`
         void push_style_var(PlotStyleVar, float);
 
-        // temporarily modifies a style variable of `Vector2` type. Must be paired with `pop_style_var`
+        // temporarily modifies a style variable of `Vector2` type. Must be paired with
+        // `pop_style_var`
         void push_style_var(PlotStyleVar, Vector2);
 
-        // undoes `count` temporary style variable modifications that were enacted by `push_style_var`
+        // undoes `count` temporary style variable modifications that were enacted by
+        // `push_style_var`
         void pop_style_var(int count = 1);
 
         // temporarily modifies a style color variable. Must be paired with `pop_style_color`
         void push_style_color(PlotColorVar, const Color&);
 
-        // undoes `count` temporary style color modifications that were enacted by `push_style_color`
+        // undoes `count` temporary style color modifications that were enacted by
+        // `push_style_color`
         void pop_style_color(int count = 1);
 
         // enables an axis or sets the label and/or the flags of an existing axis
-        void setup_axis(Axis, std::optional<CStringView> label = std::nullopt, AxisFlags = AxisFlags::Default);
+        void setup_axis(
+            Axis, std::optional<CStringView> label = std::nullopt, AxisFlags = AxisFlags::Default);
 
-        // sets the label and/or the flags for the primary X and Y axes (shorthand for two calls to `setup_axis`)
-        void setup_axes(CStringView x_label, CStringView y_label, AxisFlags x_flags = AxisFlags::Default, AxisFlags y_flags = AxisFlags::Default);
+        // sets the label and/or the flags for the primary X and Y axes (shorthand for two calls to
+        // `setup_axis`)
+        void setup_axes(
+            CStringView x_label,
+            CStringView y_label,
+            AxisFlags x_flags = AxisFlags::Default,
+            AxisFlags y_flags = AxisFlags::Default);
 
-        // sets an axis's range limits. If `Condition::Always` is used, the axes limits will be locked
-        void setup_axis_limits(Axis axis, ClosedInterval<float> data_range, float padding_percentage, Condition = Condition::Once);
+        // sets an axis's range limits. If `Condition::Always` is used, the axes limits will be
+        // locked
+        void setup_axis_limits(
+            Axis axis,
+            ClosedInterval<float> data_range,
+            float padding_percentage,
+            Condition = Condition::Once);
 
         // explicitly finalizes plot setup
         //
@@ -1291,12 +1336,14 @@ namespace osc::ui
             std::optional<float> size = std::nullopt,
             std::optional<Color> fill = std::nullopt,
             std::optional<float> weight = std::nullopt,
-            std::optional<Color> outline = std::nullopt
-        );
+            std::optional<Color> outline = std::nullopt);
 
         // plots a standard 2D line plot
         void plot_line(CStringView name, std::span<const Vector2> points);
-        void plot_line(CStringView name, std::span<const float> y_values, std::optional<ClosedInterval<float>> x_range = std::nullopt);
+        void plot_line(
+            CStringView name,
+            std::span<const float> y_values,
+            std::optional<ClosedInterval<float>> x_range = std::nullopt);
 
         // returns the plot's rectangle in ui space
         //
@@ -1309,9 +1356,21 @@ namespace osc::ui
         // - annotations are always rendered on top of the plot area
         namespace detail
         {
-            void draw_annotation_v(Vector2 position_dataspace, const Color& color, Vector2 pixel_offset, bool clamp, CStringView fmt, va_list args);
+            void draw_annotation_v(
+                Vector2 position_dataspace,
+                const Color& color,
+                Vector2 pixel_offset,
+                bool clamp,
+                CStringView fmt,
+                va_list args);
         }
-        inline void draw_annotation(Vector2 position_dataspace, const Color& color, Vector2 pixel_offset, bool clamp, CStringView fmt, ...)
+        inline void draw_annotation(  // NOLINT(cert-dcl50-cpp)
+            Vector2 position_dataspace,
+            const Color& color,
+            Vector2 pixel_offset,
+            bool clamp,
+            CStringView fmt,
+            ...)
         {
             va_list args;
             va_start(args, fmt);
@@ -1330,8 +1389,7 @@ namespace osc::ui
             Vector2d* plot_point,
             const Color&,
             float size = 4,
-            DragToolFlags = DragToolFlag::Default
-        );
+            DragToolFlags = DragToolFlag::Default);
 
         // draws a draggable vertical guideline at an x value (plot space) in the
         // plot area.
@@ -1340,8 +1398,7 @@ namespace osc::ui
             double* plot_x,
             const Color&,
             float thickness = 1,
-            DragToolFlags = DragToolFlag::Default
-        );
+            DragToolFlags = DragToolFlag::Default);
 
         // draws a draggable horizontal guideline at a y value (plot space) in the
         // plot area.
@@ -1350,8 +1407,7 @@ namespace osc::ui
             double* plot_y,
             const Color&,
             float thickness = 1,
-            DragToolFlags = DragToolFlag::Default
-        );
+            DragToolFlags = DragToolFlag::Default);
 
         // draws a tag on the x-axis at the specified x value in plot space
         void tag_x(double plot_x, const Color&, bool round = false);

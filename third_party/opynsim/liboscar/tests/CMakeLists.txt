@@ -29,6 +29,12 @@ target_link_libraries(oscar_tests PRIVATE
     oscar
     GTest::gtest
 )
+if(OPYN_USE_STRICT_COMPILER_FLAGS)
+    opyn_add_strict_compiler_options_to(oscar_tests)
+endif()
+if(OPYN_ENABLE_SANITIZERS)
+    opyn_add_sanitizer_flags_to(oscar_tests)
+endif()
 
 # tell CMake (+IDEs) how to find all tests
 if(OPYN_DISCOVER_TESTS)

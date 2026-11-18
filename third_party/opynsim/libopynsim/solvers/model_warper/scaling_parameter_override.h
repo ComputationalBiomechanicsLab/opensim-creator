@@ -13,9 +13,16 @@ namespace opyn
     // in a `ScalingParameterDeclaration`.
     class ScalingParameterOverride final : public OpenSim::Object {
         OpenSim_DECLARE_CONCRETE_OBJECT(ScalingParameterOverride, OpenSim::Object)
+
     public:
-        OpenSim_DECLARE_PROPERTY(parameter_name, std::string, "The name of the scaling parameter that should have its default overridden.");
-        OpenSim_DECLARE_PROPERTY(parameter_value, ScalingParameterValue, "The value to override the scaling parameter with. Note: it must have the correct datatype for the given scaling parameter.");
+        OpenSim_DECLARE_PROPERTY(
+            parameter_name,
+            std::string,
+            "The name of the scaling parameter that should have its default overridden.");
+        OpenSim_DECLARE_PROPERTY(
+            parameter_value,
+            ScalingParameterValue,
+            "The value to override the scaling parameter with. Note: it must have the correct datatype for the given scaling parameter.");
 
         explicit ScalingParameterOverride()
         {

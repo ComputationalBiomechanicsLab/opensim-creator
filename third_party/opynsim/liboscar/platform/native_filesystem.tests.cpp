@@ -80,7 +80,8 @@ TEST(NativeFilesystem, open_returns_ResourceStream_when_opening_a_file)
     ResourceStream stream = native_filesystem.open("somefile");
     ASSERT_EQ(stream.name(), "somefile");
 
-    const std::string read_content(std::istreambuf_iterator<char>{stream.stream()}, std::istreambuf_iterator<char>{});
+    const std::string read_content(
+        std::istreambuf_iterator<char>{stream.stream()}, std::istreambuf_iterator<char>{});
 
     ASSERT_EQ(read_content, written_content);
 }

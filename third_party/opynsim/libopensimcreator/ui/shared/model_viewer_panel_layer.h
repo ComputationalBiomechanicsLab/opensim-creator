@@ -2,11 +2,11 @@
 
 #include <libopensimcreator/ui/shared/model_viewer_panel_layer_flags.h>
 
-namespace osc { class ModelViewerPanelParameters; }
-namespace osc { class ModelViewerPanelState; }
-
 namespace osc
 {
+    class ModelViewerPanelParameters;
+    class ModelViewerPanelState;
+
     class ModelViewerPanelLayer {
     protected:
         ModelViewerPanelLayer() = default;
@@ -14,58 +14,52 @@ namespace osc
         ModelViewerPanelLayer(ModelViewerPanelLayer&&) noexcept = default;
         ModelViewerPanelLayer& operator=(const ModelViewerPanelLayer&) = default;
         ModelViewerPanelLayer& operator=(ModelViewerPanelLayer&&) noexcept = default;
+
     public:
         virtual ~ModelViewerPanelLayer() noexcept = default;
 
-        ModelViewerPanelLayerFlags getFlags() const
+        ModelViewerPanelLayerFlags get_flags() const { return impl_get_flags(); }
+
+        float get_background_alpha() const { return impl_get_background_alpha(); }
+
+        void on_new_frame() { impl_on_new_frame(); }
+
+        bool handle_mouse_inputs(ModelViewerPanelParameters& params, ModelViewerPanelState& state)
         {
-            return implGetFlags();
+            return impl_handle_mouse_inputs(params, state);
         }
 
-        float getBackgroundAlpha() const
+        bool handle_keyboard_inputs(
+            ModelViewerPanelParameters& params, ModelViewerPanelState& state)
         {
-            return implGetBackgroundAlpha();
+            return impl_handle_keyboard_inputs(params, state);
         }
 
-        void onNewFrame()
+        void on_draw(ModelViewerPanelParameters& params, ModelViewerPanelState& state)
         {
-            implOnNewFrame();
+            impl_on_draw(params, state);
         }
 
-        bool handleMouseInputs(
-            ModelViewerPanelParameters& params,
-            ModelViewerPanelState& state)
-        {
-            return implHandleMouseInputs(params, state);
-        }
-
-        bool handleKeyboardInputs(
-            ModelViewerPanelParameters& params,
-            ModelViewerPanelState& state)
-        {
-            return implHandleKeyboardInputs(params, state);
-        }
-
-        void onDraw(
-            ModelViewerPanelParameters& params,
-            ModelViewerPanelState& state)
-        {
-            implOnDraw(params, state);
-        }
-
-        bool shouldClose() const
-        {
-            return implShouldClose();
-        }
+        bool should_close() const { return impl_should_close(); }
 
     private:
-        virtual ModelViewerPanelLayerFlags implGetFlags() const { return ModelViewerPanelLayerFlags::Default; }
-        virtual float implGetBackgroundAlpha() const { return 0.0f; }
-        virtual void implOnNewFrame() {}
-        virtual bool implHandleMouseInputs(ModelViewerPanelParameters&, ModelViewerPanelState&) { return false; }
-        virtual bool implHandleKeyboardInputs(ModelViewerPanelParameters&, ModelViewerPanelState&) { return false; }
-        virtual bool implShouldClose() const { return false; }
+        virtual ModelViewerPanelLayerFlags impl_get_flags() const
+        {
+            return ModelViewerPanelLayerFlags::Default;
+        }
+        virtual float impl_get_background_alpha() const { return 0.0f; }
+        virtual void impl_on_new_frame() {}
+        virtual bool impl_handle_mouse_inputs(ModelViewerPanelParameters&, ModelViewerPanelState&)
+        {
+            return false;
+        }
+        virtual bool impl_handle_keyboard_inputs(
+            ModelViewerPanelParameters&, ModelViewerPanelState&)
+        {
+            return false;
+        }
+        virtual bool impl_should_close() const { return false; }
 
-        virtual void implOnDraw(ModelViewerPanelParameters&, ModelViewerPanelState&) = 0;
+        virtual void impl_on_draw(ModelViewerPanelParameters&, ModelViewerPanelState&) = 0;
     };
 }

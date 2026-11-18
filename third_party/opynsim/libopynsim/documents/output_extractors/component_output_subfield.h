@@ -7,23 +7,30 @@
 #include <optional>
 #include <span>
 
-namespace OpenSim { class AbstractOutput; }
-namespace SimTK { class State; }
+namespace OpenSim
+{
+    class AbstractOutput;
+}
+
+namespace SimTK
+{
+    class State;
+}
 
 namespace opyn
 {
     // flag type that can be used to say what subfields an OpenSim output has
     enum class ComponentOutputSubfield : uint32_t {
-        None       = 0,
-        X          = 1<<0,
-        Y          = 1<<1,
-        Z          = 1<<2,
-        Magnitude  = 1<<3,
-        RX         = 1<<4,
-        RY         = 1<<5,
-        RZ         = 1<<6,
-        RMagnitude = 1<<7,
-        NUM_FLAGS  =    8,
+        None = 0,
+        X = 1 << 0,
+        Y = 1 << 1,
+        Z = 1 << 2,
+        Magnitude = 1 << 3,
+        RX = 1 << 4,
+        RY = 1 << 5,
+        RZ = 1 << 6,
+        RMagnitude = 1 << 7,
+        NUM_FLAGS = 8,
 
         Default = None,
     };
@@ -32,12 +39,14 @@ namespace opyn
     std::optional<osc::CStringView> get_output_subfield_label(ComponentOutputSubfield);
     std::span<const ComponentOutputSubfield> get_all_supported_output_subfields();
 
-    // tests if the output produces numeric values (e.g. `float`, `Vector3`, etc. - as opposed to `std::string`)
+    // tests if the output produces numeric values (e.g. `float`, `Vector3`, etc. - as opposed to
+    // `std::string`)
     bool produces_extractable_numeric_values(const OpenSim::AbstractOutput&);
 
     // returns `ComponentOutputSubfield`s that are usable with the given output.
     ComponentOutputSubfields get_supported_subfields(const OpenSim::AbstractOutput&);
 
-    using SubfieldExtractorFunc = double(*)(const OpenSim::AbstractOutput&, const SimTK::State&);
-    SubfieldExtractorFunc get_extractor_func_or_null(const OpenSim::AbstractOutput&, ComponentOutputSubfield);
+    using SubfieldExtractorFunc = double (*)(const OpenSim::AbstractOutput&, const SimTK::State&);
+    SubfieldExtractorFunc get_extractor_func_or_null(
+        const OpenSim::AbstractOutput&, ComponentOutputSubfield);
 }

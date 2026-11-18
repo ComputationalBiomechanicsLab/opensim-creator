@@ -7,45 +7,38 @@ using namespace opyn;
 
 namespace
 {
-    constexpr auto c_metadata = std::to_array<OverlayDecorationOptionFlagsMetadata>(
-    {
-        OverlayDecorationOptionFlagsMetadata
-        {
+    constexpr auto c_metadata = std::to_array<OverlayDecorationOptionFlagsMetadata>({
+        OverlayDecorationOptionFlagsMetadata{
             "show_xz_grid",
             "XZ Grid",
             OverlayDecorationOptionGroup::Alignment,
             OverlayDecorationOptionFlags::DrawXZGrid,
         },
-        OverlayDecorationOptionFlagsMetadata
-        {
+        OverlayDecorationOptionFlagsMetadata{
             "show_xy_grid",
             "XY Grid",
             OverlayDecorationOptionGroup::Alignment,
             OverlayDecorationOptionFlags::DrawXYGrid,
         },
-        OverlayDecorationOptionFlagsMetadata
-        {
+        OverlayDecorationOptionFlagsMetadata{
             "show_yz_grid",
             "YZ Grid",
             OverlayDecorationOptionGroup::Alignment,
             OverlayDecorationOptionFlags::DrawYZGrid,
         },
-        OverlayDecorationOptionFlagsMetadata
-        {
+        OverlayDecorationOptionFlagsMetadata{
             "show_axis_lines",
             "Axis Lines",
             OverlayDecorationOptionGroup::Alignment,
             OverlayDecorationOptionFlags::DrawAxisLines,
         },
-        OverlayDecorationOptionFlagsMetadata
-        {
+        OverlayDecorationOptionFlagsMetadata{
             "show_aabbs",
             "AABBs",
             OverlayDecorationOptionGroup::Development,
             OverlayDecorationOptionFlags::DrawAABBs,
         },
-        OverlayDecorationOptionFlagsMetadata
-        {
+        OverlayDecorationOptionFlagsMetadata{
             "show_bvh",
             "BVH",
             OverlayDecorationOptionGroup::Development,
@@ -56,17 +49,15 @@ namespace
 
 osc::CStringView opyn::get_label(OverlayDecorationOptionGroup g)
 {
-    switch (g)
-    {
-    case OverlayDecorationOptionGroup::Alignment:
-        return "Alignment";
+    switch (g) {
+    case OverlayDecorationOptionGroup::Alignment: return "Alignment";
     case OverlayDecorationOptionGroup::Development:
-    default:
-        return "Development";
+    default: return "Development";
     }
 }
 
-std::span<const OverlayDecorationOptionFlagsMetadata> opyn::get_all_overlay_decoration_option_flags_metadata()
+std::span<const OverlayDecorationOptionFlagsMetadata> opyn::
+    get_all_overlay_decoration_option_flags_metadata()
 {
     return c_metadata;
 }

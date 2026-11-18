@@ -33,19 +33,19 @@ using namespace osc;
 namespace
 {
     constexpr auto c_scene_light_positions = std::to_array<Vector3>({
-        { 0.0f, 0.5f,  1.5f},
+        {0.0f, 0.5f, 1.5f},
         {-4.0f, 0.5f, -3.0f},
-        { 3.0f, 0.5f,  1.0f},
+        {3.0f, 0.5f, 1.0f},
         {-0.8f, 2.4f, -1.0f},
     });
 
     const std::array<Color, c_scene_light_positions.size()>& get_scene_light_colors()
     {
         static const auto s_scene_light_colors = std::to_array<Color>({
-            to_srgb_colorspace({ 5.0f, 5.0f,  5.0f}),
-            to_srgb_colorspace({10.0f, 0.0f,  0.0f}),
-            to_srgb_colorspace({ 0.0f, 0.0f, 15.0f}),
-            to_srgb_colorspace({ 0.0f, 5.0f,  0.0f}),
+            to_srgb_colorspace({5.0f, 5.0f, 5.0f}),
+            to_srgb_colorspace({10.0f, 0.0f, 0.0f}),
+            to_srgb_colorspace({0.0f, 0.0f, 15.0f}),
+            to_srgb_colorspace({0.0f, 5.0f, 0.0f}),
         });
         return s_scene_light_colors;
     }
@@ -133,10 +133,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -149,7 +146,8 @@ private:
     {
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vector2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
+        const Vector2 workspace_pixel_dimensions =
+            device_pixel_ratio * workspace_screen_space_rect.dimensions();
 
         reformat_all_textures(workspace_pixel_dimensions, device_pixel_ratio);
         render_scene_mrt();
@@ -200,23 +198,13 @@ private:
             MaterialPropertyBlock floor_props;
             floor_props.set("uDiffuseTexture", wood_texture_);
 
-            render_queue_.emplace(
-                cube_mesh_,
-                floor_transform,
-                scene_material_,
-                floor_props
-            );
+            render_queue_.emplace(cube_mesh_, floor_transform, scene_material_, floor_props);
         }
 
         MaterialPropertyBlock cube_props;
         cube_props.set("uDiffuseTexture", container_texture_);
         for (const auto& cube_transform : create_cube_transforms()) {
-            render_queue_.emplace(
-                cube_mesh_,
-                cube_transform,
-                scene_material_,
-                cube_props
-            );
+            render_queue_.emplace(cube_mesh_, cube_transform, scene_material_, cube_props);
         }
     }
 
@@ -232,12 +220,7 @@ private:
             MaterialPropertyBlock light_props;
             light_props.set("uLightColor", scene_light_colors[i]);
 
-            render_queue_.emplace(
-                cube_mesh_,
-                light_transform,
-                lightbox_material_,
-                light_props
-            );
+            render_queue_.emplace(cube_mesh_, light_transform, lightbox_material_, light_props);
         }
     }
 
@@ -262,9 +245,13 @@ private:
                 RenderBufferStoreAction::DontCare,
             },
         };
-        graphics::render_to(mrt, render_queue_, camera_, {
-            .clear_color = Color::black(),
-        });
+        graphics::render_to(
+            mrt,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = Color::black(),
+            });
         render_queue_.clear();
     }
 
@@ -292,9 +279,12 @@ private:
         final_compositing_material_.set("uExposure", 1.0f);
 
         render_queue_.emplace(quad_mesh_, final_compositing_material_);
-        graphics::render_to_main_window(render_queue_, Camera{}, {
-            .viewport_rect = viewport_screen_space_rect,
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            Camera{},
+            {
+                .viewport_rect = viewport_screen_space_rect,
+            });
         render_queue_.clear();
 
         final_compositing_material_.unset("uBloomBlur");
@@ -313,11 +303,10 @@ private:
         });
 
         for (size_t i = 0; i < texture_pointers.size(); ++i) {
-            const Vector2 offset = {static_cast<float>(i)*overlay_width, 0.0f};
+            const Vector2 offset = {static_cast<float>(i) * overlay_width, 0.0f};
             const Rect overlay_rect = Rect::from_corners(
                 viewport_screen_space_rect.ypu_bottom_left() + offset,
-                viewport_screen_space_rect.ypu_bottom_left() + offset + overlay_width
-            );
+                viewport_screen_space_rect.ypu_bottom_left() + offset + overlay_width);
 
             graphics::blit_to_main_window(*texture_pointers[i], overlay_rect);
         }
@@ -346,13 +335,9 @@ private:
     }};
 
     Texture2D wood_texture_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
-        ColorSpace::sRGB
-    );
+        loader_.open("oscar_demos/learnopengl/textures/wood.jpg"), ColorSpace::sRGB);
     Texture2D container_texture_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
-        ColorSpace::sRGB
-    );
+        loader_.open("oscar_demos/learnopengl/textures/container2.jpg"), ColorSpace::sRGB);
     Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
     Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
 
@@ -364,13 +349,27 @@ private:
     RenderQueue render_queue_;
 };
 
-
-CStringView osc::LOGLBloomTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLBloomTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLBloomTab::LOGLBloomTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLBloomTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLBloomTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLBloomTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLBloomTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLBloomTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLBloomTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLBloomTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLBloomTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

@@ -143,6 +143,8 @@ to external projects that provide further casters:
     - ``#include <nanobind/eigen/dense.h>``
   * - ``Eigen::SparseMatrix<..>``
     - ``#include <nanobind/eigen/sparse.h>``
+  * - ``Eigen::Tensor<..>``, ``Eigen::TensorMap<..>``, ``Eigen::TensorRef<..>``
+    - ``#include <nanobind/eigen/tensor.h>``
   * - Apache Arrow types
     -  `https://github.com/maximiliank/nanobind_pyarrow <https://github.com/maximiliank/nanobind_pyarrow>`__
   * - ...
@@ -369,6 +371,25 @@ This is what the example looks like when expressed using
         m.def("double_it", &double_it);
     }
 
+When the size of the result is known in advance, the
+:cpp:class:`nb::list_builder <list_builder>` and :cpp:class:`nb::tuple_builder
+<tuple_builder>` helper classes offer a more efficient alternative that fills
+the sequence in place:
+
+.. code-block:: cpp
+
+    nb::list double_it(nb::list l) {
+        nb::list_builder builder(l.size());
+        for (nb::handle h: l)
+            builder.put(h * nb::int_(2));
+        return builder.commit();
+    }
+
+Destroying a builder before the final :cpp:func:`commit()
+<tuple_builder::commit>` call releases the entries stored so far. Since
+tuples are immutable and provide no ``append()`` method,
+:cpp:class:`nb::tuple_builder <tuple_builder>` is also the preferred way to
+create a tuple whose elements must be computed one by one.
 
 The implications of using wrappers are:
 
@@ -396,7 +417,7 @@ directives:
 :cpp:class:`frozenset`, :cpp:class:`iterable`, :cpp:class:`iterator`,
 :cpp:class:`list`, :cpp:class:`mapping`,
 :cpp:class:`module_`, :cpp:class:`object`, :cpp:class:`set`, :cpp:class:`sequence`,
-:cpp:class:`slice`, :cpp:class:`str`, :cpp:class:`tuple`,
+:cpp:class:`memoryview`, :cpp:class:`slice`, :cpp:class:`str`, :cpp:class:`tuple`,
 :cpp:class:`weakref`,
 :cpp:class:`type_object`, :cpp:class:`type_object_t\<T\> <type_object_t>`,
 :cpp:class:`args`, :cpp:class:`kwargs`, and

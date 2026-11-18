@@ -30,14 +30,11 @@ namespace opyn
         explicit DataFrame(
             std::vector<std::string> column_names,
             std::vector<std::vector<double>> column_data,
-            std::unordered_map<std::string, std::string> attrs = {}
-        );
+            std::unordered_map<std::string, std::string> attrs = {});
 
         /// Constructs a `DataFrame` with the given `series`.
         explicit DataFrame(
-            std::vector<Series> series,
-            std::unordered_map<std::string, std::string> attrs = {}
-        );
+            std::vector<Series> series, std::unordered_map<std::string, std::string> attrs = {});
 
         /// Returns `true` all members of `lhs` compare equivalent to `rhs`.
         ///
@@ -109,6 +106,7 @@ namespace opyn
         /// - The returned `Series` will always have empty `attrs`. It is up to the
         ///   caller to decide how to propagate metadata.
         DataFrame with_series(Series series) const;
+
     private:
         std::vector<Series> series_;
         std::unordered_map<std::string, size_t> column_to_index_lookup_;

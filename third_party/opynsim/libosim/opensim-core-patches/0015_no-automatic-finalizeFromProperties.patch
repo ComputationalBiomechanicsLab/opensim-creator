@@ -7,8 +7,9 @@ it happens, rather than these constructors adsorbing it.
 
 ---
 
+
 diff --git a/OpenSim/Simulation/Model/Model.cpp b/OpenSim/Simulation/Model/Model.cpp
-index 5654bdeb2..83cee3e5a 100644
+index ebbf990f..feefc5ee 100644
 --- a/OpenSim/Simulation/Model/Model.cpp
 +++ b/OpenSim/Simulation/Model/Model.cpp
 @@ -192,7 +192,6 @@ Model::Model() : ModelComponent(),
@@ -27,7 +28,7 @@ index 5654bdeb2..83cee3e5a 100644
 -    try {
 -        finalizeFromProperties();
 -    }
--    catch(const InvalidPropertyValue& err) {
+-    catch(const std::exception& err) {
 -        log_error("Model was unable to finalizeFromProperties."
 -                  "Update the model file and reload OR update the property and "
 -                  "call finalizeFromProperties() on the model."
@@ -44,7 +45,7 @@ index 5654bdeb2..83cee3e5a 100644
 -    try {
 -        clone->finalizeFromProperties();
 -    }
--    catch (const InvalidPropertyValue& err) {
+-    catch (const std::exception& err) {
 -        log_error(
 -                "clone() was unable to finalizeFromProperties."
 -                "Update the model and call clone() again OR update the clone's "

@@ -6,10 +6,10 @@
 #include <string>
 #include <utility>
 
-namespace osc { class UndoRedoBase; }
-
 namespace osc
 {
+    class UndoRedoBase;
+
     // a user-visible button, with a history dropdown menu, that performs an undo operation
     class UndoButton final : public Widget {
     public:
@@ -24,7 +24,7 @@ namespace osc
         {}
 
     private:
-        void impl_on_draw() final;
+        void impl_on_draw() override;
 
         std::shared_ptr<UndoRedoBase> undo_redo_;
         std::string button_icon_text_;

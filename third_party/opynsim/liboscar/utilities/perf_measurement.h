@@ -11,8 +11,7 @@ namespace osc
 {
     class PerfMeasurement final {
     public:
-        explicit PerfMeasurement(
-            const std::shared_ptr<const PerfMeasurementMetadata>& metadata) :
+        explicit PerfMeasurement(const std::shared_ptr<const PerfMeasurementMetadata>& metadata) :
             metadata_{metadata}
         {}
 
@@ -30,7 +29,8 @@ namespace osc
 
         PerfClock::duration average_duration() const
         {
-            return call_count_ > 0 ? total_duration_/static_cast<ptrdiff_t>(call_count_) : PerfClock::duration{0};
+            return call_count_ > 0 ? total_duration_ / static_cast<ptrdiff_t>(call_count_)
+                                   : PerfClock::duration{0};
         }
 
         PerfClock::duration total_duration() const { return total_duration_; }

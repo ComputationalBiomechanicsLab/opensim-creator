@@ -12,7 +12,8 @@ using namespace osc;
 
 namespace
 {
-    using FastStringLookup = ankerl::unordered_dense::set<SharedPreHashedString, TransparentStringHasher, std::equal_to<>>;
+    using FastStringLookup = ankerl::unordered_dense::
+        set<SharedPreHashedString, TransparentStringHasher, std::equal_to<>>;
 
     SynchronizedValue<FastStringLookup>& get_global_lut()
     {

@@ -169,12 +169,17 @@ bindings are an optional component).
    nb::intrusive_init(
        [](PyObject *o) noexcept {
            nb::gil_scoped_acquire guard;
-           Py_INCREF(o);
+           if (guard.is_valid())
+               Py_INCREF(o);
        },
        [](PyObject *o) noexcept {
            nb::gil_scoped_acquire guard;
-           Py_DECREF(o);
+           if (guard.is_valid())
+               Py_DECREF(o);
        });
+
+The hooks can run on threads that Python did not create, hence the
+:ref:`check <gil-shutdown>` that a thread state was attached successfully.
 
 These ``counter.h`` include file references several functions that must be
 compiled somewhere inside the project, which can be accomplished by including
@@ -368,7 +373,7 @@ Deleter>`` from Python, ownership of that object must be transferred from C++ to
   possible when the instance was originally created by a *new expression*
   within C++ and nanobind has taken over ownership (i.e., it was created by
   a function returning a raw pointer ``T *value`` with
-  :cpp:enumerator:`rv_policy::take_ownership`, or a function returning a
+  :cpp:member:`rv_policy::take_ownership`, or a function returning a
   ``std::unique_ptr<T>``). This limitation exists because the ``Deleter``
   will execute the statement ``delete value`` when the unique pointer
   expires, causing undefined behavior when the object was allocated within

@@ -40,20 +40,11 @@ namespace osc
 
         friend auto operator<=>(const Snorm&, const Snorm&) = default;
 
-        explicit constexpr operator float() const
-        {
-            return normalized_value();
-        }
+        explicit constexpr operator float() const { return normalized_value(); }
 
-        explicit constexpr operator T() const
-        {
-            return raw_value();
-        }
+        explicit constexpr operator T() const { return raw_value(); }
 
-        constexpr T raw_value() const
-        {
-            return value_;
-        }
+        constexpr T raw_value() const { return value_; }
 
         constexpr float normalized_value() const
         {
@@ -67,7 +58,8 @@ namespace osc
             //
             // see: https://www.khronos.org/opengl/wiki/Normalized_Integer
 
-            const float fvalue = static_cast<float>(value_) / static_cast<float>(std::numeric_limits<T>::max());
+            const float fvalue =
+                static_cast<float>(value_) / static_cast<float>(std::numeric_limits<T>::max());
             return fvalue >= -1.0f ? fvalue : -1.0f;
         }
 

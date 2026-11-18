@@ -17,96 +17,75 @@ namespace osc
     public:
         MiClass(
             CStringView name,
-            CStringView namePluralized,
-            CStringView nameOptionallyPluralized,
+            CStringView name_pluralized,
+            CStringView name_optionally_pluralized,
             CStringView icon,
             CStringView description) :
 
-            m_Data{std::make_shared<Data>(
-                name,
-                namePluralized,
-                nameOptionallyPluralized,
-                icon,
-                description
-            )}
+            data_{std::make_shared<Data>(
+                name, name_pluralized, name_optionally_pluralized, icon, description)}
+        {}
+
+        UID get_id() const { return data_->id; }
+
+        CStringView get_name() const { return data_->name; }
+
+        CStringView get_name_pluralized() const { return data_->name_pluralized; }
+
+        CStringView get_name_optionally_pluralized() const
         {
+            return data_->name_optionally_pluralized;
         }
 
-        UID getID() const
-        {
-            return m_Data->id;
-        }
+        CStringView get_icon_utf8() const { return data_->icon; }
 
-        CStringView getName() const
-        {
-            return m_Data->name;
-        }
-
-        CStringView getNamePluralized() const
-        {
-            return m_Data->namePluralized;
-        }
-
-        CStringView getNameOptionallyPluralized() const
-        {
-            return m_Data->nameOptionallyPluralized;
-        }
-
-        CStringView getIconUTF8() const
-        {
-            return m_Data->icon;
-        }
-
-        CStringView getDescription() const
-        {
-            return m_Data->description;
-        }
+        CStringView get_description() const { return data_->description; }
 
         // returns a unique string that can be used to name an instance of the given class
-        std::string generateName() const
+        std::string generate_name() const
         {
             std::stringstream ss;
-            ss << getName() << fetchAddUniqueCounter();
+            ss << get_name() << fetch_add_unique_counter();
             return std::move(ss).str();
         }
 
         friend bool operator==(const MiClass& lhs, const MiClass& rhs)
         {
-            return lhs.m_Data == rhs.m_Data || *lhs.m_Data == *rhs.m_Data;
+            return lhs.data_ == rhs.data_ || *lhs.data_ == *rhs.data_;
         }
+
     private:
-        int32_t fetchAddUniqueCounter() const
+        int32_t fetch_add_unique_counter() const
         {
-            return m_Data->uniqueCounter.fetch_add(1, std::memory_order::relaxed);
+            return data_->unique_counter.fetch_add(1, std::memory_order::relaxed);
         }
 
         struct Data final {
             Data(
-                CStringView name_,
-                CStringView namePluralized_,
-                CStringView nameOptionallyPluralized_,
-                CStringView icon_,
-                CStringView description_) :
+                CStringView name,
+                CStringView name_pluralized,
+                CStringView name_optionally_pluralized,
+                CStringView icon,
+                CStringView description) :
 
-                name{name_},
-                namePluralized{namePluralized_},
-                nameOptionallyPluralized{nameOptionallyPluralized_},
-                icon{icon_},
-                description{description_}
-            {
-            }
+                name{name},
+                name_pluralized{name_pluralized},
+                name_optionally_pluralized{name_optionally_pluralized},
+                icon{icon},
+                description{description}
+            {}
 
             friend bool operator==(const Data&, const Data&) = default;
 
             UID id;
             std::string name;
-            std::string namePluralized;
-            std::string nameOptionallyPluralized;
+            std::string name_pluralized;
+            std::string name_optionally_pluralized;
             std::string icon;
             std::string description;
-            mutable std::atomic<int32_t> uniqueCounter = 0;
+            mutable std::atomic<int32_t> unique_counter = 0;
         };
 
-        std::shared_ptr<const Data> m_Data;
+        std::shared_ptr<const Data> data_;
     };
 }

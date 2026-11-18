@@ -10,10 +10,7 @@ namespace osc
     class PerfMeasurementMetadata final {
     public:
         PerfMeasurementMetadata(
-            size_t id,
-            std::string_view label,
-            std::string_view filename,
-            unsigned int line) :
+            size_t id, std::string_view label, std::string_view filename, unsigned int line) :
 
             id_{id},
             label_{label},

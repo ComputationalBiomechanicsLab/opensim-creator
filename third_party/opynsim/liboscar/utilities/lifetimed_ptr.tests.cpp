@@ -143,7 +143,7 @@ TEST(LifetimedPtr, get_returns_nullptr_for_nullptr)
 TEST(LifetimedPtr, get_throws_if_non_nullptr_but_with_expired_lifetime)
 {
     LifetimedPtr<const SomeDerivingObject> ptr;
-    const SomeDerivingObject obj; // doesn't matter if this is in-lifetime
+    const SomeDerivingObject obj;  // doesn't matter if this is in-lifetime
     {
         const SharedLifetimeBlock lifetime;
         ptr = LifetimedPtr<const SomeDerivingObject>{lifetime, &obj};
@@ -161,7 +161,7 @@ TEST(LifetimedPtr, get_if_not_expired_returns_nullptr_for_nullptr)
 TEST(LifetimedPtr, get_if_not_expired_returns_nullptr_for_non_nullptr_of_expired_lifetime)
 {
     LifetimedPtr<const SomeDerivingObject> ptr;
-    const SomeDerivingObject obj; // doesn't matter if this is in-lifetime
+    const SomeDerivingObject obj;  // doesn't matter if this is in-lifetime
     {
         const SharedLifetimeBlock lifetime;
         ptr = LifetimedPtr<const SomeDerivingObject>{lifetime, &obj};

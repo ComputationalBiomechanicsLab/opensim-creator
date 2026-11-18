@@ -9,7 +9,8 @@
 namespace osc
 {
     struct MeshBasicMaterialParams final {
-        friend bool operator==(const MeshBasicMaterialParams&, const MeshBasicMaterialParams&) = default;
+        friend bool operator==(const MeshBasicMaterialParams&, const MeshBasicMaterialParams&) =
+            default;
 
         Color color = Color::black();
     };

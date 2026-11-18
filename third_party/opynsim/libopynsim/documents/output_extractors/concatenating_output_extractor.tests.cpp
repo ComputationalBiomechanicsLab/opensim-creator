@@ -13,8 +13,10 @@ using namespace opyn;
 // concatenate two floating point outputs (#1025).
 TEST(ConcatenatingOutputExtractor, hasExpectedOutputsWhenConcatenatingTwoFloatOutput)
 {
-    const opyn::SharedOutputExtractor lhs = opyn::make_output_extractor<ConstantOutputExtractor>("lhslabel", 1.0f);
-    const opyn::SharedOutputExtractor rhs = opyn::make_output_extractor<ConstantOutputExtractor>("rhslabel", 2.0f);
+    const opyn::SharedOutputExtractor lhs =
+        opyn::make_output_extractor<ConstantOutputExtractor>("lhslabel", 1.0f);
+    const opyn::SharedOutputExtractor rhs =
+        opyn::make_output_extractor<ConstantOutputExtractor>("rhslabel", 2.0f);
     const ConcatenatingOutputExtractor concat{lhs, rhs};
 
     ASSERT_EQ(concat.output_type(), opyn::OutputExtractorDataType::Vector2);

@@ -31,7 +31,9 @@ osc::Texture2D opyn::render_model_in_state(
     osc::SceneCache* scene_cache,
     const osc::Camera* camera)
 {
-    OSC_ASSERT_ALWAYS(dimensions.x() > 0 and dimensions.y() > 0 && "The dimensions of a render must be positive integers");
+    OSC_ASSERT_ALWAYS(
+        dimensions.x() > 0 and dimensions.y() > 0 &&
+        "The dimensions of a render must be positive integers");
 
     // Create local scene cache if caller did not provide one.
     std::optional<osc::SceneCache> local_cache;
@@ -40,7 +42,8 @@ osc::Texture2D opyn::render_model_in_state(
     }
 
     // Generate decorations
-    const std::vector<osc::SceneDecoration> decorations = model.decorations(*scene_cache, model_state);
+    const std::vector<osc::SceneDecoration> decorations =
+        model.decorations(*scene_cache, model_state);
     const auto aspect_ratio = osc::aspect_ratio_of(dimensions);
 
     // Create local camera if caller did not provide one.
@@ -54,7 +57,8 @@ osc::Texture2D opyn::render_model_in_state(
             .theta = {},
             .phi = {},
         };
-        if (const auto aabb = osc::bounding_aabb_of(decorations, &osc::SceneDecoration::world_space_bounds)) {
+        if (const auto aabb =
+                osc::bounding_aabb_of(decorations, &osc::SceneDecoration::world_space_bounds)) {
             camera_controller.focus_on(*aabb, lc, aspect_ratio);
         }
         camera_controller.update_camera(lc);

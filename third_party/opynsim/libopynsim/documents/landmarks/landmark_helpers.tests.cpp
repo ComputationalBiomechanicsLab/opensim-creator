@@ -41,8 +41,7 @@ namespace
     template<class T>
     auto vector_reading_iterator(const std::vector<T>& vs)
     {
-        return [it = vs.begin(), end = vs.end()]() mutable
-        {
+        return [it = vs.begin(), end = vs.end()]() mutable {
             if (it != end) {
 
                 return std::optional<T>{*it++};
@@ -58,7 +57,7 @@ TEST(LandmarkHelpers, read_landmarks_from_csv_returns_no_rows_for_blank_csv)
 {
     auto input = open_fixture_file("blank.csv");
     size_t i = 0;
-    read_landmarks_from_csv(input, [&i](auto&&){ ++i; });
+    read_landmarks_from_csv(input, [&i](auto&&) { ++i; });
     ASSERT_EQ(i, 0);
 }
 
@@ -69,7 +68,7 @@ TEST(LandmarkHelpers, read_landmarks_from_csv_works_for_3_col_csv_with_no_header
 {
     auto input = open_fixture_file("3colnoheader.csv");
     size_t i = 0;
-    read_landmarks_from_csv(input, [&i](auto&&){ ++i; });
+    read_landmarks_from_csv(input, [&i](auto&&) { ++i; });
     ASSERT_EQ(i, 4);
 }
 
@@ -79,7 +78,7 @@ TEST(LandmarkHelpers, read_landmarks_from_csv_works_for_3_col_csv_with_header)
 {
     auto input = open_fixture_file("3colwithheader.csv");
     size_t i = 0;
-    read_landmarks_from_csv(input, [&i](auto&&){ ++i; });
+    read_landmarks_from_csv(input, [&i](auto&&) { ++i; });
     ASSERT_EQ(i, 4);  // (skipped the header)
 }
 
@@ -88,18 +87,20 @@ TEST(LandmarkHelpers, read_landmarks_from_csv_ignores_invalid_rows)
 {
     auto input = open_fixture_file("3colbutinvalid.csv");
     size_t i = 0;
-    read_landmarks_from_csv(input, [&i](auto&&){ ++i; });
+    read_landmarks_from_csv(input, [&i](auto&&) { ++i; });
     ASSERT_EQ(i, 0);  // (skipped all rows)
 }
 
 // although this is technically a bodged file, it's one of those things that custom python
 // scripts might spit out, or users might want blank lines in their CSV as a primitive way
 // of grouping datapoints - just ignore the whole row
-TEST(LandmarkHelpers, read_landmarks_from_csv_containing_sparse_errors_and_blank_rows_just_ignores_them)
+TEST(
+    LandmarkHelpers,
+    read_landmarks_from_csv_containing_sparse_errors_and_blank_rows_just_ignores_them)
 {
     auto input = open_fixture_file("3colsparseerrors.csv");
     size_t i = 0;
-    read_landmarks_from_csv(input, [&i](auto&&){ ++i; });
+    read_landmarks_from_csv(input, [&i](auto&&) { ++i; });
     ASSERT_EQ(i, 4);  // (skipped the bad ones)
 }
 
@@ -108,14 +109,12 @@ TEST(LandmarkHelpers, read_landmarks_from_typical_4_column_csv_works_as_expected
 {
     auto input = open_fixture_file("4column.csv");
     std::vector<std::string> names;
-    read_landmarks_from_csv(input, [&names](auto&& lm)
-    {
+    read_landmarks_from_csv(input, [&names](auto&& lm) {
         if (lm.maybe_name) {
             names.push_back(std::move(lm.maybe_name).value());
         }
     });
-    std::vector<std::string> expected_names =
-    {
+    std::vector<std::string> expected_names = {
         "landmark_0",
         "landmark_1",
         "landmark_2",
@@ -167,8 +166,8 @@ TEST(LandmarkHelpers, write_landmarks_to_csv_writes_only_xyz_if_no_name_requeste
 TEST(LandmarkHelpers, generate_names_does_not_change_input_if_input_is_fully_named)
 {
     const std::vector<Landmark> input = {
-        {"p1",   {}},
-        {"p2",   {0.0f, 1.0f, 0.0f}},
+        {"p1", {}},
+        {"p2", {0.0f, 1.0f, 0.0f}},
         {"etc.", {1.0f, 1.0f, 0.0f}},
     };
     const auto output = generate_names(input);
@@ -179,14 +178,14 @@ TEST(LandmarkHelpers, generate_names_does_not_change_input_if_input_is_fully_nam
 TEST(LandmarkHelpers, generate_names_generates_prefixed_name_for_unnamed_inputs)
 {
     const std::vector<Landmark> input = {
-        {"p1",         {}},
+        {"p1", {}},
         {std::nullopt, {0.0f, 1.0f, 0.0f}},
-        {"etc.",       {1.0f, 1.0f, 0.0f}},
+        {"etc.", {1.0f, 1.0f, 0.0f}},
     };
     const std::vector<NamedLandmark> expected_output = {
-        {"p1",           osc::Vector3{}},
+        {"p1", osc::Vector3{}},
         {"someprefix_0", osc::Vector3{0.0f, 1.0f, 0.0f}},
-        {"etc.",         osc::Vector3{1.0f, 1.0f, 0.0f}},
+        {"etc.", osc::Vector3{1.0f, 1.0f, 0.0f}},
     };
     const auto output = generate_names(input, "someprefix_");
 
@@ -196,14 +195,14 @@ TEST(LandmarkHelpers, generate_names_generates_prefixed_name_for_unnamed_inputs)
 TEST(LandmarkHelpers, generate_names_behaves_as_expected_in_pathological_case)
 {
     const std::vector<Landmark> input = {
-        {"p1",           {}},
-        {std::nullopt,   {0.0f, 1.0f, 0.0f}},
+        {"p1", {}},
+        {std::nullopt, {0.0f, 1.0f, 0.0f}},
         {"someprefix_0", {1.0f, 1.0f, 0.0f}},  // uh oh
         {"someprefix_1", {2.0f, 0.0f, 0.0f}},  // uhhhh oh
-        {std::nullopt,   {}},
+        {std::nullopt, {}},
     };
     const std::vector<NamedLandmark> expected_output = {
-        {"p1",           {}},
+        {"p1", {}},
         {"someprefix_2", {0.0f, 1.0f, 0.0f}},
         {"someprefix_0", {1.0f, 1.0f, 0.0f}},
         {"someprefix_1", {2.0f, 0.0f, 0.0f}},

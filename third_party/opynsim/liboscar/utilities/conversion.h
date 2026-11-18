@@ -47,10 +47,13 @@ namespace osc
     {
         // Satisfied if `Converter<T, U>` can be instantiated by the compiler
         template<typename T, typename U>
-        concept HasConverter = requires { { Converter<T, U>{} }; };
+        concept HasConverter = requires {
+            { Converter<T, U>{} };
+        };
     }
 
-    // a helper method that converts the provided `T` to a (potentially, qualified value/ref) `U` using a `Converter<T, U>`
+    // a helper method that converts the provided `T` to a (potentially, qualified value/ref) `U`
+    // using a `Converter<T, U>`
     template<typename U, typename T>
     requires detail::HasConverter<std::remove_cvref_t<T>, U>
     constexpr U to(T&& value)

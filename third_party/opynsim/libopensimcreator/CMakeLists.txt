@@ -1,7 +1,7 @@
-file(GLOB_RECURSE LIBOPYNSIM_SOURCE_FILES "*.cpp")
-list(FILTER LIBOPYNSIM_SOURCE_FILES EXCLUDE REGEX "tests")
-add_library(opensimcreator STATIC ${LIBOPYNSIM_SOURCE_FILES})
-unset(LIBOPYNSIM_SOURCE_FILES)
+file(GLOB_RECURSE _libopensimcreator_sources "*.cpp")
+list(FILTER _libopensimcreator_sources EXCLUDE REGEX "tests")
+add_library(opensimcreator STATIC ${_libopensimcreator_sources})
+unset(_libopensimcreator_sources)
 
 target_compile_features(opensimcreator PUBLIC cxx_std_23)
 set_target_properties(opensimcreator PROPERTIES
@@ -9,11 +9,13 @@ set_target_properties(opensimcreator PROPERTIES
     CXX_EXTENSIONS        OFF
 )
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(opensimcreator)
 endif()
+if(OPYN_ENABLE_SANITIZERS)
+    opyn_add_sanitizer_flags_to(opensimcreator)
+endif()
 target_include_directories(opensimcreator
-    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>"  # so that `#include <libopensimcreator/HEADER.h>` works
+    PUBLIC "$<BUILD_INTERFACE:${OPYN_BUILD_INTERFACE_INCLUDE_DIR}>"  # so that `#include <libopensimcreator/header.h>` works
     PUBLIC  $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(opensimcreator PUBLIC opynsim oscar)

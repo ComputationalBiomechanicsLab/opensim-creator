@@ -35,7 +35,7 @@ namespace osc
         int32_t width() const;
         TextureFormat texture_format() const;
 
-        TextureWrapMode wrap_mode() const;  // same as `wrap_mode_u`
+        TextureWrapMode wrap_mode() const;    // same as `wrap_mode_u`
         void set_wrap_mode(TextureWrapMode);  // sets all axes
         TextureWrapMode wrap_mode_u() const;
         void set_wrap_mode_u(TextureWrapMode);
@@ -55,6 +55,7 @@ namespace osc
 
         class Impl;
         const Impl& impl() const { return *impl_; }
+
     private:
         friend class GraphicsBackend;
 

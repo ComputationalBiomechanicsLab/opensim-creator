@@ -12,6 +12,18 @@
             }
         },
         {
+            "name": "mixin_RapidLinuxLinking",
+            "hidden": true,
+            "description": "Mixin to enable the mold linker, thin archives, and split dwarf files for faster linking (useful for development)",
+            "cacheVariables": {
+                "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=mold",
+                "CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=mold",
+                "CMAKE_MODULE_LINKER_FLAGS": "-fuse-ld=mold",
+                "CMAKE_CXX_ARCHIVE_CREATE": "<CMAKE_AR> srT <TARGET> <LINK_FLAGS> <OBJECTS>",
+                "CMAKE_CXX_FLAGS": "-gsplit-dwarf"
+            }
+        },
+        {
             "name": "Development",
             "inherits": ["mixin_ConfigBase"],
             "binaryDir": "${sourceDir}/build/Development",
@@ -20,11 +32,16 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/Development/install",
 
+                "OPYN_BUILD_DOCS": "ON",
                 "OPYN_FORCE_ASSERTS_ENABLED": "ON",
                 "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
                 "OPYN_USE_STRICT_COMPILER_FLAGS": "OFF",
                 "OPYN_STRICT_ABI_CHECKS": "OFF"
             }
+        },
+        {
+            "name": "Development-RapidLinuxLinking",
+            "inherits": ["Development", "mixin_RapidLinuxLinking"]
         },
         {
             "name": "ErrorCheck",
@@ -36,12 +53,21 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/ErrorCheck/install",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy;--warnings-as-errors=*",
+                "CMAKE_CXX_CLANG_TIDY_EXPORT_FIXES_DIR": "${sourceDir}/build/${presetName}/clang-tidy-fixes",
 
                 "OPYN_FORCE_ASSERTS_ENABLED": "ON",
                 "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON",
                 "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OPYN_STRICT_ABI_CHECKS": "OFF"
+            }
+        },
+        {
+            "name": "ErrorCheck-LibASAN",
+            "inherits": ["ErrorCheck"],
+            "cacheVariables": {
+                "OPYN_ENABLE_SANITIZERS": "ON",
+                "OPYN_BUILD_PYTHON_BINDINGS": "OFF"
             }
         },
         {
@@ -118,6 +144,17 @@
             "execution": {"noTestsAction": "error"}
         },
         {
+            "name": "mixin_TestAsan",
+            "description": "Mixin to add necessary ASAN/UBSAN/LSAN flags to the test suite",
+            "hidden": true,
+            "environment": {
+                "ASAN_OPTIONS": "abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:strict_init_order=true:detect_invalid_pointer_pairs=2",
+                "LSAN_OPTIONS": "abort_on_error=1:suppressions=${sourceDir}/scripts/suppressions_lsan.supp",
+                "UBSAN_OPTIONS": "abort_on_error=1:print_stacktrace=1:print_summary=1:suppressions=${sourceDir}/scripts/suppressions_ubsan.supp",
+                "LIBGL_ALWAYS_SOFTWARE": "1"
+            }
+        },
+        {
             "name": "Development",
             "configurePreset": "Development",
             "inherits": ["mixin_TestBase"]
@@ -126,6 +163,11 @@
             "name": "ErrorCheck",
             "configurePreset": "ErrorCheck",
             "inherits": ["mixin_TestBase"]
+        },
+        {
+            "name": "ErrorCheck-LibASAN",
+            "configurePreset": "ErrorCheck-LibASAN",
+            "inherits": ["mixin_TestBase", "mixin_TestAsan"]
         },
         {
             "name": "Release-Linux-amd64",

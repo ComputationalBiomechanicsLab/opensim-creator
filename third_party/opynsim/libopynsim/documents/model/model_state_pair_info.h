@@ -3,10 +3,10 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <liboscar/utilities/uid.h>
 
-namespace opyn { class ModelStatePair; }
-
 namespace opyn
 {
+    class ModelStatePair;
+
     // a cheap-to-copy holder for top-level model+state info
     //
     // handy for caches that need to check if the info has changed

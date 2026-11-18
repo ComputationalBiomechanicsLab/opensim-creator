@@ -22,83 +22,64 @@ namespace osc
     public:
         MiStation(
             UID id,
-            UID attachment,  // can be MiIDs::Ground()
+            UID attachment,  // can be MiIDs::ground()
             const Vector3& position,
-            const std::string& name
-        );
+            const std::string& name);
 
         MiStation(
-            UID attachment,  // can be MiIDs::Ground()
+            UID attachment,  // can be MiIDs::ground()
             const Vector3& position,
-            const std::string& name
-        );
+            const std::string& name);
 
-        UID getParentID() const
-        {
-            return m_Attachment;
-        }
+        UID get_parent_id() const { return attachment_; }
 
-        Transform getXForm() const
-        {
-            return Transform{.translation = m_Position};
-        }
+        Transform get_x_form() const { return Transform{.translation = position_}; }
 
     private:
         friend class MiObjectCRTP<MiStation>;
-        static MiClass CreateClass();
+        static MiClass create_class();
 
-        std::vector<MiCrossrefDescriptor> implGetCrossReferences() const final;
+        std::vector<MiCrossrefDescriptor> impl_get_cross_references() const override;
 
-        void implSetCrossReferenceConnecteeID(int i, UID id) final
+        void impl_set_cross_reference_connectee_id(int i, UID id) override
         {
-            if (i != 0)
-            {
+            if (i != 0) {
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
-            m_Attachment = id;
+            attachment_ = id;
         }
 
-        MiObjectFlags implGetFlags() const final
+        MiObjectFlags impl_get_flags() const override
         {
-            return
-                MiObjectFlags::CanChangeLabel |
-                MiObjectFlags::CanChangePosition |
-                MiObjectFlags::CanDelete |
-                MiObjectFlags::CanSelect;
+            return MiObjectFlags::CanChangeLabel |     //
+                   MiObjectFlags::CanChangePosition |  //
+                   MiObjectFlags::CanDelete |          //
+                   MiObjectFlags::CanSelect;
         }
 
-        UID implGetID() const final
+        UID impl_get_id() const override { return id_; }
+
+        std::ostream& impl_write_to_stream(std::ostream&) const override;
+
+        CStringView impl_get_label() const override { return name_; }
+
+        void impl_set_label(std::string_view) override;
+
+        Transform impl_get_xform(const MiObjectFinder&) const override { return get_x_form(); }
+
+        void impl_set_xform(const MiObjectFinder&, const Transform& t) override
         {
-            return m_ID;
+            position_ = t.translation;
         }
 
-        std::ostream& implWriteToStream(std::ostream&) const final;
-
-        CStringView implGetLabel() const final
+        std::optional<AABB> impl_calc_bounds(const MiObjectFinder&) const override
         {
-            return m_Name;
+            return bounding_aabb_of(position_);
         }
 
-        void implSetLabel(std::string_view) final;
-
-        Transform implGetXform(const MiObjectFinder&) const final
-        {
-            return getXForm();
-        }
-
-        void implSetXform(const MiObjectFinder&, const Transform& t) final
-        {
-            m_Position = t.translation;
-        }
-
-        std::optional<AABB> implCalcBounds(const MiObjectFinder&) const final
-        {
-            return bounding_aabb_of(m_Position);
-        }
-
-        UID m_ID;
-        UID m_Attachment;  // can be MiIDs::Ground()
-        Vector3 m_Position{};
-        std::string m_Name;
+        UID id_;
+        UID attachment_;  // can be MiIDs::ground()
+        Vector3 position_;
+        std::string name_;
     };
 }

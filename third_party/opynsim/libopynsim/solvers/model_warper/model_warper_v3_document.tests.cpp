@@ -29,9 +29,16 @@ TEST(ModelWarperV3Document, can_load_scaling_document_written_by_opensimcreator)
 
     opyn::init();
 
-    ModelWarperV3Document model_warper_v3_document{opynsim_tests_resources_directory() / "Documents/model_warper/scaling-document.xml"};
+    ModelWarperV3Document model_warper_v3_document{
+        opynsim_tests_resources_directory() / "Documents/model_warper/scaling-document.xml"};
     ASSERT_TRUE(model_warper_v3_document.has_scaling_steps());
     ASSERT_TRUE(model_warper_v3_document.has_scaling_parameters());
-    ASSERT_NE(dynamic_cast<const ThinPlateSplineMeshesScalingStep*>(model_warper_v3_document.findComponent("thinplatesplinemeshesscalingstep")), nullptr);
-    ASSERT_NE(dynamic_cast<const ThinPlateSplineStationsScalingStep*>(model_warper_v3_document.findComponent("thinplatesplinestationsscalingstep")), nullptr);
+    ASSERT_NE(
+        dynamic_cast<const ThinPlateSplineMeshesScalingStep*>(
+            model_warper_v3_document.findComponent("thinplatesplinemeshesscalingstep")),
+        nullptr);
+    ASSERT_NE(
+        dynamic_cast<const ThinPlateSplineStationsScalingStep*>(
+            model_warper_v3_document.findComponent("thinplatesplinestationsscalingstep")),
+        nullptr);
 }

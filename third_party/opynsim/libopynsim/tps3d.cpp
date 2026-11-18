@@ -25,45 +25,43 @@ namespace
     // isn't fully integrated into MacOS
     template<typename T, std::invocable<T&> UnaryFunction>
     void for_each_parallel_unsequenced(
-        size_t min_chunk_size,
-        std::span<T> values,
-        UnaryFunction mutator)
+        size_t min_chunk_size, std::span<T> values, UnaryFunction mutator)
     {
-        const size_t chunk_size = std::max(min_chunk_size, values.size()/std::thread::hardware_concurrency());
-        const size_t num_tasks = values.size()/chunk_size;
+        const size_t chunk_size =
+            std::max(min_chunk_size, values.size() / std::thread::hardware_concurrency());
+        const size_t num_tasks = values.size() / chunk_size;
 
         if (num_tasks > 1) {
             std::vector<std::future<void>> tasks;
             tasks.reserve(num_tasks);
 
-            for (size_t i = 0; i < num_tasks-1; ++i) {
+            for (size_t i = 0; i < num_tasks - 1; ++i) {
                 const size_t chunk_begin = i * chunk_size;
-                const size_t chunk_end = (i+1) * chunk_size;
-                tasks.push_back(std::async(std::launch::async, [values, mutator, chunk_begin, chunk_end]()
-                {
-                    for (size_t j = chunk_begin; j < chunk_end; ++j) {
-                        mutator(values[j]);
-                    }
-                }));
+                const size_t chunk_end = (i + 1) * chunk_size;
+                tasks.push_back(
+                    std::async(std::launch::async, [values, mutator, chunk_begin, chunk_end] {
+                        for (size_t j = chunk_begin; j < chunk_end; ++j) {
+                            mutator(values[j]);
+                        }
+                    }));
             }
 
             // last worker must also handle the remainder
             {
-                const size_t chunk_begin = (num_tasks-1) * chunk_size;
+                const size_t chunk_begin = (num_tasks - 1) * chunk_size;
                 const size_t chunk_end = values.size();
-                tasks.push_back(std::async(std::launch::async, [values, mutator, chunk_begin, chunk_end]()
-                {
-                    for (size_t i = chunk_begin; i < chunk_end; ++i) {
-                        mutator(values[i]);
-                    }
-                }));
+                tasks.push_back(
+                    std::async(std::launch::async, [values, mutator, chunk_begin, chunk_end] {
+                        for (size_t i = chunk_begin; i < chunk_end; ++i) {
+                            mutator(values[i]);
+                        }
+                    }));
             }
 
             for (std::future<void>& task : tasks) {
                 task.get();
             }
-        }
-        else {
+        } else {
             // chunks would be too small if parallelized: just do it sequentially
             for (T& value : values) {
                 mutator(value);
@@ -90,7 +88,8 @@ namespace
     }
 
     template<std::floating_point T>
-    std::ostream& write_human_readable(std::ostream& o, const TPSCoefficientSolverInputs3D<T>& inputs)
+    std::ostream& write_human_readable(
+        std::ostream& o, const TPSCoefficientSolverInputs3D<T>& inputs)
     {
         o << "TPSCoefficientSolverInputs3D{landmarks = [";
         std::string_view delimiter;
@@ -105,13 +104,15 @@ namespace
     template<std::floating_point T>
     std::ostream& write_human_readable(std::ostream& o, const TPSNonAffineTerm3D<T>& wt)
     {
-        return o << "TPSNonAffineTerm3D{weight = " << wt.weight << ", control_point = " << wt.control_point << '}';
+        return o << "TPSNonAffineTerm3D{weight = " << wt.weight
+                 << ", control_point = " << wt.control_point << '}';
     }
 
     template<std::floating_point T>
     std::ostream& write_human_readable(std::ostream& o, const TPSCoefficients3D<T>& coefs)
     {
-        o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3 << ", a4 = " << coefs.a4;
+        o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3
+          << ", a4 = " << coefs.a4;
         for (size_t i = 0; i < coefs.non_affine_terms.size(); ++i) {
             o << ", w" << i << " = " << coefs.non_affine_terms[i];
         }
@@ -121,8 +122,10 @@ namespace
 
     template<std::floating_point T>
     TPSCoefficients3D<T> tps_calc_coefficients(
-        cpp23::mdspan<const T, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> source_landmarks,
-        cpp23::mdspan<const T, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks,
+        cpp23::mdspan<const T, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride>
+            source_landmarks,
+        cpp23::mdspan<const T, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride>
+            destination_landmarks,
         T warping_penalty)
     {
         // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
@@ -161,7 +164,8 @@ namespace
         //
         //     - a is the `warping_penalty`, scaled along the diagonals of an identity
         //       matrix (i.e - it's added to each diagonal element of `K`). Here's
-        //       an alternative implementation: https://github.com/raphaelreme/tps/blob/v1.2.2/src/tps/thin_plate_spline.py#L141
+        //       an alternative implementation:
+        //       https://github.com/raphaelreme/tps/blob/v1.2.2/src/tps/thin_plate_spline.py#L141
         //
         //     - P is a n-row 4-column matrix containing the number 1 (the constant term),
         //       x, y, and z (effectively, the p term):
@@ -190,8 +194,10 @@ namespace
         // populate the K part of matrix L (upper-left)
         for (int row = 0; row < num_pairs; ++row) {
             for (int col = 0; col < num_pairs; ++col) {
-                const SimTK::Vec<3, T> pis = {source_landmarks(row, 0), source_landmarks(row, 1), source_landmarks(row, 2)};
-                const SimTK::Vec<3, T> pj = {source_landmarks(col, 0), source_landmarks(col, 1), source_landmarks(col, 2)};
+                const SimTK::Vec<3, T> pis = {
+                    source_landmarks(row, 0), source_landmarks(row, 1), source_landmarks(row, 2)};
+                const SimTK::Vec<3, T> pj = {
+                    source_landmarks(col, 0), source_landmarks(col, 1), source_landmarks(col, 2)};
 
                 l(row, col) = radial_basis_function_3d(pis, pj);
             }
@@ -204,7 +210,7 @@ namespace
             const int p_start_column = num_pairs;
 
             for (int row = 0; row < num_pairs; ++row) {
-                l(row, p_start_column)     = 1.0;
+                l(row, p_start_column) = 1.0;
                 l(row, p_start_column + 1) = source_landmarks(row, 0);
                 l(row, p_start_column + 2) = source_landmarks(row, 1);
                 l(row, p_start_column + 3) = source_landmarks(row, 2);
@@ -216,7 +222,7 @@ namespace
             const int pt_start_row = num_pairs;
 
             for (int col = 0; col < num_pairs; ++col) {
-                l(pt_start_row, col)     = 1.0;
+                l(pt_start_row, col) = 1.0;
                 l(pt_start_row + 1, col) = source_landmarks(col, 0);
                 l(pt_start_row + 2, col) = source_landmarks(col, 1);
                 l(pt_start_row + 3, col) = source_landmarks(col, 2);
@@ -245,7 +251,8 @@ namespace
             vz[row] = destination_landmarks(row, 2);
         }
 
-        // create a linear solver that can be used to solve `L*Cn = Vn` for `Cn` (where `n` is a dimension)
+        // create a linear solver that can be used to solve `L*Cn = Vn` for `Cn` (where `n` is a
+        // dimension)
         const SimTK::FactorQTZ f{l};
 
         // solve for each dimension
@@ -256,23 +263,25 @@ namespace
         SimTK::Vector cz(num_pairs + 4, 0.0);
         f.solve(vz, cz);
 
-        // `cx/cy/cz` now contain the solved coefficients (e.g. for X): [w1, w2, ... wx, a0, a1x, a1y a1z]
+        // `cx/cy/cz` now contain the solved coefficients (e.g. for X): [w1, w2, ... wx, a0, a1x,
+        // a1y a1z]
         //
         // extract the coefficients into the return value
 
         TPSCoefficients3D<T> rv;
 
         // populate affine a1, a2, a3, and a4 terms
-        rv.a1 = {T(cx[num_pairs]),   T(cy[num_pairs])  , T(cz[num_pairs])  };
-        rv.a2 = {T(cx[num_pairs+1]), T(cy[num_pairs+1]), T(cz[num_pairs+1])};
-        rv.a3 = {T(cx[num_pairs+2]), T(cy[num_pairs+2]), T(cz[num_pairs+2])};
-        rv.a4 = {T(cx[num_pairs+3]), T(cy[num_pairs+3]), T(cz[num_pairs+3])};
+        rv.a1 = {T(cx[num_pairs]), T(cy[num_pairs]), T(cz[num_pairs])};
+        rv.a2 = {T(cx[num_pairs + 1]), T(cy[num_pairs + 1]), T(cz[num_pairs + 1])};
+        rv.a3 = {T(cx[num_pairs + 2]), T(cy[num_pairs + 2]), T(cz[num_pairs + 2])};
+        rv.a4 = {T(cx[num_pairs + 3]), T(cy[num_pairs + 3]), T(cz[num_pairs + 3])};
 
         // populate `wi` coefficients (+ control points, needed at evaluation-time)
         rv.non_affine_terms.reserve(num_pairs);
         for (int i = 0; i < num_pairs; ++i) {
             const SimTK::Vec<3, T> weight{T(cx[i]), T(cy[i]), T(cz[i])};
-            const SimTK::Vec<3, T> control_point{source_landmarks(i, 0), source_landmarks(i, 1), source_landmarks(i, 2)};
+            const SimTK::Vec<3, T> control_point{
+                source_landmarks(i, 0), source_landmarks(i, 1), source_landmarks(i, 2)};
             rv.non_affine_terms.emplace_back(weight, control_point);
         }
 
@@ -287,7 +296,7 @@ namespace
             return TPSCoefficients3D<T>{};
         }
 
-        static_assert(sizeof(LandmarkPair3D<T>) == 6*sizeof(T));
+        static_assert(sizeof(LandmarkPair3D<T>) == 6 * sizeof(T));
         static_assert(alignof(LandmarkPair3D<T>) == alignof(T));
         const cpp23::extents<size_t, cpp23::dynamic_extent, 3> shape{inputs.landmarks.size()};
         const std::array<size_t, 2> strides = {6, 1};
@@ -296,8 +305,7 @@ namespace
         auto rv = ::tps_calc_coefficients<T>(
             {&inputs.landmarks.front().source[0], mapping},
             {&inputs.landmarks.front().destination[0], mapping},
-            inputs.warping_penalty
-        );
+            inputs.warping_penalty);
 
         // If required, modify the coefficients
         if (not inputs.apply_affine_translation) {
@@ -309,9 +317,9 @@ namespace
             rv.a4 = rv.a4.normalize();
         }
         if (not inputs.apply_affine_rotation) {
-            rv.a2 = {rv.a2.norm(), T(0.0),       T(0.0)};
-            rv.a3 = {T(0.0),       rv.a3.norm(), T(0.0)};
-            rv.a4 = {T(0.0),       T(0.0),       rv.a4.norm()};
+            rv.a2 = {rv.a2.norm(), T(0.0), T(0.0)};
+            rv.a3 = {T(0.0), rv.a3.norm(), T(0.0)};
+            rv.a4 = {T(0.0), T(0.0), rv.a4.norm()};
         }
         if (not inputs.apply_non_affine_warp) {
             rv.non_affine_terms.clear();
@@ -328,7 +336,8 @@ namespace
         // variants of the coefficients together in memory (as `Vector3`s)
 
         // compute affine terms (a1 + a2*x + a3*y + a4*z)
-        SimTK::Vec3 rv = SimTK::Vec3{coefs.a1} + SimTK::Vec3{coefs.a2*p[0]} + SimTK::Vec3{coefs.a3*p[1]} + SimTK::Vec3{coefs.a4*p[2]};
+        SimTK::Vec3 rv = SimTK::Vec3{coefs.a1} + SimTK::Vec3{coefs.a2 * p[0]} +
+                         SimTK::Vec3{coefs.a3 * p[1]} + SimTK::Vec3{coefs.a4 * p[2]};
 
         // accumulate non-affine terms (effectively: wi * U(||control_point - p||))
         for (const TPSNonAffineTerm3D<T>& term : coefs.non_affine_terms) {
@@ -369,42 +378,45 @@ std::ostream& opyn::operator<<(std::ostream& o, const TPSCoefficients3D<double>&
     return write_human_readable(o, coefs);
 }
 
-TPSCoefficients3D<float> opyn::tps3d_solve_coefficients(const TPSCoefficientSolverInputs3D<float>& inputs)
+TPSCoefficients3D<float> opyn::tps3d_solve_coefficients(
+    const TPSCoefficientSolverInputs3D<float>& inputs)
 {
     return ::tps_calc_coefficients<float>(inputs);
 }
 
-TPSCoefficients3D<double> opyn::tps3d_solve_coefficients(const TPSCoefficientSolverInputs3D<double>& inputs)
+TPSCoefficients3D<double> opyn::tps3d_solve_coefficients(
+    const TPSCoefficientSolverInputs3D<double>& inputs)
 {
     return ::tps_calc_coefficients<double>(inputs);
 }
 
 TPSCoefficients3D<double> opyn::tps3d_solve_coefficients(
-    cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> source_landmarks,
-    cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks,
+    cpp23::
+        mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride>
+            source_landmarks,
+    cpp23::
+        mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride>
+            destination_landmarks,
     double warping_penalty)
 {
-    return ::tps_calc_coefficients<double>(source_landmarks, destination_landmarks, warping_penalty);
+    return ::tps_calc_coefficients<double>(
+        source_landmarks, destination_landmarks, warping_penalty);
 }
 
 SimTK::Vec<3, float> opyn::tps3d_warp_point(
-    const TPSCoefficients3D<float>& coefs,
-    const SimTK::Vec<3, float>& p)
+    const TPSCoefficients3D<float>& coefs, const SimTK::Vec<3, float>& p)
 {
     return ::tps_warp_point<float>(coefs, p);
 }
 
 SimTK::Vec<3, double> opyn::tps3d_warp_point(
-    const TPSCoefficients3D<double>& coefs,
-    const SimTK::Vec<3, double>& p)
+    const TPSCoefficients3D<double>& coefs, const SimTK::Vec<3, double>& p)
 {
     return ::tps_warp_point<double>(coefs, p);
 }
 
 SimTK::Vec<3, float> opyn::tps3d_warp_point(
-    const TPSCoefficients3D<float>& coefs,
-    const SimTK::Vec<3, float>& p,
-    float linear_interpolant)
+    const TPSCoefficients3D<float>& coefs, const SimTK::Vec<3, float>& p, float linear_interpolant)
 {
     const SimTK::Vec<3, float> warped = tps3d_warp_point(coefs, p);
     return {
@@ -429,13 +441,14 @@ void opyn::tps3d_warp_points_in_place(
     std::span<SimTK::Vec<3, float>> points,
     float linear_interpolant)
 {
-    for_each_parallel_unsequenced(8192, points, [&coefs, linear_interpolant](SimTK::Vec<3, float>& vert)
-    {
-        vert = tps3d_warp_point(coefs, vert, linear_interpolant);
-    });
+    for_each_parallel_unsequenced(
+        8192, points, [&coefs, linear_interpolant](SimTK::Vec<3, float>& vert) {
+            vert = tps3d_warp_point(coefs, vert, linear_interpolant);
+        });
 }
 
-osc::Mesh opyn::tps3d_warp_mesh(TPSCoefficients3D<float>& coefs, const osc::Mesh& mesh, float linear_interpolant)
+osc::Mesh opyn::tps3d_warp_mesh(
+    TPSCoefficients3D<float>& coefs, const osc::Mesh& mesh, float linear_interpolant)
 {
     OSC_PERF("tps3d_warp_mesh");
 

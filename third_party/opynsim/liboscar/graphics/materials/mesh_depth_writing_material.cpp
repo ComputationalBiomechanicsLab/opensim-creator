@@ -26,6 +26,6 @@ void main() {}  // implicitly writes the depth
 )";
 }
 
-osc::MeshDepthWritingMaterial::MeshDepthWritingMaterial()
-    : Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
+osc::MeshDepthWritingMaterial::MeshDepthWritingMaterial() :
+    Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
 {}

@@ -39,16 +39,28 @@ namespace osc
     // when handled as a tuple-like object, a `Matrix` decomposes into its column `Vector`s
 
     template<size_t I, typename T, size_t C, size_t R>
-    constexpr const typename Matrix<T, C, R>::value_type& get(const Matrix<T, C, R>& m) { return m[I]; }
+    constexpr const typename Matrix<T, C, R>::value_type& get(const Matrix<T, C, R>& m)
+    {
+        return m[I];
+    }
 
     template<size_t I, typename T, size_t C, size_t R>
-    constexpr typename Matrix<T, C, R>::value_type& get(Matrix<T, C, R>& m) { return m[I]; }
+    constexpr typename Matrix<T, C, R>::value_type& get(Matrix<T, C, R>& m)
+    {
+        return m[I];
+    }
 
     template<size_t I, typename T, size_t C, size_t R>
-    constexpr typename Matrix<T, C, R>::value_type&& get(Matrix<T, C, R>&& m) { return std::move(m[I]); }
+    constexpr typename Matrix<T, C, R>::value_type&& get(Matrix<T, C, R>&& m)
+    {
+        return std::move(m[I]);
+    }
 
     template<size_t I, typename T, size_t C, size_t R>
-    constexpr const typename Matrix<T, C, R>::value_type&& get(const Matrix<T, C, R>&& m) { return std::move(m[I]); }
+    constexpr const typename Matrix<T, C, R>::value_type&& get(const Matrix<T, C, R>&& m)
+    {
+        return std::move(m[I]);
+    }
 }
 
 template<typename T, size_t C, size_t R>

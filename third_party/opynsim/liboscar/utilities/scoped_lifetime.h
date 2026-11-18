@@ -14,10 +14,14 @@ namespace osc
         ScopedLifetime() = default;
 
         // constructs a new lifetime
-        ScopedLifetime(const ScopedLifetime&) : ScopedLifetime{} {}
+        ScopedLifetime(const ScopedLifetime&) :
+            ScopedLifetime{}
+        {}
 
         // constructs a new lifetime
-        ScopedLifetime(ScopedLifetime&&) noexcept : ScopedLifetime{} {}
+        ScopedLifetime(ScopedLifetime&&) noexcept :
+            ScopedLifetime{}
+        {}
 
         // replaces the lifetime with a new lifetime
         ScopedLifetime& operator=(const ScopedLifetime& rhs)
@@ -39,6 +43,7 @@ namespace osc
         ~ScopedLifetime() noexcept = default;
 
         LifetimeWatcher watch() const { return lifetime_block_.watch(); }
+
     private:
         SharedLifetimeBlock lifetime_block_;
     };

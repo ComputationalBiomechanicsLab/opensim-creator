@@ -96,6 +96,6 @@ void main()
 )";
 }
 
-osc::MeshNormalVectorsMaterial::MeshNormalVectorsMaterial()
-    : Material{Shader{c_vertex_shader_src, c_geometry_shader_src, c_fragment_shader_src}}
+osc::MeshNormalVectorsMaterial::MeshNormalVectorsMaterial() :
+    Material{Shader{c_vertex_shader_src, c_geometry_shader_src, c_fragment_shader_src}}
 {}

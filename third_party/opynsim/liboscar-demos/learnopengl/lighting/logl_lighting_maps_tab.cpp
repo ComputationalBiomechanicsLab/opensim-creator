@@ -31,14 +31,11 @@ namespace
     Material create_light_mapping_material(ResourceLoader& loader)
     {
         const Texture2D diffuse_map = Image::read_into_texture(
-            loader.open("oscar_demos/learnopengl/textures/container2.jpg"),
-            ColorSpace::sRGB
-        );
+            loader.open("oscar_demos/learnopengl/textures/container2.jpg"), ColorSpace::sRGB);
 
         const Texture2D specular_map = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/container2_specular.jpg"),
-            ColorSpace::sRGB
-        );
+            ColorSpace::sRGB);
 
         Material rv{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/Lighting/LightingMaps.vert"),
@@ -70,10 +67,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -93,9 +87,12 @@ public:
         render_queue_.emplace(mesh_, light_transform_, light_cube_material_);
 
         // render 3D scene
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+            });
         render_queue_.clear();
 
         // render 2D UI
@@ -129,13 +126,27 @@ private:
     float material_shininess_ = 64.0f;
 };
 
-
-CStringView osc::LOGLLightingMapsTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLLightingMapsTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLLightingMapsTab::LOGLLightingMapsTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLLightingMapsTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLLightingMapsTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLLightingMapsTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLLightingMapsTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLLightingMapsTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLLightingMapsTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLLightingMapsTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLLightingMapsTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

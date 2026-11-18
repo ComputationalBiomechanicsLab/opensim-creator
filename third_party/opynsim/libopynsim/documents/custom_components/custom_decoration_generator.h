@@ -2,14 +2,22 @@
 
 #include <functional>
 
-namespace osc { struct SceneDecoration; }
-namespace SimTK { class State; }
+namespace SimTK
+{
+    class State;
+}
+
+namespace osc
+{
+    struct SceneDecoration;
+}
 
 namespace opyn
 {
     // an interface for an object that generates decorations in an OSC-specific custom way
     //
-    // i.e. if an `OpenSim::Component` implements this, it should take precedence over `Component::generateDecorations`
+    // i.e. if an `OpenSim::Component` implements this, it should take precedence over
+    // `Component::generateDecorations`
     class CustomDecorationGenerator {
     protected:
         CustomDecorationGenerator() = default;
@@ -17,6 +25,7 @@ namespace opyn
         CustomDecorationGenerator(CustomDecorationGenerator&&) noexcept = default;
         CustomDecorationGenerator& operator=(const CustomDecorationGenerator&) = default;
         CustomDecorationGenerator& operator=(CustomDecorationGenerator&&) noexcept = default;
+
     public:
         virtual ~CustomDecorationGenerator() noexcept = default;
 
@@ -26,10 +35,9 @@ namespace opyn
         {
             impl_generate_custom_decorations(state, callback);
         }
+
     private:
         virtual void impl_generate_custom_decorations(
-            const SimTK::State&,
-            const std::function<void(osc::SceneDecoration&&)>&
-        ) const = 0;
+            const SimTK::State&, const std::function<void(osc::SceneDecoration&&)>&) const = 0;
     };
 }

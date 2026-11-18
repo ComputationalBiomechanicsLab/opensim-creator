@@ -17,9 +17,9 @@ namespace vws = std::views;
 TEST(all_of, works_as_expected)
 {
     constexpr auto vs = std::to_array({-1, -2, -3, 0, 1, 2, 3});
-    ASSERT_TRUE(rgs::all_of(vs, [](int v){ return v > -4; }));
-    ASSERT_TRUE(rgs::all_of(vs, [](int v){ return v <  4; }));
-    ASSERT_FALSE(rgs::all_of(vs, [](int v){ return v > 0; }));
+    ASSERT_TRUE(rgs::all_of(vs, [](int v) { return v > -4; }));
+    ASSERT_TRUE(rgs::all_of(vs, [](int v) { return v < 4; }));
+    ASSERT_FALSE(rgs::all_of(vs, [](int v) { return v > 0; }));
 }
 TEST(at, works_as_expected)
 {
@@ -28,12 +28,11 @@ TEST(at, works_as_expected)
     ASSERT_EQ(at(vs, 1), -2);
     ASSERT_EQ(at(vs, 2), -3);
     ASSERT_EQ(at(vs, 3), -0);
-    ASSERT_EQ(at(vs, 4),  1);
-    ASSERT_EQ(at(vs, 5),  2);
-    ASSERT_EQ(at(vs, 6),  3);
+    ASSERT_EQ(at(vs, 4), 1);
+    ASSERT_EQ(at(vs, 5), 2);
+    ASSERT_EQ(at(vs, 6), 3);
     ASSERT_THROW({ at(vs, 7); }, std::out_of_range);
     ASSERT_THROW({ at(vs, 8); }, std::out_of_range);
-
 }
 
 TEST(at, works_at_compile_time)
@@ -176,21 +175,28 @@ namespace
         Base(Base&&) noexcept = default;
         Base& operator=(const Base&) = default;
         Base& operator=(Base&&) noexcept = default;
+
     public:
         virtual ~Base() noexcept = default;
         constexpr friend bool operator==(const Base&, const Base&) = default;
     };
     class Derived1 : public Base {
     public:
-        explicit constexpr Derived1(int data) : data_{data} {}
+        explicit constexpr Derived1(int data) :
+            data_{data}
+        {}
         constexpr friend bool operator==(const Derived1&, const Derived1&) = default;
+
     private:
         int data_;
     };
     class Derived2 : public Base {
     public:
-        explicit constexpr Derived2(double data) : data_{data} {}
+        explicit constexpr Derived2(double data) :
+            data_{data}
+        {}
         constexpr friend bool operator==(const Derived2&, const Derived2&) = default;
+
     private:
         double data_;
     };
@@ -235,7 +241,7 @@ TEST(append_range, works_as_expected_with_vector)
     {
         std::vector<std::string> v{"strings", "are", "ranges"};
         std::vector<std::string> extras{"gotta", "", "be", "", "careful"};
-        append_range(v,  extras | vws::filter(&std::string::empty));
+        append_range(v, extras | vws::filter(&std::string::empty));
         std::vector<std::string> expected{"strings", "are", "ranges", "", ""};
 
         ASSERT_EQ(v, expected);

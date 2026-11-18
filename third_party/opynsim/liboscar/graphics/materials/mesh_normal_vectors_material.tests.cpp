@@ -14,19 +14,14 @@ namespace
 
     class MeshNormalVectorsMaterialFixture : public ::testing::Test {
     protected:
-        static void SetUpTestSuite()
-        {
-            g_app = std::make_unique<App>();
-        }
+        static void SetUpTestSuite() { g_app = std::make_unique<App>(); }
 
-        static void TearDownTestSuite()
-        {
-            g_app.reset();
-        }
+        static void TearDownTestSuite() { g_app.reset(); }
     };
 }
 
 TEST_F(MeshNormalVectorsMaterialFixture, works)
 {
-    [[maybe_unused]] const MeshNormalVectorsMaterial default_constructed;  // should compile, run, etc.
+    [[maybe_unused]] const MeshNormalVectorsMaterial
+        default_constructed;  // should compile, run, etc.
 }

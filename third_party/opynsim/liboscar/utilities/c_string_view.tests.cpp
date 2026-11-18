@@ -43,13 +43,16 @@ TEST(CStringView, c_str_is_not_nullptr_when_CStringView_is_constructed_from_null
 
 TEST(CStringView, three_way_comparison_operator_behaves_identically_to_std_string_view)
 {
-    constexpr auto input_strings = std::to_array<const char*>({ "x", "somestring", "somethingelse", "", "_i hope it works ;)" });
+    constexpr auto input_strings =
+        std::to_array<const char*>({"x", "somestring", "somethingelse", "", "_i hope it works ;)"});
     for (const char* const cstring : input_strings) {
 
         const std::string_view string_view{cstring};
         const CStringView cstring_view{cstring};
         for (const char* input_string : input_strings) {
-            ASSERT_EQ(string_view <=> std::string_view{input_string}, cstring_view <=> CStringView{input_string});
+            ASSERT_EQ(
+                string_view <=> std::string_view{input_string},
+                cstring_view <=> CStringView{input_string});
         }
     }
 }

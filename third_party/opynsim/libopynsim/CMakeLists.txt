@@ -11,9 +11,10 @@ configure_file(
 )
 
 # Gather source code (excl. tests) into a library
-file(GLOB_RECURSE LIBOPYNSIM_SOURCE_FILES "*.cpp")
-list(FILTER LIBOPYNSIM_SOURCE_FILES EXCLUDE REGEX "(tests)")
-add_library(opynsim STATIC ${LIBOPYNSIM_SOURCE_FILES})
+file(GLOB_RECURSE _libopynsim_sources "*.cpp")
+list(FILTER _libopynsim_sources EXCLUDE REGEX "(tests)")
+add_library(opynsim STATIC ${_libopynsim_sources})
+unset(_libopynsim_sources)
 target_link_libraries(opynsim
 PUBLIC
     osim            # OpenSim/Simbody/plugins
@@ -22,7 +23,7 @@ PUBLIC
 )
 target_include_directories(opynsim
 PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>          # so that `#include <libopynsim/header.h>` works
+    $<BUILD_INTERFACE:${OPYN_BUILD_INTERFACE_INCLUDE_DIR}>     # so that `#include <libopynsim/header.h>` works
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated/>  # so that `#include <libopynsim/opynsim_config.h>` works
     $<INSTALL_INTERFACE:include>                               # `libopysim` is installed into the `include` root
 )
@@ -35,8 +36,10 @@ if(OPYN_BUILD_PYTHON_BINDINGS)
     set_target_properties(opynsim PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(opynsim)
+endif()
+if(OPYN_ENABLE_SANITIZERS)
+    opyn_add_sanitizer_flags_to(opynsim)
 endif()
 
 if(OPYN_BUILD_TESTING)

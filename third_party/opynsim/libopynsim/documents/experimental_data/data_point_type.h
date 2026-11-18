@@ -19,13 +19,13 @@ namespace opyn
     };
 
     // A compile-time typelist of all possible `DataPointType`s.
-    using DataPointTypeList = osc::OptionList<DataPointType,
+    using DataPointTypeList = osc::OptionList<
+        DataPointType,
         DataPointType::Point,
         DataPointType::ForcePoint,
         DataPointType::BodyForce,
         DataPointType::Orientation,
-        DataPointType::Unknown
-    >;
+        DataPointType::Unknown>;
 
     // Compile-time traits associated with a `DataPointType`.
     template<DataPointType>
@@ -64,9 +64,8 @@ namespace opyn
     // Returns the number of elements in a given `DataPointType`.
     constexpr size_t num_elements_in(DataPointType t)
     {
-        constexpr auto lut = []<DataPointType... Types>(osc::OptionList<DataPointType, Types...>)
-        {
-            return std::to_array({ ColumnDataTypeTraits<Types>::num_elements... });
+        constexpr auto lut = []<DataPointType... Types>(osc::OptionList<DataPointType, Types...>) {
+            return std::to_array({ColumnDataTypeTraits<Types>::num_elements...});
         }(DataPointTypeList{});
 
         return lut.at(osc::to_index(t));
@@ -75,9 +74,8 @@ namespace opyn
     // Returns a human-readable label for a given `DataPointType`.
     constexpr osc::CStringView label_for(DataPointType t)
     {
-        constexpr auto lut = []<DataPointType... Types>(osc::OptionList<DataPointType, Types...>)
-        {
-            return std::to_array({ ColumnDataTypeTraits<Types>::label... });
+        constexpr auto lut = []<DataPointType... Types>(osc::OptionList<DataPointType, Types...>) {
+            return std::to_array({ColumnDataTypeTraits<Types>::label...});
         }(DataPointTypeList{});
 
         return lut.at(osc::to_index(t));

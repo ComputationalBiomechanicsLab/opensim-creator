@@ -19,7 +19,7 @@ TEST(ShaderPropertyType, can_be_written_to_ostream)
 
 TEST(ShaderPropertyType, can_be_iterated_over_and_all_can_be_written_to_ostream)
 {
-    for (size_t i = 0; i < num_options<ShaderPropertyType>(); ++i) {
+    for (size_t i = 0; i < num_options_v<ShaderPropertyType>; ++i) {
         // shouldn't crash - if it does then we've missed a case somewhere
         std::stringstream ss;
         ss << static_cast<ShaderPropertyType>(i);

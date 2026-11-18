@@ -35,11 +35,10 @@ public:
             // user clicked the X, or Alt+F4, etc.)
             App::upd().request_quit();
             return true;
-        }
-        else if (ui_context_.on_event(e)) {
+        } else if (ui_context_.on_event(e)) {
             return true;  // an element in the 2D UI handled this event
         }
-        return false;   // nothing handled the event
+        return false;  // nothing handled the event
     }
 
     void on_tick()
@@ -77,8 +76,23 @@ private:
 osc::CookiecutterScreen::CookiecutterScreen() :
     Widget{std::make_unique<Impl>(*this)}
 {}
-void osc::CookiecutterScreen::impl_on_mount() { private_data().on_mount(); }
-void osc::CookiecutterScreen::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::CookiecutterScreen::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::CookiecutterScreen::impl_on_tick() { private_data().on_tick(); }
-void osc::CookiecutterScreen::impl_on_draw() { private_data().on_draw(); }
+void osc::CookiecutterScreen::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::CookiecutterScreen::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::CookiecutterScreen::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::CookiecutterScreen::impl_on_tick()
+{
+    private_data().on_tick();
+}
+void osc::CookiecutterScreen::impl_on_draw()
+{
+    private_data().on_draw();
+}

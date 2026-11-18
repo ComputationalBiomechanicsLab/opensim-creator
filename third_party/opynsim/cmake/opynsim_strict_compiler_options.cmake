@@ -36,6 +36,7 @@ function(opyn_add_strict_compiler_options_to target)
             /wd26451            # disable arithmetic overflow checks
             /wd26496            # disable const-after-construction checks
             /wd26814            # disable "can be constexpr" checks
+            /wd26815            # disable "dangling temporary" checks (false positives)
             /wd26417            # disable shared pointer reference param checks
             /wd26826            # disable checking for C-style varargs (currently necessary)
             /wd26400            # disable a gsl::owner<T> check when allocating
@@ -58,6 +59,9 @@ function(opyn_add_strict_compiler_options_to target)
             /wd26820            # disable: "this is a potentially expensive copy operation"
             /wd26415            # disable: "smart pointer parameter is used only to access contained pointer"
             /wd26418            # disable: "shared pointer parameter is not copied or moved"
+            /wd6294             # disable: "Ill-defined for-loop.  Loop body not executed"
+            /wd26432            # disable: "If you define or delete any default operation in the type 'T', define or delete them all (c.21).
+            /wd26498            # disable: "The function 'f' is constexpr, mark variable 'x' constexpr if compile-time evaluation is desired (con.5).
         >
 
         # gcc/clang flags
@@ -77,16 +81,17 @@ function(opyn_add_strict_compiler_options_to target)
             -Wimplicit-fallthrough   # warn if a case in a switch statement implicitly falls through after a statement
             -Wformat-security        # warn if insecure string formatting (e.g. for printf) is detected
             -Wcast-qual              # warn if a pointer is cast in a C-style cast in such a way that it removes qualifiers (e.g. char const* -> char*)
-            -Wconversion             # warn if implicit conversion may alter a value
 
             -Wno-sign-conversion     # don't warn if an implicit conversion involving signed-to-unsigned etc. may alter a value (hard to implement)
             -Wno-unknown-pragmas     # don't warn if the codebase contains unknown `pragma`s (e.g. MSVC-specific `pragma warning` etc.)
             -Wno-extra-semi          # don't warn if extra semicolons are detected: some macro expansions can write additional semicolons
+            -Wno-conversion          # don't warn if implicit conversion may alter a value
         >
 
         # clang flags
         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
             -Wuninitialized  # warn if using an uninitialized variable
+            -Wno-implicit-int-float-conversion  # don't warn if an int is converted into a float (it's a numeric codebase)
         >
 
         # gcc flags

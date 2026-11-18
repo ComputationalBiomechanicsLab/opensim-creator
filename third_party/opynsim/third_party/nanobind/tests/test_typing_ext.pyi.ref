@@ -1,9 +1,22 @@
+from collections import abc as cabc
 from collections.abc import Iterable
-import py_stub_test
-from typing import Any, Generic, Optional, Self, TypeAlias, TypeVar
+import logging
+from typing import (
+    Any,
+    Generic,
+    Optional,
+    Self,
+    TypeAlias,
+    TypeVar,
+    TypeVarTuple,
+    Unpack,
+    overload
+)
 
-from . import submodule as submodule
-from .submodule import F as F, f as f2
+import py_stub_test
+
+from test_typing_ext import submodule as submodule
+from test_typing_ext.submodule import F as F, f as f2
 
 
 # a prefix
@@ -71,10 +84,27 @@ T2 = TypeVar("T2", bound=Foo)
 
 T3 = TypeVar("T3", Foo, Wrapper)
 
+T4 = TypeVar("T4", bound=float, default=int)
+
+T5 = TypeVarTuple("T5", default=Unpack[tuple[Foo, ...]])
+
 def tweak_me(arg: int):
     """
     prior docstring
     remains preserved
     """
+
+def import_me(arg: logging.Logger) -> cabc.Iterable[int]: ...
+
+@overload
+def overload_me(arg: int) -> None:
+    """first overload"""
+
+@overload
+def overload_me(arg: str) -> None:
+    """second overload"""
+
+def collapse_me(arg: int | str) -> None:
+    """only docstring"""
 
 # a suffix

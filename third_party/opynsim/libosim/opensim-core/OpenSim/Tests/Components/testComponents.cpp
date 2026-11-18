@@ -24,9 +24,9 @@
 
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Common/Logger.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Auxiliary/getRSS.h>
 #include <OpenSim/Simulation/Model/StationDefinedFrame.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 
@@ -284,7 +284,7 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
                     }
                     // no luck finding a Coordinate already in the Model
                     Body* body = new Body();
-                    randomize(body);
+                    OpenSim::Testing::randomize(body);
                     model.addBody(body);
                     model.addJoint(new PinJoint("pin", model.getGround(), *body));
                 }
@@ -301,7 +301,7 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
 
             if (dependency) {
                 //give it some random values including a name
-                randomize(dependency.get());
+                OpenSim::Testing::randomize(dependency.get());
 
                 // add the dependency 
                 Component& c = addObjectAsComponentToModel(std::move(dependency), model);
@@ -438,7 +438,7 @@ void testComponent(const Component& instanceToTest)
     // 1. Set properties to random values.
     // -----------------------------------
     INFO("Randomizing the component's properties.");
-    randomize(instance.get());
+    OpenSim::Testing::randomize(instance.get());
 
     // 2. Ensure that cloning produces an exact copy.
     // ----------------------------------------------

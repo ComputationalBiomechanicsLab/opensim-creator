@@ -12,18 +12,22 @@ namespace osc::detail
         std::string_view failing_code,
         std::string_view function_name,
         std::string_view file_name,
-        unsigned int file_line
-    );
+        unsigned int file_line);
 }
 
 // always execute this assertion - even if in release mode /w debug flags disabled
-#define OSC_ASSERT_ALWAYS(expr) \
-    (static_cast<bool>(expr) ? static_cast<void>(0) : osc::detail::on_assertion_failure(#expr, static_cast<const char*>(__func__), osc::extract_filename(__FILE__), __LINE__))
+#define OSC_ASSERT_ALWAYS(expr)                                                                    \
+    (static_cast<bool>(expr) ? static_cast<void>(0)                                                \
+                             : osc::detail::on_assertion_failure(                                  \
+                                   #expr,                                                          \
+                                   static_cast<const char*>(__func__),                             \
+                                   osc::extract_filename(__FILE__),                                \
+                                   __LINE__))
 
 #if OPYN_FORCE_ASSERTS_ENABLED
-    #define OSC_ASSERT(expr) OSC_ASSERT_ALWAYS(expr)
+#define OSC_ASSERT(expr) OSC_ASSERT_ALWAYS(expr)
 #elif !defined(NDEBUG)
-    #define OSC_ASSERT(expr) OSC_ASSERT_ALWAYS(expr)
+#define OSC_ASSERT(expr) OSC_ASSERT_ALWAYS(expr)
 #else
-    #define OSC_ASSERT(expr)
+#define OSC_ASSERT(expr)
 #endif

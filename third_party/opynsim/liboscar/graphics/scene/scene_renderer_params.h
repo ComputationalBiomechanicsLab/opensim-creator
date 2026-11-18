@@ -17,23 +17,15 @@ namespace osc
             return {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         }
 
-        static constexpr Color default_background_color()
-        {
-            return {0.89f, 0.89f, 0.89f};
-        }
+        static constexpr Color default_background_color() { return {0.89f, 0.89f, 0.89f}; }
 
-        static constexpr Vector3 default_floor_position()
-        {
-            return {0.0f, -0.001f, 0.0f};
-        }
+        static constexpr Vector3 default_floor_position() { return {0.0f, -0.001f, 0.0f}; }
 
     private:
         static constexpr size_t c_num_rim_groups = 2;
+
     public:
-        static constexpr size_t num_rim_groups()
-        {
-            return c_num_rim_groups;
-        }
+        static constexpr size_t num_rim_groups() { return c_num_rim_groups; }
 
         friend bool operator==(const SceneRendererParams&, const SceneRendererParams&) = default;
 
@@ -68,7 +60,8 @@ namespace osc
             Color{0.95f, 0.4f, 0.0f, 1.0f},
             Color{0.95f, 0.2f, 0.0f, 0.4f},
         });
-        Vector2 rim_thickness = {1.0f, 1.0f};  // desired screen-space rim thickness in device-independent pixels.
+        // desired screen-space rim thickness in device-independent pixels.
+        Vector2 rim_thickness = {1.0f, 1.0f};
 
         // scene parameters
         Vector3 floor_position = default_floor_position();

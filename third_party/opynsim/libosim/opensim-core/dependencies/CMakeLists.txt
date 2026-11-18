@@ -131,12 +131,20 @@ function(AddDependency)
              -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE})
         list(APPEND CMAKE_ARGS
              -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO})
+        if(CMAKE_MSVC_RUNTIME_LIBRARY)
+            list(APPEND CMAKE_ARGS
+                 -DCMAKE_MSVC_RUNTIME_LIBRARY:STRING=${CMAKE_MSVC_RUNTIME_LIBRARY}
+                 -DCMAKE_POLICY_DEFAULT_CMP0091:STRING=NEW)
+        endif()
         if(APPLE)
             list(APPEND CMAKE_ARGS
                  -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${CMAKE_OSX_DEPLOYMENT_TARGET})
         endif()
         if(SWIG_EXECUTABLE)
             list(APPEND CMAKE_ARGS -DSWIG_EXECUTABLE:FILEPATH=${SWIG_EXECUTABLE})
+        endif()
+        if(CMAKE_INSTALL_LIBDIR)
+            list(APPEND CMAKE_ARGS -DCMAKE_INSTALL_LIBDIR:STRING=${CMAKE_INSTALL_LIBDIR})
         endif()
 
         # Append the dependency-specific CMake arguments.
@@ -179,28 +187,16 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       ezc3d
               DEFAULT    OFF
               GIT_URL    https://github.com/pyomeca/ezc3d.git
-              GIT_TAG    Release_1.5.19
+              GIT_TAG    Release_1.7.2
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
 
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    7f35622b3c5daac919fc39a2865498c03c553e53
+              GIT_TAG    59c6e7b89b3bdf266a2f3d54c611599d964205f7
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          ${SIMBODY_EXTRA_CMAKE_ARGS})
-
-set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-
-AddDependency(NAME       spdlog
-              DEFAULT    ON
-              GIT_URL    https://github.com/gabime/spdlog.git
-              GIT_TAG    v1.15.3
-              CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
-                         -DSPDLOG_BUILD_TESTS:BOOL=OFF
-                         -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
-                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
-                         -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS})
 
 AddDependency(NAME       catch2
               DEFAULT    ON

@@ -1,0 +1,21 @@
+#pragma once
+
+#include <liboscar/ui/oscimgui.h>
+#include <liboscar/ui/panels/panel.h>
+
+namespace osc
+{
+    // generic base class for the panels shown in the TPS3D tab
+    class MwUiPanel : public Panel {
+    public:
+        using Panel::Panel;
+
+    private:
+        void impl_before_imgui_begin() override
+        {
+            ui::push_style_var(ui::StyleVar::PanelPadding, {0.0f, 0.0f});
+        }
+
+        void impl_after_imgui_begin() override { ui::pop_style_var(); }
+    };
+}

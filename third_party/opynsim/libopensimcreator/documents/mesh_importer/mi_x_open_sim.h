@@ -9,16 +9,22 @@
 #include <string>
 #include <vector>
 
-namespace OpenSim { class Model; }
-namespace osc { class MiJoint; }
+namespace OpenSim
+{
+    class Model;
+}
+namespace osc
+{
+    class MiJoint;
+}
 
 // functions that bridge the mesh importer world to the OpenSim one
 namespace osc
 {
     // user-editable flags that affect how an OpenSim::Model is created by the mesh importer
     enum class ModelCreationFlags {
-        None                      = 0,
-        ExportStationsAsMarkers   = 1<<0,
+        None = 0,
+        ExportStationsAsMarkers = 1 << 0,
     };
 
     constexpr bool operator&(const ModelCreationFlags& lhs, const ModelCreationFlags& rhs)
@@ -26,26 +32,25 @@ namespace osc
         return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
     }
 
-    constexpr ModelCreationFlags operator+(const ModelCreationFlags& lhs, const ModelCreationFlags& rhs)
+    constexpr ModelCreationFlags operator+(
+        const ModelCreationFlags& lhs, const ModelCreationFlags& rhs)
     {
         return static_cast<ModelCreationFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));
     }
 
-    constexpr ModelCreationFlags operator-(const ModelCreationFlags& lhs, const ModelCreationFlags& rhs)
+    constexpr ModelCreationFlags operator-(
+        const ModelCreationFlags& lhs, const ModelCreationFlags& rhs)
     {
         return static_cast<ModelCreationFlags>(std::to_underlying(lhs) & ~std::to_underlying(rhs));
     }
 
-    MiDocument CreateModelFromOsimFile(const std::filesystem::path&);
+    MiDocument create_model_from_osim_file(const std::filesystem::path&);
 
     // if there are no issues, returns a new OpenSim::Model created from the document
     //
     // otherwise, returns nullptr and issuesOut will be populated with issue messages
-    std::unique_ptr<OpenSim::Model> CreateOpenSimModelFromMeshImporterDocument(
-        const MiDocument&,
-        ModelCreationFlags,
-        std::vector<std::string>& issuesOut
-    );
+    std::unique_ptr<OpenSim::Model> create_open_sim_model_from_mesh_importer_document(
+        const MiDocument&, ModelCreationFlags, std::vector<std::string>& issues_out);
 
-    Vector3 GetJointAxisLengths(const MiJoint&);
+    Vector3 get_joint_axis_lengths(const MiJoint&);
 }

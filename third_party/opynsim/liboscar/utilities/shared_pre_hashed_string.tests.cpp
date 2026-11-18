@@ -62,7 +62,7 @@ TEST(SharedPreHashedString, use_count_decrements_when_lifetime_is_dropped)
     const SharedPreHashedString str{"another string"};
     ASSERT_EQ(str.use_count(), 1);
     {
-        const SharedPreHashedString copy{str};  // NOLINT(performance-unnecessary-copy-initialization)
+        const SharedPreHashedString copy{str};
         ASSERT_EQ(str.use_count(), 2);
     }
     ASSERT_EQ(str.use_count(), 1);
@@ -161,7 +161,6 @@ TEST(SharedPreHashedString, can_stream_to_ostream)
     ASSERT_EQ(ss.str(), "stream me");
 }
 
-
 TEST(SharedPreHashedString, std_hash_returns_same_as_std_string_view)
 {
     const auto source_strings = std::to_array<std::string_view>({
@@ -171,6 +170,8 @@ TEST(SharedPreHashedString, std_hash_returns_same_as_std_string_view)
         " etc.",
     });
     for (const auto& source_string : source_strings) {
-        ASSERT_EQ(std::hash<std::string_view>{}(source_string), std::hash<SharedPreHashedString>{}(SharedPreHashedString{source_string}));
+        ASSERT_EQ(
+            std::hash<std::string_view>{}(source_string),
+            std::hash<SharedPreHashedString>{}(SharedPreHashedString{source_string}));
     }
 }

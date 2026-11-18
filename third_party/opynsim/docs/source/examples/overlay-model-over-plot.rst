@@ -2,14 +2,13 @@ Overlay Model Over Plot
 =======================
 
 This example uses `Matplotlib <https://matplotlib.org/>`_ to composite the pixel data
-returned by :meth:`opynsim.graphics.Texture2D.pixels_rgba32` over a line plot, so that
+returned by :meth:`opynsim.Texture2D.pixels_rgba32` over a line plot, so that
 raw data plots an be annotated with helpful visualizations.
 
 .. code:: python
 
     import opynsim as opyn
     import opynsim.examples
-    import opynsim.graphics
     import numpy as np
     import matplotlib.pyplot as plt  # from `matplotlib` package
     from matplotlib.offsetbox import OffsetImage, AnnotationBbox
@@ -40,7 +39,7 @@ raw data plots an be annotated with helpful visualizations.
     for x in image_xs:
         model.set_coordinate_value(model_state, "/jointset/pin/pin_coord_0", x)
         model.realize(model_state, opyn.STAGE_REPORT)
-        images.append(opyn.graphics.render_model_in_state(model, model_state))
+        images.append(opyn.render_model_in_state(model, model_state))
 
     # Create plot
     fig, ax = plt.subplots(figsize=(10, 6))

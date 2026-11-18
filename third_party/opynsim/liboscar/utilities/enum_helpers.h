@@ -19,19 +19,22 @@ namespace osc
         TEnum::NUM_OPTIONS;
     };
 
-    // returns the number of options in `TEnum` (effectively, returns `NUM_OPTIONS`)
+    // Provides member constant `value` equal to the number of options in `TEnum`.
     template<DenselyPackedOptionsEnum TEnum>
-    constexpr size_t num_options()
-    {
-        return static_cast<size_t>(TEnum::NUM_OPTIONS);
-    }
+    struct NumOptions final {
+        constexpr static size_t value = static_cast<size_t>(TEnum::NUM_OPTIONS);
+    };
+
+    // Helper variable template that is equivalent to the number of options in `TEnum`.
+    template<DenselyPackedOptionsEnum TEnum>
+    constexpr size_t num_options_v = NumOptions<TEnum>::value;
 
     // a compile-time list of options in `TEnum`
     //
     // - the caller must instantiate this template with each option
     template<DenselyPackedOptionsEnum TEnum, TEnum... TEnumOptions>
     struct OptionList {
-        static_assert(sizeof...(TEnumOptions) == num_options<TEnum>());
+        static_assert(sizeof...(TEnumOptions) == num_options_v<TEnum>);
     };
 
     // returns the value of `v` cast to a `size_t` (i.e. `v` should probably satisfy
@@ -47,20 +50,16 @@ namespace osc
     template<DenselyPackedOptionsEnum TEnum>
     constexpr std::optional<TEnum> from_index(size_t pos)
     {
-        if (pos < num_options<TEnum>()) {
+        if (pos < num_options_v<TEnum>) {
             return static_cast<TEnum>(pos);
-        }
-        else {
+        } else {
             return std::nullopt;
         }
     }
 
     // an iterable adaptor for a `DenselyPackedOptionsEnum` that, when iterated, emits
     // each enum option projected via `Proj`
-    template<
-        DenselyPackedOptionsEnum TEnum,
-        typename Proj = std::identity
-    >
+    template<DenselyPackedOptionsEnum TEnum, typename Proj = std::identity>
     class DenselyPackedOptionsIterable final {
     public:
         class Iterator {
@@ -79,10 +78,7 @@ namespace osc
 
             friend bool operator==(const Iterator&, const Iterator&) = default;
 
-            value_type operator*() const
-            {
-                return std::invoke(*proj_, current_);
-            }
+            value_type operator*() const { return std::invoke(*proj_, current_); }
 
             Iterator& operator++()
             {
@@ -96,6 +92,7 @@ namespace osc
                 ++(*this);
                 return copy;
             }
+
         private:
             TEnum current_ = static_cast<TEnum>(0);
             const Proj* proj_ = nullptr;
@@ -110,7 +107,11 @@ namespace osc
         {}
 
         auto front() const { return std::invoke(proj_, static_cast<TEnum>(0)); }
-        auto back() const { return std::invoke(proj_, static_cast<TEnum>(std::to_underlying(TEnum::NUM_OPTIONS)-1)); }
+        auto back() const
+        {
+            return std::invoke(
+                proj_, static_cast<TEnum>(std::to_underlying(TEnum::NUM_OPTIONS) - 1));
+        }
         Iterator begin() const { return Iterator{proj_, static_cast<TEnum>(0)}; }
         Iterator end() const { return Iterator{proj_, TEnum::NUM_OPTIONS}; }
 
@@ -118,7 +119,8 @@ namespace osc
         Proj proj_;
     };
 
-    // returns a `DenselyPackedOptionsIterable` that, when iterated, projects each enum value via `proj`
+    // returns a `DenselyPackedOptionsIterable` that, when iterated, projects each enum value via
+    // `proj`
     template<DenselyPackedOptionsEnum TEnum, typename Proj = std::identity>
     constexpr DenselyPackedOptionsIterable<TEnum, Proj> make_option_iterable(Proj&& proj = {})
     {
@@ -136,10 +138,13 @@ namespace osc
         TEnum::NUM_FLAGS;
     };
 
-    // returns the number of flags in `TEnum`
+    // Provides member constant `value` equal to the number of flags in `TEnum`.
     template<FlagsEnum TEnum>
-    constexpr size_t num_flags()
-    {
-        return static_cast<size_t>(TEnum::NUM_FLAGS);
-    }
+    struct NumFlags final {
+        constexpr static size_t value = static_cast<size_t>(TEnum::NUM_FLAGS);
+    };
+
+    // Helper variable template that is equivalent to the number of flags in `TEnum`.
+    template<FlagsEnum TEnum>
+    constexpr size_t num_flags_v = NumFlags<TEnum>::value;
 }

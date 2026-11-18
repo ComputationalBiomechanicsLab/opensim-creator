@@ -9,15 +9,14 @@ namespace osc
 {
     class VertexAttributeDescriptor {
     public:
-        VertexAttributeDescriptor(
-            VertexAttribute attribute,
-            VertexAttributeFormat format) :
+        VertexAttributeDescriptor(VertexAttribute attribute, VertexAttributeFormat format) :
 
             attribute_{attribute},
             format_{format}
         {}
 
-        friend bool operator==(const VertexAttributeDescriptor&, const VertexAttributeDescriptor&) = default;
+        friend bool operator==(const VertexAttributeDescriptor&, const VertexAttributeDescriptor&) =
+            default;
 
         VertexAttribute attribute() const { return attribute_; }
         VertexAttributeFormat format() const { return format_; }

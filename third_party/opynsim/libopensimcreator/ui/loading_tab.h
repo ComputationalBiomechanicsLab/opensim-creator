@@ -4,21 +4,19 @@
 
 #include <filesystem>
 
-namespace osc { class Widget; }
-
 namespace osc
 {
+    class Widget;
+
     class LoadingTab final : public Tab {
     public:
-        explicit LoadingTab(
-            Widget* parent,
-            std::filesystem::path
-        );
+        explicit LoadingTab(Widget* parent, std::filesystem::path);
 
-        bool isFinishedLoading() const;
+        bool is_finished_loading() const;
+
     private:
-        void impl_on_tick() final;
-        void impl_on_draw() final;
+        void impl_on_tick() override;
+        void impl_on_draw() override;
 
         class Impl;
         OSC_WIDGET_DATA_GETTERS(Impl);

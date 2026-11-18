@@ -3,16 +3,26 @@
 #include <iosfwd>
 #include <span>
 
-namespace opyn { class SharedOutputExtractor; }
-namespace OpenSim { class Component; }
-namespace osc { class SimulationReport; }
+namespace opyn
+{
+    class SharedOutputExtractor;
+}
+
+namespace OpenSim
+{
+    class Component;
+}
 
 namespace osc
 {
-    void WriteOutputsAsCSV(
+    class SimulationReport;
+}
+
+namespace osc
+{
+    void write_outputs_as_csv(
         const OpenSim::Component&,
         std::span<const opyn::SharedOutputExtractor>,
         std::span<const SimulationReport>,
-        std::ostream&
-    );
+        std::ostream&);
 }

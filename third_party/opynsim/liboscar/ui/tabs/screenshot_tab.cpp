@@ -52,14 +52,17 @@ namespace
 
         if (ratio >= 1.0f) {
             // it will touch the top/bottom but may (ratio != 1.0f) fall short of the left/right
-            const Vector2 rv_dimensions = {target_dimensions.x()/ratio, target_dimensions.y()};
-            const Vector2 rv_top_left = {target_ui_top_left.x() + 0.5f*(target_dimensions.x() - rv_dimensions.x()), target_ui_top_left.y()};
+            const Vector2 rv_dimensions = {target_dimensions.x() / ratio, target_dimensions.y()};
+            const Vector2 rv_top_left = {
+                target_ui_top_left.x() + (0.5f * (target_dimensions.x() - rv_dimensions.x())),
+                target_ui_top_left.y()};
             return Rect::from_corners(rv_top_left, rv_top_left + rv_dimensions);
-        }
-        else {
+        } else {
             // it will touch the left/right but will not touch the top/bottom
-            const Vector2 rv_dimensions = {target_dimensions.x(), ratio*target_dimensions.y()};
-            const Vector2 rv_top_left = {target_ui_top_left.x(), target_ui_top_left.y() + 0.5f*(target_dimensions.y() - rv_dimensions.y())};
+            const Vector2 rv_dimensions = {target_dimensions.x(), ratio * target_dimensions.y()};
+            const Vector2 rv_top_left = {
+                target_ui_top_left.x(),
+                target_ui_top_left.y() + (0.5f * (target_dimensions.y() - rv_dimensions.y()))};
             return Rect::from_corners(rv_top_left, rv_top_left + rv_dimensions);
         }
     }
@@ -72,21 +75,23 @@ namespace
         const auto annotation_screen_rect_corners = annotation_screen_rect.corners();
 
         const Rect normalized_ypu_rect = Rect::from_corners(
-            annotation_screen_rect_corners.min/screen_dimensions,
-            annotation_screen_rect_corners.max/screen_dimensions
-        );
+            annotation_screen_rect_corners.min / screen_dimensions,
+            annotation_screen_rect_corners.max / screen_dimensions);
         const Rect normalized_ypd_rect = normalized_ypu_rect.with_flipped_y(1.0f);
         const auto normalized_ypd_corners = normalized_ypd_rect.corners();
 
         const Vector2 ui_dims = viewport_ui_rect.dimensions();
         const Vector2 ui_top_left = viewport_ui_rect.ypd_top_left();
         return Rect::from_corners(
-            ui_top_left + ui_dims*normalized_ypd_corners.min,
-            ui_top_left + ui_dims*normalized_ypd_corners.max
-        );
+            ui_top_left + ui_dims * normalized_ypd_corners.min,
+            ui_top_left + ui_dims * normalized_ypd_corners.max);
     }
 
-    enum class ScreenshotFileFormat { png, jpeg, NUM_OPTIONS };
+    enum class ScreenshotFileFormat {
+        png,
+        jpeg,
+        NUM_OPTIONS,
+    };
 }
 
 class osc::ScreenshotTab::Impl final : public TabPrivate {
@@ -123,7 +128,8 @@ public:
             ui::pop_style_var();
 
             const Rect ui_image_rect = draw_screenshot_as_image();
-            draw_image_overlays(ui::get_panel_draw_list(), ui_image_rect, c_unselected_color, c_selected_color);
+            draw_image_overlays(
+                ui::get_panel_draw_list(), ui_image_rect, c_unselected_color, c_selected_color);
 
             ui::end_panel();
         }
@@ -159,7 +165,6 @@ public:
                 ui::end_table();
             }
 
-
             ui::end_panel();
         }
     }
@@ -169,7 +174,8 @@ private:
     Rect draw_screenshot_as_image()
     {
         const Rect window_ui_rect = ui::get_content_region_available_ui_rect();
-        const Rect image_ui_rect = shrink_to_fit(window_ui_rect, aspect_ratio_of(screenshot_.dimensions()));
+        const Rect image_ui_rect =
+            shrink_to_fit(window_ui_rect, aspect_ratio_of(screenshot_.dimensions()));
         ui::set_cursor_ui_position(image_ui_rect.ypd_top_left());
         ui::draw_image(image_texture_, image_ui_rect.dimensions());
         return image_ui_rect;
@@ -182,11 +188,12 @@ private:
         const Color& selected_color)
     {
         const Vector2 mouse_ui_pos = ui::get_mouse_ui_position();
-        const bool left_click_released = ui::is_mouse_released(ui::MouseButton::Left);
+        const bool left_click_released = ui::is_mouse_released(MouseButton::Left);
         const Vector2 screenshot_dimensions = screenshot_.dimensions();
 
         for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
-            const Rect annotation_ui_rect = map_rect(screenshot_dimensions, annotation.rect(), image_ui_rect);
+            const Rect annotation_ui_rect =
+                map_rect(screenshot_dimensions, annotation.rect(), image_ui_rect);
             const bool selected = user_selected_annotations_.contains(annotation.label());
             const bool hovered = is_intersecting(annotation_ui_rect, mouse_ui_pos);
 
@@ -198,41 +205,41 @@ private:
             if (hovered and left_click_released) {
                 if (selected) {
                     user_selected_annotations_.erase(annotation.label());
-                }
-                else {
+                } else {
                     user_selected_annotations_.insert(annotation.label());
                 }
             }
 
             draw_list.add_rect(
-                annotation_ui_rect,
-                color,
-                c_annotation_rect_rounding,
-                c_annotation_rect_thickness
-            );
+                annotation_ui_rect, color, c_annotation_rect_rounding, c_annotation_rect_thickness);
         }
     }
 
     void action_try_save_annotated_screenshot(ScreenshotFileFormat format)
     {
-        App::upd().prompt_user_to_save_file_with_extension_async([format, screenshot = render_annotated_screenshot(), jpeg_quality_level=jpeg_quality_level_](std::optional<std::filesystem::path> p)
-        {
-            if (not p) {
-                return;  // User cancelled out.
-            }
+        App::upd().prompt_user_to_save_file_with_extension_async(
+            [format,
+             screenshot = render_annotated_screenshot(),
+             jpeg_quality_level = jpeg_quality_level_](std::optional<std::filesystem::path> p) {
+                if (not p) {
+                    return;  // User cancelled out.
+                }
 
-            std::ofstream fout{*p, std::ios_base::binary};
-            if (not fout) {
-                throw std::runtime_error{p->string() + ": cannot open for writing"};
-            }
-            switch (format) {
-            case ScreenshotFileFormat::jpeg: JPEG::write(fout, screenshot, jpeg_quality_level); break;
-            case ScreenshotFileFormat::png:  PNG::write(fout, screenshot);  break;
-            default:                         std::unreachable();
-            }
-            open_file_in_os_default_application(*p);
-        }, format == ScreenshotFileFormat::jpeg ? "jpeg" : "png");
-        static_assert(num_options<ScreenshotFileFormat>() == 2);
+                std::ofstream fout{*p, std::ios_base::binary};
+                if (not fout) {
+                    throw std::runtime_error{p->string() + ": cannot open for writing"};
+                }
+                switch (format) {
+                case ScreenshotFileFormat::jpeg:
+                    JPEG::write(fout, screenshot, jpeg_quality_level);
+                    break;
+                case ScreenshotFileFormat::png: PNG::write(fout, screenshot); break;
+                default: std::unreachable();
+                }
+                open_file_in_os_default_application(*p);
+            },
+            format == ScreenshotFileFormat::jpeg ? "jpeg" : "png");
+        static_assert(num_options_v<ScreenshotFileFormat> == 2);
     }
 
     Texture2D render_annotated_screenshot()
@@ -253,8 +260,7 @@ private:
             draw_list,
             Rect::from_corners({}, image_texture_.dimensions()),
             Color::clear(),
-            c_selected_color.with_alpha(1.0f)
-        );
+            c_selected_color.with_alpha(1.0f));
 
         // render draw list to output
         draw_list.render_to(render_texture);
@@ -274,5 +280,11 @@ private:
 osc::ScreenshotTab::ScreenshotTab(Widget* parent, Screenshot&& screenshot) :
     Tab{std::make_unique<Impl>(*this, parent, std::move(screenshot))}
 {}
-void osc::ScreenshotTab::impl_on_draw_main_menu() { private_data().on_draw_main_menu(); }
-void osc::ScreenshotTab::impl_on_draw() { private_data().on_draw(); }
+void osc::ScreenshotTab::impl_on_draw_main_menu()
+{
+    private_data().on_draw_main_menu();
+}
+void osc::ScreenshotTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

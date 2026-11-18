@@ -2,6 +2,12 @@ add_executable(oscar_demo_viewer
     oscar_demo_viewer.cpp
 )
 target_link_libraries(oscar_demo_viewer PUBLIC oscar_demos)
+if(OPYN_USE_STRICT_COMPILER_FLAGS)
+    opyn_add_strict_compiler_options_to(oscar_demo_viewer)
+endif()
+if(OPYN_ENABLE_SANITIZERS)
+    opyn_add_sanitizer_flags_to(oscar_demo_viewer)
+endif()
 
 # Handle installation
 if(TRUE)

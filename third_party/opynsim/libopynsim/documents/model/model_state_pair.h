@@ -8,9 +8,16 @@
 #include <stdexcept>
 #include <string_view>
 
-namespace OpenSim { class Component; }
-namespace OpenSim { class Model; }
-namespace SimTK { class State; }
+namespace OpenSim
+{
+    class Component;
+    class Model;
+}
+
+namespace SimTK
+{
+    class State;
+}
 
 namespace opyn
 {
@@ -27,10 +34,10 @@ namespace opyn
         friend bool operator==(const ModelStatePair&, const ModelStatePair&) = default;
 
     public:
-        virtual ~ModelStatePair() noexcept = default;
+        ~ModelStatePair() noexcept override = default;
 
         const OpenSim::Model& get_model() const { return impl_get_model(); }
-        operator const OpenSim::Model& () const { return impl_get_model(); }
+        operator const OpenSim::Model&() const { return impl_get_model(); }
         const OpenSim::Model* operator->() const { return &impl_get_model(); }
 
         const SimTK::State& get_state() const { return impl_get_state(); }
@@ -40,16 +47,13 @@ namespace opyn
         OpenSim::Model& upd_model() { return impl_upd_model(); }
 
         // commit current scratch state to storage
-        void commit(std::string_view commitMessage) { impl_commit(commitMessage); }
+        void commit(std::string_view commit_message) { impl_commit(commit_message); }
 
         osc::UID get_model_version() const { return impl_get_model_version(); }
         void set_model_version(osc::UID id) { impl_set_model_version(id); }
         osc::UID get_state_version() const { return impl_get_state_version(); }
 
-        const OpenSim::Component* get_selected() const
-        {
-            return impl_get_selected();
-        }
+        const OpenSim::Component* get_selected() const { return impl_get_selected(); }
 
         template<typename T>
         const T* get_selected_as() const
@@ -57,69 +61,70 @@ namespace opyn
             return dynamic_cast<const T*>(get_selected());
         }
 
-        void set_selected(const OpenSim::Component* newSelection)
+        void set_selected(const OpenSim::Component* new_selection)
         {
-            impl_set_selected(newSelection);
+            impl_set_selected(new_selection);
         }
 
         void clear_selected() { set_selected(nullptr); }
 
-        const OpenSim::Component* get_hovered() const
-        {
-            return impl_get_hovered();
-        }
+        const OpenSim::Component* get_hovered() const { return impl_get_hovered(); }
 
-        void set_hovered(const OpenSim::Component* newHover)
-        {
-            impl_set_hovered(newHover);
-        }
+        void set_hovered(const OpenSim::Component* new_hover) { impl_set_hovered(new_hover); }
 
         // used to scale weird models (e.g. fly leg) in the UI
-        float get_fixup_scale_factor() const
-        {
-            return impl_get_fixup_scale_factor();
-        }
+        float get_fixup_scale_factor() const { return impl_get_fixup_scale_factor(); }
 
-        void set_fixup_scale_factor(float newScaleFactor)
+        void set_fixup_scale_factor(float new_scale_factor)
         {
-            impl_set_fixup_scale_factor(newScaleFactor);
+            impl_set_fixup_scale_factor(new_scale_factor);
         }
 
         // if supported by the implementation, manually sets if the current model
         // state pair as being up to date with disk at the given timepoint
-        void set_up_to_date_with_filesystem(std::filesystem::file_time_type t) { impl_set_up_to_date_with_filesystem(t); }
+        void set_up_to_date_with_filesystem(std::filesystem::file_time_type t)
+        {
+            impl_set_up_to_date_with_filesystem(t);
+        }
 
     private:
         // overrides + specializes `ComponentAccessor` API
-        const OpenSim::Component& impl_get_component() const final;
-        bool impl_can_upd_component() const { return impl_can_upd_model(); }
-        OpenSim::Component& impl_upd_component() final;
-        osc::UID impl_get_component_version() const final { return impl_get_model_version(); }
-        void impl_set_component_version(osc::UID newVersion) final { impl_set_model_version(newVersion); }
+        const OpenSim::Component& impl_get_component() const override;
+        bool impl_can_upd_component() const override { return impl_can_upd_model(); }
+        OpenSim::Component& impl_upd_component() override;
+        osc::UID impl_get_component_version() const override { return impl_get_model_version(); }
+        void impl_set_component_version(osc::UID new_version) override
+        {
+            impl_set_model_version(new_version);
+        }
 
-        // Implementors should return a const reference to an initialized (finalized properties, etc.) model.
+        // Implementors should return a const reference to an initialized (finalized properties,
+        // etc.) model.
         virtual const OpenSim::Model& impl_get_model() const = 0;
 
-        // Implementors should return a const reference to a state that's compatible with the model returned by `impl_get_model`.
+        // Implementors should return a const reference to a state that's compatible with the model
+        // returned by `impl_get_model`.
         virtual const SimTK::State& impl_get_state() const = 0;
 
-        // Implementors may return whether the model contained by the concrete `ModelStatePair` implementation can be
-        // modified in-place.
+        // Implementors may return whether the model contained by the concrete `ModelStatePair`
+        // implementation can be modified in-place.
         //
-        // If the response can be `true`, implementors should also override `impl_upd_model` accordingly.
+        // If the response can be `true`, implementors should also override `impl_upd_model`
+        // accordingly.
         virtual bool impl_can_upd_model() const { return false; }
 
-        // Implementors may return a mutable reference to a model. It is up to the caller of `upd_model` to ensure that
-        // the model is still valid + initialized after modification.
+        // Implementors may return a mutable reference to a model. It is up to the caller of
+        // `upd_model` to ensure that the model is still valid + initialized after modification.
         //
         // If this is implemented, implementors should override `impl_can_upd_model` accordingly.
         virtual OpenSim::Model& impl_upd_model()
         {
-            throw std::runtime_error{"model updating not implemented for this type of model state pair"};
+            throw std::runtime_error{
+                "model updating not implemented for this type of model state pair"};
         }
 
-        // Implementors may "snapshot" or log the current model + state. It is implementation-defined what
-        // exactly (if anything) this means.
+        // Implementors may "snapshot" or log the current model + state. It is
+        // implementation-defined what exactly (if anything) this means.
         virtual void impl_commit(std::string_view) {}
 
         // Implementors may return a `UID` that uniquely identifies the current state of the model.
@@ -130,7 +135,8 @@ namespace opyn
             return osc::UID{};
         }
 
-        // Implementors may use this to manually set the version of a model (sometimes useful for caching)
+        // Implementors may use this to manually set the version of a model (sometimes useful for
+        // caching)
         virtual void impl_set_model_version(osc::UID) {}
 
         // Implementors may return a  `UID` that uniquely identifies the current state of the state.

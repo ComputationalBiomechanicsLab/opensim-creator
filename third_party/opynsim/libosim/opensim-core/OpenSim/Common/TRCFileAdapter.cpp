@@ -160,9 +160,8 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // the data container.
     std::size_t line_num{_dataStartsAtLine};
     std::vector<std::string> row = nextLine();
-    constexpr size_t max_blank_lines_between_header_and_data = 1024;
     // skip immediate blank lines between header and data.
-    while(line_num < max_blank_lines_between_header_and_data and (row.empty() || row.at(0).empty())) {
+    while(row.empty() || row.at(0).empty()) {
         row = nextLine();
         ++line_num;
     }

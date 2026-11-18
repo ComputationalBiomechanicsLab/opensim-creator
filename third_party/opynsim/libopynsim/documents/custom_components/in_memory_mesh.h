@@ -14,18 +14,25 @@ namespace opyn
     // required by `OpenSim::Mesh`)
     class InMemoryMesh : public OpenSim::Geometry, public CustomDecorationGenerator {
         OpenSim_DECLARE_CONCRETE_OBJECT(InMemoryMesh, OpenSim::Geometry)
+
     public:
         InMemoryMesh() = default;
-        explicit InMemoryMesh(const osc::Mesh& mesh_) : osc_mesh_{mesh_} {}
 
-        void implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>&) const override
+        explicit InMemoryMesh(const osc::Mesh& mesh) :
+            osc_mesh_{mesh}
+        {}
+
+        void implementCreateDecorativeGeometry(
+            SimTK::Array_<SimTK::DecorativeGeometry>&) const override
         {
             // do nothing: OpenSim Creator will detect `ICustomDecorationDecorator` and use that
         }
 
         const osc::Mesh& osc_mesh() const { return osc_mesh_; }
+
     private:
-        void impl_generate_custom_decorations(const SimTK::State&, const std::function<void(osc::SceneDecoration&&)>&) const override;
+        void impl_generate_custom_decorations(
+            const SimTK::State&, const std::function<void(osc::SceneDecoration&&)>&) const override;
 
         osc::Mesh osc_mesh_;
     };

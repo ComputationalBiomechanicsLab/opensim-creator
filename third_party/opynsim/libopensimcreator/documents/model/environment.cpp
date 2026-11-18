@@ -14,50 +14,51 @@
 using namespace osc;
 
 osc::Environment::Environment() :
-    m_ParamBlock{ToParamBlock(ForwardDynamicSimulatorParams{})}
+    param_block_{to_param_block(ForwardDynamicSimulatorParams{})}
 {}
 
-const opyn::SharedOutputExtractor& osc::Environment::getUserOutputExtractor(int index) const
+const opyn::SharedOutputExtractor& osc::Environment::get_user_output_extractor(int index) const
 {
-    return m_OutputExtractors.at(index);
+    return output_extractors_.at(index);
 }
-void osc::Environment::addUserOutputExtractor(const opyn::SharedOutputExtractor& extractor)
+void osc::Environment::add_user_output_extractor(const opyn::SharedOutputExtractor& extractor)
 {
-    m_OutputExtractors.push_back(extractor);
-    App::upd_settings().set_value("panels/Output Watches/enabled", true);  // TODO: this should be an event... ;)
+    output_extractors_.push_back(extractor);
+    // TODO: this should be an event... ;)
+    App::upd_settings().set_value("panels/Output Watches/enabled", true);
 }
-void osc::Environment::removeUserOutputExtractor(int index)
+void osc::Environment::remove_user_output_extractor(int index)
 {
-    OSC_ASSERT(0 <= index and index < static_cast<int>(m_OutputExtractors.size()));
-    m_OutputExtractors.erase(m_OutputExtractors.begin() + index);
+    OSC_ASSERT(0 <= index and index < static_cast<int>(output_extractors_.size()));
+    output_extractors_.erase(output_extractors_.begin() + index);
 }
-bool osc::Environment::hasUserOutputExtractor(const opyn::SharedOutputExtractor& extractor) const
+bool osc::Environment::has_user_output_extractor(const opyn::SharedOutputExtractor& extractor) const
 {
-    return cpp23::contains(m_OutputExtractors, extractor);
+    return cpp23::contains(output_extractors_, extractor);
 }
-bool osc::Environment::removeUserOutputExtractor(const opyn::SharedOutputExtractor& extractor)
+bool osc::Environment::remove_user_output_extractor(const opyn::SharedOutputExtractor& extractor)
 {
-    return std::erase(m_OutputExtractors, extractor) > 0;
+    return std::erase(output_extractors_, extractor) > 0;
 }
-bool osc::Environment::overwriteOrAddNewUserOutputExtractor(const opyn::SharedOutputExtractor& old, const opyn::SharedOutputExtractor& newer)
+bool osc::Environment::overwrite_or_add_new_user_output_extractor(
+    const opyn::SharedOutputExtractor& old, const opyn::SharedOutputExtractor& newer)
 {
-    if (auto it = find_or_nullptr(m_OutputExtractors, old)) {
+    if (auto it = find_or_nullptr(output_extractors_, old)) {
         *it = newer;
         return true;
-    }
-    else {
-        m_OutputExtractors.push_back(newer);
+    } else {
+        output_extractors_.push_back(newer);
         return true;
     }
 }
 
-std::vector<opyn::SharedOutputExtractor> osc::Environment::getAllUserOutputExtractors() const
+std::vector<opyn::SharedOutputExtractor> osc::Environment::get_all_user_output_extractors() const
 {
-    const int nOutputs = getNumUserOutputExtractors();
+    const int n_outputs = get_num_user_output_extractors();
     std::vector<opyn::SharedOutputExtractor> rv;
-    rv.reserve(nOutputs);
-    for (int i = 0; i < nOutputs; ++i) {
-        rv.push_back(getUserOutputExtractor(i));
+    rv.reserve(n_outputs);
+    for (int i = 0; i < n_outputs; ++i) {
+        rv.push_back(get_user_output_extractor(i));
     }
     return rv;
 }

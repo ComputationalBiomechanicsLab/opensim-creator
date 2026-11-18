@@ -22,18 +22,30 @@
 
 namespace opyn
 {
-    // A `ScalingStep` that scales body segments by the chosen (potentially, non-uniform) scale factors
+    // A `ScalingStep` that scales body segments by the chosen (potentially, non-uniform) scale
+    // factors
     class ManuallyScaleBodySegmentsScalingStep final : public ScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(ManuallyScaleBodySegmentsScalingStep, ScalingStep)
 
-        OpenSim_DECLARE_LIST_PROPERTY(bodies,          std::string, "Absolute paths (e.g. `/bodyset/femur`) to `Body` components in the model");
-        OpenSim_DECLARE_PROPERTY(     scale_factors,   SimTK::Vec3, "The manual scale factors that should be applied to the specified bodies");
-        OpenSim_DECLARE_PROPERTY(     preserve_masses, bool,        "If enabled, the masses of the bodies will not be scaled (inertial properties will still be scaled)");
+        OpenSim_DECLARE_LIST_PROPERTY(
+            bodies,
+            std::string,
+            "Absolute paths (e.g. `/bodyset/femur`) to `Body` components in the model");
+        OpenSim_DECLARE_PROPERTY(
+            scale_factors,
+            SimTK::Vec3,
+            "The manual scale factors that should be applied to the specified bodies");
+        OpenSim_DECLARE_PROPERTY(
+            preserve_masses,
+            bool,
+            "If enabled, the masses of the bodies will not be scaled (inertial properties will still be scaled)");
+
     public:
         explicit ManuallyScaleBodySegmentsScalingStep() :
             ScalingStep{"Manually Scale Body Segments"}
         {
-            setDescription("Applies a manually-specified scaling factor to the given body segments in the model.");
+            setDescription(
+                "Applies a manually-specified scaling factor to the given body segments in the model.");
             constructProperty_bodies();
             constructProperty_scale_factors(SimTK::Vec3{1.0});
             constructProperty_preserve_masses(false);
@@ -43,28 +55,32 @@ namespace opyn
         std::vector<ScalingStepValidationMessage> impl_validate(
             ScalingCache&,
             const ScalingParameters& parameters,
-            const OpenSim::Model& sourceModel) const final
+            const OpenSim::Model& source_model) const override
         {
             std::vector<ScalingStepValidationMessage> messages;
 
             // Ensure every entry in `wrap_cylinders` can be found in the source model.
             for (int i = 0; i < getProperty_bodies().size(); ++i) {
-                const auto* body = find_component<OpenSim::Body>(sourceModel, get_bodies(i));
+                const auto* body = find_component<OpenSim::Body>(source_model, get_bodies(i));
                 if (not body) {
                     messages.emplace_back(
                         ScalingStepValidationState::Error,
-                        std::format("{}: Cannot find a `Body` in 'bodies' in the source model (or it isn't a `Body`).", get_bodies(i))
-                    );
+                        std::format(
+                            "{}: Cannot find a `Body` in 'bodies' in the source model (or it isn't a `Body`).",
+                            get_bodies(i)));
                 }
             }
 
-            const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
-            OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
+            const std::optional<double> blending_factor =
+                parameters.lookup<double>("blending_factor");
+            OSC_ASSERT_ALWAYS(
+                blending_factor && "blending_factor was not set by the warping engine");
 
             return messages;
         }
 
-        void impl_for_each_scaling_parameter_declaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const final
+        void impl_for_each_scaling_parameter_declaration(
+            const std::function<void(const ScalingParameterDeclaration&)>& callback) const override
         {
             callback(ScalingParameterDeclaration{"blending_factor", 1.0});
         }
@@ -73,32 +89,36 @@ namespace opyn
             ScalingCache&,
             const ScalingParameters& parameters,
             const OpenSim::Model&,
-            OpenSim::Model& model) const final
+            OpenSim::Model& model) const override
         {
-            const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
-            OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
+            const std::optional<double> blending_factor =
+                parameters.lookup<double>("blending_factor");
+            OSC_ASSERT_ALWAYS(
+                blending_factor && "blending_factor was not set by the warping engine");
 
-            const SimTK::Vec3 scaleFactors = {
-                osc::lerp(1.0, get_scale_factors()[0], *blendingFactor),
-                osc::lerp(1.0, get_scale_factors()[1], *blendingFactor),
-                osc::lerp(1.0, get_scale_factors()[2], *blendingFactor),
+            const SimTK::Vec3 scale_factors = {
+                osc::lerp(1.0, get_scale_factors()[0], *blending_factor),
+                osc::lerp(1.0, get_scale_factors()[1], *blending_factor),
+                osc::lerp(1.0, get_scale_factors()[2], *blending_factor),
             };
 
-            OpenSim::ScaleSet scaleSet;
+            OpenSim::ScaleSet scale_set;
             for (int i = 0; i < getProperty_bodies().size(); ++i) {
                 const auto* body = find_component<OpenSim::Body>(model, get_bodies(i));
                 if (not body) {
-                    auto msg = std::format("{}: Cannot find a `Body` in 'bodies' in the source model (or it isn't a `Body`).", get_bodies(i));
-                    throw std::runtime_error{std::move(msg)};
+                    auto msg = std::format(
+                        "{}: Cannot find a `Body` in 'bodies' in the source model (or it isn't a `Body`).",
+                        get_bodies(i));
+                    throw std::runtime_error{msg};
                 }
 
                 auto scale = std::make_unique<OpenSim::Scale>();
                 scale->setSegmentName(body->getName());
-                scale->setScaleFactors(scaleFactors);
+                scale->setScaleFactors(scale_factors);
                 scale->setApply(true);
-                scaleSet.adoptAndAppend(scale.release());
+                scale_set.adoptAndAppend(scale.release());
             }
-            model.scale(model.updWorkingState(), scaleSet, get_preserve_masses());
+            model.scale(model.updWorkingState(), scale_set, get_preserve_masses());
             initialize_model(model);
             initialize_state(model);
         }

@@ -8,7 +8,8 @@
 namespace osc
 {
     struct OctahedronGeometryParams final {
-        friend bool operator==(const OctahedronGeometryParams&, const OctahedronGeometryParams&) = default;
+        friend bool operator==(const OctahedronGeometryParams&, const OctahedronGeometryParams&) =
+            default;
 
         float radius = 1.0f;
         size_t detail = 0;
@@ -23,7 +24,8 @@ namespace osc
         explicit OctahedronGeometry(const Params& = {});
 
         const Mesh& mesh() const { return mesh_; }
-        operator const Mesh& () const { return mesh_; }
+        operator const Mesh&() const { return mesh_; }
+
     private:
         Mesh mesh_;
     };

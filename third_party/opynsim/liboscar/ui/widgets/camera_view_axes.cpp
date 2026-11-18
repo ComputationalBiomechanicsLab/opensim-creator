@@ -48,9 +48,9 @@ bool osc::CameraViewAxes::draw(OrbitCameraController& camera_controller, const C
 
     // figure out rendering order (back-to-front)
     const Matrix4x4 view_matrix = camera.view_matrix();
-    auto axes = std::array{CoordinateDirection::x(), CoordinateDirection::y(), CoordinateDirection::z()};
-    rgs::sort(axes, rgs::less{}, [&view_matrix](auto axis)
-    {
+    auto axes =
+        std::array{CoordinateDirection::x(), CoordinateDirection::y(), CoordinateDirection::z()};
+    rgs::sort(axes, rgs::less{}, [&view_matrix](auto axis) {
         return transform_vector(view_matrix, axis.direction_vector()).z();
     });
 
@@ -67,11 +67,11 @@ bool osc::CameraViewAxes::draw(OrbitCameraController& camera_controller, const C
 
         // draw line from origin to end with a labelled (clickable) circle ending
         {
-            const Vector2 end = origin + metrics.line_length*view_space_pos;
+            const Vector2 end = origin + (metrics.line_length * view_space_pos);
             const Circle circ = {.origin = end, .radius = metrics.circle_radius};
             const Rect circle_bounds = bounding_rect_of(circ);
 
-            const auto labels = std::to_array<CStringView>({ "X", "Y", "Z" });
+            const auto labels = std::to_array<CStringView>({"X", "Y", "Z"});
             const auto id = ui::get_id(labels[axis.index()]);
             ui::set_cursor_ui_position(circle_bounds.ypd_top_left());
             ui::set_next_item_size(circle_bounds);
@@ -84,9 +84,9 @@ bool osc::CameraViewAxes::draw(OrbitCameraController& camera_controller, const C
 
                 draw_list.add_line(origin, end, color, 3.0f);
                 draw_list.add_circle_filled(circ, color);
-                draw_list.add_text(end - 0.5f*label_size, text_color, labels[axis.index()]);
+                draw_list.add_text(end - (0.5f * label_size), text_color, labels[axis.index()]);
 
-                if (hovered and ui::is_mouse_clicked(ui::MouseButton::Left, id)) {
+                if (hovered and ui::is_mouse_clicked(MouseButton::Left, id)) {
                     camera_controller.focus_along(axis);
                     edited = true;
                 }
@@ -95,11 +95,11 @@ bool osc::CameraViewAxes::draw(OrbitCameraController& camera_controller, const C
 
         // negative axes: draw a faded (clickable) circle ending - no line
         {
-            const Vector2 end = origin - metrics.line_length*view_space_pos;
+            const Vector2 end = origin - (metrics.line_length * view_space_pos);
             const Circle circ = {.origin = end, .radius = metrics.circle_radius};
             const Rect circle_bounds = bounding_rect_of(circ);
 
-            const auto labels = std::to_array<CStringView>({ "-X", "-Y", "-Z" });
+            const auto labels = std::to_array<CStringView>({"-X", "-Y", "-Z"});
             const auto id = ui::get_id(labels[axis.index()]);
             ui::set_cursor_ui_position(circle_bounds.ypd_top_left());
             ui::set_next_item_size(circle_bounds);
@@ -109,7 +109,7 @@ bool osc::CameraViewAxes::draw(OrbitCameraController& camera_controller, const C
 
                 draw_list.add_circle_filled(circ, color);
 
-                if (hovered and ui::is_mouse_clicked(ui::MouseButton::Left, id)) {
+                if (hovered and ui::is_mouse_clicked(MouseButton::Left, id)) {
                     camera_controller.focus_along(-axis);
                     edited = true;
                 }

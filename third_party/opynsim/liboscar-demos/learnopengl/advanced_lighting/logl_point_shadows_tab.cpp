@@ -87,7 +87,10 @@ namespace
 
 class osc::LOGLPointShadowsTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/PointShadows"; }
+    static CStringView static_label()
+    {
+        return "oscar_demos/learnopengl/AdvancedLighting/PointShadows";
+    }
 
     explicit Impl(LOGLPointShadowsTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
@@ -105,10 +108,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_tick()
     {
@@ -138,16 +138,11 @@ private:
         // create a 90 degree cube cone projection matrix
         const float znear = 0.1f;
         const float zfar = 25.0f;
-        const Matrix4x4 projection_matrix = perspective(
-            90_deg,
-            aspect_ratio_of(c_shadow_map_pixel_dimensions),
-            znear,
-            zfar
-        );
+        const Matrix4x4 projection_matrix =
+            perspective(90_deg, aspect_ratio_of(c_shadow_map_pixel_dimensions), znear, zfar);
 
         // have the cone point toward all 6 faces of the cube
-        const auto shadow_matrices =
-            calc_cubemap_view_proj_matrices(projection_matrix, light_pos_);
+        const auto shadow_matrices = calc_cubemap_view_proj_matrices(projection_matrix, light_pos_);
 
         // pass data to material
         shadow_mapping_material_.set_array("uShadowMatrices", shadow_matrices);
@@ -184,15 +179,15 @@ private:
         material.unset("uDepthMap");
         material.set("uShadows", soft_shadows_);
         render_queue_.emplace(
-            cube_mesh_,
-            {.scale = Vector3{0.1f}, .translation = light_pos_},
-            material
-        );
+            cube_mesh_, {.scale = Vector3{0.1f}, .translation = light_pos_}, material);
 
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = viewport_screen_space_rect,
-            .clear_color = Color::clear(),
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = viewport_screen_space_rect,
+                .clear_color = Color::clear(),
+            });
         render_queue_.clear();
     }
 
@@ -209,9 +204,12 @@ private:
     ResourceLoader loader_ = App::resource_loader();
 
     Material shadow_mapping_material_{Shader{
-        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
-        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
-        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
+        loader_.slurp(
+            "oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
+        loader_.slurp(
+            "oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
+        loader_.slurp(
+            "oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
     }};
 
     Material scene_material_{Shader{
@@ -221,15 +219,14 @@ private:
 
     Material soft_scene_material_{Shader{
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
-        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
+        loader_.slurp(
+            "oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
     }};
 
     MouseCapturingCamera camera_ = create_camera();
     RenderQueue render_queue_;
     Texture2D wood_texture_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
-        ColorSpace::sRGB
-    );
+        loader_.open("oscar_demos/learnopengl/textures/wood.jpg"), ColorSpace::sRGB);
     Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
     std::array<SceneCube, 6> scene_cubes_ = make_scene_cubes();
     RenderTexture depth_texture_ = create_depth_texture();
@@ -240,14 +237,31 @@ private:
     PerfPanel perf_panel_{&owner()};
 };
 
-
-CStringView osc::LOGLPointShadowsTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLPointShadowsTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLPointShadowsTab::LOGLPointShadowsTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLPointShadowsTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLPointShadowsTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLPointShadowsTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLPointShadowsTab::impl_on_tick() { private_data().on_tick(); }
-void osc::LOGLPointShadowsTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLPointShadowsTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLPointShadowsTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLPointShadowsTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLPointShadowsTab::impl_on_tick()
+{
+    private_data().on_tick();
+}
+void osc::LOGLPointShadowsTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

@@ -5,17 +5,15 @@
 #include <string>
 #include <string_view>
 
-namespace osc { class Mesh; }
-
 namespace osc
 {
+    class Mesh;
+
     struct STLMetadata final {
 
         explicit STLMetadata();
 
-        explicit STLMetadata(
-            std::string_view authoring_tool_
-        );
+        explicit STLMetadata(std::string_view authoring_tool);
 
         std::string authoring_tool;
         std::tm creation_time;

@@ -34,7 +34,8 @@ TEST(opynsim, read_osim_works_when_given_a_file_that_does_exist)
 {
     opyn::init();
 
-    ASSERT_NO_THROW({ read_osim(opynsim_tests_resources_directory() / "models/Blank/blank.osim"); });
+    ASSERT_NO_THROW(
+        { read_osim(opynsim_tests_resources_directory() / "models/Blank/blank.osim"); });
 }
 
 TEST(opynsim, read_sto_throws_when_given_a_file_that_doesnt_exist)
@@ -48,14 +49,16 @@ TEST(opynsim, read_sto_doesnt_throw_when_given_a_valid_sto_file)
 {
     opyn::init();
 
-    ASSERT_NO_THROW({ read_sto(opynsim_tests_resources_directory() / "Documents/sto/minimal.sto");  });
+    ASSERT_NO_THROW(
+        { read_sto(opynsim_tests_resources_directory() / "Documents/sto/minimal.sto"); });
 }
 
 TEST(opynsim, read_sto_columns_returns_time_column_for_minimal_example)
 {
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/minimal.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/minimal.sto");
     const std::vector<std::string> expected = {"time"};
 
     ASSERT_EQ(df.columns(), expected);
@@ -65,7 +68,8 @@ TEST(opynsim, read_sto_shape_returns_0_1_for_minimal_example)
 {
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/minimal.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/minimal.sto");
     const std::tuple<size_t, size_t> expected = {0, 1};
 
     ASSERT_EQ(df.shape(), expected);
@@ -75,7 +79,8 @@ TEST(opynsim, read_sto_columns_returns_time_and_data_column_for_one_column_examp
 {
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/one_data_column.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/one_data_column.sto");
     const std::vector<std::string> expected = {"time", "column1"};
 
     ASSERT_EQ(df.columns(), expected);
@@ -85,7 +90,8 @@ TEST(opynsim, read_sto_columns_returns_expected_attrs_for_one_column_example)
 {
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/one_data_column.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/one_data_column.sto");
     const std::unordered_map<std::string, std::string> expected = {
         {"meta1", "a"},
     };
@@ -97,7 +103,8 @@ TEST(opynsim, read_sto_shape_returns_1_2_for_one_column_example)
 {
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/one_data_column.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/one_data_column.sto");
     const std::tuple<size_t, size_t> expected = {1, 2};
 
     ASSERT_EQ(df.shape(), expected);
@@ -107,7 +114,8 @@ TEST(opynsim, read_sto_columns_returns_time_and_two_data_columns_for_two_column_
 {
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/two_data_columns.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/two_data_columns.sto");
     const std::vector<std::string> expected = {"time", "column1", "column2"};
 
     ASSERT_EQ(df.columns(), expected);
@@ -117,7 +125,8 @@ TEST(opynsim, read_sto_columns_returns_expected_attrs_for_two_column_example)
 {
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/two_data_columns.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/two_data_columns.sto");
     const std::unordered_map<std::string, std::string> expected = {
         {"meta1", "a"},
         {"meta2", "b"},
@@ -130,7 +139,8 @@ TEST(opynsim, read_sto_shape_returns_3_2_for_two_column_example)
 {
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/two_data_columns.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/two_data_columns.sto");
     const std::tuple<size_t, size_t> expected = {2, 3};
 
     ASSERT_EQ(df.shape(), expected);
@@ -144,7 +154,8 @@ TEST(opynsim, read_sto_attrs_contains_header_if_non_kv_headers_are_in_file)
 
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/has_header.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/has_header.sto");
     const std::unordered_map<std::string, std::string> expected = {
         {"header", "Non key-value headers can continue...\n... around key values."},
         {"attr1", "x"},
@@ -158,7 +169,8 @@ TEST(opynsim, read_sto_prints_expected_pretty_string_in_two_column_case)
 {
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/two_data_columns.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/two_data_columns.sto");
     const std::string got = osc::stream_to_string(df);
     const std::string_view expected = R"(shape: (2, 3)
 | time | column1 | column2 |
@@ -173,7 +185,8 @@ TEST(opynsim, read_sto_can_read_and_print_a_bigger_pendulum_example)
 {
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/double_pendulum_run.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/double_pendulum_run.sto");
     const std::string got = osc::stream_to_string(df);
 
     ASSERT_FALSE(got.empty());
@@ -192,9 +205,11 @@ TEST(opynsim, read_sto_accepts_duplicate_time_rows)
 
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/duplicate_time_row.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/duplicate_time_row.sto");
     const std::vector<std::string> expected_columns = {"time", "col1", "col2"};
-    const std::vector<double> expected_timestamps = {0.0, 0.001, 0.001, 0.002};  // note: contains duplicates
+    // note: contains duplicates
+    const std::vector<double> expected_timestamps = {0.0, 0.001, 0.001, 0.002};
 
     ASSERT_EQ(df.columns(), expected_columns);
     ASSERT_EQ(df["time"].to_list(), expected_timestamps);
@@ -204,8 +219,10 @@ TEST(opynsim, read_sto_flatterns_quaternion_stos)
 {
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/quaternion.sto");
-    const std::vector<std::string> expected_columns = {"time", "pelvis_w", "pelvis_x", "pelvis_y", "pelvis_z"};
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/quaternion.sto");
+    const std::vector<std::string> expected_columns = {
+        "time", "pelvis_w", "pelvis_x", "pelvis_y", "pelvis_z"};
     const std::vector<double> expected_timestamps = {0.0, 1.0};
     const std::tuple<size_t, size_t> expected_shape = {2, 5};
 
@@ -227,7 +244,8 @@ TEST(opynsim, read_sto_permits_legacy_delimiters)
 
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/legacy_delimiters.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/legacy_delimiters.sto");
     const std::vector<std::string> expected_column_labels = {"time", "col1"};
     const std::vector<double> expected_times = {0.654092, 0.970842, 0.981167};
     const std::vector<double> expected_values = {0.000000, 0.256537, 0.256537};
@@ -246,14 +264,16 @@ TEST(opynsim, read_sto_can_read_empty_sto_files)
 
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/table_is_empty.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/table_is_empty.sto");
     const std::vector<std::string> expected_column_labels = {"time", "col1", "col2", "col3"};
     ASSERT_EQ(df.height(), 0);
     ASSERT_EQ(df.columns(), expected_column_labels);
     ASSERT_EQ(df["time"].size(), 0);
 }
 
-TEST(opynsim, read_sto_fills_missing_data_cells_with_NaNs) {
+TEST(opynsim, read_sto_fills_missing_data_cells_with_NaNs)
+{
     // STO files in the wild can sometimes be missing values for trailing
     // cells - probably because the researcher concatenated some text files,
     // there was a bug in a reporter/script somewhere, or similar.
@@ -263,15 +283,19 @@ TEST(opynsim, read_sto_fills_missing_data_cells_with_NaNs) {
 
     opyn::init();
 
-    const DataFrame df = read_sto(opynsim_tests_resources_directory() / "Documents/sto/missing_data_cells.sto");
+    const DataFrame df =
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/missing_data_cells.sto");
     const std::vector<std::string> expected_column_labels = {"time", "col1", "col2", "col3"};
-    const std::vector<double> expected_time_values = {0.14167000, 0.15000000, 0.15833000, 0.16667000};
-    const std::vector<double> expected_col1_values = {-0.03791000, -0.02974300, -0.02206300, -0.01457500};
-    const std::vector<double> expected_col2_values = {-0.29808000, osc::quiet_nan_v<double>, 0.73455400, 0.73537100};
-    const std::vector<double> expected_col3_values = {osc::quiet_nan_v<double>, osc::quiet_nan_v<double>, -0.29808000, -0.30013700};
+    const std::vector<double> expected_time_values = {
+        0.14167000, 0.15000000, 0.15833000, 0.16667000};
+    const std::vector<double> expected_col1_values = {
+        -0.03791000, -0.02974300, -0.02206300, -0.01457500};
+    const std::vector<double> expected_col2_values = {
+        -0.29808000, osc::quiet_nan_v<double>, 0.73455400, 0.73537100};
+    const std::vector<double> expected_col3_values = {
+        osc::quiet_nan_v<double>, osc::quiet_nan_v<double>, -0.29808000, -0.30013700};
 
-    const auto equal_to_incl_nans = [](double lhs, double rhs)
-    {
+    const auto equal_to_incl_nans = [](double lhs, double rhs) {
         return lhs == rhs or (std::isnan(lhs) and std::isnan(rhs));
     };
 
@@ -291,7 +315,9 @@ TEST(opynsim, read_sto_throws_when_row_has_too_many_columns)
 
     opyn::init();
 
-    ASSERT_ANY_THROW({ read_sto(opynsim_tests_resources_directory() / "Documents/sto/too_many_data_cells.sto"); });
+    ASSERT_ANY_THROW({
+        read_sto(opynsim_tests_resources_directory() / "Documents/sto/too_many_data_cells.sto");
+    });
 }
 
 TEST(opynsim, read_mot_works_on_minimal_example)
@@ -315,9 +341,11 @@ TEST(opynsim, read_mot_parses_one_data_column_correctly)
 {
     opyn::init();
 
-    const DataFrame df = read_mot(opynsim_tests_resources_directory() / "Documents/one_data_column.mot");
+    const DataFrame df =
+        read_mot(opynsim_tests_resources_directory() / "Documents/one_data_column.mot");
     const std::vector<std::string> expected_columns = {"time", "column1"};
-    const std::unordered_map<std::string, std::string> expected_attrs = {{"header", "meta isn't a thing in OpenSim's mot file parser?"}};
+    const std::unordered_map<std::string, std::string> expected_attrs = {
+        {"header", "meta isn't a thing in OpenSim's mot file parser?"}};
     const std::tuple<size_t, size_t> expected_shape = {1, 2};
 
     ASSERT_EQ(df.columns(), expected_columns);
@@ -336,9 +364,11 @@ TEST(opynsim, read_mot_accepts_duplicate_time_rows)
 
     opyn::init();
 
-    const DataFrame df = read_mot(opynsim_tests_resources_directory() / "Documents/duplicate_time_row.mot");
+    const DataFrame df =
+        read_mot(opynsim_tests_resources_directory() / "Documents/duplicate_time_row.mot");
     const std::vector<std::string> expected_columns = {"time", "col1", "col2"};
-    const std::vector<double> expected_timestamps = {0.0, 0.001, 0.001, 0.002};  // note: contains duplicates
+    // note: contains duplicates
+    const std::vector<double> expected_timestamps = {0.0, 0.001, 0.001, 0.002};
 
     ASSERT_EQ(df.columns(), expected_columns);
     ASSERT_EQ(df["time"].to_list(), expected_timestamps);
@@ -369,52 +399,21 @@ TEST(opynsim, read_trc_parses_leg39_swing_short_trc_correctly)
 {
     opyn::init();
 
-    const DataFrame df = read_trc(opynsim_tests_resources_directory() / "Documents/leg39_swing_short.trc");
+    const DataFrame df =
+        read_trc(opynsim_tests_resources_directory() / "Documents/leg39_swing_short.trc");
     const auto raw_column_names = std::to_array<std::string_view>({
-        "R.ASIS",
-        "L.ASIS",
-        "V.Sacral",
-        "R.Thigh.Upper",
-        "R.Thigh.Front",
-        "R.Thigh.Rear",
-        "L.Thigh.Upper",
-        "L.Thigh.Front",
-        "L.Thigh.Rear",
-        "R.Shank.Upper",
-        "R.Shank.Front",
-        "R.Shank.Rear",
-        "L.Shank.Upper",
-        "L.Shank.Front",
-        "L.Shank.Rear",
-        "R.Heel",
-        "R.Midfoot.Sup",
-        "R.Midfoot.Lat",
-        "R.Toe.Tip",
-        "L.Heel",
-        "L.Midfoot.Sup",
-        "L.Midfoot.Lat",
-        "L.Toe.Tip",
-        "Sternum",
-        "R.Acromium",
-        "L.Acromium",
-        "R.Bicep",
-        "L.Bicep",
-        "R.Elbow",
-        "L.Elbow",
-        "R.Wrist.Med",
-        "R.Wrist.Lat",
-        "L.Wrist.Med",
-        "L.Wrist.Lat",
-        "R.Toe.Lat",
-        "R.Toe.Med",
-        "L.Toe.Lat",
-        "L.Toe.Med",
-        "R.Temple",
-        "L.Temple",
+        "R.ASIS",        "L.ASIS",        "V.Sacral",      "R.Thigh.Upper", "R.Thigh.Front",
+        "R.Thigh.Rear",  "L.Thigh.Upper", "L.Thigh.Front", "L.Thigh.Rear",  "R.Shank.Upper",
+        "R.Shank.Front", "R.Shank.Rear",  "L.Shank.Upper", "L.Shank.Front", "L.Shank.Rear",
+        "R.Heel",        "R.Midfoot.Sup", "R.Midfoot.Lat", "R.Toe.Tip",     "L.Heel",
+        "L.Midfoot.Sup", "L.Midfoot.Lat", "L.Toe.Tip",     "Sternum",       "R.Acromium",
+        "L.Acromium",    "R.Bicep",       "L.Bicep",       "R.Elbow",       "L.Elbow",
+        "R.Wrist.Med",   "R.Wrist.Lat",   "L.Wrist.Med",   "L.Wrist.Lat",   "R.Toe.Lat",
+        "R.Toe.Med",     "L.Toe.Lat",     "L.Toe.Med",     "R.Temple",      "L.Temple",
         "Top.Head",
     });
     std::vector<std::string> expected_column_names;
-    expected_column_names.reserve(1 + 3*raw_column_names.size());
+    expected_column_names.reserve(1 + 3 * raw_column_names.size());
     expected_column_names.emplace_back("time");
     for (const auto& raw_column_name : raw_column_names) {
         expected_column_names.push_back(std::string{raw_column_name} + "_x");
@@ -439,9 +438,12 @@ TEST(opynsim, read_trc_accepts_duplicate_time_rows)
 
     opyn::init();
 
-    const DataFrame df = read_trc(opynsim_tests_resources_directory() / "Documents/duplicate_time_row.trc");
-    const std::vector<std::string> expected_columns = {"time", "Marker1_x", "Marker1_y", "Marker1_z"};
-    const std::vector<double> expected_timestamps = {0.0, 1.0, 1.0, 2.0};  // note: contains duplicates
+    const DataFrame df =
+        read_trc(opynsim_tests_resources_directory() / "Documents/duplicate_time_row.trc");
+    const std::vector<std::string> expected_columns = {
+        "time", "Marker1_x", "Marker1_y", "Marker1_z"};
+    const std::vector<double> expected_timestamps = {
+        0.0, 1.0, 1.0, 2.0};  // note: contains duplicates
 
     ASSERT_EQ(df.columns(), expected_columns);
     ASSERT_EQ(df["time"].to_list(), expected_timestamps);
@@ -502,8 +504,8 @@ TEST(opynsim, read_vtp_works_for_triangle)
     const osc::Mesh mesh = read_vtp(opynsim_tests_resources_directory() / "Documents/triangle.vtp");
     const std::vector<osc::Vector3f> expected_vertices = {
         {-1.0f, -1.0f, 0.0f},
-        { 1.0f, -1.0f, 0.0f},
-        { 0.0f,  1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
     };
 
     ASSERT_EQ(mesh.num_vertices(), 3);
@@ -526,8 +528,8 @@ TEST(opynsim, read_obj_works_for_triangle)
     const osc::Mesh mesh = read_obj(opynsim_tests_resources_directory() / "Documents/triangle.obj");
     const std::vector<osc::Vector3f> expected_vertices = {
         {-1.0f, -1.0f, 0.0f},
-        { 1.0f, -1.0f, 0.0f},
-        { 0.0f,  1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
     };
 
     ASSERT_EQ(mesh.num_vertices(), expected_vertices.size());
@@ -550,8 +552,8 @@ TEST(opynsim, read_stl_works_for_a_triangle)
     const osc::Mesh mesh = read_stl(opynsim_tests_resources_directory() / "Documents/triangle.stl");
     const std::vector<osc::Vector3f> expected_vertices = {
         {-1.0f, -1.0f, 0.0f},
-        { 1.0f, -1.0f, 0.0f},
-        { 0.0f,  1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
     };
 
     ASSERT_EQ(mesh.num_vertices(), expected_vertices.size());
@@ -564,7 +566,8 @@ TEST(opynsim, read_png_works_for_minimal_png_file)
 {
     opyn::init();
 
-    const osc::Texture2D png = read_png(opynsim_tests_resources_directory() / "Documents/minimal.png");
+    const osc::Texture2D png =
+        read_png(opynsim_tests_resources_directory() / "Documents/minimal.png");
 
     ASSERT_EQ(png.pixel_dimensions(), osc::Vector2i(1, 1));
     ASSERT_EQ(png.texture_format(), osc::TextureFormat::RGBA32);
@@ -575,7 +578,8 @@ TEST(opynsim, read_jpeg_works_for_minimal_jpeg_file)
 {
     opyn::init();
 
-    const osc::Texture2D jpeg = read_jpeg(opynsim_tests_resources_directory() / "Documents/minimal.jpeg");
+    const osc::Texture2D jpeg =
+        read_jpeg(opynsim_tests_resources_directory() / "Documents/minimal.jpeg");
 
     ASSERT_EQ(jpeg.pixel_dimensions(), osc::Vector2i(1, 1));
     ASSERT_EQ(jpeg.texture_format(), osc::TextureFormat::RGB24);
@@ -586,7 +590,8 @@ TEST(opynsim, read_jpg_alias_also_works)
 {
     opyn::init();
 
-    const osc::Texture2D jpeg = read_jpg(opynsim_tests_resources_directory() / "Documents/minimal.jpeg");
+    const osc::Texture2D jpeg =
+        read_jpg(opynsim_tests_resources_directory() / "Documents/minimal.jpeg");
 
     ASSERT_EQ(jpeg.pixel_dimensions(), osc::Vector2i(1, 1));
     ASSERT_EQ(jpeg.texture_format(), osc::TextureFormat::RGB24);

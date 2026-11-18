@@ -37,10 +37,7 @@ public:
         return handled;
     }
 
-    void on_tick()
-    {
-        widget_->on_tick();
-    }
+    void on_tick() { widget_->on_tick(); }
 
     void on_draw()
     {
@@ -50,8 +47,7 @@ public:
         ui_context_.render();
 
         ++frames_shown_;
-        if (frames_shown_ >= min_frames_shown_ and
-            App::get().frame_start_time() >= close_time_) {
+        if (frames_shown_ >= min_frames_shown_ and App::get().frame_start_time() >= close_time_) {
 
             App::upd().request_quit();
         }
@@ -69,8 +65,23 @@ private:
 osc::WidgetTestingScreen::WidgetTestingScreen(std::unique_ptr<Widget> widget) :
     Widget{std::make_unique<Impl>(*this, std::move(widget))}
 {}
-void osc::WidgetTestingScreen::impl_on_mount() { private_data().on_mount(); }
-void osc::WidgetTestingScreen::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::WidgetTestingScreen::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::WidgetTestingScreen::impl_on_tick() { private_data().on_tick(); }
-void osc::WidgetTestingScreen::impl_on_draw() { private_data().on_draw(); }
+void osc::WidgetTestingScreen::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::WidgetTestingScreen::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::WidgetTestingScreen::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::WidgetTestingScreen::impl_on_tick()
+{
+    private_data().on_tick();
+}
+void osc::WidgetTestingScreen::impl_on_draw()
+{
+    private_data().on_draw();
+}

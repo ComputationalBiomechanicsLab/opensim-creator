@@ -14,10 +14,10 @@ namespace osc::detail
         NUM_OPTIONS,
     };
 
-    using CPUDataTypeList = OptionList<CPUDataType,
+    using CPUDataTypeList = OptionList<
+        CPUDataType,
         CPUDataType::UnsignedByte,
         CPUDataType::Float,
         CPUDataType::UnsignedInt24_8,
-        CPUDataType::HalfFloat
-    >;
+        CPUDataType::HalfFloat>;
 }

@@ -7,8 +7,7 @@
 #include <typeinfo>
 
 std::optional<size_t> opyn::index_of(
-    const ComponentRegistryBase& registry,
-    std::string_view class_name)
+    const ComponentRegistryBase& registry, std::string_view class_name)
 {
     for (size_t i = 0; i < registry.size(); ++i) {
         const OpenSim::Component& prototype = registry[i].prototype();
@@ -20,8 +19,7 @@ std::optional<size_t> opyn::index_of(
 }
 
 std::optional<size_t> opyn::index_of(
-    const ComponentRegistryBase& registry,
-    const OpenSim::Component& component)
+    const ComponentRegistryBase& registry, const OpenSim::Component& component)
 {
     for (size_t i = 0; i < registry.size(); ++i) {
         const OpenSim::Component& prototype = registry[i].prototype();

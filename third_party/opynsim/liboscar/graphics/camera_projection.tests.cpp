@@ -12,7 +12,7 @@ using namespace osc;
 
 TEST(CameraProjection, can_be_written_to_std_ostream)
 {
-    for (size_t i = 0; i < num_options<CameraProjection>(); ++i) {
+    for (size_t i = 0; i < num_options_v<CameraProjection>; ++i) {
         std::stringstream ss;
         ss << static_cast<CameraProjection>(i);
 

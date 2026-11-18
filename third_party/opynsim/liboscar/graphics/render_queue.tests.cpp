@@ -19,7 +19,8 @@ using namespace osc;
 
 namespace
 {
-    std::unique_ptr<App> g_material_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    std::unique_ptr<App>
+        g_material_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     class RenderQueueFixture : public ::testing::Test {
     protected:
@@ -31,10 +32,7 @@ namespace
             g_material_app = std::make_unique<App>(metadata);
         }
 
-        static void TearDownTestSuite()
-        {
-            g_material_app.reset();
-        }
+        static void TearDownTestSuite() { g_material_app.reset(); }
     };
 
     struct RenderQueueEmplaceArgs final {
@@ -56,7 +54,8 @@ TEST_F(RenderQueueFixture, emplace_with_matrix_returns_handle_to_emplaced_data)
     RenderQueueEmplaceArgs args;
 
     RenderQueue render_queue;
-    const auto handle = render_queue.emplace(args.mesh, args.transform, args.material, args.material_property_block, args.submesh_index);
+    const auto handle = render_queue.emplace(
+        args.mesh, args.transform, args.material, args.material_property_block, args.submesh_index);
 
     ASSERT_EQ(render_queue.mesh(handle), args.mesh);
     ASSERT_EQ(render_queue.model_matrix(handle), args.transform);
@@ -70,7 +69,8 @@ TEST_F(RenderQueueFixture, handles_begin_returns_iterator_that_points_to_first_e
     RenderQueueEmplaceArgs args;
 
     RenderQueue render_queue;
-    render_queue.emplace(args.mesh, args.transform, args.material, args.material_property_block, args.submesh_index);
+    render_queue.emplace(
+        args.mesh, args.transform, args.material, args.material_property_block, args.submesh_index);
 
     const auto it = render_queue.handles().begin();
     ASSERT_EQ(render_queue.mesh(*it), args.mesh);
@@ -91,12 +91,15 @@ TEST_F(RenderQueueFixture, distance_between_handles_begin_and_end_is_one_with_on
     RenderQueueEmplaceArgs args;
 
     RenderQueue render_queue;
-    render_queue.emplace(args.mesh, args.transform, args.material, args.material_property_block, args.submesh_index);
+    render_queue.emplace(
+        args.mesh, args.transform, args.material, args.material_property_block, args.submesh_index);
     ASSERT_EQ(std::distance(render_queue.handles().begin(), render_queue.handles().end()), 1);
 }
 
 TEST_F(RenderQueueFixture, handles_are_permutable)
 {
     // Required for sorting, partitioning, etc.
-    static_assert(requires (RenderQueue& render_queue) { { render_queue.handles().begin() } -> std::permutable; });
+    static_assert(requires(RenderQueue& render_queue) {
+        { render_queue.handles().begin() } -> std::permutable;
+    });
 }

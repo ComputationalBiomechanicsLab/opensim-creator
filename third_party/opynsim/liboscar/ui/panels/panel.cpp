@@ -35,7 +35,8 @@ void osc::Panel::impl_on_draw()
         bool open = true;
 
         impl_before_imgui_begin();
-        const bool began = ui::begin_panel(private_data().name(), &open, private_data().panel_flags());
+        const bool began =
+            ui::begin_panel(private_data().name(), &open, private_data().panel_flags());
         impl_after_imgui_begin();
 
         if (began) {

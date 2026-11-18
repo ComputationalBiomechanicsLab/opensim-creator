@@ -22,7 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/TimeSeriesTable.h"
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
 #include <iostream>
 
 // This example demonstrates creating TimeSeriesTable from a DataTable.
@@ -71,8 +71,13 @@ int main() {
 
     // Construction of TimeSeriesTable fails because independent column is not
     // strictly increasing. 
-    ASSERT_THROW(OpenSim::Exception,
-                 TimeSeriesTable timeseries_table2{dataTable});
+    try {
+        TimeSeriesTable timeseries_table2{dataTable};
+    } catch (const OpenSim::Exception&) {
+        std::cout << "Cannot construct TimeSeriesTable from source with time "
+                     "vector that is not monotonically increasing!"
+                  << std::endl;
+    }
 
     // Edit the entry in the independent column to make the column strictly
     // increasing.

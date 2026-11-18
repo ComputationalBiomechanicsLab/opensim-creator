@@ -25,31 +25,31 @@ using namespace osc::tests;
 TEST(Camera, look_at_returns_camera_that_points_towards_target)
 {
     const Vector3 position = {-1.0f, -3.0f, -5.0f};
-    const Vector3 target   = { 1.0f,  1.0f,  1.0f};
-    const Vector3 up       = { 0.0f,  1.0f,  0.0f};
+    const Vector3 target = {1.0f, 1.0f, 1.0f};
+    const Vector3 up = {0.0f, 1.0f, 0.0f};
 
     const auto camera = Camera::look_at(position, target, up);
 
     ASSERT_EQ(camera.position(), position);
-    ASSERT_TRUE(all_of(equal_within_absdiff(camera.direction(), normalize(target - position), 0.00001f)));
+    OSC_ASSERT_VECTOR_NEAR(camera.direction(), normalize(target - position), 0.00001f);
 }
 
 TEST(Camera, look_at_normalizes_up)
 {
-    const Vector3 position = { 1.0f,  0.0f,  0.0f};
-    const Vector3 target   = { 0.0f,  0.0f,  0.0f};
-    const Vector3 up       = { 0.0f,  1.0f,  1.0f};  // not normalized
+    const Vector3 position = {1.0f, 0.0f, 0.0f};
+    const Vector3 target = {0.0f, 0.0f, 0.0f};
+    const Vector3 up = {0.0f, 1.0f, 1.0f};  // not normalized
 
     const auto camera = Camera::look_at(position, target, up);
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(camera.up(), normalize(up), 0.00001f)));
+    OSC_ASSERT_VECTOR_NEAR(camera.up(), normalize(up), 0.00001f);
 }
 
 TEST(Camera, look_at_falls_back_when_up_is_parallel_to_target)
 {
-    const Vector3 position = { 7.0f, 0.0f,  2.0f};
-    const Vector3 target   = { 0.0f, 0.0f,  0.0f};
-    const Vector3 up       = 0.3f * position;  // parallel to (target - position)
+    const Vector3 position = {7.0f, 0.0f, 2.0f};
+    const Vector3 target = {0.0f, 0.0f, 0.0f};
+    const Vector3 up = 0.3f * position;  // parallel to (target - position)
 
     const auto camera = Camera::look_at(position, target, up);
 
@@ -59,6 +59,8 @@ TEST(Camera, look_at_falls_back_when_up_is_parallel_to_target)
 TEST(Camera, can_default_construct)
 {
     const Camera camera;  // should compile + run
+    ASSERT_EQ(camera.position(), Vector3f{});
+    ASSERT_EQ(camera.direction(), Vector3f(0.0f, 0.0f, -1.0f));
 }
 
 TEST(Camera, constructing_from_position_direction_up_is_equivalent_to_calling_setters)
@@ -68,8 +70,7 @@ TEST(Camera, constructing_from_position_direction_up_is_equivalent_to_calling_se
     const Vector3 up = {0.0f, 0.0f, 1.0f};
 
     const Camera directly_constructed{position, direction, up};
-    const Camera from_setters = [&]
-    {
+    const Camera from_setters = [&] {
         Camera rv;
         rv.set_position(position);
         rv.set_direction(direction);
@@ -80,6 +81,39 @@ TEST(Camera, constructing_from_position_direction_up_is_equivalent_to_calling_se
     ASSERT_EQ(directly_constructed, from_setters);
 }
 
+TEST(
+    Camera,
+    constructing_from_position_direction_up_vertical_field_of_view_is_equivalent_to_calling_setters)
+{
+    const Vector3 position = {1.0f, 2.0f, 3.0f};
+    const Vector3 direction = {1.0f, 0.0f, 0.0f};
+    const Vector3 up = {0.0f, 0.0f, 1.0f};
+    const Degrees vertical_field_of_view{37.0f};
+
+    const Camera directly_constructed{position, direction, up, vertical_field_of_view};
+    const Camera from_setters = [&] {
+        Camera rv;
+        rv.set_position(position);
+        rv.set_direction(direction);
+        rv.set_up(up);
+        rv.set_vertical_field_of_view(vertical_field_of_view);
+        return rv;
+    }();
+
+    ASSERT_EQ(directly_constructed, from_setters);
+}
+
+TEST(Camera, defaulted_vertical_field_of_view_is_same_as_default_camera_ctor)
+{
+    const Vector3 position = {0.0f, 0.0f, 0.0f};
+    const Vector3 direction = {0.0f, 0.0f, -1.0f};
+
+    const Camera default_constructed;
+    const Camera partially_directly_constructed{position, direction};
+
+    ASSERT_EQ(default_constructed, partially_directly_constructed);
+}
+
 TEST(Camera, constructing_from_position_direction_up_normalizes_direction_vector)
 {
     const Vector3 position = {1.0f, 2.0f, 3.0f};
@@ -88,31 +122,32 @@ TEST(Camera, constructing_from_position_direction_up_normalizes_direction_vector
 
     const Camera camera{position, unnormalized_direction, up};
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(camera.direction(), normalize(unnormalized_direction), 0.00001f)));
+    OSC_ASSERT_VECTOR_NEAR(camera.direction(), normalize(unnormalized_direction), 0.00001f);
 }
 
 TEST(Camera, constructing_from_position_direction_up_falls_back_when_direction_and_up_are_colinear)
 {
-    const Vector3 position  = { 1.0f, 2.0f, 3.0f};
-    const Vector3 direction = { 1.0f, 0.0f, 0.0f};
-    const Vector3 up        = {-2.0f, 0.0f, 0.0f};  // uh oh: co-linear with `direction`.
+    const Vector3 position = {1.0f, 2.0f, 3.0f};
+    const Vector3 direction = {1.0f, 0.0f, 0.0f};
+    const Vector3 up = {-2.0f, 0.0f, 0.0f};  // uh oh: co-linear with `direction`.
 
     const Camera camera{position, direction, up};
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(camera.direction(), direction, 0.000001f))) << "`direction` should be mostly as-provided";
+    ASSERT_TRUE(all_of(equal_within_absdiff(camera.direction(), direction, 0.000001f)))
+        << "`direction` should be mostly as-provided";
     ASSERT_EQ(camera.up(), Vector3(0.0f, 1.0f, 0.0f)) << "`up` should have used a fallback";
 }
 
 TEST(Camera, can_copy_construct)
 {
     const Camera camera;
-    const Camera copy = camera;  // NOLINT(performance-unnecessary-copy-initialization)
+    const Camera copy = camera;
 }
 
 TEST(Camera, copied_instance_compares_equal_to_original)
 {
     const Camera camera;
-    const Camera copy = camera;  // NOLINT(performance-unnecessary-copy-initialization)
+    const Camera copy = camera;
 
     ASSERT_EQ(camera, copy);
 }
@@ -215,7 +250,8 @@ TEST(Camera, set_vertical_field_of_view_sets_the_vertical_field_of_view)
 TEST(Camera, horizontal_field_of_view_equals_vertical_field_of_view_when_aspect_ratio_is_1)
 {
     const Camera camera;
-    ASSERT_FLOAT_EQ(camera.vertical_field_of_view().count(), camera.horizontal_field_of_view(1.0f).count());
+    ASSERT_FLOAT_EQ(
+        camera.vertical_field_of_view().count(), camera.horizontal_field_of_view(1.0f).count());
 }
 
 TEST(Camera, set_projection_on_copy_makes_it_compare_nonequal_to_original)
@@ -273,7 +309,7 @@ TEST(Camera, set_forward_normalizes_argument)
 {
     Camera camera;
     camera.set_direction({1.0f, 2.0f, 3.0f});
-    ASSERT_TRUE(all_of(equal_within_absdiff(camera.forward(), normalize(Vector3f{1.0f, 2.0f, 3.0f}), 0.000001f)));
+    OSC_ASSERT_VECTOR_NEAR(camera.forward(), normalize(Vector3f{1.0f, 2.0f, 3.0f}), 0.000001f);
 }
 
 TEST(Camera, forward_defaults_to_minus_z)
@@ -293,7 +329,8 @@ TEST(Camera, principal_ray_is_changed_by_changing_the_position_and_direction_of_
     camera.set_direction({1.0f, 0.0f, 0.0f});
 
     ASSERT_EQ(camera.principal_ray().origin, Vector3(3.0f, 2.0f, 1.0f));
-    ASSERT_TRUE(all_of(equal_within_absdiff(camera.principal_ray().direction, Vector3(1.0f, 0.0f, 0.0f), sqrt_epsilon_v<float>)));
+    OSC_ASSERT_VECTOR_NEAR(
+        camera.principal_ray().direction, Vector3(1.0f, 0.0f, 0.0f), sqrt_epsilon_v<float>);
 }
 
 TEST(Camera, default_rotation_is_identity)
@@ -429,7 +466,9 @@ TEST(Camera, set_projection_matrix_override_makes_projection_matrix_return_the_o
     ASSERT_EQ(camera.projection_matrix(1.0f), projection_matrix);
 }
 
-TEST(Camera, set_projection_matrix_override_to_nullopt_resets_projection_matrix_to_use_camera_field_of_view_etc)
+TEST(
+    Camera,
+    set_projection_matrix_override_to_nullopt_resets_projection_matrix_to_use_camera_field_of_view_etc)
 {
     Camera camera;
     const Matrix4x4 initial_projection_matrix = camera.projection_matrix(1.0f);
@@ -522,7 +561,7 @@ TEST(Camera, world_to_ui_returns_expected_results_for_orthographic_projection)
     const Vector2 got = camera.world_to_ui({1.5f, 2.0f, 1.5f}, ui_rect);
     const Vector2 expected = {25.0f, 25.0f};
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(got, expected, 0.001f)));
+    OSC_ASSERT_VECTOR_NEAR(got, expected, 0.001f);
 }
 
 TEST(Camera, world_to_ui_is_invariant_with_depth_for_orthographic_projection)
@@ -538,7 +577,8 @@ TEST(Camera, world_to_ui_is_invariant_with_depth_for_orthographic_projection)
     std::optional<Vector2> prev;
     for (size_t i = 1; i < 16; ++i) {
         const Vector2 p = camera.world_to_ui({1.0f, 1.0f, static_cast<float>(i) * 7.5f}, ui_rect);
-        ASSERT_TRUE(not prev or all_of(equal_within_absdiff(p, *prev, 0.001f))) << "p = " << p << ", prev = " << prev.value_or(Vector3{-5.0f});
+        ASSERT_TRUE(not prev or all_of(equal_within_absdiff(p, *prev, 0.001f)))
+            << "p = " << p << ", prev = " << prev.value_or(Vector3{-5.0f});
         prev = p;
     }
 }
@@ -586,7 +626,7 @@ TEST(Camera, world_to_ui_returns_center_point_when_given_point_along_principal_r
     const Rect ui_rect = Rect::from_corners({0.0f, 0.0f}, {128.0f, 128.0f});
     const Vector2 got = camera.world_to_ui({25.0f, 25.0f, 24.0f}, ui_rect);
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(ui_rect.origin(), got, 0.0001f))) << got;
+    OSC_ASSERT_VECTOR_NEAR(ui_rect.origin(), got, 0.0001f);
 }
 
 TEST(Camera, ui_to_world_returns_orthogonal_ray_direction_in_orthographic_camera)
@@ -643,12 +683,13 @@ TEST(Camera, ui_to_world_returns_projected_out_ray_for_projection_camera)
         const float znear = camera.near_clipping_plane();
         const Radians vfov = camera.vertical_field_of_view();
         const Vector3 a = camera.position();
-        const Vector3 b = a + znear*camera.direction();
-        const float h = znear * tan(0.5f*vfov);
-        const Vector3 c = b + h*camera.up();
+        const Vector3 b = a + znear * camera.direction();
+        const float h = znear * tan(0.5f * vfov);
+        const Vector3 c = b + h * camera.up();
         const Ray expected{camera.position(), normalize(c)};
         const Ray got = camera.ui_to_world({32.0f, 0.0f}, ui_rect);
-        ASSERT_TRUE(is_colinear_and_codirectional(expected, got)) << "expected = " << expected << "got = " << got;
+        ASSERT_TRUE(is_colinear_and_codirectional(expected, got))
+            << "expected = " << expected << "got = " << got;
     }
 
     // The point going through the bottom-middle of the UI rectangle should produce
@@ -668,12 +709,13 @@ TEST(Camera, ui_to_world_returns_projected_out_ray_for_projection_camera)
         const float znear = camera.near_clipping_plane();
         const Radians vfov = camera.vertical_field_of_view();
         const Vector3 a = camera.position();
-        const Vector3 b = a + znear*camera.direction();
-        const float h = znear * tan(0.5f*vfov);
-        const Vector3 c = b + h*-camera.up(); // (go down)
+        const Vector3 b = a + znear * camera.direction();
+        const float h = znear * tan(0.5f * vfov);
+        const Vector3 c = b + h * -camera.up();  // (go down)
         const Ray expected{camera.position(), normalize(c)};
         const Ray got = camera.ui_to_world({32.0f, 64.0f}, ui_rect);
-        ASSERT_TRUE(is_colinear_and_codirectional(expected, got)) << "expected = " << expected << "got = " << got;
+        ASSERT_TRUE(is_colinear_and_codirectional(expected, got))
+            << "expected = " << expected << "got = " << got;
     }
 }
 
@@ -687,8 +729,9 @@ TEST(Camera, view_volume_height_at_depth_returns_orthographic_height_for_any_dep
     camera.set_up({1.0f, 0.0f, 0.0f});
 
     for (size_t i = 0; i < 16; ++i) {
-        const float h = camera.view_volume_height_at_depth(-8.0f + static_cast<float>(i)*1.0f);
-        ASSERT_EQ(h, 1.0f) << "The view volume height should always be the orthographic size with an orthographic camera";
+        const float h = camera.view_volume_height_at_depth(-8.0f + static_cast<float>(i) * 1.0f);
+        ASSERT_EQ(h, 1.0f)
+            << "The view volume height should always be the orthographic size with an orthographic camera";
     }
 }
 
@@ -712,4 +755,16 @@ TEST(Camera, view_volume_height_at_depth_returns_triangular_values_for_perspecti
         const float expected = 2.0f * d * tan(22.5_deg);
         ASSERT_EQ(got, expected);
     }
+}
+
+TEST(Camera, can_be_formatted_to_a_string)
+{
+    Camera camera;
+    camera.set_position({1.0f, 2.0f, 3.0f});
+    camera.set_direction({0.0f, 1.0f, 0.0f});
+    const std::string str = std::format("{}", camera);
+    ASSERT_TRUE(str.contains("Camera("));
+    ASSERT_TRUE(str.contains(std::format("position=({}, {}, {})", 1.0f, 2.0f, 3.0f)));
+    ASSERT_TRUE(str.contains(std::format("direction=({}, {}, {})", 0.0f, 1.0f, 0.0f)));
+    ASSERT_TRUE(str.contains("up="));
 }

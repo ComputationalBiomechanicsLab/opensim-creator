@@ -39,7 +39,8 @@ namespace osc
         // a 16-bit A component in bytes 6..7
         R16G16B16A16_SFLOAT,
 
-        // a one-component, 32-bit signed floating-point format that has a single 32-bit R component.
+        // a one-component, 32-bit signed floating-point format that has a single 32-bit R
+        // component.
         R32_SFLOAT,
 
         NUM_OPTIONS,

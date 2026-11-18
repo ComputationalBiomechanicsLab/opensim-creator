@@ -5,25 +5,25 @@
 
 #include <optional>
 
-namespace osc { class Camera; }
-namespace osc { class Rect; }
-
 namespace osc
 {
+    class Camera;
+    class Rect;
+
     class GuiRuler final {
     public:
-        void on_draw(
-            const Camera&,
-            const Rect& render_rect,
-            std::optional<SceneCollision>
-        );
+        void on_draw(const Camera&, const Rect& render_rect, std::optional<SceneCollision>);
         void start_measuring();
         void stop_measuring();
         void toggle_measuring();
         bool is_measuring() const;
 
     private:
-        enum class State { Inactive, WaitingForFirstPoint, WaitingForSecondPoint };
+        enum class State {
+            Inactive,
+            WaitingForFirstPoint,
+            WaitingForSecondPoint,
+        };
 
         State state_ = State::Inactive;
         Vector3 start_world_pos_ = {};

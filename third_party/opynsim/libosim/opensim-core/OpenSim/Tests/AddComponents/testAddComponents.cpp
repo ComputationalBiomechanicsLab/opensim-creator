@@ -32,7 +32,8 @@
 //==============================================================================
 #include <OpenSim/OpenSim.h>
 #include "OpenSim/Common/STOFileAdapter.h"
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <tests/Testing.h>
 
 #include <catch2/catch_all.hpp>
 
@@ -305,8 +306,7 @@ void compareResultsToStandard() {
             standard1("std_tugOfWar_states.sto");
 
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1,
-            std::vector<double>(16, 0.02), __FILE__, __LINE__,
-            "testAddComponents::tugOfWar states failed");
+            std::vector<double>(16, 0.02));
         cout << "testAddComponents::tugOfWar states passed\n";
 
         Storage result2("tugOfWar_forces.sto"),
@@ -317,8 +317,7 @@ void compareResultsToStandard() {
         tols[0] = tols[1] = 10;
 
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2,
-            tols, __FILE__, __LINE__,
-            "testAddComponents::tugOfWar forces failed");
+            tols);
         cout << "testAddComponents::tugOfWar forces passed\n";
     }
     catch (const OpenSim::Exception& e) {

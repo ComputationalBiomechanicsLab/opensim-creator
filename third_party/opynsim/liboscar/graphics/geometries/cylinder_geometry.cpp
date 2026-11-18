@@ -36,8 +36,7 @@ osc::CylinderGeometry::CylinderGeometry(const Params& p)
     size_t group_start = 0;
     std::vector<SubMeshDescriptor> groups;
 
-    const auto generate_torso = [&]()
-    {
+    const auto generate_torso = [&] {
         // used to calculate normal
         const float slope = (p.radius_bottom - p.radius_top) / p.height;
 
@@ -45,20 +44,17 @@ osc::CylinderGeometry::CylinderGeometry(const Params& p)
         size_t group_count = 0;
         for (size_t y = 0; y <= p.num_height_segments; ++y) {
             std::vector<uint32_t> row_indices;
-            const float v = static_cast<float>(y)/fnum_height_segments;
+            const float v = static_cast<float>(y) / fnum_height_segments;
             const float radius = v * (p.radius_bottom - p.radius_top) + p.radius_top;
             for (size_t x = 0; x <= p.num_radial_segments; ++x) {
                 const auto fx = static_cast<float>(x);
-                const float u = fx/fnum_radial_segments;
-                const Radians theta = u*p.theta_length + p.theta_start;
+                const float u = fx / fnum_radial_segments;
+                const Radians theta = u * p.theta_length + p.theta_start;
                 const float sin_theta = sin(theta);
                 const float cos_theta = cos(theta);
 
                 vertices.emplace_back(
-                    radius * sin_theta,
-                    (-v * p.height) + half_height,
-                    radius * cos_theta
-                );
+                    radius * sin_theta, (-v * p.height) + half_height, radius * cos_theta);
                 normals.push_back(normalize(Vector3{sin_theta, slope, cos_theta}));
                 uvs.emplace_back(u, 1 - v);
                 row_indices.push_back(index++);
@@ -69,10 +65,10 @@ osc::CylinderGeometry::CylinderGeometry(const Params& p)
         // generate indices
         for (size_t x = 0; x < p.num_radial_segments; ++x) {
             for (size_t y = 0; y < p.num_height_segments; ++y) {
-                const auto a = index_array.at(y+0).at(x+0);
-                const auto b = index_array.at(y+1).at(x+0);
-                const auto c = index_array.at(y+1).at(x+1);
-                const auto d = index_array.at(y+0).at(x+1);
+                const auto a = index_array.at(y + 0).at(x + 0);
+                const auto b = index_array.at(y + 1).at(x + 0);
+                const auto c = index_array.at(y + 1).at(x + 1);
+                const auto d = index_array.at(y + 0).at(x + 1);
                 indices.insert(indices.end(), {a, b, d});
                 indices.insert(indices.end(), {b, c, d});
                 group_count += 6;
@@ -83,8 +79,7 @@ osc::CylinderGeometry::CylinderGeometry(const Params& p)
         group_start += group_count;
     };
 
-    const auto generate_cap = [&](bool top)
-    {
+    const auto generate_cap = [&](bool top) {
         size_t group_count = 0;
 
         const auto radius = top ? p.radius_top : p.radius_bottom;
@@ -96,7 +91,7 @@ osc::CylinderGeometry::CylinderGeometry(const Params& p)
 
         const auto center_index_start = index;  // save first center vertex
         for (size_t x = 1; x <= p.num_radial_segments; ++x) {
-            vertices.emplace_back(0.0f, sign*half_height, 0.0f);
+            vertices.emplace_back(0.0f, sign * half_height, 0.0f);
             normals.emplace_back(0.0f, sign, 0.0f);
             uvs.emplace_back(0.5f, 0.5f);
             ++index;
@@ -113,10 +108,7 @@ osc::CylinderGeometry::CylinderGeometry(const Params& p)
 
             vertices.emplace_back(radius * sin_theta, half_height * sign, radius * cos_theta);
             normals.emplace_back(0.0f, sign, 0.0f);
-            uvs.emplace_back(
-                (cos_theta * 0.5f) + 0.5f,
-                (sin_theta * 0.5f * sign) + 0.5f
-            );
+            uvs.emplace_back((cos_theta * 0.5f) + 0.5f, (sin_theta * 0.5f * sign) + 0.5f);
             ++index;
         }
 
@@ -126,10 +118,9 @@ osc::CylinderGeometry::CylinderGeometry(const Params& p)
             const auto i = static_cast<uint32_t>(center_index_end + x);
 
             if (top) {
-                indices.insert(indices.end(), {i, i+1, c});
-            }
-            else {
-                indices.insert(indices.end(), {i+1, i, c});
+                indices.insert(indices.end(), {i, i + 1, c});
+            } else {
+                indices.insert(indices.end(), {i + 1, i, c});
             }
             group_count += 3;
         }

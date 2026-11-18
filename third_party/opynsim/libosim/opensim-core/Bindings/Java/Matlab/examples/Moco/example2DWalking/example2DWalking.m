@@ -52,6 +52,9 @@ clear;
 % Load the Moco libraries
 import org.opensim.modeling.*;
 
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
+
 % ---------------------------------------------------------------------------
 % Set up a coordinate tracking problem where the goal is to minimize the
 % difference between provided and simulated coordinate values and speeds (and
@@ -89,7 +92,7 @@ track.set_allow_unused_references(true);
 track.set_track_reference_position_derivatives(true);
 track.set_apply_tracked_states_to_guess(true);
 track.set_initial_time(0.0);
-track.set_final_time(0.47008941);
+track.set_final_time(0.470089);
 study = track.initialize();
 problem = study.updProblem();
 

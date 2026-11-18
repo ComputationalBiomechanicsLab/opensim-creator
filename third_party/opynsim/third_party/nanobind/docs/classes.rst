@@ -184,7 +184,7 @@ sequence.
       .def("set", nb::overload_cast<int>(&Pet::set), "Set the pet's age")
       .def("set", nb::overload_cast<const std::string &>(&Pet::set), "Set the pet's name");
 
-Here, :cpp:func:`nb::overload_cast <overload_cast>` only requires the parameter
+Here, ``nb::overload_cast`` only requires the parameter
 types to be specified, and it deduces the return type.
 
 .. note::
@@ -288,8 +288,6 @@ C++11-style strongly typed enumerations.
    my_ext.Kind.Cat
    >>> p.type.__name__
    'Cat'
-   >>> int(p.type)
-   1
 
 .. note::
 
@@ -309,6 +307,19 @@ C++11-style strongly typed enumerations.
 
        nb::enum_<Pet::Kind>(pet, "Kind", nb::is_arithmetic())
           ...
+
+   When the annotation :cpp:class:`nb::is_str() <is_str>` is passed to
+   :cpp:class:`nb::enum_\<T\> <enum_>`, the resulting Python type will be a class
+   derived from ``enum.StrEnum``, and each entry must be registered using
+   :cpp:func:`.str_value() <enum_::str_value>` (which takes an additional
+   string-valued argument that represents the entry on the Python side):
+
+   .. code-block:: cpp
+
+       nb::enum_<Color>(m, "Color", nb::is_str())
+           .str_value("Red",   Color::Red,   "red")
+           .str_value("Green", Color::Green, "green")
+           .str_value("Blue",  Color::Blue,  "blue");
 
    By default, these are omitted.
 
@@ -389,6 +400,46 @@ due to the need to store a weak reference list.
 .. code-block:: cpp
 
    nb::class_<Pet>(m, "Pet", nb::is_weak_referenceable());
+
+.. _frozen_types:
+
+Frozen types
+------------
+
+Python code can normally patch a bound type by adding, replacing, or deleting
+its attributes:
+
+.. code-block:: pycon
+
+   >>> my_ext.Pet.speak = lambda self: print("Woof")
+
+Conclude the binding declarations with :cpp:func:`.freeze() <class_::freeze>`
+to prevent this:
+
+.. code-block:: cpp
+
+   nb::class_<Pet>(m, "Pet")
+       .def(nb::init<>())
+       .def_rw("name", &Pet::name)
+       .freeze();
+
+The type then behaves like a builtin type such as ``int`` or ``str``:
+
+.. code-block:: pycon
+
+   >>> my_ext.Pet.speak = lambda self: print("Woof")
+   TypeError: cannot set 'speak' attribute of immutable type 'my_ext.Pet'
+
+Base classes must be frozen before their subclasses, and violations of this
+rule raise a ``TypeError``. Instances of the type remain writable, and Python
+subclasses of it are still possible. Only the type object itself becomes
+read-only.
+
+Freezing is also an optimization. Python's adaptive specializing interpreter
+can generate faster opcodes for immutable types, which reduces the overhead of
+dispatching a constructor call by 7-10%.
+
+The feature is only enabled on Python 3.15+ and ignored on older versions.
 
 .. _inheriting_in_python:
 
@@ -476,6 +527,49 @@ example, updating the code as follows fixes the problem:
    Max: woof!
    Max: woof!
 
+.. _python_mixins:
+
+Python mixins
+-------------
+
+A Python subclass can combine one nanobind-bound class with any number of
+Python mixins. For example, the ``Dog`` binding above can share helper methods
+and initialization logic with other Python classes:
+
+.. code-block:: python
+
+   class AlarmMixin:
+       def __init__(self, *args, alarm_count=3, **kwargs):
+           self.alarm_count = alarm_count
+           super().__init__(*args, **kwargs)
+
+       def alarm(self):
+           for _ in range(self.alarm_count):
+               print(self.bark())
+
+   class GuardDog(AlarmMixin, my_ext.Dog):
+       pass
+
+   gd = GuardDog("Max", alarm_count=2)
+   gd.alarm()  # Prints "Max: woof!" twice
+
+The usual Python method resolution order (MRO), ``super()``, and ``isinstance()``
+checks apply. The instance can still be passed to C++ functions accepting the
+bound class or its bound C++ base classes. Mixins can also :ref:`override C++
+virtual functions <trampolines>`, with a :ref:`caveat <mixin_override_caveat>`
+for overrides added after class creation.
+
+Mixins may appear before or after the bound class. For cooperative
+initialization, place them before it, as above, and have each mixin forward
+remaining arguments through ``super().__init__()``. The bound constructor ends
+this chain: it does not initialize mixins that follow it in the MRO. Such mixins
+need explicit initialization in the subclass.
+
+Exactly one *direct* base must be a nanobind-bound class or a Python subclass
+of one. Inheriting from two such bases is unsupported, even if they ultimately
+derive from the same bound class. Other bases must have compatible instance
+layouts.
+
 .. _trampolines:
 
 Overriding virtual functions in Python
@@ -550,7 +644,7 @@ to Python.
    #include <nanobind/trampoline.h>
 
    struct PyDog : Dog {
-       NB_TRAMPOLINE(Dog, 1);
+       NB_TRAMPOLINE(Dog);
 
        std::string bark() const override {
            NB_OVERRIDE(bark);
@@ -558,20 +652,8 @@ to Python.
    };
 
 This involves an additional include directive and the line
-:c:macro:`NB_TRAMPOLINE(Dog, 1) <NB_TRAMPOLINE>` to mark the class as a
-trampoline for the ``Dog`` base type. The count (``1``) denotes to the total
-number of virtual method slots that can be overridden within Python.
-
-.. note::
-
-   The number of virtual method slots is used to preallocate memory.
-   Trampoline declarations with an insufficient size may eventually trigger a
-   Python ``RuntimeError`` exception with a descriptive label, e.g.:
-
-   .. code-block:: text
-
-      nanobind::detail::get_trampoline('PyDog::bark()'): the trampoline ran out of
-      slots (you will need to increase the value provided to the NB_TRAMPOLINE() macro)
+:c:macro:`NB_TRAMPOLINE(Dog) <NB_TRAMPOLINE>` to mark the class as a
+trampoline for the ``Dog`` base type.
 
 The macro :c:macro:`NB_OVERRIDE(bark) <NB_OVERRIDE>` intercepts the virtual
 function call, checks if a Python override exists, and forwards the call in
@@ -652,6 +734,31 @@ simply refuses to do it. You will need to change your approach by either using
 :ref:`bindings <bindings>` instead of :ref:`type casters <type_casters>` or
 changing your virtual method interfaces to return by value.
 
+.. _mixin_override_caveat:
+
+A second special case concerns :ref:`Python mixins <python_mixins>`. nanobind
+caches whether a class overrides a virtual function, and it only refreshes this
+cache when a nanobind class is modified. An override that is monkey-patched
+into a mixin after C++ has already called the function goes unnoticed.
+Overrides that are part of the mixin's class body do not have this problem.
+
+.. code-block:: python
+
+   class LoudMixin:
+       pass
+
+   class LoudDog(LoudMixin, my_ext.Dog):
+       pass
+
+   d = LoudDog("Max")
+   my_ext.alarm(d)  # Calls Dog::bark(), caches that LoudDog has no override
+
+   LoudMixin.bark = lambda self: "WOOF!"
+   my_ext.alarm(d)  # Not supported: still calls Dog::bark()
+
+   LoudDog.bark = lambda self: "WOOF!"
+   my_ext.alarm(d)  # OK: assigning to the nanobind subclass refreshes the cache
+
 .. _operator_overloading:
 
 Operator overloading
@@ -725,7 +832,7 @@ invoked with incompatible arguments rather than throwing a type error.
 
 When binding *in-place* operators such as ``operator+=``, and when their
 implementation is guaranteed to end with ``return *this``, it is recommended
-that you set a return value policy of :cpp:enumerator:`rv_policy::none`, i.e.,
+that you set a return value policy of :cpp:member:`rv_policy::none`, i.e.,
 
 .. code-block:: cpp
 
@@ -791,7 +898,7 @@ described trampoline:
 
     class Trampoline : public A {
     public:
-        NB_TRAMPOLINE(A, 1);
+        NB_TRAMPOLINE(A);
         int foo() const override { NB_OVERRIDE(foo); }
     };
 
@@ -1076,7 +1183,7 @@ here creates two magic methods on ``Pet``:
 * A ``__new__`` that uses the given function to produce a new ``Pet``.
   It is converted to a Python object in the same way as the return value
   of any other function you might write bindings for. In particular,
-  you can pass a :cpp:enum:`nb::rv_policy <rv_policy>` as an additional
+  you can pass a :cpp:class:`nb::rv_policy <rv_policy>` as an additional
   argument to :cpp:func:`.def() <class_::def>` to control how this conversion
   occurs.
 
@@ -1169,7 +1276,7 @@ current compilation unit).
 .. warning::
 
    Instance class marked with :cpp:class:`nb::never_destruct <never_destruct>`
-   must be returned using the :cpp:enumerator:`reference
+   must be returned using the :cpp:member:`reference
    <rv_policy::reference>` return value policy. Otherwise, nanobind will assume
    ownership, which includes the requirement of destructing the object at
    a later point.
@@ -1181,3 +1288,75 @@ current compilation unit).
    nanobind will abort with a fatal error if it is ever put into a situation
    where an object with the :cpp:class:`nb::never_destruct <never_destruct>`
    annotation must be destructed.
+
+.. _instance_pooling:
+
+Instance pooling
+----------------
+
+Some nanobind workloads create large numbers of short-lived objects and
+bottleneck on object allocation. Constructing an object normally involves
+several steps:
+
+1. Allocating space for the object via ``PyObject_Malloc()``.
+2. Increasing the reference count of both the object and its heap type.
+3. Registering the instance in nanobind's instance hash table.
+4. Calling the C++ constructor.
+
+Releasing the instance performs the inverse of each step in reverse order. In
+free-threaded builds, the hash table in step 3 is additionally guarded by a
+sharded lock that is relatively costly to acquire and release. The C++
+constructor and destructor calls and reference counting steps are unavoidable,
+but steps 1 and 3 are pure bookkeeping that can in principle be avoided.
+
+The :cpp:struct:`nb::pooled <pooled>` class binding annotation enables this:
+instead of freeing a released object, nanobind can stash it in a small per-type
+pool and hand it right back on the next construction. This removes steps 1–3
+from the critical path, leaving only the placement constructor and destructor:
+
+.. code-block:: cpp
+
+   nb::class_<Vec3>(m, "Vec3", nb::pooled(/* capacity = */ 128))
+       .def(nb::init<float>())
+       .def(nb::self + nb::self)
+       .def(nb::self * float());
+
+The optional ``capacity`` argument (128 by default) bounds how objects can be
+retained. Once the pool is full, further releases are freed normally. Pooled
+instances behave exactly like ordinary instances.
+
+Incidentally, this mirrors an optimization that CPython itself applies
+internally to frequently allocated built-in types such as lists, tuples, and
+dictionaries.
+
+A microbenchmark dominated by object construction runs roughly 1.42× faster on
+Python 3.14 with pooling enabled. In free-threaded builds, each thread keeps
+its own pool so that the fast path remains lock-free. Avoiding the lock is
+especially valuable under contention: on the same benchmark, the speedup ranges
+from 1.32× in the uncontended single-threaded case to 3.2× with 32 threads on a
+32-core machine.
+
+Pooling only applies to instances whose storage nanobind owns (i.e., which are
+constructed from Python or returned by value). Instances wrapping *external*
+storage (values returned by pointer or reference, or from :cpp:struct:`nb::new_
+<new_>` bindings that return a pointer) don't benefit from pooling.
+
+Pooling composes transparently with the :ref:`low-level interface <lowlevel>`:
+:cpp:func:`nb::inst_alloc() <inst_alloc>` draws an object from the pool ff
+possible, which is returned to the pool when its reference count reaches zero.
+Instances whose ownership has been transferred to C++ are never placed into the
+pool.
+
+.. note::
+
+   Pooling is *incompatible* with :ref:`intrusive reference counting
+   <intrusive>`. That corner case aside, everything else works:
+   garbage-collected types with custom type slots, weak-reference types, or
+   types with instance dictionaries, etc.
+
+   Pooling is intended for types that are frequently constructed and destroyed.
+   Enabling it for a rarely-instantiated type wastes the (lazily allocated) pool
+   storage without any benefit.
+
+   Pooling isn't supported in PyPy extensions, where the annotation is simply
+   ignored.

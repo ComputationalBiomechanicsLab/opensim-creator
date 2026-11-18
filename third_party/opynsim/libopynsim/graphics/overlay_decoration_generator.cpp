@@ -21,32 +21,28 @@ void opyn::generate_overlay_decorations(
     }
 
     if (params.get_draw_xz_grid()) {
-        draw_xz_grid(mesh_cache, [&out, fixup_scale_factor](osc::SceneDecoration&& dec)
-        {
+        draw_xz_grid(mesh_cache, [&out, fixup_scale_factor](osc::SceneDecoration&& dec) {
             dec.transform.scale *= fixup_scale_factor;
             out(std::move(dec));
         });
     }
 
     if (params.get_draw_xy_grid()) {
-        draw_xy_grid(mesh_cache, [&out, fixup_scale_factor](osc::SceneDecoration&& dec)
-        {
+        draw_xy_grid(mesh_cache, [&out, fixup_scale_factor](osc::SceneDecoration&& dec) {
             dec.transform.scale *= fixup_scale_factor;
             out(std::move(dec));
         });
     }
 
     if (params.get_draw_yz_grid()) {
-        draw_yz_grid(mesh_cache, [&out, fixup_scale_factor](osc::SceneDecoration&& dec)
-        {
+        draw_yz_grid(mesh_cache, [&out, fixup_scale_factor](osc::SceneDecoration&& dec) {
             dec.transform.scale *= fixup_scale_factor;
             out(std::move(dec));
         });
     }
 
     if (params.get_draw_axis_lines()) {
-        draw_xz_floor_lines(mesh_cache, [&out, fixup_scale_factor](osc::SceneDecoration&& dec)
-        {
+        draw_xz_floor_lines(mesh_cache, [&out, fixup_scale_factor](osc::SceneDecoration&& dec) {
             dec.transform.scale *= fixup_scale_factor;
             out(std::move(dec));
         });

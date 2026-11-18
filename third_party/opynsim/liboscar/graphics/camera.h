@@ -9,12 +9,13 @@
 #include <liboscar/maths/vector.h>
 #include <liboscar/utilities/copy_on_upd_shared_value.h>
 
+#include <format>
 #include <optional>
-
-namespace osc { class Rect; }
 
 namespace osc
 {
+    class Rect;
+
     /// Represents a camera at `position` in world space, pointing in
     /// `direction`, and oriented such that the top of its viewing plane
     /// points `up`.
@@ -27,24 +28,21 @@ namespace osc
         /// `up` is normalized by the implementation. If it parallel with
         /// `target - position` then it will fallback to something
         /// non-parallel.
-        static Camera look_at(
-            const Vector3& position,
-            const Vector3& target,
-            const Vector3& up
-        );
+        static Camera look_at(const Vector3& position, const Vector3& target, const Vector3& up);
 
         Camera();
 
-        /// Constructs a camera from a world-space position (`position`),
-        /// direction (`direction`), and upwards vector (`up`).
+        /// Constructs a perspective camera from a world-space position (`position`),
+        /// direction (`direction`), upwards vector (`up`), and vertical
+        /// field of view (`vertical_field_of_view`).
         ///
         /// `direction` and `up` are normalized by the implementation. If they
         /// are parallel then `up` will fallback to something non-parallel.
         explicit Camera(
             const Vector3& position,
             const Vector3& direction,
-            const Vector3& up = {0.0f, 1.0f, 0.0f}
-        );
+            const Vector3& up = {0.0f, 1.0f, 0.0f},
+            Radians vertical_field_of_view = Degrees{90.0f});
 
         // resets the camera to default parameters
         void reset();
@@ -65,16 +63,16 @@ namespace osc
 
         // get/set the vertical field-of-view angle of the viewer's projection camera
         //
-        // undefined behavior if `projection() != CameraProjection::Perspective` or the projection matrix
-        // has been overridden with `set_projection_matrix_override`.
+        // undefined behavior if `projection() != CameraProjection::Perspective` or the projection
+        // matrix has been overridden with `set_projection_matrix_override`.
         Radians vertical_field_of_view() const;
         void set_vertical_field_of_view(Radians);
 
         // returns the horizontal field-of-view angle of the viewer's projection camera, assuming
         // it's rendering to a render target with the given `aspect_ratio`.
         //
-        // undefined behavior if `projection() != CameraProjection::Perspective` or the projection matrix
-        // has been overridden with `set_projection_matrix_override`.
+        // undefined behavior if `projection() != CameraProjection::Perspective` or the projection
+        // matrix has been overridden with `set_projection_matrix_override`.
         Radians horizontal_field_of_view(float aspect_ratio) const;
 
         // get/set the distance, in world space units, between both the camera and the nearest
@@ -150,7 +148,8 @@ namespace osc
         // clip space is defined such that there exists a unit cube in it that eventually
         // projects onto screen space in the following way:
         //
-        // - transformed points (affine, homogeneous) are divided by their `w` component (perspective
+        // - transformed points (affine, homogeneous) are divided by their `w` component
+        // (perspective
         //   divide) to yield their normalized device coordinates (NDC).
         // - Anything outside of [{-1,-1,-1},{+1,+1,+1}] in NDC is discarded (clipping)
         // - NDC `( 0,  0,  0)` maps to the midpoint of screen space (i.e. 0.5 * {w, h})
@@ -188,6 +187,7 @@ namespace osc
         // Returns the view volume's vertical extent in world units at a given depth
         // from the camera origin.
         float view_volume_height_at_depth(float depth) const;
+
     private:
         friend bool operator==(const Camera&, const Camera&);
         class Impl;
@@ -196,3 +196,49 @@ namespace osc
 
     bool operator==(const Camera&, const Camera&);
 }
+
+// A `std::formatter` that pretty-prints a `Camera`.
+template<>
+struct std::formatter<osc::Camera> {
+    template<class ParseCtx>
+    constexpr typename ParseCtx::iterator parse(ParseCtx& ctx)
+    {
+        return inner_.parse(ctx);
+    }
+
+    template<class FmtCtx>
+    typename FmtCtx::iterator format(const osc::Camera& camera, FmtCtx& ctx) const
+    {
+        auto it = std::ranges::copy(std::string_view{"Camera(position="}, ctx.out()).out;
+        ctx.advance_to(it);
+        it = format(camera.position(), ctx);
+        it = std::ranges::copy(std::string_view{", direction="}, it).out;
+        ctx.advance_to(it);
+        it = format(camera.direction(), ctx);
+        it = std::ranges::copy(std::string_view{", up="}, it).out;
+        ctx.advance_to(it);
+        it = format(camera.up(), ctx);
+        *it++ = ')';
+        return it;
+    }
+
+private:
+    // Pretty prints a vector in a tuple-like format (e.g. "(a, b, c)").
+    template<class FmtCtx>
+    typename FmtCtx::iterator format(const osc::Vector3& v, FmtCtx& ctx) const
+    {
+        auto it = ctx.out();
+        *it++ = '(';
+        std::string_view delimiter;
+        for (const auto& el : v) {
+            it = std::ranges::copy(delimiter, it).out;
+            ctx.advance_to(it);
+            it = inner_.format(el, ctx);
+            delimiter = ", ";
+        }
+        *it++ = ')';
+        return it;
+    }
+
+    std::formatter<float> inner_;
+};

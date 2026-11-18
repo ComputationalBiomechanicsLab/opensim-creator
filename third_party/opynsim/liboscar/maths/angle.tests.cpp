@@ -32,14 +32,14 @@ TEST(Radians, can_be_constructed_from_Degrees)
 
 TEST(Radians, construction_from_Degrees_converts_the_value_as_expected)
 {
-    static_assert(Radians{-90.0_deg} == Radians{-0.5f*pi_v<float>});
-    static_assert(Radians{90.0_deg} == Radians{0.5f*pi_v<float>});
+    static_assert(Radians{-90.0_deg} == Radians{-0.5f * pi_v<float>});
+    static_assert(Radians{90.0_deg} == Radians{0.5f * pi_v<float>});
 
     static_assert(Radians{-180.0_deg} == Radians{-pi_v<float>});
     static_assert(Radians{180.0_deg} == Radians{pi_v<float>});
 
-    static_assert(Radians{-360.0_deg} == Radians{-2.0f*pi_v<float>});
-    static_assert(Radians{360.0_deg} == Radians{2.0f*pi_v<float>});
+    static_assert(Radians{-360.0_deg} == Radians{-2.0f * pi_v<float>});
+    static_assert(Radians{360.0_deg} == Radians{2.0f * pi_v<float>});
 }
 
 TEST(Radians, addition_operator_works_as_expected)
@@ -54,8 +54,8 @@ TEST(Radians, subtraction_operator_works_as_expected)
 
 TEST(Radians, scalar_multiplication_operator_works_as_expected)
 {
-    static_assert(2.0f*Radians{1.0f} == Radians{2.0f});
-    static_assert(Radians{1.0f}*3.0f == Radians{3.0f});
+    static_assert(2.0f * Radians{1.0f} == Radians{2.0f});
+    static_assert(Radians{1.0f} * 3.0f == Radians{3.0f});
 }
 
 TEST(Radians, three_way_comparison_works_as_expected)
@@ -90,8 +90,8 @@ TEST(Angle, addition_operator_works_with_different_Angle_types)
 
 TEST(Turns, converts_to_Degrees_or_Radians_as_expected)
 {
-    static_assert(1_turn == 2.0f*pi_v<float>*1_rad);
-    static_assert(0.5_turn == pi_v<float>*1_rad);
+    static_assert(1_turn == 2.0f * pi_v<float> * 1_rad);
+    static_assert(0.5_turn == pi_v<float> * 1_rad);
     static_assert(1_turn == 360_deg);
     static_assert(0.5_turn == 180_deg);
 }
@@ -103,7 +103,7 @@ TEST(Angle, equality_works_across_mixed_Angle_types)
 
 TEST(Turn, division_by_a_scalar_works_as_expected)
 {
-    static_assert(1_turn/2 == 180_deg);
+    static_assert(1_turn / 2 == 180_deg);
 }
 
 TEST(Angle, is_compatible_with_projected_clamp_algorithm)
@@ -126,4 +126,12 @@ TEST(Angle, std_is_convertible_to_works_between_angles)
 TEST(Angle, can_be_formatted)
 {
     ASSERT_EQ(std::format("{:.0f}", 10_deg), "10 deg");
+}
+
+TEST(Angle, abs_returns_absolute_version_of_supplied_angle)
+{
+    ASSERT_EQ(abs(45_turn), 45_turn);
+    ASSERT_EQ(abs(90_deg), 90_deg);
+    ASSERT_EQ(abs(-90_deg), 90_deg);
+    ASSERT_EQ(abs(-1.434_rad), 1.434_rad);
 }

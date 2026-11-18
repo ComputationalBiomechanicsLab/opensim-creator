@@ -9,6 +9,7 @@
 
 namespace opyn
 {
+    // clang-format off
     enum class OpenSimDecorationOptionFlag : uint32_t {
         None                                                = 0,
         ShouldShowScapulo                                   = 1<<0,
@@ -27,6 +28,7 @@ namespace opyn
 
         Default = ShouldShowPointToPointSprings | ShouldShowScholz2015ObstacleContactHints,
     };
+    // clang-format on
     using OpenSimDecorationOptionFlags = osc::Flags<OpenSimDecorationOptionFlag>;
 
     struct OpenSimDecorationOptionMetadata final {

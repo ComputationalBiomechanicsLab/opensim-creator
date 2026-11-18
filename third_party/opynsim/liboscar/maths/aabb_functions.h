@@ -14,10 +14,10 @@
 #include <optional>
 #include <ranges>
 
-namespace osc { struct Sphere; }
-
 namespace osc
 {
+    struct Sphere;
+
     // returns the average centroid of `aabb`
     constexpr Vector3 centroid_of(const AABB& aabb)
     {
@@ -82,7 +82,8 @@ namespace osc
         return AABB{elementwise_min(x.min, y.min), elementwise_max(x.max, y.max)};
     }
 
-    // returns an `AABB` that tightly bounds the union of `x` and `y`, or only `y` if `x` is `std::nullopt`
+    // returns an `AABB` that tightly bounds the union of `x` and `y`, or only `y` if `x` is
+    // `std::nullopt`
     constexpr AABB bounding_aabb_of(const std::optional<AABB>& x, const AABB& y)
     {
         return x ? bounding_aabb_of(*x, y) : y;
@@ -96,23 +97,23 @@ namespace osc
         if (x and y) {
             return bounding_aabb_of(*x, *y);
         }
-        else if (x) {
-            return *x;
+        if (x) {
+            return x;
         }
-        else if (y) {
-            return *y;
+        if (y) {
+            return y;
         }
-        else {
-            return std::nullopt;
-        }
+        return std::nullopt;
     }
 
     namespace detail
     {
         // returns an `AABB` that tightly bounds the `Vector3`s projected from `r`
         template<std::ranges::input_range R, class Proj = std::identity>
-        requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vector3&>
-        constexpr AABB bounding_aabb_of_nonempty_range(R&& r, Proj proj = {})
+        requires std::convertible_to<
+            typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type,
+            const Vector3&>
+        constexpr AABB bounding_aabb_of_nonempty_range(const R& r, Proj proj = {})
         {
             auto it = std::ranges::begin(r);
             const auto last = std::ranges::end(r);
@@ -127,7 +128,9 @@ namespace osc
 
     // returns an `AABB` that tightly bounds the `Vector3`s projected from `r`
     template<std::ranges::input_range R, class Proj = std::identity>
-    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vector3&>
+    requires std::convertible_to<
+        typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type,
+        const Vector3&>
     constexpr std::optional<AABB> bounding_aabb_of(R&& r, Proj proj = {})
     {
         if (std::ranges::begin(r) != std::ranges::end(r)) {
@@ -137,18 +140,23 @@ namespace osc
         }
     }
 
-    // returns an `AABB` that tightly bounds the `Vector3`s projected from `r` (specialized for compile-time-non-empty ranges)
+    // returns an `AABB` that tightly bounds the `Vector3`s projected from `r` (specialized for
+    // compile-time-non-empty ranges)
     template<InputRangeWithSizeGreaterThan<0> R, class Proj = std::identity>
-    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vector3&>
+    requires std::convertible_to<
+        typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type,
+        const Vector3&>
     constexpr AABB bounding_aabb_of(R&& r, Proj proj = {})
     {
         return detail::bounding_aabb_of_nonempty_range(std::forward<R>(r), std::move(proj));
     }
 
     // returns an `AABB` that tightly bounds the `AABB`s projected from `r`
-    template<std::ranges::input_range Range, class Proj = std::identity>
-    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, const AABB&>
-    constexpr std::optional<AABB> bounding_aabb_of(Range&& r, Proj proj = {})
+    template<std::ranges::input_range R, class Proj = std::identity>
+    requires std::convertible_to<
+        typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type,
+        const AABB&>
+    constexpr std::optional<AABB> bounding_aabb_of(const R& r, Proj proj = {})
     {
         auto it = std::ranges::begin(r);
         auto const last = std::ranges::end(r);
@@ -163,14 +171,18 @@ namespace osc
         return rv;
     }
 
-    // returns an `AABB` that tightly bounds any non-`std::nullopt` `std::optional<AABB>`s projected from `r`
+    // returns an `AABB` that tightly bounds any non-`std::nullopt` `std::optional<AABB>`s projected
+    // from `r`
     //
     // if no element in `r` projects an `AABB`, returns `std::nullopt`
-    template<std::ranges::input_range Range, class Proj = std::identity>
-    requires
-        std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, const std::optional<AABB>&>
-        and (not std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, const AABB&>)
-    constexpr std::optional<AABB> bounding_aabb_of(Range&& r, Proj proj = {})
+    template<std::ranges::input_range R, class Proj = std::identity>
+    requires std::convertible_to<
+                 typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type,
+                 const std::optional<AABB>&> and
+             (not std::convertible_to<
+                 typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type,
+                 const AABB&>)
+    constexpr std::optional<AABB> bounding_aabb_of(const R& r, Proj proj = {})
     {
         auto it = std::ranges::begin(r);
         const auto last = std::ranges::end(r);
@@ -205,6 +217,5 @@ namespace osc
         const Matrix4x4& view_mat,
         const Matrix4x4& proj_mat,
         float znear,
-        float zfar
-    );
+        float zfar);
 }

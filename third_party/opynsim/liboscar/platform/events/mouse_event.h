@@ -22,7 +22,8 @@ namespace osc
             return MouseEvent{EventType::MouseButtonUp, source, button};
         }
 
-        static MouseEvent motion(MouseInputSource source, Vector2 relative_delta, Vector2 position_in_window)
+        static MouseEvent motion(
+            MouseInputSource source, Vector2 relative_delta, Vector2 position_in_window)
         {
             return MouseEvent{source, relative_delta, position_in_window};
         }
@@ -41,9 +42,7 @@ namespace osc
 
     private:
         explicit MouseEvent(
-            EventType event_type,
-            MouseInputSource input_source,
-            MouseButton button) :
+            EventType event_type, MouseInputSource input_source, MouseButton button) :
 
             Event{event_type},
             input_source_{input_source},
@@ -51,9 +50,7 @@ namespace osc
         {}
 
         explicit MouseEvent(
-            MouseInputSource input_source,
-            Vector2 relative_delta,
-            Vector2 position_in_window) :
+            MouseInputSource input_source, Vector2 relative_delta, Vector2 position_in_window) :
 
             Event{EventType::MouseMove},
             relative_delta_{relative_delta},

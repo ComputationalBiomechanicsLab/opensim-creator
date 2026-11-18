@@ -23,7 +23,8 @@ namespace osc
         TextureDimensionality dimensionality = TextureDimensionality::Tex2D;
         AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel{1};
         ColorRenderBufferFormat color_format = ColorRenderBufferFormat::Default;
-        DepthStencilRenderBufferFormat depth_stencil_format = DepthStencilRenderBufferFormat::Default;
+        DepthStencilRenderBufferFormat depth_stencil_format =
+            DepthStencilRenderBufferFormat::Default;
     };
 
     std::ostream& operator<<(std::ostream&, const RenderTextureParams&);

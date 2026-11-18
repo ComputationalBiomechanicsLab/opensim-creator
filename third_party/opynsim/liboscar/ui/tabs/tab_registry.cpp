@@ -19,25 +19,13 @@ public:
         rgs::sort(entries_, rgs::less{}, &TabRegistryEntry::name);
     }
 
-    const_iterator begin() const
-    {
-        return entries_.data();
-    }
+    const_iterator begin() const { return entries_.data(); }
 
-    const_iterator end() const
-    {
-        return entries_.data() + entries_.size();
-    }
+    const_iterator end() const { return entries_.data() + entries_.size(); }
 
-    size_t size() const
-    {
-        return entries_.size();
-    }
+    size_t size() const { return entries_.size(); }
 
-    TabRegistryEntry operator[](size_t pos) const
-    {
-        return entries_[pos];
-    }
+    TabRegistryEntry operator[](size_t pos) const { return entries_[pos]; }
 
     std::optional<TabRegistryEntry> find_by_name(std::string_view name) const
     {

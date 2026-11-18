@@ -16,17 +16,13 @@ namespace
             // setup material
             material_.set_viewer_position(viewer_position);
         }
+
     private:
-        void impl_on_mount() override
-        {}
+        void impl_on_mount() override {}
 
-        void impl_on_unmount() override
-        {}
+        void impl_on_unmount() override {}
 
-        bool impl_on_event(Event& e) override
-        {
-            return ui_context_.on_event(e);
-        }
+        bool impl_on_event(Event& e) override { return ui_context_.on_event(e); }
 
         void impl_on_draw() override
         {
@@ -36,8 +32,8 @@ namespace
 
             // ensure target texture matches screen dimensions
             target_texture_.reformat({
-                .pixel_dimensions    = App::get().main_window_pixel_dimensions(),
-                .device_pixel_ratio  = App::get().main_window_device_pixel_ratio(),
+                .pixel_dimensions = App::get().main_window_pixel_dimensions(),
+                .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
                 .anti_aliasing_level = App::get().anti_aliasing_level(),
             });
 
@@ -52,7 +48,8 @@ namespace
             graphics::blit_to_main_window(target_texture_);
 
             ui::begin_panel("window");
-            ui::draw_float_slider("torus_radius", &edited_torus_parameters_.torus_radius, 0.0f, 5.0f);
+            ui::draw_float_slider(
+                "torus_radius", &edited_torus_parameters_.torus_radius, 0.0f, 5.0f);
             ui::draw_float_slider("tube_radius", &edited_torus_parameters_.tube_radius, 0.0f, 5.0f);
             ui::draw_size_t_input("p", &edited_torus_parameters_.p);
             ui::draw_size_t_input("q", &edited_torus_parameters_.q);

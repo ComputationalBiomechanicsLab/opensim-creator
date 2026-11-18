@@ -25,26 +25,34 @@ using namespace osc;
 // bricked the documentation models
 TEST(DocumentationModels, CanAllBeLoadedAndInitializedWithoutThrowingAnException)
 {
-    GloballyInitOpenSim();
-    GloballyAddDirectoryToOpenSimGeometrySearchPath(std::filesystem::path{OSC_RESOURCES_DIR} / "geometry");
+    globally_init_open_sim();
+    globally_add_directory_to_open_sim_geometry_search_path(
+        std::filesystem::path{OSC_RESOURCES_DIR} / "geometry");
 
     SceneCache cache;
     opyn::OpenSimDecorationOptions options;
 
-    std::filesystem::path docSourcesDir{OSC_DOCS_SOURCES_DIR};
-    for_each_file_with_extensions_recursive(docSourcesDir, [&cache, &options](const std::filesystem::path& osim)
-    {
-        // load + initialize the documentation model
-        UndoableModelStatePair model{osim};
+    std::filesystem::path doc_sources_dir{OSC_DOCS_SOURCES_DIR};
+    for_each_file_with_extensions_recursive(
+        doc_sources_dir,
+        [&cache, &options](const std::filesystem::path& osim) {
+            // load + initialize the documentation model
+            UndoableModelStatePair model{osim};
 
-        // try to generate 3D decorations from the model, which forces the backend
-        // to (e.g.) try and load mesh files, etc.
-        std::vector<SceneDecoration> decorations;
-        generate_model_decorations(cache, model.get_model(), model.get_state(), options, 1.0f, [&decorations](const OpenSim::Component&, const SceneDecoration& decoration)
-        {
-            decorations.push_back(decoration);
-        });
+            // try to generate 3D decorations from the model, which forces the backend
+            // to (e.g.) try and load mesh files, etc.
+            std::vector<SceneDecoration> decorations;
+            generate_model_decorations(
+                cache,
+                model.get_model(),
+                model.get_state(),
+                options,
+                1.0f,
+                [&decorations](const OpenSim::Component&, const SceneDecoration& decoration) {
+                    decorations.push_back(decoration);
+                });
 
-        ASSERT_FALSE(decorations.empty());
-    }, std::to_array<std::string_view>({".osim"}));
+            ASSERT_FALSE(decorations.empty());
+        },
+        std::to_array<std::string_view>({".osim"}));
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/platform/key.h>
-#include <liboscar/platform/key_modifier.h>
+#include <liboscar/platform/modifier_key.h>
 #include <liboscar/utilities/hash_helpers.h>
 
 #include <cstddef>
@@ -9,22 +9,29 @@
 
 namespace osc
 {
-    // Represents a combination of a single `Key` with zero or more `KeyModifier`s.
+    // Represents a combination of a single `Key` with `ModifierKeys`.
     class KeyCombination final {
     public:
-        constexpr KeyCombination(Key key = Key::Unknown) : key_{key} {}
-        constexpr KeyCombination(KeyModifiers modifiers, Key key) : modifiers_{modifiers}, key_{key} {}
+        constexpr KeyCombination(Key key = Key::Unknown) :
+            key_{key}
+        {}
+
+        constexpr KeyCombination(ModifierKeys modifiers, Key key) :
+            modifiers_{modifiers},
+            key_{key}
+        {}
 
         friend bool operator==(const KeyCombination&, const KeyCombination&) = default;
 
         constexpr Key key() const { return key_; }
-        constexpr KeyModifiers modifiers() const { return modifiers_; }
+        constexpr ModifierKeys modifiers() const { return modifiers_; }
+
     private:
-        KeyModifiers modifiers_{};
+        ModifierKeys modifiers_{};
         Key key_ = Key::Unknown;
     };
 
-    constexpr KeyCombination operator|(KeyModifiers modifiers, Key key)
+    constexpr KeyCombination operator|(ModifierKeys modifiers, Key key)
     {
         return KeyCombination{modifiers, key};
     }

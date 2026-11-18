@@ -20,19 +20,14 @@ using namespace osc;
 
 namespace
 {
-    std::unique_ptr<App> g_renderer_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    std::unique_ptr<App>
+        g_renderer_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     class Graphics : public ::testing::Test {
     protected:
-        static void SetUpTestSuite()
-        {
-            g_renderer_app = std::make_unique<App>();
-        }
+        static void SetUpTestSuite() { g_renderer_app = std::make_unique<App>(); }
 
-        static void TearDownTestSuite()
-        {
-            g_renderer_app.reset();
-        }
+        static void TearDownTestSuite() { g_renderer_app.reset(); }
     };
 
     constexpr CStringView c_vertex_shader_src = R"(
@@ -223,21 +218,27 @@ TEST_F(Graphics, graphics_draw_does_not_throw_if_given_in_bounds_sub_mesh_index)
     graphics::render_to_main_window(render_queue, camera);
 }
 
-TEST_F(Graphics, graphics_render_blank_render_queue_to_render_texture_yields_sampleable_render_texture)
+TEST_F(
+    Graphics, graphics_render_blank_render_queue_to_render_texture_yields_sampleable_render_texture)
 {
     // First pass: render an empty `RenderQueue` with a purple clear color.
     //
     // It should still render something (the clear color) to the `RenderTexture`.
     RenderTexture render_texture{{.pixel_dimensions = {1, 1}}};
     const RenderQueue empty_render_queue;
-    graphics::render_to(render_texture, empty_render_queue, Camera{}, {
-        .clear_color = Color::purple(),
-    });
+    graphics::render_to(
+        render_texture,
+        empty_render_queue,
+        Camera{},
+        {
+            .clear_color = Color::purple(),
+        });
 
     // Second pass: sample the output of the first pass.
     //
     // Look directly at a quad that is textured with the output of the first pass.
-    Material textured_material{Shader{c_textured_material_vertex_src, c_textured_material_fragment_src}};
+    Material textured_material{
+        Shader{c_textured_material_vertex_src, c_textured_material_fragment_src}};
     textured_material.set("uTextureSampler", render_texture);
     const PlaneGeometry quad{{.dimensions = {2.0f, 2.0f}, .num_segments = {1, 1}}};
     RenderTexture final_output{{.pixel_dimensions = {1, 1}}};
@@ -252,12 +253,12 @@ TEST_F(Graphics, graphics_render_blank_render_queue_to_render_texture_yields_sam
     graphics::render_to(final_output, render_queue, camera);
 
     // Test: ensure the second pass produces the purple color from the first pass.
-    Texture2D cpu_texture{{1,1}};
+    Texture2D cpu_texture{{1, 1}};
     graphics::copy_texture(final_output, cpu_texture);
     const auto pixels = cpu_texture.pixels();
     ASSERT_EQ(pixels.size(), 1);
-    ASSERT_NEAR(pixels.front().r, Color::purple().r, 1.0f/255.0f);
-    ASSERT_NEAR(pixels.front().g, Color::purple().g, 1.0f/255.0f);
-    ASSERT_NEAR(pixels.front().b, Color::purple().b, 1.0f/255.0f);
-    ASSERT_NEAR(pixels.front().a, Color::purple().a, 1.0f/255.0f);
+    ASSERT_NEAR(pixels.front().r, Color::purple().r, 1.0f / 255.0f);
+    ASSERT_NEAR(pixels.front().g, Color::purple().g, 1.0f / 255.0f);
+    ASSERT_NEAR(pixels.front().b, Color::purple().b, 1.0f / 255.0f);
+    ASSERT_NEAR(pixels.front().a, Color::purple().a, 1.0f / 255.0f);
 }

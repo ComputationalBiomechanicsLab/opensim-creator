@@ -15,7 +15,7 @@ static_assert(std::is_same_v<std::underlying_type_t<TextureFormat>, int32_t>);
 
 TEST(TextureFormat, num_components_in_returns_expected_values)
 {
-    static_assert(num_options<TextureFormat>() == 7);
+    static_assert(num_options_v<TextureFormat> == 7);
 
     ASSERT_EQ(num_components_in(TextureFormat::R8), 1);
     ASSERT_EQ(num_components_in(TextureFormat::RG16), 2);
@@ -28,7 +28,7 @@ TEST(TextureFormat, num_components_in_returns_expected_values)
 
 TEST(TextureFormat, component_format_of_returns_expected_values)
 {
-    static_assert(num_options<TextureFormat>() == 7);
+    static_assert(num_options_v<TextureFormat> == 7);
 
     ASSERT_EQ(component_format_of(TextureFormat::R8), TextureComponentFormat::Uint8);
     ASSERT_EQ(component_format_of(TextureFormat::RG16), TextureComponentFormat::Uint8);
@@ -41,7 +41,7 @@ TEST(TextureFormat, component_format_of_returns_expected_values)
 
 TEST(TextureFormat, num_bytes_per_pixel_in_returns_expected_values)
 {
-    static_assert(num_options<TextureFormat>() == 7);
+    static_assert(num_options_v<TextureFormat> == 7);
 
     ASSERT_EQ(num_bytes_per_pixel_in(TextureFormat::R8), 1);
     ASSERT_EQ(num_bytes_per_pixel_in(TextureFormat::RG16), 2);
@@ -54,7 +54,7 @@ TEST(TextureFormat, num_bytes_per_pixel_in_returns_expected_values)
 
 TEST(TextureFormat, to_texture_format_returns_expected_values)
 {
-    static_assert(num_options<TextureFormat>() == 7);
+    static_assert(num_options_v<TextureFormat> == 7);
 
     ASSERT_EQ(to_texture_format(1, TextureComponentFormat::Uint8), TextureFormat::R8);
     ASSERT_EQ(to_texture_format(2, TextureComponentFormat::Uint8), TextureFormat::RG16);

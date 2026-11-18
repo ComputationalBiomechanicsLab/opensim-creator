@@ -36,16 +36,11 @@ namespace osc
 
         friend bool operator==(const RenderQueue&, const RenderQueue&) = default;
 
-        handle_type emplace(
-            const Mesh& mesh,
-            const Material& material)
+        handle_type emplace(const Mesh& mesh, const Material& material)
         {
             return emplace(mesh, identity<Matrix4x4>(), material);
         }
-        handle_type emplace(
-            const Mesh& mesh,
-            const Transform& transform,
-            const Material& material)
+        handle_type emplace(const Mesh& mesh, const Transform& transform, const Material& material)
         {
             return emplace(mesh, matrix4x4_cast(transform), material);
         }
@@ -72,7 +67,8 @@ namespace osc
             const MaterialPropertyBlock& material_prop_block,
             size_t submesh_index)
         {
-            return emplace(mesh, matrix4x4_cast(transform), material, material_prop_block, submesh_index);
+            return emplace(
+                mesh, matrix4x4_cast(transform), material, material_prop_block, submesh_index);
         }
         handle_type emplace(const Mesh& mesh, const Matrix4x4& transform, const Material& material)
         {
@@ -139,14 +135,26 @@ namespace osc
         const Material& material(handle_type id) const { return materials_[id]; }
         Material& material(handle_type id) { return materials_[id]; }
 
-        const MaterialPropertyBlock& material_property_block(handle_type id) const { return material_property_blocks_[id]; }
-        MaterialPropertyBlock& material_property_block(handle_type id) { return material_property_blocks_[id]; }
+        const MaterialPropertyBlock& material_property_block(handle_type id) const
+        {
+            return material_property_blocks_[id];
+        }
+        MaterialPropertyBlock& material_property_block(handle_type id)
+        {
+            return material_property_blocks_[id];
+        }
 
         const Mesh& mesh(handle_type id) const { return meshes_[id]; }
         Mesh& mesh(handle_type id) { return meshes_[id]; }
 
-        const submesh_index_type& maybe_submesh_index(handle_type id) const { return maybe_submesh_indices_[id]; }
-        submesh_index_type& maybe_submesh_index(handle_type id) { return maybe_submesh_indices_[id]; }
+        const submesh_index_type& maybe_submesh_index(handle_type id) const
+        {
+            return maybe_submesh_indices_[id];
+        }
+        submesh_index_type& maybe_submesh_index(handle_type id)
+        {
+            return maybe_submesh_indices_[id];
+        }
 
         const Matrix4x4& model_matrix(handle_type id) const { return model_matrices_[id]; }
         Matrix4x4& model_matrix(handle_type id) { return model_matrices_[id]; }
@@ -162,8 +170,14 @@ namespace osc
 
         bool is_opaque(handle_type id) const { return not material(id).is_transparent(); }
         bool is_depth_tested(handle_type id) const { return material(id).is_depth_tested(); }
-        Matrix3x3 normal_matrix3x3(handle_type id) const { return osc::normal_matrix(model_matrix(id)); }
-        Matrix4x4 normal_matrix4x4(handle_type id) const { return osc::normal_matrix4x4(model_matrix(id)); }
+        Matrix3x3 normal_matrix3x3(handle_type id) const
+        {
+            return osc::normal_matrix(model_matrix(id));
+        }
+        Matrix4x4 normal_matrix4x4(handle_type id) const
+        {
+            return osc::normal_matrix4x4(model_matrix(id));
+        }
 
         const auto& handles() const { return handles_; }
         auto& handles() { return handles_; }

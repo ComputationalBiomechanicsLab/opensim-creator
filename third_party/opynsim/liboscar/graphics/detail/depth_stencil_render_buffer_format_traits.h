@@ -11,7 +11,8 @@ namespace osc::detail
     struct DepthStencilRenderBufferFormatTraits;
 
     template<>
-    struct DepthStencilRenderBufferFormatTraits<DepthStencilRenderBufferFormat::D24_UNorm_S8_UInt> final {
+    struct DepthStencilRenderBufferFormatTraits<DepthStencilRenderBufferFormat::D24_UNorm_S8_UInt>
+        final {
         static constexpr bool has_stencil_component = true;
         static constexpr CStringView label = "D24_UNorm_S8_UInt";
         static constexpr CPUImageFormat equivalent_cpu_image_format = CPUImageFormat::DepthStencil;

@@ -101,7 +101,7 @@ An example is shown below:
    version = "0.0.1"
    description = "A brief description of what this project does"
    readme = "README.md"
-   requires-python = ">=3.9"
+   requires-python = ">=3.10"
    authors = [
        { name = "Your Name", email = "your.email@address.com" },
    ]
@@ -178,7 +178,7 @@ component that can be used to create `stable ABI
 .. code-block:: cmake
 
    # Try to import all Python components potentially needed by nanobind
-   find_package(Python 3.9
+   find_package(Python 3.10
      REQUIRED COMPONENTS Interpreter Development.Module
      OPTIONAL_COMPONENTS Development.SABIModule)
 
@@ -308,9 +308,37 @@ Furthermore, append the following ``cibuildwheel``-specific configuration to
 Following each run, the action provides a downloadable *build artifact*, which
 is a ZIP file containing all the individual wheel files for each platform.
 
+.. note::
+
+   The wheel matrix shrinks considerably when the extension is built in
+   :ref:`split mode <split-mode>`: one wheel per platform then covers every
+   supported Python version starting at 3.10 (linked-mode stable ABI builds
+   start at 3.12). Pass ``BACKEND_MODULE nanobind_backend`` to
+   :cmake:command:`nanobind_add_module` and add ``nanobind-backend>=1.0``
+   to ``[project] dependencies``.
+
+   Two further ``pyproject.toml`` changes then reduce the build matrix to a
+   single Python 3.10 stable ABI wheel per platform: declare the stable ABI
+   target so that the wheel receives the ``abi3`` tag, and restrict
+   ``cibuildwheel`` to one Python version per platform (the resulting wheel
+   covers all newer versions):
+
+   .. code-block:: toml
+
+      [tool.scikit-build]
+      wheel.py-api = "cp310"    # instead of "cp312" above
+
+      [tool.cibuildwheel]
+      build = "cp310-*"
+
+   The ``py-api`` setting determines which stable ABI the extension is
+   compiled against. Raising it to ``cp312`` (and the ``cibuildwheel``
+   entry along with it) trades support for Python 3.10 and 3.11 against
+   access to newer limited API functions.
+
 By default, ``cibuildwheel`` will launch a very large build matrix, and it is
 possible that your extension is not compatible with every single configuration.
-For example, suppose that the project depends on Python 3.9+ and a 64 bit
+For example, suppose that the project depends on Python 3.10+ and a 64 bit
 processor. In this case, add further entries to the ``[tool.cibuildwheel]``
 block to remove incompatible configurations from the matrix:
 

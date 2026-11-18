@@ -1,8 +1,10 @@
 #pragma once
 
+#include <liboscar/maths/identity.h>
 #include <liboscar/maths/matrix.h>
 #include <liboscar/maths/vector.h>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 
@@ -31,22 +33,32 @@ namespace osc
                 column_type{s, T{}, T{}, T{}},
                 column_type{T{}, s, T{}, T{}},
                 column_type{T{}, T{}, s, T{}},
-                column_type{T{}, T{}, T{}, s}
-            }
+                column_type{T{}, T{}, T{}, s}}
         {}
 
         constexpr Matrix(
-            const T& x0, const T& y0, const T& z0, const T& w0,
-            const T& x1, const T& y1, const T& z1, const T& w1,
-            const T& x2, const T& y2, const T& z2, const T& w2,
-            const T& x3, const T& y3, const T& z3, const T& w3) :
+            const T& x0,
+            const T& y0,
+            const T& z0,
+            const T& w0,
+            const T& x1,
+            const T& y1,
+            const T& z1,
+            const T& w1,
+            const T& x2,
+            const T& y2,
+            const T& z2,
+            const T& w2,
+            const T& x3,
+            const T& y3,
+            const T& z3,
+            const T& w3) :
 
             value_{
                 column_type{x0, y0, z0, w0},
                 column_type{x1, y1, z1, w1},
                 column_type{x2, y2, z2, w2},
-                column_type{x3, y3, z3, w3}
-            }
+                column_type{x3, y3, z3, w3}}
         {}
 
         constexpr Matrix(
@@ -59,22 +71,45 @@ namespace osc
         {}
 
         template<
-            typename X0, typename Y0, typename Z0, typename W0,
-            typename X1, typename Y1, typename Z1, typename W1,
-            typename X2, typename Y2, typename Z2, typename W2,
-            typename X3, typename Y3, typename Z3, typename W3>
+            typename X0,
+            typename Y0,
+            typename Z0,
+            typename W0,
+            typename X1,
+            typename Y1,
+            typename Z1,
+            typename W1,
+            typename X2,
+            typename Y2,
+            typename Z2,
+            typename W2,
+            typename X3,
+            typename Y3,
+            typename Z3,
+            typename W3>
         constexpr Matrix(
-            const X0& x0, const Y0& y0, const Z0& z0, const W0& w0,
-            const X1& x1, const Y1& y1, const Z1& z1, const W1& w1,
-            const X2& x2, const Y2& y2, const Z2& z2, const W2& w2,
-            const X3& x3, const Y3& y3, const Z3& z3, const W3& w3) :
+            const X0& x0,
+            const Y0& y0,
+            const Z0& z0,
+            const W0& w0,
+            const X1& x1,
+            const Y1& y1,
+            const Z1& z1,
+            const W1& w1,
+            const X2& x2,
+            const Y2& y2,
+            const Z2& z2,
+            const W2& w2,
+            const X3& x3,
+            const Y3& y3,
+            const Z3& z3,
+            const W3& w3) :
 
             value_{
                 column_type{x0, y0, z0, w0},
                 column_type{x1, y1, z1, w1},
                 column_type{x2, y2, z2, w2},
-                column_type{x3, y3, z3, w3}
-            }
+                column_type{x3, y3, z3, w3}}
         {}
 
         template<typename V1, typename V2, typename V3, typename V4>
@@ -84,12 +119,7 @@ namespace osc
             const Vector<V3, 4>& v3,
             const Vector<V4, 4>& v4) :
 
-            value_{
-                column_type{v1},
-                column_type{v2},
-                column_type{v3},
-                column_type{v4}
-            }
+            value_{column_type{v1}, column_type{v2}, column_type{v3}, column_type{v4}}
         {}
 
         constexpr Matrix(const Matrix<T, 3, 3>& m) :
@@ -97,8 +127,7 @@ namespace osc
                 column_type{m[0], T{}},
                 column_type{m[1], T{}},
                 column_type{m[2], T{}},
-                column_type{T{}, T{}, T{}, T(1)}
-            }
+                column_type{T{}, T{}, T{}, T(1)}}
         {}
 
         template<typename U>
@@ -112,8 +141,8 @@ namespace osc
         }
 
         constexpr size_type size() const { return 4; }
-        constexpr pointer data() { return value_; }
-        constexpr const_pointer data() const { return value_; }
+        constexpr pointer data() { return value_.data(); }
+        constexpr const_pointer data() const { return value_.data(); }
         constexpr iterator begin() { return data(); }
         constexpr const_iterator begin() const { return data(); }
         constexpr iterator end() { return data() + size(); }
@@ -228,7 +257,7 @@ namespace osc
         }
 
     private:
-        column_type value_[4];
+        std::array<column_type, 4> value_;
     };
 
     template<typename T>
@@ -292,7 +321,8 @@ namespace osc
     }
 
     template<typename T>
-    typename Matrix<T, 4, 4>::column_type operator*(const Matrix<T, 4, 4>& m, const typename Matrix<T, 4, 4>::row_type& v)
+    typename Matrix<T, 4, 4>::column_type operator*(
+        const Matrix<T, 4, 4>& m, const typename Matrix<T, 4, 4>::row_type& v)
     {
         using column_type = typename Matrix<T, 4, 4>::column_type;
 
@@ -311,14 +341,14 @@ namespace osc
     }
 
     template<typename T>
-    typename Matrix<T, 4, 4>::row_type operator*(const typename Matrix<T, 4, 4>::column_type& v, const Matrix<T, 4, 4>& m)
+    typename Matrix<T, 4, 4>::row_type operator*(
+        const typename Matrix<T, 4, 4>::column_type& v, const Matrix<T, 4, 4>& m)
     {
         return typename Matrix<T, 4, 4>::row_type(
             m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2] + m[0][3] * v[3],
             m[1][0] * v[0] + m[1][1] * v[1] + m[1][2] * v[2] + m[1][3] * v[3],
             m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2] + m[2][3] * v[3],
-            m[3][0] * v[0] + m[3][1] * v[1] + m[3][2] * v[2] + m[3][3] * v[3]
-        );
+            m[3][0] * v[0] + m[3][1] * v[1] + m[3][2] * v[2] + m[3][3] * v[3]);
     }
 
     template<typename T>
@@ -357,13 +387,15 @@ namespace osc
     }
 
     template<typename T>
-    typename Matrix<T, 4, 4>::column_type operator/(const Matrix<T, 4, 4>& m, const typename Matrix<T, 4, 4>::row_type& v)
+    typename Matrix<T, 4, 4>::column_type operator/(
+        const Matrix<T, 4, 4>& m, const typename Matrix<T, 4, 4>::row_type& v)
     {
         return inverse(m) * v;
     }
 
     template<typename T>
-    typename Matrix<T, 4, 4>::row_type operator/(const typename Matrix<T, 4, 4>::column_type& v, const Matrix<T, 4, 4>& m)
+    typename Matrix<T, 4, 4>::row_type operator/(
+        const typename Matrix<T, 4, 4>::column_type& v, const Matrix<T, 4, 4>& m)
     {
         return v * inverse(m);
     }
@@ -382,9 +414,6 @@ namespace osc
     using Matrix4x4z = Matrix<ptrdiff_t, 4, 4>;
     using Matrix4x4zu = Matrix<size_t, 4, 4>;
     using Matrix4x4u32 = Matrix<uint32_t, 4, 4>;
-
-    template<typename T>
-    constexpr T identity();
 
     template<>
     constexpr Matrix4x4 identity<Matrix4x4>()

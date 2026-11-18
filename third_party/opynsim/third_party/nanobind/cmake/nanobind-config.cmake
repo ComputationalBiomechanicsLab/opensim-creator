@@ -1,11 +1,11 @@
 include_guard(GLOBAL)
 
-if (NOT TARGET Python::Module)
+if (NOT TARGET Python::Interpreter OR NOT TARGET Python::Module)
   message(FATAL_ERROR "You must invoke 'find_package(Python COMPONENTS Interpreter Development REQUIRED)' prior to including nanobind.")
 endif()
 
-if (Python_VERSION VERSION_LESS "3.9")
-  message(FATAL_ERROR "nanobind requires Python 3.9 or newer (found Python ${Python_VERSION}).")
+if (Python_VERSION VERSION_LESS "3.10")
+  message(FATAL_ERROR "nanobind requires Python 3.10 or newer (found Python ${Python_VERSION}).")
 endif()
 
 # Determine the right suffix for ordinary and stable ABI extensions.
@@ -30,10 +30,10 @@ elseif(DEFINED Python_SOSABI)
   set(NB_SOSABI "${Python_SOSABI}")
 endif()
 
-# Error if scikit-build-core is trying to build Stable ABI < 3.12 wheels
-if(DEFINED SKBUILD_SABI_VERSION AND SKBUILD_ABI_VERSION AND SKBUILD_SABI_VERSION VERSION_LESS "3.12")
-  message(FATAL_ERROR "You must set tool.scikit-build.wheel.py-api to 'cp312' or later when "
-                      "using scikit-build-core with nanobind, '${SKBUILD_SABI_VERSION}' is too old.")
+# Strip platform-tagged stable ABI suffixes (introduced by 3.15) to ensure
+# older Python versions that don't handle these suffixes still work
+if(DEFINED NB_SOSABI AND NB_SOSABI MATCHES "^(abi[0-9]+t?)-")
+  set(NB_SOSABI "${CMAKE_MATCH_1}")
 endif()
 
 # PyPy sets an invalid SOABI (platform missing), causing older FindPythons to
@@ -52,6 +52,11 @@ endif()
 
 # Extract Python version and extensions (e.g. free-threaded build)
 string(REGEX REPLACE "[^-]*-([^-]*)-.*" "\\1" NB_ABI "${NB_SOABI}")
+
+# Windows has no ABI-tagged extension suffix; scikit-build-core sets this instead
+if(Py_TARGET_ABI3T)
+  set(NB_ABI "${Python_VERSION_MAJOR}${Python_VERSION_MINOR}t")
+endif()
 
 # Determine whether the interpreter was built without the GIL using the ABI tag
 # (free-threaded builds encode this using a trailing 't').
@@ -96,12 +101,22 @@ set(NB_SUFFIX_S       ${NB_SUFFIX_S}       CACHE INTERNAL "")
 set(NB_ABI            ${NB_ABI}            CACHE INTERNAL "")
 set(NB_FREE_THREADED  ${NB_FREE_THREADED} CACHE INTERNAL "")
 
-get_filename_component(NB_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(NB_DIR "${CMAKE_CURRENT_LIST_FILE}" REALPATH)
+get_filename_component(NB_DIR "${NB_DIR}" PATH)
 get_filename_component(NB_DIR "${NB_DIR}" PATH)
 
 set(NB_DIR      ${NB_DIR} CACHE INTERNAL "")
 set(NB_OPT      $<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>> CACHE INTERNAL "")
 set(NB_OPT_SIZE $<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>,$<CONFIG:RelWithDebInfo>> CACHE INTERNAL "")
+
+# ---------------------------------------------------------------------------
+# Probe for the faster TLSDESC thread-local storage ABI (Linux/x86_64)
+# ---------------------------------------------------------------------------
+
+if (NOT (MSVC OR WIN32 OR APPLE))
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag(-mtls-dialect=gnu2 NB_HAS_MTLS_GNU2)
+endif()
 
 # ---------------------------------------------------------------------------
 # Helper function to handle undefined CPython API symbols on macOS
@@ -124,7 +139,7 @@ endfunction()
 
 function (nanobind_build_library TARGET_NAME)
   cmake_parse_arguments(PARSE_ARGV 1 ARG
-    "AS_SYSINCLUDE" "" "")
+    "AS_SYSINCLUDE;FULL_ASSERTIONS" "" "")
 
   if (TARGET ${TARGET_NAME})
     return()
@@ -142,8 +157,11 @@ function (nanobind_build_library TARGET_NAME)
 
   add_library(${TARGET_NAME} ${TARGET_TYPE}
     EXCLUDE_FROM_ALL
+    ${NB_DIR}/include/nanobind/eval.h
     ${NB_DIR}/include/nanobind/make_iterator.h
     ${NB_DIR}/include/nanobind/nanobind.h
+    ${NB_DIR}/include/nanobind/nb_backend.h
+    ${NB_DIR}/include/nanobind/nb_backend_slots.h
     ${NB_DIR}/include/nanobind/nb_accessor.h
     ${NB_DIR}/include/nanobind/nb_attr.h
     ${NB_DIR}/include/nanobind/nb_call.h
@@ -151,11 +169,10 @@ function (nanobind_build_library TARGET_NAME)
     ${NB_DIR}/include/nanobind/nb_class.h
     ${NB_DIR}/include/nanobind/nb_defs.h
     ${NB_DIR}/include/nanobind/nb_descr.h
-    ${NB_DIR}/include/nanobind/nb_enums.h
     ${NB_DIR}/include/nanobind/nb_error.h
     ${NB_DIR}/include/nanobind/nb_func.h
-    ${NB_DIR}/include/nanobind/nb_lib.h
     ${NB_DIR}/include/nanobind/nb_misc.h
+    ${NB_DIR}/include/nanobind/nb_platform.h
     ${NB_DIR}/include/nanobind/nb_python.h
     ${NB_DIR}/include/nanobind/nb_traits.h
     ${NB_DIR}/include/nanobind/nb_tuple.h
@@ -167,10 +184,12 @@ function (nanobind_build_library TARGET_NAME)
     ${NB_DIR}/include/nanobind/stl/array.h
     ${NB_DIR}/include/nanobind/stl/bind_map.h
     ${NB_DIR}/include/nanobind/stl/bind_vector.h
-    ${NB_DIR}/include/nanobind/stl/detail
+    ${NB_DIR}/include/nanobind/stl/chrono.h
+    ${NB_DIR}/include/nanobind/stl/complex.h
     ${NB_DIR}/include/nanobind/stl/detail/nb_array.h
     ${NB_DIR}/include/nanobind/stl/detail/nb_dict.h
     ${NB_DIR}/include/nanobind/stl/detail/nb_list.h
+    ${NB_DIR}/include/nanobind/stl/detail/nb_optional.h
     ${NB_DIR}/include/nanobind/stl/detail/nb_set.h
     ${NB_DIR}/include/nanobind/stl/detail/traits.h
     ${NB_DIR}/include/nanobind/stl/filesystem.h
@@ -189,8 +208,10 @@ function (nanobind_build_library TARGET_NAME)
     ${NB_DIR}/include/nanobind/stl/unordered_set.h
     ${NB_DIR}/include/nanobind/stl/variant.h
     ${NB_DIR}/include/nanobind/stl/vector.h
+    ${NB_DIR}/include/nanobind/stl/wstring.h
     ${NB_DIR}/include/nanobind/eigen/dense.h
     ${NB_DIR}/include/nanobind/eigen/sparse.h
+    ${NB_DIR}/include/nanobind/eigen/tensor.h
 
     ${NB_DIR}/src/buffer.h
     ${NB_DIR}/src/hash.h
@@ -201,6 +222,7 @@ function (nanobind_build_library TARGET_NAME)
     ${NB_DIR}/src/nb_enum.cpp
     ${NB_DIR}/src/nb_ndarray.cpp
     ${NB_DIR}/src/nb_static_property.cpp
+    ${NB_DIR}/src/nb_datetime.cpp
     ${NB_DIR}/src/nb_ft.h
     ${NB_DIR}/src/common.cpp
     ${NB_DIR}/src/error.cpp
@@ -212,14 +234,15 @@ function (nanobind_build_library TARGET_NAME)
     target_sources(${TARGET_NAME} PRIVATE ${NB_DIR}/src/nb_ft.cpp)
   endif()
 
+  target_compile_definitions(${TARGET_NAME} PRIVATE -DNB_BUILD)
+
   if (TARGET_TYPE STREQUAL "SHARED")
     nanobind_link_options(${TARGET_NAME})
-    target_compile_definitions(${TARGET_NAME} PRIVATE -DNB_BUILD)
     target_compile_definitions(${TARGET_NAME} PUBLIC -DNB_SHARED)
     nanobind_lto(${TARGET_NAME})
 
     nanobind_strip(${TARGET_NAME})
-  elseif(NOT WIN32 AND NOT APPLE)
+  elseif(NOT WIN32 AND NOT APPLE AND NOT AIX)
     target_compile_options(${TARGET_NAME} PUBLIC $<${NB_OPT_SIZE}:-ffunction-sections -fdata-sections>)
     target_link_options(${TARGET_NAME} PUBLIC $<${NB_OPT_SIZE}:-Wl,--gc-sections>)
   endif()
@@ -240,6 +263,11 @@ function (nanobind_build_library TARGET_NAME)
     target_compile_options(${TARGET_NAME} PRIVATE -fno-strict-aliasing)
   endif()
 
+  # Use the faster TLSDESC model for libnanobind's thread_local accesses
+  if (NB_HAS_MTLS_GNU2)
+    target_compile_options(${TARGET_NAME} PRIVATE -mtls-dialect=gnu2)
+  endif()
+
   if (WIN32)
     if (${TARGET_NAME} MATCHES "-abi3")
       target_link_libraries(${TARGET_NAME} PUBLIC Python::SABIModule)
@@ -253,9 +281,13 @@ function (nanobind_build_library TARGET_NAME)
   endif()
 
   # Nanobind performs many assertion checks -- detailed error messages aren't
-  # included in Release/MinSizeRel/RelWithDebInfo modes
-  target_compile_definitions(${TARGET_NAME} PRIVATE
-    $<${NB_OPT_SIZE}:NB_COMPACT_ASSERTIONS>)
+  # included in Release/MinSizeRel/RelWithDebInfo modes. Pass FULL_ASSERTIONS
+  # to keep them, which backend modules do (their users cannot rebuild them in
+  # a different mode).
+  if (NOT ARG_FULL_ASSERTIONS)
+    target_compile_definitions(${TARGET_NAME} PRIVATE
+      $<${NB_OPT_SIZE}:NB_COMPACT_ASSERTIONS>)
+  endif()
 
   # If nanobind was installed without submodule dependencies, then the
   # dependencies directory won't exist and we need to find them.
@@ -302,10 +334,12 @@ function(nanobind_opt_size name)
 endfunction()
 
 function(nanobind_disable_stack_protector name)
-  if (NOT MSVC)
-    # The stack protector affects binding size negatively (+8% on Linux in my
-    # benchmarks). Protecting from stack smashing in a Python VM seems in any
-    # case futile, so let's get rid of it by default in optimized modes.
+  # Drop the stack protector in optimized builds (it adds ~9-12% binary size
+  # and 1-2% runtime overheads, see docs/api_cmake.rst for the rationale).
+  # Pass PROTECT_STACK to opt out.
+  if (MSVC)
+    target_compile_options(${name} PRIVATE $<${NB_OPT}:$<$<COMPILE_LANGUAGE:CXX>:/GS->>)
+  else()
     target_compile_options(${name} PRIVATE $<${NB_OPT}:-fno-stack-protector>)
   endif()
 endfunction()
@@ -318,6 +352,17 @@ function(nanobind_extension_abi3 name)
   set_target_properties(${name} PROPERTIES PREFIX "" SUFFIX "${NB_SUFFIX_S}")
 endfunction()
 
+function(nanobind_extension_abi3t name)
+  # The 'abi3t' stable ABI variant of free-threaded builds (PEP 803)
+  if (WIN32)
+    set(suffix "${NB_SUFFIX_S}")
+  else()
+    get_filename_component(ext "${NB_SUFFIX}" LAST_EXT)
+    set(suffix ".abi3t${ext}")
+  endif()
+  set_target_properties(${name} PROPERTIES PREFIX "" SUFFIX "${suffix}")
+endfunction()
+
 function (nanobind_lto name)
   set_target_properties(${name} PROPERTIES
     INTERPROCEDURAL_OPTIMIZATION_RELEASE ON
@@ -326,7 +371,10 @@ endfunction()
 
 function (nanobind_compile_options name)
   if (MSVC)
-    target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/bigobj /MP>)
+    target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/bigobj>)
+  endif()
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/MP>)
   endif()
 endfunction()
 
@@ -351,7 +399,7 @@ endfunction()
 function(nanobind_add_module name)
   cmake_parse_arguments(PARSE_ARGV 1 ARG
     "STABLE_ABI;FREE_THREADED;NB_STATIC;NB_SHARED;PROTECT_STACK;LTO;NOMINSIZE;NOSTRIP;MUSL_DYNAMIC_LIBCPP;NB_SUPPRESS_WARNINGS"
-    "NB_DOMAIN" "")
+    "NB_DOMAIN;BACKEND_MODULE;BACKEND_PYPI;STABLE_ABI_VERSION" "")
 
   add_library(${name} MODULE ${ARG_UNPARSED_ARGUMENTS})
 
@@ -359,59 +407,187 @@ function(nanobind_add_module name)
   nanobind_link_options(${name})
   set_target_properties(${name} PROPERTIES LINKER_LANGUAGE CXX)
 
-  if (ARG_NB_SHARED AND ARG_NB_STATIC)
+  # Split mode: use a libnanobind provided as a separate Python package.
+  if (ARG_BACKEND_MODULE)
+    set(IS_SPLIT TRUE)
+  else()
+    set(IS_SPLIT FALSE)
+  endif()
+
+  if (IS_SPLIT AND (ARG_NB_SHARED OR ARG_NB_STATIC))
+    message(FATAL_ERROR "split mode cannot be combined with NB_STATIC or NB_SHARED!")
+  elseif (ARG_NB_SHARED AND ARG_NB_STATIC)
     message(FATAL_ERROR "NB_SHARED and NB_STATIC cannot be specified at the same time!")
-  elseif (NOT ARG_NB_SHARED)
+  elseif (NOT IS_SPLIT AND NOT ARG_NB_SHARED)
     set(ARG_NB_STATIC TRUE)
   endif()
 
-  # Stable ABI builds require CPython >= 3.12 and Python::SABIModule
-  if ((Python_VERSION VERSION_LESS 3.12) OR
-      (NOT Python_INTERPRETER_ID STREQUAL "Python") OR
-      (NOT TARGET Python::SABIModule))
-    set(ARG_STABLE_ABI FALSE)
-  endif()
+  set(NB_ABI3T FALSE)
+  if (IS_SPLIT)
+    # Split mode extensions always target a stable ABI: 'abi3' with a Python
+    # 3.10 floor, or 'abi3t' (PEP 803) on free-threaded Python 3.15+.
+    set(ARG_STABLE_ABI TRUE)
 
-  if (NB_ABI MATCHES "[0-9]t")
-    # Free-threaded Python interpreters don't support building a nanobind
-    # module that uses the stable ABI.
-    set(ARG_STABLE_ABI FALSE)
+    if (NOT Python_INTERPRETER_ID STREQUAL "Python")
+      message(FATAL_ERROR "Split mode requires CPython!")
+    endif()
+
+    if (NB_ABI MATCHES "[0-9]t")
+      if (ARG_FREE_THREADED)
+        if (Python_VERSION VERSION_LESS 3.15)
+          message(FATAL_ERROR
+            "Free-threaded extensions in split mode require the 'abi3t' "
+            "stable ABI of Python 3.15 or newer; use a linked mode on "
+            "Python ${Python_VERSION}.")
+        endif()
+        set(NB_ABI3T TRUE)
+      else()
+        message(FATAL_ERROR
+          "Split mode on a free-threaded interpreter requires the "
+          "FREE_THREADED option ('abi3t', Python 3.15 or newer). Classic "
+          "'abi3' extensions cannot be built against free-threaded Python.")
+      endif()
+    else()
+      # A free-threaded Python interpreter is required to build a
+      # free-threaded nanobind module.
+      set(ARG_FREE_THREADED FALSE)
+    endif()
+
+    if (WIN32 AND NOT TARGET Python::SABIModule)
+      message(FATAL_ERROR
+        "Split mode requires the Development.SABIModule component of "
+        "find_package(Python) on Windows.")
+    endif()
+
+    # Pick the stable ABI floor
+    if (NB_ABI3T)
+      set(NB_SABI_MIN "3.15")
+    else()
+      set(NB_SABI_MIN "3.10")
+    endif()
+
+    if (ARG_STABLE_ABI_VERSION)
+      set(NB_SABI "${ARG_STABLE_ABI_VERSION}")
+    elseif (SKBUILD_SABI_VERSION)
+      set(NB_SABI "${SKBUILD_SABI_VERSION}") # 'tool.scikit-build.wheel.py-api'
+    else()
+      set(NB_SABI "${NB_SABI_MIN}")
+    endif()
+
+    if (NOT NB_SABI MATCHES "^([0-9]+)\\.([0-9]+)$")
+      message(FATAL_ERROR "nanobind: '${NB_SABI}' is not a valid stable ABI "
+        "target, expected a 'MAJOR.MINOR' version such as '3.12'.")
+    elseif (NB_SABI VERSION_LESS NB_SABI_MIN OR NB_SABI VERSION_GREATER Python_VERSION)
+      message(FATAL_ERROR "nanobind: split mode can target the stable ABI of "
+        "Python ${NB_SABI_MIN} up to ${Python_VERSION} here, which excludes "
+        "the requested '${NB_SABI}'.")
+    endif()
+
+    math(EXPR NB_SABI_HEX "(${CMAKE_MATCH_1} << 24) | (${CMAKE_MATCH_2} << 16)"
+         OUTPUT_FORMAT HEXADECIMAL)
   else()
-    # A free-threaded Python interpreter is required to build a free-threaded
-    # nanobind module.
-    set(ARG_FREE_THREADED FALSE)
+    if (ARG_STABLE_ABI_VERSION)
+      message(FATAL_ERROR "nanobind: STABLE_ABI_VERSION requires split mode "
+        "(BACKEND_MODULE); linked builds always target Python 3.12.")
+    endif()
+
+    # Linked-mode stable ABI builds require CPython >= 3.12 (the backend
+    # itself then compiles under Py_LIMITED_API)
+    if (DEFINED SKBUILD_SABI_VERSION AND
+        NOT SKBUILD_SABI_VERSION STREQUAL "" AND
+        SKBUILD_SABI_VERSION VERSION_LESS "3.12")
+      message(FATAL_ERROR
+        "You must set tool.scikit-build.wheel.py-api to 'cp312' or later "
+        "when using linked nanobind, '${SKBUILD_SABI_VERSION}' is too old. "
+        "Stable ABI wheels for Python 3.10/3.11 require split mode.")
+    endif()
+
+    if ((Python_VERSION VERSION_LESS 3.12) OR
+        (NOT Python_INTERPRETER_ID STREQUAL "Python") OR
+        (NOT TARGET Python::SABIModule))
+      set(ARG_STABLE_ABI FALSE)
+    endif()
+
+    if (NB_ABI MATCHES "[0-9]t")
+      # No linked-mode stable ABI on free-threaded interpreters
+      set(ARG_STABLE_ABI FALSE)
+    else()
+      # A free-threaded Python interpreter is required to build a
+      # free-threaded nanobind module.
+      set(ARG_FREE_THREADED FALSE)
+    endif()
   endif()
 
-  set(libname "nanobind")
-  if (ARG_NB_STATIC)
-    set(libname "${libname}-static")
-  endif()
+  if (NOT IS_SPLIT)
+    set(libname "nanobind")
+    if (ARG_NB_STATIC)
+      set(libname "${libname}-static")
+    endif()
 
-  if (ARG_STABLE_ABI)
-    set(libname "${libname}-abi3")
-  endif()
+    if (ARG_STABLE_ABI)
+      set(libname "${libname}-abi3")
+    endif()
 
-  if (ARG_FREE_THREADED)
-    set(libname "${libname}-ft")
-  endif()
+    if (ARG_FREE_THREADED)
+      set(libname "${libname}-ft")
+    endif()
 
-  if (ARG_NB_DOMAIN AND ARG_NB_SHARED)
-    set(libname ${libname}-${ARG_NB_DOMAIN})
-  endif()
+    # The stack protector changes how libnanobind is compiled, so the protected
+    # variant needs its own library (like -abi3 / -ft).
+    if (ARG_PROTECT_STACK)
+      set(libname "${libname}-ps")
+    endif()
 
-  if (ARG_NB_SUPPRESS_WARNINGS)
-    set(EXTRA_LIBRARY_PARAMS AS_SYSINCLUDE)
-  endif()
+    if (ARG_NB_SUPPRESS_WARNINGS)
+      set(EXTRA_LIBRARY_PARAMS AS_SYSINCLUDE)
+    endif()
 
-  nanobind_build_library(${libname} ${EXTRA_LIBRARY_PARAMS})
+    nanobind_build_library(${libname} ${EXTRA_LIBRARY_PARAMS})
+  endif()
 
   if (ARG_NB_DOMAIN)
     target_compile_definitions(${name} PRIVATE NB_DOMAIN=${ARG_NB_DOMAIN})
   endif()
 
+  if (IS_SPLIT)
+    if (NOT ARG_BACKEND_PYPI AND ARG_BACKEND_MODULE STREQUAL "nanobind_backend")
+      set(ARG_BACKEND_PYPI "nanobind-backend")
+    endif()
+    target_compile_definitions(${name} PRIVATE
+      "NB_BACKEND_MODULE=${ARG_BACKEND_MODULE}")
+    if (ARG_BACKEND_PYPI)
+      target_compile_definitions(${name} PRIVATE
+        "NB_BACKEND_PYPI=${ARG_BACKEND_PYPI}")
+    endif()
+    if (ARG_NB_SUPPRESS_WARNINGS)
+      set(NB_SPLIT_SYSINCLUDE SYSTEM)
+    endif()
+    target_include_directories(${name} ${NB_SPLIT_SYSINCLUDE} PRIVATE
+      ${Python_INCLUDE_DIRS} ${NB_DIR}/include)
+    target_compile_features(${name} PRIVATE cxx_std_17)
+
+    if (NOT WIN32 AND NOT APPLE AND NOT AIX)
+      target_compile_options(${name} PRIVATE $<${NB_OPT_SIZE}:-ffunction-sections -fdata-sections>)
+      target_link_options(${name} PRIVATE $<${NB_OPT_SIZE}:-Wl,--gc-sections>)
+    endif()
+
+    if (WIN32)
+      target_link_libraries(${name} PRIVATE Python::SABIModule)
+    endif()
+  endif()
+
   if (ARG_STABLE_ABI)
-    target_compile_definitions(${libname} PUBLIC -DPy_LIMITED_API=0x030C0000)
-    nanobind_extension_abi3(${name})
+    if (IS_SPLIT)
+      target_compile_definitions(${name} PRIVATE -DPy_LIMITED_API=${NB_SABI_HEX})
+      if (NB_ABI3T)
+        nanobind_extension_abi3t(${name})
+      else()
+        nanobind_extension_abi3(${name})
+      endif()
+    else()
+      target_compile_definitions(${libname} PUBLIC -DPy_LIMITED_API=0x030C0000)
+      nanobind_extension_abi3(${name})
+    endif()
   else()
     nanobind_extension(${name})
   endif()
@@ -420,10 +596,15 @@ function(nanobind_add_module name)
     target_compile_definitions(${name} PRIVATE NB_FREE_THREADED)
   endif()
 
-  target_link_libraries(${name} PRIVATE ${libname})
+  if (NOT IS_SPLIT)
+    target_link_libraries(${name} PRIVATE ${libname})
+  endif()
 
   if (NOT ARG_PROTECT_STACK)
     nanobind_disable_stack_protector(${name})
+    if (NOT IS_SPLIT)
+      nanobind_disable_stack_protector(${libname})
+    endif()
   endif()
 
   if (NOT ARG_NOMINSIZE)
@@ -443,6 +624,62 @@ function(nanobind_add_module name)
   endif()
 
   nanobind_set_visibility(${name})
+endfunction()
+
+# ---------------------------------------------------------------------------
+# Build a backend module: a Python module containing the compiled nanobind
+# backend, serving it to split-mode extensions through fill(). The official
+# 'nanobind-backend' wheel uses this same command.
+# ---------------------------------------------------------------------------
+
+function(nanobind_add_backend name)
+  cmake_parse_arguments(PARSE_ARGV 1 ARG
+    "PROTECT_STACK;NOMINSIZE;NOSTRIP;NB_SUPPRESS_WARNINGS" "" "")
+
+  add_library(${name} MODULE ${NB_DIR}/src/nb_backend.cpp)
+
+  nanobind_compile_options(${name})
+  nanobind_link_options(${name})
+  set_target_properties(${name} PROPERTIES LINKER_LANGUAGE CXX)
+
+  # Backend modules are never limited-API; the free-threading flavor
+  # follows the interpreter. The '-fa' part keeps the library separate from
+  # the one that linked mode builds, which drops the assertion messages in
+  # optimized builds.
+  set(libname "nanobind-static-fa")
+  if (NB_FREE_THREADED)
+    set(libname "${libname}-ft")
+  endif()
+
+  if (ARG_PROTECT_STACK)
+    set(libname "${libname}-ps")
+  endif()
+
+  if (ARG_NB_SUPPRESS_WARNINGS)
+    set(EXTRA_LIBRARY_PARAMS AS_SYSINCLUDE)
+  endif()
+
+  nanobind_build_library(${libname} FULL_ASSERTIONS ${EXTRA_LIBRARY_PARAMS})
+  target_link_libraries(${name} PRIVATE ${libname} tsl::robin_map)
+
+  target_compile_definitions(${name} PRIVATE
+    NB_BUILD "NB_BACKEND_NAME=${name}")
+
+  nanobind_extension(${name})
+  nanobind_set_visibility(${name})
+
+  if (NOT ARG_PROTECT_STACK)
+    nanobind_disable_stack_protector(${name})
+    nanobind_disable_stack_protector(${libname})
+  endif()
+
+  if (NOT ARG_NOMINSIZE)
+    nanobind_opt_size(${name})
+  endif()
+
+  if (NOT ARG_NOSTRIP)
+    nanobind_strip(${name})
+  endif()
 endfunction()
 
 # ---------------------------------------------------------------------------
@@ -613,7 +850,13 @@ endfunction()
 # ---------------------------------------------------------------------------
 
 function (nanobind_add_stub name)
-  cmake_parse_arguments(PARSE_ARGV 1 ARG "VERBOSE;INCLUDE_PRIVATE;EXCLUDE_DOCSTRINGS;EXCLUDE_VALUES;INSTALL_TIME;RECURSIVE;EXCLUDE_FROM_ALL" "MODULE;COMPONENT;PATTERN_FILE;OUTPUT_PATH" "PYTHON_PATH;DEPENDS;MARKER_FILE;OUTPUT")
+  cmake_parse_arguments(PARSE_ARGV 1 ARG
+    # Options
+    "VERBOSE;INCLUDE_PRIVATE;EXCLUDE_DOCSTRINGS;EXCLUDE_VALUES;INSTALL_TIME;RECURSIVE;EXCLUDE_FROM_ALL"
+    # Single-value arguments
+    "MODULE;COMPONENT;OUTPUT_PATH"
+    # Multi-value arguments
+    "PYTHON_PATH;DEPENDS;MARKER_FILE;OUTPUT;PATTERN_FILE")
 
   if (EXISTS ${NB_DIR}/src/stubgen.py)
     set(NB_STUBGEN "${NB_DIR}/src/stubgen.py")
@@ -649,9 +892,9 @@ function (nanobind_add_stub name)
     list(APPEND NB_STUBGEN_ARGS -i "${PYTHON_PATH}")
   endforeach()
 
-  if (ARG_PATTERN_FILE)
-    list(APPEND NB_STUBGEN_ARGS -p "${ARG_PATTERN_FILE}")
-  endif()
+  foreach (PATTERN_FILE IN LISTS ARG_PATTERN_FILE)
+    list(APPEND NB_STUBGEN_ARGS -p "${PATTERN_FILE}")
+  endforeach()
 
   if (ARG_MARKER_FILE)
     foreach (MARKER_FILE IN LISTS ARG_MARKER_FILE)
@@ -719,7 +962,7 @@ function (nanobind_add_stub name)
       OUTPUT ${NB_STUBGEN_OUTPUTS}
       COMMAND ${NB_STUBGEN_CMD}
       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-      DEPENDS ${ARG_DEPENDS} "${NB_STUBGEN}" "${ARG_PATTERN_FILE}"
+      DEPENDS ${ARG_DEPENDS} "${NB_STUBGEN}" ${ARG_PATTERN_FILE}
       ${NB_STUBGEN_EXTRA}
     )
     add_custom_target(${name} ALL DEPENDS ${NB_STUBGEN_OUTPUTS})

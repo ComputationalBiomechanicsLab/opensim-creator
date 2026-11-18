@@ -19,7 +19,8 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    using TransparentMap = std::unordered_map<std::string, int, TransparentStringHasher, std::equal_to<>>;
+    using TransparentMap =
+        std::unordered_map<std::string, int, TransparentStringHasher, std::equal_to<>>;
 }
 
 TEST(TransparentStringHasher, can_construct_unordered_map_that_uses_transparent_string_hasher)
@@ -30,19 +31,22 @@ TEST(TransparentStringHasher, can_construct_unordered_map_that_uses_transparent_
 TEST(TransparentStringHasher, transparent_unordered_map_enables_std_string_view_lookups)
 {
     const TransparentMap map;
-    [[maybe_unused]] const auto it = map.find(std::string_view{"i don't need to be converted into a std::string :)"});
+    [[maybe_unused]] const auto it =
+        map.find(std::string_view{"i don't need to be converted into a std::string :)"});
 }
 
 TEST(TransparentStringHasher, transparent_unordered_map_enables_CStringView_lookups)
 {
     const TransparentMap map;
-    [[maybe_unused]] const auto it = map.find(CStringView{"i don't need to be converted into a std::string :)"});
+    [[maybe_unused]] const auto it =
+        map.find(CStringView{"i don't need to be converted into a std::string :)"});
 }
 
 TEST(TransparentStringHasher, transparent_unordered_map_enables_StringName_lookups)
 {
     const TransparentMap map;
-    [[maybe_unused]] const auto it = map.find(StringName{"i don't need to be converted into a std::string :)"});
+    [[maybe_unused]] const auto it =
+        map.find(StringName{"i don't need to be converted into a std::string :)"});
 }
 
 TEST(TransparentStringHasher, produces_same_hash_for_all_of_OSCs_string_types)

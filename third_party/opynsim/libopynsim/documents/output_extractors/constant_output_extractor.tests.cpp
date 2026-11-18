@@ -28,14 +28,19 @@ TEST(ConstantOutputExtractor, HasTypeFloatWhenConstructedFromFloat)
 
 TEST(ConstantOutputExtractor, HasTypeVector2WhenConstructedFromVector2)
 {
-    ASSERT_EQ(ConstantOutputExtractor("hello", osc::Vector2{1.0f, 2.0f}).output_type(), OutputExtractorDataType::Vector2);
+    ASSERT_EQ(
+        ConstantOutputExtractor("hello", osc::Vector2{1.0f, 2.0f}).output_type(),
+        OutputExtractorDataType::Vector2);
 }
 
 TEST(ConstantOutputExtractor, ReturnsAnExtractorThatEmitsTheProvidedValue)
 {
     ConstantOutputExtractor coe("extractor", 1337.0f);
-    BlankStateView state;  // the state doesn't actually need any information for this type of extractor
-    OpenSim::Station component;  // it doesn't matter which type of component it is for this extractor
+
+    // the state doesn't actually need any information for this type of extractor
+    BlankStateView state;
+    // it doesn't matter which type of component it is for this extractor
+    OpenSim::Station component;
 
     ASSERT_EQ(coe.value<float>(component, state), 1337.0f);
 }
@@ -43,8 +48,10 @@ TEST(ConstantOutputExtractor, ReturnsAnExtractorThatEmitsTheProvidedValue)
 TEST(ConstantOutputExtractor, ReturnsAnExectactorThatEmitsVector2sWhenProviedVector2s)
 {
     ConstantOutputExtractor coe("extractor", osc::Vector2{2.0f, 3.0f});
-    BlankStateView state;  // the state doesn't actually need any information for this type of extractor
-    OpenSim::Station component;  // it doesn't matter which type of component it is for this extractor
+    // the state doesn't actually need any information for this type of extractor
+    BlankStateView state;
+    // it doesn't matter which type of component it is for this extractor
+    OpenSim::Station component;
 
     ASSERT_EQ(coe.value<osc::Vector2>(component, state), osc::Vector2(2.0f, 3.0f));
 }

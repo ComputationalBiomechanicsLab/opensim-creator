@@ -20,7 +20,7 @@ Curiously, the situation now is reminiscent of 2015: binding generation with
 existing tools (`Boost.Python <https://github.com/boostorg/python>`__, `pybind11
 <http://github.com/pybind/pybind11>`__) is slow and produces enormous binaries
 with overheads on runtime performance. At the same time, key improvements in
-C++17 and Python 3.8 provide opportunities for drastic simplifications.
+C++17 and Python 3.10 provide opportunities for drastic simplifications.
 Therefore, I am starting *another* binding project. This time, the scope is
 intentionally limited so that this doesn't turn into an endless cycle.
 
@@ -100,7 +100,7 @@ performance improvements:
 
 - **Lifetime management**: nanobind maintains efficient internal data
   structures for lifetime management (needed for :cpp:class:`nb::keep_alive
-  <keep_alive>`, :cpp:enumerator:`nb::rv_policy::reference_internal
+  <keep_alive>`, :cpp:member:`nb::rv_policy::reference_internal
   <rv_policy::reference_internal>`, the ``std::shared_ptr`` interface, etc.).
   With these changes, bound types no longer need to be weak-referenceable,
   which saves a pointer per instance.
@@ -121,9 +121,10 @@ nanobind includes a number of quality-of-life improvements for developers:
   the :ref:`section on n-dimensional arrays <ndarrays>` for details.
 
 - **Stable ABI**: nanobind can target Python's `stable ABI interface
-  <https://docs.python.org/3/c-api/stable.html>`__ starting with Python 3.12.
-  This means that extension modules are compatible with later version of
-  Python without having to compile separate binaries per interpreter.
+  <https://docs.python.org/3/c-api/stable.html>`__ starting with Python 3.12
+  (or 3.10 in :ref:`split mode <split-mode>`). This means that extension
+  modules are compatible with later version of Python without having to
+  compile separate binaries per interpreter.
 
 - **Stub generation**: nanobind ships with a custom :ref:`stub generator
   <stubs>` and CMake integration to automatically create high quality type
@@ -180,7 +181,7 @@ The following lists minor-but-useful additions relative to pybind11.
   type signature of a class or function to provide richer type information to
   static type checkers like `MyPy <https://github.com/python/mypy>`__ or
   `PyRight <https://github.com/microsoft/pyright>`__. In such cases, specify
-  the :cpp:class:`nb::sig <signature>` attribute to override the default
+  the :cpp:struct:`nb::sig <sig>` attribute to override the default
   nanobind-provided signature.
 
   For example, the following function signature annotation creates an overload
@@ -224,7 +225,7 @@ The following lists minor-but-useful additions relative to pybind11.
 
 - **Finding Python objects associated with a C++ instance**: In addition to all
   of the return value policies supported by pybind11, nanobind provides one
-  additional policy named :cpp:enumerator:`nb::rv_policy::none
+  additional policy named :cpp:member:`nb::rv_policy::none
   <rv_policy::none>` that *only* succeeds when the return value is already a
   known/registered Python object. In other words, this policy will never
   attempt to move, copy, or reference a C++ instance by constructing a new

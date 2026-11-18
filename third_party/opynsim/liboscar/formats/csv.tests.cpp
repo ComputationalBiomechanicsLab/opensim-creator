@@ -16,7 +16,9 @@ TEST(CSV, read_row_reading_an_empty_stream_returns_a_single_empty_column)
     ASSERT_EQ(output->at(0), "");
 }
 
-TEST(CSV, read_row_reading_a_stream_containing_one_space_returns_a_single_column_containing_the_spaace)
+TEST(
+    CSV,
+    read_row_reading_a_stream_containing_one_space_returns_a_single_column_containing_the_spaace)
 {
     std::istringstream input{" "};
     const std::optional<std::vector<std::string>> output = CSV::read_row(input);
@@ -29,11 +31,11 @@ TEST(CSV, read_row_reading_a_stream_containing_one_space_returns_a_single_column
 TEST(CSV, read_row_reading_a_stream_containing_just_two_commas_should_return_three_empty_columns)
 {
     std::istringstream input{",,"};
-    const  std::optional<std::vector<std::string>> output = CSV::read_row(input);
+    const std::optional<std::vector<std::string>> output = CSV::read_row(input);
 
     ASSERT_TRUE(output.has_value());
     ASSERT_EQ(output->size(), 3);
-    for (const std::string& column : *output) {
+    for (const std::string& column : output.value()) {
         ASSERT_TRUE(column.empty()) << column << " is not an empty string";
     }
 }
@@ -77,7 +79,9 @@ TEST(CSV, read_row_reading_a_stream_containing_nested_quotes_works_as_expected_f
     ASSERT_EQ(output->at(1), "col2");
 }
 
-TEST(CSV, read_row_reading_a_stream_containing_nested_quotes_works_as_expected_for_example_exported_from_microsoft_excel)
+TEST(
+    CSV,
+    read_row_reading_a_stream_containing_nested_quotes_works_as_expected_for_example_exported_from_microsoft_excel)
 {
     std::istringstream input{R"("""quoted text""",col2)"};
     const std::optional<std::vector<std::string>> output = CSV::read_row(input);
@@ -131,7 +135,8 @@ TEST(CSV, read_row_edge_case_3)
     // from GitHub: maxogden/csv-spectrum: comma_in_quotes.csv
 
     std::istringstream input{R"(John,Doe,120 any st.,"Anytown, WW",08123)"};
-    const std::vector<std::string> expected_output = {"John", "Doe", "120 any st.", "Anytown, WW", "08123"};
+    const std::vector<std::string> expected_output = {
+        "John", "Doe", "120 any st.", "Anytown, WW", "08123"};
     const std::optional<std::vector<std::string>> output = CSV::read_row(input);
 
     ASSERT_TRUE(output.has_value());
@@ -179,7 +184,8 @@ TEST(CSV, read_row_edge_case_7)
     // from GitHub: maxogden/csv-spectrum: json.csv
 
     std::istringstream input{R"(1,"{""type"": ""Point"", ""coordinates"": [102.0, 0.5]}")"};
-    const std::vector<std::string> expected_output = {"1", R"({"type": "Point", "coordinates": [102.0, 0.5]})"};
+    const std::vector<std::string> expected_output = {
+        "1", R"({"type": "Point", "coordinates": [102.0, 0.5]})"};
     const std::optional<std::vector<std::string>> output = CSV::read_row(input);
 
     ASSERT_TRUE(output.has_value());
@@ -259,7 +265,8 @@ TEST(CSV, write_row_edge_case_1)
         {"\"quoted column\"", "column, with comma", "nested\nnewline"},
         {"a", "b", "\"hardmode, maybe?\nwho knows"},
     };
-    const std::string expected_output = "\"\"\"quoted column\"\"\",\"column, with comma\",\"nested\nnewline\"\na,b,\"\"\"hardmode, maybe?\nwho knows\"\n";
+    const std::string expected_output =
+        "\"\"\"quoted column\"\"\",\"column, with comma\",\"nested\nnewline\"\na,b,\"\"\"hardmode, maybe?\nwho knows\"\n";
 
     std::stringstream output;
     for (const auto& input : inputs) {

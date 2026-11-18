@@ -7,27 +7,28 @@ namespace osc
     // a collection of senteniel IDs used in the mesh importer
     class MiIDs final {
     public:
-        static UID Ground() { return GetAllIDs().Ground; }
-        static UID Empty() { return GetAllIDs().Empty; }
-        static UID RightClickedNothing() { return GetAllIDs().RightClickedNothing; }
-        static UID GroundGroup() { return GetAllIDs().GroundGroup; }
-        static UID MeshGroup() { return GetAllIDs().MeshGroup; }
-        static UID BodyGroup() { return GetAllIDs().BodyGroup; }
-        static UID JointGroup() { return GetAllIDs().JointGroup; }
-        static UID StationGroup() { return GetAllIDs().StationGroup; }
-        static UID EdgeGroup() { return GetAllIDs().EdgeGroup; }
+        static UID ground() { return get_all_ids().ground; }
+        static UID empty() { return get_all_ids().empty; }
+        static UID right_clicked_nothing() { return get_all_ids().right_clicked_nothing; }
+        static UID ground_group() { return get_all_ids().ground_group; }
+        static UID mesh_group() { return get_all_ids().mesh_group; }
+        static UID body_group() { return get_all_ids().body_group; }
+        static UID joint_group() { return get_all_ids().joint_group; }
+        static UID station_group() { return get_all_ids().station_group; }
+        static UID edge_group() { return get_all_ids().edge_group; }
+
     private:
         struct AllIDs final {
-            UID Ground;
-            UID Empty;
-            UID RightClickedNothing;
-            UID GroundGroup;
-            UID MeshGroup;
-            UID BodyGroup;
-            UID JointGroup;
-            UID StationGroup;
-            UID EdgeGroup;
+            UID ground;
+            UID empty;
+            UID right_clicked_nothing;
+            UID ground_group;
+            UID mesh_group;
+            UID body_group;
+            UID joint_group;
+            UID station_group;
+            UID edge_group;
         };
-        static const AllIDs& GetAllIDs();
+        static const AllIDs& get_all_ids();
     };
 }

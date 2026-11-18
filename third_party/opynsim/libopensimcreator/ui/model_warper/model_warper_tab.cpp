@@ -69,7 +69,6 @@ namespace
     // Top-level UI state that's shared between panels/widget that the UI manipulates.
     class ModelWarperV3UIState final : public std::enable_shared_from_this<ModelWarperV3UIState> {
     public:
-
         explicit ModelWarperV3UIState(Widget* parent) :
             parent_{parent}
         {}
@@ -78,169 +77,169 @@ namespace
         void on_tick()
         {
             try {
-                if (not m_DeferredActions.empty()) {
-                    for (auto& deferredAction : m_DeferredActions) {
-                        deferredAction(*this);
+                if (not deferred_actions_.empty()) {
+                    for (auto& deferred_action : deferred_actions_) {
+                        deferred_action(*this);
                     }
-                    m_DeferredActions.clear();
+                    deferred_actions_.clear();
 
-                    updateScaledModel();
+                    update_scaled_model();
                 }
-            }
-            catch (const std::exception& ex) {
+            } catch (const std::exception& ex) {
                 log_error("error processing deferred actions: {}", ex.what());
             }
         }
 
         // Returns a shared readonly pointer to the top-level model warping document.
-        std::shared_ptr<const ModelWarperV3Document> getDocumentPtr() const
+        std::shared_ptr<const ModelWarperV3Document> get_document_ptr() const
         {
-            return m_ScalingState->scratch().get_scaling_document_ptr();
+            return scaling_state_->scratch().get_scaling_document_ptr();
         }
 
-
-        bool hasScalingSteps() const
+        bool has_scaling_steps() const { return scaling_state_->scratch().has_scaling_steps(); }
+        auto iterate_scaling_steps() const
         {
-            return m_ScalingState->scratch().has_scaling_steps();
+            return scaling_state_->scratch().iterate_scaling_steps();
         }
-        auto iterateScalingSteps() const
+        void add_scaling_step_deferred(std::unique_ptr<ScalingStep> step)
         {
-            return m_ScalingState->scratch().iterate_scaling_steps();
-        }
-        void addScalingStepDeferred(std::unique_ptr<ScalingStep> step)
-        {
-            m_DeferredActions.emplace_back([s = std::shared_ptr<ScalingStep>{std::move(step)}](ModelWarperV3UIState& state) mutable
-            {
-                state.m_ScalingState->upd_scratch().add_scaling_step(std::unique_ptr<ScalingStep>{s->clone()});
-                state.m_ScalingState->commit_scratch("Add scaling step");
+            deferred_actions_.emplace_back([s = std::shared_ptr<ScalingStep>{std::move(step)}](
+                                               ModelWarperV3UIState& state) mutable {
+                state.scaling_state_->upd_scratch().add_scaling_step(
+                    std::unique_ptr<ScalingStep>{s->clone()});
+                state.scaling_state_->commit_scratch("Add scaling step");
             });
         }
-        void eraseScalingStepDeferred(const ScalingStep& step)
+        void erase_scaling_step_deferred(const ScalingStep& step)
         {
-            m_DeferredActions.emplace_back([path = step.getAbsolutePath()](ModelWarperV3UIState& state)
-            {
-                if (state.m_ScalingState->upd_scratch().erase_scaling_step(path)) {
-                    state.m_ScalingState->commit_scratch("Erase scaling step");
-                }
-            });
+            deferred_actions_.emplace_back(
+                [path = step.getAbsolutePath()](ModelWarperV3UIState& state) {
+                    if (state.scaling_state_->upd_scratch().erase_scaling_step(path)) {
+                        state.scaling_state_->commit_scratch("Erase scaling step");
+                    }
+                });
         }
-        std::vector<ScalingStepValidationMessage> validateStep(const ScalingStep& step)
+        std::vector<ScalingStepValidationMessage> validate_step(const ScalingStep& step)
         {
             return step.validate(
-                m_ScalingCache,
-                m_ScalingState->scratch().get_effective_scaling_parameters(),
-                m_ScalingState->scratch().get_source_model()
-            );
+                scaling_cache_,
+                scaling_state_->scratch().get_effective_scaling_parameters(),
+                scaling_state_->scratch().get_source_model());
         }
 
-
-        bool hasScalingParameters() const
+        bool has_scaling_parameters() const
         {
-            return m_ScalingState->scratch().has_scaling_parameter_declarations();
+            return scaling_state_->scratch().has_scaling_parameter_declarations();
         }
-        ScalingParameters getEffectiveScalingParameters() const
+        ScalingParameters get_effective_scaling_parameters() const
         {
-            return m_ScalingState->scratch().get_effective_scaling_parameters();
+            return scaling_state_->scratch().get_effective_scaling_parameters();
         }
-        void setScalingParameterValueDeferred(const std::string& scalingParamName, ScalingParameterValue newValue)
+        void set_scaling_parameter_value_deferred(
+            const std::string& scaling_param_name, ScalingParameterValue new_value)
         {
-            m_DeferredActions.emplace_back([scalingParamName, newValue](ModelWarperV3UIState& state)
-            {
-                if (state.m_ScalingState->upd_scratch().set_scaling_parameter_override(scalingParamName, newValue)) {
-                    state.m_ScalingState->commit_scratch("Set scaling parameter");
-                }
-            });
+            deferred_actions_.emplace_back(
+                [scaling_param_name, new_value](ModelWarperV3UIState& state) {
+                    if (state.scaling_state_->upd_scratch().set_scaling_parameter_override(
+                            scaling_param_name, new_value)) {
+                        state.scaling_state_->commit_scratch("Set scaling parameter");
+                    }
+                });
         }
 
-
-        std::shared_ptr<ModelStatePair> sourceModel()
+        std::shared_ptr<ModelStatePair> source_model()
         {
-            return m_ScalingState->upd_scratch().get_source_model_ptr();
+            return scaling_state_->upd_scratch().get_source_model_ptr();
         }
-
 
         // result model stuff (note: might not be available if there's validation issues)
         using ScaledModelOrValidationErrorsOrScalingErrors = std::variant<
             std::shared_ptr<ModelStatePair>,                // successfully scaled model
             std::vector<ScalingDocumentValidationMessage>,  // validation messages
-            std::string                                     // runtime scaling error message (i.e. after validation passed but during scaling)
-        >;
-        ScaledModelOrValidationErrorsOrScalingErrors scaledModelOrDocumentValidationMessages()
+            std::string>;                                   // runtime scaling error message
+        ScaledModelOrValidationErrorsOrScalingErrors scaled_model_or_document_validation_messages()
         {
-            if (m_ScalingErrorMessage) {
-                return m_ScalingErrorMessage.value();
-            }
-            else if (auto validationMessages = m_ScalingState->scratch().get_enabled_scaling_step_validation_messages(m_ScalingCache); not validationMessages.empty()) {
-                return validationMessages;
-            }
-            else {
-                return m_ScaledModel;
+            if (scaling_error_message_) {
+                return scaling_error_message_.value();
+            } else if (auto validation_messages =
+                           scaling_state_->scratch().get_enabled_scaling_step_validation_messages(
+                               scaling_cache_);
+                       not validation_messages.empty()) {
+                return validation_messages;
+            } else {
+                return scaled_model_;
             }
         }
 
-        bool canExportWarpedModel() const
-        {
-            return not m_ScalingErrorMessage.has_value();
-        }
+        bool can_export_warped_model() const { return not scaling_error_message_.has_value(); }
 
-        void exportWarpedModelToModelEditor()
+        void export_warped_model_to_model_editor()
         {
-            if (not canExportWarpedModel()) {
+            if (not can_export_warped_model()) {
                 return;  // can't warp
             }
 
-            auto scalingResult = scaledModelOrDocumentValidationMessages();
-            if (not std::holds_alternative<std::shared_ptr<ModelStatePair>>(scalingResult)) {
+            auto scaling_result = scaled_model_or_document_validation_messages();
+            if (not std::holds_alternative<std::shared_ptr<ModelStatePair>>(scaling_result)) {
                 log_error("cannot export scaled model: could not create a warped model");
                 return;
             }
 
-            const OpenSim::Model& sourceModel = m_ScalingState->scratch().get_source_model();
-            const auto modelFilesystemLocation = try_find_input_file(sourceModel);
-            if (not modelFilesystemLocation) {
-                log_error("cannot export scaled model: can't figure out where the source model is on-disk");
+            const OpenSim::Model& source_model = scaling_state_->scratch().get_source_model();
+            const auto model_filesystem_location = try_find_input_file(source_model);
+            if (not model_filesystem_location) {
+                log_error(
+                    "cannot export scaled model: can't figure out where the source model is on-disk");
                 return;
             }
 
-            std::shared_ptr<ModelStatePair> scaled = std::get<std::shared_ptr<ModelStatePair>>(scalingResult);
+            std::shared_ptr<ModelStatePair> scaled =
+                std::get<std::shared_ptr<ModelStatePair>>(scaling_result);
 
-            std::unique_ptr<OpenSim::Model> copy = std::make_unique<OpenSim::Model>(scaled->get_model());
+            std::unique_ptr<OpenSim::Model> copy =
+                std::make_unique<OpenSim::Model>(scaled->get_model());
             initialize_model(*copy);
             initialize_state(*copy);
             {
                 // TODO/FIXME/HACK: this code was thrown together to solve an immediate problem
                 // of being able to export warped models, but it isn't very clean or robust (#1003).
-                auto inMemoryMeshes = scaled->get_model().getComponentList<InMemoryMesh>();
-                if (inMemoryMeshes.begin() != inMemoryMeshes.end()) {
-                    const auto warpedGeometryDir = tryGetWarpedGeometryDirectory();
-                    if (not warpedGeometryDir) {
-                        log_error("cannot export scaled model: can't figure out where to save the warped meshes");
+                auto in_memory_meshes = scaled->get_model().getComponentList<InMemoryMesh>();
+                if (in_memory_meshes.begin() != in_memory_meshes.end()) {
+                    const auto warped_geometry_dir = try_get_warped_geometry_directory();
+                    if (not warped_geometry_dir) {
+                        log_error(
+                            "cannot export scaled model: can't figure out where to save the warped meshes");
                         return;
                     }
 
                     // If the warped geometry directory doesn't exist yet, create it.
-                    if (not std::filesystem::exists(*warpedGeometryDir)) {
-                        std::filesystem::create_directories(*warpedGeometryDir);
+                    if (not std::filesystem::exists(*warped_geometry_dir)) {
+                        std::filesystem::create_directories(*warped_geometry_dir);
                     }
 
                     // Export `InMemoryMesh`es to disk (#1003)
-                    for (const InMemoryMesh& mesh : inMemoryMeshes) {
+                    for (const InMemoryMesh& mesh : in_memory_meshes) {
                         // Figure out output file name.
-                        const auto& inputMesh = sourceModel.getComponent<OpenSim::Mesh>(mesh.getAbsolutePath());
-                        const auto warpedMeshAbsPath = std::filesystem::weakly_canonical(*warpedGeometryDir / std::filesystem::path{inputMesh.get_mesh_file()}.filename().replace_extension(".obj"));
+                        const auto& input_mesh =
+                            source_model.getComponent<OpenSim::Mesh>(mesh.getAbsolutePath());
+                        const auto warped_mesh_abs_path = std::filesystem::weakly_canonical(
+                            *warped_geometry_dir / std::filesystem::path{input_mesh.get_mesh_file()}
+                                                       .filename()
+                                                       .replace_extension(".obj"));
 
                         // Write warped mesh data to disk in an OBJ format.
                         {
-                            std::ofstream objStream{warpedMeshAbsPath, std::ios::trunc};
-                            objStream.exceptions(std::ios::badbit | std::ios::failbit);
-                            OBJ::write(objStream, mesh.osc_mesh(), OBJMetadata{"osc-model-warper"});
+                            std::ofstream obj_stream{warped_mesh_abs_path, std::ios::trunc};
+                            obj_stream.exceptions(std::ios::badbit | std::ios::failbit);
+                            OBJ::write(
+                                obj_stream, mesh.osc_mesh(), OBJMetadata{"osc-model-warper"});
                         }
 
                         // Overwrite the `InMemoryMesh` in `copy`
-                        auto& copyMesh = copy->updComponent<InMemoryMesh>(mesh.getAbsolutePath());
-                        auto newMesh = std::make_unique<OpenSim::Mesh>();
-                        newMesh->set_mesh_file(warpedMeshAbsPath.string());
-                        overwrite_geometry(*copy, copyMesh, std::move(newMesh));
+                        auto& copy_mesh = copy->updComponent<InMemoryMesh>(mesh.getAbsolutePath());
+                        auto new_mesh = std::make_unique<OpenSim::Mesh>();
+                        new_mesh->set_mesh_file(warped_mesh_abs_path.string());
+                        overwrite_geometry(*copy, copy_mesh, std::move(new_mesh));
                     }
                 }
             }
@@ -251,116 +250,110 @@ namespace
             copy->setInputFileName("");
 
             // Make the model undo-able
-            auto undoableModel = std::make_unique<UndoableModelStatePair>(std::move(copy));
+            auto undoable_model = std::make_unique<UndoableModelStatePair>(std::move(copy));
 
             // If the user requests it, bake the SDFs after finishing everything else
-            if (getBakeSDFs()) {
-                ActionBakeStationDefinedFrames(*undoableModel);
+            if (get_bake_sd_fs()) {
+                action_bake_station_defined_frames(*undoable_model);
             }
 
-            auto editor = std::make_unique<ModelEditorTab>(parent_, std::move(undoableModel));
+            auto editor = std::make_unique<ModelEditorTab>(parent_, std::move(undoable_model));
             App::post_event<OpenTabEvent>(*parent_, std::move(editor));
         }
 
         // camera stuff
-        bool isCameraControllerLinked() const { return m_LinkCameras; }
-        void setCameraControllerLinked(bool v) { m_LinkCameras = v; }
-        bool isOnlyCameraControllerRotationLinked() const { return m_OnlyLinkRotation; }
-        void setOnlyCameraControllerRotationLinked(bool v) { m_OnlyLinkRotation = v; }
+        bool is_camera_controller_linked() const { return link_cameras_; }
+        void set_camera_controller_linked(bool v) { link_cameras_ = v; }
+        bool is_only_camera_controller_rotation_linked() const { return only_link_rotation_; }
+        void set_only_camera_controller_rotation_linked(bool v) { only_link_rotation_ = v; }
 
-        bool updateLocalControllerIfLinked(OrbitCameraController& cameraController)
+        bool update_local_controller_if_linked(OrbitCameraController& camera_controller)
         {
-            if (not isCameraControllerLinked()) {
+            if (not is_camera_controller_linked()) {
                 return false;
             }
 
-            if (isOnlyCameraControllerRotationLinked()) {
-                cameraController.theta = m_CameraController.theta;
-                cameraController.phi = m_CameraController.phi;
-            }
-            else {
-                cameraController = m_CameraController;
+            if (is_only_camera_controller_rotation_linked()) {
+                camera_controller.theta = camera_controller_.theta;
+                camera_controller.phi = camera_controller_.phi;
+            } else {
+                camera_controller = camera_controller_;
             }
             return true;
         }
-        void updateSharedControllerIfLinked(const OrbitCameraController& downstreamController)
+        void update_shared_controller_if_linked(const OrbitCameraController& downstream_controller)
         {
-            if (not isCameraControllerLinked()) {
+            if (not is_camera_controller_linked()) {
                 return;
             }
-            if (isOnlyCameraControllerRotationLinked()) {
-                m_CameraController.phi = downstreamController.phi;
-                m_CameraController.theta = downstreamController.theta;
-            }
-            else {
-                m_CameraController = downstreamController;
+            if (is_only_camera_controller_rotation_linked()) {
+                camera_controller_.phi = downstream_controller.phi;
+                camera_controller_.theta = downstream_controller.theta;
+            } else {
+                camera_controller_ = downstream_controller;
             }
         }
 
         // undo/redo stuff
-        std::shared_ptr<UndoRedoBase> getUndoRedoPtr() { return m_ScalingState; }
-
+        std::shared_ptr<UndoRedoBase> get_undo_redo_ptr() { return scaling_state_; }
 
         // warped geometry dir stuff
-        std::optional<std::filesystem::path> tryGetWarpedGeometryDirectory() const
+        std::optional<std::filesystem::path> try_get_warped_geometry_directory() const
         {
-            if (m_MaybeCustomWarpedGeometryDirectory) {
-                return m_MaybeCustomWarpedGeometryDirectory;  // top-prio is user-enacted choice (#1046).
+            if (maybe_custom_warped_geometry_directory_) {
+                return maybe_custom_warped_geometry_directory_;  // prio for user choice (#1046).
             }
 
-            const OpenSim::Model& sourceModel = m_ScalingState->scratch().get_source_model();
-            const auto modelFilesystemLocation = try_find_input_file(sourceModel);
-            if (modelFilesystemLocation) {
-                return modelFilesystemLocation->parent_path() / "WarpedGeometry";
+            const OpenSim::Model& source_model = scaling_state_->scratch().get_source_model();
+            const auto model_filesystem_location = try_find_input_file(source_model);
+            if (model_filesystem_location) {
+                return model_filesystem_location->parent_path() / "WarpedGeometry";
             }
 
             return std::nullopt;  // can't figure out where to save it :(
         }
 
         // SDF baking stuff
-        bool getBakeSDFs() const { return m_BakeStationDefinedFrames; }
-        void setBakeSDFs(bool v) { m_BakeStationDefinedFrames = v; }
+        bool get_bake_sd_fs() const { return bake_station_defined_frames_; }
+        void set_bake_sd_fs(bool v) { bake_station_defined_frames_ = v; }
 
         // actions
-        void actionCreateNewSourceModel()
+        void action_create_new_source_model()
         {
-            m_ScalingState->upd_scratch().reset_source_model();
-            updateScaledModel();
-            m_ScalingState->commit_scratch("Create new source model");
+            scaling_state_->upd_scratch().reset_source_model();
+            update_scaled_model();
+            scaling_state_->commit_scratch("Create new source model");
         }
 
-        void actionOpenOsimOrPromptUser(std::optional<std::filesystem::path> path)
+        void action_open_osim_or_prompt_user(std::optional<std::filesystem::path> path)
         {
             if (path) {
-                actionOpenOsim(*path);
-            }
-            else {
+                action_open_osim(*path);
+            } else {
                 if (not shared_from_this()) {
-                    log_critical("can't open osim file selection dialog because the UI state isn't shared");
+                    log_critical(
+                        "can't open osim file selection dialog because the UI state isn't shared");
                     return;
                 }
 
                 App::upd().prompt_user_to_select_file_async(
-                    [state = shared_from_this()](const FileDialogResponse& response)
-                    {
+                    [state = shared_from_this()](const FileDialogResponse& response) {
                         if (not state) {
                             return;  // Something bad has happened.
                         }
                         if (response.size() != 1) {
                             return;  // Error, cancellation, or the user somehow selected >1 file.
                         }
-                        state->actionOpenOsim(response.front());
+                        state->action_open_osim(response.front());
                     },
-                    get_model_file_filters()
-                );
+                    get_model_file_filters());
             }
         }
 
-        void actionPromptUserToSelectWarpedGeometryDirectory()
+        void action_prompt_user_to_select_warped_geometry_directory()
         {
             App::upd().prompt_user_to_select_directory_async(
-                [state = shared_from_this()](const FileDialogResponse& response)
-                {
+                [state = shared_from_this()](const FileDialogResponse& response) {
                     if (not state) {
                         return;  // Can't continue.
                     }
@@ -368,36 +361,35 @@ namespace
                         return;  // Error, cancellation, or the user somehow selected >1 file.
                     }
 
-                    state->m_MaybeCustomWarpedGeometryDirectory = response.front();
-                }
-            );
+                    state->maybe_custom_warped_geometry_directory_ = response.front();
+                });
         }
 
-        void actionOpenOsim(const std::filesystem::path& path)
+        void action_open_osim(const std::filesystem::path& path)
         {
             App::singleton<RecentFiles>()->push_back(path);
-            m_ScalingState->upd_scratch().load_source_model_from_osim(path);
-            updateScaledModel();
-            m_ScalingState->commit_scratch("Loaded osim file");
+            scaling_state_->upd_scratch().load_source_model_from_osim(path);
+            update_scaled_model();
+            scaling_state_->commit_scratch("Loaded osim file");
         }
 
-        void actionCreateNewScalingDocument()
+        void action_create_new_scaling_document()
         {
-            m_ScalingState->upd_scratch().reset_scaling_document();
-            updateScaledModel();
-            m_ScalingState->commit_scratch("Create new scaling document");
+            scaling_state_->upd_scratch().reset_scaling_document();
+            update_scaled_model();
+            scaling_state_->commit_scratch("Create new scaling document");
         }
 
-        void actionOpenScalingDocument()
+        void action_open_scaling_document()
         {
             if (not shared_from_this()) {
-                log_critical("cannot open a file selection dialog because the UI state isn't reference-counted");
+                log_critical(
+                    "cannot open a file selection dialog because the UI state isn't reference-counted");
                 return;
             }
 
             App::upd().prompt_user_to_select_file_async(
-                [state = shared_from_this()](const FileDialogResponse& response)
-                {
+                [state = shared_from_this()](const FileDialogResponse& response) {
                     if (not state) {
                         return;  // Can't continue.
                     }
@@ -405,99 +397,93 @@ namespace
                         return;  // Error, cancellation, or the user somehow selected >1 file.
                     }
 
-                    state->m_ScalingState->upd_scratch().load_scaling_document(response.front());
-                    state->updateScaledModel();
-                    state->m_ScalingState->commit_scratch("Loaded scaling document");
+                    state->scaling_state_->upd_scratch().load_scaling_document(response.front());
+                    state->update_scaled_model();
+                    state->scaling_state_->commit_scratch("Loaded scaling document");
                 },
-                get_open_sim_xml_file_filters()
-            );
+                get_open_sim_xml_file_filters());
         }
 
-        void actionSaveScalingDocument()
+        void action_save_scaling_document()
         {
-            if (const auto existingPath = m_ScalingState->scratch().scaling_document_filesystem_location()) {
-                m_ScalingState->upd_scratch().get_scaling_document_ptr()->save_to(*existingPath);
+            if (const auto existing_path =
+                    scaling_state_->scratch().scaling_document_filesystem_location()) {
+                scaling_state_->upd_scratch().get_scaling_document_ptr()->save_to(*existing_path);
                 return;  // Document saved to existing filesystem location.
             }
 
             // Else: prompt the user to save it
-            App::upd().prompt_user_to_save_file_with_extension_async([doc = m_ScalingState->upd_scratch().get_scaling_document_ptr()](std::optional<std::filesystem::path> p)
-            {
-                if (not p) {
-                    return;  // user cancelled out of the prompt
-                }
-                doc->save_to(*p);
-            }, "xml");
+            App::upd().prompt_user_to_save_file_with_extension_async(
+                [doc = scaling_state_->upd_scratch().get_scaling_document_ptr()](
+                    std::optional<std::filesystem::path> p) {
+                    if (not p) {
+                        return;  // user cancelled out of the prompt
+                    }
+                    doc->save_to(*p);
+                },
+                "xml");
         }
 
-        void actionApplyObjectEditToScalingDocument(const ObjectPropertyEdit& edit)
+        void action_apply_object_edit_to_scaling_document(const ObjectPropertyEdit& edit)
         {
-            m_ScalingState->upd_scratch().apply_scaling_object_property_edit(edit);
-            updateScaledModel();
-            m_ScalingState->commit_scratch("change scaling property");
+            scaling_state_->upd_scratch().apply_scaling_object_property_edit(edit);
+            update_scaled_model();
+            scaling_state_->commit_scratch("change scaling property");
         }
 
-        void actionDisableScalingStep(const OpenSim::ComponentPath& path)
+        void action_disable_scaling_step(const OpenSim::ComponentPath& path)
         {
-            m_ScalingState->upd_scratch().disable_scaling_step(path);
-            updateScaledModel();
-            m_ScalingState->commit_scratch("disable scaling step");
+            scaling_state_->upd_scratch().disable_scaling_step(path);
+            update_scaled_model();
+            scaling_state_->commit_scratch("disable scaling step");
         }
 
-        void actionRollback()
+        void action_rollback() { scaling_state_->rollback(); }
+
+        void action_retry_scaling_deferred()
         {
-            m_ScalingState->rollback();
+            deferred_actions_.emplace_back(
+                [](ModelWarperV3UIState& state) mutable { state.update_scaled_model(); });
         }
 
-        void actionRetryScalingDeferred()
-        {
-            m_DeferredActions.emplace_back([](ModelWarperV3UIState& state) mutable
-            {
-                state.updateScaledModel();
-            });
-        }
+        bool can_undo() const { return scaling_state_->can_undo(); }
+        void action_undo() { scaling_state_->undo(); }
 
-        bool canUndo() const
-        {
-            return m_ScalingState->can_undo();
-        }
-        void actionUndo()
-        {
-            m_ScalingState->undo();
-        }
     private:
-        void updateScaledModel()
+        void update_scaled_model()
         {
             try {
-                m_ScalingCache.clear();  // Prevents over-caching
-                auto scaledModel = m_ScalingState->scratch().try_generate_scaled_model(m_ScalingCache);
-                if (not scaledModel) {
+                scaling_cache_.clear();  // Prevents over-caching
+                auto scaled_model =
+                    scaling_state_->scratch().try_generate_scaled_model(scaling_cache_);
+                if (not scaled_model) {
                     return;
                 }
 
-                m_ScaledModel = std::move(scaledModel);
-                m_ScalingErrorMessage.reset();
-            }
-            catch (const std::exception& ex) {
-                m_ScalingErrorMessage = ex.what();
+                scaled_model_ = std::move(scaled_model);
+                scaling_error_message_.reset();
+            } catch (const std::exception& ex) {
+                scaling_error_message_ = ex.what();
             }
         }
 
         Widget* parent_ = nullptr;
 
-        std::shared_ptr<UndoRedo<ScalingState>> m_ScalingState = std::make_shared<UndoRedo<ScalingState>>();
+        std::shared_ptr<UndoRedo<ScalingState>> scaling_state_ =
+            std::make_shared<UndoRedo<ScalingState>>();
 
-        ScalingCache m_ScalingCache;
-        std::shared_ptr<BasicModelStatePair> m_ScaledModel = std::make_shared<BasicModelStatePair>();
-        std::optional<std::string> m_ScalingErrorMessage;
+        ScalingCache scaling_cache_;
+        std::shared_ptr<BasicModelStatePair> scaled_model_ =
+            std::make_shared<BasicModelStatePair>();
+        std::optional<std::string> scaling_error_message_;
 
-        std::vector<std::function<void(ModelWarperV3UIState&)>> m_DeferredActions;
-        bool m_LinkCameras = true;
-        bool m_OnlyLinkRotation = false;
-        OrbitCameraController m_CameraController;
+        std::vector<std::function<void(ModelWarperV3UIState&)>> deferred_actions_;
+        bool link_cameras_ = true;
+        bool only_link_rotation_ = false;
+        OrbitCameraController camera_controller_;
 
-        std::optional<std::filesystem::path> m_MaybeCustomWarpedGeometryDirectory;
-        bool m_BakeStationDefinedFrames = false;
+        std::optional<std::filesystem::path> maybe_custom_warped_geometry_directory_;
+        bool bake_station_defined_frames_ = false;
     };
 }
 
@@ -507,8 +493,8 @@ namespace
     {
         switch (message.get_state()) {
         case ScalingStepValidationState::Warning: return Color::orange();
-        case ScalingStepValidationState::Error:   return Color::muted_red();
-        default:                                  return Color::muted_red();
+        case ScalingStepValidationState::Error: [[fallthrough]];
+        default: return Color::muted_red();
         }
     }
 
@@ -516,80 +502,95 @@ namespace
     class ModelWarperV3SourceModelViewerPanel final : public ModelViewerPanel {
     public:
         explicit ModelWarperV3SourceModelViewerPanel(
-            Widget* parent,
-            std::string_view label,
-            std::shared_ptr<ModelWarperV3UIState> state) :
+            Widget* parent, std::string_view label, std::shared_ptr<ModelWarperV3UIState> state) :
 
-            ModelViewerPanel{parent, label, ModelViewerPanelParameters{state->sourceModel()}, ModelViewerPanelFlag::NoHittest},
-            m_State{std::move(state)}
+            ModelViewerPanel{
+                parent,
+                label,
+                ModelViewerPanelParameters{state->source_model()},
+                ModelViewerPanelFlag::NoHittest},
+            state_{std::move(state)}
         {}
 
     private:
-        void impl_draw_content() final
+        void impl_draw_content() override
         {
             // if linked, read linked camera controller into local camera
-            if (m_State->updateLocalControllerIfLinked(updOrbitCameraController())) {
-                getOrbitCameraController().update_camera(updCamera());
+            if (state_->update_local_controller_if_linked(upd_orbit_camera_controller())) {
+                get_orbit_camera_controller().update_camera(upd_camera());
             }
 
-            setModelState(m_State->sourceModel());
+            set_model_state(state_->source_model());
             ModelViewerPanel::impl_draw_content();
 
             // if linked, local controller may have been updated, push update to linked controller
-            m_State->updateSharedControllerIfLinked(getOrbitCameraController());
+            state_->update_shared_controller_if_linked(get_orbit_camera_controller());
         }
 
-        std::shared_ptr<ModelWarperV3UIState> m_State;
+        std::shared_ptr<ModelWarperV3UIState> state_;
     };
 
     // result model 3D viewer
     class ModelWarperV3ResultModelViewerPanel final : public ModelViewerPanel {
     public:
         ModelWarperV3ResultModelViewerPanel(
-            Widget* parent,
-            std::string_view label,
-            std::shared_ptr<ModelWarperV3UIState> state) :
+            Widget* parent, std::string_view label, std::shared_ptr<ModelWarperV3UIState> state) :
 
-            ModelViewerPanel{parent, label, ModelViewerPanelParameters{state->sourceModel()}, ModelViewerPanelFlag::NoHittest},
-            m_State{std::move(state)}
+            ModelViewerPanel{
+                parent,
+                label,
+                ModelViewerPanelParameters{state->source_model()},
+                ModelViewerPanelFlag::NoHittest},
+            state_{std::move(state)}
         {}
 
     private:
-        void impl_draw_content() final
+        void impl_draw_content() override
         {
-            std::visit(Overload{
-                [this](const std::shared_ptr<ModelStatePair>& scaledModel) { draw_scaled_model_visualization(scaledModel); },
-                [this](const std::vector<ScalingDocumentValidationMessage>& messages) { draw_validation_error_message(messages); },
-                [this](const std::string& scalingErrorMessage) { draw_scaling_error_message(scalingErrorMessage); },
-            }, m_State->scaledModelOrDocumentValidationMessages());
+            std::visit(
+                Overload{
+                    [this](const std::shared_ptr<ModelStatePair>& scaled_model) {
+                        draw_scaled_model_visualization(scaled_model);
+                    },
+                    [this](const std::vector<ScalingDocumentValidationMessage>& messages) {
+                        draw_validation_error_message(messages);
+                    },
+                    [this](const std::string& scaling_error_message) {
+                        draw_scaling_error_message(scaling_error_message);
+                    },
+                },
+                state_->scaled_model_or_document_validation_messages());
         }
 
-        void draw_scaled_model_visualization(const std::shared_ptr<ModelStatePair>& scaledModel)
+        void draw_scaled_model_visualization(const std::shared_ptr<ModelStatePair>& scaled_model)
         {
             // if linked, read linked camera controller into local camera
-            if (m_State->updateLocalControllerIfLinked(updOrbitCameraController())) {
-                getOrbitCameraController().update_camera(updCamera());
+            if (state_->update_local_controller_if_linked(upd_orbit_camera_controller())) {
+                get_orbit_camera_controller().update_camera(upd_camera());
             }
 
-            setModelState(scaledModel);
+            set_model_state(scaled_model);
             ModelViewerPanel::impl_draw_content();
 
             // if linked, local controller may have been updated, push update to linked controller
-            m_State->updateSharedControllerIfLinked(getOrbitCameraController());
+            state_->update_shared_controller_if_linked(get_orbit_camera_controller());
         }
 
-        void draw_validation_error_message(std::span<const ScalingDocumentValidationMessage> messages)
+        void draw_validation_error_message(
+            std::span<const ScalingDocumentValidationMessage> messages)
         {
-            const float contentHeight = static_cast<float>(messages.size() + 2) * ui::get_text_line_height_in_current_panel();
-            const float regionHeight = ui::get_content_region_available().y();
-            const float top = 0.5f * (regionHeight - contentHeight);
+            const float content_height = static_cast<float>(messages.size() + 2) *
+                                         ui::get_text_line_height_in_current_panel();
+            const float region_height = ui::get_content_region_available().y();
+            const float top = 0.5f * (region_height - content_height);
 
             ui::set_cursor_panel_position({0.0f, top});
 
             // header line
             {
                 std::stringstream ss;
-                ss << "Cannot show model: " << messages.size() << " validation error" << (messages.size() > 1 ? "s" : "") << " detected:";
+                ss << "Cannot show model: " << messages.size() << " validation error"
+                   << (messages.size() > 1 ? "s" : "") << " detected:";
                 ui::draw_text_centered(std::move(ss).str());
             }
 
@@ -600,13 +601,14 @@ namespace
 
                 ui::push_style_color(ui::ColorVar::Text, ui_color(message.payload));
                 std::stringstream ss;
-                ss << message.source_scaling_step_abs_path.getComponentName() << ": " << message.payload.get_message();
+                ss << message.source_scaling_step_abs_path.getComponentName() << ": "
+                   << message.payload.get_message();
                 ui::draw_text_bullet_pointed(std::move(ss).str());
                 ui::pop_style_color();
 
                 ui::same_line();
                 if (ui::draw_small_button("Disable Scaling Step")) {
-                    m_State->actionDisableScalingStep(message.source_scaling_step_abs_path);
+                    state_->action_disable_scaling_step(message.source_scaling_step_abs_path);
                 }
 
                 ui::pop_id();
@@ -616,19 +618,19 @@ namespace
         void draw_scaling_error_message(CStringView message)
         {
             const float h = ui::get_content_region_available().y();
-            const float lineHeight = ui::get_text_line_height_in_current_panel();
-            constexpr float numLines = 3.0f;
-            const float top = 0.5f * (h - numLines*lineHeight);
+            const float line_height = ui::get_text_line_height_in_current_panel();
+            constexpr float num_lines = 3.0f;
+            const float top = 0.5f * (h - num_lines * line_height);
 
             ui::set_cursor_panel_position({0.0f, top});
             ui::draw_text_centered("An error occured while trying to scale the model:");
             ui::draw_text_centered(message);
             if (ui::draw_button_centered(MSMICONS_RECYCLE " Retry Scaling")) {
-                m_State->actionRetryScalingDeferred();
+                state_->action_retry_scaling_deferred();
             }
         }
 
-        std::shared_ptr<ModelWarperV3UIState> m_State;
+        std::shared_ptr<ModelWarperV3UIState> state_;
     };
 
     class WarpedModelExporterPopup final : public Popup {
@@ -638,28 +640,24 @@ namespace
         {}
 
     private:
-        void impl_draw_content() final
-        {
-            ui::draw_text("hello, popup content!");
-        }
+        void impl_draw_content() override { ui::draw_text("hello, popup content!"); }
     };
 
     // main toolbar
     class ModelWarperV3Toolbar final : public Widget {
     public:
         explicit ModelWarperV3Toolbar(
-            Widget* parent,
-            std::string_view label,
-            std::shared_ptr<ModelWarperV3UIState> state) :
+            Widget* parent, std::string_view label, std::shared_ptr<ModelWarperV3UIState> state) :
             Widget{parent},
-            m_State{std::move(state)}
+            state_{std::move(state)}
         {
             set_name(label);
         }
+
     private:
-        void impl_on_draw() final
+        void impl_on_draw() override
         {
-            if (BeginToolbar(name())) {
+            if (begin_toolbar(name())) {
                 draw_content();
             }
             ui::end_panel();
@@ -675,45 +673,42 @@ namespace
             ui::draw_text("Source Model: ");
             ui::same_line();
             if (ui::draw_button(MSMICONS_FILE)) {
-                m_State->actionCreateNewSourceModel();
+                state_->action_create_new_source_model();
             }
             ui::same_line();
-            DrawOpenModelButtonWithRecentFilesDropdown([this](auto maybeSelection)
-            {
-                m_State->actionOpenOsimOrPromptUser(std::move(maybeSelection));
+            draw_open_model_button_with_recent_files_dropdown([this](auto maybe_selection) {
+                state_->action_open_osim_or_prompt_user(std::move(maybe_selection));
             });
             ui::same_line();
             ui::draw_vertical_separator();
             ui::pop_id();
-
 
             ui::push_id(id++);
             ui::same_line();
             ui::draw_text("Scaling Document: ");
             ui::same_line();
             if (ui::draw_button(MSMICONS_FILE)) {
-                m_State->actionCreateNewScalingDocument();
+                state_->action_create_new_scaling_document();
             }
             ui::same_line();
             if (ui::draw_button(MSMICONS_FOLDER_OPEN)) {
-                m_State->actionOpenScalingDocument();
+                state_->action_open_scaling_document();
             }
             ui::same_line();
             if (ui::draw_button(MSMICONS_SAVE)) {
-                m_State->actionSaveScalingDocument();
+                state_->action_save_scaling_document();
             }
             ui::same_line();
             ui::draw_vertical_separator();
             ui::pop_id();
 
-
             ui::push_id(id++);
             ui::same_line();
-            m_UndoButton.on_draw();
+            undo_button_.on_draw();
             ui::pop_id();
             ui::push_id(id++);
             ui::same_line();
-            m_RedoButton.on_draw();
+            redo_button_.on_draw();
             ui::same_line();
             ui::draw_vertical_separator();
             ui::pop_id();
@@ -723,14 +718,14 @@ namespace
                 ui::push_id(id++);
                 ui::same_line();
                 bool disabled = false;
-                if (not m_State->canExportWarpedModel()) {
+                if (not state_->can_export_warped_model()) {
                     ui::begin_disabled();
                     disabled = true;
                 }
 
                 ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
                 if (ui::draw_button(MSMICONS_PLAY " Export Warped Model")) {
-                    m_State->exportWarpedModelToModelEditor();
+                    state_->export_warped_model_to_model_editor();
                 }
                 ui::add_screenshot_annotation_to_last_drawn_item("Export Warped Model Button");
                 ui::pop_style_color();
@@ -739,28 +734,25 @@ namespace
                     ui::open_popup("##WarpedModelExportModifiers");
                 }
 
-
                 if (ui::begin_popup("##WarpedModelExportModifiers")) {
 
                     // UI for warped geometry directory toggle
-                    const auto geomDir = m_State->tryGetWarpedGeometryDirectory();
-                    if (geomDir) {
-                        ui::draw_text("Warped Geometry Directory: {}", geomDir->string());
-                    }
-                    else {
+                    const auto geom_dir = state_->try_get_warped_geometry_directory();
+                    if (geom_dir) {
+                        ui::draw_text("Warped Geometry Directory: {}", geom_dir->string());
+                    } else {
                         ui::draw_text("Warped Geometry Directory: UNKNOWN");
                     }
                     ui::same_line();
                     if (ui::draw_small_button("change")) {
-                        m_State->actionPromptUserToSelectWarpedGeometryDirectory();
+                        state_->action_prompt_user_to_select_warped_geometry_directory();
                     }
-
 
                     // UI for baking `StationDefinedFrame`s during warping
                     {
-                        bool bakeSDFs = m_State->getBakeSDFs();
-                        if (ui::draw_checkbox("Bake StationDefinedFrames", &bakeSDFs)) {
-                            m_State->setBakeSDFs(bakeSDFs);
+                        bool bake_sd_fs = state_->get_bake_sd_fs();
+                        if (ui::draw_checkbox("Bake StationDefinedFrames", &bake_sd_fs)) {
+                            state_->set_bake_sd_fs(bake_sd_fs);
                         }
                     }
 
@@ -776,20 +768,24 @@ namespace
 
             ui::push_id(id++);
             ui::same_line();
-            if (bool v = m_State->isCameraControllerLinked(); ui::draw_checkbox("link cameras", &v)) {
-                m_State->setCameraControllerLinked(v);
+            if (bool v = state_->is_camera_controller_linked();
+                ui::draw_checkbox("link cameras", &v)) {
+
+                state_->set_camera_controller_linked(v);
             }
 
             ui::same_line();
-            if (bool v = m_State->isOnlyCameraControllerRotationLinked(); ui::draw_checkbox("only link rotation", &v)) {
-                m_State->setOnlyCameraControllerRotationLinked(v);
+            if (bool v = state_->is_only_camera_controller_rotation_linked();
+                ui::draw_checkbox("only link rotation", &v)) {
+
+                state_->set_only_camera_controller_rotation_linked(v);
             }
             ui::pop_id();
         }
 
-        std::shared_ptr<ModelWarperV3UIState> m_State;
-        UndoButton m_UndoButton{this, m_State->getUndoRedoPtr(), MSMICONS_UNDO};
-        RedoButton m_RedoButton{this, m_State->getUndoRedoPtr(), MSMICONS_REDO};
+        std::shared_ptr<ModelWarperV3UIState> state_;
+        UndoButton undo_button_{this, state_->get_undo_redo_ptr(), MSMICONS_UNDO};
+        RedoButton redo_button_{this, state_->get_undo_redo_ptr(), MSMICONS_REDO};
     };
 
     // control panel (design, set parameters, etc.)
@@ -797,15 +793,15 @@ namespace
     public:
         explicit ModelWarperV3ControlPanel(
             Widget* parent,
-            std::string_view panelName,
+            std::string_view panel_name,
             std::shared_ptr<ModelWarperV3UIState> state) :
 
-            Panel{parent, panelName},
-            m_State{std::move(state)}
+            Panel{parent, panel_name},
+            state_{std::move(state)}
         {}
 
     private:
-        void impl_draw_content() final
+        void impl_draw_content() override
         {
             draw_scaling_parameters();
             ui::draw_vertical_spacer(0.75f);
@@ -817,32 +813,32 @@ namespace
             ui::draw_text_centered("Scaling Parameters");
             ui::draw_separator();
             ui::draw_vertical_spacer(0.5f);
-            if (m_State->hasScalingParameters()) {
+            if (state_->has_scaling_parameters()) {
                 if (ui::begin_table("##ScalingParameters", 2)) {
                     ui::table_setup_column("Name");
                     ui::table_setup_column("Value");
                     ui::table_headers_row();
 
                     int id = 0;
-                    for (const auto& [name, value] : m_State->getEffectiveScalingParameters()) {
+                    for (const auto& [name, value] : state_->get_effective_scaling_parameters()) {
                         ui::push_id(id++);
                         ui::table_next_row();
                         ui::table_set_column_index(0);
                         ui::draw_text(name);
                         ui::table_set_column_index(1);
-                        auto valueCopy{value};
-                        ui::draw_double_input("##valueeditor", &valueCopy, 0.0, 0.0, "%.6f");
+                        auto value_copy{value};
+                        ui::draw_double_input("##valueeditor", &value_copy, 0.0, 0.0, "%.6f");
                         if (ui::is_item_deactivated_after_edit()) {
-                            m_State->setScalingParameterValueDeferred(name, valueCopy);
+                            state_->set_scaling_parameter_value_deferred(name, value_copy);
                         }
                         ui::pop_id();
                     }
                     ui::end_table();
                 }
-            }
-            else {
+            } else {
                 ui::draw_text_disabled_and_centered("No Scaling Parameters.");
-                ui::draw_text_disabled_and_centered("(scaling parameters are normally implicitly added by scaling steps)");
+                ui::draw_text_disabled_and_centered(
+                    "(scaling parameters are normally implicitly added by scaling steps)");
             }
         }
 
@@ -852,16 +848,15 @@ namespace
             ui::draw_separator();
             ui::draw_vertical_spacer(0.5f);
 
-            if (m_State->hasScalingSteps()) {
+            if (state_->has_scaling_steps()) {
                 size_t i = 0;
-                for (const ScalingStep& step : m_State->iterateScalingSteps()) {
+                for (const ScalingStep& step : state_->iterate_scaling_steps()) {
                     ui::push_id(step.getAbsolutePathString());
                     draw_scaling_step(i, step);
                     ui::pop_id();
                     ++i;
                 }
-            }
-            else {
+            } else {
                 ui::draw_text_disabled_and_centered("No scaling steps.");
                 ui::draw_text_disabled_and_centered("(the model will be left unmodified)");
             }
@@ -870,13 +865,14 @@ namespace
             draw_add_scaling_step_context_button();
         }
 
-        void draw_scaling_step(size_t stepIndex, const ScalingStep& step)
+        void draw_scaling_step(size_t step_index, const ScalingStep& step)
         {
             // draw collapsing header, don't render content if it's collapsed
             {
                 std::stringstream header;
-                header << '#' << stepIndex + 1 << ": " << step.label();
-                if (not ui::draw_collapsing_header(std::move(header).str(), ui::TreeNodeFlag::DefaultOpen)) {
+                header << '#' << step_index + 1 << ": " << step.label();
+                if (not ui::draw_collapsing_header(
+                        std::move(header).str(), ui::TreeNodeFlag::DefaultOpen)) {
                     return;  // header is collapsed
                 }
             }
@@ -886,33 +882,33 @@ namespace
 
             // draw deletion button
             {
-                constexpr auto deletionButtonIcon = MSMICONS_TRASH;
+                constexpr auto deletion_button_icon = MSMICONS_TRASH;
 
                 ui::same_line();
 
-                const Vector2 oldCursorPos = ui::get_cursor_panel_position();
-                const float endX = oldCursorPos.x() + ui::get_content_region_available().x();
+                const Vector2 old_cursor_pos = ui::get_cursor_panel_position();
+                const float end_x = old_cursor_pos.x() + ui::get_content_region_available().x();
 
-                const Vector2 newCursorPos = {endX - ui::calc_button_size(deletionButtonIcon).x(), oldCursorPos.y()};
-                ui::set_cursor_panel_position(newCursorPos);
-                if (ui::draw_small_button(deletionButtonIcon)) {
-                    m_State->eraseScalingStepDeferred(step);
+                const Vector2 new_cursor_pos = {
+                    end_x - ui::calc_button_size(deletion_button_icon).x(), old_cursor_pos.y()};
+                ui::set_cursor_panel_position(new_cursor_pos);
+                if (ui::draw_small_button(deletion_button_icon)) {
+                    state_->erase_scaling_step_deferred(step);
                 }
             }
 
             // draw validation messages
             {
-                const auto messages = m_State->validateStep(step);
+                const auto messages = state_->validate_step(step);
                 if (not messages.empty()) {
                     ui::draw_vertical_spacer(0.2f);
                     ui::indent();
                     for (const ScalingStepValidationMessage& message : messages) {
                         ui::push_style_color(ui::ColorVar::Text, ui_color(message));
                         ui::draw_bullet_point();
-                        if (const auto propName = message.try_get_property_name()) {
-                            ui::draw_text("{}: {}", *propName, message.get_message());
-                        }
-                        else {
+                        if (const auto prop_name = message.try_get_property_name()) {
+                            ui::draw_text("{}: {}", *prop_name, message.get_message());
+                        } else {
                             ui::draw_text(message.get_message());
                         }
                         ui::pop_style_color();
@@ -923,45 +919,49 @@ namespace
             }
 
             // draw property editors
-            ui::indent(1.0f*ui::get_text_line_height_in_current_panel());
+            ui::indent(1.0f * ui::get_text_line_height_in_current_panel());
             {
                 const auto path = step.getAbsolutePathString();
-                const auto docPtr = m_State->getDocumentPtr();
-                const auto [it, inserted] = m_StepPropertyEditors.try_emplace(
-                    path,
-                    this,
-                    docPtr,
-                    [docPtr, path] { return find_component(*docPtr, path); }
-                );
+                const auto doc_ptr = state_->get_document_ptr();
+                const auto [it, inserted] =
+                    step_property_editors_.try_emplace(path, this, doc_ptr, [doc_ptr, path] {
+                        return find_component(*doc_ptr, path);
+                    });
                 if (inserted) {
-                    it->second.insertInBlacklist("components");
+                    it->second.insert_in_blacklist("components");
                 }
-                if (auto objectEdit = it->second.onDraw()) {
-                    m_State->actionApplyObjectEditToScalingDocument(std::move(objectEdit).value());
+                if (auto object_edit = it->second.on_draw()) {
+                    state_->action_apply_object_edit_to_scaling_document(
+                        std::move(object_edit).value());
                 }
             }
-            ui::unindent(1.0f*ui::get_text_line_height_in_current_panel());
+            ui::unindent(1.0f * ui::get_text_line_height_in_current_panel());
             ui::draw_vertical_spacer(0.5f);
         }
 
         void draw_add_scaling_step_context_button()
         {
-            ui::draw_button(MSMICONS_PLUS "Add Scaling Step", {ui::get_content_region_available().x(), ui::calc_button_size("").y()});
-            if (ui::begin_popup_context_menu("##AddScalingStepPopupMenu", ui::PopupFlag::MouseButtonLeft)) {
+            ui::draw_button(
+                MSMICONS_PLUS "Add Scaling Step",
+                {ui::get_content_region_available().x(), ui::calc_button_size("").y()});
+            if (ui::begin_popup_context_menu(
+                    "##AddScalingStepPopupMenu", ui::PopupFlag::MouseButtonLeft)) {
                 for (const auto& ptr : get_scaling_step_prototypes()) {
                     ui::push_id(ptr.get());
                     if (ui::draw_selectable(ptr->label())) {
-                        m_State->addScalingStepDeferred(std::unique_ptr<ScalingStep>{ptr->clone()});
+                        state_->add_scaling_step_deferred(
+                            std::unique_ptr<ScalingStep>{ptr->clone()});
                     }
-                    ui::draw_tooltip_if_item_hovered(ptr->label(), ptr->getDescription(), ui::HoveredFlag::DelayNormal);
+                    ui::draw_tooltip_if_item_hovered(
+                        ptr->label(), ptr->getDescription(), ui::HoveredFlag::DelayNormal);
                     ui::pop_id();
                 }
                 ui::end_popup();
             }
         }
 
-        std::shared_ptr<ModelWarperV3UIState> m_State;
-        std::unordered_map<std::string, ObjectPropertiesEditor> m_StepPropertyEditors;
+        std::shared_ptr<ModelWarperV3UIState> state_;
+        std::unordered_map<std::string, ObjectPropertiesEditor> step_property_editors_;
     };
 }
 
@@ -972,106 +972,120 @@ public:
     explicit Impl(Tab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
     {
-        m_PanelManager->register_toggleable_panel("Control Panel", [state = m_State](Widget* parent, std::string_view panelName)
-        {
-            return std::make_shared<ModelWarperV3ControlPanel>(parent, panelName, state);
-        });
-        m_PanelManager->register_toggleable_panel("Source Model", [state = m_State](Widget* parent, std::string_view panelName)
-        {
-            return std::make_shared<ModelWarperV3SourceModelViewerPanel>(parent, panelName, state);
-        });
-        m_PanelManager->register_toggleable_panel("Result Model", [state = m_State](Widget* parent, std::string_view panelName)
-        {
-            return std::make_shared<ModelWarperV3ResultModelViewerPanel>(parent, panelName, state);
-        });
-        m_PanelManager->register_toggleable_panel("Log", [](Widget* parent, std::string_view panelName)
-        {
-            return std::make_shared<LogViewerPanel>(parent, panelName);
-        });
-        m_PanelManager->register_toggleable_panel("Performance", [](Widget* parent, std::string_view panelName)
-        {
-            return std::make_shared<PerfPanel>(parent, panelName);
-        });
+        panel_manager_->register_toggleable_panel(
+            "Control Panel", [state = state_](Widget* parent, std::string_view panel_name) {
+                return std::make_shared<ModelWarperV3ControlPanel>(parent, panel_name, state);
+            });
+        panel_manager_->register_toggleable_panel(
+            "Source Model", [state = state_](Widget* parent, std::string_view panel_name) {
+                return std::make_shared<ModelWarperV3SourceModelViewerPanel>(
+                    parent, panel_name, state);
+            });
+        panel_manager_->register_toggleable_panel(
+            "Result Model", [state = state_](Widget* parent, std::string_view panel_name) {
+                return std::make_shared<ModelWarperV3ResultModelViewerPanel>(
+                    parent, panel_name, state);
+            });
+        panel_manager_->register_toggleable_panel(
+            "Log", [](Widget* parent, std::string_view panel_name) {
+                return std::make_shared<LogViewerPanel>(parent, panel_name);
+            });
+        panel_manager_->register_toggleable_panel(
+            "Performance", [](Widget* parent, std::string_view panel_name) {
+                return std::make_shared<PerfPanel>(parent, panel_name);
+            });
     }
 
-    void on_mount()
-    {
-        m_PanelManager->on_mount();
-    }
+    void on_mount() { panel_manager_->on_mount(); }
 
-    void on_unmount()
-    {
-        m_PanelManager->on_unmount();
-    }
+    void on_unmount() { panel_manager_->on_unmount(); }
 
     void on_tick()
     {
-        m_State->on_tick();
-        m_PanelManager->on_tick();
+        state_->on_tick();
+        panel_manager_->on_tick();
     }
 
     void on_draw_main_menu()
     {
-        m_WindowMenu.on_draw();
-        m_AboutTab.onDraw();
+        window_menu_.on_draw();
+        about_tab_.on_draw();
     }
 
     void on_draw()
     {
         try {
             ui::enable_dockspace_over_main_window();
-            m_PanelManager->on_draw();
-            m_Toolbar.on_draw();
-            m_ExceptionThrownLastFrame = false;
+            panel_manager_->on_draw();
+            toolbar_.on_draw();
+            exception_thrown_last_frame_ = false;
         } catch (const std::exception& ex) {
-            log_error("an exception was thrown, probably due to an error in the document: {}", ex.what());
+            log_error(
+                "an exception was thrown, probably due to an error in the document: {}", ex.what());
 
             // The exception might've left the UI context in an invalid state, so reset it.
             log_error("resetting the UI");
             App::notify<ResetUIContextEvent>(*parent());
 
-            if (std::exchange(m_ExceptionThrownLastFrame, true)) {
+            if (std::exchange(exception_thrown_last_frame_, true)) {
                 // An exception was also thrown last frame - try to undo the state to try
                 // and fix the problem for the user.
-                if (m_State->canUndo()) {
+                if (state_->can_undo()) {
                     log_error("attempting to fix the problem by undo-ing the document");
-                    m_State->actionUndo();
-                }
-                else {
+                    state_->action_undo();
+                } else {
                     // Undoing isn't possible, so we must defer this error to a higher level
                     // of the system.
                     log_critical("the document cannot be undone, elevating the exception");
                     throw;
                 }
-            }
-            else {
+            } else {
                 // No exception thrown last frame, it's likely that the exception is due to
                 // an edit to the scratch space last frame, so try to softly roll the model
                 // back.
                 log_error("rolling back the document");
-                m_State->actionRollback();
+                state_->action_rollback();
             }
         }
     }
 
 private:
-    std::shared_ptr<ModelWarperV3UIState> m_State = std::make_shared<ModelWarperV3UIState>(&this->owner());
+    std::shared_ptr<ModelWarperV3UIState> state_ =
+        std::make_shared<ModelWarperV3UIState>(&this->owner());
 
-    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>(&owner());
-    WindowMenu m_WindowMenu{&owner(), m_PanelManager};
-    MainMenuAboutTab m_AboutTab;
-    ModelWarperV3Toolbar m_Toolbar{&this->owner(), "##ModelWarperV3Toolbar", m_State};
+    std::shared_ptr<PanelManager> panel_manager_ = std::make_shared<PanelManager>(&owner());
+    WindowMenu window_menu_{&owner(), panel_manager_};
+    MainMenuAboutTab about_tab_;
+    ModelWarperV3Toolbar toolbar_{&this->owner(), "##ModelWarperV3Toolbar", state_};
 
-    bool m_ExceptionThrownLastFrame = false;
+    bool exception_thrown_last_frame_ = false;
 };
 
-CStringView osc::ModelWarperTab::id() { return Impl::static_label(); }
+CStringView osc::ModelWarperTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::ModelWarperTab::ModelWarperTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::ModelWarperTab::impl_on_mount() { private_data().on_mount(); }
-void osc::ModelWarperTab::impl_on_unmount() { private_data().on_unmount(); }
-void osc::ModelWarperTab::impl_on_tick() { private_data().on_tick(); }
-void osc::ModelWarperTab::impl_on_draw_main_menu() { private_data().on_draw_main_menu(); }
-void osc::ModelWarperTab::impl_on_draw() { private_data().on_draw(); }
+void osc::ModelWarperTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::ModelWarperTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+void osc::ModelWarperTab::impl_on_tick()
+{
+    private_data().on_tick();
+}
+void osc::ModelWarperTab::impl_on_draw_main_menu()
+{
+    private_data().on_draw_main_menu();
+}
+void osc::ModelWarperTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

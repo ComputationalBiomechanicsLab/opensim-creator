@@ -24,6 +24,7 @@ namespace
 {
     Mesh generate_plane()
     {
+        // clang-format off
         Mesh mesh;
         mesh.set_vertices({
             { 5.0f, -0.5f,  5.0f},
@@ -44,6 +45,7 @@ namespace
             {2.0f, 2.0f},
         });
         mesh.set_indices({0, 2, 1,    3, 5, 4});
+        // clang-format on
         return mesh;
     }
 
@@ -59,7 +61,10 @@ namespace
 
 class osc::LOGLFramebuffersTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedOpenGL/Framebuffers"; }
+    static CStringView static_label()
+    {
+        return "oscar_demos/learnopengl/AdvancedOpenGL/Framebuffers";
+    }
 
     explicit Impl(LOGLFramebuffersTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
@@ -77,10 +82,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -89,7 +91,8 @@ public:
         // setup render texture
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vector2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
+        const Vector2 workspace_pixel_dimensions =
+            device_pixel_ratio * workspace_screen_space_rect.dimensions();
 
         render_texture_.set_pixel_dimensions(workspace_pixel_dimensions);
         render_texture_.set_device_pixel_ratio(device_pixel_ratio);
@@ -99,8 +102,10 @@ public:
         {
             // cubes
             scene_render_material_.set("uTexture1", container_texture_);
-            render_queue_.emplace(cube_mesh_, {.translation = {-1.0f, 0.0f, -1.0f}}, scene_render_material_);
-            render_queue_.emplace(cube_mesh_, {.translation = { 1.0f, 0.0f, -1.0f}}, scene_render_material_);
+            render_queue_.emplace(
+                cube_mesh_, {.translation = {-1.0f, 0.0f, -1.0f}}, scene_render_material_);
+            render_queue_.emplace(
+                cube_mesh_, {.translation = {1.0f, 0.0f, -1.0f}}, scene_render_material_);
 
             // floor
             scene_render_material_.set("uTexture1", metal_texture_);
@@ -110,7 +115,8 @@ public:
         render_queue_.clear();
 
         // render via a effect sampler
-        graphics::blit_to_main_window(render_texture_, screen_material_, workspace_screen_space_rect);
+        graphics::blit_to_main_window(
+            render_texture_, screen_material_, workspace_screen_space_rect);
 
         // auxiliary UI
         log_viewer_.on_draw();
@@ -129,13 +135,9 @@ private:
     RenderQueue render_queue_;
 
     Texture2D container_texture_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/container.jpg"),
-        ColorSpace::sRGB
-    );
+        loader_.open("oscar_demos/learnopengl/textures/container.jpg"), ColorSpace::sRGB);
     Texture2D metal_texture_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/metal.jpg"),
-        ColorSpace::sRGB
-    );
+        loader_.open("oscar_demos/learnopengl/textures/metal.jpg"), ColorSpace::sRGB);
 
     Mesh cube_mesh_ = BoxGeometry{}.mesh();
     Mesh plane_mesh_ = generate_plane();
@@ -150,13 +152,27 @@ private:
     PerfPanel perf_panel_{&owner()};
 };
 
-
-CStringView osc::LOGLFramebuffersTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLFramebuffersTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLFramebuffersTab::LOGLFramebuffersTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLFramebuffersTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLFramebuffersTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLFramebuffersTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLFramebuffersTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLFramebuffersTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLFramebuffersTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLFramebuffersTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLFramebuffersTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

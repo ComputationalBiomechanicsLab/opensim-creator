@@ -18,8 +18,6 @@
 #include <OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
-#include <jam-plugin/Smith2018ArticularContactForce.h>
-#include <jam-plugin/Smith2018ContactMesh.h>
 #include <liboscar/formats/csv.h>
 #include <liboscar/formats/image.h>
 #include <liboscar/platform/log.h>
@@ -51,32 +49,22 @@
 
 using namespace opyn;
 
-// An `osc::Converter` that maps `spdlog::level`s (from OpenSim) to
+// An `osc::Converter` that maps `OpenSim::LogLevel`s (from OpenSim) to
 // `oscar`'s `LogLevel`.
 template<>
-struct osc::Converter<spdlog::level::level_enum, osc::LogLevel> {
-    osc::LogLevel operator()(spdlog::level::level_enum e) const
+struct osc::Converter<OpenSim::LogLevel, osc::LogLevel> {
+    osc::LogLevel operator()(OpenSim::LogLevel e) const
     {
         switch (e) {
-        case spdlog::level::level_enum::trace:    return osc::LogLevel::trace;
-        case spdlog::level::level_enum::debug:    return osc::LogLevel::debug;
-        case spdlog::level::level_enum::info:     return osc::LogLevel::info;
-        case spdlog::level::level_enum::warn:     return osc::LogLevel::warn;
-        case spdlog::level::level_enum::err:      return osc::LogLevel::err;
-        case spdlog::level::level_enum::critical: return osc::LogLevel::critical;
-        case spdlog::level::level_enum::off:      return osc::LogLevel::off;
-        default:                                  return osc::LogLevel::DEFAULT;
+        case OpenSim::LogLevel::Trace: return osc::LogLevel::trace;
+        case OpenSim::LogLevel::Debug: return osc::LogLevel::debug;
+        case OpenSim::LogLevel::Info: return osc::LogLevel::info;
+        case OpenSim::LogLevel::Warn: return osc::LogLevel::warn;
+        case OpenSim::LogLevel::Error: return osc::LogLevel::err;
+        case OpenSim::LogLevel::Critical: return osc::LogLevel::critical;
+        case OpenSim::LogLevel::Off: return osc::LogLevel::off;
+        default: return osc::LogLevel::DEFAULT;
         }
-    }
-};
-
-// An `osc::Converter` that maps `spdlog::string_view_t`s (from OpenSim) to
-// `std::string`s.
-template<>
-struct osc::Converter<spdlog::string_view_t, std::string> {
-    std::string operator()(spdlog::string_view_t s) const
-    {
-        return {s.begin(), s.end()};
     }
 };
 
@@ -99,11 +87,11 @@ namespace
     // An OpenSim log sink that sinks into the `oscar` application log.
     class OpenSimLogSink final : public OpenSim::LogSink {
     protected:
-        void sink_it_(const spdlog::details::log_msg& msg) override
+        void sinkImpl(const OpenSim::LogMessage& msg) override
         {
-            osc::log_message(osc::to<osc::LogLevel>(msg.level), osc::to<std::string>(msg.payload));
+            osc::log_message(
+                osc::to<osc::LogLevel>(msg.getLevel()), osc::to<std::string>(msg.getPayload()));
         }
-        void flush_() override {}
     };
 
     // Globally mutates OpenSim's logging configuration to use the
@@ -155,7 +143,7 @@ namespace
     // It's unsafe because `setlocale` globally mutates environment state.
     void setlocale_wrapper(int category, const char* locale)
     {
-        if (std::setlocale(category, locale) == nullptr) { // NOLINT(concurrency-mt-unsafe)
+        if (std::setlocale(category, locale) == nullptr) {  // NOLINT(concurrency-mt-unsafe)
             osc::log_warn("error setting locale category {} to {}", category, locale);
         }
     }
@@ -171,7 +159,15 @@ namespace
     {
         osc::log_info("setting locale to US (so that numbers are always in the format '0.x')");
         const char* locale = "C";
-        for (const char* envvar : {"LANG", "LC_CTYPE", "LC_NUMERIC", "LC_TIME", "LC_COLLATE", "LC_MONETARY", "LC_MESSAGES", "LC_ALL"}) {
+        for (const char* envvar :
+             {"LANG",
+              "LC_CTYPE",
+              "LC_NUMERIC",
+              "LC_TIME",
+              "LC_COLLATE",
+              "LC_MONETARY",
+              "LC_MESSAGES",
+              "LC_ALL"}) {
             setenv_wrapper(envvar, locale, true);
         }
 
@@ -202,8 +198,7 @@ namespace
     // Registers custom types from the model warper.
     void register_model_warper_types()
     {
-        []<typename... TScalingStep>(osc::Typelist<TScalingStep...>)
-        {
+        []<typename... TScalingStep>(osc::Typelist<TScalingStep...>) {
             OpenSim::Object::registerType(ScalingParameterOverride{});
             (OpenSim::Object::registerType(TScalingStep{}), ...);
             OpenSim::Object::registerType(ModelWarperV3Document{});
@@ -221,8 +216,6 @@ namespace
         RegisterTypes_osimActuators();
         RegisterTypes_osimAnalyses();
         RegisterTypes_osimExampleComponents();
-        OpenSim::Object::registerType(OpenSim::Smith2018ArticularContactForce());
-        OpenSim::Object::registerType(OpenSim::Smith2018ContactMesh());
         register_model_warper_types();
     }
 
@@ -230,8 +223,7 @@ namespace
     // use the `oscar` log (can be called multiple times).
     void globally_ensure_log_is_default_initialized()
     {
-        [[maybe_unused]] static bool s_log_initialized = []()
-        {
+        [[maybe_unused]] static bool s_log_initialized = [] {
             osc::global_default_logger()->set_level(osc::LogLevel::err);
             setup_opensim_to_use_oscar_log();
             return true;
@@ -285,8 +277,8 @@ namespace
         // becomes "no"
         if (const auto it = attrs.find("inDegrees"); it != attrs.end()) {
 
-            if (   osc::is_equal_case_insensitive(it->second, "y")
-                or osc::is_equal_case_insensitive(it->second, "yes")) {
+            if (osc::is_equal_case_insensitive(it->second, "y") or
+                osc::is_equal_case_insensitive(it->second, "yes")) {
 
                 it->second = "yes";
             } else {
@@ -298,10 +290,8 @@ namespace
         // in the header then that should be coerced into an `inDegrees` key. This
         // is a backwards compatibility shim because `OpenSim::Storage` works that
         // way.
-        if (not attrs.contains("inDegrees")
-            and attrs.contains("version")
-            and attrs["version"] == "0"
-            and attrs.contains("header")) {
+        if (not attrs.contains("inDegrees") and attrs.contains("version") and
+            attrs["version"] == "0" and attrs.contains("header")) {
 
             if (attrs["header"].contains("Angles are in degrees.")) {
                 attrs["inDegrees"] = "yes";
@@ -327,7 +317,8 @@ namespace
         const std::filesystem::path& source,
         std::optional<std::string_view> table_name = std::nullopt)
     {
-        const auto tables = OpenSim::FileAdapter::createAdapterFromExtension(source.string())->read(source.string());
+        const auto tables = OpenSim::FileAdapter::createAdapterFromExtension(source.string())
+                                ->read(source.string());
         if (tables.size() > 1 and not table_name) {
             std::stringstream ss;
             ss << source << ": contains more than one table (";
@@ -344,7 +335,10 @@ namespace
         if (table_name) {
             const auto it = tables.find(std::string{*table_name});
             if (it == tables.end()) {
-                throw osc::formatted_runtime_error("{}: Could not find table '{}' in the data source", source.string(), *table_name);
+                throw osc::formatted_runtime_error(
+                    "{}: Could not find table '{}' in the data source",
+                    source.string(),
+                    *table_name);
             }
             table = it->second.get();
         } else {
@@ -356,17 +350,24 @@ namespace
         // than OpenSim's typed data table API but easier to work with in
         // the wider Python ecosystem.
         OSC_ASSERT(table != nullptr && "Earlier code should have set this");
-        if (const auto* doubles_table = dynamic_cast<const OpenSim::DataTable_<double, double>*>(table)) {
+        if (const auto* doubles_table =
+                dynamic_cast<const OpenSim::DataTable_<double, double>*>(table)) {
             return read_opensim_datatable_into_data_frame(*doubles_table);
         }
-        if (const auto* vec3_table = dynamic_cast<const OpenSim::DataTable_<double, SimTK::Vec3>*>(table)) {
+        if (const auto* vec3_table =
+                dynamic_cast<const OpenSim::DataTable_<double, SimTK::Vec3>*>(table)) {
             return read_opensim_datatable_into_data_frame(vec3_table->flatten({"_x", "_y", "_z"}));
         }
-        if (const auto* quaternion_table = dynamic_cast<const OpenSim::DataTable_<double, SimTK::Quaternion>*>(table)) {
-            return read_opensim_datatable_into_data_frame(quaternion_table->flatten({"_w", "_x", "_y", "_z"}));
+        if (const auto* quaternion_table =
+                dynamic_cast<const OpenSim::DataTable_<double, SimTK::Quaternion>*>(table)) {
+            return read_opensim_datatable_into_data_frame(
+                quaternion_table->flatten({"_w", "_x", "_y", "_z"}));
         }
 
-        throw osc::formatted_runtime_error("{}: : Specified data table has an unsupported data type ({}).", source.string(), typeid(*table).name());
+        throw osc::formatted_runtime_error(
+            "{}: : Specified data table has an unsupported data type ({}).",
+            source.string(),
+            typeid(*table).name());
     }
 
     osc::Texture2D read_texture_via_oscar(const std::filesystem::path& source)
@@ -376,7 +377,8 @@ namespace
             throw osc::formatted_runtime_error("{}: : Error opening input file", source.string());
         }
 
-        return osc::Image::read_into_texture(ifs, source.filename().string(), osc::ColorSpace::sRGB);
+        return osc::Image::read_into_texture(
+            ifs, source.filename().string(), osc::ColorSpace::sRGB);
     }
 }
 
@@ -419,8 +421,7 @@ bool opyn::init()
     globally_ensure_log_is_default_initialized();
 
     // This part should only ever be called once per process.
-    static bool s_osc_initialized = []
-    {
+    static bool s_osc_initialized = [] {
         osc::log_info("initializing OPynSim (opyn::init)");
 
         // Make the current process globally use the same locale that OpenSim uses

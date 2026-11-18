@@ -15,8 +15,7 @@ namespace osc
             Panel& owner,
             Widget* parent = nullptr,
             std::string_view panel_name = "unnamed",
-            ui::PanelFlags panel_flags = {}
-        );
+            ui::PanelFlags panel_flags = {});
 
         bool is_open() const;
         void set_open(bool);
@@ -25,6 +24,7 @@ namespace osc
 
     protected:
         OSC_OWNER_GETTERS(Panel);
+
     private:
         std::string panel_enabled_config_key_;
         ui::PanelFlags panel_flags_;

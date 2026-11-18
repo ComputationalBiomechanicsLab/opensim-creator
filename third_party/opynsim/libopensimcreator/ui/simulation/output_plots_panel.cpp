@@ -19,10 +19,10 @@ using namespace osc;
 
 namespace
 {
-    bool IsAnyOutputExportableToCSV(const Environment& env)
+    bool is_any_output_exportable_to_csv(const Environment& env)
     {
-        for (int i = 0; i < env.getNumUserOutputExtractors(); ++i) {
-            if (is_numeric(env.getUserOutputExtractor(i).output_type())) {
+        for (int i = 0; i < env.get_num_user_output_extractors(); ++i) {
+            if (is_numeric(env.get_user_output_extractor(i).output_type())) {
                 return true;
             }
         }
@@ -35,32 +35,34 @@ public:
     explicit Impl(
         OutputPlotsPanel& owner,
         Widget* parent,
-        std::string_view panelName_,
+        std::string_view panel_name,
         std::shared_ptr<Environment> environment,
         SimulatorUIAPI* api) :
 
-        PanelPrivate{owner, parent, panelName_},
-        m_Environment{std::move(environment)},
-        m_SimulatorUIAPI{api}
+        PanelPrivate{owner, parent, panel_name},
+        environment_{std::move(environment)},
+        simulator_uiapi_{api}
     {}
 
     void draw_content()
     {
-        if (m_Environment->getNumUserOutputExtractors() <= 0) {
+        if (environment_->get_num_user_output_extractors() <= 0) {
             ui::draw_text_disabled_and_panel_centered("No outputs being watched");
             ui::draw_text_disabled_and_centered("(Right-click a component and 'Watch Output')");
             return;
         }
 
-        if (IsAnyOutputExportableToCSV(*m_Environment)) {
+        if (is_any_output_exportable_to_csv(*environment_)) {
             ui::draw_button(MSMICONS_SAVE " Save All " MSMICONS_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft)) {
                 if (ui::draw_menu_item("as CSV")) {
-                    m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV(m_Environment->getAllUserOutputExtractors());
+                    simulator_uiapi_->try_prompt_to_save_all_outputs_as_csv(
+                        environment_->get_all_user_output_extractors());
                 }
 
                 if (ui::draw_menu_item("as CSV (and open)")) {
-                    m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV(m_Environment->getAllUserOutputExtractors(), true);
+                    simulator_uiapi_->try_prompt_to_save_all_outputs_as_csv(
+                        environment_->get_all_user_output_extractors(), true);
                 }
 
                 ui::end_popup();
@@ -68,19 +70,20 @@ public:
         }
 
         ui::draw_separator();
-        ui::draw_vertical_spacer(5.0f/15.0f);
+        ui::draw_vertical_spacer(5.0f / 15.0f);
 
-        for (int i = 0; i < m_Environment->getNumUserOutputExtractors(); ++i) {
-            opyn::SharedOutputExtractor output = m_Environment->getUserOutputExtractor(i);
+        for (int i = 0; i < environment_->get_num_user_output_extractors(); ++i) {
+            opyn::SharedOutputExtractor output = environment_->get_user_output_extractor(i);
 
             ui::push_id(i);
-            SimulationOutputPlot plot{m_SimulatorUIAPI, output, 128.0f};
-            plot.onDraw();
+            SimulationOutputPlot plot{simulator_uiapi_, output, 128.0f};
+            plot.on_draw();
 
-            DrawOutputNameColumn(output, true, m_SimulatorUIAPI->tryGetCurrentSimulationState());
+            draw_output_name_column(
+                output, true, simulator_uiapi_->try_get_current_simulation_state());
             ui::same_line();
             if (ui::draw_button(MSMICONS_TRASH)) {
-                m_Environment->removeUserOutputExtractor(output);
+                environment_->remove_user_output_extractor(output);
                 --i;
             }
             ui::pop_id();
@@ -88,16 +91,19 @@ public:
     }
 
 private:
-    std::shared_ptr<Environment> m_Environment;
-    SimulatorUIAPI* m_SimulatorUIAPI;
+    std::shared_ptr<Environment> environment_;
+    SimulatorUIAPI* simulator_uiapi_;
 };
 
 osc::OutputPlotsPanel::OutputPlotsPanel(
     Widget* parent,
-    std::string_view panelName_,
+    std::string_view panel_name,
     std::shared_ptr<Environment> environment,
     SimulatorUIAPI* api) :
 
-    Panel{std::make_unique<Impl>(*this, parent, panelName_, std::move(environment), api)}
+    Panel{std::make_unique<Impl>(*this, parent, panel_name, std::move(environment), api)}
 {}
-void osc::OutputPlotsPanel::impl_draw_content() { private_data().draw_content(); }
+void osc::OutputPlotsPanel::impl_draw_content()
+{
+    private_data().draw_content();
+}

@@ -15,16 +15,18 @@ public:
         TabPrivate{owner, parent, static_label()}
     {}
 
-    void on_draw()
-    {
-        ui::show_demo_panel();
-    }
+    void on_draw() { ui::show_demo_panel(); }
 };
 
-
-CStringView osc::ImGuiDemoTab::id() { return Impl::static_label(); }
+CStringView osc::ImGuiDemoTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::ImGuiDemoTab::ImGuiDemoTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::ImGuiDemoTab::impl_on_draw() { private_data().on_draw(); }
+void osc::ImGuiDemoTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

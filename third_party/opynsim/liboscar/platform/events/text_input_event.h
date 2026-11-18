@@ -20,6 +20,7 @@ namespace osc
         {}
 
         CStringView utf8_text() const { return utf8_text_; }
+
     private:
         std::string utf8_text_;
     };

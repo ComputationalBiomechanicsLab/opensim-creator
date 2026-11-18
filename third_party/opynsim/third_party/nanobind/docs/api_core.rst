@@ -31,6 +31,9 @@ Macros
            });
        }
 
+   Extensions that cannot use this macro because their entry point is provided
+   by other means should call :cpp:func:`register_module` instead.
+
 .. c:macro:: NB_MAKE_OPAQUE(T)
 
    The macro registers a partial template specialization pattern for the type
@@ -101,10 +104,12 @@ following mixin class that lives in the ``nanobind::detail`` namespace.
       Return a :cpp:class:`handle` wrapping the underlying ``PyObject*`` pointer.
 
    .. cpp:function:: detail::accessor<obj_attr> attr(handle key) const
+   .. cpp:function:: template <typename T, enable_if_t<is_owned_key_v<T>> = 0> detail::accessor<obj_attr_own> attr(T && key) const
 
       Analogous to ``self.key`` in Python, where ``key`` is a Python object.
       The result is wrapped in an :cpp:class:`accessor <detail::accessor>` so
-      that it can be read and written.
+      that it can be read and written. The second overload takes ownership of
+      keys passed as an rvalue, which may not outlive the accessor.
 
    .. cpp:function:: detail::accessor<str_attr> attr(const char * key) const
 
@@ -119,10 +124,12 @@ following mixin class that lives in the ``nanobind::detail`` namespace.
        written.
 
    .. cpp:function:: detail::accessor<obj_item> operator[](handle key) const
+   .. cpp:function:: template <typename T, enable_if_t<is_owned_key_v<T>> = 0> detail::accessor<obj_item_own> operator[](T && key) const
 
       Analogous to ``self[key]`` in Python, where ``key`` is a Python object.
       The result is wrapped in an :cpp:class:`accessor <detail::accessor>` so that it can be read and
-      written.
+      written. The second overload takes ownership of keys passed as an
+      rvalue, which may not outlive the accessor.
 
    .. cpp:function:: detail::accessor<str_item> operator[](const char * key) const
 
@@ -136,7 +143,7 @@ following mixin class that lives in the ``nanobind::detail`` namespace.
       type (e.g., an integer). The result is wrapped in an :cpp:class:`accessor <detail::accessor>` so
       that it can be read and written.
 
-   .. cpp:function:: template <rv_policy policy = rv_policy::automatic_reference, typename... Args> object operator()(Args &&...args) const
+   .. cpp:function:: template <rv_policy::value policy = rv_policy::automatic_reference_v, typename... Args> object operator()(Args &&...args) const
 
       Assuming the Python object is a function or implements the ``__call__``
       protocol, `operator()` invokes the underlying function, passing an
@@ -153,10 +160,10 @@ following mixin class that lives in the ``nanobind::detail`` namespace.
 
    .. cpp:function:: args_proxy operator*() const
 
-      Given a a tuple or list, this helper function performs variable argument
-      list unpacking in function calls resembling the ``*`` operator in Python.
-      Applying `operator*()` twice yields ``**`` keyword argument
-      unpacking for dictionaries.
+      Given an iterable, this helper function performs variable argument list
+      unpacking in function calls resembling the ``*`` operator in Python.
+      Applying `operator*()` twice yields ``**`` keyword argument unpacking
+      for dictionaries and other mappings.
 
    .. cpp:function:: bool is(handle value) const
 
@@ -659,7 +666,7 @@ Wrapper classes
    read tuple elements.
    Once created, the tuple is immutable and its elements cannot be replaced.
 
-   Use the :py:func:`make_tuple` function to create new tuples.
+   Use the :cpp:func:`make_tuple` function to create new tuples.
 
    .. cpp:function:: tuple()
 
@@ -678,13 +685,13 @@ Wrapper classes
 
       Check whether the tuple is empty.
 
-   .. cpp:function:: detail::fast_iterator begin() const
+   .. cpp:function:: detail::tuple_iterator begin() const
 
       Return a forward iterator analogous to ``iter()`` in Python. The function
       overrides a generic version in :cpp:class:`detail::api` and is more
       efficient for tuples.
 
-   .. cpp:function:: detail::fast_iterator end() const
+   .. cpp:function:: detail::tuple_iterator end() const
 
       Return a sentinel that ends the iteration.
 
@@ -760,16 +767,79 @@ Wrapper classes
       The function overrides the generic version in :cpp:class:`detail::api`
       and is more efficient for lists.
 
-   .. cpp:function:: detail::fast_iterator begin() const
+   .. cpp:function:: detail::list_iterator begin() const
 
       Return a forward iterator analogous to ``iter()`` in Python. The operator
       provided here overrides the generic version in :cpp:class:`detail::api`
-      and is more efficient for lists.
+      and is more efficient for lists. In free-threaded builds, the iterator
+      holds a reference to the entry it points at, and another thread
+      shortening the list ends the iteration.
 
-   .. cpp:function:: detail::fast_iterator end() const
+   .. cpp:function:: detail::list_iterator end() const
 
       Return a sentinel that ends the iteration.
 
+
+.. cpp:class:: tuple_builder
+
+   Helper class to build a tuple element by element. Tuples are immutable,
+   hence the wrapper API provides no equivalent of ``list.append()``, and
+   the usual workaround converts an intermediate list. This class instead
+   fills the item storage of a new tuple in place, and adding an entry
+   reduces to the cost of a pointer store. The size must be known up front,
+   and each entry must be filled exactly once:
+
+   .. code-block:: cpp
+
+      nb::tuple_builder builder(size);
+      for (size_t i = 0; i < size; ++i)
+          builder.put(/* value of entry i */);
+      nb::tuple result = builder.commit();
+
+   Destroying the builder without calling :cpp:func:`commit()` releases the
+   entries stored so far, hence a C++ exception raised midway does not leak
+   them.
+
+   .. cpp:function:: tuple_builder(size_t size)
+
+      Allocate a builder for a tuple with ``size`` entries.
+
+   .. cpp:function:: template <typename T> bool put(T &&value) noexcept
+
+      Fill the next entry. When `T` does not already represent a wrapped
+      Python object, the function performs a cast. A failed cast stores
+      nothing and returns ``false``. Checking the result is optional: it
+      leaves the sequence incomplete, and the subsequent
+      :cpp:func:`commit()` raises an exception. Calling ``put()`` more than
+      ``size`` times is undefined behavior, which debug builds diagnose
+      with a fatal error.
+
+   .. cpp:function:: tuple commit()
+
+      Return the finished tuple and deactivate the builder. The function
+      raises an exception when entries remain unfilled. Calling ``commit()``
+      a second time is undefined behavior, which debug builds diagnose with
+      an exception.
+
+.. cpp:class:: list_builder
+
+   Equivalent of :cpp:class:`tuple_builder` that constructs a ``list``.
+   When the size is known in advance, it is faster than growing a list
+   through repeated ``append()`` calls, especially in :ref:`split mode
+   <split-mode>` and stable-ABI builds, where each ``append()`` requires a
+   Python C API call.
+
+   .. cpp:function:: list_builder(size_t size)
+
+      Allocate a builder for a list with ``size`` entries.
+
+   .. cpp:function:: template <typename T> bool put(T &&value) noexcept
+
+      Fill the next entry, analogous to :cpp:func:`tuple_builder::put`.
+
+   .. cpp:function:: list commit()
+
+      Return the finished list, analogous to :cpp:func:`tuple_builder::commit`.
 
 .. cpp:class:: dict: public object
 
@@ -1277,6 +1347,14 @@ Wrapper classes
     Attempt to create a ``memoryview`` Python object from an object. Analogous
     to the expression ``memoryview(h)`` in Python.
 
+.. cpp:class:: none: public object
+
+   Wrapper class representing a Python ``None`` object.
+
+   .. cpp:function:: none()
+
+      Create a wrapper referencing the unique Python ``None`` object.
+
 .. cpp:class:: ellipsis: public object
 
    Wrapper class representing a Python ellipsis (``...``) object.
@@ -1408,14 +1486,14 @@ the reference section on :ref:`class binding <class_binding>`.
 
       Move constructor
 
-   .. cpp:function:: const char * what() noexcept
+   .. cpp:function:: const char * what() const noexcept
 
       Return a stringified version of the exception. nanobind internally
       normalizes the exception and generates a traceback that is included
       as part of this string. This can be a relatively costly operation
       and should only be used if all of this detail is actually needed.
 
-   .. cpp:function:: bool matches(handle exc) noexcept
+   .. cpp:function:: bool matches(handle exc) const noexcept
 
       Checks whether the exception has the same type as `exc`.
 
@@ -1667,7 +1745,7 @@ Casting
    such object can be found, the function it returns an invalid object
    (:cpp:func:`detail::api::is_valid()` is ``false``).
 
-.. cpp:function:: template <rv_policy policy = rv_policy::automatic, typename... Args> tuple make_tuple(Args&&... args)
+.. cpp:function:: template <rv_policy::value policy = rv_policy::automatic_v, typename... Args> tuple make_tuple(Args&&... args)
 
    Create a Python tuple from a sequence of C++ objects ``args...``. The return
    value policy `policy` is used to handle ownership-related questions when a
@@ -1739,24 +1817,27 @@ parameter of :cpp:func:`module_::def`, :cpp:func:`class_::def`,
 
       Create a function argument annotation. The name is optional.
 
-   .. cpp:function:: template <typename T> arg_v operator=(T &&value) const
+   .. cpp:function:: template <typename T> auto operator=(T &&value) const
 
       Return an argument annotation that is like this one but also assigns a
       default value to the argument. The default will be converted into a Python
       object immediately, so its bindings must have already been defined.
+      Assigning ``nb::none()`` or ``nullptr`` additionally marks the
+      argument as accepting ``None``, as if :cpp:func:`.none() <arg::none>`
+      had been specified.
 
-   .. cpp:function:: arg &none(bool value = true)
+   .. cpp:function:: auto none() const
 
-      Set a flag noting that the function argument accepts ``None``. Can only
-      be used for python wrapper types (e.g. :cpp:class:`handle`,
+      Return an annotation noting that the function argument accepts ``None``.
+      Can only be used for python wrapper types (e.g. :cpp:class:`handle`,
       :cpp:class:`int_`) and types that have been bound using
       :cpp:class:`class_`. You cannot use this to implement functions that
       accept null pointers to builtin C++ types like ``int *i = nullptr``.
 
-   .. cpp:function:: arg &noconvert(bool value = true)
+   .. cpp:function:: auto noconvert() const
 
-      Set a flag noting that implicit conversion should never be performed for
-      this function argument.
+      Return an annotation noting that implicit conversion should never be
+      performed for this function argument.
 
    .. cpp:function:: arg &sig(const char * sig)
 
@@ -1765,7 +1846,7 @@ parameter of :cpp:func:`module_::def`, :cpp:func:`class_::def`,
       explain it in docstrings and stubs (``str(value)``) does not produce
       acceptable output.
 
-   .. cpp:function:: arg_locked lock()
+   .. cpp:function:: auto lock() const
 
       Return an argument annotation that is like this one but also requests that
       this argument be locked when dispatching a function call in free-threaded
@@ -1899,7 +1980,7 @@ parameter of :cpp:func:`module_::def`, :cpp:func:`class_::def`,
       bindings, the specified name must match the ``name`` argument of
       :cpp:class:`nb::class_ <class_>`.
 
-.. cpp:enum-class:: rv_policy
+.. cpp:class:: rv_policy
 
    A return value policy determines the question of *ownership* when a bound
    function returns a previously unknown C++ instance that must now be
@@ -1917,11 +1998,37 @@ parameter of :cpp:func:`module_::def`, :cpp:func:`class_::def`,
    ownership (e.g., ``std::unique_ptr<T>``, ``std::shared_ptr<T>``, a type with
    :ref:`intrusive reference counting <intrusive>`).
 
+   The named constants below are compile-time tags that convert implicitly
+   to a runtime ``rv_policy``. Templates with a policy parameter
+   (:cpp:func:`make_iterator`, :cpp:func:`bind_vector`, etc.) use the nested
+   :cpp:enum:`rv_policy::value` enumeration and accept the tags as arguments.
+
+   .. cpp:enum:: value
+
+      Runtime representation of a return value policy. Each enumerator
+      mirrors the equally named tag constant (e.g. ``move_v`` for ``move``).
+
+      .. cpp:enumerator:: automatic_v
+
+      .. cpp:enumerator:: automatic_reference_v
+
+      .. cpp:enumerator:: take_ownership_v
+
+      .. cpp:enumerator:: copy_v
+
+      .. cpp:enumerator:: move_v
+
+      .. cpp:enumerator:: reference_v
+
+      .. cpp:enumerator:: reference_internal_v
+
+      .. cpp:enumerator:: none_v
+
    The following policies are available (where `automatic` is the default).
    Please refer to the :ref:`return value policy section <rvp>` of the main
    documentation, which clarifies the list below using concrete examples.
 
-   .. cpp:enumerator:: take_ownership
+   .. cpp:member:: static constexpr auto take_ownership
 
       Create a Python object that wraps the existing C++ instance and takes
       full ownership of it. No copies are made. Python will call the C++
@@ -1930,25 +2037,25 @@ parameter of :cpp:func:`module_::def`, :cpp:func:`class_::def`,
       and is not allowed to destruct the instance, or undefined behavior will
       ensue.
 
-   .. cpp:enumerator:: copy
+   .. cpp:member:: static constexpr auto copy
 
       Copy-construct a new Python object from the C++ instance. The new copy
       will be owned by Python, while C++ retains ownership of the original.
 
-   .. cpp:enumerator:: move
+   .. cpp:member:: static constexpr auto move
 
       Move-construct a new Python object from the C++ instance. The new object
       will be owned by Python, while C++ retains ownership of the original
       (whose contents were likely invalidated by the move operation).
 
-   .. cpp:enumerator:: reference
+   .. cpp:member:: static constexpr auto reference
 
       Create a Python object that wraps the existing C++ instance *without
       taking ownership* of it. No copies are made. Python will never call the
       destructor or ``delete`` operator, even when the Python wrapper is
       garbage collected.
 
-   .. cpp:enumerator:: reference_internal
+   .. cpp:member:: static constexpr auto reference_internal
 
       A safe extension of the `reference` policy for methods that implement
       some form of attribute access. It creates a Python object that wraps the
@@ -1956,19 +2063,19 @@ parameter of :cpp:func:`module_::def`, :cpp:func:`class_::def`,
       adjusts reference counts to keeps the method's implicit ``self`` argument
       alive until the newly created object has been garbage collected.
 
-   .. cpp:enumerator:: none
+   .. cpp:member:: static constexpr auto none
 
       This is the most conservative policy: it simply refuses the cast unless
       the C++ instance already has a corresponding Python object, in which case
       the question of ownership becomes moot.
 
-   .. cpp:enumerator:: automatic
+   .. cpp:member:: static constexpr auto automatic
 
       This is the default return value policy, which falls back to
       `take_ownership` when the return value is a pointer, `move`  when it is a
       rvalue reference, and `copy` when it is a lvalue reference.
 
-   .. cpp:enumerator:: automatic_reference
+   .. cpp:member:: static constexpr auto automatic_reference
 
       This policy matches `automatic` but falls back to `reference` when the
       return value is a pointer.
@@ -2118,7 +2225,7 @@ parameter of :cpp:func:`module_::def`, :cpp:func:`class_::def`,
                   throw std::runtime_error("return value should be a sequence");
               }
               for (nb::handle nurse : ret) {
-                  nb::detail::keep_alive(nurse.ptr(), args[I - 1]);
+                  nb::keep_alive_obj(nurse, args[I - 1]);
               }
           }
       };
@@ -2200,6 +2307,21 @@ declarations in generated :ref:`stubs <stubs>`,
 
    Disables destroying the instance.
 
+.. cpp:struct:: pooled
+
+   Opt a bound type into :ref:`instance pooling <instance_pooling>`: instead of
+   freeing the Python object of a released instance, nanobind puts it into a
+   small pool for subsequent reuse. This avoids per-instance allocation and
+   bookkeeping costs and can speed up code that creates many short-lived
+   temporaries.
+
+   .. cpp:function:: explicit pooled(uint32_t capacity = 128)
+
+      Enable pooling with up to ``capacity`` released instances (per type, and
+      per thread in free-threaded builds). A ``capacity`` of ``0`` disables
+      pooling. The annotation is silently ignored on PyPy, which does not
+      support pooling.
+
 .. _enum_binding_annotations:
 
 Enum binding annotations
@@ -2237,6 +2359,23 @@ The following annotations can be specified using the variable-length
    either :py:class:`enum.IntFlag` or :py:class:`enum.Flag`, depending on
    whether or not the enumeration is also marked to support arithmetic
    operations (see :cpp:class:`is_arithmetic`).
+
+.. cpp:struct:: is_str
+
+   Indicate that the enumeration carries a string value per entry. Passing
+   this annotation changes the Python enumeration parent class to
+   :py:class:`enum.StrEnum` (Python 3.11+) or an equivalent class derived from
+   ``(str, enum.Enum)`` on older Python versions. Each enumerator must then be
+   registered using :cpp:func:`enum_::str_value` instead of
+   :cpp:func:`enum_::value`, supplying the string that represents the entry in
+   Python.
+
+   Members are instances of :py:class:`str` and compare equal to their string
+   value (e.g., ``Color.Red == "red"``). Conversion of bare strings to the
+   enumeration is supported when implicit conversions are enabled.
+
+   This annotation cannot be combined with :cpp:class:`is_arithmetic` or
+   :cpp:class:`is_flag`.
 
 Function binding
 ----------------
@@ -2404,9 +2543,9 @@ Class binding
       specifically to the setter or getter part.
 
       Note that this function implicitly assigns the
-      :cpp:enumerator:`rv_policy::reference_internal` return value policy to
+      :cpp:member:`rv_policy::reference_internal` return value policy to
       `getter` (as opposed to the usual
-      :cpp:enumerator:`rv_policy::automatic`). Provide an explicit return value
+      :cpp:member:`rv_policy::automatic`). Provide an explicit return value
       policy as part of the `extra` argument to override this.
 
       **Example**: the example below uses `def_prop_rw` to expose a C++
@@ -2439,9 +2578,9 @@ Class binding
       other :ref:`function binding annotations <function_binding_annotations>`.
 
       Note that this function implicitly assigns the
-      :cpp:enumerator:`rv_policy::reference_internal` return value policy to
+      :cpp:member:`rv_policy::reference_internal` return value policy to
       `getter` (as opposed to the usual
-      :cpp:enumerator:`rv_policy::automatic`). Provide an explicit return value
+      :cpp:member:`rv_policy::automatic`). Provide an explicit return value
       policy as part of the `extra` argument to override this.
 
       **Example**: the example below uses `def_prop_ro` to expose a C++ getter
@@ -2548,9 +2687,9 @@ Class binding
       specifically to the setter or getter part.
 
       Note that this function implicitly assigns the
-      :cpp:enumerator:`rv_policy::reference` return value policy to
+      :cpp:member:`rv_policy::reference` return value policy to
       `getter` (as opposed to the usual
-      :cpp:enumerator:`rv_policy::automatic`). Provide an explicit return value
+      :cpp:member:`rv_policy::automatic`). Provide an explicit return value
       policy as part of the `extra` argument to override this.
 
       **Example**: the example below uses `def_prop_rw_static` to expose a
@@ -2581,9 +2720,9 @@ Class binding
       other :ref:`function binding annotations <function_binding_annotations>`.
 
       Note that this function implicitly assigns the
-      :cpp:enumerator:`rv_policy::reference` return value policy to
+      :cpp:member:`rv_policy::reference` return value policy to
       `getter` (as opposed to the usual
-      :cpp:enumerator:`rv_policy::automatic`). Provide an explicit return value
+      :cpp:member:`rv_policy::automatic`). Provide an explicit return value
       policy as part of the `extra` argument to override this.
 
       **Example**: the example below uses `def_prop_ro_static` to expose a
@@ -2641,6 +2780,28 @@ Class binding
 
       Like the above ``.def()`` variant, but furthermore cast the result of the operation back to `T`.
 
+   .. cpp:function:: class_ &freeze()
+
+      Make the type immutable so that Python code can no longer add, replace,
+      or delete its attributes. The call must be the last step of a binding
+      chain, since the earlier steps assign to the type. The section on
+      :ref:`frozen types <frozen_types>` provides further details.
+
+      **Example**:
+
+      .. code-block:: cpp
+
+         nb::class_<A>(m, "A")
+             .def(nb::init<>())
+             .def("f", &A::f)
+             .freeze();
+
+      Base classes must be frozen before their subclasses, and violations of
+      this rule raise a ``TypeError``. This operation is implemented on Python
+      3.15+ and is a no-op on other versions and stable ABI builds that do not
+      use :ref:`split mode <split-mode>`. Use :cpp:func:`type_freeze` to
+      directly freeze a type object and receive a confirmation on whether the
+      operation had any effect.
 
 .. cpp:class:: template <typename T> enum_ : public class_<T>
 
@@ -2657,6 +2818,13 @@ Class binding
 
       Add the entry `value` to the enumeration using the identifier `name`,
       potentially with a docstring provided via `doc` (optional).
+
+   .. cpp:function:: enum_ &str_value(const char * name, T value, const char * str_val, const char * doc = nullptr)
+
+      Add the entry `value` to a string-valued enumeration using the identifier
+      `name` and the Python-side string `str_val`, optionally with a docstring
+      provided via `doc`. The enumeration must have been declared with the
+      :cpp:class:`is_str` annotation.
 
    .. cpp:function:: enum_ &export_values()
 
@@ -2826,15 +2994,46 @@ scope. The :cpp:struct:`gil_scoped_release` helper is often combined with the
 This releases the interpreter lock while `expensive` is running, which permits
 running it in parallel from multiple Python threads.
 
+.. _gil-shutdown:
+
+Acquiring the GIL can fail once the interpreter starts shutting down. This
+matters for code that runs on threads that Python did not create, such as a
+C++ destructor that drops the last reference to a Python object. Python 3.15
+introduced an interface for this situation (`PEP 788
+<https://peps.python.org/pep-0788/>`__) that nanobind uses when it is
+available. Query :cpp:func:`gil_scoped_acquire::is_valid()
+<gil_scoped_acquire::is_valid>` and skip the Python part of the work when the
+guard reports failure.
+
+.. code-block:: cpp
+
+    void my_deleter(PyObject *o) noexcept {
+        nb::gil_scoped_acquire guard;
+        if (guard.is_valid())
+            Py_DECREF(o);
+    }
+
+Older Python versions block indefinitely instead of reporting failure, so
+``is_valid()`` always returns ``true`` there. Writing the check is still
+worthwhile, since the same binary may later run on a newer interpreter.
+
 .. cpp:struct:: gil_scoped_acquire
 
    .. cpp:function:: gil_scoped_acquire()
 
-      Acquire the GIL
+      Attach a Python thread state to the calling thread, which acquires the
+      GIL in non-free-threaded builds. Nested use is fine. The operation can
+      fail while the interpreter is shutting down, see above.
 
    .. cpp:function:: ~gil_scoped_acquire()
 
-      Release the GIL
+      Undo a successful attachment, which releases the GIL in
+      non-free-threaded builds
+
+   .. cpp:function:: bool is_valid() const
+
+      Was a thread state attached successfully? The class also provides an
+      ``explicit operator bool()`` with the same meaning.
 
 .. cpp:struct:: gil_scoped_release
 
@@ -2983,13 +3182,51 @@ Type objects
 
    Return the full (module-qualified) name of a type object as a Python string.
 
+.. cpp:function:: dict type_dict(handle h)
+
+   This function returns the namespace dictionary of the type object ``h``. it
+   resembles the Python expression ``h.__dict__``, except that Python only
+   exposes a read-only dictionary proxy, while this function returns a writable
+   dictionary. If your code modifies it, you *must* subsequently notify Python
+   of this via the CPython API call ``PyType_Modified(h.ptr())``.
+
+   The input ``h`` must be a Python *heap type*. It is not restricted to
+   nanobind types bound via :cpp:class:`class_`.
+   The function never raises and may return an invalid object
+   (``!o.is_valid()``).
+
+.. cpp:function:: object type_lookup(handle h, handle name)
+
+   Search the method resolution order of the type object ``h`` for an entry
+   named ``name`` and return it. This function wraps emulates the CPython API
+   function ``_PyType_LookupRef()``.
+
+   In contrast to :cpp:func:`getattr`, the lookup returns the raw entry without
+   engaging the descriptor protocol, and it does not fall back to the metaclass
+   of ``h``.
+
+   The input ``h`` must be a Python type object. It is not restricted to
+   nanobind types bound via :cpp:class:`class_`. The function never raises and
+   may return an invalid object (``!o.is_valid()``) when there is no such
+   entry.
+
+.. cpp:function:: object type_lookup(handle h, const char * name)
+
+   Version of the above function taking a C string as key.
+
+.. cpp:function:: bool type_freeze(handle h)
+
+   Make the type object ``h`` immutable, which is the low-level equivalent of
+   :cpp:func:`class_::freeze` and has the same benefits (see the section on
+   :ref:`frozen types <frozen_types>`).
+
 .. cpp:function:: void * type_get_slot(handle h, int slot_id)
 
-   On Python 3.10+, this function is a simple wrapper around the Python C API
+   On CPython, this function is a simple wrapper around the Python C API
    function ``PyType_GetSlot`` that provides stable API-compatible access to
-   type object members. On Python 3.9 and earlier, the official function did
-   not work on non-heap types. The nanobind version consistently works on heap
-   and non-heap types across Python versions.
+   type object members. On PyPy, where that function only handles heap types,
+   nanobind substitutes its own implementation that consistently works on
+   heap and non-heap types.
 
 Instances
 ^^^^^^^^^
@@ -3007,6 +3244,13 @@ The documentation below refers to two per-instance flags with the following mean
    Returns ``true`` if `h` represents an instance of a type that was
    previously bound via :cpp:class:`class_`.
 
+.. cpp:function:: bool inst_python_derived(handle h)
+
+   Assuming that `h` represents an instance of a type that was previously bound
+   via :cpp:class:`class_`, return ``true`` if the type of `h` is a Python
+   subclass of the bound type, and ``false`` if `h` is a direct instance of the
+   bound type.
+
 .. cpp:function:: template <typename T> T * inst_ptr(handle h)
 
    Assuming that `h` represents an instance of a type that was previously bound
@@ -3014,6 +3258,17 @@ The documentation below refers to two per-instance flags with the following mean
 
    The function *does not check* that `h` actually contains an instance with
    C++ type `T`.
+
+.. cpp:function:: dict inst_dict(handle h)
+
+   This function returns ``h.__dict__`` more efficiently than going through the
+   attribute protocol. The function never raises but may return an object ``o``
+   with ``!o.is_valid()`` when of `h` lacks an attribute dictionary.
+
+   The function accepts any Python object. When providing instances o types
+   bound via :cpp:class:`class_`, the function only returns a dictionary when
+   the type declares :cpp:class:`nb::dynamic_attr` or was subclassed in Python.
+
 
 .. cpp:function:: object inst_alloc(handle h)
 
@@ -3042,12 +3297,12 @@ The documentation below refers to two per-instance flags with the following mean
    set to ``true`` and ``false``.
 
    This is analogous to casting a C++ object with return value policy
-   :cpp:enumerator:`rv_policy::reference`.
+   :cpp:member:`rv_policy::reference`.
 
    If a `parent` object is specified, the instance keeps this parent alive
    while the newly created object exists. This is analogous to casting a C++
    object with return value policy
-   :cpp:enumerator:`rv_policy::reference_internal`.
+   :cpp:member:`rv_policy::reference_internal`.
 
 .. cpp:function:: object inst_take_ownership(handle h, void * p)
 
@@ -3059,7 +3314,7 @@ The documentation below refers to two per-instance flags with the following mean
    ``true``.
 
    This is analogous to casting a C++ object with return value policy
-   :cpp:enumerator:`rv_policy::take_ownership`.
+   :cpp:member:`rv_policy::take_ownership`.
 
 .. cpp:function:: void inst_zero(handle h)
 
@@ -3090,18 +3345,18 @@ The documentation below refers to two per-instance flags with the following mean
 
 .. cpp:function:: void inst_copy(handle dst, handle src)
 
-   Copy-construct the contents of `src` into `dst` and set the *ready* and
-   *destruct* flags of `dst` to ``true``.
+   Copy-construct the contents of `src` into `dst` and set the *ready* flag
+   of `dst`. Both must be instances of the same type.
 
-   `dst` should be an uninitialized instance of the same type. Note that
-   setting the *destruct* flag may be problematic if `dst` is an offset into an
-   existing object created using :cpp:func:`inst_reference` (the destructor
-   will be called multiple times in this case). If so, you must use
-   :cpp:func:`inst_set_state` to disable the flag following the call to
-   :cpp:func:`inst_copy`.
+   The behavior depends on the prior state of `dst`. When `dst` is
+   uninitialized, the value is constructed in place and the *destruct* flag
+   is set. When `dst` holds a live value (its *ready* flag is set), that
+   value is destructed first (even if the *destruct* flag is ``false``) and
+   the *destruct* flag keeps its previous value, so an instance referencing
+   foreign storage created via :cpp:func:`inst_reference` remains a
+   non-owning view.
 
-   *New in nanobind v2.0.0*: The function is a no-op when ``src`` and ``dst``
-   refer to the same object.
+   The function is a no-op when ``src`` and ``dst`` refer to the same object.
 
 .. cpp:function:: void inst_move(handle dst, handle src)
 
@@ -3110,28 +3365,49 @@ The documentation below refers to two per-instance flags with the following mean
 
 .. cpp:function:: void inst_replace_copy(handle dst, handle src)
 
-   Destruct the contents of `dst` (even if the *destruct* flag is ``false``).
-   Next, copy-construct the contents of `src` into `dst` and set the *ready*
-   flag of ``dst``. The value of the *destruct* flag is subsequently set to its
-   value prior to the call.
-
-   This operation is useful to replace the contents of one instance with that
-   of another regardless of whether `dst` has been created using
-   :cpp:func:`inst_alloc`, :cpp:func:`inst_reference`, or
-   :cpp:func:`inst_take_ownership`.
-
-   *New in nanobind v2.0.0*: The function is a no-op when ``src`` and ``dst``
-   refer to the same object.
+   Equivalent to :cpp:func:`inst_copy`, which now detects at runtime whether
+   the contents of `dst` must be replaced. The name remains for
+   compatibility.
 
 .. cpp:function:: void inst_replace_move(handle dst, handle src)
 
-   Analogous to :cpp:func:`inst_replace_copy`, except that the move constructor
-   is used instead of the copy constructor.
+   Equivalent to :cpp:func:`inst_move`; see :cpp:func:`inst_replace_copy`.
 
 .. cpp:function:: str inst_name(handle h)
 
    Return the full (module-qualified) name of the instance's type object as a
    Python string.
+
+Lifetime dependencies
+^^^^^^^^^^^^^^^^^^^^^
+
+The :cpp:class:`nb::keep_alive\<Nurse, Patient\>() <keep_alive>` function
+binding annotation builds on the following two functions, which are also
+available for direct use, e.g., in a :cpp:struct:`nb::call_policy
+<call_policy>` or in code that constructs Python objects by hand.
+
+.. cpp:function:: void keep_alive_obj(handle nurse, handle patient)
+
+   Keep the Python object `patient` alive at least until the Python object
+   `nurse` is garbage collected.
+
+   The function does nothing when either argument is ``None`` or an invalid
+   handle. When `nurse` is an instance of a type bound via
+   :cpp:class:`class_`, nanobind records the dependency in a table that it
+   consults when `nurse` expires. Otherwise, `nurse` must be weak-referenceable,
+   and the function registers a weak reference callback that releases
+   `patient`. A ``RuntimeError`` exception is raised when neither strategy is
+   applicable.
+
+.. cpp:function:: void keep_alive_cb(handle nurse, void * payload, void (*deleter)(void *) noexcept) noexcept
+
+   Invoke ``deleter(payload)`` when the Python object `nurse` is garbage
+   collected. This is useful to tie the lifetime of a C++ allocation to that of
+   a Python object.
+
+   The same restrictions on `nurse` apply as in :cpp:func:`keep_alive_obj`,
+   except that `nurse` must not be ``None`` or an invalid handle. Failure to
+   create the record is fatal, since the function cannot raise an exception.
 
 Global flags
 ------------
@@ -3161,12 +3437,48 @@ Global flags
 
    The function returns ``true`` when nanobind is initialized and ready for
    use. It returns ``false`` when the Python interpreter has shut down, causing
-   the destruction various nanobind-internal data structures. Having access to
-   this liveness status can be useful to avoid operations that are illegal in
-   the latter context.
+   the destruction of various nanobind-internal data structures. Having access
+   to this liveness status can be useful to avoid operations that are illegal
+   in the latter context.
 
 Miscellaneous
 -------------
+
+.. cpp:function:: bool register_module(handle m) noexcept
+
+   In split mode builds, macro :c:macro:`NB_MODULE` has two roles beyond
+   creating the module: it imports the backend and connects the extension to
+   it. The nanobind API cannot be safely used before these steps have
+   completed.
+
+   In certain advanced use cases, users may choose to *not* use
+   :c:macro:`NB_MODULE` and instead create modules another way. In this case,
+   they must call this function to register the module and perform these
+   necessary initialization steps before using further nanobind API calls.
+
+   Pass the module that will hold the bindings; it may be an object of another
+   binding framework such as pybind11. Repeated calls are harmless. Extensions
+   consisting of several modules that share a :ref:`domain <type-visibility>`
+   may register each of them.
+
+   The function returns ``false`` with a Python error set when the setup fails,
+   which mainly happens in :ref:`split mode <split-mode>` when the backend
+   module cannot be imported. It reports failures this way rather than by
+   raising a C++ exception because nanobind's exception machinery may itself be
+   unavailable at this point.
+
+   The following example shows how this feature enables the use of nanobind
+   within a pybind11 module.
+
+   .. code-block:: cpp
+
+      PYBIND11_MODULE(my_ext, m) {
+          if (!nb::register_module(m.ptr()))
+              throw py::error_already_set();
+
+          nb::module_ nb_m = nb::borrow<nb::module_>(m.ptr());
+          nb::class_<MyType>(nb_m, "MyType");
+      }
 
 .. cpp:function:: str repr(handle h)
 
@@ -3187,10 +3499,6 @@ Miscellaneous
 .. cpp:function:: iterator iter(handle h)
 
    Equivalent to ``iter(h)`` in Python.
-
-.. cpp:function:: object none()
-
-   Return an object representing the value ``None``.
 
 .. cpp:function:: dict builtins()
 

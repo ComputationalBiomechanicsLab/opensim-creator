@@ -14,6 +14,7 @@ namespace osc
         }
 
         UID tabid_to_close() const { return tabid_to_close_; }
+
     private:
         UID tabid_to_close_;
     };

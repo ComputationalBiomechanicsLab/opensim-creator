@@ -5,7 +5,10 @@
 #include <memory>
 #include <string_view>
 
-namespace opyn { class ModelStatePair; }
+namespace opyn
+{
+    class ModelStatePair;
+}
 
 namespace osc
 {
@@ -13,12 +16,11 @@ namespace osc
     public:
         explicit ExportPointsPopup(
             Widget* parent,
-            std::string_view popupName,
-            std::shared_ptr<const opyn::ModelStatePair>
-        );
+            std::string_view popup_name,
+            std::shared_ptr<const opyn::ModelStatePair>);
 
     private:
-        void impl_draw_content() final;
+        void impl_draw_content() override;
 
         class Impl;
         OSC_WIDGET_DATA_GETTERS(Impl);

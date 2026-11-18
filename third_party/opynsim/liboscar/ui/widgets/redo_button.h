@@ -6,10 +6,10 @@
 #include <string>
 #include <utility>
 
-namespace osc { class UndoRedoBase; }
-
 namespace osc
 {
+    class UndoRedoBase;
+
     class RedoButton final : public Widget {
     public:
         explicit RedoButton(
@@ -23,7 +23,7 @@ namespace osc
         {}
 
     private:
-        void impl_on_draw();
+        void impl_on_draw() override;
 
         std::shared_ptr<UndoRedoBase> undo_redo_;
         std::string button_icon_text_;

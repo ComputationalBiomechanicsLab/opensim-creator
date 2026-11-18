@@ -5,11 +5,7 @@
 namespace osc
 {
     // accessor to a reference to the guarded value
-    template<
-        typename T,
-        typename Mutex = std::mutex,
-        typename MutexGuard = std::lock_guard<Mutex>
-    >
+    template<typename T, typename Mutex = std::mutex, typename MutexGuard = std::lock_guard<Mutex>>
     class SynchronizedValueGuard final {
     public:
         using value_type = T;
@@ -26,7 +22,7 @@ namespace osc
         {}
 
         reference operator*() & { return *value_ptr_; }
-        const_reference operator*() const & { return *value_ptr_; }
+        const_reference operator*() const& { return *value_ptr_; }
         pointer operator->() { return value_ptr_; }
         const_pointer operator->() const { return value_ptr_; }
 

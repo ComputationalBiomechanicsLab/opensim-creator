@@ -35,6 +35,7 @@ namespace osc
             UndoRedoEntryMetadata(UndoRedoEntryMetadata&&) noexcept = default;
             UndoRedoEntryMetadata& operator=(const UndoRedoEntryMetadata&) = default;
             UndoRedoEntryMetadata& operator=(UndoRedoEntryMetadata&&) noexcept = default;
+
         public:
             virtual ~UndoRedoEntryMetadata() noexcept = default;
 
@@ -53,7 +54,7 @@ namespace osc
             template<typename... Args>
             requires std::constructible_from<T, Args&&...>
             explicit UndoRedoEntryData(std::string_view message, Args&&... args) :
-                UndoRedoEntryMetadata{std::move(message)},
+                UndoRedoEntryMetadata{message},
                 value_{std::forward<Args>(args)...}
             {}
 
@@ -75,6 +76,7 @@ namespace osc
         {}
 
         const detail::UndoRedoEntryMetadata& metadata() const { return *data_; }
+
     public:
         UID id() const { return data_->id(); }
         CStringView message() const { return data_->message(); }
@@ -90,10 +92,14 @@ namespace osc
         template<typename... Args>
         requires std::constructible_from<T, Args&&...>
         explicit UndoRedoEntry(std::string_view message, Args&&... args) :
-            UndoRedoEntryBase{std::make_shared<detail::UndoRedoEntryData<T>>(std::move(message), std::forward<Args>(args)...)}
+            UndoRedoEntryBase{std::make_shared<detail::UndoRedoEntryData<T>>(
+                message, std::forward<Args>(args)...)}
         {}
 
-        const T& value() const { return static_cast<const detail::UndoRedoEntryData<T>&>(metadata()).value(); }
+        const T& value() const
+        {
+            return static_cast<const detail::UndoRedoEntryData<T>&>(metadata()).value();
+        }
     };
 
     // type-erased base class for undo/redo storage
@@ -135,7 +141,8 @@ namespace osc
         void redo();
 
     private:
-        virtual UndoRedoEntryBase impl_construct_commit_from_scratch(std::string_view commit_message) = 0;
+        virtual UndoRedoEntryBase impl_construct_commit_from_scratch(
+            std::string_view commit_message) = 0;
         virtual void impl_copy_assign_scratch_from_commit(const UndoRedoEntryBase&) = 0;
 
         std::vector<UndoRedoEntryBase> undo_;
@@ -164,21 +171,24 @@ namespace osc
 
         const UndoRedoEntry<T>& undo_entry_at(size_t pos) const
         {
-            return static_cast<const UndoRedoEntry<T>&>(static_cast<const UndoRedoBase&>(*this).undo_entry_at(pos));
+            return static_cast<const UndoRedoEntry<T>&>(
+                static_cast<const UndoRedoBase&>(*this).undo_entry_at(pos));
         }
 
         const UndoRedoEntry<T>& redo_entry_at(size_t pos) const
         {
-            return static_cast<const UndoRedoEntry<T>&>(static_cast<const UndoRedoBase&>(*this).redo_entry_at(pos));
+            return static_cast<const UndoRedoEntry<T>&>(
+                static_cast<const UndoRedoBase&>(*this).redo_entry_at(pos));
         }
 
     private:
-        UndoRedoEntryBase impl_construct_commit_from_scratch(std::string_view commit_message) final
+        UndoRedoEntryBase impl_construct_commit_from_scratch(
+            std::string_view commit_message) override
         {
-            return UndoRedoEntry<T>{std::move(commit_message), scratch_};
+            return UndoRedoEntry<T>{commit_message, scratch_};
         }
 
-        void impl_copy_assign_scratch_from_commit(const UndoRedoEntryBase& commit) final
+        void impl_copy_assign_scratch_from_commit(const UndoRedoEntryBase& commit) override
         {
             scratch_ = static_cast<const UndoRedoEntry<T>&>(commit).value();
         }

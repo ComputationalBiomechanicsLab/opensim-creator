@@ -11,27 +11,29 @@ namespace opyn
 {
     /// Integrates the forward dynamics of a model + state pair.
     ///
-    /// The solver stores a `ModelState` that it integrates forward
+    /// The solver manages a `ModelState` that it integrates forward
     /// in time to a caller-specified timepoint (see `integrate_to`).
     class ForwardDynamicsSolver final {
     public:
-
-        /// Constructs a `ForwardDynamicsSolver` that starts with the
-        /// given `model` and `model_state` pair and uses an integrator
-        /// configured with `integrator_settings` (if provided).
+        /// Constructs a `ForwardDynamicsSolver` for the given `model`. If
+        /// supplied, the  solver manages `model_state`; otherwise, it
+        /// manages `model.initial_state()`. The solver an integrator
+        /// configured with `integrator_settings` (if provided); otherwise, it
+        /// uses a default integrator configuration.
         explicit ForwardDynamicsSolver(
             Model model,
-            ModelState model_state,
-            const std::optional<IntegratorSettings>& = std::nullopt
-        );
+            std::optional<ModelState> model_state = std::nullopt,
+            const std::optional<IntegratorSettings>& = std::nullopt);
         ForwardDynamicsSolver(const ForwardDynamicsSolver&) = delete;
         ForwardDynamicsSolver(ForwardDynamicsSolver&&) noexcept;
         ~ForwardDynamicsSolver() noexcept;
-
         ForwardDynamicsSolver& operator=(const ForwardDynamicsSolver&) = delete;
         ForwardDynamicsSolver& operator=(ForwardDynamicsSolver&&) noexcept;
 
-        /// Solves the forward dynamics of the internal `ModelState` to `time`
+        /// Returns a reference to the internal `ModelState` managed by this solver.
+        const ModelState& model_state() const;
+
+        /// Solves the forward dynamics of the managed `ModelState` to `time`
         /// and returns a copy of it realized to at least `realized_to`.
         ModelState integrate_to(double time, ModelStateStage realized_to = ModelStateStage::report);
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <liboscar/maths/qua.h>
+#include <liboscar/maths/identity.h>
 
 #include <cstdint>
 
@@ -11,9 +12,6 @@ namespace osc
     using Quaterniond = Qua<double>;
     using Quaternioni = Qua<int>;
     using Quaternionu32 = Qua<uint32_t>;
-
-    template<typename T>
-    constexpr T identity();
 
     template<>
     constexpr Quaternion identity<Quaternion>()

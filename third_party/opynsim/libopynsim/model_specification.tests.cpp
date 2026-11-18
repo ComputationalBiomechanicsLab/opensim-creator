@@ -32,7 +32,8 @@ TEST(ModelSpecification, compile_works_on_more_complicated_example_OpenSim_model
 {
     opyn::init();
 
-    const ModelSpecification model_specification = read_osim(opynsim_tests_resources_directory() / "models/RajagopalModel/Rajagopal2015.osim");
+    const ModelSpecification model_specification =
+        read_osim(opynsim_tests_resources_directory() / "models/RajagopalModel/Rajagopal2015.osim");
     ASSERT_NO_THROW({ model_specification.compile(); });
 }
 
@@ -44,13 +45,8 @@ TEST(ModelSpecification, can_construct_from_opensim_model)
     opyn::init();
 
     OpenSim::Model opensim_model;
-    auto& head = add_body(
-        opensim_model,
-        "head",
-        1.0,
-        SimTK::Vec3{0.0},
-        SimTK::Inertia{SimTK::Vec3{1.0}}
-    );
+    auto& head =
+        add_body(opensim_model, "head", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
     auto& pin = add_joint<OpenSim::PinJoint>(
         opensim_model,
         "pin",
@@ -59,9 +55,8 @@ TEST(ModelSpecification, can_construct_from_opensim_model)
         SimTK::Vec3{0.0},
         head,
         SimTK::Vec3{0.0, -1.0, 0.0},
-        SimTK::Vec3{0.0}
-    );
-    pin.updCoordinate().set_default_value(0.25*std::numbers::pi_v<double>);
+        SimTK::Vec3{0.0});
+    pin.updCoordinate().set_default_value(0.25 * std::numbers::pi_v<double>);
     opensim_model.finalizeConnections();
 
     const ModelSpecification model_specification{std::move(opensim_model)};
@@ -149,8 +144,7 @@ TEST(ModelSpecification, to_osim_with_no_args_generates_string_that_is_identical
     model_specification.to_osim(tmp.absolute_path());
     const std::string written_content{
         std::istreambuf_iterator<char>{std::ifstream{tmp.absolute_path()}.rdbuf()},
-        std::istreambuf_iterator<char>{}
-    };
+        std::istreambuf_iterator<char>{}};
     const std::string string_content = model_specification.to_osim();
 
     ASSERT_EQ(written_content, string_content);
@@ -166,8 +160,10 @@ TEST(ModelSpecification, bake_station_defined_frames_performs_conversion)
 
     OpenSim::Model model;
     auto& origin = add_component<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{0.0});
-    auto& left   = add_component<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
-    auto& up     = add_component<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& left =
+        add_component<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& up =
+        add_component<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
     add_component<OpenSim::StationDefinedFrame>(
         model,
         "sdf",
@@ -176,8 +172,7 @@ TEST(ModelSpecification, bake_station_defined_frames_performs_conversion)
         origin,
         left,
         up,
-        origin
-    );
+        origin);
     model.finalizeConnections();
     model.buildSystem();
 
@@ -203,8 +198,7 @@ TEST(ModelSpecification, to_osim_throws_if_specification_contains_in_memory_mesh
     opyn::init();
 
     // Create a model containing an `InMemoryMesh`.
-    const ModelSpecification model_specification = []
-    {
+    const ModelSpecification model_specification = [] {
         OpenSim::Model model;
         auto& in_memory_mesh = add_component<InMemoryMesh>(model);
         in_memory_mesh.setName("some_in_memory_mesh");
@@ -213,10 +207,12 @@ TEST(ModelSpecification, to_osim_throws_if_specification_contains_in_memory_mesh
         return ModelSpecification{std::move(model)};
     }();
 
-    // It should throw an exception if the caller tries to write it to a `std::string` with `to_osim`.
+    // It should throw an exception if the caller tries to write it to a `std::string` with
+    // `to_osim`.
     try {
         model_specification.to_osim();
-        FAIL() << "`to_osim` did not throw when the specification contains inlined resources (it should)";
+        FAIL()
+            << "`to_osim` did not throw when the specification contains inlined resources (it should)";
     } catch (const std::runtime_error& ex) {
         ASSERT_TRUE(std::string_view{ex.what()}.contains("some_in_memory_mesh"));
         ASSERT_TRUE(std::string_view{ex.what()}.contains("flush_in_memory_resources_to"));
@@ -227,7 +223,8 @@ TEST(ModelSpecification, to_osim_throws_if_specification_contains_in_memory_mesh
     tmp_file.close();
     try {
         model_specification.to_osim(tmp_file.absolute_path());
-        FAIL() << "`to_osim` did not throw when the specification contains inlined resources (it should)";
+        FAIL()
+            << "`to_osim` did not throw when the specification contains inlined resources (it should)";
     } catch (const std::runtime_error& ex) {
         ASSERT_TRUE(std::string_view{ex.what()}.contains("some_in_memory_mesh"));
         ASSERT_TRUE(std::string_view{ex.what()}.contains("flush_in_memory_resources_to"));
@@ -245,16 +242,17 @@ TEST(ModelSpecification, flush_in_memory_resources_to_flushes_in_memory_meshes_t
     // Create a model with some `InMemoryMesh`es.
     const osc::Mesh first_mesh = osc::BoxGeometry{};
     const osc::Mesh second_mesh = osc::SphereGeometry{};
-    ModelSpecification model_specification = [&]
-    {
+    ModelSpecification model_specification = [&] {
         OpenSim::Model model;
 
-        auto& body1 = add_body(model, "body1", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+        auto& body1 =
+            add_body(model, "body1", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
         auto& imm1 = attach_geometry<InMemoryMesh>(body1, second_mesh);
         imm1.setName("in_memory_mesh1");
         imm1.setFrame(model.getGround());
 
-        auto& body2 = add_body(model, "body2", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+        auto& body2 =
+            add_body(model, "body2", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
         auto& imm2 = attach_geometry<InMemoryMesh>(body2, second_mesh);
         imm2.setName("in_memory_mesh2");
         imm2.setFrame(body2);
@@ -268,10 +266,15 @@ TEST(ModelSpecification, flush_in_memory_resources_to_flushes_in_memory_meshes_t
 
     // Calling `ModelSpecification::flush_in_memory_resources_to` fixes that.
     osc::TemporaryDirectory tmp_dir;
-    model_specification.flush_in_memory_resources_to(tmp_dir.absolute_path() / "flushed_resources");  // Should create directory, if necessary
+    // Should create directory, if necessary
+    model_specification.flush_in_memory_resources_to(tmp_dir.absolute_path() / "flushed_resources");
     ASSERT_TRUE(model_specification.to_osim().contains("<Mesh"));
 
     // And the mesh files are written to disk with the expected names
-    ASSERT_TRUE(std::filesystem::is_regular_file(tmp_dir.absolute_path() / "flushed_resources" / "in_memory_mesh1.obj"));
-    ASSERT_TRUE(std::filesystem::is_regular_file(tmp_dir.absolute_path() / "flushed_resources" / "in_memory_mesh2.obj"));
+    ASSERT_TRUE(
+        std::filesystem::is_regular_file(
+            tmp_dir.absolute_path() / "flushed_resources" / "in_memory_mesh1.obj"));
+    ASSERT_TRUE(
+        std::filesystem::is_regular_file(
+            tmp_dir.absolute_path() / "flushed_resources" / "in_memory_mesh2.obj"));
 }

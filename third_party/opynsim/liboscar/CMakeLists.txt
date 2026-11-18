@@ -53,11 +53,13 @@ if(OPYN_BUILD_PYTHON_BINDINGS)
     set_target_properties(oscar PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(oscar)
 endif()
+if(OPYN_ENABLE_SANITIZERS)
+    opyn_add_sanitizer_flags_to(oscar)
+endif()
 target_include_directories(oscar PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>         # so that `#include <liboscar/HEADER.h>` works
+    $<BUILD_INTERFACE:${OPYN_BUILD_INTERFACE_INCLUDE_DIR}>    # so that `#include <liboscar/HEADER.h>` works
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>  # so that `#include <liboscar/oscar_config.h>` and `#include <liboscar/oscar.h>` work
     $<INSTALL_INTERFACE:include>                              # because all headers are installed into `liboscar/`
 )

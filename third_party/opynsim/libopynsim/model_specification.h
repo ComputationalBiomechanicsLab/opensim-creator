@@ -7,7 +7,10 @@
 #include <filesystem>
 #include <string>
 
-namespace OpenSim { class Model; }
+namespace OpenSim
+{
+    class Model;
+}
 
 namespace opyn
 {
@@ -15,7 +18,8 @@ namespace opyn
     /// and compiled into a `Model`.
     ///
     /// Related: https://simtk.org/api_docs/opensim/api_docs32/classOpenSim_1_1Model.html#details
-    /// Related: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089017/SimTK+Simulation+Concepts
+    /// Related:
+    /// https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089017/SimTK+Simulation+Concepts
     class ModelSpecification {
     public:
         static ModelSpecification from_osim(const std::filesystem::path& source);
@@ -56,6 +60,7 @@ namespace opyn
         /// Flushes all in-memory resources in `*this` to `directory` and updates
         /// the associated components to point to the flushed resources.
         void flush_in_memory_resources_to(const std::filesystem::path& directory);
+
     private:
         class Impl;
         explicit ModelSpecification(osc::CopyOnUpdPtr<Impl>);

@@ -481,6 +481,10 @@ struct CableSpanParameters final : IntegratorTolerances {
     Real solverMaxStepSize = 10. / 180. * Pi;
     // The algorithm used to compute the optimal path.
     CableSpanAlgorithm algorithm = CableSpanAlgorithm::MinimumLength;
+    // Whether the solver uses the previously computed path as a warm start to
+    // compute the next path solution. When false, the path is always recomputed
+    // from each obstacle's initial contact-point hint.
+    bool useWarmStart = true;
 };
 
 } // namespace
@@ -669,11 +673,10 @@ public:
     // Realizing and cache access.
     //--------------------------------------------------------------------------
 
-    // Allocate state variables and cache entries.
-    void realizeTopology(State& state)
+    // Compute the initial instance data based on the contact point hint.
+    CurveSegmentData::Instance computeInitialInstanceData() const
     {
         CurveSegmentData::Instance dataInst;
-        // Initialize the contact point if a hint is available.
         if (isContactPointHintAvailable()) {
             const Vec3 initContactPoint =
                 getContactGeometry().projectDownhillToNearestPoint(
@@ -682,17 +685,30 @@ public:
             dataInst.X_SQ.updP()    = initContactPoint;
             dataInst.wrappingStatus = ObstacleWrappingStatus::InitialGuess;
         } else {
-            // Otherwise assume no contact.
             dataInst.trackingPointOnLine_S = Vec3{0.};
             dataInst.wrappingStatus = ObstacleWrappingStatus::LiftedFromSurface;
         }
-        // Use auto-update discrete variable to retain the previous path as a
-        // warmstart.
-        m_indexDataInst = updSubsystem().allocateAutoUpdateDiscreteVariable(
-            state,
-            Stage::Position,
-            new Value<CurveSegmentData::Instance>(dataInst),
-            Stage::Instance);
+        return dataInst;
+    }
+
+    // Allocate state variables and cache entries.
+    void realizeTopology(State& state)
+    {
+        if (getUseWarmStart()) {
+            m_indexDataInst = updSubsystem().allocateAutoUpdateDiscreteVariable(
+                state,
+                Stage::Position,
+                new Value<CurveSegmentData::Instance>(
+                    computeInitialInstanceData()),
+                Stage::Instance);
+        } else {
+            m_indexDataInstCache = updSubsystem().allocateCacheEntry(
+                state,
+                Stage::Instance,
+                Stage::Infinity,
+                new Value<CurveSegmentData::Instance>(
+                    computeInitialInstanceData()));
+        }
 
         m_indexDataPos = updSubsystem().allocateCacheEntry(
             state,
@@ -706,37 +722,70 @@ public:
         getSubsystem().markCacheValueNotRealized(state, m_indexDataPos);
     }
 
+    void invalidateDataInstCache(const State& state) const
+    {
+        if (!getUseWarmStart()) {
+            SubsystemIndex subsystemIx = getSubsystem().getMySubsystemIndex();
+            CacheEntryKey cacheKey =
+                std::make_pair(subsystemIx, m_indexDataInstCache);
+            SimTK_ASSERT_ALWAYS(state.hasCacheEntry(cacheKey),
+                "CurveSegment: cannot invalidate non-existent instance cache.");
+            getSubsystem().markCacheValueNotRealized(
+                state,
+                m_indexDataInstCache);
+        }
+    }
+
     const CurveSegmentData::Instance& getDataInst(const State& state) const
     {
         const CableSubsystem& subsystem = getSubsystem();
-        if (!subsystem.isDiscreteVarUpdateValueRealized(
-                state,
-                m_indexDataInst)) {
-            updDataInst(state) = getPrevDataInst(state);
-            subsystem.markDiscreteVarUpdateValueRealized(
-                state,
-                m_indexDataInst);
+
+        // Warm start enabled.
+        if (getUseWarmStart()) {
+            if (!subsystem.isDiscreteVarUpdateValueRealized(
+                    state,
+                    m_indexDataInst)) {
+                updDataInst(state) = getPrevDataInst(state);
+                markDataInstRealized(state);
+            }
+            return Value<CurveSegmentData::Instance>::downcast(
+                subsystem.getDiscreteVarUpdateValue(state, m_indexDataInst));
+        }
+
+        // Warm start disabled.
+        if (!subsystem.isCacheValueRealized(state, m_indexDataInstCache)) {
+            updDataInst(state) = computeInitialInstanceData();
+            markDataInstRealized(state);
         }
         return Value<CurveSegmentData::Instance>::downcast(
-            subsystem.getDiscreteVarUpdateValue(state, m_indexDataInst));
+            subsystem.getCacheEntry(state, m_indexDataInstCache));
     }
 
     CurveSegmentData::Instance& updDataInst(const State& state) const
     {
         return Value<CurveSegmentData::Instance>::updDowncast(
-            getSubsystem().updDiscreteVarUpdateValue(state, m_indexDataInst));
+            getUseWarmStart()
+                ? getSubsystem().updDiscreteVarUpdateValue(
+                      state,
+                      m_indexDataInst)
+                : getSubsystem().updCacheEntry(state, m_indexDataInstCache));
+    }
+
+    void markDataInstRealized(const State& state) const
+    {
+        if (getUseWarmStart()) {
+            getSubsystem().markDiscreteVarUpdateValueRealized(
+                state,
+                m_indexDataInst);
+        } else {
+            getSubsystem().markCacheValueRealized(state, m_indexDataInstCache);
+        }
     }
 
     const CurveSegmentData::Instance& getPrevDataInst(const State& state) const
     {
         return Value<CurveSegmentData::Instance>::downcast(
             getSubsystem().getDiscreteVariable(state, m_indexDataInst));
-    }
-
-    CurveSegmentData::Instance& updPrevDataInst(State& state) const
-    {
-        return Value<CurveSegmentData::Instance>::updDowncast(
-            getSubsystem().updDiscreteVariable(state, m_indexDataInst));
     }
 
     const CurveSegmentData::Position& getDataPos(const State& state) const
@@ -850,6 +899,8 @@ public:
     }
 
     const IntegratorTolerances& getIntegratorTolerances() const;
+
+    bool getUseWarmStart() const;
 
     //--------------------------------------------------------------------------
     // Utility functions.
@@ -1257,9 +1308,7 @@ public:
             dataInst.integratorInitialStepSize,
             updDataInst(state));
 
-        getSubsystem().markDiscreteVarUpdateValueRealized(
-            state,
-            m_indexDataInst);
+        markDataInstRealized(state);
         invalidatePosEntry(state);
     }
 
@@ -1284,9 +1333,7 @@ public:
             break;
         }
 
-        getSubsystem().markDiscreteVarUpdateValueRealized(
-            state,
-            m_indexDataInst);
+        markDataInstRealized(state);
         return getDataInst(state);
     }
 
@@ -1470,6 +1517,7 @@ private:
     // Topology cache.
     CacheEntryIndex m_indexDataPos        = CacheEntryIndex::Invalid();
     DiscreteVariableIndex m_indexDataInst = DiscreteVariableIndex::Invalid();
+    CacheEntryIndex m_indexDataInstCache  = CacheEntryIndex::Invalid();
 
     // Initial contact point hint used to setup the initial path.
     Vec3 m_contactPointHint_S{NaN, NaN, NaN};
@@ -1613,17 +1661,6 @@ public:
             state).shiftFrameStationToBase(m_station_B);
         getSubsystem().markCacheValueRealized(state, m_indexStation_G);
         return station_G;
-    }
-
-    //--------------------------------------------------------------------------
-    // Helper function: via point visualization
-    //--------------------------------------------------------------------------
-
-    void calcDecorativePathPoints(
-        const State& state,
-        const std::function<void(Vec3 point_G)>& sink) const
-    {
-        sink(getStation_G(state));
     }
 
 private:
@@ -1854,6 +1891,9 @@ public:
     {
         if (getSubsystem().isCacheValueRealized(state, m_indexDataPos)) {
             return;
+        }
+        for (const CurveSegment& curve : m_curveSegments) {
+            curve.invalidateDataInstCache(state);
         }
         calcDataPos(state);
         getSubsystem().markCacheValueRealized(state, m_indexDataPos);
@@ -2163,12 +2203,12 @@ public:
                 curve.calcDecorativePathPoints(state, sink);
             }
 
-            // Write the path points for the final via point in the cable
+            // Write the path point for the final via point in the cable
             // segment.
             if (cableSegment.getFinalViaPointIndex().isValid()) {
                 const ViaPoint& viaPoint = getViaPoint(
                     cableSegment.getFinalViaPointIndex());
-                viaPoint.calcDecorativePathPoints(state, sink);
+                sink(viaPoint.getStation_G(state));
             }
         }
 
@@ -2181,6 +2221,38 @@ public:
         CableSpanObstacleIndex ix,
         int numSamples,
         const std::function<void(Vec3 point_G)>& sink) const;
+
+    void calcResampledDecorativePathPoints(
+        const State& state,
+        int numCurveSegmentSamples,
+        const std::function<void(Vec3 point_G)>& sink) const
+    {
+        // Write the initial path point.
+        const CableSpanData::Position& dataPos = getDataPos(state);
+        sink(dataPos.originPoint_G);
+
+        // Write the path points for each cable segment.
+        for (CableSegmentIndex ix(0); ix < getNumCableSegments(); ++ix) {
+            const CableSegment& cableSegment = getCableSegment(ix);
+
+            // Write the path points for each obstacle in the cable segment.
+            for (ObstacleIndex ix : cableSegment.getObstacleIndexes()) {
+                const CurveSegment& curve = getObstacleCurveSegment(ix);
+                curve.calcResampledPoints(state, numCurveSegmentSamples, sink);
+            }
+
+            // Write the path point for the final via point in the cable
+            // segment.
+            if (cableSegment.getFinalViaPointIndex().isValid()) {
+                const ViaPoint& viaPoint = getViaPoint(
+                    cableSegment.getFinalViaPointIndex());
+                sink(viaPoint.getStation_G(state));
+            }
+        }
+
+        // Write the path's termination point.
+        sink(dataPos.terminationPoint_G);
+    }
 
     void calcDecorativeGeometryAndAppend(
         const State& state,
@@ -2504,6 +2576,11 @@ private:
 const IntegratorTolerances& CurveSegment::getIntegratorTolerances() const
 {
     return getCable().getParameters();
+}
+
+bool CurveSegment::getUseWarmStart() const
+{
+    return getCable().getParameters().useWarmStart;
 }
 
 ObstacleIndex CurveSegment::findPrevObstacleInContactWithCable(
@@ -4545,12 +4622,26 @@ void CableSpan::calcOriginUnitForce(
     calcUnitForceAtCableOrigin(getImpl(), state, unitForce_G);
 }
 
+UnitVec3 CableSpan::calcOriginTangentDirection(const State& state) const
+{
+    getImpl().realizePosition(state);
+    const CableSpanData::Position& dataPos = getImpl().getDataPos(state);
+    return dataPos.originTangent_G;
+}
+
 void CableSpan::calcTerminationUnitForce(
     const State& state,
     SpatialVec& unitForce_G) const
 {
     getImpl().realizePosition(state);
     calcUnitForceAtCableTermination(getImpl(), state, unitForce_G);
+}
+
+UnitVec3 CableSpan::calcTerminationTangentDirection(const State& state) const
+{
+    getImpl().realizePosition(state);
+    const CableSpanData::Position& dataPos = getImpl().getDataPos(state);
+    return dataPos.terminationTangent_G;
 }
 
 ObstacleIndex CableSpan::addObstacle(
@@ -4741,6 +4832,17 @@ void CableSpan::setAlgorithm(CableSpanAlgorithm algorithm)
     updImpl().updParameters().algorithm = algorithm;
 }
 
+bool CableSpan::getUseWarmStart() const
+{
+    return getImpl().getParameters().useWarmStart;
+}
+
+void CableSpan::setUseWarmStart(bool useWarmStart)
+{
+    updImpl().invalidateTopology();
+    updImpl().updParameters().useWarmStart = useWarmStart;
+}
+
 Real CableSpan::calcLength(const State& s) const
 {
     return getImpl().getDataPos(s).cableLength;
@@ -4764,6 +4866,15 @@ void CableSpan::calcDecorativePathPoints(
     const std::function<void(Vec3 point_G)>& sink) const
 {
     getImpl().calcDecorativePathPoints(state, sink);
+}
+
+void CableSpan::calcResampledDecorativePathPoints(
+    const State& state,
+    int numCurveSegmentSamples,
+    const std::function<void(Vec3 point_G)>& sink) const
+{
+    getImpl().calcResampledDecorativePathPoints(
+        state, numCurveSegmentSamples, sink);
 }
 
 Real CableSpan::calcCablePower(const State& state, Real tension) const
@@ -4815,4 +4926,26 @@ void CableSpan::calcViaPointUnitForce(
     getImpl().realizePosition(state);
     const auto& viaPoint = getImpl().getViaPoint(ix);
     calcUnitForceExertedByViaPoint(viaPoint, state, unitForce_G);
+}
+
+UnitVec3 CableSpan::calcViaPointIncomingTangentDirection(
+    const State& state,
+    CableSpanViaPointIndex ix) const
+{
+    SimTK_INDEXCHECK_ALWAYS(ix,getNumViaPoints(),
+        "CableSpan::calcViaPointIncomingTangentDirection()");
+    getImpl().realizePosition(state);
+    const CableSpanData::Position& dataPos = getImpl().getDataPos(state);
+    return dataPos.viaPointInTangents_G[ix];
+}
+
+UnitVec3 CableSpan::calcViaPointOutgoingTangentDirection(
+    const State& state,
+    CableSpanViaPointIndex ix) const
+{
+    SimTK_INDEXCHECK_ALWAYS(ix,getNumViaPoints(),
+        "CableSpan::calcViaPointOutgoingTangentDirection()");
+    getImpl().realizePosition(state);
+    const CableSpanData::Position& dataPos = getImpl().getDataPos(state);
+    return dataPos.viaPointOutTangents_G[ix];
 }

@@ -31,15 +31,12 @@ namespace
         auto& model = *rv.upd();
 
         // Setup head body with decorations
-        auto& head = add_body(model, "head", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+        auto& head =
+            add_body(model, "head", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
         auto& head_sphere_geom = attach_geometry<OpenSim::Sphere>(head, 0.05);
         head_sphere_geom.setName("head_geom");
         auto& head_rod_pof = add_component<OpenSim::PhysicalOffsetFrame>(
-            head,
-            "head_rod_offset",
-            head,
-            SimTK::Transform{SimTK::Vec3{0.0, 0.25, 0.0}}
-        );
+            head, "head_rod_offset", head, SimTK::Transform{SimTK::Vec3{0.0, 0.25, 0.0}});
         attach_geometry<OpenSim::Cylinder>(head_rod_pof, 0.005, 0.25);
 
         // Attach body to ground with a pin joint
@@ -51,9 +48,8 @@ namespace
             SimTK::Vec3{0.0},
             head,
             SimTK::Vec3{0.0, -1.0, 0.0},
-            SimTK::Vec3{0.0}
-        );
-        pin.updCoordinate().set_default_value(0.25*std::numbers::pi_v<double>);
+            SimTK::Vec3{0.0});
+        pin.updCoordinate().set_default_value(0.25 * std::numbers::pi_v<double>);
         model.finalizeConnections();
         return rv;
     }
@@ -62,15 +58,12 @@ namespace
     {
         auto rv = osc::make_cow<OpenSim::Model>();
         auto& model = *rv.upd();
-        auto& rod1 = add_body(model, "rod1", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+        auto& rod1 =
+            add_body(model, "rod1", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
         auto& rod1_sphere = attach_geometry<OpenSim::Sphere>(rod1, 0.05);
         rod1_sphere.setName("rod1_geom_2");
         auto& rod1_rod_frame = add_component<OpenSim::PhysicalOffsetFrame>(
-            rod1,
-            "rod1_geom_frame_1",
-            rod1,
-            SimTK::Transform{SimTK::Vec3{0.0, 0.25, 0.0}}
-        );
+            rod1, "rod1_geom_frame_1", rod1, SimTK::Transform{SimTK::Vec3{0.0, 0.25, 0.0}});
         attach_geometry<OpenSim::Cylinder>(rod1_rod_frame, 0.005, 0.25);
         auto& pin1 = add_joint<OpenSim::PinJoint>(
             model,
@@ -80,18 +73,14 @@ namespace
             SimTK::Vec3{0.0},
             rod1,
             SimTK::Vec3{0.0, 0.5, 0.0},
-            SimTK::Vec3{0.0}
-        );
-        pin1.updCoordinate().set_default_value(0.25*std::numbers::pi_v<double>);
-        auto& rod2 = add_body(model, "rod2", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+            SimTK::Vec3{0.0});
+        pin1.updCoordinate().set_default_value(0.25 * std::numbers::pi_v<double>);
+        auto& rod2 =
+            add_body(model, "rod2", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
         auto& rod2_sphere = attach_geometry<OpenSim::Sphere>(rod2, 0.05);
         rod2_sphere.setName("rod2_geom_2");
         auto& rod2_rod_frame = add_component<OpenSim::PhysicalOffsetFrame>(
-            rod2,
-            "rod2_geom_frame_1",
-            rod2,
-            SimTK::Transform{SimTK::Vec3{0.0, 0.25, 0.0}}
-        );
+            rod2, "rod2_geom_frame_1", rod2, SimTK::Transform{SimTK::Vec3{0.0, 0.25, 0.0}});
         attach_geometry<OpenSim::Cylinder>(rod2_rod_frame, 0.005, 0.25);
         auto& pin2 = add_joint<OpenSim::PinJoint>(
             model,
@@ -101,9 +90,8 @@ namespace
             SimTK::Vec3{0.0},
             rod2,
             SimTK::Vec3{0.0, 0.5, 0.0},
-            SimTK::Vec3{0.0}
-        );
-        pin2.updCoordinate().set_default_value(0.25*std::numbers::pi_v<double>);
+            SimTK::Vec3{0.0});
+        pin2.updCoordinate().set_default_value(0.25 * std::numbers::pi_v<double>);
 
         // This must happen here, because the pointers (which reset/invalidate
         // on copy) must be written as component paths (copyable) before
@@ -166,10 +154,7 @@ public:
         return model_->dump();
     }
 
-    void bake_station_defined_frames()
-    {
-        opyn::bake_station_defined_frames(*model_.upd());
-    }
+    void bake_station_defined_frames() { opyn::bake_station_defined_frames(*model_.upd()); }
 
     void flush_in_memory_resources_to(const std::filesystem::path& directory)
     {
@@ -190,11 +175,15 @@ public:
             for (const auto& imm_abs_path : imm_abs_paths) {
                 name_counts[imm_abs_path.getComponentName()]++;
             }
-            const auto count_gt_1 = [](const auto& p) { return p.second > 1; };
+            const auto count_gt_1 = [](const auto& p) {
+                return p.second > 1;
+            };
             if (rgs::any_of(name_counts, count_gt_1)) {
-                std::string error_message = "Cannot flush in-memory resources: the `ModelSpecification` the following in-memory components have duplicate names:";
+                std::string error_message =
+                    "Cannot flush in-memory resources: the `ModelSpecification` the following in-memory components have duplicate names:";
                 for (const auto& [name, count] : name_counts | vws::filter(count_gt_1)) {
-                    std::format_to(std::back_inserter(error_message), "- {} ({} occurrences)", name, count);
+                    std::format_to(
+                        std::back_inserter(error_message), "- {} ({} occurrences)", name, count);
                 }
                 throw std::runtime_error{error_message};
             }
@@ -211,7 +200,8 @@ public:
             std::filesystem::path filename{imm_abs_path.getComponentName()};
             filename.replace_extension(".obj");
             const std::filesystem::path filesystem_path = root_directory() / directory / filename;
-            const std::filesystem::path property_path   = (directory / filename).lexically_normal().generic_string();
+            const std::filesystem::path property_path =
+                (directory / filename).lexically_normal().generic_string();
 
             // Write in-memory warped mesh data to disk as an OBJ file.
             auto& imm = mutable_model.updComponent<InMemoryMesh>(imm_abs_path);
@@ -239,11 +229,14 @@ private:
             violations.push_back(&in_memory_mesh);
         }
         if (not violations.empty()) {
-            std::string error_msg = "Cannot serialize `ModelSpecification`: it contains the following in-memory resources:";
+            std::string error_msg =
+                "Cannot serialize `ModelSpecification`: it contains the following in-memory resources:";
             for (const InMemoryMesh* in_memory_mesh : violations) {
-                std::format_to(std::back_inserter(error_msg), "- {}", in_memory_mesh->getAbsolutePathString());
+                std::format_to(
+                    std::back_inserter(error_msg), "- {}", in_memory_mesh->getAbsolutePathString());
             }
-            error_msg += "You can fix this by first flushing them to disk with `model_specification.flush_in_memory_resources_to(directory)`. If you are using a relative `directory`, you may also need to set the `root_path` of this model to the directory where it will be stored.";
+            error_msg +=
+                "You can fix this by first flushing them to disk with `model_specification.flush_in_memory_resources_to(directory)`. If you are using a relative `directory`, you may also need to set the `root_path` of this model to the directory where it will be stored.";
             throw std::runtime_error{error_msg};
         }
     }
@@ -276,11 +269,26 @@ opyn::ModelSpecification::ModelSpecification(osc::CopyOnUpdPtr<Impl> impl) :
     impl_{std::move(impl)}
 {}
 
-Model opyn::ModelSpecification::compile() const { return impl_->compile(); }
-std::filesystem::path opyn::ModelSpecification::root_directory() const { return impl_->root_directory(); }
-void opyn::ModelSpecification::set_root_directory(const std::filesystem::path& directory) { impl_.upd()->set_root_directory(directory); }
-void opyn::ModelSpecification::to_osim(const std::filesystem::path& destination) const { impl_->to_osim(destination); }
-std::string opyn::ModelSpecification::to_osim() const { return impl_->to_osim(); }
+Model opyn::ModelSpecification::compile() const
+{
+    return impl_->compile();
+}
+std::filesystem::path opyn::ModelSpecification::root_directory() const
+{
+    return impl_->root_directory();
+}
+void opyn::ModelSpecification::set_root_directory(const std::filesystem::path& directory)
+{
+    impl_.upd()->set_root_directory(directory);
+}
+void opyn::ModelSpecification::to_osim(const std::filesystem::path& destination) const
+{
+    impl_->to_osim(destination);
+}
+std::string opyn::ModelSpecification::to_osim() const
+{
+    return impl_->to_osim();
+}
 void opyn::ModelSpecification::bake_station_defined_frames()
 {
     impl_.upd()->bake_station_defined_frames();

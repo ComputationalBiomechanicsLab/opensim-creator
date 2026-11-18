@@ -154,6 +154,10 @@ Two further functions :cpp:func:`nb::type_name() <type_name>` and
 :cpp:func:`nb::inst_name() <inst_name>` determine the type name associated with
 a type or instance thereof. These also accept non-nanobind types and instances.
 
+The function :cpp:func:`nb::inst_python_derived() <inst_python_derived>`
+reports whether a nanobind instance belongs to a Python subclass of the bound
+type rather than to the bound type itself.
+
 Even lower-level interface
 --------------------------
 
@@ -175,7 +179,7 @@ both of them to ``false``.
 In rare situations, the destructor should *not* be invoked when the instance is
 garbage collected, for example when working with a nanobind instance
 representing a field of a parent instance created using the
-:cpp:enumerator:`nb::rv_policy::reference_internal
+:cpp:member:`nb::rv_policy::reference_internal
 <rv_policy::reference_internal>` return value policy. The library therefore
 exposes two more functions :cpp:func:`nb::inst_state() <inst_state>` and
 :cpp:func:`nb::inst_set_state() <inst_set_state>` that can be used to access
@@ -267,6 +271,77 @@ as attributes of the type object (in its ``__dict__``) and store a borrowed
 name that begins with the symbol ``@``, then nanobind will prevent Python
 code from rebinding or deleting the attribute after it has been set, making
 the borrowed reference reasonably safe.
+
+.. _type_namespaces:
+
+Type namespaces
+---------------
+
+Python exposes the namespace of a type object through the read-only proxy
+``cls.__dict__``. The function :cpp:func:`nb::type_dict() <type_dict>` returns
+the underlying dictionary, which is useful to inspect or modify the attributes
+that a type declares itself.
+
+.. code-block:: cpp
+
+   nb::dict d = nb::type_dict(cls);
+
+   // Does 'cls' declare 'my_method', or does it inherit the attribute?
+   bool local = d.contains("my_method");
+
+Modifications of this dictionary bypass the ``__setattr__`` protocol, in which
+case the attribute caches of the interpreter must be flushed manually.
+
+.. code-block:: cpp
+
+   d["my_attribute"] = value;
+
+   // Announce the change to the interpreter
+   PyType_Modified((PyTypeObject *) cls.ptr());
+
+When Python evaluates an attribute access like ``inst.my_property``, it first
+searches the type of ``inst`` and its base classes for an entry of that name.
+This search visits the bases in `method resolution order
+<https://docs.python.org/3/glossary.html#term-method-resolution-order>`__
+(MRO). The instance dictionary and the descriptor protocol then determine the
+final result, e.g., by replacing a property by its current value.
+
+The function :cpp:func:`nb::type_lookup() <type_lookup>` performs only this
+first step and returns the raw entry, which reveals what a type provides
+without involving an instance or running any of the associated machinery.
+
+.. code-block:: cpp
+
+   // Fetch the descriptor of a static property without invoking its getter
+   nb::object o = nb::type_lookup(cls, "my_property");
+
+The search skips the metaclass, hence attributes like ``__name__`` that a type
+object inherits from ``type`` are not found. It returns an invalid object
+(checked via ``o.is_valid()``) when there is no matching entry, and it never
+raises an exception.
+
+.. _instance_dicts:
+
+Instance dictionaries
+---------------------
+
+The function :cpp:func:`nb::inst_dict() <inst_dict>` provides access to the
+instance dictionary of an arbitrary Python object. This is more efficient than
+the equivalent expression ``isnt.attr("__dict__")``. The function never raises
+but may return an object ``o`` with ``!o.is_valid()`` when of `h` lacks an
+attribute dictionary.
+
+.. code-block:: cpp
+
+   nb::dict d = nb::inst_dict(inst);
+   if (d.is_valid())
+       d["my_attribute"] = value;
+
+
+A type bound via :cpp:class:`nb::class_ <class_>` must declare
+:cpp:class:`nb::dynamic_attr <dynamic_attr>` to equip its instances with such a
+dictionary. Python subclasses including :ref:`trampolines <trampolines>` always
+have one.
 
 .. _typeslots:
 

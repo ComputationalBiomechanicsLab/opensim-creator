@@ -1,16 +1,16 @@
+.. currentmodule:: opynsim
+
 Modelling
 =========
 
 Modelling is a central part of of the OPynSim API. At a high-level, the API is designed
 around three classes with distinct roles:
 
-- :class:`opynsim.ModelSpecification`: A high-level specification of the
-  model. This is what Python code manipulates before calling :meth:`opynsim.ModelSpecification.compile`
-  to yield...
-- :class:`opynsim.Model`: A compiled read-only physics model, which can
+- :class:`ModelSpecification`: A high-level specification of the
+  model. Compiling a model with :meth:`ModelSpecification.compile` yields...
+- :class:`Model`: A compiled read-only physics model, which can
   create/read/manipulate...
-- :class:`opynsim.ModelState`: A single state of an :class:`opynsim.Model`, which can
-  be modified by Python code to modify the state of the model.
+- :class:`ModelState`: A single, modifiable, state of a :class:`Model`.
 
 When modelling with OPynSim, it's important to understand this relationship, because the rest
 of the modelling API is built around it.
@@ -28,4 +28,4 @@ Typical modelling workflows follow some combination of these steps:
 5. If required, modify the :class:`opynsim.ModelState`.
 6. Use, or extract data from, the resulting :class:`opynsim.Model` + :class:`opynsim.ModelState` pair.
 
-See :doc:`../examples/plot-model-output-vs-property` for an example of this pattern.
+See :doc:`../examples/overlay-model-over-plot` for an example of this pattern.

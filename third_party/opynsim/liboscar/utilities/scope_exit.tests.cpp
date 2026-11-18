@@ -13,15 +13,21 @@ namespace
     class Callable final {
     public:
         explicit Callable(int* calls, int* copies, int* moves) :
-            calls_{calls}, copies_{copies}, moves_{moves}
+            calls_{calls},
+            copies_{copies},
+            moves_{moves}
         {}
         Callable(Callable&& tmp) noexcept(IsNoexceptMoveConstructible) :
-            calls_{tmp.calls_}, copies_{tmp.copies_}, moves_{tmp.moves_}
+            calls_{tmp.calls_},
+            copies_{tmp.copies_},
+            moves_{tmp.moves_}
         {
             ++(*moves_);
         }
         Callable(const Callable& src) noexcept(IsNoexceptCopyConstructible) :
-            calls_{src.calls_}, copies_{src.copies_}, moves_{src.moves_}
+            calls_{src.calls_},
+            copies_{src.copies_},
+            moves_{src.moves_}
         {
             ++(*copies_);
         }
@@ -30,8 +36,8 @@ namespace
         Callable& operator=(const Callable&) = delete;
         Callable& operator=(Callable&&) noexcept = delete;
 
-
         void operator()() const noexcept { ++(*calls_); }
+
     private:
         int* calls_;
         int* copies_;
@@ -43,7 +49,9 @@ TEST(ScopeExit, calls_exit_function_on_normal_scope_exit)
 {
     bool called = false;
     {
-        ScopeExit exit{[&called]() { called = true; }};
+        ScopeExit exit{[&called] {
+            called = true;
+        }};
     }
     ASSERT_TRUE(called);
 }
@@ -53,10 +61,12 @@ TEST(ScopeExit, calls_exit_function_when_exception_is_thrown)
     bool called = false;
     {
         try {
-            ScopeExit exit{[&called]() { called = true; }};
+            ScopeExit exit{[&called] {
+                called = true;
+            }};
             throw std::runtime_error{"throw something"};
+        } catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
         }
-        catch (const std::exception&) {}  // NOLINT(bugprone-empty-catch)
     }
     ASSERT_TRUE(called);
 }
@@ -65,7 +75,9 @@ TEST(ScopeExit, when_move_constructed_only_calls_exit_function_once)
 {
     int calls = 0;
     {
-        ScopeExit first{[&calls]() { ++calls; }};
+        ScopeExit first{[&calls] {
+            ++calls;
+        }};
         ScopeExit second{std::move(first)};
     }
     ASSERT_EQ(calls, 1);
@@ -75,7 +87,9 @@ TEST(ScopeExit, when_move_constructed_does_not_forget_release_of_source_object)
 {
     int calls = 0;
     {
-        ScopeExit first{[&calls]() { ++calls; }};
+        ScopeExit first{[&calls] {
+            ++calls;
+        }};
         first.release();
         ScopeExit second{std::move(first)};
     }
@@ -111,16 +125,18 @@ TEST(ScopeExit, moves_the_exit_function_if_its_move_constructor_is_noexcept)
         ScopeExit first{Callable<true, true>{&calls, &copies, &moves}};
         ScopeExit second{std::move(first)};
     }
-    ASSERT_EQ(calls, 1);   // Destruction of `second`
+    ASSERT_EQ(calls, 1);  // Destruction of `second`
     ASSERT_EQ(copies, 0);
-    ASSERT_EQ(moves, 2);   // Initial construction and move construction of `ScopeExit`
+    ASSERT_EQ(moves, 2);  // Initial construction and move construction of `ScopeExit`
 }
 
 TEST(ScopeExit, release_stops_exit_function_from_being_called_on_normal_scope_exit)
 {
     bool called = false;
     {
-        ScopeExit exit{[&called]() { called = true; }};
+        ScopeExit exit{[&called] {
+            called = true;
+        }};
         exit.release();
     }
     ASSERT_FALSE(called);
@@ -131,11 +147,13 @@ TEST(ScopeExit, release_stops_exit_function_from_being_called_when_exception_is_
     bool called = false;
     {
         try {
-            ScopeExit exit{[&called]() { called = true; }};
+            ScopeExit exit{[&called] {
+                called = true;
+            }};
             exit.release();
             throw std::runtime_error{"throw something"};
+        } catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
         }
-        catch (const std::exception&) {}  // NOLINT(bugprone-empty-catch)
     }
     ASSERT_FALSE(called);
 }

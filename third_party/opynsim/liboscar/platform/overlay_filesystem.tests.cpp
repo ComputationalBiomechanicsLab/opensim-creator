@@ -39,7 +39,9 @@ TEST(OverlayFilesystem, resource_filepath_returns_correct_path)
     overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir2.absolute_path());
     overlay_filesystem.emplace_lowest_priority<NativeFilesystem>(dir3.absolute_path());
 
-    ASSERT_EQ(overlay_filesystem.resource_filepath("file1"), std::filesystem::weakly_canonical(dir2.absolute_path() / "file1"));
+    ASSERT_EQ(
+        overlay_filesystem.resource_filepath("file1"),
+        std::filesystem::weakly_canonical(dir2.absolute_path() / "file1"));
 }
 
 TEST(OverlayFilesystem, resource_exists_returns_true_if_file_exists_in_some_layer)
@@ -77,7 +79,8 @@ TEST(OverlayFilesystem, resource_exists_returns_true_if_file_exists_in_some_laye
 
     ASSERT_FALSE(overlay_filesystem.resource_exists("bar.txt"));
     ASSERT_FALSE(overlay_filesystem.resource_exists("foobar.txt"));
-    ASSERT_FALSE(overlay_filesystem.resource_exists("subdir")) << "Directories are only shown during iteration: they aren't load-able resources";
+    ASSERT_FALSE(overlay_filesystem.resource_exists("subdir"))
+        << "Directories are only shown during iteration: they aren't load-able resources";
     ASSERT_FALSE(overlay_filesystem.resource_exists("subdir/barfoo.txt"));
 }
 

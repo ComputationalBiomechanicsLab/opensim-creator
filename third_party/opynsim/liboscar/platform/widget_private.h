@@ -6,9 +6,17 @@
 
 #include <string_view>
 
-#define OSC_OWNER_GETTERS(OwnerClass)                                                             \
-    const OwnerClass& owner() const { return reinterpret_cast<const OwnerClass&>(base_owner()); } \
-    OwnerClass& owner() { return reinterpret_cast<OwnerClass&>(base_owner()); }
+// NOLINTBEGIN
+#define OSC_OWNER_GETTERS(OwnerClass)                                                              \
+    const OwnerClass& owner() const                                                                \
+    {                                                                                              \
+        return reinterpret_cast<const OwnerClass&>(base_owner());                                  \
+    }                                                                                              \
+    OwnerClass& owner()                                                                            \
+    {                                                                                              \
+        return reinterpret_cast<OwnerClass&>(base_owner());                                        \
+    }
+// NOLINTEND
 
 namespace osc
 {
@@ -18,7 +26,12 @@ namespace osc
             owner_{&owner},
             parent_{parent}
         {}
+        WidgetPrivate(const WidgetPrivate&) = default;
+        WidgetPrivate(WidgetPrivate&&) noexcept = default;
         virtual ~WidgetPrivate() noexcept = default;
+
+        WidgetPrivate& operator=(const WidgetPrivate&) = default;
+        WidgetPrivate& operator=(WidgetPrivate&&) noexcept = default;
 
         LifetimeWatcher lifetime_watcher() const { return lifetime_.watch(); }
 

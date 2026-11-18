@@ -22,7 +22,8 @@ namespace osc
         explicit BoxGeometry(const Params& = Params{});
 
         const Mesh& mesh() const { return mesh_; }
-        operator const Mesh& () const { return mesh_; }
+        operator const Mesh&() const { return mesh_; }
+
     private:
         Mesh mesh_;
     };

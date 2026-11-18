@@ -13,28 +13,49 @@ namespace osc
         AppMetadata() = default;
 
         CStringView organization_name() const { return organization_name_; }
-        void set_organization_name(std::string_view new_organization_name) { organization_name_ = new_organization_name; }
+        void set_organization_name(std::string_view new_organization_name)
+        {
+            organization_name_ = new_organization_name;
+        }
 
         CStringView application_name() const { return application_name_; }
-        void set_application_name(std::string_view new_application_name) { application_name_ = new_application_name; }
+        void set_application_name(std::string_view new_application_name)
+        {
+            application_name_ = new_application_name;
+        }
 
         CStringView config_filename() const { return config_filename_; }
-        void set_config_filename(std::string_view new_config_filename)  { config_filename_ = new_config_filename; }
+        void set_config_filename(std::string_view new_config_filename)
+        {
+            config_filename_ = new_config_filename;
+        }
 
         std::optional<CStringView> long_appliation_name() const { return long_application_name_; }
-        void set_long_application_name(std::string_view new_long_application_name) { long_application_name_ = new_long_application_name; }
+        void set_long_application_name(std::string_view new_long_application_name)
+        {
+            long_application_name_ = new_long_application_name;
+        }
 
         std::optional<CStringView> version_string() const { return version_string_; }
-        void set_version_string(std::string_view new_version_string) { version_string_ = new_version_string; }
+        void set_version_string(std::string_view new_version_string)
+        {
+            version_string_ = new_version_string;
+        }
 
         std::optional<CStringView> build_id() const { return build_id_; }
         void set_build_id(std::string_view new_build_id) { build_id_ = new_build_id; }
 
         std::optional<CStringView> repository_url() const { return repository_url_; }
-        void set_repository_url(std::string_view new_repository_url) { repository_url_ = new_repository_url; }
+        void set_repository_url(std::string_view new_repository_url)
+        {
+            repository_url_ = new_repository_url;
+        }
 
         std::optional<CStringView> documentation_url() const { return documentation_url_; }
-        void set_documentation_url(std::string_view new_documentation_url) { documentation_url_ = new_documentation_url; }
+        void set_documentation_url(std::string_view new_documentation_url)
+        {
+            documentation_url_ = new_documentation_url;
+        }
 
         std::optional<CStringView> help_url() const { return help_url_; }
         void set_help_url(std::string_view new_help_url) { help_url_ = new_help_url; }
@@ -47,10 +68,17 @@ namespace osc
         std::string application_name_with_version_and_buildid() const;
 
         std::optional<bool> headless_mode() const { return headless_mode_; }
-        void set_headless_mode(std::optional<bool> new_headless_mode) { headless_mode_ = new_headless_mode; }
+        void set_headless_mode(std::optional<bool> new_headless_mode)
+        {
+            headless_mode_ = new_headless_mode;
+        }
 
         std::optional<bool> maximize_main_window() const { return maximize_main_window_; }
-        void set_maximize_main_window(std::optional<bool> new_maximize_main_window) { maximize_main_window_ = new_maximize_main_window; }
+        void set_maximize_main_window(std::optional<bool> new_maximize_main_window)
+        {
+            maximize_main_window_ = new_maximize_main_window;
+        }
+
     private:
         std::string organization_name_ = "oscarorg";
         std::string application_name_ = "osc";

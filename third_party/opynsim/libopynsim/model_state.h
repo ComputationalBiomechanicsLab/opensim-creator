@@ -5,17 +5,23 @@
 
 #include <liboscar/utilities/copy_on_upd_ptr.h>
 
+#include <format>
 #include <unordered_map>
 
-namespace opyn { class Model; }
-namespace SimTK { class State; }
+namespace SimTK
+{
+    class State;
+}
 
 namespace opyn
 {
+    class Model;
+
     // Represents all state information for a `Model`.
     //
     // Related: https://simtk.org/api_docs/simbody/3.5/classSimTK_1_1State.html#details
-    // Related: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089017/SimTK+Simulation+Concepts
+    // Related:
+    // https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089017/SimTK+Simulation+Concepts
     class ModelState final {
     public:
         using attrs_type = std::unordered_map<Symbol, double>;
@@ -45,6 +51,24 @@ namespace opyn
 
     private:
         class Impl;
+        friend bool operator==(const ModelState&, const ModelState&);
+
         osc::CopyOnUpdPtr<Impl> impl_;
     };
+
+    /// Returns `true` if `lhs` and `rhs` are memory-equivalent at the
+    /// time/stage/state-variable level.
+    bool operator==(const ModelState& lhs, const ModelState& rhs);
 }
+
+template<>
+struct std::formatter<opyn::ModelState> {
+    constexpr auto parse(std::format_parse_context& ctx) const { return ctx.begin(); }
+
+    template<class FormatContext>
+    auto format(const opyn::ModelState& model_state, FormatContext& ctx) const
+    {
+        return std::format_to(
+            ctx.out(), "ModelState(time={}, stage={})", model_state.time(), model_state.stage());
+    }
+};

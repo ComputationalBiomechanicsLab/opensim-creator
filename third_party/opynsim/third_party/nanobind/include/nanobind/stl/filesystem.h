@@ -16,6 +16,8 @@
 NAMESPACE_BEGIN(NB_NAMESPACE)
 NAMESPACE_BEGIN(detail)
 
+inline import_cache pathlib_path { "pathlib", "Path" };
+
 template <>
 struct type_caster<std::filesystem::path> {
 
@@ -24,9 +26,7 @@ struct type_caster<std::filesystem::path> {
         str py_str = to_py_str(path.native());
         if (py_str.is_valid()) {
             try {
-                return module_::import_("pathlib")
-                    .attr("Path")(py_str)
-                    .release();
+                return pathlib_path.get()(py_str).release();
             } catch (python_error &e) {
                 e.restore();
             }
@@ -35,12 +35,12 @@ struct type_caster<std::filesystem::path> {
     }
 
     template <typename Char = typename std::filesystem::path::value_type>
-    bool from_python(handle src, uint8_t, cleanup_list *) noexcept {
+    bool from_python(handle src, uint32_t, cleanup_list *) noexcept {
         bool success = false;
 
-        /* PyUnicode_FSConverter and PyUnicode_FSDecoder normally take care of
-           calling PyOS_FSPath themselves, but that's broken on PyPy (see PyPy
-           issue #3168) so we do it ourselves instead. */
+        // PyUnicode_FSConverter and PyUnicode_FSDecoder normally take care of
+        // calling PyOS_FSPath themselves, but that's broken on PyPy (see PyPy
+        // issue #3168) so we do it ourselves instead.
         PyObject *buf = PyOS_FSPath(src.ptr());
         if (buf) {
             PyObject *native = nullptr;

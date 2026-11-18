@@ -16,7 +16,7 @@ namespace osc
         std::string_view name() const { return name_; }
         std::istream& stream() const { return *handle_; }
 
-        operator std::istream& () { return *handle_; }
+        operator std::istream&() { return *handle_; }
 
     private:
         std::string name_;

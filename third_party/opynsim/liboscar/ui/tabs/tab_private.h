@@ -17,6 +17,7 @@ namespace osc
         }
 
         UID id() const { return id_; }
+
     private:
         UID id_;
     };

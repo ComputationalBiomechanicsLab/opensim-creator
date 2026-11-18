@@ -25,9 +25,11 @@ namespace osc
                 offset_{offset}
             {}
 
-            friend bool operator==(const VertexAttributeLayout&, const VertexAttributeLayout&) = default;
+            friend bool operator==(const VertexAttributeLayout&, const VertexAttributeLayout&) =
+                default;
 
             size_t offset() const { return offset_; }
+
         private:
             size_t offset_;
         };
@@ -48,7 +50,8 @@ namespace osc
                 iter_{iter}
             {}
 
-            friend bool operator==(const VertexAttributeLayoutIterator& lhs, const VertexAttributeLayoutIterator& rhs)
+            friend bool operator==(
+                const VertexAttributeLayoutIterator& lhs, const VertexAttributeLayoutIterator& rhs)
             {
                 return lhs.iter_ == rhs.iter_;
             }
@@ -67,10 +70,8 @@ namespace osc
                 return tmp;
             }
 
-            reference operator*() const
-            {
-                return VertexAttributeLayout{*iter_, offset_};
-            }
+            reference operator*() const { return VertexAttributeLayout{*iter_, offset_}; }
+
         private:
             size_t offset_ = 0;
             std::vector<VertexAttributeDescriptor>::const_iterator iter_{};
@@ -97,6 +98,7 @@ namespace osc
             {
                 return VertexAttributeLayoutIterator{descriptions_->end()};
             }
+
         private:
             const std::vector<VertexAttributeDescriptor>* descriptions_ = nullptr;
         };
@@ -116,25 +118,17 @@ namespace osc
 
         friend bool operator==(const VertexFormat&, const VertexFormat&) = default;
 
-        void clear()
-        {
-            *this = VertexFormat{};
-        }
+        void clear() { *this = VertexFormat{}; }
 
-        [[nodiscard]] bool empty() const
-        {
-            return attribute_descriptions_.empty();
-        }
+        [[nodiscard]] bool empty() const { return attribute_descriptions_.empty(); }
 
         bool contains(VertexAttribute attribute) const
         {
-            return cpp23::contains(attribute_descriptions_, attribute, &VertexAttributeDescriptor::attribute);
+            return cpp23::contains(
+                attribute_descriptions_, attribute, &VertexAttributeDescriptor::attribute);
         }
 
-        size_t num_attributes() const
-        {
-            return attribute_descriptions_.size();
-        }
+        size_t num_attributes() const { return attribute_descriptions_.size(); }
 
         VertexAttributeLayoutRange attribute_layouts() const
         {
@@ -143,16 +137,15 @@ namespace osc
 
         std::optional<VertexAttributeLayout> attribute_layout(VertexAttribute attribute) const
         {
-            return find_or_nullopt(attribute_layouts(), attribute, &VertexAttributeLayout::attribute);
+            return find_or_nullopt(
+                attribute_layouts(), attribute, &VertexAttributeLayout::attribute);
         }
 
-        size_t stride() const
-        {
-            return stride_;
-        }
+        size_t stride() const { return stride_; }
 
         void insert(const VertexAttributeDescriptor&);
         void erase(VertexAttribute);
+
     private:
         size_t calc_stride() const;
 

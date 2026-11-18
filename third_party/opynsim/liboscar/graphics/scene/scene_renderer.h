@@ -5,12 +5,12 @@
 #include <memory>
 #include <span>
 
-namespace osc { class SceneCache; }
-namespace osc { struct SceneRendererParams; }
-namespace osc { class RenderTexture; }
-
 namespace osc
 {
+    class RenderTexture;
+    class SceneCache;
+    struct SceneRendererParams;
+
     // renders the given `SceneDecoration`s with the given `SceneRendererParams`
     // to a rasterized `RenderTexture`
     class SceneRenderer final {

@@ -1,4 +1,3 @@
-
 file(GLOB INCLUDES *.h gcvspl.h)
 file(GLOB SOURCES *.cpp gcvspl.c)
 
@@ -16,15 +15,21 @@ OpenSimAddLibrary(
     KIT Common
     AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
     # Clients of osimCommon need not link to ezc3d.
-    LINKLIBS PUBLIC ${Simbody_LIBRARIES} spdlog::spdlog osimLepton
+    LINKLIBS PUBLIC ${Simbody_LIBRARIES} osimLepton
              PRIVATE ${ezc3d_LIBRARY}
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
-    TESTDIRS "Test"
+    TESTDIRS "tests"
     # This disables the operators from SimTK that newer compilers have problems with
     # see https://github.com/simbody/simbody/pull/815 for details
     EXTERNAL_DEPENDENCY_SYMBOL SWIG_PYTHON
     )
+
+# Copy the Detail directory so that compilation units can find the contained
+# headers in external projects.
+file(GLOB DETAIL_INCLUDES Detail/*.h)
+install(FILES ${DETAIL_INCLUDES}
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/OpenSim/Common/Detail")
 
 if(WIN32)
     # On Windows only, debug libraries cannot be mixed with release

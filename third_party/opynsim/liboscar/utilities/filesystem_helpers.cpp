@@ -36,21 +36,16 @@ void osc::for_each_file_with_extensions_recursive(
 }
 
 std::vector<std::filesystem::path> osc::find_files_with_extensions_recursive(
-    const std::filesystem::path& root,
-    std::span<const std::string_view> extensions)
+    const std::filesystem::path& root, std::span<const std::string_view> extensions)
 {
     std::vector<std::filesystem::path> rv;
     for_each_file_with_extensions_recursive(
-        root,
-        [&rv](auto p) { rv.push_back(std::move(p)); },
-        extensions
-    );
+        root, [&rv](auto p) { rv.push_back(std::move(p)); }, extensions);
     return rv;
 }
 
 void osc::for_each_file_recursive(
-    const std::filesystem::path& root,
-    const std::function<void(std::filesystem::path)>& consumer)
+    const std::filesystem::path& root, const std::function<void(std::filesystem::path)>& consumer)
 {
     if (not std::filesystem::exists(root)) {
         return;
@@ -67,15 +62,15 @@ void osc::for_each_file_recursive(
     }
 }
 
-std::vector<std::filesystem::path> osc::find_files_recursive(
-    const std::filesystem::path& root)
+std::vector<std::filesystem::path> osc::find_files_recursive(const std::filesystem::path& root)
 {
     std::vector<std::filesystem::path> rv;
     for_each_file_recursive(root, [&rv](auto p) { rv.push_back(std::move(p)); });
     return rv;
 }
 
-bool osc::is_filename_lexicographically_greater_than(const std::filesystem::path& p1, const std::filesystem::path& p2)
+bool osc::is_filename_lexicographically_greater_than(
+    const std::filesystem::path& p1, const std::filesystem::path& p2)
 {
     return is_string_case_insensitive_greater_than(p1.filename().string(), p2.filename().string());
 }
@@ -90,6 +85,4 @@ std::filesystem::path osc::read_windows_or_unix_path_string(const std::string& s
     std::string copy{s};
     rgs::replace(copy, '\\', '/');
     return std::filesystem::path{copy};
-
 }
-

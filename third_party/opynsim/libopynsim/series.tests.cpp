@@ -65,7 +65,7 @@ TEST(Series, equality_returns_false_if_idential_but_contain_nans)
 TEST(Series, map_elements_applies_function_to_elements)
 {
     const Series input{"x", {1.0, 2.0, 3.0}};
-    const Series got = input.map_elements([](double v) { return 2.0*v; });
+    const Series got = input.map_elements([](double v) { return 2.0 * v; });
     const Series expected{"x", {2.0, 4.0, 6.0}};
 
     ASSERT_EQ(got, expected);

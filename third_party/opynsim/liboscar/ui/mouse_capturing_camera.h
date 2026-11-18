@@ -3,10 +3,10 @@
 #include <liboscar/graphics/camera.h>
 #include <liboscar/maths/euler_angles.h>
 
-namespace osc { class Event; }
-
 namespace osc
 {
+    class Event;
+
     class MouseCapturingCamera final : public Camera {
     public:
         void on_mount();

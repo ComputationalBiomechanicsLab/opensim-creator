@@ -13,6 +13,7 @@ namespace osc
         constexpr LifetimeWatcher() = default;
 
         bool expired() const noexcept { return ptr_.expired(); }
+
     private:
         friend class SharedLifetimeBlock;
         explicit LifetimeWatcher(const std::shared_ptr<int>& ptr) :

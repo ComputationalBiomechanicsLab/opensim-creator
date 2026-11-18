@@ -45,7 +45,10 @@ namespace osc
 template<>
 struct std::formatter<osc::Color> final {
     template<class ParseCtx>
-    constexpr auto parse(ParseCtx& ctx) { return inner_.parse(ctx); }
+    constexpr auto parse(ParseCtx& ctx)
+    {
+        return inner_.parse(ctx);
+    }
 
     template<class FmtCtx>
     auto format(const osc::Color color, FmtCtx& ctx) const
@@ -61,6 +64,7 @@ struct std::formatter<osc::Color> final {
         *it++ = ')';
         return it;
     }
+
 private:
     std::formatter<osc::Color::value_type> inner_;
 };

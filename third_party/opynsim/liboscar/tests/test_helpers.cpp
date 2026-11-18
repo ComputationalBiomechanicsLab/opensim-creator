@@ -31,62 +31,75 @@ namespace
     }
 }
 
-template<> float osc::tests::generate()
+template<>
+float osc::tests::generate()
 {
     return static_cast<float>(std::uniform_real_distribution{}(get_process_random_engine()));
 }
 
-template<> int osc::tests::generate()
+template<>
+int osc::tests::generate()
 {
     return std::uniform_int_distribution{}(get_process_random_engine());
 }
 
-template<> bool osc::tests::generate()
+template<>
+bool osc::tests::generate()
 {
     return generate<int>() % 2 == 0;
 }
 
-template<> uint8_t osc::tests::generate()
+template<>
+uint8_t osc::tests::generate()
 {
     return static_cast<uint8_t>(std::uniform_int_distribution{0, 255}(get_process_random_engine()));
 }
 
-template<> Color osc::tests::generate()
+template<>
+Color osc::tests::generate()
 {
     return Color{generate<float>(), generate<float>(), generate<float>(), generate<float>()};
 }
 
-template<> Color32 osc::tests::generate()
+template<>
+Color32 osc::tests::generate()
 {
     return {generate<uint8_t>(), generate<uint8_t>(), generate<uint8_t>(), generate<uint8_t>()};
 }
 
-template<> Vector2 osc::tests::generate()
+template<>
+Vector2 osc::tests::generate()
 {
     return Vector2{generate<float>(), generate<float>()};
 }
 
-template<> Vector3 osc::tests::generate()
+template<>
+Vector3 osc::tests::generate()
 {
     return Vector3{generate<float>(), generate<float>(), generate<float>()};
 }
 
-template<> Vector4 osc::tests::generate()
+template<>
+Vector4 osc::tests::generate()
 {
     return Vector4{generate<float>(), generate<float>(), generate<float>(), generate<float>()};
 }
 
-template<> Matrix3x3 osc::tests::generate()
+template<>
+Matrix3x3 osc::tests::generate()
 {
     return Matrix3x3{generate<Vector3>(), generate<Vector3>(), generate<Vector3>()};
 }
 
-template<> Matrix4x4 osc::tests::generate()
+template<>
+Matrix4x4 osc::tests::generate()
 {
-    return Matrix4x4{generate<Vector4>(), generate<Vector4>(), generate<Vector4>(), generate<Vector4>()};
+    return Matrix4x4{
+        generate<Vector4>(), generate<Vector4>(), generate<Vector4>(), generate<Vector4>()};
 }
 
-template<> Triangle osc::tests::generate()
+template<>
+Triangle osc::tests::generate()
 {
     return Triangle{generate<Vector3>(), generate<Vector3>(), generate<Vector3>()};
 }
@@ -103,7 +116,7 @@ std::vector<Vector3> osc::tests::generate_vertices(size_t n)
 
 std::vector<Vector3> osc::tests::generate_normals(size_t n)
 {
-    return generate_into_vector(n, []{ return normalize(generate<Vector3>()); });
+    return generate_into_vector(n, [] { return normalize(generate<Vector3>()); });
 }
 
 std::vector<Vector2> osc::tests::generate_texture_coordinates(size_t n)

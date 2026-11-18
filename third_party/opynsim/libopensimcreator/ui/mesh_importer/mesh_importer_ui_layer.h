@@ -2,8 +2,6 @@
 
 #include <libopensimcreator/ui/mesh_importer/mesh_importer_ui_layer_host.h>
 
-namespace osc { class Event; }
-
 // UI layering support
 //
 // the visualizer can push the 3D visualizer into different modes (here, "layers") that
@@ -13,45 +11,36 @@ namespace osc { class Event; }
 // - picking another body in the scene mode
 namespace osc
 {
+    class Event;
+
     // a layer that is hosted by the parent
     class MeshImporterUILayer {
     protected:
-        explicit MeshImporterUILayer(MeshImporterUILayerHost& parent) : m_Parent{&parent}
-        {
-        }
+        explicit MeshImporterUILayer(MeshImporterUILayerHost& parent) :
+            parent_{&parent}
+        {}
         MeshImporterUILayer(const MeshImporterUILayer&) = default;
         MeshImporterUILayer(MeshImporterUILayer&&) noexcept = default;
         MeshImporterUILayer& operator=(const MeshImporterUILayer&) = default;
         MeshImporterUILayer& operator=(MeshImporterUILayer&&) noexcept = default;
+
     public:
         virtual ~MeshImporterUILayer() noexcept = default;
 
-        bool onEvent(Event& e)
-        {
-            return implOnEvent(e);
-        }
+        bool on_event(Event& e) { return impl_on_event(e); }
 
-        void tick(float dt)
-        {
-            implTick(dt);
-        }
+        void tick(float dt) { impl_tick(dt); }
 
-        void onDraw()
-        {
-            implOnDraw();
-        }
+        void on_draw() { impl_on_draw(); }
 
     protected:
-        void requestPop()
-        {
-            m_Parent->requestPop(*this);
-        }
+        void request_pop() { parent_->request_pop(*this); }
 
     private:
-        virtual bool implOnEvent(Event&) = 0;
-        virtual void implTick(float) = 0;
-        virtual void implOnDraw() = 0;
+        virtual bool impl_on_event(Event&) = 0;
+        virtual void impl_tick(float) = 0;
+        virtual void impl_on_draw() = 0;
 
-        MeshImporterUILayerHost* m_Parent;
+        MeshImporterUILayerHost* parent_;
     };
 }

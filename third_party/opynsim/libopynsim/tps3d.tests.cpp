@@ -22,7 +22,8 @@ namespace
     // points on the surface of a sphere with radius `radius` using the Fibonacci
     // lattice technique.
     template<std::floating_point T = double>
-    SimTK::Vec<3, T> generate_ith_fibonnaci_sphere_point(size_t i, size_t n, T radius = static_cast<T>(1.0))
+    SimTK::Vec<3, T> generate_ith_fibonnaci_sphere_point(
+        size_t i, size_t n, T radius = static_cast<T>(1.0))
     {
         const T fi = static_cast<T>(i);
         const T fn = static_cast<T>(n);
@@ -34,7 +35,8 @@ namespace
         // Calculate radius of the horizontal cross-section circle at height y
         const T radius_at_y = std::sqrt(std::max(T(0.0), (radius * radius) - (y * y)));
 
-        const T golden_ratio_conjugate_increment = std::numbers::pi_v<T> * (T(3.0) - std::sqrt(T(5.0)));
+        const T golden_ratio_conjugate_increment =
+            std::numbers::pi_v<T> * (T(3.0) - std::sqrt(T(5.0)));
         const T theta = fi * golden_ratio_conjugate_increment;
         const T x = radius_at_y * std::cos(theta);
         const T z = radius_at_y * std::sin(theta);
@@ -46,7 +48,8 @@ namespace
     // dimensions. The point is created by projecting `p` onto the cube's
     // surface. `std::nullopt` is returned if the point is un-projectable.
     template<std::floating_point T>
-    std::optional<SimTK::Vec<3, T>> project_onto_cube_surface(const SimTK::Vec<3, T>& p, T half_side_length = static_cast<T>(1.0))
+    std::optional<SimTK::Vec<3, T>> project_onto_cube_surface(
+        const SimTK::Vec<3, T>& p, T half_side_length = static_cast<T>(1.0))
     {
         const auto pa = p.abs();
         const T longest_axis = std::max({pa[0], pa[1], pa[2]});
@@ -83,7 +86,7 @@ namespace
     bool equal_within_absdiff(const SimTK::Vec3& lhs, const SimTK::Vec3& rhs, double absdiff)
     {
         for (int i = 0; i < SimTK::Vec3::size(); ++i) {
-            if (not (std::abs(lhs[i] - rhs[i]) <= absdiff)) {
+            if (not(std::abs(lhs[i] - rhs[i]) <= absdiff)) {
                 return false;
             }
         }
@@ -133,7 +136,9 @@ namespace
 
     // Represents the transform error between two affine transforms.
     struct ParameterSpaceError final {
-        ParameterSpaceError(const SimbodyAffineTransform& truth, const SimbodyAffineTransform& model) :
+        ParameterSpaceError(
+            const SimbodyAffineTransform& truth, const SimbodyAffineTransform& model) :
+
             scale{(model.scale - truth.scale).norm()},
             rotation{angular_rotation_error(truth.transform.R(), model.transform.R())},
             translation((truth.transform.p() - model.transform.p()).norm())
@@ -151,9 +156,11 @@ TEST(tps3d, solving_coefficients_on_identical_points_produces_an_identity_warp)
     const TPSCoefficients3D<double> coefficients = tps3d_solve_coefficients(inputs);
 
     for (size_t i = 0; i < inputs.landmarks.size(); ++i) {
-        const auto input_point = generate_ith_fibonnaci_sphere_point(i + inputs.landmarks.size(), 2*inputs.landmarks.size());
+        const auto input_point = generate_ith_fibonnaci_sphere_point(
+            i + inputs.landmarks.size(), 2 * inputs.landmarks.size());
         const auto output_point = opyn::tps3d_warp_point(coefficients, input_point);
-        ASSERT_TRUE(equal_within_absdiff(input_point, output_point, 10.0*std::numeric_limits<double>::epsilon()));
+        ASSERT_TRUE(equal_within_absdiff(
+            input_point, output_point, 10.0 * std::numeric_limits<double>::epsilon()));
     }
 }
 
@@ -165,15 +172,19 @@ TEST(tps3d, solving_coefficients_on_sphere_to_cube_warp_can_warp_within_reasonab
     double sse = 0.0;  // Sum of Squared Errors (SSE)
     double sst = 0.0;  // Total sum of squares (SST, relative to origin center)
     for (size_t i = 0; i < inputs.landmarks.size(); ++i) {
-        const auto input         = generate_ith_fibonnaci_sphere_point(i + inputs.landmarks.size(), 2*inputs.landmarks.size());
-        const auto output        = tps3d_warp_point(coefficients, input);
-        const auto ideal_output  = project_onto_cube_surface(input).value();
+        const auto input = generate_ith_fibonnaci_sphere_point(
+            i + inputs.landmarks.size(), 2 * inputs.landmarks.size());
+        const auto output = tps3d_warp_point(coefficients, input);
+        const auto ideal_output = project_onto_cube_surface(input).value();
         sse += (output - ideal_output).normSqr();
-        sst += ideal_output.normSqr();  // i.e. "the dumb model's error if it just guessed (0,0,0) every time"
+        sst +=
+            ideal_output
+                .normSqr();  // i.e. "the dumb model's error if it just guessed (0,0,0) every time"
     }
     const double r2 = 1.0 - (sse / sst);
 
-    ASSERT_GT(r2, 0.98) << "The coefficient of determination (R^2) for the warp is lower than expected!";
+    ASSERT_GT(r2, 0.98)
+        << "The coefficient of determination (R^2) for the warp is lower than expected!";
 }
 
 TEST(tps3d, adjusting_warping_penalty_reduces_point_r2_but_increases_affine_transform_accuracy)
@@ -193,10 +204,12 @@ TEST(tps3d, adjusting_warping_penalty_reduces_point_r2_but_increases_affine_tran
     // Ground-truth of the affine transform.
     const SimbodyAffineTransform actual_transform{
         .scale = {1.5, 0.2, 1.4},
-        .transform = {
-            SimTK::Rotation{33.0*osc::deg_to_rad_v<double>, SimTK::CoordinateAxis::XCoordinateAxis{}},
-            SimTK::Vec3{-0.5, 0.3, 0.33}
-        },
+        .transform =
+            {
+                SimTK::Rotation{
+                    33.0 * osc::deg_to_rad_v<double>, SimTK::CoordinateAxis::XCoordinateAxis{}},
+                SimTK::Vec3{-0.5, 0.3, 0.33},
+            },
     };
 
     // Generate point pairs and apply the affine transform to destination.
@@ -207,11 +220,13 @@ TEST(tps3d, adjusting_warping_penalty_reduces_point_r2_but_increases_affine_tran
 
     const TPSCoefficientSolverInputs3D<double> solver_inputs{input_points};
     TPSCoefficientSolverInputs3D<double> penalized_solver_inputs{input_points};
-    penalized_solver_inputs.warping_penalty = 0.01;  // Higher --> more weight given to the affine coefficients
+    // Higher --> more weight given to the affine coefficients
+    penalized_solver_inputs.warping_penalty = 0.01;
 
     // Solve coefficients with/without a `warping_penalty`
     const TPSCoefficients3D<double> coefs = tps3d_solve_coefficients(solver_inputs);
-    const TPSCoefficients3D<double> penalized_coefs = tps3d_solve_coefficients(penalized_solver_inputs);
+    const TPSCoefficients3D<double> penalized_coefs =
+        tps3d_solve_coefficients(penalized_solver_inputs);
 
     // Unpack the coefficients into affine transforms.
     const auto transform = extract_affine_transform(coefs);
@@ -221,7 +236,8 @@ TEST(tps3d, adjusting_warping_penalty_reduces_point_r2_but_increases_affine_tran
     const ParameterSpaceError transform_error{actual_transform, transform};
     const ParameterSpaceError penalized_transform_error{actual_transform, penalized_transform};
 
-    // The penalized inputs should ideally produce a close/lower error (requires tweaking `warping_penalty`).
+    // The penalized inputs should ideally produce a close/lower error (requires tweaking
+    // `warping_penalty`).
     ASSERT_LT(penalized_transform_error.scale, transform_error.scale);
     ASSERT_LT(penalized_transform_error.rotation, transform_error.rotation);
     ASSERT_LT(penalized_transform_error.translation, transform_error.translation);
@@ -236,10 +252,10 @@ TEST(tps3d, setting_warping_penalty_very_high_effectively_yields_an_affine_trans
     // Ground-truth of the affine transform.
     const SimbodyAffineTransform actual_transform{
         .scale = {0.7, 1.1, 0.85},
-        .transform = {
-            SimTK::Rotation{45.0*osc::deg_to_rad_v<double>, SimTK::CoordinateAxis::YCoordinateAxis{}},
-            SimTK::Vec3{-5.5, 3.3, 2.33}
-        },
+        .transform =
+            {SimTK::Rotation{
+                 45.0 * osc::deg_to_rad_v<double>, SimTK::CoordinateAxis::YCoordinateAxis{}},
+             SimTK::Vec3{-5.5, 3.3, 2.33}},
     };
 
     // Generate point pairs and apply the affine transform to destination.

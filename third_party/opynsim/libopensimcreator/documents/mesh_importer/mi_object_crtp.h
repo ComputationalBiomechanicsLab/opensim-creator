@@ -16,39 +16,40 @@ namespace osc
     template<typename T>
     class MiObjectCRTP : public MiObject {
     public:
-        static const MiClass& Class()
+        static const MiClass& get_class()
         {
-            static const MiClass s_Class = T::CreateClass();
-            return s_Class;
+            static const MiClass s_class = T::create_class();
+            return s_class;
         }
 
         std::unique_ptr<T> clone()
         {
-            return std::unique_ptr<T>{static_cast<T*>(implClone().release())};
-        }
-    private:
-        const MiClass& implGetClass() const final
-        {
-            static_assert(std::is_reference_v<decltype(T::Class())>);
-            static_assert(std::is_same_v<decltype(T::Class()), const MiClass&>);
-            return T::Class();
+            return std::unique_ptr<T>{static_cast<T*>(impl_clone().release())};
         }
 
-        std::unique_ptr<MiObject> implClone() const final
+    private:
+        const MiClass& impl_get_class() const override
+        {
+            static_assert(std::is_reference_v<decltype(T::get_class())>);
+            static_assert(std::is_same_v<decltype(T::get_class()), const MiClass&>);
+            return T::get_class();
+        }
+
+        std::unique_ptr<MiObject> impl_clone() const override
         {
             static_assert(std::is_base_of_v<MiObject, T>);
             static_assert(std::is_final_v<T>);
             return std::make_unique<T>(static_cast<T const&>(*this));
         }
 
-        MiVariantConstReference implToVariant() const final
+        MiVariantConstReference impl_to_variant() const override
         {
             static_assert(std::is_base_of_v<MiObject, T>);
             static_assert(std::is_final_v<T>);
             return static_cast<T const&>(*this);
         }
 
-        MiVariantReference implToVariant() final
+        MiVariantReference impl_to_variant() override
         {
             static_assert(std::is_base_of_v<MiObject, T>);
             static_assert(std::is_final_v<T>);

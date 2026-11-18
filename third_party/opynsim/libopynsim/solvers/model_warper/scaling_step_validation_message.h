@@ -13,15 +13,12 @@ namespace opyn
     // A message produced by a `ScalingStep`'s validation check.
     class ScalingStepValidationMessage {
     public:
-
         // Constructs a validation message that's related to the value(s) held in
         // a property with name `propertyName` on the `ScalingStep`.
         explicit ScalingStepValidationMessage(
-            std::string propertyName,
-            ScalingStepValidationState state,
-            std::string message) :
+            std::string property_name, ScalingStepValidationState state, std::string message) :
 
-            maybe_property_name_{std::move(propertyName)},
+            maybe_property_name_{std::move(property_name)},
             state_{state},
             message_{std::move(message)}
         {}
@@ -29,8 +26,7 @@ namespace opyn
         // Constructs a validation message that's in some (general) way related to
         // the `ScalingStep` that produced it.
         explicit ScalingStepValidationMessage(
-            ScalingStepValidationState state,
-            std::string message) :
+            ScalingStepValidationState state, std::string message) :
 
             state_{state},
             message_{std::move(message)}
@@ -38,7 +34,8 @@ namespace opyn
 
         std::optional<osc::CStringView> try_get_property_name() const
         {
-            return not maybe_property_name_.empty() ? std::optional{maybe_property_name_} : std::nullopt;
+            return not maybe_property_name_.empty() ? std::optional{maybe_property_name_}
+                                                    : std::nullopt;
         }
         ScalingStepValidationState get_state() const { return state_; }
         osc::CStringView get_message() const { return message_; }

@@ -9,9 +9,7 @@ namespace osc
 {
     class ScreenshotAnnotation final {
     public:
-        explicit ScreenshotAnnotation(
-            std::string label,
-            const Rect& screenspace_rect) :
+        explicit ScreenshotAnnotation(std::string label, const Rect& screenspace_rect) :
             label_{std::move(label)},
             rect_{screenspace_rect}
         {}

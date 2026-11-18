@@ -7,10 +7,10 @@
 #include <future>
 #include <memory>
 
-namespace osc { class TabPrivate; }
-
 namespace osc
 {
+    class TabPrivate;
+
     class Tab : public Widget {
     public:
         UID id() const;
@@ -22,6 +22,7 @@ namespace osc
         explicit Tab(std::unique_ptr<TabPrivate>&&);
 
         OSC_WIDGET_DATA_GETTERS(TabPrivate);
+
     private:
         // Implementors should return `true` if the contents of the `Tab`
         // are "unsaved". The `Tab`-managing implementation may then use

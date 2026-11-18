@@ -29,8 +29,10 @@ set_target_properties(opynsim_tests PROPERTIES
     CXX_EXTENSIONS        OFF
 )
 if(OPYN_USE_STRICT_COMPILER_FLAGS)
-    include(../../cmake/opynsim_strict_compiler_options.cmake)
     opyn_add_strict_compiler_options_to(opynsim_tests)
+endif()
+if(OPYN_ENABLE_SANITIZERS)
+    opyn_add_sanitizer_flags_to(opynsim_tests)
 endif()
 target_include_directories(opynsim_tests
     # so that `#include <libopynsim/tests/opynsim_tests_config.h>` works

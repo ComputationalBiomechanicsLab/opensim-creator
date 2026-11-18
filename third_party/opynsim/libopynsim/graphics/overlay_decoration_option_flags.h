@@ -10,6 +10,7 @@
 
 namespace opyn
 {
+    // clang-format off
     enum class OverlayDecorationOptionFlags : uint32_t {
         None          = 0,
         DrawXZGrid    = 1<<0,
@@ -22,28 +23,29 @@ namespace opyn
 
         Default = None,
     };
+    // clang-format on
 
     constexpr bool operator&(OverlayDecorationOptionFlags lhs, OverlayDecorationOptionFlags rhs)
     {
         return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
     }
 
-    constexpr void set_option(OverlayDecorationOptionFlags& flags, OverlayDecorationOptionFlags flag, bool v)
+    constexpr void set_option(
+        OverlayDecorationOptionFlags& flags, OverlayDecorationOptionFlags flag, bool v)
     {
-        if (v)
-        {
-            flags = static_cast<OverlayDecorationOptionFlags>(std::to_underlying(flags) | std::to_underlying(flag));
-        }
-        else
-        {
-            flags = static_cast<OverlayDecorationOptionFlags>(std::to_underlying(flags) & ~std::to_underlying(flag));
+        if (v) {
+            flags = static_cast<OverlayDecorationOptionFlags>(
+                std::to_underlying(flags) | std::to_underlying(flag));
+        } else {
+            flags = static_cast<OverlayDecorationOptionFlags>(
+                std::to_underlying(flags) & ~std::to_underlying(flag));
         }
     }
 
     constexpr OverlayDecorationOptionFlags ith_option(size_t i)
     {
-        i = i < osc::num_flags<OverlayDecorationOptionFlags>() ? i : 0;
-        return static_cast<OverlayDecorationOptionFlags>(1<<i);
+        i = i < osc::num_flags_v<OverlayDecorationOptionFlags> ? i : 0;
+        return static_cast<OverlayDecorationOptionFlags>(1 << i);
     }
 
     enum class OverlayDecorationOptionGroup {
@@ -59,5 +61,6 @@ namespace opyn
         OverlayDecorationOptionFlags value;
     };
     osc::CStringView get_label(OverlayDecorationOptionGroup);
-    std::span<const OverlayDecorationOptionFlagsMetadata> get_all_overlay_decoration_option_flags_metadata();
+    std::span<const OverlayDecorationOptionFlagsMetadata>
+    get_all_overlay_decoration_option_flags_metadata();
 }

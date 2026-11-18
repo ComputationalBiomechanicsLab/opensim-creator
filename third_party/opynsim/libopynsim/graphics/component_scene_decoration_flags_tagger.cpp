@@ -6,18 +6,15 @@
 using namespace opyn;
 
 opyn::ComponentSceneDecorationFlagsTagger::ComponentSceneDecorationFlagsTagger(
-    const OpenSim::Component* selected,
-    const OpenSim::Component* hovered) :
+    const OpenSim::Component* selected, const OpenSim::Component* hovered) :
     selected_{selected},
     hovered_{hovered}
 {}
 
 void opyn::ComponentSceneDecorationFlagsTagger::operator()(
-    const OpenSim::Component& component,
-    osc::SceneDecoration& decoration)
+    const OpenSim::Component& component, osc::SceneDecoration& decoration)
 {
-    if (&component != last_component_)
-    {
+    if (&component != last_component_) {
         last_flags_ = compute_flags(component);
         last_component_ = &component;
     }

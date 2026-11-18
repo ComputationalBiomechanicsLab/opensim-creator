@@ -32,6 +32,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
+    // clang-format off
     constexpr auto c_object_positions = std::to_array<Vector3>({
         {-3.0,  -0.5, -3.0},
         { 0.0,  -0.5, -3.0},
@@ -44,6 +45,7 @@ namespace
         { 3.0,  -0.5,  3.0},
     });
     constexpr size_t c_num_lights = 32;
+    // clang-format on
 
     Vector3 generate_scene_light_position(std::default_random_engine& rng)
     {
@@ -59,8 +61,7 @@ namespace
 
     std::vector<Vector3> generate_n_scene_light_positions(size_t n)
     {
-        const auto generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
-        {
+        const auto generator = [rng = std::default_random_engine{std::random_device{}()}] mutable {
             return generate_scene_light_position(rng);
         };
 
@@ -72,8 +73,7 @@ namespace
 
     std::vector<Vector3> generate_n_scene_light_colors(size_t n)
     {
-        const auto generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
-        {
+        const auto generator = [rng = std::default_random_engine{std::random_device{}()}] mutable {
             const Color srgb_color = generate_scene_light_color(rng);
             const Color linear_color = to_linear_colorspace(srgb_color);
             return Vector3{linear_color.r, linear_color.g, linear_color.b};
@@ -88,8 +88,10 @@ namespace
     Material load_gbuffer_material(ResourceLoader& loader)
     {
         return Material{Shader{
-            loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
-            loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.frag"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.frag"),
         }};
     }
 
@@ -116,9 +118,12 @@ namespace
         {}
 
         Material material;
-        RenderTexture albedo = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_SRGB);
-        RenderTexture normal = render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
-        RenderTexture position = render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
+        RenderTexture albedo =
+            render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_SRGB);
+        RenderTexture normal =
+            render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
+        RenderTexture position =
+            render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
         RenderTarget render_target{
             RenderTargetColorAttachment{
                 albedo.upd_color_buffer(),
@@ -145,7 +150,8 @@ namespace
             },
         };
 
-        void reformat(Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
+        void reformat(
+            Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
                 texture_ptr->reformat({
@@ -162,8 +168,10 @@ namespace
 
         explicit LightPassState(ResourceLoader& loader) :
             material{Shader{
-                loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
-                loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),
+                loader.slurp(
+                    "oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
+                loader.slurp(
+                    "oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),
             }}
         {}
 
@@ -173,7 +181,10 @@ namespace
 
 class osc::LOGLDeferredShadingTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/DeferredShading"; }
+    static CStringView static_label()
+    {
+        return "oscar_demos/learnopengl/AdvancedLighting/DeferredShading";
+    }
 
     explicit Impl(LOGLDeferredShadingTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
@@ -191,10 +202,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -235,12 +243,15 @@ private:
             render_queue_.emplace(
                 cube_mesh_,
                 {.scale = Vector3{0.5f}, .translation = object_position},
-                gbuffer_.material
-            );
+                gbuffer_.material);
         }
-        graphics::render_to(gbuffer_.render_target, render_queue_, camera_, {
-            .clear_color = Color::black(),
-        });
+        graphics::render_to(
+            gbuffer_.render_target,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = Color::black(),
+            });
         render_queue_.clear();
     }
 
@@ -253,24 +264,18 @@ private:
         graphics::blit_to_main_window(
             gbuffer_.albedo,
             Rect::from_corners(
-                overlays_bottom_left + Vector2{0.0f*overlay_size, 0.0f},
-                overlays_bottom_left + Vector2{0.0f*overlay_size, 0.0f} + overlay_size
-            )
-        );
+                overlays_bottom_left + Vector2{0.0f * overlay_size, 0.0f},
+                overlays_bottom_left + Vector2{0.0f * overlay_size, 0.0f} + overlay_size));
         graphics::blit_to_main_window(
             gbuffer_.normal,
             Rect::from_corners(
-                overlays_bottom_left + Vector2{1.0f*overlay_size, 0.0f},
-                overlays_bottom_left + Vector2{1.0f*overlay_size, 0.0f} + overlay_size
-            )
-        );
+                overlays_bottom_left + Vector2{1.0f * overlay_size, 0.0f},
+                overlays_bottom_left + Vector2{1.0f * overlay_size, 0.0f} + overlay_size));
         graphics::blit_to_main_window(
             gbuffer_.position,
             Rect::from_corners(
-                overlays_bottom_left + Vector2{2.0f*overlay_size, 0.0f},
-                overlays_bottom_left + Vector2{2.0f*overlay_size, 0.0f} + overlay_size
-            )
-        );
+                overlays_bottom_left + Vector2{2.0f * overlay_size, 0.0f},
+                overlays_bottom_left + Vector2{2.0f * overlay_size, 0.0f} + overlay_size));
     }
 
     void render_lighting_pass()
@@ -285,9 +290,13 @@ private:
         light_pass_.material.set("uViewPos", camera_.position());
 
         render_queue_.emplace(quad_mesh_, identity<Transform>(), light_pass_.material);
-        graphics::render_to(output_texture_, render_queue_, camera_, {
-            .clear_color = Color::black(),
-        });
+        graphics::render_to(
+            output_texture_,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = Color::black(),
+            });
         render_queue_.clear();
 
         light_pass_.material.unset("uPositionTex");
@@ -304,8 +313,7 @@ private:
             render_queue_.emplace(
                 cube_mesh_,
                 {.scale = Vector3{0.125f}, .translation = light_positions_[i]},
-                light_box_material_
-            );
+                light_box_material_);
         }
 
         const RenderTarget render_target{
@@ -322,9 +330,13 @@ private:
             },
         };
 
-        graphics::render_to(render_target, render_queue_, camera_, {
-            .clear_color = Color::black(),
-        });
+        graphics::render_to(
+            render_target,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = Color::black(),
+            });
         render_queue_.clear();
     }
 
@@ -338,33 +350,45 @@ private:
     Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
     Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
     Texture2D diffuse_map_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
-        ColorSpace::sRGB
-    );
+        loader_.open("oscar_demos/learnopengl/textures/container2.jpg"), ColorSpace::sRGB);
     Texture2D specular_map_ = Image::read_into_texture(
-        loader_.open("oscar_demos/learnopengl/textures/container2_specular.jpg"),
-        ColorSpace::sRGB
-    );
+        loader_.open("oscar_demos/learnopengl/textures/container2_specular.jpg"), ColorSpace::sRGB);
 
     // rendering state
     GBufferRenderingState gbuffer_{loader_};
     LightPassState light_pass_{loader_};
 
     Material light_box_material_{Shader{
-        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.vert"),
-        loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.frag"),
+        loader_.slurp(
+            "oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.vert"),
+        loader_.slurp(
+            "oscar_demos/learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.frag"),
     }};
 
     RenderTexture output_texture_;
 };
 
-
-CStringView osc::LOGLDeferredShadingTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLDeferredShadingTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLDeferredShadingTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLDeferredShadingTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLDeferredShadingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLDeferredShadingTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLDeferredShadingTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLDeferredShadingTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLDeferredShadingTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLDeferredShadingTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

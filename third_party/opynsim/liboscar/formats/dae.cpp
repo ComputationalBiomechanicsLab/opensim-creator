@@ -101,13 +101,15 @@ namespace
                 continue;  // custom materials are unsupported
             }
 
-            auto [mesh_iterator, mesh_inserted] = mesh_to_id.try_emplace(decoration.mesh, std::string{});
+            auto [mesh_iterator, mesh_inserted] =
+                mesh_to_id.try_emplace(decoration.mesh, std::string{});
             if (mesh_inserted) {
                 mesh_iterator->second = std::format("mesh_{}", latest_mesh++);
                 rv.geometries.emplace_back(mesh_iterator->second, mesh_iterator->first);
             }
 
-            auto [material_iterator, material_inserted] = color_to_material_id.try_emplace(std::get<Color>(decoration.shading), std::string{});
+            auto [material_iterator, material_inserted] = color_to_material_id.try_emplace(
+                std::get<Color>(decoration.shading), std::string{});
             if (material_inserted) {
                 material_iterator->second = std::format("material_{}", latest_material++);
                 rv.materials.emplace_back(material_iterator->second, material_iterator->first);
@@ -117,8 +119,7 @@ namespace
                 std::format("instance_{}", latest_instance++),
                 mesh_iterator->second,
                 material_iterator->second,
-                decoration.transform
-            );
+                decoration.transform);
         }
 
         return rv;
@@ -179,8 +180,10 @@ namespace
         out << "      <author>" << metadata.author << "</author>\n";
         out << "      <authoring_tool>" << metadata.authoring_tool << "</authoring_tool>\n";
         out << "    </contributor>\n";
-        out << "    <created>" << std::put_time(&metadata.creation_time, "%Y-%m-%d %H:%M:%S") << "</created>\n";
-        out << "    <modified>" << std::put_time(&metadata.modification_time, "%Y-%m-%d %H:%M:%S") << "</modified>\n";
+        out << "    <created>" << std::put_time(&metadata.creation_time, "%Y-%m-%d %H:%M:%S")
+            << "</created>\n";
+        out << "    <modified>" << std::put_time(&metadata.modification_time, "%Y-%m-%d %H:%M:%S")
+            << "</modified>\n";
         out << "    <unit name=\"meter\" meter=\"1\" />\n";
         out << "    <up_axis>Y_UP</up_axis>\n";
         out << "  </asset>\n";
@@ -196,7 +199,8 @@ namespace
         out << "              <color sid=\"emission\">0 0 0 1</color>\n";
         out << "            </emission>\n";
         out << "            <diffuse>\n";
-        out << "              <color sid=\"diffuse\">" << to_float_span(material.color) << "</color>\n";
+        out << "              <color sid=\"diffuse\">" << to_float_span(material.color)
+            << "</color>\n";
         out << "            </diffuse>\n";
         out << "            <reflectivity>\n";
         out << "              <float sid=\"specular\">0.0</float>\n";
@@ -218,7 +222,8 @@ namespace
 
     void write_material_node(std::ostream& out, const DaeMaterial& material)
     {
-        out << "    <material id=\"" << material.material_id << "-material\" name=\"" << material.material_id << "\">\n";
+        out << "    <material id=\"" << material.material_id << "-material\" name=\""
+            << material.material_id << "\">\n";
         out << "      <instance_effect url=\"#" << material.material_id << "-effect\"/>\n";
         out << "    </material>\n";
     }
@@ -239,9 +244,12 @@ namespace
         const size_t num_vertices = vertices.size();
 
         out << "        <source id=\"" << geometry.geometry_id << "-positions\">\n";
-        out << "          <float_array id=\"" << geometry.geometry_id << "-positions-array\" count=\"" << num_floats << "\">" << to_float_span(vertices) << "</float_array>\n";
+        out << "          <float_array id=\"" << geometry.geometry_id
+            << "-positions-array\" count=\"" << num_floats << "\">" << to_float_span(vertices)
+            << "</float_array>\n";
         out << "          <technique_common>\n";
-        out << "            <accessor source=\"#" << geometry.geometry_id << "-positions-array\" count=\"" << num_vertices << "\" stride=\"3\">\n";
+        out << "            <accessor source=\"#" << geometry.geometry_id
+            << "-positions-array\" count=\"" << num_vertices << "\" stride=\"3\">\n";
         out << "              <param name=\"X\" type=\"float\"/>\n";
         out << "              <param name=\"Y\" type=\"float\"/>\n";
         out << "              <param name=\"Z\" type=\"float\"/>\n";
@@ -256,10 +264,12 @@ namespace
         const size_t num_floats = 3 * normals.size();
         const size_t num_normals = normals.size();
 
-        out << "        <source id=\""  << geometry.geometry_id << "-normals\">\n";
-        out << "          <float_array id=\"" << geometry.geometry_id << "-normals-array\" count=\"" << num_floats << "\">" << to_float_span(normals) << "</float_array>\n";
+        out << "        <source id=\"" << geometry.geometry_id << "-normals\">\n";
+        out << "          <float_array id=\"" << geometry.geometry_id << "-normals-array\" count=\""
+            << num_floats << "\">" << to_float_span(normals) << "</float_array>\n";
         out << "          <technique_common>\n";
-        out << "            <accessor source=\"#" << geometry.geometry_id << "-normals-array\" count=\"" << num_normals << "\" stride=\"3\">\n";
+        out << "            <accessor source=\"#" << geometry.geometry_id
+            << "-normals-array\" count=\"" << num_normals << "\" stride=\"3\">\n";
         out << "              <param name=\"X\" type=\"float\"/>\n";
         out << "              <param name=\"Y\" type=\"float\"/>\n";
         out << "              <param name=\"Z\" type=\"float\"/>\n";
@@ -275,9 +285,11 @@ namespace
         const size_t num_tex_coords = tex_coords.size();
 
         out << "        <source id=\"" << geometry.geometry_id << "-map-0\">\n";
-        out << "          <float_array id=\"" << geometry.geometry_id << "-map-0-array\" count=\"" << num_floats << "\">" << to_float_span(tex_coords) <<  "</float_array>\n";
+        out << "          <float_array id=\"" << geometry.geometry_id << "-map-0-array\" count=\""
+            << num_floats << "\">" << to_float_span(tex_coords) << "</float_array>\n";
         out << "          <technique_common>\n";
-        out << "            <accessor source=\"#" << geometry.geometry_id << "-map-0-array\" count=\"" << num_tex_coords << "\" stride=\"2\">\n";
+        out << "            <accessor source=\"#" << geometry.geometry_id
+            << "-map-0-array\" count=\"" << num_tex_coords << "\" stride=\"2\">\n";
         out << "              <param name=\"S\" type=\"float\"/>\n";
         out << "              <param name=\"T\" type=\"float\"/>\n";
         out << "            </accessor>\n";
@@ -288,7 +300,8 @@ namespace
     void write_mesh_vertices_node(std::ostream& out, const DaeGeometry& geometry)
     {
         out << "        <vertices id=\"" << geometry.geometry_id << "-vertices\">\n";
-        out << R"(           <input semantic="POSITION" source="#)" << geometry.geometry_id << "-positions\"/>\n";
+        out << R"(           <input semantic="POSITION" source="#)" << geometry.geometry_id
+            << "-positions\"/>\n";
         out << "        </vertices>\n";
     }
 
@@ -298,12 +311,15 @@ namespace
         const size_t num_triangles = indices.size() / 3;
 
         out << "        <triangles count=\"" << num_triangles << "\">\n";
-        out << R"(            <input semantic="VERTEX" source="#)" << geometry.geometry_id << "-vertices\" offset=\"0\" />\n";
+        out << R"(            <input semantic="VERTEX" source="#)" << geometry.geometry_id
+            << "-vertices\" offset=\"0\" />\n";
         if (geometry.mesh.has_normals()) {
-            out << R"(            <input semantic="NORMAL" source="#)" << geometry.geometry_id << "-normals\" offset=\"0\" />\n";
+            out << R"(            <input semantic="NORMAL" source="#)" << geometry.geometry_id
+                << "-normals\" offset=\"0\" />\n";
         }
         if (geometry.mesh.has_tex_coords()) {
-            out << R"(            <input semantic="TEXCOORD" source="#)" << geometry.geometry_id << "-map-0\" offset=\"0\" set=\"0\"/>\n";
+            out << R"(            <input semantic="TEXCOORD" source="#)" << geometry.geometry_id
+                << "-map-0\" offset=\"0\" set=\"0\"/>\n";
         }
 
         out << "          <p>";
@@ -337,7 +353,8 @@ namespace
 
     void write_geometry_node(std::ostream& out, const DaeGeometry& geometry)
     {
-        out << "    <geometry id=\"" << geometry.geometry_id << "\" name=\"" << geometry.geometry_id << "\">\n";
+        out << "    <geometry id=\"" << geometry.geometry_id << "\" name=\"" << geometry.geometry_id
+            << "\">\n";
         write_mesh_node(out, geometry);
         out << "    </geometry>\n";
     }
@@ -373,21 +390,24 @@ namespace
     {
         out << "          <bind_material>\n";
         out << "            <technique_common>\n";
-        out << "              <instance_material symbol=\"" << instance.material_id << "-material\" target=\"#" << instance.material_id << "-material\" />\n";
+        out << "              <instance_material symbol=\"" << instance.material_id
+            << "-material\" target=\"#" << instance.material_id << "-material\" />\n";
         out << "            </technique_common>\n";
         out << "          </bind_material>\n";
     }
 
     void write_instance_geometry_node(std::ostream& out, const DaeInstance& instance)
     {
-        out << "        <instance_geometry url=\"#" << instance.geometry_id << "\" name=\"" << instance.geometry_id << "\">\n";
+        out << "        <instance_geometry url=\"#" << instance.geometry_id << "\" name=\""
+            << instance.geometry_id << "\">\n";
         write_instance_bind_material_node(out, instance);
         out << "        </instance_geometry>\n";
     }
 
     void write_scene_node(std::ostream& out, const DaeInstance& instance)
     {
-        out << "      <node id=\"" << instance.instance_id << "\" name=\"" << instance.instance_id << "\" type=\"NODE\">\n";
+        out << "      <node id=\"" << instance.instance_id << "\" name=\"" << instance.instance_id
+            << "\" type=\"NODE\">\n";
         write_matrix_node(out, instance.transform);
         write_instance_geometry_node(out, instance);
         out << "      </node>\n";
@@ -413,9 +433,7 @@ osc::DAEMetadata::DAEMetadata() :
     DAEMetadata{"unknown_author", OSC_LIBRARY_NAME}
 {}
 
-osc::DAEMetadata::DAEMetadata(
-    std::string_view author,
-    std::string_view authoring_tool) :
+osc::DAEMetadata::DAEMetadata(std::string_view author, std::string_view authoring_tool) :
 
     author{author},
     authoring_tool{authoring_tool},
@@ -424,9 +442,7 @@ osc::DAEMetadata::DAEMetadata(
 {}
 
 void osc::DAE::write(
-    std::ostream& out,
-    std::span<const SceneDecoration> decorations,
-    const DAEMetadata& metadata)
+    std::ostream& out, std::span<const SceneDecoration> decorations, const DAEMetadata& metadata)
 {
     const DaeSceneGraph graph = to_dae_scene_graph(decorations);
 

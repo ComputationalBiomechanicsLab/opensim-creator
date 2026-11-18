@@ -18,15 +18,15 @@ public:
     explicit Impl(
         SelectComponentPopup& owner,
         Widget* parent,
-        std::string_view popupName,
+        std::string_view popup_name,
         std::shared_ptr<const opyn::ModelStatePair> model,
-        std::function<void(const OpenSim::ComponentPath&)> onSelection,
+        std::function<void(const OpenSim::ComponentPath&)> on_selection,
         std::function<bool(const OpenSim::Component&)> filter) :
 
-        PopupPrivate{owner, parent, popupName},
-        m_Model{std::move(model)},
-        m_OnSelection{std::move(onSelection)},
-        m_Filter{std::move(filter)}
+        PopupPrivate{owner, parent, popup_name},
+        model_{std::move(model)},
+        on_selection_{std::move(on_selection)},
+        filter_{std::move(filter)}
     {}
 
     void draw_content()
@@ -35,41 +35,45 @@ public:
 
         // iterate through each T in `root` and give the user the option to click it
         {
-            ui::begin_child_panel("first", Vector2{256.0f, 256.0f}, ui::ChildPanelFlag::Border, ui::PanelFlag::HorizontalScrollbar);
-            for (const OpenSim::Component& c : m_Model->get_model().getComponentList())
-            {
-                if (!m_Filter(c))
-                {
+            ui::begin_child_panel(
+                "first",
+                Vector2{256.0f, 256.0f},
+                ui::ChildPanelFlag::Border,
+                ui::PanelFlag::HorizontalScrollbar);
+            for (const OpenSim::Component& c : model_->get_model().getComponentList()) {
+                if (not filter_(c)) {
                     continue;  // filtered out
                 }
-                if (ui::draw_button(c.getName()))
-                {
+                if (ui::draw_button(c.getName())) {
                     selected = &c;
                 }
             }
             ui::end_child_panel();
         }
 
-        if (selected)
-        {
-            m_OnSelection(opyn::get_absolute_path(*selected));
+        if (selected) {
+            on_selection_(opyn::get_absolute_path(*selected));
             request_close();
         }
     }
 
 private:
-    std::shared_ptr<const opyn::ModelStatePair> m_Model;
-    std::function<void(const OpenSim::ComponentPath&)> m_OnSelection;
-    std::function<bool(const OpenSim::Component&)> m_Filter;
+    std::shared_ptr<const opyn::ModelStatePair> model_;
+    std::function<void(const OpenSim::ComponentPath&)> on_selection_;
+    std::function<bool(const OpenSim::Component&)> filter_;
 };
 
 osc::SelectComponentPopup::SelectComponentPopup(
     Widget* parent,
-    std::string_view popupName,
+    std::string_view popup_name,
     std::shared_ptr<const opyn::ModelStatePair> model,
-    std::function<void(const OpenSim::ComponentPath&)> onSelection,
+    std::function<void(const OpenSim::ComponentPath&)> on_selection,
     std::function<bool(const OpenSim::Component&)> filter) :
 
-    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(model), std::move(onSelection), std::move(filter))}
+    Popup{std::make_unique<Impl>(
+        *this, parent, popup_name, std::move(model), std::move(on_selection), std::move(filter))}
 {}
-void osc::SelectComponentPopup::impl_draw_content() { private_data().draw_content(); }
+void osc::SelectComponentPopup::impl_draw_content()
+{
+    private_data().draw_content();
+}

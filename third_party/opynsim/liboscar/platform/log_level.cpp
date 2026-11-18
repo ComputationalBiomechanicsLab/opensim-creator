@@ -17,8 +17,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr auto c_log_level_strings = std::to_array<CStringView>(
-    {
+    constexpr auto c_log_level_strings = std::to_array<CStringView>({
         "trace",
         "debug",
         "info",
@@ -37,7 +36,8 @@ CStringView osc::to_cstringview(LogLevel level)
 
 std::optional<LogLevel> osc::try_parse_as_log_level(std::string_view str)
 {
-    const auto it = rgs::find_if(c_log_level_strings, std::bind_front(is_equal_case_insensitive, str));
+    const auto it =
+        rgs::find_if(c_log_level_strings, std::bind_front(is_equal_case_insensitive, str));
     if (it == c_log_level_strings.end()) {
         return std::nullopt;
     }

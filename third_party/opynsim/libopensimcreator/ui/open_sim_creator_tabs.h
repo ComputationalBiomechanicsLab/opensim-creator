@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopensimcreator/ui/mesh_importer/mesh_importer_tab.h>
-#include <libopensimcreator/ui/mesh_warper/mesh_warping_tab.h>
+#include <libopensimcreator/ui/mesh_warper/mw_ui_tab.h>
 #include <libopensimcreator/ui/model_editor/model_editor_tab.h>
 #include <libopensimcreator/ui/model_warper/model_warper_tab.h>
 #include <libopensimcreator/ui/preview_experimental_data/preview_experimental_data_tab.h>
@@ -12,11 +12,10 @@
 namespace osc
 {
     using OpenSimCreatorTabs = Typelist<
-        MeshWarpingTab,
+        MwUiTab,
         MeshImporterTab,
         ModelEditorTab,
         ModelWarperTab,
         PreviewExperimentalDataTab,
-        RendererPerfTestingTab
-    >;
+        RendererPerfTestingTab>;
 }

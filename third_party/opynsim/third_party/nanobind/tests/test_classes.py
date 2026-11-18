@@ -1,15 +1,13 @@
 import sys
+from itertools import permutations
 import test_classes_ext as t
 import pytest
-from common import skip_on_pypy, collect
+from common import is_pypy, skip_on_pypy, collect, parallelize
 
 
 
 def optional(arg: str, /) -> str:
-    if sys.version_info < (3, 10):
-        return "typing.Optional[" + arg + "]"
-    else:
-        return arg + " | " + "None"
+    return arg + " | " + "None"
 
 
 @pytest.fixture
@@ -125,6 +123,23 @@ def test06_reference_internal(clean):
     s1 = s.s1
     del s1
     del s
+
+
+def test06c_init_not_list_initialization():
+    # Issue #1074: nb::init must use direct- rather than list-initialization, so
+    # that a std::initializer_list constructor is not spuriously preferred.
+    assert t.InitListTest(1).value == 1
+
+
+def test06b_reference_internal_free(clean):
+    # A free function with reference_internal has no 'self' to keep-alive the
+    # result on. It must fail consistently regardless of arity (the 1-arg case
+    # is dispatched via the 'simple_1' vectorcall path, which previously
+    # mistakenly used its sole argument as the cleanup 'self').
+    with pytest.raises(TypeError):
+        t.create_reference_internal_free()
+    with pytest.raises(TypeError):
+        t.create_reference_internal_free_1arg(0)
 
 
 def test07_big():
@@ -305,6 +320,13 @@ def test13_implicitly_convertible():
     d = t.D(5)
     assert t.get_d(d) == 10005
     assert t.get_optional_d(d) == 10005
+
+    # The copy constructor must copy without invoking an implicit conversion
+    # (D(D(...)) would otherwise recurse), and implicit conversions of other
+    # argument types must still work in its presence
+    d2 = t.D(d)
+    assert d2.value == 10005
+    assert t.D(a).value == 11
     assert t.get_d_via_cast(d) == (10005, 10005, 10005, 10005)
     assert t.get_d_via_try_cast(d) == (10005, 10005, 10005, 10005)
 
@@ -394,9 +416,70 @@ def test16_keep_alive_custom(clean):
         x = 5
         t.keep_alive_ret(x, s)
 
-    assert "nanobind::detail::keep_alive(): could not create a weak reference!" in str(
+    assert "nanobind::detail::keep_alive_py(): could not create a weak reference!" in str(
         excinfo.value
     )
+
+
+def test16b_inst_python_derived():
+    class Dachshund(t.Dog):
+        pass
+
+    assert not t.inst_python_derived(t.Dog("Rufus"))
+    assert t.inst_python_derived(Dachshund("Rufus"))
+    assert not t.inst_python_derived(t.Struct())
+
+
+def test16c_keep_alive_functions(clean):
+    # nb::keep_alive_obj() with a nanobind nurse
+    t.reset()
+    nurse = t.Dog("Rufus")
+    patient = t.Struct()
+    t.keep_alive_obj(nurse, patient)
+    t.keep_alive_obj(nurse, patient)  # repeated registration is a no-op
+    del patient
+    assert_stats(default_constructed=1)
+    del nurse
+    assert_stats(default_constructed=1, destructed=1)
+
+    # .. and with an arbitrary weak-referenceable nurse
+    t.reset()
+
+    class Nurse:
+        pass
+
+    nurse = Nurse()
+    patient = t.Struct()
+    t.keep_alive_obj(nurse, patient)
+    del patient
+    assert_stats(default_constructed=1)
+    del nurse
+    collect()
+    assert_stats(default_constructed=1, destructed=1)
+
+    # None as nurse or patient does nothing
+    t.keep_alive_obj(None, t.Struct())
+    t.keep_alive_obj(t.Struct(), None)
+
+    with pytest.raises(RuntimeError, match="could not create a weak reference"):
+        t.keep_alive_obj(5, t.Struct())
+
+    # nb::keep_alive_cb() releases the payload when the nurse expires
+    base = t.keep_alive_cb_deleted()
+    nurse = t.Dog("Rufus")
+    t.keep_alive_cb(nurse)
+    t.keep_alive_cb(nurse)
+    assert t.keep_alive_cb_deleted() == base
+    del nurse
+    collect()
+    assert t.keep_alive_cb_deleted() == base + 2
+
+    nurse = Nurse()
+    t.keep_alive_cb(nurse)
+    assert t.keep_alive_cb_deleted() == base + 2
+    del nurse
+    collect()
+    assert t.keep_alive_cb_deleted() == base + 3
 
 
 def f():
@@ -469,6 +552,10 @@ def test18_static_properties():
     t.StaticProperties2.value = 50
     assert t.StaticProperties2.get() == 50
     assert t.StaticProperties.get() == 50
+
+    # Deleting a static property without a deleter must raise
+    with pytest.raises(AttributeError):
+        del t.StaticProperties.value
 
 
 @skip_on_pypy
@@ -545,10 +632,10 @@ def test25_none_arg():
     assert t.none_3(None) is True
     assert t.none_4(arg=None) is True
     assert t.none_0.__doc__ == "none_0(arg: test_classes_ext.Struct, /) -> bool"
-    assert t.none_1.__doc__ == "none_1(arg: test_classes_ext.Struct) -> bool"
+    assert t.none_1.__doc__ == "none_1(arg: test_classes_ext.Struct, /) -> bool"
     assert t.none_2.__doc__ == "none_2(arg: test_classes_ext.Struct) -> bool"
     opt_struct = optional("test_classes_ext.Struct")
-    assert t.none_3.__doc__ == f"none_3(arg: {opt_struct}) -> bool"
+    assert t.none_3.__doc__ == f"none_3(arg: {opt_struct}, /) -> bool"
     assert t.none_4.__doc__ == f"none_4(arg: {opt_struct}) -> bool"
 
 
@@ -586,6 +673,21 @@ def test27_dynamic_attr(clean):
     assert_stats(value_constructed=100, destructed=100)
 
 
+@skip_on_pypy
+def test27b_bound_method_gc(clean):
+    import gc
+
+    o = t.StructWithAttr(1)
+    bound = o.value
+    assert gc.is_tracked(bound)
+
+    # Create a cycle through the bound method (which holds a ref to 'o')
+    o.cycle = bound
+    del o, bound
+
+    assert_stats(value_constructed=1, destructed=1)
+
+
 def test28_copy_rvp():
     a = t.Struct.create_reference()
     b = t.Struct.create_copy()
@@ -596,6 +698,11 @@ def test29_pydoc():
     import pydoc
 
     assert "Some documentation" in pydoc.render_doc(t)
+
+    # pydoc bypasses tp_getattro when looking up docstrings (see issue #1431)
+    m = t.Dog("Rufus").what
+    assert object.__getattribute__(m, "__doc__") == "what(self) -> str"
+    assert "what(self) -> str" in pydoc.render_doc(m)
 
 
 def test30_property_assignment_instance():
@@ -609,6 +716,15 @@ def test30_property_assignment_instance():
     assert s.s2.value() == 456
     assert s1.value() == 123
     assert s2.value() == 456
+
+
+def test30b_property_policy_override():
+    # A user-provided policy must take precedence over the implicit
+    # 'reference_internal' policy of def_prop_ro
+    s = t.PairStruct()
+    c = s.s1_copy
+    c.set_value(123)
+    assert s.s1.value() != 123
 
 
 # cpyext reference cycles are not supported, see https://foss.heptapod.net/pypy/pypy/-/issues/3849
@@ -926,6 +1042,30 @@ def test47_inconstructible():
     with pytest.raises(TypeError, match="no constructor defined"):
         t.Foo()
 
+def test47b_state_warning_as_error():
+    # When warnings are turned into errors, the state-error warning emitted
+    # while casting an invalid instance must not leak a pending exception into
+    # the dispatcher (which previously surfaced as a spurious SystemError).
+    # The warning is instead reported through sys.unraisablehook.
+    import warnings
+    a = t.Int.__new__(t.Int)  # uninitialized
+    b = t.Int(3)
+    unraised = []
+    old_hook = sys.unraisablehook
+    sys.unraisablehook = lambda arg: unraised.append(arg.exc_value)
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", RuntimeWarning)
+            # '__add__' fails to cast 'a' and must report NotImplemented cleanly
+            with pytest.raises(TypeError, match="unsupported operand"):
+                a + b
+    finally:
+        sys.unraisablehook = old_hook
+    assert sys.exc_info() == (None, None, None)
+    assert len(unraised) == 1
+    assert isinstance(unraised[0], RuntimeWarning)
+    assert "uninitialized instance" in str(unraised[0])
+
 def test48_monekypatchable():
     # issue 750: how to monkeypatch __init__
     q = t.MonkeyPatchable()
@@ -992,3 +1132,596 @@ def test53_never_destruct():
     r = t.NeverDestruct.make_ref()
     r.set_var(5)
     assert r.var() == 5
+
+
+# Run the pooling lifecycle tests against both a plain type (gc=0) and a
+# GC-tracked one (gc=1, dynamic_attr + weak-referenceable).
+def _pooled(gc):
+    if gc:
+        return t.PooledGC, t.pooled_gc_reset, t.pooled_gc_stats
+    return t.Pooled, t.pooled_reset, t.pooled_stats
+
+
+# Object pooling relies on reference counting: releasing an instance parks the
+# object immediately in 'tp_dealloc'. PyPy uses a tracing GC, so 'del' does not
+# deterministically run the C++ destructor, breaking the lifecycle assertions.
+@skip_on_pypy
+@pytest.mark.parametrize("gc", [0, 1])
+def test54_pooled(gc):
+    cls, reset, stats = _pooled(gc)
+
+    # Basic correctness through the pool fast path
+    reset()
+    a = cls(3)
+    assert a.get() == 3 and a.value == 3
+    c0, d0 = stats()
+    assert c0 == 1 and d0 == 0
+
+    # Releasing 'a' parks the object (capacity 4): the C++ destructor runs...
+    addr = id(a)
+    del a
+    c1, d1 = stats()
+    assert c1 == 1 and d1 == 1
+
+    # ...and the next construction revives the SAME object (no realloc),
+    # running a fresh C++ constructor. Identity (address) is reused.
+    b = cls(7)
+    assert id(b) == addr
+    assert b.get() == 7   # no stale data from the previous occupant
+    c2, d2 = stats()
+    assert c2 == 2 and d2 == 1
+    del b
+
+
+@skip_on_pypy
+@pytest.mark.parametrize("gc", [0, 1])
+def test55_pooled_churn(gc):
+    cls, reset, stats = _pooled(gc)
+
+    # A hot alloc/free loop should keep reusing a tiny working set of objects
+    # while construct/destruct run every iteration.
+    reset()
+    seen = set()
+    for i in range(1000):
+        x = cls(i)
+        assert x.get() == i
+        seen.add(id(x))
+        del x
+    c, d = stats()
+    assert c == 1000 and d == 1000          # full C++ lifecycle each iteration
+    assert len(seen) <= 4                   # but addresses come from the pool
+
+    # Return-by-value (operator) also flows through the pool
+    reset()
+    p = cls(10)
+    q = p + 5                               # returns a fresh instance by value
+    assert q.get() == 15 and isinstance(q, cls)
+    del p, q
+
+
+@skip_on_pypy
+@pytest.mark.parametrize("gc", [0, 1])
+def test56_pooled_bounded(gc):
+    cls, reset, stats = _pooled(gc)
+
+    # Holding more live instances than the pool capacity (4) must be fine:
+    # surplus objects are freed normally instead of parked.
+    reset()
+    items = [cls(i) for i in range(32)]
+    assert [x.get() for x in items] == list(range(32))
+    del items
+    c, d = stats()
+    assert c == 32 and d == 32
+
+
+@skip_on_pypy
+@pytest.mark.parametrize("gc", [0, 1])
+def test59_pooled_threaded(gc, n_threads=8):
+    cls, reset, stats = _pooled(gc)
+
+    # Per-thread instance pools must work without locking under free-threading:
+    # many threads concurrently construct/release pooled temporaries (including
+    # return-by-value), and the exact C++ lifecycle balance must be preserved.
+    n = 50000
+    reset()
+
+    def f():
+        for i in range(n):
+            a = cls(i)
+            assert a.get() == i
+            b = a + 5                 # return-by-value -> pool
+            assert b.get() == i + 5
+            del a, b
+
+    parallelize(f, n_threads=n_threads)
+
+    c, d = stats()
+    # per iteration: ctor(a) + ctor(inside __add__) + move-ctor(by value) = 3
+    expected = n_threads * n * 3
+    assert c == expected and d == expected
+
+
+# GC-specific guarantees the plain type can't exercise.
+@skip_on_pypy
+def test60_pooled_gc():
+    import weakref, gc
+
+    # A recycled instance must not inherit the previous occupant's __dict__
+    t.pooled_gc_reset()
+    p = t.PooledGC(1)
+    p.extra = ["payload"]
+    addr = id(p)
+    del p
+    q = t.PooledGC(2)
+    assert id(q) == addr and not hasattr(q, "extra")
+    del q
+
+    # Parking an instance invalidates weak references to it
+    r = t.PooledGC(5)
+    wr = weakref.ref(r)
+    assert wr() is r
+    del r
+    assert wr() is None
+
+    # A reference cycle (via dynamic attrs) is still collected, not leaked
+    t.pooled_gc_reset()
+    x, y = t.PooledGC(1), t.PooledGC(2)
+    x.peer, y.peer = y, x
+    del x, y
+    gc.collect()
+    c, d = t.pooled_gc_stats()
+    assert c == 2 and d == 2
+
+
+# The only path where the collector traverses into a pooled object's C++ payload
+# (PooledGC's built-in traverse only visits __dict__).
+@skip_on_pypy
+def test61_pooled_custom_traverse():
+    import gc
+
+    # Custom traverse reports the held reference; a revival starts clean
+    t.pooled_tr_reset()
+    sentinel = ["payload"]
+    a = t.PooledTraverse(sentinel)
+    assert sentinel in gc.get_referents(a)
+    addr = id(a)
+    del a
+    b = t.PooledTraverse()
+    assert id(b) == addr and b.get() is None
+    del b
+
+    # A cycle routed through the C++ payload is collected
+    t.pooled_tr_reset()
+    box = []
+    q = t.PooledTraverse(box)
+    box.append(q)
+    del q, box
+    gc.collect()
+    c, d = t.pooled_tr_stats()
+    assert c == 1 and d == 1
+
+
+def test62_type_namespace():
+    # 'type_dict' returns the writable namespace of a type
+    d = t.type_dict(t.Struct)
+    assert isinstance(d, dict) and "value_plus" in d
+    assert t.type_dict(t.Struct) is d
+
+    class Sub(t.Struct):
+        pass
+
+    t.type_dict_insert(Sub, "injected", 5)
+    assert Sub.injected == 5
+
+    # Inherited entries are not part of the namespace, but visible to a lookup
+    assert "value" in t.type_dict(t.StaticProperties)
+    assert "value" not in t.type_dict(t.StaticProperties2)
+    assert t.type_lookup(t.StaticProperties2, "value") is \
+           t.type_dict(t.StaticProperties)["value"]
+
+    # The lookup returns raw entries without invoking the descriptor protocol
+    assert t.Struct.static_ro == 42
+    assert type(t.type_lookup(t.Struct, "static_ro")).__name__ == \
+           "nb_static_property"
+
+    # It also does not fall back to the metaclass
+    assert t.Struct.__name__ == "Struct"
+    assert t.type_lookup(t.Struct, "__name__") is None
+    assert t.type_lookup(t.Struct, "does_not_exist") is None
+
+    # Python string keys produce the same results
+    for name in ("static_ro", "__name__", "does_not_exist"):
+        assert t.type_lookup_key(t.Struct, name) is t.type_lookup(t.Struct, name)
+
+
+def test63_freeze():
+    if t.freeze_supported():
+        with pytest.raises(TypeError):
+            t.Frozen.extra = 1
+        with pytest.raises(TypeError):
+            t.Frozen2.extra = 1
+
+        # Freezing requires that all base classes are immutable
+        with pytest.raises(TypeError, match="mutable base"):
+            t.freeze_type(t.StaticProperties2)
+    else:
+        assert not t.freeze_type(t.StaticProperties2)
+        t.Frozen.extra = 1
+        del t.Frozen.extra
+
+    # Instances and subclasses remain usable either way
+    v = t.Frozen()
+    v.value = 5
+    assert v.value == 5
+
+    class Sub(t.Frozen):
+        pass
+
+    assert Sub().value == 3
+
+
+def test64_inst_dict():
+    s = t.StructWithAttr(5)
+    d = t.inst_dict(s)
+    assert d == {} and s.__dict__ is d
+
+    s.attr = 10
+    assert d["attr"] == 10
+    t.inst_dict_insert(s, "attr_2", 11)
+    assert s.attr_2 == 11
+
+    # A Python subclass holds attributes even when the base type does not
+    # declare 'nb::dynamic_attr'
+    class Sub(t.Struct):
+        pass
+
+    x = Sub(2)
+    t.inst_dict_insert(x, "attr", 12)
+    assert x.attr == 12 and x.__dict__ == {"attr": 12}
+
+    # The function also accepts objects unrelated to nanobind. Such instances
+    # may keep their attributes in a managed dictionary that only materializes
+    # when it is requested.
+    class Plain:
+        def __init__(self):
+            self.attr = 13
+
+    y = Plain()
+    d = t.inst_dict(y)
+    assert d == {"attr": 13} and y.__dict__ is d
+    t.inst_dict_insert(y, "attr_2", 14)
+    assert y.attr_2 == 14
+
+    # Objects that cannot store attributes report an invalid dictionary
+    # (PyPy equips every instance with one)
+    if not is_pypy:
+        assert t.inst_dict(t.Struct(1)) is None
+        assert t.inst_dict(object()) is None and t.inst_dict(1) is None
+
+
+def test65_init_subclass_setattr():
+    # '__init_subclass__' and '__set_name__' observe the new class before the
+    # metaclass 'tp_init' slot runs. The nanobind type record must already be
+    # complete at this point.
+    class BaseWithInitSubclass(t.Animal):
+        def __init_subclass__(cls, **kwargs):
+            super().__init_subclass__(**kwargs)
+            cls.foo = 123
+
+    class Derived(BaseWithInitSubclass):
+        pass
+
+    assert Derived.foo == 123
+
+    class Descriptor:
+        def __set_name__(self, owner, name):
+            owner.bar = name
+
+    class Derived2(t.Animal):
+        descr = Descriptor()
+
+    assert Derived2.bar == "descr"
+
+    with pytest.raises(TypeError, match="requires a nanobind base type"):
+        class Derived3(metaclass=type(t.Animal)):
+            pass
+
+
+def test66_uninitialized_type_use():
+    # Instantiation from '__init_subclass__' / '__set_name__', and types
+    # created via 'type.__new__()', which skips the metaclass 'tp_init' slot
+    class BaseWithInitSubclass(t.Animal):
+        def __init_subclass__(cls, **kwargs):
+            super().__init_subclass__(**kwargs)
+            cls.inst = cls()
+
+    class Derived(BaseWithInitSubclass):
+        pass
+
+    assert isinstance(Derived.inst, Derived)
+    assert Derived.inst.name() == "Animal"
+
+    class Descriptor:
+        def __set_name__(self, owner, name):
+            owner.inst = owner()
+
+    class Derived2(t.Animal):
+        descr = Descriptor()
+
+    assert isinstance(Derived2.inst, Derived2)
+
+    meta = type(t.Animal)
+    Derived3 = type.__new__(meta, "Derived3", (t.Animal,), {})
+    Derived3.baz = 1
+    assert Derived3.baz == 1 and isinstance(Derived3(), t.Animal)
+
+    # 'type.__new__()' cannot be intercepted, the error surfaces on first use
+    Derived4 = type.__new__(meta, "Derived4", (t.FinalType,), {})
+    with pytest.raises(TypeError, match="prohibits subclassing"):
+        Derived4()
+    with pytest.raises(TypeError, match="prohibits subclassing"):
+        Derived4.foo = 1
+
+    # Chains of types whose first use happens via a subclass
+    Derived5 = type.__new__(meta, "Derived5", (t.Animal,), {})
+
+    class Derived6(Derived5):
+        pass
+
+    assert isinstance(Derived6(), Derived5)
+
+    class BaseWithCompanion(t.Animal):
+        def __init_subclass__(cls, **kwargs):
+            super().__init_subclass__(**kwargs)
+            if cls.__name__ != "Companion":
+                cls.companion = type("Companion", (cls,), {})()
+
+    class Derived7(BaseWithCompanion):
+        pass
+
+    assert isinstance(Derived7.companion, Derived7)
+    assert Derived7.companion.name() == "Animal"
+
+
+def test67_implicit_self_annotation():
+    # 'self' is the only parameter, and it carries an implicit annotation, so
+    # the function record ends up without any argument records
+    assert t.OptionalNoneTest().optional_self() is True
+
+
+def test68_trampoline_invalidate_subclasses():
+    """Invalidate cached missing overrides in ordinary nanobind descendants
+    when a Python base class is patched, including on PyPy."""
+    class Base(t.Dog):
+        pass
+
+    class Sub(Base):
+        pass
+
+    obj = Sub("hello")
+    assert t.go(obj) == "Dog says hello"
+    Base.name = lambda self: "patched"
+    assert t.go(obj) == "patched says hello"
+    del Base.name
+    assert t.go(obj) == "Dog says hello"
+
+
+@pytest.mark.parametrize("order", list(permutations(range(3))))
+def test69_multiple_inheritance(order):
+    """Combine two mixins with a bound class in every order, preserving its MRO
+    and conversion to C++ base classes, including after further subclassing."""
+    class MixinA:
+        def __init__(self, value):
+            self.a = value
+
+        def extra(self):
+            return self.a + self.b
+
+    class MixinB:
+        def __init__(self, value):
+            self.b = value
+
+    bases = (MixinA, MixinB, t.Dog)
+    bases = tuple(bases[i] for i in order)
+
+    class Mixed(*bases):
+        def __init__(self):
+            t.Dog.__init__(self, "hello")
+            MixinA.__init__(self, 10)
+            MixinB.__init__(self, 20)
+
+    expected_mro = list(bases)
+    expected_mro.insert(expected_mro.index(t.Dog) + 1, t.Animal)
+    assert Mixed.__mro__ == (Mixed, *expected_mro, object)
+    assert Mixed.__base__ is t.Dog
+
+    obj = Mixed()
+    assert obj.extra() == 30
+    assert all(isinstance(obj, b) for b in (*bases, t.Animal))
+    assert t.animal_passthrough(obj) is obj
+    assert t.dog_passthrough(obj) is obj
+    assert t.go(obj) == "Dog says hello"
+
+    class EmptyMixin:
+        __slots__ = ()
+
+    class Further(EmptyMixin, Mixed):
+        pass
+
+    obj = Further()
+    assert obj.extra() == 30 and t.animal_passthrough(obj) is obj
+
+
+def test70_multiple_inheritance_super():
+    """Follow cooperative mixin initializers and virtual overrides through super();
+    a bound constructor terminates the initializer chain."""
+    class MixinA:
+        def __init__(self, *args, **kwargs):
+            self.a = 10
+            super().__init__(*args, **kwargs)
+
+        def name(self):
+            return "A " + super().name()
+
+        def extra(self):
+            return self.a + super().extra()
+
+    class MixinB:
+        def __init__(self, *args, **kwargs):
+            self.b = 20
+            super().__init__(*args, **kwargs)
+
+        def name(self):
+            return "B " + super().name()
+
+        def extra(self):
+            return self.b
+
+    class Mixed(MixinA, MixinB, t.Dog):
+        pass
+
+    obj = Mixed("hello")
+    assert (obj.a, obj.b) == (10, 20)
+    assert obj.extra() == 30
+    assert t.go(obj) == "A B Dog says hello"
+
+    class BoundFirst(t.Dog, MixinA, MixinB):
+        pass
+
+    obj = BoundFirst("hello")
+    assert not hasattr(obj, "a") and not hasattr(obj, "b")
+    assert t.go(obj) == "Dog says hello"
+
+
+@pytest.mark.parametrize("base", [t.Struct, t.StructWithAttr,
+                                  t.StructWithWeakrefs,
+                                  t.StructWithWeakrefsAndDynamicAttrs])
+def test71_multiple_inheritance_gc(clean, base):
+    """Collect cycles in mixin dictionaries and subclass slots, releasing weak
+    references and destroying the C++ instance exactly once."""
+    import weakref
+
+    class Mixin:
+        pass
+
+    class Mixed(Mixin, base):
+        __slots__ = ("peer",)
+
+    obj = Mixed(42)
+    assert obj.value() == 42
+    obj.peer = obj
+    obj.cycle = obj
+    ref = weakref.ref(obj)
+    del obj
+    collect()
+    assert ref() is None
+    assert_stats(value_constructed=1, destructed=1)
+
+
+def test72_multiple_inheritance_errors():
+    """Reject multiple nanobind bases, conflicting native layouts, and mixins
+    combined with a bound class that prohibits subclassing."""
+    class Left(t.Struct):
+        pass
+
+    class Right(t.Struct):
+        pass
+
+    # Python accepts these compatible layouts, nanobind rejects them
+    for bases in ((t.Dog, t.Animal), (Left, Right)):
+        with pytest.raises(TypeError, match="multiple nanobind bases"):
+            type("MultipleBases", bases, {})
+
+    class SlottedMixin:
+        __slots__ = ("state",)
+
+    for bases in ((t.Struct, t.Dog), (list, t.Struct),
+                  (SlottedMixin, t.Struct), (t.Struct, SlottedMixin)):
+        with pytest.raises(TypeError):
+            type("ConflictingLayout", bases, {})
+
+    class Mixin:
+        pass
+
+    with pytest.raises(TypeError, match="prohibits subclassing"):
+        class Final(Mixin, t.FinalType):
+            pass
+
+
+def test73_multiple_inheritance_early_init():
+    """Allow mixin instances in class hooks and initialize deferred type records,
+    while still rejecting invalid bases when the metaclass initializer is skipped."""
+    class Mixin:
+        def __init_subclass__(cls, **kwargs):
+            super().__init_subclass__(**kwargs)
+            cls.inst = cls("hello")
+
+    class Mixed(Mixin, t.Dog):
+        pass
+
+    assert t.go(Mixed.inst) == "Dog says hello"
+    del Mixed.inst
+
+    class Descriptor:
+        def __set_name__(self, owner, name):
+            owner.inst = owner("hello")
+
+    class PlainMixin:
+        pass
+
+    bases = (PlainMixin, t.Dog)
+
+    class WithDescriptor(*bases):
+        descr = Descriptor()
+
+    assert t.go(WithDescriptor.inst) == "Dog says hello"
+    del WithDescriptor.inst
+
+    # Bypass the metaclass initializer, including for the nanobind base.
+    meta = type(t.Dog)
+    Deferred = type.__new__(meta, "Deferred", bases, {})
+
+    Deferred2 = type.__new__(meta, "Deferred2", (Deferred,), {})
+    assert t.go(Deferred2("hello")) == "Dog says hello"
+
+    Invalid = type.__new__(meta, "Invalid", (t.Dog, t.Animal), {})
+    with pytest.raises(TypeError, match="multiple nanobind bases"):
+        Invalid("hello")
+    with pytest.raises(TypeError, match="multiple nanobind bases"):
+        Invalid.attr = 1
+
+
+def test74_multiple_inheritance_monkeypatch():
+    """Observe replaced and deleted mixin overrides, along with changes made
+    through the nanobind subclass, on a mixed class and its descendants."""
+    class Mixin:
+        def name(self):
+            return "mixin"
+
+    class Named:
+        def name(self):
+            return "named"
+
+    class Mixed(Mixin, t.Dog):
+        pass
+
+    class Further(Mixed):
+        pass
+
+    objects = [Mixed("hello"), Further("hello")]
+
+    def check(name):
+        for obj in objects:
+            assert t.go(obj) == name + " says hello"
+
+    check("mixin")
+    Mixin.name = lambda self: "replaced"
+    check("replaced")
+    del Mixin.name
+    check("Dog")
+    Mixed.name = lambda self: "mixed"
+    check("mixed")
+    del Mixed.name
+    check("Dog")
+    Mixed.__bases__ = (Named, t.Dog)
+    check("named")

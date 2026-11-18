@@ -5,19 +5,17 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class UndoableModelStatePair; }
-
 namespace osc
 {
+    class UndoableModelStatePair;
+
     class ModelEditorToolbar final : public Widget {
     public:
         explicit ModelEditorToolbar(
-            Widget* parent,
-            std::string_view label,
-            std::shared_ptr<UndoableModelStatePair>
-        );
+            Widget* parent, std::string_view label, std::shared_ptr<UndoableModelStatePair>);
+
     private:
-        void impl_on_draw() final;
+        void impl_on_draw() override;
 
         class Impl;
         OSC_WIDGET_DATA_GETTERS(Impl);

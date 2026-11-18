@@ -25,8 +25,7 @@ namespace osc
         template<typename T>
         static constexpr bool contains() noexcept
         {
-            const auto f = []<typename... Ts>(Typelist<Ts...>)
-            {
+            const auto f = []<typename... Ts>(Typelist<Ts...>) {
                 return (std::same_as<T, Ts> or ...);
             };
             return f(Typelist{});
@@ -44,7 +43,7 @@ namespace osc
     };
 
     template<typename TList>
-    inline constexpr size_t TypelistSizeV = TypelistSize<TList>::value;
+    inline constexpr size_t typelist_size_v = TypelistSize<TList>::value;
 
     // Typelist: indexed access
 
@@ -58,8 +57,8 @@ namespace osc
 
     template<typename Head, typename... Tails, size_t Index>
     struct TypeAt<Typelist<Head, Tails...>, Index> {
-        static_assert(Index < sizeof...(Tails)+1, "index out of range");
-        using type = typename TypeAt<Typelist<Tails...>, Index-1>::type;
+        static_assert(Index < sizeof...(Tails) + 1, "index out of range");
+        using type = typename TypeAt<Typelist<Tails...>, Index - 1>::type;
     };
 
     template<typename TList, size_t Index>

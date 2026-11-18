@@ -36,54 +36,58 @@ namespace
             osc::Color background_color,
             bool draw_floor,
             osc::SceneCache* scene_cache,
+            osc::Camera* camera,
             UiCallbacks callbacks) :
 
             callbacks_{std::move(callbacks)},
             local_scene_cache_{scene_cache ? std::optional<osc::SceneCache>{} : osc::SceneCache{}},
             scene_cache_{scene_cache ? scene_cache : &local_scene_cache_.value()},
             decorations_{model.decorations(*scene_cache_, model_state)},
+            local_camera_{camera ? std::optional<osc::Camera>{} : osc::Camera{}},
+            camera_{camera ? camera : &*local_camera_},
             background_color_{background_color},
-            fit_camera_on_next_frame_{true},
             draw_floor_{draw_floor}
         {
-            camera_.set_vertical_field_of_view(35_deg);
-            camera_controller_.update_camera(camera_);
+            if (local_camera_) {
+                // The implementation had to create an internal (local) camera. Ensure
+                // it has reasonable defaults etc.
+                local_camera_->set_vertical_field_of_view(35_deg);
+                camera_controller_.update_camera(*camera_);
+            } else {
+                // Ensure the controller is positioned according to the caller's
+                // initial camera positioning.
+                camera_controller_.set_position_and_direction_from(*camera_);
+            }
         }
+
     private:
-        bool impl_on_event(osc::Event& e) override
-        {
-            return ui_context_.on_event(e);
-        }
+        bool impl_on_event(osc::Event& e) override { return ui_context_.on_event(e); }
 
-        void impl_on_tick() override
-        {
-            callbacks_.on_tick_begin();
-        }
+        void impl_on_tick() override { callbacks_.on_tick_begin(); }
 
-        void impl_on_draw() final
+        void impl_on_draw() override
         {
             osc::App::upd().main_window_clear();
             ui_context_.on_start_new_frame();
 
             // Handle initial autofocus
             if (std::exchange(fit_camera_on_next_frame_, false)) {
-                if (const auto aabb = osc::bounding_aabb_of(decorations_, &osc::SceneDecoration::world_space_bounds)) {
+                if (const auto aabb = osc::bounding_aabb_of(
+                        decorations_, &osc::SceneDecoration::world_space_bounds)) {
                     camera_controller_.focus_on(
                         *aabb,
-                        camera_,
-                        osc::aspect_ratio_of(osc::App::get().main_window_dimensions())
-                    );
+                        *camera_,
+                        osc::aspect_ratio_of(osc::App::get().main_window_dimensions()));
                 }
             }
 
             // Update the scene camera state based on the user's inputs.
             osc::ui::update_orbit_controller_from_all_inputs(
                 camera_controller_,
-                camera_,
+                *camera_,
                 osc::Rect::from_origin_and_dimensions({}, osc::App::get().main_window_dimensions()),
-                std::nullopt
-            );
-            camera_controller_.update_camera(camera_);
+                std::nullopt);
+            camera_controller_.update_camera(*camera_);
 
             const osc::Vector2 dimensions = osc::App::get().main_window_dimensions();
 
@@ -92,8 +96,8 @@ namespace
                 .device_pixel_ratio = osc::App::get().main_window_device_pixel_ratio(),
                 .anti_aliasing_level = osc::App::get().anti_aliasing_level(),
                 .draw_floor = draw_floor_,
-                .view_matrix = camera_.view_matrix(),
-                .projection_matrix = camera_.projection_matrix(osc::aspect_ratio_of(dimensions)),
+                .view_matrix = camera_->view_matrix(),
+                .projection_matrix = camera_->projection_matrix(osc::aspect_ratio_of(dimensions)),
                 .background_color = background_color_,
             };
             scene_renderer_.render(decorations_, scene_renderer_params);
@@ -108,14 +112,14 @@ namespace
         osc::SceneCache* scene_cache_;
         osc::SceneRenderer scene_renderer_{*scene_cache_};
         std::vector<osc::SceneDecoration> decorations_;
-        osc::Camera camera_;
         osc::OrbitCameraController camera_controller_;
+        std::optional<osc::Camera> local_camera_;
+        osc::Camera* camera_ = nullptr;  // can be either `*local_camera_` or caller-supplied.
         osc::Color background_color_ = osc::Color::white();
-        bool fit_camera_on_next_frame_ = false;
+        bool fit_camera_on_next_frame_ = local_camera_.has_value();
         bool draw_floor_ = true;
     };
 }
-
 
 void opyn::show_model_in_state(
     OPynSimApp& app,
@@ -125,19 +129,16 @@ void opyn::show_model_in_state(
     osc::Color background_color,
     bool draw_floor,
     osc::SceneCache* scene_cache,
+    osc::Camera* camera,
     UiCallbacks callbacks)
 {
     app.set_main_window_showing(true);
     app.set_main_window_dimensions(dimensions);
-    osc::ScopeExit hide_window_on_exit{[&app]{ app.set_main_window_showing(false); }};
+    osc::ScopeExit hide_window_on_exit{[&app] {
+        app.set_main_window_showing(false);
+    }};
     app.focus_main_window();
 
     app.show<BasicModelViewer>(
-        model,
-        state,
-        background_color,
-        draw_floor,
-        scene_cache,
-        std::move(callbacks)
-    );
+        model, state, background_color, draw_floor, scene_cache, camera, std::move(callbacks));
 }

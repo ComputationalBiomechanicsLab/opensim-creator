@@ -49,6 +49,10 @@ napoleon_numpy_docstring = False  # `opynsim` uses Google-style docstrings
 
 # html output options:
 html_theme = 'sphinx_book_theme'
+html_theme_options = {
+    "show_navbar_depth": 2,  # Unfold top-level API Reference submodules
+    "max_navbar_depth": 4,
+}
 html_logo = '_static/opynsim_banner_vertical.svg'
 html_favicon = '_static/opynsim_logo.svg'
 html_static_path = ['_static']  # note: static files listed here are copied after builtin static files (overwrite)

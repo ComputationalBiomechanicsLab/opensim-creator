@@ -8,10 +8,10 @@
 #include <functional>
 #include <ranges>
 
-namespace osc { struct Circle; }
-
 namespace osc
 {
+    struct Circle;
+
     // returns the aspect ratio of `rect`
     inline float aspect_ratio_of(const Rect& rect)
     {
@@ -39,17 +39,15 @@ namespace osc
         const auto y_corners = y.corners();
         return Rect::from_corners(
             elementwise_min(x_corners.min, y_corners.min),
-            elementwise_max(x_corners.max, y_corners.max)
-        );
+            elementwise_max(x_corners.max, y_corners.max));
     }
 
     // returns a `Rect` that tightly bounds the `Vector2`s projected from `r`
-    template<
-        std::ranges::input_range R,
-        typename Proj = std::identity
-    >
-    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vector2&>
-    constexpr Rect bounding_rect_of(R&& r, Proj proj = {})
+    template<std::ranges::input_range R, typename Proj = std::identity>
+    requires std::convertible_to<
+        typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type,
+        const Vector2&>
+    constexpr Rect bounding_rect_of(const R& r, Proj proj = {})
     {
         auto it = std::ranges::begin(r);
         const auto last = std::ranges::end(r);

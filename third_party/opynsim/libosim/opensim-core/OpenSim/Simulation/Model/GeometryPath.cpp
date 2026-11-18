@@ -33,6 +33,7 @@
 #include <OpenSim/Simulation/Model/MovingPathPoint.h>
 #include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 //=============================================================================
 // STATICS
@@ -179,6 +180,7 @@ void GeometryPath::extendFinalizeFromProperties()
 
 void GeometryPath::implForEachDecorativePathPoint(
     const SimTK::State& state,
+    const ModelDisplayHints&,
     const std::function<void(const DecorativePathPoint&)>& callback) const
 {
     const Array<AbstractPathPoint*>& pathPoints = getCurrentPath(state);
@@ -189,7 +191,8 @@ void GeometryPath::implForEachDecorativePathPoint(
         if (auto* pwp = dynamic_cast<const PathWrapPoint*>(&p)) {
             // A `PathWrapPoint`'s surface points are expressed w.r.t. the wrap
             // surface's body frame. Ensure they're transformed to ground.
-            const SimTK::Transform& X_BG = pwp->getParentFrame().getTransformInGround(state);
+            const SimTK::Transform& X_BG =
+                    pwp->getParentFrame().getTransformInGround(state);
 
             // A `PathWrapPoint`'s surface points should be emitted, but not
             // associated to a component in the model (they are synthetic).
@@ -388,6 +391,36 @@ void GeometryPath::produceForces(const SimTK::State& s,
             force
         );
     }
+}
+
+bool GeometryPath::isVisualPath() const
+{
+    return true;
+}
+
+std::vector<ComponentPath>
+GeometryPath::findIndependentCoordinates(const SimTK::State& s) const {
+    const PathPointSet& pps = get_PathPointSet();
+    const PhysicalFrame& firstFrame = pps.get(0).getParentFrame();
+    const PhysicalFrame& lastFrame = pps.get(pps.getSize() - 1).getParentFrame();
+
+    std::vector<SimTK::ReferencePtr<const Joint>>
+    jointsBetweenFrames = findJointsBetweenPhysicalFrames(
+            getModel(),
+            firstFrame.getAbsolutePathString(),
+            lastFrame.getAbsolutePathString());
+
+    std::vector<ComponentPath> coordinates;
+    for (const auto& joint : jointsBetweenFrames) {
+        for (int i = 0; i < joint->numCoordinates(); ++i) {
+            const Coordinate& coord = joint->get_coordinates(i);
+            if (!coord.isConstrained(s)) {
+                coordinates.push_back(
+                    ComponentPath(coord.getAbsolutePathString()));
+            }
+        }
+    }
+    return coordinates;
 }
 
 //_____________________________________________________________________________

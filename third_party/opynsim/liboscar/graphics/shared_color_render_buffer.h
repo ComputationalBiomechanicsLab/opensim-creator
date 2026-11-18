@@ -6,10 +6,10 @@
 
 #include <memory>
 
-namespace osc { struct ColorRenderBufferParams; }
-
 namespace osc
 {
+    struct ColorRenderBufferParams;
+
     // A render buffer that's shareable between `Material`s, `RenderTarget`s,
     // and `RenderTexture`s.
     //
@@ -50,7 +50,8 @@ namespace osc
         explicit SharedColorRenderBuffer();
         explicit SharedColorRenderBuffer(const ColorRenderBufferParams&);
 
-        friend bool operator==(const SharedColorRenderBuffer&, const SharedColorRenderBuffer&) = default;
+        friend bool operator==(const SharedColorRenderBuffer&, const SharedColorRenderBuffer&) =
+            default;
 
         // returns an independent (as in, not-shared) copy of the underlying render buffer data
         SharedColorRenderBuffer clone() const;
@@ -64,6 +65,7 @@ namespace osc
 
         class ColorRenderBuffer;
         const ColorRenderBuffer& impl() const { return *impl_; }
+
     private:
         friend class GraphicsBackend;
         friend class RenderTexture;

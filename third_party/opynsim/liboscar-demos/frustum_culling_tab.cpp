@@ -39,10 +39,8 @@ namespace
 
         std::optional<AABB> world_space_bounds() const
         {
-            return mesh.bounds().transform([this](const AABB& local_aabb)
-            {
-                return transform_aabb(transform, local_aabb);
-            });
+            return mesh.bounds().transform(
+                [this](const AABB& local_aabb) { return transform_aabb(transform, local_aabb); });
         }
     };
 
@@ -68,18 +66,19 @@ namespace
             for (size_t y = 0; y < num_cells.y(); ++y) {
                 for (size_t z = 0; z < num_cells.z(); ++z) {
 
-                    const Vector3 pos = bounds.min + dims * (Vector3{x, y, z} / Vector3{num_cells - 1uz});
+                    const Vector3 pos =
+                        bounds.min + dims * (Vector3{x, y, z} / Vector3{num_cells - 1uz});
 
                     Mesh mesh;
                     rgs::sample(geometries, &mesh, 1, rng);
 
-                    rv.push_back(TransformedMesh{
-                        .mesh = mesh,
-                        .transform = {
-                            .scale = Vector3{dist(rng)},
-                            .translation = pos,
-                        }
-                    });
+                    rv.push_back(
+                        TransformedMesh{
+                            .mesh = mesh,
+                            .transform = {
+                                .scale = Vector3{dist(rng)},
+                                .translation = pos,
+                            }});
                 }
             }
         }
@@ -113,10 +112,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -125,13 +121,12 @@ public:
         const float x_midpoint = workspace_screen_space_rect.origin().x();
         const Rect lhs_screen_space_rect = Rect::from_corners(
             workspace_screen_space_rect_corners.min,
-            {x_midpoint, workspace_screen_space_rect_corners.max.y()}
-        );
+            {x_midpoint, workspace_screen_space_rect_corners.max.y()});
         const Rect rhs_screen_space_rect = Rect::from_corners(
             {x_midpoint, workspace_screen_space_rect_corners.min.y()},
-            workspace_screen_space_rect_corners.max
-        );
-        const FrustumPlanes frustum = calc_frustum_planes(camera_, aspect_ratio_of(lhs_screen_space_rect));
+            workspace_screen_space_rect_corners.max);
+        const FrustumPlanes frustum =
+            calc_frustum_planes(camera_, aspect_ratio_of(lhs_screen_space_rect));
 
         camera_.on_draw();  // update from inputs etc.
 
@@ -139,31 +134,40 @@ public:
         for (const auto& decoration : decorations_) {
             const std::optional<AABB> decoration_world_aabb = decoration.world_space_bounds();
             if (decoration_world_aabb and is_intersecting(frustum, *decoration_world_aabb)) {
-                render_queue_.emplace(decoration.mesh, decoration.transform, material_, blue_material_props_);
+                render_queue_.emplace(
+                    decoration.mesh, decoration.transform, material_, blue_material_props_);
             }
         }
-        graphics::render_to_main_window(render_queue_, camera_, {
-            .viewport_rect = lhs_screen_space_rect,
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            camera_,
+            {
+                .viewport_rect = lhs_screen_space_rect,
+            });
         render_queue_.clear();
 
         // render from top-down perspective on right-hand side
         for (const auto& decoration : decorations_) {
             const std::optional<AABB> decoration_world_aabb = decoration.world_space_bounds();
-            const auto & props = (decoration_world_aabb and is_intersecting(frustum, *decoration_world_aabb)) ? blue_material_props_ : red_material_props_;
+            const auto& props =
+                (decoration_world_aabb and is_intersecting(frustum, *decoration_world_aabb))
+                    ? blue_material_props_
+                    : red_material_props_;
             render_queue_.emplace(decoration.mesh, decoration.transform, material_, props);
         }
         render_queue_.emplace(
             SphereGeometry{},
             {.scale = Vector3{0.1f}, .translation = camera_.position()},
             material_,
-            green_material_props_
-        );
-        graphics::render_to_main_window(render_queue_, top_down_camera_, {
-            .viewport_rect = rhs_screen_space_rect,
-            .scissor_rect = rhs_screen_space_rect,  // stops clear from clearing left-hand side
-            .clear_color = {0.1f, 1.0f},
-        });
+            green_material_props_);
+        graphics::render_to_main_window(
+            render_queue_,
+            top_down_camera_,
+            {
+                .viewport_rect = rhs_screen_space_rect,
+                .scissor_rect = rhs_screen_space_rect,  // stops clear from clearing left-hand side
+                .clear_color = {0.1f, 1.0f},
+            });
         render_queue_.clear();
     }
 
@@ -178,13 +182,27 @@ private:
     MeshBasicMaterial::PropertyBlock green_material_props_{Color::green()};
 };
 
-
-osc::CStringView osc::FrustumCullingTab::id() { return Impl::static_label(); }
+osc::CStringView osc::FrustumCullingTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::FrustumCullingTab::FrustumCullingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::FrustumCullingTab::impl_on_mount() { private_data().on_mount(); }
-void osc::FrustumCullingTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::FrustumCullingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::FrustumCullingTab::impl_on_draw() { private_data().on_draw(); }
+void osc::FrustumCullingTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::FrustumCullingTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::FrustumCullingTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::FrustumCullingTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

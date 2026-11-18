@@ -26,10 +26,10 @@ using namespace osc;
 namespace
 {
     constexpr auto c_light_positions = std::to_array<Vector3>({
-        { 0.0f,  0.0f, 49.5f},
+        {0.0f, 0.0f, 49.5f},
         {-1.4f, -1.9f, 9.0f},
-        { 0.0f, -1.8f, 4.0f},
-        { 0.8f, -1.7f, 6.0f},
+        {0.0f, -1.8f, 4.0f},
+        {0.8f, -1.7f, 6.0f},
     });
 
     std::array<Color, c_light_positions.size()> get_light_colors()
@@ -60,9 +60,7 @@ namespace
     Material create_scene_material(ResourceLoader& loader)
     {
         const Texture2D wood_texture = Image::read_into_texture(
-            loader.open("oscar_demos/learnopengl/textures/wood.jpg"),
-            ColorSpace::sRGB
-        );
+            loader.open("oscar_demos/learnopengl/textures/wood.jpg"), ColorSpace::sRGB);
 
         Material material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
@@ -104,10 +102,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
@@ -139,9 +134,13 @@ private:
         }
 
         render_queue_.emplace(cube_mesh_, corridoor_transform_, scene_material_);
-        graphics::render_to(scene_hdr_texture_, render_queue_, camera_, {
-            .clear_color = {0.1f, 1.0f},
-        });
+        graphics::render_to(
+            scene_hdr_texture_,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = {0.1f, 1.0f},
+            });
         render_queue_.clear();
     }
 
@@ -156,10 +155,13 @@ private:
         tonemap_material_.set("uExposure", exposure_);
 
         render_queue_.emplace(quad_mesh_, tonemap_material_);
-        graphics::render_to_main_window(render_queue_, orthogonal_camera, {
-            .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
-            .clear_color = Color::clear(),
-        });
+        graphics::render_to_main_window(
+            render_queue_,
+            orthogonal_camera,
+            {
+                .viewport_rect = ui::get_main_window_workspace_screen_space_rect(),
+                .clear_color = Color::clear(),
+            });
         render_queue_.clear();
 
         tonemap_material_.unset("uTexture");
@@ -190,13 +192,27 @@ private:
     bool use_tonemap_ = true;
 };
 
-
-CStringView osc::LOGLHDRTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLHDRTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLHDRTab::LOGLHDRTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
-void osc::LOGLHDRTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLHDRTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLHDRTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLHDRTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLHDRTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLHDRTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLHDRTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLHDRTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

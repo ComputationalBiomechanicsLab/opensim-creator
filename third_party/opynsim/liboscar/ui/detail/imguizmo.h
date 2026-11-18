@@ -48,11 +48,18 @@
 
 struct ImDrawList;
 
-namespace osc::ui { struct GizmoOperationSnappingSteps; }
-namespace osc { struct AABB; }
+namespace osc::ui
+{
+    struct GizmoOperationSnappingSteps;
+}
+namespace osc
+{
+    struct AABB;
+}
 
 namespace osc::ui::gizmo::detail
 {
+    // clang-format off
     enum class Operation {
         None           =  0,
         TranslateX     = (1u << 0),
@@ -76,6 +83,7 @@ namespace osc::ui::gizmo::detail
         ScaleU         = ScaleXU | ScaleYU | ScaleZU, // universal
         Universal      = Translate | Rotate | ScaleU
     };
+    // clang-format on
 
     constexpr Operation operator|(Operation lhs, Operation rhs)
     {
@@ -97,14 +105,14 @@ namespace osc::ui::gizmo::detail
         return static_cast<bool>(std::to_underlying(lhs) & std::to_underlying(rhs));
     }
 
-    enum class Mode {
-        Local,
-        World
-    };
+    enum class Mode { Local, World };
 
     // Returns the padding distance between the gizmo and any textual annotations
     // on it in device-independent pixels.
-    constexpr float AnnotationOffset() { return 15.0f; }
+    constexpr float annotation_offset()
+    {
+        return 15.0f;
+    }
 
     class GizmoContext final {
     public:
@@ -116,56 +124,56 @@ namespace osc::ui::gizmo::detail
         GizmoContext& operator=(const GizmoContext&) = delete;
         GizmoContext& operator=(GizmoContext&&) noexcept;
 
-        // call inside your own window and before Manipulate() in order to draw gizmo to that window.
-        // Or pass a specific ImDrawList to draw to (e.g. ImGui::GetForegroundDrawList()).
-        void SetDrawlist(ImDrawList* drawlist = nullptr);
+        // call inside your own window and before Manipulate() in order to draw gizmo to that
+        // window. Or pass a specific ImDrawList to draw to (e.g. ImGui::GetForegroundDrawList()).
+        void set_drawlist(ImDrawList* drawlist = nullptr);
 
         // call BeginFrame right after ImGui_XXXX_NewFrame();
-        void BeginFrame();
+        void begin_frame();
 
         // return true if mouse cursor is over any gizmo control (axis, plan or screen component)
-        bool IsOver();
+        bool is_over();
 
         // return true if the cursor is over the operation's gizmo
-        bool IsOver(Operation op);
+        bool is_over(Operation op);
 
         // return true if mouse IsOver or if the gizmo is in moving state
-        bool IsUsing();
+        bool is_using();
 
         // return true if any gizmo is in moving state
-        bool IsUsingAny();
+        bool is_using_any();
 
         // enable/disable the gizmo. Stay in the state until next call to Enable.
         // gizmo is rendered with gray half transparent color when disabled
-        void Enable(bool enable);
+        void enable(bool enable);
 
         // Set the viewport rectangle in the ui coordinate system (device-independent pixels)
         // where the gizmo shall be drawn.
-        void SetRect(const Rect& ui_rect);
+        void set_rect(const Rect& ui_rect);
 
         // default is false
-        void SetOrthographic(bool isOrthographic);
+        void set_orthographic(bool is_orthographic);
 
         // Push/Pop IDs from the current gizmo context's local ID stack
-        void          PushID(UID);
-        void          PopID();                                                        // pop from the ID stack.
+        void push_id(UID);
+        void pop_id();  // pop from the ID stack.
 
-        void SetGizmoSizeClipSpace(float value);
+        void set_gizmo_size_clip_space(float value);
 
         // Configure the limit where axis are hidden
-        void SetAxisLimit(float value);
+        void set_axis_limit(float value);
 
         // Set an axis mask to permanently hide a given axis (true -> hidden, false -> shown)
-        void SetAxisMask(bool x, bool y, bool z);
+        void set_axis_mask(bool x, bool y, bool z);
 
         // Configure the limit where planes are hidden
-        void SetPlaneLimit(float value);
+        void set_plane_limit(float value);
 
         // call it when you want a gizmo
         // Needs view and projection matrices.
-        // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function.
-        // translation is applied in world space
-        std::optional<Transform> Manipulate(
+        // matrix parameter is the source matrix (where will be gizmo be drawn) and might be
+        // transformed by the function. translation is applied in world space
+        std::optional<Transform> manipulate(
             const Matrix4x4& view,
             const Matrix4x4& projection,
             Operation operation,
@@ -173,10 +181,10 @@ namespace osc::ui::gizmo::detail
             Matrix4x4& matrix,
             const GizmoOperationSnappingSteps* snap = nullptr,
             const AABB* local_bounds = nullptr,
-            const float* boundsSnap = nullptr
-        );
+            const float* bounds_snap = nullptr);
 
         class Impl;
+
     private:
         std::unique_ptr<Impl> impl_;
     };

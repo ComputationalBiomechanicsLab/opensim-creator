@@ -37,8 +37,10 @@ TEST(VariableLengthArray, can_construct_from_initializer_list)
 
 TEST(VariableLengthArray, immediately_spills_to_upstream_if_given_oversized_initializer_list)
 {
-    const auto fn = []{ VariableLengthArray<int, 1> vla({0, 1}, std::pmr::null_memory_resource()); };
-    ASSERT_THROW({ 	fn(); }, std::bad_alloc);
+    const auto fn = [] {
+        VariableLengthArray<int, 1> vla({0, 1}, std::pmr::null_memory_resource());
+    };
+    ASSERT_THROW({ fn(); }, std::bad_alloc);
 }
 
 TEST(VariableLengthArray, doesnt_spill_if_push_back_used_after_undersized_initializer_list)
@@ -62,7 +64,9 @@ TEST(VariableLengthArray, when_copied_uses_the_same_upstream_memory_resource_as_
     copy.push_back(2);
     ASSERT_EQ(vla.size(), 2);
     ASSERT_EQ(copy.size(), 3);
-    ASSERT_THROW({ copy.push_back(3); }, std::bad_alloc) << "should throw, because it took the null resource from the source vla";
+    ASSERT_THROW(
+        { copy.push_back(3); }, std::bad_alloc)
+        << "should throw, because it took the null resource from the source vla";
 }
 
 TEST(VariableLengthArray, can_move_construct_when_it_contains_moveonly_objects)
@@ -81,7 +85,9 @@ TEST(VariableLengthArray, when_move_constructed_uses_same_upstream_memory_resour
     ASSERT_EQ(moved.size(), 2);
     moved.push_back(std::make_unique<int>(2));
     ASSERT_EQ(moved.size(), 3);
-    ASSERT_THROW({ moved.push_back(std::make_unique<int>(3)); }, std::bad_alloc) << "should throw, because it took the null resource from the source vla";
+    ASSERT_THROW(
+        { moved.push_back(std::make_unique<int>(3)); }, std::bad_alloc)
+        << "should throw, because it took the null resource from the source vla";
 }
 
 TEST(VariableLengthArray, can_copy_assign)
@@ -92,7 +98,8 @@ TEST(VariableLengthArray, can_copy_assign)
 
 TEST(VariableLengthArray, copy_assignment_does_not_propagate_allocator)
 {
-    static_assert(not std::allocator_traits<std::pmr::polymorphic_allocator<int>>::propagate_on_container_copy_assignment());
+    static_assert(not std::allocator_traits<
+                  std::pmr::polymorphic_allocator<int>>::propagate_on_container_copy_assignment());
 
     VariableLengthArray<int, 2> rhs({0}, std::pmr::null_memory_resource());
     VariableLengthArray<int, 2> lhs = {0, 1};
@@ -111,7 +118,8 @@ TEST(VariableLengthArray, can_move_assign)
 
 TEST(VariableLengthArray, move_assignment_does_not_propagate_allocator)
 {
-    static_assert(not std::allocator_traits<std::pmr::polymorphic_allocator<int>>::propagate_on_container_move_assignment());
+    static_assert(not std::allocator_traits<
+                  std::pmr::polymorphic_allocator<int>>::propagate_on_container_move_assignment());
 
     VariableLengthArray<std::unique_ptr<int>, 2> rhs(std::pmr::null_memory_resource());
     rhs.push_back(std::make_unique<int>(0));
@@ -123,7 +131,8 @@ TEST(VariableLengthArray, move_assignment_does_not_propagate_allocator)
     ASSERT_EQ(lhs.size(), 1);
     ASSERT_EQ(*lhs.front(), 0);
     lhs.push_back(std::make_unique<int>(1));
-    ASSERT_NO_THROW({ lhs.push_back(std::make_unique<int>(2)); }) << "shouldn't propagate the null memory resource";
+    ASSERT_NO_THROW({ lhs.push_back(std::make_unique<int>(2)); })
+        << "shouldn't propagate the null memory resource";
 }
 
 TEST(VariableLengthArray, push_back_increases_size_by_1)
@@ -151,7 +160,8 @@ TEST(VariableLengthArray, push_back_works_with_overaligned_values)
         std::array<std::byte, 256 - sizeof(int64_t)> padding{};
     };
 
-    VariableLengthArray<Overaligned, 4> vla(std::pmr::null_memory_resource());  // throws `std::bad_alloc` on allocation
+    // throws `std::bad_alloc` on allocation
+    VariableLengthArray<Overaligned, 4> vla(std::pmr::null_memory_resource());
     vla.push_back(Overaligned{0});
     vla.push_back(Overaligned{1});
     vla.push_back(Overaligned{2});
@@ -165,7 +175,8 @@ TEST(VariableLengthArray, push_back_works_with_overaligned_values)
 
 TEST(VariableLengthArray, push_back_uses_upstream_allocator_only_once_N_is_exceeded)
 {
-    VariableLengthArray<int, 4> vla(std::pmr::null_memory_resource());  // throws `std::bad_alloc` on allocation
+    // throws `std::bad_alloc` on allocation
+    VariableLengthArray<int, 4> vla(std::pmr::null_memory_resource());
 
     vla.push_back(0);
     vla.push_back(1);

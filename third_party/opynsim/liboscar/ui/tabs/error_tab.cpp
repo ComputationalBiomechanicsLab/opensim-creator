@@ -32,12 +32,15 @@ public:
 
         // error message panel
         {
-            const Vector2 ui_pos{workspace_ui_top_left.x() + workspace_dimensions.x()/2.0f, workspace_ui_top_left.y() + padding};
+            const Vector2 ui_pos{
+                workspace_ui_top_left.x() + (workspace_dimensions.x() / 2.0f),
+                workspace_ui_top_left.y() + padding};
             ui::set_next_panel_ui_position(ui_pos, ui::Conditional::Once, {0.5f, 0.0f});
             ui::set_next_panel_size({width, 0.0f});
 
             if (ui::begin_panel("fatal error")) {
-                ui::draw_text_wrapped("The application threw an exception with the following message:");
+                ui::draw_text_wrapped(
+                    "The application threw an exception with the following message:");
                 ui::draw_dummy({2.0f, 10.0f});
                 ui::same_line();
                 ui::draw_text_wrapped(error_message_);
@@ -48,7 +51,9 @@ public:
 
         // log message panel
         {
-            const Vector2 ui_pos{workspace_ui_top_left.x() + workspace_dimensions.x()/2.0f, workspace_ui_top_left.y() - padding};
+            const Vector2 ui_pos{
+                workspace_ui_top_left.x() + (workspace_dimensions.x() / 2.0f),
+                workspace_ui_top_left.y() - padding};
             ui::set_next_panel_ui_position(ui_pos, ui::Conditional::Once, {0.5f, 1.0f});
             ui::set_next_panel_size({width, 0.0f});
 
@@ -67,4 +72,7 @@ private:
 osc::ErrorTab::ErrorTab(Widget& parent, const std::exception& exception) :
     Tab{std::make_unique<Impl>(*this, parent, exception)}
 {}
-void osc::ErrorTab::impl_on_draw() { private_data().on_draw(); }
+void osc::ErrorTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

@@ -1,6 +1,9 @@
 #pragma once
 
-namespace nanobind { class module_; }
+namespace nanobind
+{
+    class module_;  // NOLINT(readability-identifier-naming)
+}
 
 namespace opyn
 {

@@ -29,7 +29,8 @@ TEST(ModelWarper, from_xml_can_load_scaling_document_written_by_opensimcreator)
 
     opyn::init();
 
-    const auto model_warper = ModelWarper::from_xml(opynsim_tests_resources_directory() / "Documents/model_warper/scaling-document.xml");
+    const auto model_warper = ModelWarper::from_xml(
+        opynsim_tests_resources_directory() / "Documents/model_warper/scaling-document.xml");
     ASSERT_EQ(model_warper.num_scaling_steps(), 6);
     ASSERT_EQ(model_warper.num_scaling_parameters(), 1);
 }
@@ -44,8 +45,10 @@ TEST(ModelWarper, can_warp_example_model_from_opensimcreator)
     opyn::init();
 
     // Load input specification, create a warper for it.
-    const ModelSpecification model_specification = read_osim(opynsim_tests_resources_directory() / "Documents/model_warper/make-a-leg.osim");
-    const auto model_warper = ModelWarper::from_xml(opynsim_tests_resources_directory() / "Documents/model_warper/scaling-document.xml");
+    const ModelSpecification model_specification =
+        read_osim(opynsim_tests_resources_directory() / "Documents/model_warper/make-a-leg.osim");
+    const auto model_warper = ModelWarper::from_xml(
+        opynsim_tests_resources_directory() / "Documents/model_warper/scaling-document.xml");
 
     // Perform warp.
     const ModelSpecification warped_specification = model_warper.warp(model_specification);

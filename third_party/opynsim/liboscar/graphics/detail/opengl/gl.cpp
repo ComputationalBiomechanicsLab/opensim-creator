@@ -52,7 +52,11 @@ void osc::gl::link_program(gl::Program& program)
     glGetProgramiv(program.get(), GL_INFO_LOG_LENGTH, &log_length);
 
     std::vector<GLchar> error_message_bytes(static_cast<size_t>(log_length));
-    glGetProgramInfoLog(program.get(), static_cast<GLsizei>(error_message_bytes.size()), nullptr, error_message_bytes.data());
+    glGetProgramInfoLog(
+        program.get(),
+        static_cast<GLsizei>(error_message_bytes.size()),
+        nullptr,
+        error_message_bytes.data());
 
     throw formatted_runtime_error("OpenGL: glLinkProgram() failed: {}", error_message_bytes.data());
 }

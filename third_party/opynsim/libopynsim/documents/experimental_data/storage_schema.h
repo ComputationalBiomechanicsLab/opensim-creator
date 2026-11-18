@@ -5,19 +5,22 @@
 #include <utility>
 #include <vector>
 
-namespace OpenSim { class Storage; }
+namespace OpenSim
+{
+    class Storage;
+}
 
 namespace opyn
 {
     // Stores the higher-level schema associated with an `OpenSim::Storage`.
     class StorageSchema final {
     public:
-
         // Returns a `StorageSchema` by parsing (the column labels of) the
         // provided `OpenSim::Storage`.
         static StorageSchema parse(const OpenSim::Storage&);
 
         const std::vector<DataSeriesAnnotation>& annotations() const { return annotations_; }
+
     private:
         explicit StorageSchema(std::vector<DataSeriesAnnotation> annotations) :
             annotations_{std::move(annotations)}

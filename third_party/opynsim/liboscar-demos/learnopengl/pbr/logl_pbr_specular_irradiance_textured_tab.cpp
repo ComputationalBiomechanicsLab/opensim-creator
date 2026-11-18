@@ -30,18 +30,19 @@ using namespace osc;
 namespace
 {
     constexpr auto c_light_positions = std::to_array<Vector3>({
-        {-10.0f,  10.0f, 10.0f},
-        { 10.0f,  10.0f, 10.0f},
+        {-10.0f, 10.0f, 10.0f},
+        {10.0f, 10.0f, 10.0f},
         {-10.0f, -10.0f, 10.0f},
-        { 10.0f, -10.0f, 10.0f},
+        {10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vector3, c_light_positions.size()> c_light_radiances = std::to_array<Vector3>({
-        {150.0f, 150.0f, 150.0f},
-        {150.0f, 150.0f, 150.0f},
-        {150.0f, 150.0f, 150.0f},
-        {150.0f, 150.0f, 150.0f},
-    });
+    constexpr std::array<Vector3, c_light_positions.size()> c_light_radiances =
+        std::to_array<Vector3>({
+            {150.0f, 150.0f, 150.0f},
+            {150.0f, 150.0f, 150.0f},
+            {150.0f, 150.0f, 150.0f},
+            {150.0f, 150.0f, 150.0f},
+        });
 
     MouseCapturingCamera create_camera()
     {
@@ -56,8 +57,7 @@ namespace
     {
         Texture2D hdr_texture = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
-            ColorSpace::Linear
-        );
+            ColorSpace::Linear);
         hdr_texture.set_wrap_mode(TextureWrapMode::Clamp);
         hdr_texture.set_filter_mode(TextureFilterMode::Linear);
 
@@ -72,16 +72,21 @@ namespace
 
         // create material that projects all 6 faces onto the output cubemap
         Material material{Shader{
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.vert"),
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.geom"),
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.frag"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.vert"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.geom"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.frag"),
         }};
         material.set("uEquirectangularMap", hdr_texture);
-        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vector3{}));
+        material.set_array(
+            "uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vector3{}));
 
         Camera camera;
         RenderQueue render_queue;
-        render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+        render_queue.emplace(
+            BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
         graphics::render_to(cubemap_render_target, render_queue, camera);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -99,23 +104,29 @@ namespace
         const Matrix4x4 capture_projection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.vert"),
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.geom"),
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.frag"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.vert"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.geom"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.frag"),
         }};
         material.set("uEnvironmentMap", skybox);
-        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
+        material.set_array(
+            "uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
 
         Camera camera;
         RenderQueue render_queue;
-        render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+        render_queue.emplace(
+            BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
         graphics::render_to(irradiance_cubemap, render_queue, camera);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
         return irradiance_cubemap;
     }
 
-    Cubemap create_prefiltered_environment_map(ResourceLoader& loader, const RenderTexture& environment_map)
+    Cubemap create_prefiltered_environment_map(
+        ResourceLoader& loader, const RenderTexture& environment_map)
     {
         constexpr int level_zero_width = 128;
         static_assert(std::popcount(static_cast<unsigned>(level_zero_width)) == 1);
@@ -129,21 +140,23 @@ namespace
         const Matrix4x4 capture_projection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.vert"),
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.geom"),
-            loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.frag"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.vert"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.geom"),
+            loader.slurp(
+                "oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.frag"),
         }};
         material.set("uEnvironmentMap", environment_map);
-        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
+        material.set_array(
+            "uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
 
         Cubemap rv{level_zero_width, TextureFormat::RGBAFloat};
         rv.set_wrap_mode(TextureWrapMode::Clamp);
         rv.set_filter_mode(TextureFilterMode::Mipmap);
 
-        constexpr size_t max_mipmap_level = static_cast<size_t>(max(
-            0,
-            static_cast<int>(std::bit_width(static_cast<size_t>(level_zero_width)) - 1)  // NOLINT(readability-redundant-casting) casted to int because of LWG3656
-        ));
+        constexpr size_t max_mipmap_level = static_cast<size_t>(
+            max(0, static_cast<int>(std::bit_width(static_cast<size_t>(level_zero_width)) - 1)));
         static_assert(max_mipmap_level == 7);
 
         Camera camera;
@@ -153,11 +166,14 @@ namespace
         // LOD of the cubemap's mipmaps
         for (size_t mip = 0; mip <= max_mipmap_level; ++mip) {
             const size_t mip_width = level_zero_width >> mip;
-            capture_render_target.set_pixel_dimensions({static_cast<int>(mip_width), static_cast<int>(mip_width)});
+            capture_render_target.set_pixel_dimensions(
+                {static_cast<int>(mip_width), static_cast<int>(mip_width)});
 
-            material.set("uRoughness", static_cast<float>(mip)/static_cast<float>(max_mipmap_level));
+            material.set(
+                "uRoughness", static_cast<float>(mip) / static_cast<float>(max_mipmap_level));
 
-            render_queue.emplace(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
+            render_queue.emplace(
+                BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material);
             graphics::render_to(capture_render_target, render_queue, camera);
             graphics::copy_texture(capture_render_target, rv, mip);
             render_queue.clear();
@@ -180,8 +196,7 @@ namespace
             Material{Shader{
                 loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/BRDF.vert"),
                 loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/BRDF.frag"),
-            }}
-        );
+            }});
 
         RenderTexture render_texture{{
             .pixel_dimensions = {512, 512},
@@ -214,9 +229,13 @@ namespace
     struct IBLSpecularObjectTextures final {
         explicit IBLSpecularObjectTextures(ResourceLoader loader) :
             albedo_map{Image::read_into_texture(loader.open("albedo.jpg"), ColorSpace::sRGB)},
-            normal_map{Image::read_into_texture(loader.open("normal.jpg"), ColorSpace::Linear, ImageLoadingFlag::TreatComponentsAsSpatialVectors)},
+            normal_map{Image::read_into_texture(
+                loader.open("normal.jpg"),
+                ColorSpace::Linear,
+                ImageLoadingFlag::TreatComponentsAsSpatialVectors)},
             metallic_map{Image::read_into_texture(loader.open("metallic.jpg"), ColorSpace::Linear)},
-            roughness_map{Image::read_into_texture(loader.open("roughness.jpg"), ColorSpace::Linear)},
+            roughness_map{
+                Image::read_into_texture(loader.open("roughness.jpg"), ColorSpace::Linear)},
             ao_map{Image::read_into_texture(loader.open("ao.jpg"), ColorSpace::Linear)}
         {}
 
@@ -230,7 +249,10 @@ namespace
 
 class osc::LOGLPBRSpecularIrradianceTexturedTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "oscar_demos/learnopengl/PBR/SpecularIrradianceTextured"; }
+    static CStringView static_label()
+    {
+        return "oscar_demos/learnopengl/PBR/SpecularIrradianceTextured";
+    }
 
     explicit Impl(LOGLPBRSpecularIrradianceTexturedTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
@@ -250,16 +272,14 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event& e)
-    {
-        return camera_.on_event(e);
-    }
+    bool on_event(Event& e) { return camera_.on_event(e); }
 
     void on_draw()
     {
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vector2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
+        const Vector2 workspace_pixel_dimensions =
+            device_pixel_ratio * workspace_screen_space_rect.dimensions();
 
         output_render_.set_pixel_dimensions(workspace_pixel_dimensions);
         output_render_.set_device_pixel_ratio(device_pixel_ratio);
@@ -288,15 +308,16 @@ private:
         // Add lights
         for (const Vector3& position : c_light_positions) {
             render_queue_.emplace(
-                sphere_mesh_,
-                {.scale = Vector3{0.5f}, .translation = position},
-                pbr_material_
-            );
+                sphere_mesh_, {.scale = Vector3{0.5f}, .translation = position}, pbr_material_);
         }
 
-        graphics::render_to(output_render_, render_queue_, camera_, {
-            .clear_color = {0.1f, 1.0f},
-        });
+        graphics::render_to(
+            output_render_,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = {0.1f, 1.0f},
+            });
         render_queue_.clear();
     }
 
@@ -307,7 +328,9 @@ private:
         pbr_material_.set_array("uLightColors", c_light_radiances);
         pbr_material_.set("uIrradianceMap", irradiance_map_);
         pbr_material_.set("uPrefilterMap", prefilter_map_);
-        pbr_material_.set("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
+        pbr_material_.set(
+            "uMaxReflectionLOD",
+            static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
         pbr_material_.set("uBRDFLut", brdf_lookup_);
     }
 
@@ -323,25 +346,36 @@ private:
     void draw_background()
     {
         background_material_.set("uEnvironmentMap", projected_map_);
-        background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
+        // for skybox depth trick
+        background_material_.set_depth_function(DepthFunction::LessOrEqual);
 
         render_queue_.emplace(cube_mesh_, identity<Transform>(), background_material_);
-        graphics::render_to(output_render_, render_queue_, camera_, {
-            .clear_color = {0.1f, 1.0f},
-            .clear_flags = ClearFlag::None,
-        });
+        graphics::render_to(
+            output_render_,
+            render_queue_,
+            camera_,
+            {
+                .clear_color = {0.1f, 1.0f},
+                .clear_flags = ClearFlag::None,
+            });
         render_queue_.clear();
     }
 
     ResourceLoader loader_ = App::resource_loader();
 
-    std::array<IBLSpecularObjectTextures, 5> object_textures_ = std::to_array<IBLSpecularObjectTextures>({
-        IBLSpecularObjectTextures{loader_.with_prefix("oscar_demos/learnopengl/textures/pbr/rusted_iron")},
-        IBLSpecularObjectTextures{loader_.with_prefix("oscar_demos/learnopengl/textures/pbr/gold")},
-        IBLSpecularObjectTextures{loader_.with_prefix("oscar_demos/learnopengl/textures/pbr/grass")},
-        IBLSpecularObjectTextures{loader_.with_prefix("oscar_demos/learnopengl/textures/pbr/plastic")},
-        IBLSpecularObjectTextures{loader_.with_prefix("oscar_demos/learnopengl/textures/pbr/wall")},
-    });
+    std::array<IBLSpecularObjectTextures, 5> object_textures_ =
+        std::to_array<IBLSpecularObjectTextures>({
+            IBLSpecularObjectTextures{
+                loader_.with_prefix("oscar_demos/learnopengl/textures/pbr/rusted_iron")},
+            IBLSpecularObjectTextures{
+                loader_.with_prefix("oscar_demos/learnopengl/textures/pbr/gold")},
+            IBLSpecularObjectTextures{
+                loader_.with_prefix("oscar_demos/learnopengl/textures/pbr/grass")},
+            IBLSpecularObjectTextures{
+                loader_.with_prefix("oscar_demos/learnopengl/textures/pbr/plastic")},
+            IBLSpecularObjectTextures{
+                loader_.with_prefix("oscar_demos/learnopengl/textures/pbr/wall")},
+        });
 
     RenderTexture projected_map_ = load_equirectangular_hdr_texture_into_cubemap(loader_);
     RenderTexture irradiance_map_ = create_irradiance_cubemap(loader_, projected_map_);
@@ -364,13 +398,27 @@ private:
     PerfPanel perf_panel_{&owner()};
 };
 
-
-CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::id() { return Impl::static_label(); }
+CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::id()
+{
+    return Impl::static_label();
+}
 
 osc::LOGLPBRSpecularIrradianceTexturedTab::LOGLPBRSpecularIrradianceTexturedTab(Widget* owner) :
     Tab{std::make_unique<Impl>(*this, owner)}
 {}
-void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_mount() { private_data().on_mount(); }
-void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_event(Event& e) { return private_data().on_event(e); }
-void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_draw() { private_data().on_draw(); }
+void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_mount()
+{
+    private_data().on_mount();
+}
+void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_unmount()
+{
+    private_data().on_unmount();
+}
+bool osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_event(Event& e)
+{
+    return private_data().on_event(e);
+}
+void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_draw()
+{
+    private_data().on_draw();
+}

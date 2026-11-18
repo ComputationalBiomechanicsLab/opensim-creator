@@ -19,8 +19,7 @@ namespace
     {
         if (const auto* c = dynamic_cast<const OpenSim::Component*>(&obj)) {
             return opyn::get_absolute_path_string(*c);
-        }
-        else {
+        } else {
             return std::string{};
         }
     }

@@ -8,7 +8,8 @@
 namespace osc
 {
     struct ColorRenderBufferParams final {
-        friend bool operator==(const ColorRenderBufferParams&, const ColorRenderBufferParams&) = default;
+        friend bool operator==(const ColorRenderBufferParams&, const ColorRenderBufferParams&) =
+            default;
 
         Vector2i pixel_dimensions = {1, 1};
         TextureDimensionality dimensionality = TextureDimensionality::Tex2D;

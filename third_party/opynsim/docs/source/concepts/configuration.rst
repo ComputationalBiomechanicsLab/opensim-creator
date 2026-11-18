@@ -7,35 +7,6 @@ The :mod:`opynsim.config` module centralizes functions that configure the global
 state of OPynSim. These are sometimes necessary for debugging, implementing
 legacy compatibility, and customizing where shared assets should be loaded from.
 
-Logging
--------
-
-It's useful to globally configure ``opynsim``\'s log level, so that downstream
-scripts can contain more/less feedback. It can be configured with :func:`config.set_log_level`:
-
-.. code:: python
-
-    import opynsim as opyn
-    import opynsim.config
-    import logging
-
-    # Make OPynSim's logging more verbose (default is `logging.WARN`).
-    opyn.config.set_log_level(logging.DEBUG)
-
-    # OPynSim's logger is compatible with Python's logging API. For example:
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(levelname)s: %(message)s',
-        handlers=[
-            logging.FileHandler("opynsim.log"), # Write logs to a log file...
-            logging.StreamHandler()             # ... and also write them to the console.
-        ]
-    )
-
-All log output from OPynSim goes via the Python ``logger.Logger`` returned
-by ``logger.getLogger("opynsim")``, or one of its children.
-
-
 Resource Search Path
 --------------------
 
@@ -65,3 +36,31 @@ way to globally specify an additional shared directory:
 See :func:`config.get_search_paths` for a detailed explanation of the
 path resolution process. Alternatively, :func:`config.append_search_path`
 can be used to specify a low-priority fallback directory.
+
+Logging
+-------
+
+It's useful to globally configure ``opynsim``\'s log level, so that downstream
+scripts can contain more/less feedback. It can be configured with :func:`config.set_log_level`:
+
+.. code:: python
+
+    import opynsim as opyn
+    import opynsim.config
+    import logging
+
+    # Make OPynSim's logging more verbose (default is `logging.WARN`).
+    opyn.config.set_log_level(logging.DEBUG)
+
+    # OPynSim's logger is compatible with Python's logging API. For example:
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(levelname)s: %(message)s',
+        handlers=[
+            logging.FileHandler("opynsim.log"), # Write logs to a log file...
+            logging.StreamHandler()             # ... and also write them to the console.
+        ]
+    )
+
+All log output from OPynSim goes via the Python ``logger.Logger`` returned
+by ``logger.getLogger("opynsim")``, or one of its children.

@@ -138,17 +138,19 @@ straight line. Similarly the cable can touchdown on the obstacle if the surface
 obstructs the straight line segment again. The cable will always slide freely
 through any via points present in the path.
 
-The path is computed as an optimization problem using the previous optimal path
-as the warm start. This is done by computing natural geodesic corrections for
-each curve segment to compute the locally shortest path, as described in the
-following publication:
+The path is computed as an optimization problem by computing natural geodesic
+corrections for each curve segment to compute the locally shortest path,
+as described in the following publication:
 
     Scholz, A., Sherman, M., Stavness, I. et al (2015). A fast multi-obstacle
     muscle wrapping method using natural geodesic variations. Multibody System
     Dynamics 36, 195–219.
 
 The overall path is locally the shortest, allowing winding over an obstacle
-multiple times, without flipping to the other side.
+multiple times, without flipping to the other side. The wrapping solver can
+optionally use the solution from the previous time step as a warm start to
+improve performance during forward dynamics simulations (see method
+`getUseWarmStart()` for more information).
 
 During initialization the path is assumed to be in contact with each obstacle at
 the user defined contact-point-hint. At each contact point a
@@ -297,9 +299,19 @@ public:
     /** @name End point computations */
     ///@{
 
+    /** Calculate the cable span tangent direction at the origin. The direction
+    points along the path from the origin towards the termination.
+    State must be realized to Stage::Position.
+    @param state State of the system.
+    **/
+    UnitVec3 calcOriginTangentDirection(const State& state) const;
+
     /** Calculate the unit force exerted by the cable at the cable origin (in
-    ground frame). The force can be obtained by multiplying the result by the
-    cable tension. State must be realized to Stage::Position.
+    ground frame). The force is applied tangent to the cable span pointing
+    towards the termination, i.e., the same direction as returned by
+    calcOriginTangentDirection(). The effect of a tensile force applied to the
+    cable can be obtained by multiplying the returned unit force by the cable
+    tension. State must be realized to Stage::Position.
     @param state State of the system.
     @param[out] unitForce_G The resulting unit spatial force in ground frame.
     **/
@@ -307,9 +319,19 @@ public:
         const State& state,
         SpatialVec& unitForce_G) const;
 
+    /** Calculate the cable span tangent direction at the termination. The
+    direction points along the path from the origin towards the termination.
+    State must be realized to Stage::Position.
+    @param state State of the system.
+    **/
+    UnitVec3 calcTerminationTangentDirection(const State& state) const;
+
     /** Calculate the unit force exerted by the cable at the cable termination
-    (in ground frame). The force can be obtained by multiplying the result by
-    the cable tension. State must be realized to Stage::Position.
+    (in ground frame). The force is applied tangent to the cable span pointing
+    towards the origin, i.e., the opposite of the direction returned by
+    calcTerminationTangentDirection(). The effect of a tensile force applied to
+    the cable can be obtained by multiplying the returned unit force by the
+    cable tension. State must be realized to Stage::Position.
     @param state State of the system.
     @param[out] unitForce_G The resulting unit spatial force in ground frame.
     **/
@@ -471,6 +493,21 @@ public:
     /** Set the algorithm used to compute the optimal path. **/
     void setAlgorithm(CableSpanAlgorithm algorithm);
 
+    /** Whether the solver uses the previously computed path as a warm
+    start to compute the next path solution. When true (the default), each path
+    computation is seeded with the previous optimal path, which is typically
+    much faster. When false, the path is always recomputed from each obstacle's
+    initial contact-point hint (see addObstacle and setObstacleContactPointHint)
+    every time the State is realized to Stage::Position. **/
+    bool getUseWarmStart() const;
+
+    /** Set whether the solver uses the previously computed path as a warm
+    start to compute the next path solution.
+    @note Changing this setting invalidates the Stage::Topology cache.
+    Therefore, callers should re-realize the system to Stage::Topology and
+    obtain a new State before any new computations. **/
+    void setUseWarmStart(bool useWarmStart);
+
     ///@}
 
     /** @name Path computations */
@@ -513,6 +550,20 @@ public:
     @param sink Where the path points (in ground frame) will be written to. **/
     void calcDecorativePathPoints(
         const State& state,
+        const std::function<void(Vec3 point_G)>& sink) const;
+
+    /** Compute `numCurveSegmentSamples` equally-spaced points for each curve
+    segment along the path spanned by this cable and emit them to `sink`.
+    This can be useful for visualization purposes, where it can be important to
+    limit the amount of visualized path points for performance reasons.
+    State must be realized to Stage::Position.
+    @param state System State.
+    @param numCurveSegmentSamples The number of samples to take per curve
+                                  segment.
+    @param sink Where the path points (in ground frame) will be written to. **/
+    void calcResampledDecorativePathPoints(
+        const State& state,
+        int numCurveSegmentSamples,
         const std::function<void(Vec3 point_G)>& sink) const;
 
     ///@}
@@ -591,8 +642,9 @@ public:
         const std::function<void(Vec3 point_G)>& sink) const;
 
     /** Calculate the unit force exerted by the cable at the specified obstacle
-    (in ground frame). The force can be obtained by multiplying the result by
-    the cable tension. State must be realized to Stage::Position.
+    (in ground frame). The effect of a tensile force applied to the cable can be
+    obtained by multiplying the returned unit force by the cable tension. State
+    must be realized to Stage::Position.
     @param state State of the system.
     @param ix The index of the obstacle in this CableSpan.
     @param[out] unitForce_G The resulting unit spatial force in ground frame. **/
@@ -616,8 +668,9 @@ public:
         CableSpanViaPointIndex ix) const;
 
     /** Calculate the unit force exerted by the cable at the specified via point
-    (in ground frame). The force can be obtained by multiplying the result by
-    the cable tension. State must be realized to Stage::Position.
+    (in ground frame). The effect of a tensile force applied to the cable can be
+    obtained by multiplying the returned unit force by the cable tension. State
+    must be realized to Stage::Position.
     @param state State of the system.
     @param ix The index of the via point in this CableSpan.
     @param[out] unitForce_G The resulting unit spatial force in ground frame. **/
@@ -625,6 +678,25 @@ public:
         const State& state,
         CableSpanViaPointIndex ix,
         SpatialVec& unitForce_G) const;
+
+    /** Calculate the incoming tangent direction of the cable span at the
+    specified via point. The direction points along the path from the origin
+    towards the via point. State must be realized to Stage::Position.
+    @param state State of the system.
+    @param ix The index of the via point in this CableSpan. **/
+    UnitVec3 calcViaPointIncomingTangentDirection(
+        const State& state,
+        CableSpanViaPointIndex ix) const;
+
+    /** Calculate the outgoing tangent direction of the cable span at the
+    specified via point. The direction points along the path from the via point
+    towards the termination point. State must be
+    realized to Stage::Position.
+    @param state State of the system.
+    @param ix The index of the via point in this CableSpan. **/
+    UnitVec3 calcViaPointOutgoingTangentDirection(
+        const State& state,
+        CableSpanViaPointIndex ix) const;
 
     ///@}
 

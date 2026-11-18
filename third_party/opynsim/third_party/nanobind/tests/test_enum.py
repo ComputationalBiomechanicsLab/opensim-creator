@@ -71,6 +71,10 @@ def test02_signed_enum():
     assert t.from_enum(t.SEnum.B) == 1
     assert t.from_enum(t.SEnum.C) == -1
 
+    # Arithmetic enums derive from 'enum.IntEnum' and must convert
+    # to a plain integer argument
+    assert t.to_enum(t.SEnum.B) is t.Enum.B
+
 
 def test03_enum_arithmetic():
     assert t.SEnum.B + 2 == 3
@@ -179,6 +183,11 @@ def test06_enum_flag():
     assert t.to_flag(4) == t.Flag.C
     assert t.to_flag(5) == (t.Flag.A | t.Flag.C)
 
+    # Returning a flag value with bits outside the registered mask must raise
+    # a catchable Python exception rather than aborting the process.
+    with pytest.raises(ValueError):
+        t.to_flag(8)
+
 def test09_enum_methods():
     assert t.Item1.my_value == 0 and t.Item2.my_value == 1
     assert t.Item1.get_value() == 0 and t.Item2.get_value() == 1
@@ -187,6 +196,62 @@ def test09_enum_methods():
 
 def test10_enum_opaque():
     assert t.OpaqueEnum.X == t.OpaqueEnum("X") and t.OpaqueEnum.Y == t.OpaqueEnum("Y")
+
+def test12_str_enum():
+    assert isinstance(t.Color.Red, str)
+    assert isinstance(t.Color.Red, t.Color)
+    assert t.Color.Red == "red"
+    assert t.Color.Green == "green"
+    assert t.Color.Blue == "blue"
+
+    assert t.Color.Red.name == "Red"
+    assert t.Color.Red._name_ == "Red"
+    assert t.Color.Red.value == "red"
+    assert t.Color.Red._value_ == "red"
+
+    assert t.Color.__doc__ == "string-valued enum"
+    assert t.Color.Red.__doc__ is None
+
+    assert str(t.Color.Red) == "Color.Red"
+    assert repr(t.Color.Red) == "Color.Red"
+    assert str(t.Color.Green) == "Color.Green"
+    assert repr(t.Color.Green) == "Color.Green"
+
+    assert t.Color("red") is t.Color.Red
+    assert t.Color("green") is t.Color.Green
+    assert t.Color(t.Color.Blue) is t.Color.Blue
+
+    with pytest.raises(ValueError):
+        t.Color("not-a-color")
+
+    assert t.from_color(t.Color.Red) == 0
+    assert t.from_color(t.Color.Green) == 1
+    assert t.from_color(t.Color.Blue) == 2
+    assert t.to_color(0) is t.Color.Red
+    assert t.to_color(1) is t.Color.Green
+    assert t.to_color(2) is t.Color.Blue
+
+    with pytest.raises(ValueError) as excinfo:
+        t.to_color(99)
+    assert '99 is not a valid Color' in str(excinfo.value)
+
+    # convert: bare strings are accepted.
+    assert t.from_color_implicit("red") == 0
+    assert t.from_color_implicit("green") == 1
+    assert t.from_color_implicit("blue") == 2
+    assert t.from_color_implicit(t.Color.Red) == 0
+
+    with pytest.raises(TypeError):
+        t.from_color_implicit("not-a-color")
+
+    # convert: StrEnum is keyed by string value, not the underlying C++ integer.
+    with pytest.raises(TypeError):
+        t.from_color_implicit(0)
+
+    # noconvert: a bare string is not accepted, even if it would match.
+    with pytest.raises(TypeError):
+        t.from_color("red")
+
 
 def test11_enum_name_value_members():
     # Test for issue #1246: enums with members named 'name' or 'value'
@@ -202,3 +267,15 @@ def test11_enum_name_value_members():
     assert t.item_to_int(t.Item.value) == 1
     assert t.item_to_int(t.Item.extra) == 2
     assert t.item_to_int() == 0  # default is Item.name
+
+
+def test13_no_implicit_self_conversion():
+    # 'EnumWrapper' is implicitly constructible from 'EnumWrapper.Value'. That
+    # conversion must not apply to the implicit 'self' argument of an unbound
+    # method call, since the method would then run on a temporary.
+    w = t.EnumWrapper(t.EnumWrapper.Value.Beta)
+    assert w.get_value() == t.EnumWrapper.Value.Beta
+    assert t.EnumWrapper.get_value(w) == t.EnumWrapper.Value.Beta
+
+    with pytest.raises(TypeError):
+        t.EnumWrapper.get_value(t.EnumWrapper.Value.Beta)

@@ -21,9 +21,13 @@ namespace
     // Refers to one data series within one annotated motion.
     class DataSeries final : public OpenSim::ModelComponent {
         OpenSim_DECLARE_CONCRETE_OBJECT(DataSeries, OpenSim::ModelComponent)
+
     public:
-        OpenSim_DECLARE_PROPERTY(type, std::string, "the datatype of the data series")
-        OpenSim_DECLARE_PROPERTY(column_offset, int, "index of the first column (excl. time) that contains this data series")
+        OpenSim_DECLARE_PROPERTY(type, std::string, "the datatype of the data series");
+        OpenSim_DECLARE_PROPERTY(
+            column_offset,
+            int,
+            "index of the first column (excl. time) that contains this data series");
 
         explicit DataSeries(
             std::shared_ptr<const OpenSim::Storage> storage,
@@ -58,7 +62,8 @@ opyn::AnnotatedMotion::AnnotatedMotion(const std::filesystem::path& path) :
     setName(path.filename().string());
 }
 
-std::shared_ptr<OpenSim::Storage> opyn::AnnotatedMotion::load_path_into_storage(const std::filesystem::path& path)
+std::shared_ptr<OpenSim::Storage> opyn::AnnotatedMotion::load_path_into_storage(
+    const std::filesystem::path& path)
 {
     if (path.extension() == ".trc") {
         // use `MarkerData`, same as OpenSim GUI's `FileLoadDataAction.java`
@@ -68,8 +73,7 @@ std::shared_ptr<OpenSim::Storage> opyn::AnnotatedMotion::load_path_into_storage(
         auto storage = std::make_shared<OpenSim::Storage>();
         marker_data.makeRdStorage(*storage);
         return storage;
-    }
-    else {
+    } else {
         return std::make_shared<OpenSim::Storage>(path.string());
     }
 }
@@ -97,8 +101,7 @@ opyn::AnnotatedMotion::AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage
             auto series = std::make_unique<DataSeries>(storage_, annotation);
             series->finalizeFromProperties();
             addComponent(series.release());
-        }
-        catch (const std::exception& ex) {
+        } catch (const std::exception& ex) {
             osc::log_warn("Error loading a data series from {}: {}", getName(), ex.what());
         }
     }

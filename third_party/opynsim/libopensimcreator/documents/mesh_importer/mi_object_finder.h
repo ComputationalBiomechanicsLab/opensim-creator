@@ -2,10 +2,10 @@
 
 #include <liboscar/utilities/uid.h>
 
-namespace osc { class MiObject; }
-
 namespace osc
 {
+    class MiObject;
+
     // virtual interface to something that can be used to lookup objects in some larger document
     class MiObjectFinder {
     protected:
@@ -14,14 +14,13 @@ namespace osc
         MiObjectFinder(MiObjectFinder&&) noexcept = default;
         MiObjectFinder& operator=(const MiObjectFinder&) = default;
         MiObjectFinder& operator=(MiObjectFinder&&) noexcept = default;
+
     public:
         virtual ~MiObjectFinder() noexcept = default;
 
-        const MiObject* find(UID id) const
-        {
-            return implFind(id);
-        }
+        const MiObject* find(UID id) const { return impl_find(id); }
+
     private:
-        virtual const MiObject* implFind(UID) const = 0;
+        virtual const MiObject* impl_find(UID) const = 0;
     };
 }

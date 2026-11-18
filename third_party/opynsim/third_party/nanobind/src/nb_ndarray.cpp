@@ -21,6 +21,9 @@ NAMESPACE_END(dlpack)
 
 NAMESPACE_BEGIN(detail)
 
+/// Maximum number of ndarray dimensions (2x NumPy's NPY_MAXDIMS)
+static constexpr int32_t max_ndim = 128;
+
 // DLPack version 0, deprecated Feb 2024, obsoleted March 2025
 struct managed_dltensor {
     dlpack::dltensor dltensor;
@@ -38,11 +41,13 @@ struct managed_dltensor_versioned {
 };
 
 static void mt_from_buffer_delete(managed_dltensor_versioned* self) {
-    gil_scoped_acquire guard;
-    Py_buffer *buf = (Py_buffer *) self->manager_ctx;
-    PyBuffer_Release(buf);
-    PyMem_Free(buf);
-    PyMem_Free(self);  // This also frees shape and size arrays.
+    // Don't run the cleanup if the interpreter has been shut down
+    if (cleanup_guard guard{}) {
+        Py_buffer *buf = (Py_buffer *) self->manager_ctx;
+        PyBuffer_Release(buf);
+        PyMem_Free(buf);
+        PyMem_Free(self);  // This also frees shape and size arrays.
+    }
 }
 
 // Forward declaration
@@ -50,21 +55,23 @@ struct ndarray_handle;
 
 template<typename MT>
 static void mt_from_handle_delete(MT* self) {
-    gil_scoped_acquire guard;
-    ndarray_handle* th = (ndarray_handle *) self->manager_ctx;
-    PyMem_Free(self);
-    ndarray_dec_ref(th);
+    // Don't run the cleanup if the interpreter has been shut down
+    if (cleanup_guard guard{}) {
+        ndarray_handle* th = (ndarray_handle *) self->manager_ctx;
+        PyMem_Free(self);
+        ndarray_dec_ref(th);
+    }
 }
 
-template<bool versioned>
+template<bool Versioned>
 static void capsule_delete(PyObject *capsule) {
     const char* capsule_name;
-    if constexpr (versioned)
+    if constexpr (Versioned)
         capsule_name = "dltensor_versioned";
     else
         capsule_name = "dltensor";
 
-    using MT = std::conditional_t<versioned, managed_dltensor_versioned,
+    using MT = std::conditional_t<Versioned, managed_dltensor_versioned,
                                              managed_dltensor>;
     error_scope scope; // temporarily save any existing errors
     MT* mt = (MT*) PyCapsule_GetPointer(capsule, capsule_name);
@@ -87,46 +94,43 @@ struct ndarray_handle {
     bool call_deleter;  // True if tensor was imported, else PyMem_Free(mt).
     bool ro;            // Whether tensor is read-only.
 
-    PyObject* make_capsule_unversioned() {
-        PyObject* capsule;
-        if (!versioned && mt_unversioned->manager_ctx == this) {
-            capsule = PyCapsule_New(mt_unversioned, "dltensor",
-                                    capsule_delete</*versioned=*/false>);
-        } else {
-            scoped_pymalloc<managed_dltensor> mt;
-            memcpy(&mt->dltensor,
-                   (versioned) ? &mt_versioned->dltensor
-                               : &mt_unversioned->dltensor,
-                   sizeof(dlpack::dltensor));
-            mt->manager_ctx = this;
-            mt->deleter = mt_from_handle_delete<managed_dltensor>;
-            capsule = PyCapsule_New(mt.release(), "dltensor",
-                                    capsule_delete</*versioned=*/false>);
-        }
-        check(capsule, "Could not make unversioned capsule");
-        refcount++;
-        return capsule;
+    dlpack::dltensor &tensor() {
+        return versioned ? mt_versioned->dltensor : mt_unversioned->dltensor;
     }
 
-    PyObject* make_capsule_versioned() {
-        PyObject* capsule;
-        if (versioned && mt_versioned->manager_ctx == this) {
-            capsule = PyCapsule_New(mt_versioned, "dltensor_versioned",
-                                    capsule_delete</*versioned=*/true>);
-        } else {
-            scoped_pymalloc<managed_dltensor_versioned> mt;
-            mt->version = {dlpack::major_version, dlpack::minor_version};
-            mt->manager_ctx = this;
-            mt->deleter = mt_from_handle_delete<managed_dltensor_versioned>;
-            mt->flags = (ro) ? dlpack::flag_bitmask_read_only : 0;
-            memcpy(&mt->dltensor,
-                   (versioned) ? &mt_versioned->dltensor
-                               : &mt_unversioned->dltensor,
-                   sizeof(dlpack::dltensor));
-            capsule = PyCapsule_New(mt.release(), "dltensor_versioned",
-                                    capsule_delete</*versioned=*/true>);
+    template <bool Versioned> PyObject *make_capsule() {
+        using MT = std::conditional_t<Versioned, managed_dltensor_versioned,
+                                                 managed_dltensor>;
+        const char *name = Versioned ? "dltensor_versioned" : "dltensor";
+
+        // Reuse nanobind's own managed tensor if its flavor already matches;
+        // otherwise allocate a fresh one wrapping a copy of the DLTensor.
+        MT *mt = nullptr;
+        if (versioned == Versioned) {
+            if constexpr (Versioned)
+                mt = mt_versioned;
+            else
+                mt = mt_unversioned;
+            if (mt->manager_ctx != this)
+                mt = nullptr;
         }
-        check(capsule, "Could not make versioned capsule");
+
+        PyObject *capsule;
+        if (mt) {
+            capsule = PyCapsule_New(mt, name, capsule_delete<Versioned>);
+        } else {
+            scoped_pymalloc<MT> fresh;
+            if constexpr (Versioned) {
+                fresh->version = {dlpack::major_version, dlpack::minor_version};
+                fresh->flags = ro ? dlpack::flag_bitmask_read_only : 0;
+            }
+            fresh->manager_ctx = this;
+            fresh->deleter = mt_from_handle_delete<MT>;
+            memcpy(&fresh->dltensor, &tensor(), sizeof(dlpack::dltensor));
+            capsule = PyCapsule_New(fresh.release(), name,
+                                    capsule_delete<Versioned>);
+        }
+        check(capsule, "Could not make capsule");
         refcount++;
         return capsule;
     }
@@ -141,14 +145,24 @@ static void nb_ndarray_dealloc(PyObject *self) {
     Py_DECREF(tp);
 }
 
-static int nb_ndarray_getbuffer(PyObject *self, Py_buffer *view, int) {
+static int nb_ndarray_getbuffer(PyObject *self, Py_buffer *view, int flags) {
+    // The buffer protocol requires that 'view->obj' be set to NULL whenever
+    // the exporter signals failure by returning -1.
+    view->obj = nullptr;
+
     ndarray_handle *th = ((nb_ndarray *) self)->th;
-    dlpack::dltensor &t = (th->versioned) ? th->mt_versioned->dltensor
-                                          : th->mt_unversioned->dltensor;
+    dlpack::dltensor &t = th->tensor();
 
     if (t.device.device_type != device::cpu::value) {
         PyErr_SetString(PyExc_BufferError, "Only CPU-allocated ndarrays can be "
                                            "accessed via the buffer protocol!");
+        return -1;
+    }
+
+    // Honor a writable request: refuse to expose read-only memory as writable.
+    if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE && th->ro) {
+        PyErr_SetString(PyExc_BufferError,
+            "Cannot provide writable access to a read-only ndarray!");
         return -1;
     }
 
@@ -182,6 +196,7 @@ static int nb_ndarray_getbuffer(PyObject *self, Py_buffer *view, int) {
 
         case dlpack::dtype_code::Complex:
             switch (t.dtype.bits) {
+                case 32: format = "Ze"; break;
                 case 64: format = "Zf"; break;
                 case 128: format = "Zd"; break;
             }
@@ -201,29 +216,52 @@ static int nb_ndarray_getbuffer(PyObject *self, Py_buffer *view, int) {
         return -1;
     }
 
-    view->buf = (void *) ((uintptr_t) t.data + t.byte_offset);
-    view->obj = self;
-    Py_INCREF(self);
+    const Py_ssize_t itemsize = t.dtype.bits / 8;
+    Py_ssize_t len = itemsize, size = 1;
+    for (size_t i = 0; i < (size_t) t.ndim; ++i) {
+        len *= (Py_ssize_t) t.shape[i];
+        size *= (Py_ssize_t) t.shape[i];
+    }
+
+    // When the consumer cannot handle strides, only C-contiguous data may be
+    // exported -- otherwise it would interpret 'buf'..'buf + len' as a packed
+    // C-contiguous block and silently read the wrong elements. Arrays with one
+    // or fewer elements are trivially contiguous.
+    if ((flags & PyBUF_STRIDES) != PyBUF_STRIDES && size > 1) {
+        bool c_contig = true;
+        for (int64_t i = t.ndim - 1, accum = 1; i >= 0; --i) {
+            c_contig &= t.shape[i] == 1 || t.strides[i] == accum;
+            accum *= t.shape[i];
+        }
+
+        if (!c_contig) {
+            PyErr_SetString(PyExc_BufferError,
+                "Cannot provide a contiguous buffer for a non-C-contiguous "
+                "ndarray!");
+            return -1;
+        }
+    }
 
     scoped_pymalloc<Py_ssize_t> shape_and_strides(2 * (size_t) t.ndim);
     Py_ssize_t* shape = shape_and_strides.get();
     Py_ssize_t* strides = shape + t.ndim;
 
-    const Py_ssize_t itemsize = t.dtype.bits / 8;
-    Py_ssize_t len = itemsize;
     for (size_t i = 0; i < (size_t) t.ndim; ++i) {
-        len *= (Py_ssize_t) t.shape[i];
         shape[i] = (Py_ssize_t) t.shape[i];
         strides[i] = (Py_ssize_t) t.strides[i] * itemsize;
     }
 
+    view->buf = (void *) ((uintptr_t) t.data + t.byte_offset);
+    view->obj = Py_NewRef(self);
     view->len = len;
     view->itemsize = itemsize;
     view->readonly = th->ro;
     view->ndim = t.ndim;
-    view->format = (char *) format;
-    view->shape = shape;
-    view->strides = strides;
+    view->format =
+        ((flags & PyBUF_FORMAT) == PyBUF_FORMAT) ? (char *) format : nullptr;
+    view->shape = ((flags & PyBUF_ND) == PyBUF_ND) ? shape : nullptr;
+    view->strides =
+        ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) ? strides : nullptr;
     view->suboffsets = nullptr;
     view->internal = shape_and_strides.release();
 
@@ -236,45 +274,109 @@ static void nb_ndarray_releasebuffer(PyObject *, Py_buffer *view) {
 
 // This function implements __dlpack__() for a nanobind.nb_ndarray.
 static PyObject *nb_ndarray_dlpack(PyObject *self, PyObject *const *args,
-                                   Py_ssize_t nargsf, PyObject *kwnames) {
-    if (PyVectorcall_NARGS(nargsf) != 0) {
+                                   Py_ssize_t nargs, PyObject *kwnames) {
+    if (nargs != 0) {
         PyErr_SetString(PyExc_TypeError,
                 "__dlpack__() does not accept positional arguments");
         return nullptr;
     }
     Py_ssize_t nkwargs = (kwnames) ? NB_TUPLE_GET_SIZE(kwnames) : 0;
 
+    // Match a keyword name against an interned reference.
+    auto key_is = [](PyObject *key, PyObject *r) -> bool {
+        return key == r;
+    };
+
+    // Match a keyword name against an interned reference, falling back to a
+    // string comparison since kwnames passed via f(**d) are not guaranteed to
+    // be identical to the interned objects.
+    auto key_equals = [](PyObject *key, PyObject *r) -> bool {
+        return key == r || PyObject_RichCompareBool(key, r, Py_EQ) == 1;
+    };
+
+    ndarray_handle *th = ((nb_ndarray *) self)->th;
+    nb_internals *p = ((nb_ndarray *) self)->internals;
+    dlpack::dltensor &t = th->tensor();
+
     long max_major_version = 0;
-    for (Py_ssize_t i = 0; i < nkwargs; ++i) {
-        PyObject* key = NB_TUPLE_GET_ITEM(kwnames, i);
-        if (key == static_pyobjects[pyobj_name::dl_device_str] ||
-            key == static_pyobjects[pyobj_name::copy_str])
-            // These keyword arguments are ignored.  This branch of the code
-            // is here to avoid a Python call to RichCompare if these kwargs
-            // are provided by the caller.
-            continue;
-        if (key == static_pyobjects[pyobj_name::max_version_str] ||
-            PyObject_RichCompareBool(key,
-                static_pyobjects[pyobj_name::max_version_str], Py_EQ) == 1) {
-            PyObject* value = args[i];
-            if (value == Py_None)
-                break;
-            if (!PyTuple_Check(value) || NB_TUPLE_GET_SIZE(value) != 2) {
-                PyErr_SetString(PyExc_TypeError,
-                        "max_version must be None or tuple[int, int]");
-                return nullptr;
+
+    // Return nkwargs on success, -1 on error, else index of unmatched kwarg.
+    auto parse_kwargs = [&kwnames, &nkwargs, &args, &t, &max_major_version, p](
+                                Py_ssize_t begin, auto compare) -> Py_ssize_t {
+        // Extract a 2-tuple of integers; returns false (with no error set)
+        // for any other input.
+        auto get_int_pair = [](PyObject *value, long *a, long *b) -> bool {
+            if (!PyTuple_Check(value) || NB_TUPLE_GET_SIZE(value) != 2)
+                return false;
+            *a = PyLong_AsLong(NB_TUPLE_GET_ITEM(value, 0));
+            *b = PyLong_AsLong(NB_TUPLE_GET_ITEM(value, 1));
+            if (PyErr_Occurred()) {
+                PyErr_Clear();
+                return false;
             }
-            max_major_version = PyLong_AsLong(NB_TUPLE_GET_ITEM(value, 0));
-            break;
+            return true;
+        };
+
+        for (Py_ssize_t i = begin; i < nkwargs; ++i) {
+            PyObject* key = NB_TUPLE_GET_ITEM(kwnames, i);
+            PyObject* value = args[i];
+            long a, b;
+            if (compare(key, NB_INTERNED(p, copy))) {
+                // The capsule aliases C++-owned storage; a copy cannot be made
+                if (value == true_ptr()) {
+                    PyErr_SetString(PyExc_BufferError,
+                            "__dlpack__(): copy=True is not supported.");
+                    return -1;
+                }
+            } else if (compare(key, NB_INTERNED(p, dl_device))) {
+                // Reject requests for a device other than the array's own
+                if (value != none_ptr() &&
+                        (!get_int_pair(value, &a, &b) ||
+                         a != (long) t.device.device_type ||
+                         b != (long) t.device.device_id)) {
+                    PyErr_SetString(PyExc_BufferError,
+                            "__dlpack__(): unsupported dl_device.");
+                    return -1;
+                }
+            } else if (compare(key, NB_INTERNED(p, max_version))) {
+                if (value != none_ptr()) {
+                    if (!get_int_pair(value, &a, &b)) {
+                        PyErr_SetString(PyExc_TypeError,
+                                "max_version must be None or tuple[int, int]");
+                        return -1;
+                    }
+                    max_major_version = a;
+                }
+            } else if (compare(key, NB_INTERNED(p, stream))) {
+                // Accepted but ignored: nanobind tracks no producer stream and
+                // has no backend dependency, so it cannot synchronize. See docs.
+            } else {
+                return i;
+            }
+        }
+        return nkwargs;
+    };
+
+    Py_ssize_t result = parse_kwargs(0, key_is);
+    if (NB_UNLIKELY(result < 0))
+        return nullptr;
+    if (NB_UNLIKELY(result < nkwargs)) {
+        result = parse_kwargs(result, key_equals);
+        if (NB_UNLIKELY(result < 0))
+            return nullptr;
+        if (NB_UNLIKELY(result < nkwargs)) {
+            PyErr_Format(PyExc_TypeError,
+                    "__dlpack__(): unsupported keyword argument '%S'",
+                    NB_TUPLE_GET_ITEM(kwnames, result));
+            return nullptr;
         }
     }
 
-    ndarray_handle *th = ((nb_ndarray *) self)->th;
     PyObject *capsule;
     if (max_major_version >= (long)dlpack::major_version)
-        capsule = th->make_capsule_versioned();
+        capsule = th->make_capsule<true>();
     else
-        capsule = th->make_capsule_unversioned();
+        capsule = th->make_capsule<false>();
 
     return capsule;
 }
@@ -282,13 +384,10 @@ static PyObject *nb_ndarray_dlpack(PyObject *self, PyObject *const *args,
 // This function implements __dlpack_device__() for a nanobind.nb_ndarray.
 static PyObject *nb_ndarray_dlpack_device(PyObject *self, PyObject *) {
     ndarray_handle *th = ((nb_ndarray *) self)->th;
-    dlpack::dltensor& t = (th->versioned)
-                              ? th->mt_versioned->dltensor
-                              : th->mt_unversioned->dltensor;
+    dlpack::dltensor& t = th->tensor();
     PyObject *r;
     if (t.device.device_type == 1 && t.device.device_id == 0) {
-        r = static_pyobjects[pyobj_name::dl_cpu_tpl];
-        Py_INCREF(r);
+        r = Py_NewRef(NB_INTERNED(((nb_ndarray *) self)->internals, dl_cpu_tpl));
     } else {
         r = PyTuple_New(2);
         PyObject *r0 = PyLong_FromLong(t.device.device_type);
@@ -312,8 +411,7 @@ static PyMethodDef nb_ndarray_methods[] = {
    { nullptr, nullptr, 0, nullptr }
 };
 
-static PyTypeObject *nb_ndarray_tp() noexcept {
-    nb_internals *internals_ = internals;
+static PyTypeObject *nb_ndarray_tp(nb_internals *internals_) noexcept {
     PyTypeObject *tp = internals_->nb_ndarray.load_acquire();
 
     if (NB_UNLIKELY(!tp)) {
@@ -334,7 +432,8 @@ static PyTypeObject *nb_ndarray_tp() noexcept {
             /* .name = */ "nanobind.nb_ndarray",
             /* .basicsize = */ (int) sizeof(nb_ndarray),
             /* .itemsize = */ 0,
-            /* .flags = */ Py_TPFLAGS_DEFAULT,
+            /* .flags = */ Py_TPFLAGS_DEFAULT | Py_TPFLAGS_IMMUTABLETYPE |
+                           Py_TPFLAGS_DISALLOW_INSTANTIATION,
             /* .slots = */ slots
         };
 
@@ -380,12 +479,12 @@ static mt_unique_ptr_t make_mt_from_buffer_protocol(PyObject *o, bool ro) {
     if (skip_first && format_str)
         format_c = *++format_str;
 
-    bool is_complex = format_str[0] == 'Z';
+    bool is_complex = format_str && format_str[0] == 'Z';
     if (is_complex)
         format_c = *++format_str;
 
     dlpack::dtype dt { };
-    bool fail = format_str && format_str[1] != '\0';
+    bool fail = format_str && format_str[0] != '\0' && format_str[1] != '\0';
 
     if (!fail) {
         switch (format_c) {
@@ -428,33 +527,27 @@ static mt_unique_ptr_t make_mt_from_buffer_protocol(PyObject *o, bool ro) {
     }
 
     int32_t ndim = view->ndim;
+    if (ndim < 0 || ndim > max_ndim) {
+        PyBuffer_Release(view.get());
+        return mt_unique_ptr;
+    }
 
     static_assert(alignof(managed_dltensor_versioned) >= alignof(int64_t));
-    scoped_pymalloc<managed_dltensor_versioned> mt(1, 2 * sizeof(int64_t)*ndim);
+    scoped_pymalloc<managed_dltensor_versioned> mt(1, 2 * sizeof(int64_t) * (size_t) ndim);
     int64_t* shape = nullptr;
     int64_t* strides = nullptr;
     if (ndim > 0) {
-        shape = new ((void*) (mt.get() + 1)) int64_t[2 * ndim];
+        shape = new ((void*) (mt.get() + 1)) int64_t[2 * (size_t) ndim];
         strides = shape + ndim;
     }
 
-    /* See comments in function ndarray_create(). */
-#if 0
-    uintptr_t data_uint = (uintptr_t) view->buf;
-    void* data_ptr = (void *) (data_uint & ~uintptr_t{255});
-    uint64_t data_offset = data_uint & uintptr_t{255};
-#else
-    void* data_ptr = view->buf;
-    constexpr uint64_t data_offset = 0UL;
-#endif
-
-    mt->dltensor.data = data_ptr;
+    mt->dltensor.data = view->buf;
     mt->dltensor.device = { device::cpu::value, 0 };
     mt->dltensor.ndim = ndim;
     mt->dltensor.dtype = dt;
     mt->dltensor.shape = shape;
     mt->dltensor.strides = strides;
-    mt->dltensor.byte_offset = data_offset;
+    mt->dltensor.byte_offset = 0UL;
 
     const int64_t itemsize = (int64_t) view->itemsize;
     for (int32_t i = 0; i < ndim; ++i) {
@@ -476,12 +569,131 @@ static mt_unique_ptr_t make_mt_from_buffer_protocol(PyObject *o, bool ro) {
     return mt_unique_ptr;
 }
 
-bool ndarray_check(PyObject *o) noexcept {
-    if (PyObject_HasAttr(o, static_pyobjects[pyobj_name::dunder_dlpack_str]) ||
-        PyObject_CheckBuffer(o))
+// Per-framework import data for the source-detectable frameworks. Indexed by
+// the framework `value` from ndarray.h; rows only exist for frameworks that can
+// be detected as an incoming object (numpy..cupy), everything else is empty.
+struct import_info {
+    const char *module_prefix; // __module__ prefix, for detection
+    const char *type_name;     // exact Py_TYPE name, for ndarray_check
+    const char *to_dlpack_pkg; // legacy to_dlpack() module, or nullptr
+};
+
+static constexpr import_info importers[] = {
+    /* no_framework */ { nullptr, nullptr, nullptr },
+    /* numpy        */ { "numpy", "numpy.ndarray", nullptr },
+    /* pytorch      */ { "torch", "torch.Tensor", "torch.utils.dlpack" },
+    /* tensorflow   */ { "tensorflow", "tensorflow.Tensor", "tensorflow.experimental.dlpack" },
+    /* jax          */ { "jaxlib", "jaxlib._jax.ArrayImpl", "jax.dlpack" },
+    /* cupy         */ { "cupy", "cupy.ndarray", nullptr }
+};
+
+static constexpr int importer_count = sizeof(importers) / sizeof(importers[0]);
+
+// Detect the source framework from __module__, returning its ndarray.h `value`
+// (no_framework::value if unrecognized). Never raises.
+static int detect_framework(nb_internals *p, PyTypeObject *tp) noexcept {
+    object mod = steal(PyObject_GetAttr((PyObject *) tp,
+                                        NB_INTERNED(p, __module__)));
+    const char *name =
+        mod.is_valid() ? PyUnicode_AsUTF8AndSize(mod.ptr(), nullptr) : nullptr;
+    if (!name) {
+        PyErr_Clear();
+        return no_framework::value;
+    }
+    for (int i = 1; i < importer_count; ++i) {
+        const char *p = importers[i].module_prefix;
+        if (strncmp(name, p, strlen(p)) == 0)
+            return i;
+    }
+    return no_framework::value;
+}
+
+// Convert to the requested dtype (and order, where the framework supports it).
+static object convert_array(nb_internals *p, int framework, PyObject *src,
+                            const char *dtype, char order) {
+    object converted;
+    try {
+        object dtype_str = steal(raise_if_null(PyUnicode_FromString(dtype)));
+        switch (framework) {
+            case numpy::value:
+            case cupy::value: {
+                object order_str = steal(raise_if_null(
+                    PyUnicode_FromStringAndSize(&order, 1)));
+                converted =
+                    obj_call(p, steal(getattr(src, NB_INTERNED(p, astype))),
+                             dtype_str, order_str);
+                break;
+            }
+
+            case pytorch::value: {
+                module_ torch = module_::import_("torch");
+                converted = obj_call(p, steal(getattr(src, NB_INTERNED(p, to))),
+                                     str_getattr(p, torch, dtype));
+                if (order == 'C')
+                    converted = obj_call(
+                        p, steal(getattr(converted.ptr(),
+                                         NB_INTERNED(p, contiguous))));
+                break;
+            }
+
+            case tensorflow::value: {
+                module_ tensorflow = module_::import_("tensorflow");
+                converted =
+                    obj_call(p,
+                             steal(getattr(tensorflow.ptr(),
+                                           NB_INTERNED(p, cast))),
+                             handle(src), dtype_str);
+                break;
+            }
+
+            case jax::value:
+                converted =
+                    obj_call(p, steal(getattr(src, NB_INTERNED(p, astype))),
+                             dtype_str);
+                break;
+
+            default:
+                break;
+        }
+    } catch (...) {
+        converted.reset();
+    }
+    return converted;
+}
+
+// True if `src` supports the buffer protocol. Non-raising.
+static bool obj_has_buffer(PyObject *src, PyTypeObject *tp) noexcept {
+#if !defined(Py_LIMITED_API)
+    (void) src;
+    return tp->tp_as_buffer && tp->tp_as_buffer->bf_getbuffer;
+#else
+    (void) tp;
+    return PyObject_CheckBuffer(src);
+#endif
+}
+
+// Fetch __dlpack__ as an unbound descriptor (callable with self at args[0]), or
+// an invalid object if absent. Avoids exception-related costs if possible.
+static object dlpack_method(nb_internals *p, PyTypeObject *tp) noexcept {
+#if !defined(Py_LIMITED_API) && PY_VERSION_HEX >= 0x030D0000 && \
+    !defined(PYPY_VERSION)
+    return steal(_PyType_LookupRef(tp, NB_INTERNED(p, __dlpack__)));
+#elif !defined(Py_LIMITED_API)
+    return borrow(_PyType_Lookup(tp, NB_INTERNED(p, __dlpack__)));
+#else
+    object descr =
+        steal(PyObject_GetAttr((PyObject *) tp, NB_INTERNED(p, __dlpack__)));
+    if (!descr.is_valid()) // can raise
+        PyErr_Clear();
+    return descr;
+#endif
+}
+
+bool ndarray_check(nb_internals *p, PyObject *o) noexcept {
+    PyTypeObject *tp = Py_TYPE(o);
+    if (dlpack_method(p, tp).is_valid() || obj_has_buffer(o, tp))
         return true;
 
-    PyTypeObject *tp = Py_TYPE(o);
     if (tp == &PyCapsule_Type)
         return true;
 
@@ -491,72 +703,95 @@ bool ndarray_check(PyObject *o) noexcept {
     const char *tp_name = PyUnicode_AsUTF8AndSize(name, nullptr);
     check(tp_name, "Could not obtain type name! (2)");
 
-    bool result =
-        // PyTorch
-        strcmp(tp_name, "torch.Tensor") == 0 ||
-        // XLA
-        strcmp(tp_name, "jaxlib.xla_extension.ArrayImpl") == 0 ||
-        // Tensorflow
-        strcmp(tp_name, "tensorflow.python.framework.ops.EagerTensor") == 0 ||
-        // Cupy
-        strcmp(tp_name, "cupy.ndarray") == 0;
+    bool result = false;
+    for (int i = 1; i < importer_count; ++i) {
+        if (strcmp(tp_name, importers[i].type_name) == 0) {
+            result = true;
+            break;
+        }
+    }
 
     Py_DECREF(name);
     return result;
 }
 
+// Helper function reports whether `code` represents a complex number.
+static NB_INLINE bool dtype_code_is_complex(uint8_t code) {
+    return code == (uint8_t) dlpack::dtype_code::Complex ||
+           code == (uint8_t) dlpack::dtype_code::Bcomplex;
+}
 
-ndarray_handle *ndarray_import(PyObject *src, const ndarray_config *c,
-                               bool convert, cleanup_list *cleanup) noexcept {
+static ndarray_handle *ndarray_import_impl(nb_internals *p, PyObject *src,
+                                           const ndarray_config &cfg,
+                                           bool convert,
+                                           cleanup_list *cleanup) noexcept {
     object capsule;
-    const bool src_is_pycapsule = PyCapsule_CheckExact(src);
     mt_unique_ptr_t mt_unique_ptr(nullptr, &mt_from_buffer_delete);
+
+    // Capsule flavor (versioned or not) to probe for first during extraction.
+    // Defaults to unversioned: the right guess for an unknown user capsule.
+    bool expect_versioned = false;
+
+    PyTypeObject *tp = Py_TYPE(src);
+    const bool src_is_pycapsule = tp == &PyCapsule_Type;
 
     if (src_is_pycapsule) {
         capsule = borrow(src);
     } else {
-        // Try calling src.__dlpack__()
-        PyObject* args[] = {src, static_pyobjects[pyobj_name::dl_version_tpl]};
-        Py_ssize_t nargsf = 1 | PY_VECTORCALL_ARGUMENTS_OFFSET;
-        capsule = steal(PyObject_VectorcallMethod(
-                          static_pyobjects[pyobj_name::dunder_dlpack_str],
-                          args, nargsf,
-                          static_pyobjects[pyobj_name::max_version_tpl]));
+        // __dlpack__ is by contract a plain method, so call the looked-up
+        // descriptor directly (args[0] is self) rather than re-resolving it.
+        object dlpack_descr = dlpack_method(p, tp);
 
-        // Python array API standard v2023 introduced max_version.
-        // Try calling src.__dlpack__() without any kwargs.
-        if (!capsule.is_valid() && PyErr_ExceptionMatches(PyExc_TypeError)) {
-            PyErr_Clear();
-            capsule = steal(PyObject_VectorcallMethod(
-                              static_pyobjects[pyobj_name::dunder_dlpack_str],
-                              args, nargsf, nullptr));
+        if (dlpack_descr.is_valid()) {
+            PyObject* args[] = {src, NB_INTERNED(p, dl_version_tpl)};
+            size_t nargsf = 1 | PY_VECTORCALL_ARGUMENTS_OFFSET;
+
+            // max_version_kw requests a versioned capsule, nullptr the cheaper
+            // unversioned one.
+            PyObject *max_version_kw = NB_INTERNED(p, max_version_tpl);
+            auto dlpack = [&](PyObject *kwnames) {
+                return steal(PyObject_Vectorcall(dlpack_descr.ptr(), args,
+                                                 nargsf, kwnames));
+            };
+
+            // The unversioned path is generally faster to handle for the target
+            // framework. Try that first if the user only requested readonly input.
+            capsule = dlpack(cfg.ro ? nullptr : max_version_kw);
+            expect_versioned = !cfg.ro;
+
+            // Fall back to the other variant on failure: a read-only source
+            // refusing unversioned export raises BufferError, and producers
+            // predating max_version (array API < v2023) raise TypeError.
+            if (!capsule.is_valid() &&
+                (PyErr_ExceptionMatches(PyExc_BufferError) ||
+                 PyErr_ExceptionMatches(PyExc_TypeError))) {
+                PyErr_Clear();
+                capsule = dlpack(cfg.ro ? max_version_kw : nullptr);
+                expect_versioned = cfg.ro;
+            }
+
+            if (!capsule.is_valid())
+                PyErr_Clear();
         }
 
-        // Try creating an ndarray via the buffer protocol
-        if (!capsule.is_valid()) {
-            PyErr_Clear();
-            mt_unique_ptr = make_mt_from_buffer_protocol(src, c->ro);
-        }
+        // Fall back to the buffer protocol, again gated on a non-raising probe.
+        if (!capsule.is_valid() && obj_has_buffer(src, tp))
+            mt_unique_ptr = make_mt_from_buffer_protocol(src, cfg.ro);
 
         // Try the function to_dlpack(), already obsolete in array API v2021
         if (!mt_unique_ptr && !capsule.is_valid()) {
-            PyTypeObject *tp = Py_TYPE(src);
-            try {
-                const char *module_name =
-                    borrow<str>(handle(tp).attr("__module__")).c_str();
-
-                object package;
-                if (strncmp(module_name, "tensorflow.", 11) == 0)
-                    package = module_::import_("tensorflow.experimental.dlpack");
-                else if (strncmp(module_name, "torch", 5) == 0)
-                    package = module_::import_("torch.utils.dlpack");
-                else if (strncmp(module_name, "jaxlib", 6) == 0)
-                    package = module_::import_("jax.dlpack");
-
-                if (package.is_valid())
-                    capsule = package.attr("to_dlpack")(handle(src));
-            } catch (...) {
-                capsule.reset();
+            const char *pkg =
+                importers[detect_framework(p, tp)].to_dlpack_pkg;
+            if (pkg) {
+                try {
+                    object package = module_::import_(pkg);
+                    if (package.is_valid())
+                        capsule = obj_call(
+                            p, str_getattr(p, package, "to_dlpack"),
+                            handle(src));
+                } catch (...) {
+                    capsule.reset();
+                }
             }
             if (!capsule.is_valid())
                 return nullptr;
@@ -564,16 +799,19 @@ ndarray_handle *ndarray_import(PyObject *src, const ndarray_config *c,
     }
 
     void* mt;  // can be versioned or unversioned
-    bool versioned = true;
+    bool versioned;
     if (mt_unique_ptr) {
         mt = mt_unique_ptr.get();
+        versioned = true;
     } else {
-        // Extract the managed_dltensor{_versioned} pointer from the capsule.
-        mt = PyCapsule_GetPointer(capsule.ptr(), "dltensor_versioned");
+        // Probe the expected capsule name first
+        static const char *names[2] = { "dltensor", "dltensor_versioned" };
+        versioned = expect_versioned;
+        mt = PyCapsule_GetPointer(capsule.ptr(), names[(int) versioned]);
         if (!mt) {
             PyErr_Clear();
-            versioned = false;
-            mt = PyCapsule_GetPointer(capsule.ptr(), "dltensor");
+            versioned = !versioned;
+            mt = PyCapsule_GetPointer(capsule.ptr(), names[(int) versioned]);
             if (!mt) {
                 PyErr_Clear();
                 return nullptr;
@@ -588,28 +826,31 @@ ndarray_handle *ndarray_import(PyObject *src, const ndarray_config *c,
     uint64_t flags = (versioned) ? ((managed_dltensor_versioned *) mt)->flags
                                  : 0UL;
 
+    if (t.ndim < 0 || t.ndim > max_ndim)
+        return nullptr;
+
     // Reject a read-only ndarray if a writable one is required, and
     // reject an ndarray not on the required device.
-    if ((!c->ro && (flags & dlpack::flag_bitmask_read_only))
-        || (c->device_type != 0 && t.device.device_type != c->device_type)) {
+    if ((!cfg.ro && (flags & dlpack::flag_bitmask_read_only))
+        || (cfg.device_type != 0 && t.device.device_type != cfg.device_type)) {
         return nullptr;
     }
 
     // Check if the ndarray satisfies the remaining requirements.
-    bool has_dtype = c->dtype != dlpack::dtype(),
-         has_shape = c->ndim != -1,
-         has_order = c->order != '\0';
+    bool has_dtype = cfg.dtype != dlpack::dtype(),
+         has_shape = cfg.ndim != -1,
+         has_order = cfg.order != '\0';
 
     bool pass_dtype = true, pass_shape = true, pass_order = true;
 
     if (has_dtype)
-        pass_dtype = t.dtype == c->dtype;
+        pass_dtype = t.dtype == cfg.dtype;
 
     if (has_shape) {
-        pass_shape = t.ndim == c->ndim;
+        pass_shape = t.ndim == cfg.ndim;
         if (pass_shape) {
-            for (int32_t i = 0; i < c->ndim; ++i) {
-                if (c->shape[i] != -1 && t.shape[i] != c->shape[i]) {
+            for (int32_t i = 0; i < cfg.ndim; ++i) {
+                if (cfg.shape[i] != -1 && t.shape[i] != cfg.shape[i]) {
                     pass_shape = false;
                     break;
                 }
@@ -617,20 +858,22 @@ ndarray_handle *ndarray_import(PyObject *src, const ndarray_config *c,
         }
     }
 
+    // Only the order check below needs the element count, so skip it otherwise.
     int64_t size = 1;
-    for (int32_t i = 0; i < t.ndim; ++i)
-        size *= t.shape[i];
+    if (has_order)
+        for (int32_t i = 0; i < t.ndim; ++i)
+            size *= t.shape[i];
 
     // Tolerate any strides if the array has 1 or fewer elements
     if (pass_shape && has_order && size > 1) {
-        char order = c->order;
+        char order = cfg.order;
 
         bool c_order = order == 'C' || order == 'A',
              f_order = order == 'F' || order == 'A';
 
         if (!t.strides) {
-            /* When the provided tensor does not have a valid
-               strides field, it uses the C ordering convention */
+            // When the provided tensor does not have a valid
+            // strides field, it uses the C ordering convention
             if (c_order) {
                 pass_order = true;
             } else {
@@ -660,25 +903,22 @@ ndarray_handle *ndarray_import(PyObject *src, const ndarray_config *c,
 
     // Do not convert shape and do not convert complex numbers to non-complex.
     convert &= pass_shape &
-               !(t.dtype.code == (uint8_t) dlpack::dtype_code::Complex
-                 && has_dtype
-                 && c->dtype.code != (uint8_t) dlpack::dtype_code::Complex);
+               !(dtype_code_is_complex(t.dtype.code) &&
+                 has_dtype && !dtype_code_is_complex(cfg.dtype.code));
 
     // Support implicit conversion of dtype and order.
     if (convert && (!pass_dtype || !pass_order) && !src_is_pycapsule) {
-        PyTypeObject *tp = Py_TYPE(src);
-        str module_name_o = borrow<str>(handle(tp).attr("__module__"));
-        const char *module_name = module_name_o.c_str();
+        int fw = detect_framework(p, tp);
 
         char order = 'K'; // for NumPy. 'K' means 'keep'
-        if (c->order)
-            order = c->order;
+        if (cfg.order)
+            order = cfg.order;
 
-        dlpack::dtype dt = has_dtype ? c->dtype : t.dtype;
+        dlpack::dtype dt = has_dtype ? cfg.dtype : t.dtype;
         if (dt.lanes != 1)
             return nullptr;
 
-        char dtype[11];
+        char dtype[12];
         if (dt.code == (uint8_t) dlpack::dtype_code::Bool) {
             std::strcpy(dtype, "bool");
         } else {
@@ -699,34 +939,21 @@ ndarray_handle *ndarray_import(PyObject *src, const ndarray_config *c,
                 case (uint8_t) dlpack::dtype_code::Complex:
                     prefix = "complex";
                     break;
+                case (uint8_t) dlpack::dtype_code::Bcomplex:
+                    prefix = "bcomplex";
+                    break;
                 default:
                     return nullptr;
             }
             snprintf(dtype, sizeof(dtype), "%s%u", prefix, dt.bits);
         }
 
-        object converted;
-        try {
-            if (strncmp(module_name, "numpy", 5) == 0
-                || strncmp(module_name, "cupy", 4) == 0) {
-                converted = handle(src).attr("astype")(dtype, order);
-            } else if (strncmp(module_name, "torch", 5) == 0) {
-                module_ torch = module_::import_("torch");
-                converted = handle(src).attr("to")(torch.attr(dtype));
-                if (c->order == 'C')
-                    converted = converted.attr("contiguous")();
-            } else if (strncmp(module_name, "tensorflow.", 11) == 0) {
-                module_ tensorflow = module_::import_("tensorflow");
-                converted = tensorflow.attr("cast")(handle(src), dtype);
-            } else if (strncmp(module_name, "jaxlib", 6) == 0) {
-                converted = handle(src).attr("astype")(dtype);
-            }
-        } catch (...) { converted.reset(); }
+        object converted = convert_array(p, fw, src, dtype, order);
 
         // Potentially try once again, recursively
         if (converted.is_valid()) {
             ndarray_handle *h =
-                ndarray_import(converted.ptr(), c, false, nullptr);
+                ndarray_import_impl(p, converted.ptr(), cfg, false, nullptr);
             if (h && cleanup)
                 cleanup->append(converted.release().ptr());
             return h;
@@ -747,13 +974,12 @@ ndarray_handle *ndarray_import(PyObject *src, const ndarray_config *c,
     result->owner = nullptr;
     result->versioned = versioned;
     result->call_deleter = true;
-    result->ro = c->ro;
+    result->ro = cfg.ro;
 
     if (src_is_pycapsule) {
         result->self = nullptr;
     } else {
-        result->self = src;
-        Py_INCREF(src);
+        result->self = Py_NewRef(src);
     }
 
     // If ndim > 0, ensure that the strides member is initialized.
@@ -763,19 +989,29 @@ ndarray_handle *ndarray_import(PyObject *src, const ndarray_config *c,
         result->free_strides = true;
 
         scoped_pymalloc<int64_t> strides((size_t) t.ndim);
-        for (int64_t i = t.ndim - 1, accum = 1; i >= 0; --i) {
-            strides[i] = accum;
+        int64_t accum = 1;
+        for (int32_t i = t.ndim - 1; i >= 0; --i) {
+            strides[(size_t) i] = accum;
             accum *= t.shape[i];
         }
         t.strides = strides.release();
     }
 
     if (capsule.is_valid()) {
-        // Mark the dltensor capsule as used, i.e., "consumed".
-        const char* used_name = (versioned) ? "used_dltensor_versioned"
-                                            : "used_dltensor";
-        if (PyCapsule_SetName(capsule.ptr(), used_name) ||
-            PyCapsule_SetDestructor(capsule.ptr(), nullptr))
+        // Neutralize the producer's capsule so its destructor won't free the
+        // DLManagedTensor that nanobind now owns. Clearing the destructor is
+        // sufficient and is the only step the common __dlpack__() path needs:
+        // nanobind holds the sole reference to that capsule and never re-reads
+        // its name. A user-supplied raw capsule, by contrast, is still
+        // referenced by the caller, so it is additionally renamed to the
+        // conventional "used" name to stop a second import from re-consuming it.
+        bool fail = PyCapsule_SetDestructor(capsule.ptr(), nullptr);
+        if (src_is_pycapsule && !fail) {
+            const char* used_name = (versioned) ? "used_dltensor_versioned"
+                                                : "used_dltensor";
+            fail = PyCapsule_SetName(capsule.ptr(), used_name);
+        }
+        if (fail)
             check(false, "ndarray_import(): could not mark capsule as used");
     }
 
@@ -783,12 +1019,47 @@ ndarray_handle *ndarray_import(PyObject *src, const ndarray_config *c,
     return result.release();
 }
 
+ndarray_handle *ndarray_import(nb_internals *p, PyObject *src,
+                               const ndarray_config *c,
+                               bool convert,
+                               cleanup_list *cleanup) noexcept {
+    return ndarray_import_impl(p, src, *c, convert, cleanup);
+}
+
 dlpack::dltensor *ndarray_inc_ref(ndarray_handle *th) noexcept {
     if (!th)
         return nullptr;
     ++th->refcount;
-    return (th->versioned) ? &th->mt_versioned->dltensor
-                           : &th->mt_unversioned->dltensor;
+    return &th->tensor();
+}
+
+// Final teardown of a handle whose refcount reached zero.
+static void ndarray_dec_ref_free(ndarray_handle *th) noexcept {
+    Py_XDECREF(th->owner);
+    Py_XDECREF(th->self);
+    if (th->versioned) {
+        managed_dltensor_versioned *mt = th->mt_versioned;
+        if (th->free_strides) {
+            PyMem_Free(mt->dltensor.strides);
+            mt->dltensor.strides = nullptr;
+        }
+        if (th->call_deleter) {
+            if (mt->deleter)
+                mt->deleter(mt);
+        } else {
+            PyMem_Free(mt);  // This also frees shape and size arrays.
+        }
+    } else {
+        managed_dltensor *mt = th->mt_unversioned;
+        if (th->free_strides) {
+            PyMem_Free(mt->dltensor.strides);
+            mt->dltensor.strides = nullptr;
+        }
+        assert(th->call_deleter);
+        if (mt->deleter)
+            mt->deleter(mt);
+    }
+    PyMem_Free(th);
 }
 
 void ndarray_dec_ref(ndarray_handle *th) noexcept {
@@ -799,86 +1070,58 @@ void ndarray_dec_ref(ndarray_handle *th) noexcept {
     if (rc_value == 0) {
         check(false, "ndarray_dec_ref(): reference count became negative!");
     } else if (rc_value == 1) {
-        gil_scoped_acquire guard;
-
-        Py_XDECREF(th->owner);
-        Py_XDECREF(th->self);
-        if (th->versioned) {
-            managed_dltensor_versioned *mt = th->mt_versioned;
-            if (th->free_strides) {
-                PyMem_Free(mt->dltensor.strides);
-                mt->dltensor.strides = nullptr;
-            }
-            if (th->call_deleter) {
-                if (mt->deleter)
-                    mt->deleter(mt);
-            } else {
-                PyMem_Free(mt);  // This also frees shape and size arrays.
-            }
-        } else {
-            managed_dltensor *mt = th->mt_unversioned;
-            if (th->free_strides) {
-                PyMem_Free(mt->dltensor.strides);
-                mt->dltensor.strides = nullptr;
-            }
-            assert(th->call_deleter);
-            if (mt->deleter)
-                mt->deleter(mt);
-        }
-        PyMem_Free(th);
+        // Don't run the cleanup if the interpreter has been shut down
+        if (cleanup_guard guard{})
+            ndarray_dec_ref_free(th);
     }
 }
 
-ndarray_handle *ndarray_create(void *data, size_t ndim, const size_t *shape_in,
-                               PyObject *owner, const int64_t *strides_in,
-                               dlpack::dtype dtype, bool ro, int device_type,
-                               int device_id, char order) {
-    /* DLPack mandates 256-byte alignment of the 'DLTensor::data' field,
-       but this requirement is generally ignored.  Also, PyTorch has/had
-       a bug in ignoring byte_offset and assuming it's zero.
-       It would be wrong to split the 64-bit raw pointer into two pieces,
-       as disabled below, since the pointer dltensor.data must point to
-       allocated memory (i.e., memory that can be accessed).
-       A byte_offset can be used to support array slicing when data is an
-       opaque device pointer or handle, on which arithmetic is impossible.
-       However, this function is not slicing the data.
-       See also: https://github.com/data-apis/array-api/discussions/779  */
-#if 0
-    uintptr_t data_uint = (uintptr_t) data;
-    data = (void *) (data_uint & ~uintptr_t{255});      // upper bits
-    uint64_t data_offset = data_uint & uintptr_t{255};  // lowest 8 bits
-#else
-    constexpr uint64_t data_offset = 0UL;
-#endif
-    if (device_type == 0)
-        device_type = device::cpu::value;
+ndarray_handle *ndarray_create(nb_internals *, const ndarray_create_args *a) {
+    ndarray_create_args args = *a;
+
+    check(args.ndim <= (size_t) max_ndim,
+          "ndarray_create(): ndim is too large!");
+
+    // A comment in the DLPack header file suggests 256-byte alignment of the
+    // DLTensor::data field, but this is generally (and necessarily) ignored.
+    // Note that the pointer dltensor.data must point to allocated memory
+    // (i.e., memory that can be accessed), so it cannot simply be rounded
+    // down by zeroing its lowest 8 bits.
+    // A byte_offset can be used to support array slicing when data is an
+    // opaque device pointer or handle, on which arithmetic is impossible.
+    // See also: https://github.com/data-apis/array-api/discussions/779
+
+    if (args.device_type == 0)
+        args.device_type = device::cpu::value;
 
     static_assert(alignof(managed_dltensor_versioned) >= alignof(int64_t));
-    scoped_pymalloc<managed_dltensor_versioned> mt(1, 2 * sizeof(int64_t)*ndim);
+    scoped_pymalloc<managed_dltensor_versioned> mt(
+        1, 2 * sizeof(int64_t) * args.ndim);
     int64_t* shape = nullptr;
     int64_t* strides = nullptr;
-    if (ndim > 0) {
-        shape = new ((void*) (mt.get() + 1)) int64_t[2 * ndim];
-        strides = shape + ndim;
+    if (args.ndim > 0) {
+        shape = new ((void*) (mt.get() + 1)) int64_t[2 * args.ndim];
+        strides = shape + args.ndim;
     }
 
-    for (size_t i = 0; i < ndim; ++i)
-        shape[i] = (int64_t) shape_in[i];
+    for (size_t i = 0; i < args.ndim; ++i)
+        shape[i] = (int64_t) args.shape[i];
 
-    if (ndim > 0) {
+    if (args.ndim > 0) {
         int64_t prod = 1;
-        if (strides_in) {
-            for (size_t i = 0; i < ndim; ++i)
-                strides[i] = strides_in[i];
-        } else if (order == 'F') {
-            for (size_t i = 0; i < ndim; ++i) {
+        if (args.strides) {
+            for (size_t i = 0; i < args.ndim; ++i)
+                strides[i] = args.strides[i];
+        } else if (args.order == 'F') {
+            for (size_t i = 0; i < args.ndim; ++i) {
                 strides[i] = prod;
-                prod *= (int64_t) shape_in[i];
+                prod *= (int64_t) args.shape[i];
             }
-        } else if (order == '\0' || order == 'A' || order == 'C') {
-            for (ssize_t i = (ssize_t) ndim - 1; i >= 0; --i) {
+        } else if (args.order == '\0' || args.order == 'A' ||
+                   args.order == 'C') {
+            for (ssize_t i = (ssize_t) args.ndim - 1; i >= 0; --i) {
                 strides[i] = prod;
-                prod *= (int64_t) shape_in[i];
+                prod *= (int64_t) args.shape[i];
             }
         } else {
             check(false, "ndarray_create(): unknown memory order requested!");
@@ -892,28 +1135,63 @@ ndarray_handle *ndarray_create(void *data, size_t ndim, const size_t *shape_in,
     mt->deleter = [](managed_dltensor_versioned *self) {
                       ndarray_dec_ref((ndarray_handle *) self->manager_ctx);
                   };
-    mt->flags = (ro) ? dlpack::flag_bitmask_read_only : 0;
-    mt->dltensor.data = data;
-    mt->dltensor.device.device_type = (int32_t) device_type;
-    mt->dltensor.device.device_id = (int32_t) device_id;
-    mt->dltensor.ndim = (int32_t) ndim;
-    mt->dltensor.dtype = dtype;
+    mt->flags = (args.ro) ? dlpack::flag_bitmask_read_only : 0;
+    mt->dltensor.data = args.data;
+    mt->dltensor.device.device_type = args.device_type;
+    mt->dltensor.device.device_id = args.device_id;
+    mt->dltensor.ndim = (int32_t) args.ndim;
+    mt->dltensor.dtype = args.dtype;
     mt->dltensor.shape = shape;
     mt->dltensor.strides = strides;
-    mt->dltensor.byte_offset = data_offset;
+    mt->dltensor.byte_offset = args.byte_offset;
     result->mt_versioned = mt.release();
     result->refcount = 0;
-    result->owner = owner;
+    result->owner = Py_XNewRef(args.owner);
     result->self = nullptr;
     result->versioned = true;
     result->free_strides = false;
     result->call_deleter = false;
-    result->ro = ro;
-    Py_XINCREF(owner);
+    result->ro = args.ro;
     return result.release();
 }
 
-PyObject *ndarray_export(ndarray_handle *th, int framework,
+/// Module + attribute of export callables, indexed by `ndarray_export_slot`.
+static constexpr struct { const char *pkg, *attr; }
+    ndarray_export_spec[nd_export_count] = {
+        { "numpy",                          "asarray"     },
+        { "numpy",                          "copy"        },
+        { "torch.utils.dlpack",             "from_dlpack" },
+        { "tensorflow.experimental.dlpack", "from_dlpack" },
+        { "jax.dlpack",                     "from_dlpack" },
+        { "cupy",                           "from_dlpack" },
+        { "mlx.core",                       "array"       },
+    };
+
+/// Resolve (and cache) the callable for an ``ndarray_export`` cache slot.
+static PyObject *ndarray_export_fn(nb_internals *internals_,
+                                   ndarray_export_slot slot) {
+    PyObject *fn = internals_->ndarray_export[slot].load_acquire();
+    if (NB_LIKELY(fn))
+        return fn;
+
+    // Resolve before taking the lock: the import runs arbitrary Python code
+    // that may reenter nanobind, and the internals mutex is non-reentrant
+    object obj = str_getattr(internals_,
+                             steal(module_import(ndarray_export_spec[slot].pkg)),
+                             ndarray_export_spec[slot].attr);
+
+    lock_internals guard(internals_);
+    fn = internals_->ndarray_export[slot].load_relaxed();
+    if (fn)
+        return fn;
+
+    fn = obj.release().ptr();
+    new_object(internals_, fn);
+    internals_->ndarray_export[slot].store_release(fn);
+    return fn;
+}
+
+PyObject *ndarray_export(nb_internals *p, ndarray_handle *th, int framework,
                          rv_policy policy, cleanup_list *cleanup) noexcept {
     if (!th)
         return none().release().ptr();
@@ -929,8 +1207,7 @@ PyObject *ndarray_export(ndarray_handle *th, int framework,
                                     "applied (ndarray already has an owner)");
                     return nullptr;
                 } else {
-                    th->owner = cleanup->self();
-                    Py_INCREF(th->owner);
+                    th->owner = Py_NewRef(cleanup->self());
                 }
             }
             [[fallthrough]];
@@ -952,12 +1229,28 @@ PyObject *ndarray_export(ndarray_handle *th, int framework,
 
     if (!copy) {
         if (th->self) {
-            Py_INCREF(th->self);
-            return th->self;
+            return Py_NewRef(th->self);
         } else if (policy == rv_policy::none) {
             return nullptr;
         }
     }
+
+    // These frameworks export a raw DLPack capsule or buffer view rather than
+    // a framework array with a copy method, so the requested copy cannot be
+    // performed. Refuse the cast rather than returning a view that would
+    // alias (and possibly outlive) the original storage.
+    if (copy && !th->self &&
+        (framework == no_framework::value || framework == tensorflow::value ||
+         framework == memview::value || framework == array_api::value)) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "nanobind::detail::ndarray_export(): copying the "
+                        "array contents is not supported for this framework; "
+                        "please specify an 'owner' so that the array can be "
+                        "returned without a copy.");
+        return nullptr;
+    }
+
+    nb_internals *internals_ = p;
 
     object o;
     if (copy && framework == no_framework::value && th->self) {
@@ -965,62 +1258,55 @@ PyObject *ndarray_export(ndarray_handle *th, int framework,
     } else if (framework == no_framework::value ||
                framework == tensorflow::value) {
         // Make a new capsule wrapping an unversioned managed_dltensor.
-        o = steal(th->make_capsule_unversioned());
+        o = steal(th->make_capsule<false>());
     } else {
         // Make a Python object providing the buffer interface and having
         // the two DLPack methods __dlpack__() and __dlpack_device__().
-        nb_ndarray *h = PyObject_New(nb_ndarray, nb_ndarray_tp());
+        nb_ndarray *h = PyObject_New(nb_ndarray, nb_ndarray_tp(internals_));
         if (!h)
             return nullptr;
         h->th = th;
+        h->internals = internals_;
         ndarray_inc_ref(th);
         o = steal((PyObject *) h);
     }
 
     if (framework == numpy::value) {
         try {
-            PyObject* pkg_mod = module_import("numpy");
-            PyObject* args[] = {pkg_mod, o.ptr(),
-                                (copy) ? Py_True : Py_False};
-            Py_ssize_t nargsf = 2 | PY_VECTORCALL_ARGUMENTS_OFFSET;
-            return PyObject_VectorcallMethod(
-                        static_pyobjects[pyobj_name::array_str], args, nargsf,
-                        static_pyobjects[pyobj_name::copy_tpl]);
+            // Call nump.asarray(o) to create a view, and numpy.copy(o) to copy
+            PyObject *export_fn = ndarray_export_fn(
+                internals_, copy ? nd_export_numpy_copy : nd_export_numpy_view);
+            PyObject *stack[] = {nullptr, o.ptr()};
+            size_t nargsf = 1 | PY_VECTORCALL_ARGUMENTS_OFFSET;
+            return PyObject_Vectorcall(export_fn, stack + 1, nargsf, nullptr);
         } catch (const std::exception &e) {
             PyErr_Format(PyExc_TypeError,
-                         "could not export nanobind::ndarray: %s",
-                         e.what());
+                         "could not export nanobind::ndarray: %s", e.what());
             return nullptr;
         }
     }
 
+    // The DLPack frameworks build a view via <pkg>.from_dlpack(o); no_framework
+    // and array_api leave `o` as-is; memview returns a memoryview directly.
     try {
-        const char* pkg_name;
+        ndarray_export_slot slot;
         switch (framework) {
-            case pytorch::value:
-                pkg_name = "torch.utils.dlpack";
-                break;
-            case tensorflow::value:
-                pkg_name = "tensorflow.experimental.dlpack";
-                break;
-            case jax::value:
-                pkg_name = "jax.dlpack";
-                break;
-            case cupy::value:
-                pkg_name = "cupy";
-                break;
-            case memview::value:
-                return PyMemoryView_FromObject(o.ptr());
-            default:
-                pkg_name = nullptr;
+            case pytorch::value:    slot = nd_export_pytorch;    break;
+            case tensorflow::value: slot = nd_export_tensorflow; break;
+            case jax::value:        slot = nd_export_jax;        break;
+            case cupy::value:       slot = nd_export_cupy;       break;
+            case mlx::value:        slot = nd_export_mlx;        break;
+            case memview::value:    return PyMemoryView_FromObject(o.ptr());
+            default:                slot = nd_export_count;  // no export call
         }
-        if (pkg_name) {
-            PyObject* pkg_mod = module_import(pkg_name);
-            PyObject* args[] = {pkg_mod, o.ptr()};
-            Py_ssize_t nargsf = 2 | PY_VECTORCALL_ARGUMENTS_OFFSET;
-            o = steal(PyObject_VectorcallMethod(
-                          static_pyobjects[pyobj_name::from_dlpack_str],
-                          args, nargsf, nullptr));
+
+        if (slot != nd_export_count) {
+            PyObject *export_fn = ndarray_export_fn(internals_, slot);
+            PyObject *stack[] = {nullptr, o.ptr()};
+            size_t nargsf = 1 | PY_VECTORCALL_ARGUMENTS_OFFSET;
+            o = steal(PyObject_Vectorcall(export_fn, stack + 1, nargsf, nullptr));
+            if (!o.is_valid())
+                return nullptr;
         }
     } catch (const std::exception &e) {
         PyErr_Format(PyExc_TypeError,
@@ -1029,13 +1315,14 @@ PyObject *ndarray_export(ndarray_handle *th, int framework,
         return nullptr;
     }
 
-    if (copy) {
-        PyObject* copy_function_name = static_pyobjects[pyobj_name::copy_str];
-        if (framework == pytorch::value)
-            copy_function_name = static_pyobjects[pyobj_name::clone_str];
-
+    // MLX has no copy()/clone() method; mlx.core.array() already returned an
+    // owned copy, so the copy policy is satisfied without an extra step.
+    if (copy && framework != mlx::value) {
+        PyObject* copy_fn_name = framework == pytorch::value
+                                     ? NB_INTERNED(p, clone)
+                                     : NB_INTERNED(p, copy);
         try {
-            o = o.attr(copy_function_name)();
+            o = obj_call(p, steal(getattr(o.ptr(), copy_fn_name)));
         } catch (std::exception &e) {
             PyErr_Format(PyExc_RuntimeError,
                          "copying nanobind::ndarray failed: %s",

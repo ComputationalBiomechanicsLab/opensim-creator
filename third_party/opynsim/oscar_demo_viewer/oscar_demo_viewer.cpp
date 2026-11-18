@@ -21,17 +21,21 @@ namespace
     class NamedWidget final {
     public:
         template<typename TWidget>
-        requires (requires { TWidget::id(); })
+        requires(requires { TWidget::id(); })
         static NamedWidget create()
         {
-            return NamedWidget{TWidget::id(), [](Widget* owner) { return std::make_unique<TWidget>(owner); }};
+            return NamedWidget{TWidget::id(), [](Widget* owner) {
+                                   return std::make_unique<TWidget>(owner);
+                               }};
         }
 
         const auto& name() const { return name_; }
         std::unique_ptr<Widget> construct(Widget* owner) { return constructor_(owner); }
+
     private:
         template<typename StringLike, typename Constructor>
-        requires (std::constructible_from<std::string, StringLike> and std::invocable<Constructor, Widget*>)
+        requires(std::constructible_from<std::string, StringLike> and
+                 std::invocable<Constructor, Widget*>)
         NamedWidget(StringLike&& name, Constructor&& constructor) :
             name_{std::forward<StringLike>(name)},
             constructor_{std::forward<Constructor>(constructor)}
@@ -44,8 +48,7 @@ namespace
     std::vector<NamedWidget> all_demos()
     {
         std::vector<NamedWidget> rv;
-        [&rv]<typename... Demos>(Typelist<Demos...>)
-        {
+        [&rv]<typename... Demos>(Typelist<Demos...>) {
             static_assert(sizeof...(Demos) > 0);
             (rv.push_back(NamedWidget::create<Demos>()), ...);
         }(OscarDemosTypelist{});
@@ -62,7 +65,7 @@ namespace
         }
 
     private:
-        bool impl_on_key_event(KeyEvent& e) final
+        bool impl_on_key_event(KeyEvent& e) override
         {
             if (e.type() != EventType::KeyUp) {
                 return false;
@@ -81,7 +84,7 @@ namespace
             return false;
         }
 
-        bool impl_on_event(Event& e) final
+        bool impl_on_event(Event& e) override
         {
             if (Widget::impl_on_event(e)) {
                 return true;
@@ -92,10 +95,10 @@ namespace
             return active_demo_->on_event(e);
         }
 
-        void impl_on_mount() final { active_demo_->on_mount(); }
-        void impl_on_unmount() final { active_demo_->on_unmount(); }
-        void impl_on_tick() final { active_demo_->on_tick(); }
-        void impl_on_draw() final
+        void impl_on_mount() override { active_demo_->on_mount(); }
+        void impl_on_unmount() override { active_demo_->on_unmount(); }
+        void impl_on_tick() override { active_demo_->on_tick(); }
+        void impl_on_draw() override
         {
             App::upd().main_window_clear();
             ui_context_.on_start_new_frame();
@@ -108,7 +111,8 @@ namespace
 
         void draw_ui_demo_selector()
         {
-            const auto& longest_entry = *rgs::max_element(demos_, rgs::less{}, [](auto const& entry) { return entry.name().size(); });
+            const auto& longest_entry = *rgs::max_element(
+                demos_, rgs::less{}, [](auto const& entry) { return entry.name().size(); });
             const float combo_len = ui::calc_text_size(longest_entry.name()).x();
 
             // Draw demo selector dropdown
@@ -124,7 +128,8 @@ namespace
                 ui::set_next_item_width(combo_len + 32.0f);  // pad the arrow
                 if (ui::begin_combobox("##DemoSelectorCombobox", active_demo_->name())) {
                     for (size_t i = 0; i < demos_.size(); ++i) {
-                        if (ui::draw_selectable(demos_[i].name(), demos_[i].name() == active_demo_->name())) {
+                        if (ui::draw_selectable(
+                                demos_[i].name(), demos_[i].name() == active_demo_->name())) {
                             switch_demo(i);
                         }
                     }

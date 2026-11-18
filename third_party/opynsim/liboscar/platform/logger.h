@@ -37,7 +37,8 @@ namespace osc
                 return;  // the message's level is too low for this logger
             }
 
-            auto it = std::ranges::find_if(log_sinks_, [log_level](const auto& sink) { return sink->should_log(log_level); });
+            auto it = std::ranges::find_if(
+                log_sinks_, [log_level](const auto& sink) { return sink->should_log(log_level); });
             if (it == log_sinks_.end()) {
                 return;  // no sink in this logger will consume the message
             }
@@ -45,7 +46,7 @@ namespace osc
             // else: there exists at least one sink that wants the message
 
             // format the format string with the arguments
-           const auto message = std::format(std::move(fmt), std::forward<Args>(args)...);
+            const auto message = std::format(std::move(fmt), std::forward<Args>(args)...);
 
             // create a readonly view of the message that sinks _may_ consume
             LogMessageView view{name_, CStringView{message}, log_level};
@@ -62,7 +63,7 @@ namespace osc
         std::vector<std::shared_ptr<LogSink>>& sinks() { return log_sinks_; }
 
         LogLevel level() const { return log_level_; }
-        void set_level(LogLevel level_) { log_level_ = level_; }
+        void set_level(LogLevel level) { log_level_ = level; }
 
     private:
         StringName name_;

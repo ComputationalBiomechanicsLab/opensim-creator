@@ -16,14 +16,13 @@ namespace
             "Fixed",
             MuscleSizingStyle::Fixed,
         },
-        MuscleSizingStyleMetadata
-        {
+        MuscleSizingStyleMetadata{
             "pcsa_derived",
             "PCSA-derived",
             MuscleSizingStyle::PcsaDerived,
         },
     });
-    static_assert(c_metadata.size() == osc::num_options<MuscleSizingStyle>());
+    static_assert(c_metadata.size() == osc::num_options_v<MuscleSizingStyle>);
 }
 
 std::span<const MuscleSizingStyleMetadata> opyn::get_all_muscle_sizing_style_metadata()

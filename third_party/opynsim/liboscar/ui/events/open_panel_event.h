@@ -18,6 +18,7 @@ namespace osc
 
         bool has_panel() const { return panel_to_open_ != nullptr; }
         std::unique_ptr<Panel> take_panel() { return std::move(panel_to_open_); }
+
     private:
         std::unique_ptr<Panel> panel_to_open_;
     };

@@ -31,6 +31,9 @@ function exampleScholz2015GeometryPath()
 
 import org.opensim.modeling.*;
 
+% Log outputs to 'opensim.log'.
+Logger.addFileSink('opensim.log');
+
 model = ModelFactory.createDoublePendulum();
 model.setUseVisualizer(true);
 
@@ -77,6 +80,11 @@ path.appendObstacle(obstacle, contact_hint);
 % in a Scholz2015GeometryPath. Since this is the last path point we are
 % adding, it defines the insertion of the path.
 path.appendPathPoint(model.getBodySet().get('b1'), Vec3(-0.5, 0.1, 0.));
+
+% Enable warm starts in the wrapping solver. At each time step, the
+% wrapping solver will use the solution from the previous time step as an
+% initial guess for the current time step.
+path.setUseWarmStart(true);
 
 % Initialize the system.
 state = model.initSystem();

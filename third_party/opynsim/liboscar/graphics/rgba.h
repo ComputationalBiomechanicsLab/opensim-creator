@@ -26,8 +26,8 @@ namespace osc
         using iterator = value_type*;
         using const_iterator = const value_type*;
 
-        static constexpr Rgba clear() { return {0.0f, 0.0f, 0.0f, 0.0f}; }
-
+        // clang-format off
+        static constexpr Rgba clear()         { return {0.0f, 0.0f, 0.0f, 0.0f}; }
         static constexpr Rgba white()         { return Rgb<T>::white();         }
         static constexpr Rgba lightest_grey() { return Rgb<T>::lightest_grey(); }
         static constexpr Rgba lighter_grey()  { return Rgb<T>::lighter_grey();  }
@@ -49,27 +49,43 @@ namespace osc
         static constexpr Rgba yellow()        { return Rgb<T>::yellow();        }
         static constexpr Rgba orange()        { return Rgb<T>::orange();        }
         static constexpr Rgba purple()        { return Rgb<T>::purple();        }
+        // clang-format on
 
         Rgba() = default;
 
         explicit constexpr Rgba(value_type v) :
-            r{v}, g{v}, b{v}, a(1.0f)
+            r{v},
+            g{v},
+            b{v},
+            a(1.0f)
         {}
 
         constexpr Rgba(value_type v, value_type alpha) :
-            r{v}, g{v}, b{v}, a{alpha}
+            r{v},
+            g{v},
+            b{v},
+            a{alpha}
         {}
 
         explicit constexpr Rgba(const Vector<value_type, 3>& v) :
-            r{v.x()}, g{v.y()}, b{v.z()}, a(1.0f)
+            r{v.x()},
+            g{v.y()},
+            b{v.z()},
+            a(1.0f)
         {}
 
         constexpr Rgba(const Vector<value_type, 3>& v, value_type alpha) :
-            r{v.x()}, g{v.y()}, b{v.z()}, a{alpha}
+            r{v.x()},
+            g{v.y()},
+            b{v.z()},
+            a{alpha}
         {}
 
         explicit constexpr Rgba(const Vector<value_type, 4>& v) :
-            r{v.x()}, g{v.y()}, b{v.z()}, a{v.w()}
+            r{v.x()},
+            g{v.y()},
+            b{v.z()},
+            a{v.w()}
         {}
 
         template<ColorComponent U>
@@ -81,18 +97,23 @@ namespace osc
             a{static_cast<T>(v.w())}
         {}
 
-        constexpr Rgba(value_type r_, value_type g_, value_type b_, value_type a_) :
-            r{r_}, g{g_}, b{b_}, a{a_}
+        constexpr Rgba(value_type r, value_type g, value_type b, value_type a) :
+            r{r},
+            g{g},
+            b{b},
+            a{a}
         {}
 
-        constexpr Rgba(value_type r_, value_type g_, value_type b_) :
-            r{r_}, g{g_}, b{b_}, a(1.0f)
+        constexpr Rgba(value_type r, value_type g, value_type b) :
+            r{r},
+            g{g},
+            b{b},
+            a(1.0f)
         {}
 
         template<ColorComponent U>
         requires std::constructible_from<T, const U&>
-        explicit (not (std::convertible_to<U, T>))
-        constexpr Rgba(const Rgba<U>& v) :
+        explicit(not(std::convertible_to<U, T>)) constexpr Rgba(const Rgba<U>& v) :
             r{static_cast<T>(v.r)},
             g{static_cast<T>(v.g)},
             b{static_cast<T>(v.b)},
@@ -106,15 +127,15 @@ namespace osc
             a{alpha}
         {}
 
-        constexpr reference       operator[](size_type pos)       { return *(begin() + pos); }
+        constexpr reference operator[](size_type pos) { return *(begin() + pos); }
         constexpr const_reference operator[](size_type pos) const { return *(begin() + pos); }
 
         constexpr size_t size() const { return 4; }
 
-        constexpr iterator       begin()       { return &r; }
+        constexpr iterator begin() { return &r; }
         constexpr const_iterator begin() const { return &r; }
 
-        constexpr iterator       end()       { return &r + size(); }
+        constexpr iterator end() { return &r + size(); }
         constexpr const_iterator end() const { return &r + size(); }
 
         friend bool operator==(const Rgba&, const Rgba&) = default;
@@ -146,10 +167,7 @@ namespace osc
             };
         }
 
-        constexpr Rgba with_alpha(value_type a_) const
-        {
-            return Rgba{r, g, b, a_};
-        }
+        constexpr Rgba with_alpha(value_type new_a) const { return Rgba{r, g, b, new_a}; }
 
         constexpr Rgba with_element(size_type pos, value_type value) const
         {
@@ -158,10 +176,7 @@ namespace osc
             return copy;
         }
 
-        constexpr Rgb<T> rgb() const
-        {
-            return {r, g, b};
-        }
+        constexpr Rgb<T> rgb() const { return {r, g, b}; }
 
         value_type r{};
         value_type g{};
@@ -172,7 +187,8 @@ namespace osc
     template<ColorComponent T>
     std::ostream& operator<<(std::ostream& o, const Rgba<T>& rgba)
     {
-        return o << "Rgba{r = " << rgba.r << ", g = " << rgba.g << ", b = " << rgba.b << ", a = " << rgba.a << "}";
+        return o << "Rgba{r = " << rgba.r << ", g = " << rgba.g << ", b = " << rgba.b
+                 << ", a = " << rgba.a << "}";
     }
 
     // returns a pointer to the first component of the `Rgba<T>`
@@ -192,16 +208,28 @@ namespace osc
     // when handled as a tuple-like object, a `Rgba<T>` decomposes into its components (incl. alpha)
 
     template<size_t I, ColorComponent T>
-    constexpr const T& get(const Rgba<T>& rgba) { return rgba[I]; }
+    constexpr const T& get(const Rgba<T>& rgba)
+    {
+        return rgba[I];
+    }
 
     template<size_t I, ColorComponent T>
-    constexpr T& get(Rgba<T>& rgba) { return rgba[I]; }
+    constexpr T& get(Rgba<T>& rgba)
+    {
+        return rgba[I];
+    }
 
     template<size_t I, ColorComponent T>
-    constexpr T&& get(Rgba<T>&& rgba) { return std::move(rgba[I]); }
+    constexpr T&& get(Rgba<T>&& rgba)
+    {
+        return std::move(rgba[I]);
+    }
 
     template<size_t I, ColorComponent T>
-    constexpr const T&& get(const Rgba<T>&& rgba) { return std::move(rgba[I]); }
+    constexpr const T&& get(const Rgba<T>&& rgba)
+    {
+        return std::move(rgba[I]);
+    }
 
     // returns a `Rgba<U>` containing `op(xv)` for each `xv` component in `x`
     template<ColorComponent T, std::invocable<const T&> UnaryOperation>
@@ -216,7 +244,8 @@ namespace osc
 
     // returns a `Rgba<U>` containing `op(xv, yv)` for each `(xv, yv)` component in `x` and `y`
     template<ColorComponent T, std::invocable<const T&, const T&> BinaryOperation>
-    constexpr auto map(const Rgba<T>& x, const Rgba<T>& y, BinaryOperation op) -> Rgba<decltype(std::invoke(op, x[0], y[0]))>
+    constexpr auto map(const Rgba<T>& x, const Rgba<T>& y, BinaryOperation op)
+        -> Rgba<decltype(std::invoke(op, x[0], y[0]))>
     {
         Rgba<decltype(std::invoke(op, x[0], y[0]))> rv{};
         for (size_t i = 0; i < 4; ++i) {
@@ -243,7 +272,7 @@ namespace osc
 // define compile-time size for `Rgba<T>`
 template<osc::ColorComponent T>
 struct std::tuple_size<osc::Rgba<T>> {
-    static inline constexpr size_t value = 4;
+    static constexpr size_t value = 4;
 };
 
 template<size_t I, osc::ColorComponent T>

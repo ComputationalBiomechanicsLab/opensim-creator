@@ -9,11 +9,11 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class Panel; }
-namespace osc { class Widget; }
-
 namespace osc
 {
+    class Panel;
+    class Widget;
+
     // manages a collection of panels that may be toggled, disabled, spawned, etc.
     class PanelManager final {
     public:
@@ -32,20 +32,18 @@ namespace osc
         void register_toggleable_panel(
             std::string_view base_name,
             std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor,
-            ToggleablePanelFlags flags = ToggleablePanelFlags::Default
-        );
+            ToggleablePanelFlags flags = ToggleablePanelFlags::Default);
 
         // register a panel that can spawn N copies (e.g. visualizers)
         void register_spawnable_panel(
             std::string_view base_name,
             std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor,
-            size_t num_initially_opened_panels
-        );
+            size_t num_initially_opened_panels);
 
         // returns the panel with the given name, or `nullptr` if not found
         Panel* try_upd_panel_by_name(std::string_view);
         template<std::derived_from<Panel> TConcretePanel>
-        TConcretePanel* try_upd_panel_by_name_T(std::string_view name)
+        TConcretePanel* try_upd_panel_by_name_t(std::string_view name)
         {
             Panel* p = try_upd_panel_by_name(name);
             return p ? dynamic_cast<TConcretePanel*>(p) : nullptr;

@@ -20,9 +20,18 @@ osc::Widget::Widget(Widget* parent) :
 {}
 osc::Widget::~Widget() noexcept = default;
 
-Widget* osc::Widget::parent() { return data_->parent(); }
-const Widget* osc::Widget::parent() const { return data_->parent(); }
-void osc::Widget::set_parent(Widget* new_parent) { data_->set_parent(new_parent); }
+Widget* osc::Widget::parent()
+{
+    return data_->parent();
+}
+const Widget* osc::Widget::parent() const
+{
+    return data_->parent();
+}
+void osc::Widget::set_parent(Widget* new_parent)
+{
+    data_->set_parent(new_parent);
+}
 
 LifetimedPtr<Widget> osc::Widget::weak_ref()
 {
@@ -45,6 +54,7 @@ osc::Widget::Widget(std::unique_ptr<WidgetPrivate>&& data) :
 
 bool osc::Widget::impl_on_event(Event& e)
 {
+    // clang-format off
     switch (e.type()) {
     case EventType::DropFile:           return impl_on_drop_file_event(dynamic_cast<DropFileEvent&>(e));
     case EventType::KeyDown:            [[fallthrough]];
@@ -59,16 +69,41 @@ bool osc::Widget::impl_on_event(Event& e)
     case EventType::Window:             return impl_on_window_event(dynamic_cast<WindowEvent&>(e));
     default:                            return false;
     }
+    // clang-format on
 }
 
-bool osc::Widget::impl_on_display_state_change_event(DisplayStateChangeEvent&) { return false; }
-bool osc::Widget::impl_on_drop_file_event(DropFileEvent&) { return false; }
-bool osc::Widget::impl_on_key_event(KeyEvent&) { return false; }
-bool osc::Widget::impl_on_mouse_event(MouseEvent&) { return false; }
-bool osc::Widget::impl_on_mouse_wheel_event(MouseWheelEvent&) { return false; }
-bool osc::Widget::impl_on_quit_event(QuitEvent&) { return false; }
-bool osc::Widget::impl_on_text_input_event(TextInputEvent&) { return false; }
-bool osc::Widget::impl_on_window_event(WindowEvent&) { return false; }
+bool osc::Widget::impl_on_display_state_change_event(DisplayStateChangeEvent&)
+{
+    return false;
+}
+bool osc::Widget::impl_on_drop_file_event(DropFileEvent&)
+{
+    return false;
+}
+bool osc::Widget::impl_on_key_event(KeyEvent&)
+{
+    return false;
+}
+bool osc::Widget::impl_on_mouse_event(MouseEvent&)
+{
+    return false;
+}
+bool osc::Widget::impl_on_mouse_wheel_event(MouseWheelEvent&)
+{
+    return false;
+}
+bool osc::Widget::impl_on_quit_event(QuitEvent&)
+{
+    return false;
+}
+bool osc::Widget::impl_on_text_input_event(TextInputEvent&)
+{
+    return false;
+}
+bool osc::Widget::impl_on_window_event(WindowEvent&)
+{
+    return false;
+}
 
 void osc::Widget::impl_on_mount() {}
 void osc::Widget::impl_on_unmount() {}

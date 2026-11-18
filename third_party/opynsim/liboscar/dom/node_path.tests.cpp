@@ -10,7 +10,6 @@
 
 using namespace osc;
 
-
 namespace
 {
     std::vector<std::string> slurp(const NodePath& node_path)
@@ -86,7 +85,9 @@ TEST(NodePath, std_distance_equals_one_when_constructed_from_single_element_stri
     ASSERT_EQ(std::distance(node_path.begin(), node_path.end()), 1);
 }
 
-TEST(NodePath, compares_equal_to_expected_result_when_constructed_from_single_element_and_slurped_into_vector)
+TEST(
+    NodePath,
+    compares_equal_to_expected_result_when_constructed_from_single_element_and_slurped_into_vector)
 {
     const NodePath node_path{"el"};
     const std::vector<std::string> expected = {"el"};
@@ -104,12 +105,15 @@ TEST(NodePath, compares_not_equal_to_empty_std_string_view_when_constructed_from
     ASSERT_NE(NodePath("el"), std::string_view());
 }
 
-TEST(NodePath, compares_not_equal_to_some_other_std_string_view_when_constructed_from_single_element)
+TEST(
+    NodePath, compares_not_equal_to_some_other_std_string_view_when_constructed_from_single_element)
 {
     ASSERT_NE(NodePath("el"), std::string_view("else"));
 }
 
-TEST(NodePath, std_hash_is_equal_to_hash_of_equivalent_std_string_view_when_constructed_from_single_element)
+TEST(
+    NodePath,
+    std_hash_is_equal_to_hash_of_equivalent_std_string_view_when_constructed_from_single_element)
 {
     const auto node_path_hash = std::hash<NodePath>{}(NodePath{"el"});
     const auto string_view_hash = std::hash<std::string_view>{}(std::string_view{"el"});
@@ -126,7 +130,9 @@ TEST(NodePath, is_absolute_returns_true_when_constructed_from_abs_path_to_single
     ASSERT_TRUE(NodePath("/el").is_absolute());
 }
 
-TEST(NodePath, compares_equal_to_equivalent_std_string_view_when_constructed_from_abs_path_to_single_element)
+TEST(
+    NodePath,
+    compares_equal_to_equivalent_std_string_view_when_constructed_from_abs_path_to_single_element)
 {
     ASSERT_EQ(NodePath("/el"), std::string_view("/el"));
 }
@@ -144,7 +150,9 @@ TEST(NodePath, when_constructed_from_single_element_with_leading_slash_slurps_in
     ASSERT_EQ(slurp(node_path), expected);
 }
 
-TEST(NodePath, when_constructed_from_single_element_with_leading_slash_hashes_to_equivalent_std_string_view)
+TEST(
+    NodePath,
+    when_constructed_from_single_element_with_leading_slash_hashes_to_equivalent_std_string_view)
 {
     const auto node_path_hash = std::hash<NodePath>{}(NodePath{"/el"});
     const auto string_view_hash = std::hash<std::string_view>{}(std::string_view{"/el"});
@@ -169,12 +177,16 @@ TEST(NodePath, when_constructed_from_two_elements_with_no_leading_slash_slurps_i
     ASSERT_EQ(slurp(node_path), expected);
 }
 
-TEST(NodePath, when_constructed_from_two_elements_with_no_leading_slash_compares_equal_to_equivalent_std_string_view)
+TEST(
+    NodePath,
+    when_constructed_from_two_elements_with_no_leading_slash_compares_equal_to_equivalent_std_string_view)
 {
     ASSERT_EQ(NodePath("a/b"), std::string_view("a/b"));
 }
 
-TEST(NodePath, std_hash_returns_same_as_std_string_veiw_when_constructed_from_two_elements_with_no_leading_slash)
+TEST(
+    NodePath,
+    std_hash_returns_same_as_std_string_veiw_when_constructed_from_two_elements_with_no_leading_slash)
 {
     const auto node_path_hash = std::hash<NodePath>{}(NodePath{"a/b"});
     const auto string_view_hash = std::hash<std::string_view>{}(std::string_view{"a/b"});
@@ -235,6 +247,7 @@ TEST(NodePath, normalizes_the_input_string_as_expected_for_a_variety_of_inputs)
         std::string_view expectedOutput;
     };
 
+    // clang-format off
     constexpr auto test_cases = std::to_array<TestCase>({
         {"",                       "" },
         {"/",                      "/" },
@@ -273,9 +286,11 @@ TEST(NodePath, normalizes_the_input_string_as_expected_for_a_variety_of_inputs)
         {"/a/././b/c/..//d/.././", "/a/b"},
         {"/a/b/c/d/../..",         "/a/b"},
     });
+    // clang-format on
 
     for (const TestCase& test_case : test_cases) {
-        ASSERT_EQ(NodePath(test_case.input), test_case.expectedOutput) << std::string_view{test_case.input};
+        ASSERT_EQ(NodePath(test_case.input), test_case.expectedOutput)
+            << std::string_view{test_case.input};
     }
 }
 
@@ -311,6 +326,7 @@ TEST(NodePath, constructor_throws_if_given_invalid_input)
     });
 
     for (const auto& input : inputs) {
-        ASSERT_ANY_THROW({ const NodePath p(input); }) << std::string{"input was: "} + std::string{input};
+        ASSERT_ANY_THROW({ const NodePath p(input); })
+            << std::string{"input was: "} + std::string{input};
     }
 }

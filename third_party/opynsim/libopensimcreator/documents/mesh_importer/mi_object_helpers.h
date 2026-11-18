@@ -8,19 +8,25 @@
 #include <array>
 #include <variant>
 
-namespace osc { class MiMesh; }
-namespace osc { class MiObject; }
+namespace osc
+{
+    class MiMesh;
+}
+namespace osc
+{
+    class MiObject;
+}
 
 namespace osc
 {
     // returns true if a mesh can be attached to the given object
-    bool CanAttachMeshTo(const MiObject&);
+    bool can_attach_mesh_to(const MiObject&);
 
     // returns `true` if a `MiStation` can be attached to the object
-    bool CanAttachStationTo(const MiObject&);
+    bool can_attach_station_to(const MiObject&);
 
-    const std::array<MiClass, std::variant_size_v<MiVariantReference>>& GetSceneElClasses();
+    const std::array<MiClass, std::variant_size_v<MiVariantReference>>& get_scene_el_classes();
 
-    Vector3 AverageCenter(const MiMesh&);
+    Vector3 average_center(const MiMesh&);
     Vector3 mass_center_of(const MiMesh&);
 }

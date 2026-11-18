@@ -13,14 +13,6 @@
 using namespace opyn;
 namespace rgs = std::ranges;
 
-opyn::OpenSimDecorationOptions::OpenSimDecorationOptions() :
-    muscle_decoration_style_{MuscleDecorationStyle::Default},
-    muscle_color_source_{MuscleColorSource::Default},
-    muscle_sizing_style_{MuscleSizingStyle::Default},
-    muscle_colour_source_scaling_{MuscleColorSourceScaling::Default},
-    flags_{OpenSimDecorationOptionFlag::Default}
-{}
-
 MuscleDecorationStyle opyn::OpenSimDecorationOptions::get_muscle_decoration_style() const
 {
     return muscle_decoration_style_;
@@ -63,7 +55,7 @@ void opyn::OpenSimDecorationOptions::set_muscle_color_source_scaling(MuscleColor
 
 size_t opyn::OpenSimDecorationOptions::get_num_options() const
 {
-    return osc::num_flags<OpenSimDecorationOptionFlag>();
+    return osc::num_flags_v<OpenSimDecorationOptionFlag>;
 }
 
 bool opyn::OpenSimDecorationOptions::get_option_value(ptrdiff_t i) const
@@ -81,7 +73,8 @@ osc::CStringView opyn::OpenSimDecorationOptions::get_option_label(ptrdiff_t i) c
     return get_ith_option_metadata(i).label;
 }
 
-std::optional<osc::CStringView> opyn::OpenSimDecorationOptions::get_option_description(ptrdiff_t i) const
+std::optional<osc::CStringView> opyn::OpenSimDecorationOptions::get_option_description(
+    ptrdiff_t i) const
 {
     return get_ith_option_metadata(i).maybe_description;
 }
@@ -96,42 +89,52 @@ void opyn::OpenSimDecorationOptions::set_should_show_scapulo(bool v)
     flags_.set(OpenSimDecorationOptionFlag::ShouldShowScapulo, v);
 }
 
-bool opyn::OpenSimDecorationOptions::get_should_show_effective_muscle_line_of_action_for_origin() const
+bool opyn::OpenSimDecorationOptions::get_should_show_effective_muscle_line_of_action_for_origin()
+    const
 {
     return flags_.get(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForOrigin);
 }
 
-void opyn::OpenSimDecorationOptions::set_should_show_effective_muscle_line_of_action_for_origin(bool v)
+void opyn::OpenSimDecorationOptions::set_should_show_effective_muscle_line_of_action_for_origin(
+    bool v)
 {
     flags_.set(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForOrigin, v);
 }
 
-bool opyn::OpenSimDecorationOptions::get_should_show_effective_muscle_line_of_action_for_insertion() const
+bool opyn::OpenSimDecorationOptions::get_should_show_effective_muscle_line_of_action_for_insertion()
+    const
 {
     return flags_.get(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForInsertion);
 }
 
-void opyn::OpenSimDecorationOptions::set_should_show_effective_muscle_line_of_action_for_insertion(bool v)
+void opyn::OpenSimDecorationOptions::set_should_show_effective_muscle_line_of_action_for_insertion(
+    bool v)
 {
     flags_.set(OpenSimDecorationOptionFlag::ShouldShowEffectiveLinesOfActionForInsertion, v);
 }
 
-bool opyn::OpenSimDecorationOptions::get_should_show_anatomical_muscle_line_of_action_for_origin() const
+bool opyn::OpenSimDecorationOptions::get_should_show_anatomical_muscle_line_of_action_for_origin()
+    const
 {
-    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForOrigin);
+    return flags_.get(
+        OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForOrigin);
 }
 
-void opyn::OpenSimDecorationOptions::set_should_show_anatomical_muscle_line_of_action_for_origin(bool v)
+void opyn::OpenSimDecorationOptions::set_should_show_anatomical_muscle_line_of_action_for_origin(
+    bool v)
 {
     flags_.set(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForOrigin, v);
 }
 
-bool opyn::OpenSimDecorationOptions::get_should_show_anatomical_muscle_line_of_action_for_insertion() const
+bool opyn::OpenSimDecorationOptions::
+    get_should_show_anatomical_muscle_line_of_action_for_insertion() const
 {
-    return flags_.get(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForInsertion);
+    return flags_.get(
+        OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForInsertion);
 }
 
-void opyn::OpenSimDecorationOptions::set_should_show_anatomical_muscle_line_of_action_for_insertion(bool v)
+void opyn::OpenSimDecorationOptions::set_should_show_anatomical_muscle_line_of_action_for_insertion(
+    bool v)
 {
     flags_.set(OpenSimDecorationOptionFlag::ShouldShowAnatomicalMuscleLinesOfActionForInsertion, v);
 }
@@ -224,71 +227,85 @@ void opyn::OpenSimDecorationOptions::set_should_show_everything(bool v)
 void opyn::OpenSimDecorationOptions::for_each_option_as_app_setting_value(
     const std::function<void(std::string_view, const osc::Variant&)>& callback) const
 {
-    callback("muscle_decoration_style", osc::Variant{get_muscle_decoration_style_metadata(muscle_decoration_style_).id});
-    callback("muscle_coloring_style",   osc::Variant{get_muscle_coloring_style_metadata(muscle_color_source_).id});
-    callback("muscle_sizing_style",     osc::Variant{get_muscle_sizing_style_metadata(muscle_sizing_style_).id});
-    callback("muscle_color_scaling",    osc::Variant{get_muscle_color_source_scaling_metadata(muscle_colour_source_scaling_).id});
-    for (size_t i = 0; i < osc::num_flags<OpenSimDecorationOptionFlag>(); ++i) {
+    callback(
+        "muscle_decoration_style",
+        osc::Variant{get_muscle_decoration_style_metadata(muscle_decoration_style_).id});
+    callback(
+        "muscle_coloring_style",
+        osc::Variant{get_muscle_coloring_style_metadata(muscle_color_source_).id});
+    callback(
+        "muscle_sizing_style",
+        osc::Variant{get_muscle_sizing_style_metadata(muscle_sizing_style_).id});
+    callback(
+        "muscle_color_scaling",
+        osc::Variant{get_muscle_color_source_scaling_metadata(muscle_colour_source_scaling_).id});
+    for (size_t i = 0; i < osc::num_flags_v<OpenSimDecorationOptionFlag>; ++i) {
         const auto& meta = get_ith_option_metadata(i);
         callback(meta.id, osc::Variant{flags_.get(get_ith_option(i))});
     }
 }
 
 void opyn::OpenSimDecorationOptions::try_upd_from_values(
-    std::string_view prefix,
-    const std::unordered_map<std::string, osc::Variant>& lut)
+    std::string_view prefix, const std::unordered_map<std::string, osc::Variant>& lut)
 {
     // looks up a single element in the lut
-    auto lookup = [
-        &lut,
-        buf = std::string{prefix},
-        prefix_len = prefix.size()](std::string_view v) mutable
-    {
-        buf.resize(prefix_len);
-        buf.insert(prefix_len, v);
+    auto lookup =
+        [&lut, buf = std::string{prefix}, prefix_len = prefix.size()](std::string_view v) mutable {
+            buf.resize(prefix_len);
+            buf.insert(prefix_len, v);
 
-        return lookup_or_nullptr(lut, buf);
-    };
+            return lookup_or_nullptr(lut, buf);
+        };
 
-    if (auto* app_val = lookup("muscle_decoration_style"); app_val and app_val->type() == osc::VariantType::String)
-    {
+    if (auto* app_val = lookup("muscle_decoration_style");
+        app_val and app_val->type() == osc::VariantType::String) {
+
         const auto metadata = get_all_muscle_decoration_style_metadata();
-        const auto it = rgs::find(metadata, to<std::string>(*app_val), [](const auto& m) { return m.id; });
+        const auto it =
+            rgs::find(metadata, to<std::string>(*app_val), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             muscle_decoration_style_ = it->value;
         }
     }
 
-    if (auto* app_val = lookup("muscle_coloring_style"); app_val and app_val->type() == osc::VariantType::String)
-    {
+    if (auto* app_val = lookup("muscle_coloring_style");
+        app_val and app_val->type() == osc::VariantType::String) {
+
         const auto metadata = get_all_possible_muscle_coloring_sources_metadata();
-        const auto it = rgs::find(metadata, to<std::string>(*app_val), [](const auto& m) { return m.id; });
+        const auto it =
+            rgs::find(metadata, to<std::string>(*app_val), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             muscle_color_source_ = it->value;
         }
     }
 
-    if (auto* app_val = lookup("muscle_sizing_style"); app_val and app_val->type() == osc::VariantType::String)
-    {
+    if (auto* app_val = lookup("muscle_sizing_style");
+        app_val and app_val->type() == osc::VariantType::String) {
+
         const auto metadata = get_all_muscle_sizing_style_metadata();
-        const auto it = rgs::find(metadata, to<std::string>(*app_val), [](const auto& m) { return m.id; });
+        const auto it =
+            rgs::find(metadata, to<std::string>(*app_val), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             muscle_sizing_style_ = it->value;
         }
     }
 
-    if (auto* app_val = lookup("muscle_color_scaling"); app_val and app_val->type() == osc::VariantType::String)
-    {
+    if (auto* app_val = lookup("muscle_color_scaling");
+        app_val and app_val->type() == osc::VariantType::String) {
+
         const auto metadata = get_all_possible_muscle_color_source_scaling_metadata();
-        const auto it = rgs::find(metadata, to<std::string>(*app_val), [](const auto& m) { return m.id; });
+        const auto it =
+            rgs::find(metadata, to<std::string>(*app_val), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             muscle_colour_source_scaling_ = it->value;
         }
     }
 
-    for (size_t i = 0; i < osc::num_flags<OpenSimDecorationOptionFlag>(); ++i) {
+    for (size_t i = 0; i < osc::num_flags_v<OpenSimDecorationOptionFlag>; ++i) {
         const auto& metadata = get_ith_option_metadata(i);
-        if (auto* app_val = lookup(metadata.id); app_val and app_val->type() == osc::VariantType::Bool) {
+        if (auto* app_val = lookup(metadata.id);
+            app_val and app_val->type() == osc::VariantType::Bool) {
+
             flags_.set(get_ith_option(i), to<bool>(*app_val));
         }
     }

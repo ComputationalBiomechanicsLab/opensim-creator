@@ -2,10 +2,10 @@
 
 #include <liboscar/ui/tabs/tab.h>
 
-namespace osc { class Widget; }
-
 namespace osc
 {
+    class Widget;
+
     class ImPlotDemoTab final : public Tab {
     public:
         static CStringView id();
@@ -13,7 +13,7 @@ namespace osc
         explicit ImPlotDemoTab(Widget*);
 
     private:
-        void impl_on_draw() final;
+        void impl_on_draw() override;
 
         class Impl;
         OSC_WIDGET_DATA_GETTERS(Impl);

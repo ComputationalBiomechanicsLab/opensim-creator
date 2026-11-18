@@ -20,7 +20,6 @@ option(OPYNDEPS_BUILD_NANOBIND        "Build nanobind"                          
 option(OPYNDEPS_BUILD_OPENBLAS        "Build OpenBLAS"                          ${_build_openblas_default})
 option(OPYNDEPS_BUILD_ROBIN_MAP       "Build robin-map (required for nanobind)" ON)
 option(OPYNDEPS_BUILD_SDL             "Build SDL"                               ON)
-option(OPYNDEPS_BUILD_SPDLOG          "Build spdlog"                            ON)
 option(OPYNDEPS_BUILD_STB             "Build stb"                               ON)
 option(OPYNDEPS_BUILD_TOMLPLUSPLUS    "Build tomlplusplus"                      ON)
 option(OPYNDEPS_BUILD_UNORDERED_DENSE "Build unordered-dense"                   ON)
@@ -205,19 +204,6 @@ if(OPYNDEPS_BUILD_SDL)
             -DSDL_SHARED:BOOL=OFF
             -DSDL_STATIC:BOOL=ON
             -DSDL_TEST_LIBRARY:BOOL=OFF
-    )
-endif()
-
-if(OPYNDEPS_BUILD_SPDLOG)
-    ExternalProject_Add(spdlog
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spdlog
-        BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OPYNDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DSPDLOG_BUILD_BENCH:BOOL=OFF
-            -DSPDLOG_BUILD_TESTS:BOOL=OFF
-            -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
-            -DSPDLOG_BUILD_SHARED:BOOL=OFF
     )
 endif()
 

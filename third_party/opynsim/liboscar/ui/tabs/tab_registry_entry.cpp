@@ -12,23 +12,15 @@ using namespace osc;
 
 class osc::TabRegistryEntry::Impl final {
 public:
-    explicit Impl(
-        CStringView name,
-        std::function<std::unique_ptr<Tab>(Widget*)> tab_constructor) :
+    explicit Impl(CStringView name, std::function<std::unique_ptr<Tab>(Widget*)> tab_constructor) :
 
         name_{name},
         tab_constructor_{std::move(tab_constructor)}
     {}
 
-    CStringView name() const
-    {
-        return name_;
-    }
+    CStringView name() const { return name_; }
 
-    std::unique_ptr<Tab> construct_tab(Widget* host) const
-    {
-        return tab_constructor_(host);
-    }
+    std::unique_ptr<Tab> construct_tab(Widget* host) const { return tab_constructor_(host); }
 
 private:
     std::string name_;
@@ -36,8 +28,7 @@ private:
 };
 
 osc::TabRegistryEntry::TabRegistryEntry(
-    CStringView name,
-    std::function<std::unique_ptr<Tab>(Widget*)> tab_constructor) :
+    CStringView name, std::function<std::unique_ptr<Tab>(Widget*)> tab_constructor) :
 
     impl_{std::make_shared<Impl>(name, std::move(tab_constructor))}
 {}
