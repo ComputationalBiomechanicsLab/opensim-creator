@@ -69,6 +69,7 @@ Table of Contents
    development/cpp-api-reference
    development/opensim-interoperability
    development/release-process
+   development/contributing
 
 .. toctree::
     :caption: Other Links

@@ -26,6 +26,7 @@ websites like GitHub.
     - [ ] Ensure the `ErrorCheck` build + tests all pass
     - [ ] Manually spot-check any new changes with the `ErrorCheck` build
     - [ ] Fix all bugs/problems/lints found during the above steps
+    - [ ] Build `Release-Linux-amd64` and ensure the release build's test suite passes under `valgrind`: `LIBGL_ALWAYS_SOFTWARE=1 valgrind --leak-check=full --trace-children=yes -- ctest --test-dir build/Release-Linux-amd64 --output-on-failure`
     - [ ] Commit the fixes to CI and ensure CI passes
     - [ ] Download CI artifacts for all supported platforms. Install them on all applicable test/development machines. Manually spot-check that they install, work, etc.
     - [ ] Update  `CHANGELOG.md`:

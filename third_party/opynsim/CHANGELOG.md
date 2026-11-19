@@ -6,6 +6,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release] - YYYY/MM/DD
 
+## [0.9.0] - 2026/11/19
+
+v0.9.0 is effectively a re-tagged v0.1.0. The reason for this is so that OPynSim's version
+number matches [OpenSim Creator's](https://www.opensimcreator.com), because the two projects
+will be versioned in lock-step from now on.
+
+
 ## [0.1.0] - 2026/11/17
 
 0.1 is a pre-alpha development release that rearranges the locations of various classes
