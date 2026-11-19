@@ -1,5 +1,7 @@
 # CPack script that codesigns the application bundle
 
+set(OSC_STAGING_DIR "${CPACK_TEMPORARY_INSTALL_DIRECTORY}/ALL_COMPONENTS_IN_ONE")
+
 execute_process(
     COMMAND codesign
     --force
@@ -7,7 +9,7 @@ execute_process(
     --verbose
     --options runtime
     --sign "${CPACK_OSC_CODESIGN_DEVELOPER_ID}"
-    "${CPACK_TEMPORARY_INSTALL_DIRECTORY}/OpenSim Creator.app"
+    "${OSC_STAGING_DIR}/OpenSim Creator.app"
     RESULT_VARIABLE res
     COMMAND_ECHO STDERR
 )
@@ -15,7 +17,7 @@ if(NOT res EQUAL 0)
     message(FATAL_ERROR "codesign failed!")
 endif()
 execute_process(
-    COMMAND codesign --verify --verbose=4 "${CPACK_TEMPORARY_INSTALL_DIRECTORY}/OpenSim Creator.app"
+    COMMAND codesign --verify --verbose=4 "${OSC_STAGING_DIR}/OpenSim Creator.app"
     RESULT_VARIABLE res
     COMMAND_ECHO STDERR
 )

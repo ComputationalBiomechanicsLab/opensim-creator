@@ -2,9 +2,11 @@
 # before they're packaged into the final installer (which must also be signed, but in
 # a different script).
 
+set(OSC_STAGING_DIR "${CPACK_TEMPORARY_INSTALL_DIRECTORY}/ALL_COMPONENTS_IN_ONE")
+
 # Find `.exe`/`.dll`s that need to be signed
-file(GLOB_RECURSE _exe_files "${CPACK_TEMPORARY_INSTALL_DIRECTORY}/*.exe")
-file(GLOB_RECURSE _dll_files "${CPACK_TEMPORARY_INSTALL_DIRECTORY}/*.dll")
+file(GLOB_RECURSE _exe_files "${OSC_STAGING_DIR}/*.exe")
+file(GLOB_RECURSE _dll_files "${OSC_STAGING_DIR}/*.dll")
 
 # Sign each binary
 foreach(_binary IN LISTS _exe_files _dll_files)
