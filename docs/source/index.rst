@@ -17,7 +17,7 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 2
-   :caption: Setup
+   :caption: Getting Started
 
    installation
 
