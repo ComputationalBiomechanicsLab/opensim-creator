@@ -40,7 +40,7 @@ Table of Contents
    :caption: Development
 
    contributing
-   the-release-process
+   release-process
 
 .. toctree::
     :caption: Other Links

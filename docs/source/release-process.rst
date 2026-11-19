@@ -1,5 +1,5 @@
-The Release Process
-===================
+Release Process
+===============
 
 This is a rough overview of OpenSim Creator's release process - mostly intended as
 internal documentation for the development team.
