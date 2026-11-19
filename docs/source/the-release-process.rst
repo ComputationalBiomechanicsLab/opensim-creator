@@ -24,6 +24,9 @@ Creator, it's usually copied into a GitHub issue:
 
 .. code-block:: markdown
 
+    - [ ] The version number matches OPynSim's version (lockstep: both projects are locked together by one
+          team. The version number shown to users in osc.exe is _OPynSim's_ because that's where the GUI
+          is built).
     - [ ] Create an issue called something like `Release XX.xx.pp`
     - [ ] Copy this checklist into it
     - [ ] Bump the VERSION in the top-level `CMakeLists.txt` accordingly
