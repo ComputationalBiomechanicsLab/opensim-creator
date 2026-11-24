@@ -1,6 +1,6 @@
 # CPack script that codesigns the application bundle
 
-set(OSC_STAGING_DIR "${CPACK_TEMPORARY_INSTALL_DIRECTORY}/ALL_COMPONENTS_IN_ONE")
+set(OSC_STAGING_DIR "${CPACK_TEMPORARY_INSTALL_DIRECTORY}/ALL_IN_ONE")
 
 execute_process(
     COMMAND codesign
