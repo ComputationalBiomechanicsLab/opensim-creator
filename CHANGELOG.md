@@ -6,6 +6,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+## [0.9.0] - 2026/11/24
+
+0.9.0 finishes off porting OSC [OPynSim](https://github.com/opynsim/opynsim), fixes
+various packaging issues, fixes an issue where the global `geometry/` directory
+took precedence over the local one (!), and adds some small UX improvements for
+output watching and the mesh warper.
+
 - OpenSim Creator's C++ source code was moved to [OPynSim](https://github.com/opynsim/opynsim),
   which ensures it is synchronized 1:1 with OPynSim's features/bugfixes. The
   opensim-creator repository now only handles documentation, packaging, branding,
@@ -23,6 +30,16 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   the output name in OpenSim Creator should hopefully match the name used by OPynSim).
 - The model warper now caches TPS warps more aggressively, improving model warping
   performance in bigger pipelines containing many TPS warps.
+- The model editor now has user-editable `target` and `position` inputs in the camera
+  controls, which matches the Python API's `Camera.look_at` API.
+- **BREAKING**: Removed support for `Smith2018ArticularContactForce` and
+  `Smith2018ContactMesh`. This is in order to ensure `.osim` data interoperability with
+  baseline OpenSim. Use an older version of OPynSim/OpenSim Creator if you need to use
+  these components, or (ideally) get them merged into [opensim-core](https://github.com/opensim-org/opensim-core), so
+  that they can be loaded by the entire ecosystem!
+- The mesh warping workflow now has a right-click context menu for the mesh, which
+  includes a new "Move Selection Here" option, enabling moving existing landmarks to
+  the click location.
 
 ## [0.8.0] - 2026/07/10
 
