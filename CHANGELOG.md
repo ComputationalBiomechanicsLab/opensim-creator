@@ -8,7 +8,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [0.9.0] - 2026/11/24
 
-0.9.0 finishes off porting OSC [OPynSim](https://github.com/opynsim/opynsim), fixes
+0.9.0 finishes off porting OSC to [OPynSim](https://github.com/opynsim/opynsim), fixes
 various packaging issues, fixes an issue where the global `geometry/` directory
 took precedence over the local one (!), and adds some small UX improvements for
 output watching and the mesh warper.
